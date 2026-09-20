@@ -1,0 +1,10 @@
+{
+  "candidateFiles": 10939,
+  "excluded": 622,
+  "capturedWorktreeFiles": 4376,
+  "worktrees": 54,
+  "rootHead": "6a98366b7507e3ee76cc0e13690afffd403a5321",
+  "privateDir": "C:\\Users\\maksd\\AppData\\Local\\Temp\\rct-audit-publish-20260920",
+  "remoteBase": "87784165874e2da6fc261abc1c01584e24624289",
+  "distinctRevisionPatches": 25
+}

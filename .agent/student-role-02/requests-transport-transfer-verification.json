@@ -1,0 +1,9 @@
+{
+  "recordedAt": "2026-09-07T21:38:20.2669507Z",
+  "manifestSha256": "4725C54BF3F6300557697C4A756ED1565D5CCD8005F229C6C60AE3250744B2C4",
+  "filesChecked": 91,
+  "mismatches": [],
+  "status": "INCOMPLETE_CHECKPOINT_NOT_ACCEPTED",
+  "writerStopped": true,
+  "remaining": "Combined Rabbit 11 tests/1 failure; Python pytest/ruff missing; full transport runtime and independent review open"
+}

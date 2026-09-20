@@ -1,0 +1,51 @@
+# Part 26 — Teacher profile role entry + unified mobile role gradient
+
+Дата: 05.09.2026. Источник: новое сообщение владельца в текущей задаче.
+
+## Требования владельца
+
+1. На Teacher Profile `5850:585` вернуть видимую строку/вкладку
+   `Сменить роль`, ведущую в существующий task `5854:582`.
+2. Role-switch triggers `5810:145`, `5896:452`, `5901:455` привести к
+   градиенту принятого mobile donor `4997:144`.
+3. Исправление охватывает Teacher и Admin; промежуточной приёмки между ними
+   не ждать.
+
+## Разбор до записи
+
+- Пункт 1 прямо отменяет закрытое решение Part 24, по которому второй entry
+  point из Teacher Profile был удалён. Последняя owner-правка главнее: отмена
+  должна быть названа в журнале и mobile spec.
+- Donor и targets являются локальными screen frames, не instances общего
+  role-switch master. Нужна локальная правка экранов, shared-master write не
+  требуется.
+- Живой donor `4997:144`: 118×44 px, linear gradient из трёх stops,
+  `radius=24`, без stroke/effect. Owner потребовал тот же градиент; размеры и
+  тексты targets остаются ролевыми.
+- Teacher Profile получает clone принятой строки Headman Profile
+  `5271:1011`: 358×56 px, `icon/role-switch` `4734:146`, Onest SemiBold 15,
+  semantic surface/text/icon bindings. Существующие четыре строки сдвигаются
+  вниз на 68 px; отдельный role subtitle в identity-card не возвращается.
+- Code Connect отсутствует: frontend-кода в kit ещё нет. Все зависимости
+  разрешены через существующие screens; поиск внешней библиотеки не нужен.
+- Изображений/внешних assets нет. Новый component, variant, token или style не
+  создаётся; публикацию выполняет только владелец.
+
+## Порядок
+
+1. Зафиксировать живой baseline страниц 25/26/27 и визуальные screenshots.
+2. Локально скопировать donor gradient в три role trigger.
+3. Добавить одну строку `Сменить роль` в Teacher Profile.
+4. Выполнить независимый структурный, числовой, шрифтовой, token/literal,
+   touch/overflow и визуальный аудит другим проходом.
+5. Получить functional/mobile/critic GO, записать решение и финальный state.
+
+## Ограничения
+
+- Писатель в Figma один — root-оркестратор; субагенты только читают и
+  критикуют.
+- Не менять shared masters, auth/student/headman screens и закрытые состояния,
+  кроме чтения donor `4997:144`.
+- Не публиковать.
+- Числа считать в единице A с живого файла; direct consumers называть своей
+  единицей, не A.

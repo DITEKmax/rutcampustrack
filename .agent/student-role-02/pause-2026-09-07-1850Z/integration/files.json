@@ -1,0 +1,296 @@
+[
+  {
+    "path": "docs/openapi/mobile-bff.json",
+    "kind": "tracked",
+    "added": 427,
+    "removed": 50,
+    "sha256": "CC22AAF4518392CB0AA792166D4BDD8D4071958BD82D0C2BCC990B6D6924D363"
+  },
+  {
+    "path": "frontends/mobile-core/fixtures/homework-completion-completed.json",
+    "kind": "tracked",
+    "added": 5,
+    "removed": 0,
+    "sha256": "AABBDFD60FD6E1598BB367A245483E7175BFBEEDA09BF3B0D3BA1D9C88DFDCC3"
+  },
+  {
+    "path": "frontends/mobile-core/fixtures/homework-completion-undone.json",
+    "kind": "tracked",
+    "added": 5,
+    "removed": 0,
+    "sha256": "33AFD3AEF747A7D83F48A786D1127102E392A6423D3908F17DF9E14DC1AA6BAE"
+  },
+  {
+    "path": "frontends/mobile-core/fixtures/homework-feed.json",
+    "kind": "tracked",
+    "added": 41,
+    "removed": 0,
+    "sha256": "966B29D6DDC21759CA0E0262FD39A1558B40B26E7CBD9FC0FA967ABF4B7FB514"
+  },
+  {
+    "path": "frontends/mobile-core/fixtures/manifest.json",
+    "kind": "tracked",
+    "added": 12,
+    "removed": 0,
+    "sha256": "F738B64369EE53996CBF4607663D04320FD3AECC3456F4DB789366031CFBF383"
+  },
+  {
+    "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+    "kind": "tracked",
+    "added": 250,
+    "removed": 2,
+    "sha256": "581CB2BCEB3C0934C6C8C8E9BD6B864922E9755B5D99365079B09C6B30AD4323"
+  },
+  {
+    "path": "frontends/mobile-core/src/api/student-client.ts",
+    "kind": "tracked",
+    "added": 18,
+    "removed": 0,
+    "sha256": "9C58BC308683302C2C04382CD1BDA1378555155D6AF61991B9D75B85A9CA1B33"
+  },
+  {
+    "path": "frontends/mobile-core/src/api/types.ts",
+    "kind": "tracked",
+    "added": 4,
+    "removed": 0,
+    "sha256": "4F3373429838D9B4D976C62A8B6EF76E59CF4C2B4FF49A3D512CFC4AB9B80A9B"
+  },
+  {
+    "path": "frontends/mobile-core/src/features/today/TodayScreen.vue",
+    "kind": "tracked",
+    "added": 207,
+    "removed": 248,
+    "sha256": "717DE86EC368873ABCAD04A6B8AA938F2D86605EF56C8D396650950CC8928D9D"
+  },
+  {
+    "path": "frontends/mobile-core/src/features/today/today-screen.pcss",
+    "kind": "tracked",
+    "added": 2,
+    "removed": 72,
+    "sha256": "73F70DB145AFF155D8459430A48B561A6A1C182C0849A313E20663402E19084E"
+  },
+  {
+    "path": "frontends/mobile-core/src/index.ts",
+    "kind": "tracked",
+    "added": 5,
+    "removed": 0,
+    "sha256": "50266856FC2F98D43C4B0972D82D2AA98C15D89F184C17628EB29F4A476E15A5"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+    "kind": "tracked",
+    "added": 66,
+    "removed": 0,
+    "sha256": "48B5BA2E8398628377A545309D5BDBD0708CE4C33E138FCCFC00B9F81EC28562"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/MobileShell.vue",
+    "kind": "tracked",
+    "added": 155,
+    "removed": 0,
+    "sha256": "5F1DAE4030128D146ABD10672A73FE94983A091EF186AB0FD338E125D079CFAE"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+    "kind": "tracked",
+    "added": 98,
+    "removed": 0,
+    "sha256": "1B716DD5ABCD418B756C98253F24B87778EED26FEADD0FB8A6434008F718AA1A"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/mobile-shell.pcss",
+    "kind": "tracked",
+    "added": 23,
+    "removed": 0,
+    "sha256": "9DF1A2079BB1356CD87253A2702BE1C7ED1BF284212CCA97C851FD17EB6E3B18"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/host.ts",
+    "kind": "tracked",
+    "added": 23,
+    "removed": 0,
+    "sha256": "B48FC3B170B44DFCC7EB4B2534153C3BF62D792A639F75F973A19D80F810501D"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/navigation.ts",
+    "kind": "tracked",
+    "added": 144,
+    "removed": 0,
+    "sha256": "F101000CFC8968F6B31A7A720E0577E91E49FB3BC9EAF2AEDC1416DF32D75F9B"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/shell-contract.ts",
+    "kind": "tracked",
+    "added": 27,
+    "removed": 0,
+    "sha256": "815A67E3F1688749F0F977550773D32E8FB57CB46A65D2228BDDAA3802A2000B"
+  },
+  {
+    "path": "frontends/mobile-core/src/styles/tokens.pcss",
+    "kind": "tracked",
+    "added": 1,
+    "removed": 0,
+    "sha256": "B871D9DD0D22CCB171661F59AD1C7F0B4AA4123D245C0C35D6F139ACD458E071"
+  },
+  {
+    "path": "frontends/mobile-core/src/test-adapter/fixture-transport.test.ts",
+    "kind": "tracked",
+    "added": 2,
+    "removed": 4,
+    "sha256": "867629F8FDA856448BA07F0151C0BA1A4DE64A729F477DD42980E78AF4AAD3CA"
+  },
+  {
+    "path": "frontends/mobile-core/src/test-adapter/homework-fixtures.ts",
+    "kind": "tracked",
+    "added": 8,
+    "removed": 0,
+    "sha256": "F6980DE0CF8666DBC085862E317DB2EA0540D3D7A0C71C15F62A29EBED2603A3"
+  },
+  {
+    "path": "frontends/mobile-core/tests/contract.test.mjs",
+    "kind": "tracked",
+    "added": 46,
+    "removed": 0,
+    "sha256": "AAB61BB8E68A7085C6C4EF067CD7A6ECC5F9486D9A41F1F379FFB5FF966E8B39"
+  },
+  {
+    "path": "frontends/mobile-core/tests/navigation.test.mjs",
+    "kind": "tracked",
+    "added": 79,
+    "removed": 0,
+    "sha256": "31BB8726437133DC485A5EB3C1DC58072BAAC4A24FBD343F59C597B73B19DAEB"
+  },
+  {
+    "path": "proto/academic.proto",
+    "kind": "tracked",
+    "added": 22,
+    "removed": 0,
+    "sha256": "C8D63E6CF23C3EB8511715CB6AF55735260C543BE78BED9F1C2B1EED3D75A499"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+    "kind": "tracked",
+    "added": 138,
+    "removed": 8,
+    "sha256": "5388439A2955AAAFDCC8C18335DB0AD34ECAAADC375091479A612A2F4D12C757"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java",
+    "kind": "tracked",
+    "added": 20,
+    "removed": 0,
+    "sha256": "4DA9E957B5C54175808F4DEEDF9363333272A5309B019318ED636B14018C0667"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+    "kind": "tracked",
+    "added": 49,
+    "removed": 0,
+    "sha256": "6B88450D1A7CAF7F54C2C1CDCD41F8A89D956F4D342FC5902C112E47D55AEB3B"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java",
+    "kind": "tracked",
+    "added": 109,
+    "removed": 0,
+    "sha256": "32897B42552FC0B0E226C78E6EA24E559CB8BC9DAF1C30BB7DDCBAC4122C996B"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java",
+    "kind": "tracked",
+    "added": 23,
+    "removed": 0,
+    "sha256": "EE4FCB710048B61650D38E9E83293593D7A12F050A72BB80B7393F90D305C838"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+    "kind": "tracked",
+    "added": 68,
+    "removed": 0,
+    "sha256": "9A3D25908EBCEBAB53D729686F535D911BA5EDA8DDEC252F5818FAC48DAD1DA6"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java",
+    "kind": "tracked",
+    "added": 334,
+    "removed": 0,
+    "sha256": "FE9E0FCB350A0C0D195950620030E997DCC41320A6A8410A519D1FEEFE6B88FD"
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java",
+    "kind": "tracked",
+    "added": 129,
+    "removed": 0,
+    "sha256": "22529D2964743FD7495E5A7925AC2C20C5C7B55C62C4BE44DE2EC6ABBCA2683C"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+    "kind": "tracked",
+    "added": 79,
+    "removed": 0,
+    "sha256": "BBB07805C3275A31E1883955329D2751F22E46985B3577CA3EC597096798D677"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "kind": "tracked",
+    "added": 54,
+    "removed": 0,
+    "sha256": "30839EC9E3274C70FF177D7C40451DA42A4249ADED25B4F73F76116E434C8691"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java",
+    "kind": "tracked",
+    "added": 56,
+    "removed": 0,
+    "sha256": "F187257E274306678972E925D98E1E4A92ABF66B8B148FDC776D5A7C60C9071A"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+    "kind": "tracked",
+    "added": 1,
+    "removed": 1,
+    "sha256": "7636D7FD92B4F08DC0F504383D47F9FDD82976951FF7FDFA62B7DAA6A837630F"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkJsonConfiguration.java",
+    "kind": "tracked",
+    "added": 44,
+    "removed": 0,
+    "sha256": "4C6C3919B814EEAD59A78AF9D91E2D744CAF8E70B3FF8B7C79184E1766D646A6"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkNoStoreFilter.java",
+    "kind": "tracked",
+    "added": 52,
+    "removed": 0,
+    "sha256": "382D30397C038442EBAD2F69D00F013C1CEC159B75379D149D94C3B8A5143833"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java",
+    "kind": "tracked",
+    "added": 12,
+    "removed": 0,
+    "sha256": "76DA973BCFD2955C889E0AE26BCFFF138B49D153BFCD70E33A2E71D63976043C"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+    "kind": "tracked",
+    "added": 115,
+    "removed": 0,
+    "sha256": "131A98419B0572CD106E23EE8C8EE660BC84BDF5CD2E952178C9F682D42B366E"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+    "kind": "tracked",
+    "added": 495,
+    "removed": 0,
+    "sha256": "BFB13DC406AC328A65D41A4B0604F8FDFFB3EFC7003C5090ECFA157D2481F1A4"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentQueryHomeworkTest.java",
+    "kind": "tracked",
+    "added": 165,
+    "removed": 0,
+    "sha256": "E1BF434887EA979AAAEE030955657432A9BAF6FDB0DA5EE780016D8C92BE3B42"
+  }
+]

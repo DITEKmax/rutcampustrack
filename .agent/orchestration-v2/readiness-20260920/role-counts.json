@@ -1,0 +1,42 @@
+[
+  {
+    "role": "admin",
+    "active": 26,
+    "accepted": 0,
+    "partial": 18,
+    "unknown": 8,
+    "confirmedMinimumPercent": 0.0
+  },
+  {
+    "role": "headman",
+    "active": 52,
+    "accepted": 0,
+    "partial": 6,
+    "unknown": 46,
+    "confirmedMinimumPercent": 0.0
+  },
+  {
+    "role": "student",
+    "active": 36,
+    "accepted": 2,
+    "partial": 21,
+    "unknown": 13,
+    "confirmedMinimumPercent": 5.56
+  },
+  {
+    "role": "system",
+    "active": 16,
+    "accepted": 0,
+    "partial": 14,
+    "unknown": 2,
+    "confirmedMinimumPercent": 0.0
+  },
+  {
+    "role": "teacher",
+    "active": 15,
+    "accepted": 0,
+    "partial": 2,
+    "unknown": 13,
+    "confirmedMinimumPercent": 0.0
+  }
+]

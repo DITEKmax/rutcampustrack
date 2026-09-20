@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.integration.SessionAuthFlowIT" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-11T09:47:52" hostname="DITEK-PK" time="2.321">
+  <properties/>
+  <testcase name="refreshCookieCasHasOneWinnerAndKeepsAbsoluteExpiry()" classname="ru.rutcampustrack.auth.integration.SessionAuthFlowIT" time="0.224"/>
+  <testcase name="validCookieFallsBackWhenSameUsersBearerSessionIsRevoked()" classname="ru.rutcampustrack.auth.integration.SessionAuthFlowIT" time="0.334"/>
+  <testcase name="passwordLoginSelectsStudentAndRoleSwitchIssuesTeacherBoundAccess()" classname="ru.rutcampustrack.auth.integration.SessionAuthFlowIT" time="0.283"/>
+  <testcase name="bootstrapBearerReachesCurrentSessionsAndRoleSelectionButNotHistoryOrPassword()" classname="ru.rutcampustrack.auth.integration.SessionAuthFlowIT" time="0.243"/>
+  <testcase name="liveBearerForAnotherSessionCannotRevokeCookieSession()" classname="ru.rutcampustrack.auth.integration.SessionAuthFlowIT" time="0.277"/>
+  <testcase name="bootstrapBearerOnlyLogoutAndLogoutAllAreAllowedByTheExactScope()" classname="ru.rutcampustrack.auth.integration.SessionAuthFlowIT" time="0.288"/>
+  <testcase name="cookieOnlyLogoutUsesRefreshAuthorityAndRevokesTheCookieSession()" classname="ru.rutcampustrack.auth.integration.SessionAuthFlowIT" time="0.144"/>
+  <testcase name="passwordChangeCommitsClearRevokesBearerAndReplacesCredential()" classname="ru.rutcampustrack.auth.integration.SessionAuthFlowIT" time="0.52"/>
+  <system-out><![CDATA[{"ts":"2026-09-11T12:47:52.733+03:00","v":"1","level":"INFO","logger":"org.springframework.test.context.support.AnnotationConfigContextLoaderUtils","thread":"Test worker","msg":"Could not detect default configuration classes for test class [ru.rutcampustrack.auth.integration.SessionAuthFlowIT]: SessionAuthFlowIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.","service":"auth-service"}
+{"ts":"2026-09-11T12:47:52.745+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.test.context.SpringBootTestContextBootstrapper","thread":"Test worker","msg":"Found @SpringBootConfiguration ru.rutcampustrack.auth.AuthApplication for test class ru.rutcampustrack.auth.integration.SessionAuthFlowIT","service":"auth-service"}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

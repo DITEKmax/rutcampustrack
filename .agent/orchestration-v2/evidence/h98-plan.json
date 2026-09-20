@@ -1,0 +1,34 @@
+{
+  "arguments": [
+    ":services:academic-service:academic-app:test",
+    "--tests",
+    "*HistoricalMembershipServiceTest",
+    "--tests",
+    "*HistoricalMembershipGrpcTest",
+    "--tests",
+    "*GroupServiceTest",
+    "--tests",
+    "*UserServiceConflictTest",
+    "--tests",
+    "*UserServiceTelegramRequiredTest",
+    ":services:attendance-service:attendance-app:test",
+    "--tests",
+    "*LessonEventServiceTest",
+    "--tests",
+    "*LessonEventServiceParallelTest",
+    "--tests",
+    "*AcademicGrpcClientTest",
+    "--tests",
+    "*ReportServiceTest",
+    "--continue",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report"
+  ],
+  "resultDirectories": [
+    "services/academic-service/academic-app/build/test-results/test",
+    "services/attendance-service/attendance-app/build/test-results/test"
+  ],
+  "meaning": "Compile shared proto/both services/all test sources; focused changed unit tests. Real PG/Mongo integration separate."
+}

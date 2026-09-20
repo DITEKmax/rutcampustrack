@@ -1,0 +1,101 @@
+{
+  "schema": "rct.checks.v1",
+  "task": "JS-STUDENT-01-FIX-r2",
+  "revision": "cedce8c60aee04261ca87a18b898b148719bee89",
+  "branch": "codex/js-student-01-fix-tma",
+  "model": "gpt-5.6-luna",
+  "effort": "max",
+  "recordedAt": "2026-09-06T20:01:00+03:00",
+  "environment": "Windows; Node 24.14.0; npm 11.9.0; Vite 7.3.6; Vitest 4.1.4; checks run in the assigned TMA worktree with a local junction to already-installed frontend dependencies; no downloads or secrets used.",
+  "checks": [
+    {
+      "name": "Pre-fix TMA auth regression",
+      "phase": "before-fix",
+      "cwd": "frontends",
+      "command": "npm test --workspace @rct/tma-vue",
+      "exitCode": 1,
+      "evidence": "Expected failure: the new regression suite could not import the missing src/tma-auth module from the old App.vue path. This records the old auth path as unimplemented for the required contract."
+    },
+    {
+      "name": "Pre-fix Telegram entry regression",
+      "phase": "before-fix",
+      "cwd": "frontends/tma-vue",
+      "command": "node --test tests/tma-entry.test.mjs",
+      "exitCode": 1,
+      "evidence": "Expected failure: index.html had no official telegram.org WebApp SDK script in head."
+    },
+    {
+      "name": "TMA regression suite",
+      "cwd": "frontends",
+      "command": "npm test --workspace @rct/tma-vue",
+      "exitCode": 0,
+      "evidence": "Vitest: 6 tests passed; Node entry test: 1 test passed. Coverage includes exact JSON body/content type/credentials, fixture reuse of the same request init, access token extraction, 401 handling, real-host preservation, empty SDK-shell fixture replacement, missing-host handling, and SDK script order."
+    },
+    {
+      "name": "TMA strict typecheck",
+      "cwd": "frontends",
+      "command": "npm run typecheck --workspace @rct/tma-vue",
+      "exitCode": 0,
+      "evidence": "vue-tsc -p tsconfig.json --noEmit passed."
+    },
+    {
+      "name": "TMA strict lint",
+      "cwd": "frontends",
+      "command": "npm run lint --workspace @rct/tma-vue",
+      "exitCode": 0,
+      "evidence": "ESLint passed with --max-warnings=0."
+    },
+    {
+      "name": "TMA production build",
+      "cwd": "frontends",
+      "command": "npm run build --workspace @rct/tma-vue",
+      "exitCode": 0,
+      "evidence": "Build passed with VITE_MOBILE_FIXTURE_MODE unset; 99 modules transformed and dist/index.html contains the official SDK before the generated app module."
+    },
+    {
+      "name": "Stable diff whitespace",
+      "cwd": ".",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "evidence": "No whitespace errors. Git emitted only the known LF/CRLF normalization warnings for edited text files."
+    }
+  ],
+  "runtime": {
+    "fixture": {
+      "command": "$env:VITE_MOBILE_FIXTURE_MODE='true'; npm run dev --workspace @rct/tma-vue -- --host 127.0.0.1 --port 5186",
+      "startup": "Vite 7.3.6 ready; http://127.0.0.1:5186/",
+      "browser": "Codex in-app browser tab 1",
+      "observations": [
+        "?fixtureToday=default rendered Today rows and an enabled Отметиться action.",
+        "Clicking Отметиться moved the active lesson to Отметка подтверждена.",
+        "?fixtureApi=unauthorized rendered Не удалось получить данные / Telegram не подтвердил сессию."
+      ],
+      "status": "PASS synthetic fixture flow; server stopped after check"
+    },
+    "productionLike": {
+      "command": "npm run dev --workspace @rct/tma-vue -- --host 127.0.0.1 --port 5187",
+      "startup": "Vite 7.3.6 ready; http://127.0.0.1:5187/",
+      "browser": "Codex in-app browser tab 1",
+      "observations": [
+        "Without VITE_MOBILE_FIXTURE_MODE, the page rendered Не удалось получить данные / Открой приложение из Telegram.",
+        "The live DOM exposed https://telegram.org/js/telegram-web-app.js before the /src/main.ts module (Vite client injection is visible separately)."
+      ],
+      "status": "PASS clean missing-host handling and SDK entry order; server stopped after check"
+    }
+  },
+  "diagnostics": [
+    {
+      "check": "sandboxed dev/test startup",
+      "exitCode": 1,
+      "link": "environment-only dependency serving restriction",
+      "reproduction": "Using a junction to the already-installed sibling frontend dependencies made Vite/esbuild report the sibling font files/config path outside the assigned fs allow list.",
+      "correction": "No product code changed for this warning; reran the same test and runtime commands with the permitted local runtime.",
+      "recheck": "TMA tests, typecheck, lint, build and both browser flows passed; the warnings are retained as an environment limitation."
+    }
+  ],
+  "limitations": [
+    "No real Telegram host/session was available; the fixture host is synthetic and does not prove Telegram HMAC signing.",
+    "No real auth-service HTTP request was run in this FE lane. The Java TmaAuthRequest/AuthApi contract and backend integration remain root-owned runtime evidence.",
+    "The dependency junction is local and ignored; a clean checkout needs the existing frontend dependency install before running npm checks."
+  ]
+}

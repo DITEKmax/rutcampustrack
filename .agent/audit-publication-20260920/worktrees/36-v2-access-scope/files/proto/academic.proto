@@ -1,0 +1,476 @@
+syntax = "proto3";
+
+package rutcampustrack.academic;
+
+import "schedule.proto";
+
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.academic.grpc";
+
+// Academic Structure Service — gRPC контракт
+// Используется другими сервисами для получения справочных данных
+
+service AcademicGrpcService {
+
+  // Получить информацию о группе
+  rpc GetGroup (GroupRequest) returns (GroupResponse);
+
+  // Получить состав группы (список студентов)
+  rpc GetGroupMembers (GroupMembersRequest) returns (GroupMembersResponse);
+
+  // Получить предметы преподавателя (для авторизации в Report)
+  rpc GetTeacherSubjects (TeacherSubjectsRequest) returns (TeacherSubjectsResponse);
+
+  // Проверить, является ли пользователь старостой группы
+  rpc IsHeadman (HeadmanCheckRequest) returns (HeadmanCheckResponse);
+
+  // Получить активный семестр
+  rpc GetActiveSemester (Empty) returns (SemesterResponse);
+
+  // Получить геофенс кампуса
+  rpc GetCampusGeofence (Empty) returns (GeofenceResponse);
+
+  // Получить пользователя по ID
+  rpc GetUserById (UserRequest) returns (UserResponse);
+
+  // Получить собственную авторитетную запись пользователя из signed context
+  rpc GetOwnUser (Empty) returns (UserResponse);
+
+  // Resolve the signed student's own semester scope and its separate rank cohort.
+  rpc ResolveStudentProjectionScope (StudentProjectionScopeRequest)
+      returns (StudentProjectionScopeResponse);
+
+  // Получить предметы по списку ID (для отчётов посещаемости)
+  rpc GetSubjectsByIds (SubjectsByIdsRequest) returns (SubjectsByIdsResponse);
+
+  // Получить пользователя по Telegram ID (для бота)
+  rpc GetUserByTelegramId (UserByTelegramIdRequest) returns (UserByTelegramIdResponse);
+
+  // Read homework for a student's group in a date range (for Telegram bot).
+  rpc GetHomeworksForWeek (HomeworksForWeekRequest) returns (HomeworksForWeekResponse);
+
+  // Set a student's desired completion state for one homework item.
+  // The actor is taken from the signed internal JWT metadata, never from the request.
+  rpc SetHomeworkCompletion (SetHomeworkCompletionRequest) returns (SetHomeworkCompletionResponse);
+
+  // Получить назначения по их идентификаторам
+  rpc GetAssignmentsByIds (AssignmentsByIdsRequest) returns (AssignmentsByIdsResponse);
+
+  // Зарезервировать привязку домашней работы к occurrence.
+  rpc ReserveHomeworkBinding (ReserveHomeworkBindingRequest) returns (HomeworkBindingResponse);
+
+  // Подтвердить привязку домашней работы после публикации.
+  rpc ConfirmHomeworkBinding (ConfirmHomeworkBindingRequest) returns (HomeworkBindingResponse);
+
+  // Прочитать текущие привязки домашних работ для occurrences.
+  rpc GetHomeworkBindings (HomeworkBindingsRequest) returns (HomeworkBindingsResponse);
+
+  rpc GetCampusMapManifest (CampusMapManifestRequest) returns (CampusMapManifestResponse);
+  rpc GetCampusFloorPlan (CampusMapFloorRequest) returns (CampusMapPlanResponse);
+  rpc ReadCampusMapAsset (CampusMapAssetRequest) returns (stream CampusMapAssetChunk);
+  rpc RecordCampusFloorOpen (CampusMapOpenRequest) returns (CampusMapOpenAck);
+}
+
+message Empty {}
+
+message GroupRequest {
+  int64 group_id = 1;
+}
+
+message GroupResponse {
+  int64 id = 1;
+  string name = 2;
+  // field 3 reserved (previously `string code` — removed in BUG-006-5 / план 58-04)
+  reserved 3;
+  reserved "code";
+  bool is_active = 4;
+}
+
+message GroupMembersRequest {
+  int64 group_id = 1;
+}
+
+message GroupMembersResponse {
+  repeated StudentInfo students = 1;
+}
+
+message StudentInfo {
+  int64 user_id = 1;
+  string display_name = 2;
+  bool is_headman = 3;
+  int64 telegram_id = 4;
+}
+
+message TeacherSubjectsRequest {
+  int64 teacher_id = 1;
+  int64 semester_id = 2;
+}
+
+message TeacherSubjectsResponse {
+  repeated TeacherSubjectInfo subjects = 1;
+}
+
+message TeacherSubjectInfo {
+  int64 subject_id = 1;
+  string subject_name = 2;
+  string subject_type = 3;
+  int64 group_id = 4;
+  string group_name = 5;
+  int64 assignment_id = 6;
+  int64 semester_id = 7;
+  string lesson_type = 8;
+  string valid_from = 9;
+  string valid_until_exclusive = 10;
+}
+
+message AcademicSubjectInfo {
+  int64 subject_id = 1;
+  string subject_name = 2;
+  string subject_type = 3;
+  int64 group_id = 4;
+  repeated string lesson_types = 5;
+}
+
+message UserRoleGrant {
+  int64 grant_id = 1;
+  string role = 2;
+  string status = 3;
+  optional int64 group_id = 4;
+}
+
+message HeadmanCheckRequest {
+  int64 user_id = 1;
+  int64 group_id = 2;
+}
+
+message HeadmanCheckResponse {
+  bool is_headman = 1;
+}
+
+message SemesterResponse {
+  int64 id = 1;
+  string name = 2;
+  string date_from = 3;
+  string date_to = 4;
+  string first_week_type = 5;
+}
+
+message GeofenceResponse {
+  double lat = 1;
+  double lng = 2;
+  int32 radius_m = 3;
+}
+
+message UserRequest {
+  int64 user_id = 1;
+}
+
+message UserResponse {
+  int64 id = 1;
+  string login = 2;
+  string display_name = 3;
+  string role = 4;
+  string status = 5;
+  int64 group_id = 6;
+  bool is_headman = 7;
+  int64 telegram_id = 8;
+  // Preset avatar id (e.g. "avatar_03"); empty string == not chosen, render initials. BUG-004.
+  string avatar_id = 9;
+  repeated UserRoleGrant roles = 10;
+  int64 roles_version = 11;
+}
+
+message StudentProjectionScopeRequest {
+  int64 semester_id = 1;
+}
+
+message StudentProjectionScopeResponse {
+  int64 student_id = 1;
+  reserved 2;
+  reserved "group_id";
+  int64 semester_id = 3;
+  string date_from = 4;
+  string date_to = 5;
+  bool terminal_read_only = 6;
+  repeated int64 active_roster_user_ids = 7;
+  repeated AcademicSubjectInfo subjects = 8;
+  repeated StudentProjectionMembershipSegment own_membership_segments = 9;
+  StudentProjectionRankVisibility rank_visibility = 10;
+  optional int64 rank_group_id = 11;
+  bool rank_eligible = 12;
+  string server_date = 13;
+}
+
+message StudentProjectionMembershipSegment {
+  int64 group_id = 1;
+  string date_from = 2;
+  string date_until_exclusive = 3;
+  repeated int64 subject_ids = 4;
+}
+
+enum StudentProjectionRankVisibility {
+  STUDENT_PROJECTION_RANK_VISIBILITY_UNSPECIFIED = 0;
+  STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE = 1;
+  STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN = 2;
+}
+
+// Packed into gRPC status details. Consumers use the stable code and do not
+// parse status descriptions.
+message AcademicProjectionErrorDetail {
+  AcademicProjectionErrorCode code = 1;
+}
+
+enum AcademicProjectionErrorCode {
+  ACADEMIC_PROJECTION_ERROR_CODE_UNSPECIFIED = 0;
+  ACADEMIC_PROJECTION_ERROR_CODE_INVALID_REQUEST = 1;
+  ACADEMIC_PROJECTION_ERROR_CODE_INVALID_SESSION = 2;
+  ACADEMIC_PROJECTION_ERROR_CODE_WRONG_ROLE = 3;
+  ACADEMIC_PROJECTION_ERROR_CODE_OUT_OF_SCOPE = 4;
+  ACADEMIC_PROJECTION_ERROR_CODE_STUDENT_SCOPE_UNRESOLVED = 5;
+  ACADEMIC_PROJECTION_ERROR_CODE_DEPENDENCY_UNAVAILABLE = 6;
+  ACADEMIC_PROJECTION_ERROR_CODE_INCONSISTENT_SOURCE = 7;
+}
+
+message SubjectsByIdsRequest {
+  repeated int64 subject_ids = 1;
+}
+
+message SubjectsByIdsResponse {
+  repeated SubjectInfo subjects = 1;
+}
+
+message SubjectInfo {
+  int64 subject_id = 1;
+  string subject_name = 2;
+  string subject_type = 3;
+}
+
+message UserByTelegramIdRequest {
+  int64 telegram_id = 1;
+}
+
+message UserByTelegramIdResponse {
+  bool found = 1;
+  int64 user_id = 2;
+  string login = 3;
+  string display_name = 4;
+  string role = 5;
+  int64 group_id = 6;
+  string group_name = 7;
+  bool is_headman = 8;
+  int64 telegram_id = 9;
+  string initial_password = 10;
+  bool password_changed = 11;
+}
+
+message HomeworksForWeekRequest {
+  int64 group_id = 1;
+  int64 semester_id = 2;
+  int64 student_id = 3;
+  string date_from = 4;
+  string date_to = 5;
+  // Explicitly opt in to the current Moscow completion-day union. Existing
+  // callers keep the lesson-date range semantics when this remains false.
+  bool include_completed_today = 6;
+  string completed_today_from = 7;
+  string completed_today_to = 8;
+}
+
+message HomeworksForWeekResponse {
+  repeated HomeworkInfo homeworks = 1;
+}
+
+message HomeworkInfo {
+  int64 homework_id = 1;
+  int64 subject_id = 2;
+  string subject_name = 3;
+  string title = 4;
+  string description = 5;
+  string link = 6;
+  string lesson_date = 7;
+  int32 lesson_number = 8;
+  bool completed = 9;
+  optional string completed_at = 10;
+  optional int64 binding_id = 11;
+  optional int64 occurrence_id = 12;
+  optional int64 current_lesson_id = 13;
+  optional int64 binding_revision = 14;
+  bool archived = 15;
+}
+
+message SetHomeworkCompletionRequest {
+  int64 homework_id = 1;
+  int64 semester_id = 2;
+  bool completed = 3;
+}
+
+message SetHomeworkCompletionResponse {
+  int64 homework_id = 1;
+  bool completed = 2;
+  optional string completed_at = 3;
+}
+
+message AssignmentInfo {
+  int64 id = 1;
+  int64 teacher_id = 2;
+  int64 subject_id = 3;
+  int64 group_id = 4;
+  int64 semester_id = 5;
+  string lesson_type = 6;
+  string valid_from = 7;
+  string valid_until_exclusive = 8;
+}
+
+message AssignmentsByIdsRequest {
+  repeated int64 assignment_ids = 1;
+}
+
+message AssignmentsByIdsResponse {
+  repeated AssignmentInfo assignments = 1;
+}
+
+enum HomeworkBindingState {
+  HOMEWORK_BINDING_STATE_UNSPECIFIED = 0;
+  HOMEWORK_BINDING_STATE_PENDING = 1;
+  HOMEWORK_BINDING_STATE_ACTIVE = 2;
+  HOMEWORK_BINDING_STATE_ARCHIVED = 3;
+}
+
+message ReserveHomeworkBindingRequest {
+  int64 occurrence_id = 1;
+  string request_key = 2;
+  int64 expected_revision = 3;
+  bytes payload_hash = 4;
+}
+
+message ConfirmHomeworkBindingRequest {
+  int64 binding_id = 1;
+  int64 homework_id = 2;
+  string request_key = 3;
+}
+
+message HomeworkBindingResponse {
+  int64 binding_id = 1;
+  int64 occurrence_id = 2;
+  rutcampustrack.schedule.LessonInfo current_lesson = 3;
+  optional int64 homework_id = 4;
+  HomeworkBindingState state = 5;
+  int64 revision = 6;
+  int64 group_id = 7;
+  int64 subject_id = 8;
+  int64 semester_id = 9;
+  string date = 10;
+  int32 lesson_number = 11;
+}
+
+message HomeworkBindingsRequest {
+  repeated int64 occurrence_ids = 1;
+}
+
+message HomeworkBindingsResponse {
+  repeated HomeworkBindingResponse bindings = 1;
+}
+
+enum CampusMapFormat {
+  CAMPUS_MAP_FORMAT_UNSPECIFIED = 0;
+  CAMPUS_MAP_FORMAT_PNG = 1;
+  CAMPUS_MAP_FORMAT_SVG = 2;
+}
+
+enum CampusMapFormatState {
+  CAMPUS_MAP_FORMAT_STATE_UNSPECIFIED = 0;
+  CAMPUS_MAP_FORMAT_STATE_ABSENT = 1;
+  CAMPUS_MAP_FORMAT_STATE_PROCESSING = 2;
+  CAMPUS_MAP_FORMAT_STATE_READY = 3;
+  CAMPUS_MAP_FORMAT_STATE_FAILED = 4;
+}
+
+message CampusMapManifestRequest {
+  int64 known_revision = 1;
+}
+
+message CampusMapManifestUnchanged {
+  int64 revision = 1;
+}
+
+message CampusMapManifestResponse {
+  oneof result {
+    CampusMapManifestUnchanged unchanged = 1;
+    CampusMapManifest manifest = 2;
+  }
+}
+
+message CampusMapManifest {
+  int32 schema_version = 1;
+  int32 validation_policy_version = 2;
+  int64 revision = 3;
+  repeated CampusMapBuilding buildings = 4;
+}
+
+message CampusMapBuilding {
+  string id = 1;
+  string label = 2;
+  repeated CampusMapFloor floors = 3;
+}
+
+message CampusMapFloor {
+  string id = 1;
+  string label = 2;
+  CampusMapPlan plan = 3;
+}
+
+message CampusMapPlan {
+  string building_id = 1;
+  string floor_id = 2;
+  int64 version = 3;
+  string label = 4;
+  CampusMapFormatSlot png = 5;
+  CampusMapFormatSlot svg = 6;
+}
+
+message CampusMapFormatSlot {
+  CampusMapFormat format = 1;
+  CampusMapFormatState state = 2;
+  string content_type = 3;
+  optional string asset_id = 4;
+  int64 bytes = 5;
+  optional string sha256 = 6;
+  optional int32 width = 7;
+  optional int32 height = 8;
+  repeated double view_box = 9;
+}
+
+message CampusMapFloorRequest {
+  string building_id = 1;
+  string floor_id = 2;
+}
+
+message CampusMapPlanResponse {
+  oneof result {
+    CampusMapPlan plan = 1;
+    Empty no_plan = 2;
+  }
+}
+
+message CampusMapAssetRequest {
+  string building_id = 1;
+  string floor_id = 2;
+  int64 version = 3;
+  CampusMapFormat format = 4;
+  string asset_id = 5;
+}
+
+message CampusMapAssetChunk {
+  bytes data = 1;
+  int64 offset = 2;
+}
+
+message CampusMapOpenRequest {
+  string building_id = 1;
+  string floor_id = 2;
+  string intent_id = 3;
+}
+
+message CampusMapOpenAck {
+  bool accepted = 1;
+}

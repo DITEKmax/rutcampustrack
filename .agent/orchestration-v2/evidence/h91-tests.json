@@ -1,0 +1,101 @@
+[
+  {
+    "module": "services/academic-service/academic-app",
+    "name": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T12:39:28.9957908Z"
+  },
+  {
+    "module": "services/academic-service/academic-app",
+    "name": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T12:39:28.9906806Z"
+  },
+  {
+    "module": "services/academic-service/academic-app",
+    "name": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T12:39:28.9921690Z"
+  },
+  {
+    "module": "services/academic-service/academic-app",
+    "name": "ru.rutcampustrack.academic.assignment.AssignmentClosureContractTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T12:39:28.9967894Z"
+  },
+  {
+    "module": "services/academic-service/academic-app",
+    "name": "ru.rutcampustrack.academic.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T12:39:28.9946864Z"
+  },
+  {
+    "module": "services/academic-service/academic-app",
+    "name": "ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest",
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T12:39:28.9931781Z"
+  },
+  {
+    "module": "services/academic-service/academic-app",
+    "name": "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T12:39:28.9996030Z"
+  },
+  {
+    "module": "services/schedule-service/schedule-app",
+    "name": "ru.rutcampustrack.schedule.arch.GrpcClientDeadlineTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T12:40:03.0212924Z"
+  },
+  {
+    "module": "services/schedule-service/schedule-app",
+    "name": "ru.rutcampustrack.schedule.arch.RepositoryNPlusOneGuardTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T12:40:03.0197260Z"
+  },
+  {
+    "module": "services/schedule-service/schedule-app",
+    "name": "ru.rutcampustrack.schedule.arch.ScheduledMustHaveSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T12:40:03.0186395Z"
+  },
+  {
+    "module": "services/schedule-service/schedule-app",
+    "name": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T12:40:03.0166731Z"
+  }
+]

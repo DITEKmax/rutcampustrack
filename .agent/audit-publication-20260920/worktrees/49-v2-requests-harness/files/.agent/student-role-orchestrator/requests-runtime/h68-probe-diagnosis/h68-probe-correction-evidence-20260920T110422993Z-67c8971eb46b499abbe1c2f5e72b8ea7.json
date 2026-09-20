@@ -1,0 +1,251 @@
+{
+  "schema": "rct.student-requests-h68-probe-correction.v1",
+  "evidencePath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\h68-probe-correction-evidence-20260920T110422993Z-67c8971eb46b499abbe1c2f5e72b8ea7.json",
+  "packetPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\REQUESTS-H68-PROBE-DIAGNOSIS.md",
+  "packetSha256": "6abcb3c4782553a8af02aa3f84f2b0564e300120826c995c1252703ca4ab0eaa",
+  "rulesSha256": "b256a175274987da9710d804b3c050a5dbcb47d8448cc03644d74168b52a437a",
+  "currentPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\CURRENT.md",
+  "currentSha256": "a5e6a9cbc1ae42779b90ad56af01c5ce70a9c2409a953dc8f1e88364e4f652f3",
+  "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+  "runnerSha256": "033236b56ebfb8193a86d67b033f8cf23f5cc18f4132a2fac5f525b756fd540c",
+  "preCorrectionRunnerSha256": "9a2d703548110a142597b02196f5483f0f61d7329dfbfed313e38f1afc0b4b9d",
+  "preservedDiagnosisEvidence": {
+    "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\h68-probe-evidence.prefixed.json",
+    "sha256": "f6b4ae476b5a5e91fc16904c767b59cbf106de722f937be31bae77c59f8fe480"
+  },
+  "syntheticChildren": [
+    {
+      "name": "warning-plus-valid-json",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\synthetic-probe.mjs",
+      "sha256": "3be210956ccc057ff412a1407aa20426c563fdc1ceb3f638f69b60ec44486c59"
+    },
+    {
+      "name": "warning-plus-valid-json-with-secret-sentinel",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\synthetic-probe-secret-warning.mjs",
+      "sha256": "cb813667b7f21b720750ad0c8d8b5b7a67e25c7fb50e1acdf17f4d53d42e3ed2"
+    },
+    {
+      "name": "valid-json-with-trailing-junk",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\synthetic-probe-invalid.mjs",
+      "sha256": "71ac80bfdf395bc0e04bf3e7321c98849e1d66a7a27370006b1e6ee785cba209"
+    },
+    {
+      "name": "nonzero-with-valid-json",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\synthetic-probe-nonzero.mjs",
+      "sha256": "c4640e6571d0e1fc30828f8bc81df2d5c48f8c26d3aa8a7193ae5abb2a132c72"
+    },
+    {
+      "name": "nonzero-with-redacted-fail-json",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\h81-probe-fail-json.mjs",
+      "sha256": "5f3fef339403fe5fcdc6a09d5b7f57142cd48e74a9eb42067e4b5d119cbbc580"
+    },
+    {
+      "name": "nonzero-with-bounded-fail-error",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\h81-probe-fail-long.mjs",
+      "sha256": "f1fbf036b6632de3059a064f6bbe81ac09b3dcac617c11337f291436df3fff07"
+    },
+    {
+      "name": "nonzero-with-malformed-fail-json",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\h81-probe-fail-malformed.mjs",
+      "sha256": "41ae17140600ce227b85f5b72c145db16a551d7f22fdfe82aab47e1c2f0a1b50"
+    }
+  ],
+  "actualH68Cause": "UNPROVEN; root H68 raw probe output remains withheld",
+  "directHelper": {
+    "command": "AST-extracted production Invoke-ExternalSafe -> node synthetic-probe.mjs; TimeoutSeconds=30",
+    "exitCode": 0,
+    "stdout": "{\"schema\":\"rct.student-requests-probe.v1\",\"status\":\"PASS\",\"mode\":\"health-only\",\"statusCode\":200}\n",
+    "stderr": "(node:1) [DEP0123] Setting the TLS ServerName to an IP address is deprecated.\n",
+    "outputIncludesBothStreams": true,
+    "stdoutStrictJson": {
+      "parsed": true,
+      "error": null
+    },
+    "combinedStrictJson": {
+      "parsed": false,
+      "error": "Conversion from JSON failed with error: Additional text encountered after finished reading JSON content: (. Path '', line 3, position 0."
+    },
+    "typedProperties": [
+      "ExitCode",
+      "Output",
+      "Stdout",
+      "Stderr"
+    ]
+  },
+  "probeCases": [
+    {
+      "name": "warning-plus-valid-json",
+      "succeeded": true,
+      "status": "PASS",
+      "mode": "health-only",
+      "error": null,
+      "diagnostics": {
+        "mode": "health-only",
+        "exitCode": 0,
+        "stderr": "(node:1) [DEP0123] <redacted> warning is diagnostic-only.\n"
+      },
+      "historyCount": 1
+    },
+    {
+      "name": "valid-json-with-trailing-junk",
+      "succeeded": false,
+      "error": "Requests probe did not return valid redacted JSON",
+      "diagnostics": {
+        "mode": "health-only",
+        "exitCode": 0,
+        "stderr": ""
+      },
+      "historyCount": 1
+    },
+    {
+      "name": "nonzero-with-valid-json",
+      "succeeded": false,
+      "error": "Requests Node HTTPS probe failed; raw probe output was withheld",
+      "diagnostics": {
+        "mode": "health-only",
+        "exitCode": 7,
+        "stderr": "synthetic nonzero diagnostic\n",
+        "error": "Requests Node HTTPS probe failed; raw probe output was withheld"
+      },
+      "historyCount": 1
+    },
+    {
+      "name": "nonzero-with-redacted-fail-json",
+      "succeeded": false,
+      "error": "Requests Node HTTPS probe failed: I1 create failed with HTTP 502",
+      "diagnostics": {
+        "mode": "health-only",
+        "exitCode": 7,
+        "stderr": "synthetic fail warning <redacted>",
+        "error": "I1 create failed with HTTP 502"
+      },
+      "historyCount": 1
+    },
+    {
+      "name": "nonzero-with-bounded-fail-error",
+      "succeeded": false,
+      "error": "Requests Node HTTPS probe failed: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<truncated>",
+      "diagnostics": {
+        "mode": "health-only",
+        "exitCode": 7,
+        "stderr": "",
+        "error": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<truncated>"
+      },
+      "historyCount": 1
+    },
+    {
+      "name": "nonzero-with-malformed-fail-json",
+      "succeeded": false,
+      "error": "Requests Node HTTPS probe failed; raw probe output was withheld",
+      "diagnostics": {
+        "mode": "health-only",
+        "exitCode": 7,
+        "stderr": "",
+        "error": "Requests Node HTTPS probe failed; raw probe output was withheld"
+      },
+      "historyCount": 1
+    }
+  ],
+  "h81FailureDiagnostics": {
+    "validSchemaStatusError": "PASS",
+    "boundedSanitizedError": "PASS",
+    "malformedFallbackAndSentinelExclusion": "PASS"
+  },
+  "perProbeSequence": {
+    "outcomes": [
+      {
+        "name": "health",
+        "succeeded": true,
+        "error": null,
+        "mode": "health-only",
+        "exitCode": 0
+      },
+      {
+        "name": "i1",
+        "succeeded": false,
+        "error": "Requests probe did not return valid redacted JSON",
+        "mode": "i1",
+        "exitCode": 0
+      },
+      {
+        "name": "i2",
+        "succeeded": false,
+        "error": "Requests Node HTTPS probe failed; raw probe output was withheld",
+        "mode": "i2",
+        "exitCode": 7
+      }
+    ],
+    "history": [
+      {
+        "mode": "health-only",
+        "exitCode": 0,
+        "stderr": "(node:1) [DEP0123] <redacted> warning is diagnostic-only.\n"
+      },
+      {
+        "mode": "i1",
+        "exitCode": 0,
+        "stderr": ""
+      },
+      {
+        "mode": "i2",
+        "exitCode": 7,
+        "stderr": "synthetic nonzero diagnostic\n",
+        "error": "Requests Node HTTPS probe failed; raw probe output was withheld"
+      }
+    ],
+    "retained": true
+  },
+  "actualOuterFailure": {
+    "originalFailurePreserved": true,
+    "captureFailureRecorded": true,
+    "cleanupFailureAppended": true,
+    "finalFailureMessage": "synthetic outer failure <redacted>; synthetic cleanup failure <redacted>"
+  },
+  "compatibility": {
+    "timeoutExitCode": 124,
+    "timeoutOutput": "external command timed out",
+    "timeoutTypedStreamsEmpty": true,
+    "nonTimedOutput": "compat-output",
+    "nonTimedProperties": [
+      "ExitCode",
+      "Output"
+    ]
+  },
+  "redaction": {
+    "healthShape": "{\"schema\":\"rct.student-requests-probe.v1\",\"status\":\"PASS\",\"mode\":\"health-only\",\"statusCode\":200}",
+    "healthParseable": true,
+    "sensitiveShapeSafeText": "{\"schema\":\"rct.student-requests-probe.v1\",\"token\":\"<redacted>\",\"password\":\"<redacted>\",\"status\":\"PASS\"}",
+    "sensitiveParseable": true,
+    "plaintextSafeText": "token=<redacted>; Bearer <redacted>",
+    "syntheticSentinelPresent": false
+  },
+  "sourceGuards": {
+    "parser": "PASS",
+    "typedStreams": "PASS",
+    "strictStdoutWholeDocument": "PASS",
+    "boundedSeparateDiagnostics": "PASS",
+    "jsonSafeQuotedRedaction": "PASS",
+    "priorOuterFailureAndCleanupGuard": "PASS"
+  },
+  "checks": {
+    "validJsonPlusWarning": "PASS",
+    "trailingJunkRejected": "PASS",
+    "nonzeroValidJsonRejected": "PASS",
+    "quotedAndEscapedRedactionParseable": "PASS",
+    "timeoutPreserved": "PASS",
+    "legacyOutputPreserved": "PASS",
+    "perProbeDiagnosticsHistory": "PASS",
+    "outerFailureCaptureGuard": "PASS",
+    "cleanupFailureAppendGuard": "PASS",
+    "docker": "NOT_RUN",
+    "gradle": "NOT_RUN",
+    "network": "NOT_RUN",
+    "productRuntime": "NOT_RUN"
+  },
+  "diagnosticRetention": "The existing singleton report.probeDiagnostics remains the latest probe for compatibility. Each invocation also appends one bounded mode/exit/redacted-stderr record to report.probeDiagnosticsHistory; history is capped at eight entries and therefore preserves health/I1/I2 without unbounded report growth. The same-report sequence in this check exercises three successive invocations.",
+  "minimalCorrection": "Keep timed subprocess Stdout and Stderr typed while preserving combined Output compatibility. Parse only separately redacted stdout as strict whole-document JSON; retain bounded separately redacted stderr in the current probe record and bounded history before exit and parse assertions. Keep exit checks, timeout behavior, TLS and redaction enabled; quote JSON string replacements so escaped values remain parseable.",
+  "limitations": [
+    "Synthetic children do not establish the withheld H68 raw stream shape.",
+    "No Docker, Gradle, network, ports, runtime, keys or product sources were used."
+  ]
+}

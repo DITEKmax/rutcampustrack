@@ -1,0 +1,38 @@
+# L5B source gaps — root verification 2026-09-19
+Read-only scout l5b_schedule_fence_scout Luna max released. Base accepted union426a15b6b42e816deaa3ca5c50437e0964aaf85e, not L5A source branch. RULES B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A. Static evidence only; no tests run or implementation approved.
+
+Root personally opened LessonGenerationService.java generateLessons/regenerateFromDate/regenerateFromDateForReconciliation/deletePlannedLessonsFromToday/buildLessons and V17__student_occurrence_homework_binding.sql schema/history trigger. Current generation saves Lesson with scheduleItemId/date/status/geo/createdAt only. Regeneration deletes planned/planned+cancelled rows then saveAll. V17 requires assignment-linked lesson_occurrences/physical snapshots and rejects physical DELETE explicitly. This is a confirmed source mismatch and pending product integration work; no successful physical generation runtime claimed.
+
+Bounded source map (under services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule):
+- lesson/LessonGenerationService.java:126,152,185,214,229 — physical create/regenerate/delete and minimal legacy entity assembly.
+- item/ScheduleItemService.java:86,147,198 — transactional template CRUD invokes generation, requires assignment-aware integration.
+- oneoff/OneOffLessonService.java:98,165 — one-off template writes; scout found no physical creation, root verification pending.
+- lesson/IsoParityReconciler.java:65 — startup reconciliation calls regeneration; root verification pending.
+- lesson/LessonStatusTransitionJob.java:54 — scheduled status transitions, not a creation fence.
+- lesson/repository/LessonRepository.java:104,183,259 — legacy delete/read/subject counts.
+- grpc/ScheduleGrpcServiceImpl.java:146,197 — identity mapping/reference RPC needs root review before design.
+- config/SchedulingConfig.java:20 — scheduled job locks only (scout finding).
+- resources/db/migration/V17__student_occurrence_homework_binding.sql:36,150 — canonical assignment/occurrence constraints and physical history guard.
+- proto/schedule.proto and proto/academic.proto — existing assignment identity fields/RPC; detailed protocol still requires frozen contract.
+
+Next bounded design must cover all physical creation, restore/regenerate and reconciliation paths, durable assignment close cap with same transaction lock as creation, historical identities and immutable lifecycle, cross-service replay/failure, and current UI producer adaptation. Count-only prechecks cannot prove race safety. Canonical LESSONS-L5.md v3 L5B requirements unchanged. No schema/backfill or owner policy inferred. First resolve reusable current sources, open remaining critical originals, freeze protocol/acceptance then independent review before code. Do not call isolated SQL migration tests full producer runtime.
+
+## Source provenance clarification (root direct reads)
+Scout's three E filesystem paths under mainrepo were incorrect; root Test-Path confirmed those files absent there. Root instead located/read exact preserved E originals:
+- C:/Users/maksd/.codex/worktrees/6a61/rutcampustrack/.agent/homework-lifecycle-e-resume/summary-homework-write.md: Vue/IndexedDB/offline write repair and mounted/store checks, no Schedule producer.
+- C:/Users/maksd/.codex/worktrees/6a61/rutcampustrack/.agent/student-homework-e/release-provenance.md: baseline8002b9ea4356b10779c5bb9a6d99746d32d78ae2, releasedd3c31acb8cce53791a4981e5858a37d44fdc9a0e and25UIpathmanifest; historical importguard, not new permission.
+- C:/Users/maksd/.codex/worktrees/6a61/rutcampustrack/.agent/student-homework-e/contract.md: PWA/TMA session/owner/offline adapter scope; backend/proto beyond immutableimport excluded, realAPI-DB andgenuineTelegram separate gates.
+These sources preserve accepted frontend work, not evidence of implemented Schedule physical lifecycle. Root did not transfer/copy them or change sourcesmanifest during read-only audit. Exact B foundation-decision-result pointer remains unresolved in boundedlocations. Scout's claim runtime-build-r2 dirty was withdrawn; root independently observed EMPTY gitstatus/current426a15b6 andmanifest61E73 unchanged. Do not propagate rejectedpaths/status. Prior sourcegap claims remain supported by rootopened actualSchedule originals.
+
+## Additional root critical reads after H69
+Opened exact r2 OneOffLessonService createOneOffLesson98 and deleteOneOffLesson165: writes OneOffLesson group/subject/semester/date/number/classroom/createdBy, emits Spring event; method does not create physical lesson/occurrence or bind assignment. Delete physically removes one-off then emits cancellation. No claim that downstream event consumers were exhaustively checked here.
+Opened ScheduleGrpcServiceImpl getLessonsByIds146: reads physical rows then current ScheduleItem, silently excludes missing parents, fills old lesson/group/subject/start/number/date only. resolveLesson197 resolves natural key then current parent and buildResponse. Assignment/occurrence history identities require explicit implementation; current code is not evidence of preserved immutable snapshots. countSubjectReferences currently counts template/oneoff/physical rows and remains only reference query, not durable cross-service close fence.
+
+## Root verified event-retention dependency
+Opened r2 schedule/subject/SubjectDeletedCascadeService.cascade: emits LessonDeletedEvent and OneOffLessonCancelledEvent then deletes oneOffs and ScheduleItems. Opened Attendance event/LessonEventService.processOneOffLessonCancelled and processLessonsDeleted: Mongo remove by natural slot and lesson IDs respectively; normal processLessonCancelled instead updates CANCELLED. These are existing source facts, not approved next-stage behavior. L5B retained-history cutover requires explicit producer/consumer protocol and old-event handling; cannot claim safe retention by changing Schedule writes alone. No source edits or data operations during this read.
+
+## Missing B source resolved
+Fresh max8document lookup found actual C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/student-academic-b/foundation-decision-result.md, root opened/hashverified00B22EC98BA8117E92E4F145DEBA5D1B2FEDC2B59D41B14644F5184A280FDDE2. Canonical backend-conflicts.md hash701EBFB7C91906F1EF57B2D6ED5B54202A38475A1E246C3172FADB1AB6646DD8 R7/R25 rootverified: retroactivecancel allowed; marks invalidated not deleted; restoreemptygrid; transferfutureonly/sameassignment/Homeworkmoves. B lines70–76/103–104 cancelarchivesHomework/restoredoesnotresurrect. B oldMongo generationmigration prerequisite superseded by later HANDOFF32 B2 ownercorrection; do not reintroduce it. Oneoff time-source remains unresolved in max8docbounds. Student group-transfer stats decision unrelated to lessontransfer.
+
+## One-off time authority source clarification 2026-09-20
+Root independently opened canonical docs/architecture/reference-rutcampustrack-design/backend-requests.md:196 SC-02: university-wide lesson-number→start/end directory plus study-day count is an explicit requirement, missing API. Read actual CreateOneOffLessonRequest (schedule-api-contract/.../dto/oneoff) with lessonNumber1..8/date, no start/end; ClockConfig only provides Europe/Moscow. Thus do not ask owner to choose arbitrary explicit time fields versus directory as if policy absent. Directory requirement is established; exact values/configuration/change semantics remain to resolve, preserve immutable physical time snapshots. Bounded scout did not inspect canonical docs, lead/root did; its initial no-authority conclusion was incomplete and superseded.

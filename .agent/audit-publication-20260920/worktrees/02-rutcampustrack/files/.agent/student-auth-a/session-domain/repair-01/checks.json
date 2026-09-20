@@ -1,0 +1,45 @@
+{
+  "repair": "repair-01",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "checks": [
+    {
+      "criterion": "Focused role, password and session boundary behavior passes",
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:test --tests ru.rutcampustrack.auth.session.ActiveRolePolicyTest --tests ru.rutcampustrack.auth.session.PasswordPolicyTest --tests ru.rutcampustrack.auth.session.SessionLifecycleServiceTest --no-daemon --max-workers=1",
+      "startedAt": "2026-09-08T00:13:42.109Z",
+      "endedAt": "2026-09-08T00:14:26.769Z",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "evidence/junit/*.xml; BUILD SUCCESSFUL in 42s; ActiveRolePolicyTest 4, PasswordPolicyTest 6, SessionLifecycleServiceTest 11; total 21; failures/errors/skips 0/0/0"
+    },
+    {
+      "criterion": "No source drift after focused run",
+      "command": "PowerShell SHA256 and byte comparison against pretest-source-manifest.json",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "evidence/source-drift.json; 16 entries; 0 mismatches"
+    },
+    {
+      "criterion": "Scoped whitespace check has no errors",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "No diff-check errors; warnings only pre-existing purpose4 LF/CRLF notices"
+    }
+  ],
+  "runtime": {
+    "status": "N/A",
+    "reason": "Assigned scope is pure auth/session domain; no HTTP/SQL/Gateway launch is applicable"
+  },
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "java": "21.0.10",
+    "gradle": "8.12"
+  },
+  "lease": {
+    "rootGo": "explicit",
+    "gradleRuns": 1,
+    "additionalGradleRuns": 0,
+    "testcontainersRuns": 0
+  }
+}

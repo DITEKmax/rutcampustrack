@@ -1,0 +1,2236 @@
+{
+  "capturedAt": "2026-09-16T01:12:26.7310610+03:00",
+  "purpose": "Owner STOP: files preserved in place; no commit, deployment or runtime check",
+  "worktrees": [
+    {
+      "name": "v2-access-scope",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-access-scope",
+      "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "branch": "codex/v2-access-scope",
+      "status": [
+        " M AGENTS.md",
+        " M proto/academic.proto",
+        " M services/academic-service/academic-app/build.gradle.kts",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+        " M services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+        "?? .agent/access-a2/checks.json",
+        "?? .agent/access-a2/diff.md",
+        "?? .agent/access-a2/evidence.md",
+        "?? .agent/access-a2/manifest.sha256",
+        "?? .agent/access-a2/packet.md",
+        "?? .agent/access-a2/summary.md",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/JdbcStudentProjectionQueryAdapter.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionException.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionGrpcErrors.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQuery.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScope.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+        "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentProjectionGrpcServiceTest.java",
+        "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQueryAdapterIT.java",
+        "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java"
+      ],
+      "files": [
+        {
+          "path": ".agent/access-a2/checks.json",
+          "bytes": 19451,
+          "sha256": "3ED7EB73125682DBA4602C1CA870FB4F2B1B48441861BE4E87182000952C78D5"
+        },
+        {
+          "path": ".agent/access-a2/diff.md",
+          "bytes": 2742,
+          "sha256": "FBD3BE8F6120B0C4FB38AAD872743CD0CDC8DBCA442E54C9F267166EE3E14DF0"
+        },
+        {
+          "path": ".agent/access-a2/evidence.md",
+          "bytes": 14348,
+          "sha256": "64F5CF9AD90313050597FCD00EB38ED463AE660D322433695FFE8008F10BC2EC"
+        },
+        {
+          "path": ".agent/access-a2/manifest.sha256",
+          "bytes": 2751,
+          "sha256": "85613366A96ADDDBA189C6B5573D7B1D6AED10CEC03049DBBD2E7B1876069569"
+        },
+        {
+          "path": ".agent/access-a2/packet.md",
+          "bytes": 7798,
+          "sha256": "7DF5D2FCCC9F1F1EEAD0E09DCC3A7C3C371A444C45305D4AC6C9B9C573633214"
+        },
+        {
+          "path": ".agent/access-a2/summary.md",
+          "bytes": 8121,
+          "sha256": "7F5746186490D6732A651129500D94CDBC5A860B356D8F9E2DCCD0B129A97FAF"
+        },
+        {
+          "path": "AGENTS.md",
+          "bytes": 5575,
+          "sha256": "29CE4F1340867CCCDB5DDD39DAC57DE0124FF7DF4334D245E5239D25658EC210"
+        },
+        {
+          "path": "proto/academic.proto",
+          "bytes": 12896,
+          "sha256": "BF7C37FEFD9253F347B4DA9C07696C5ACBDD45DD6B4E3378103B32CACCB9966C"
+        },
+        {
+          "path": "services/academic-service/academic-app/build.gradle.kts",
+          "bytes": 5754,
+          "sha256": "0DAB34508BE348798C1848A3D8D0A0C0C31BB7E923C0B9D66DC3E34D28FD4DF2"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+          "bytes": 31517,
+          "sha256": "E7C73C72DB01F14FBAC89DE7DDC083498DB1B8F8DAD7E73CDFFF50C71E1E72D4"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+          "bytes": 2556,
+          "sha256": "ABD2FD0A1C8DF359DFA30C50D94D1587A6029B47472088F97135CF2601FC0CD9"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/JdbcStudentProjectionQueryAdapter.java",
+          "bytes": 10947,
+          "sha256": "61E8AC56B2E934D13AECD0844E40606DF64384A6089C4F2EF96FC39D9A13D504"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionException.java",
+          "bytes": 2086,
+          "sha256": "57FD0A2C1A1336FF3272029A1AEF5D305AEFD145AAFA92BA5A841B0E9E8D7F2F"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionGrpcErrors.java",
+          "bytes": 4248,
+          "sha256": "68F243B3D885EE83E75929C2E8265A060631BE07CCC068EAB1FC8CE0845DE777"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQuery.java",
+          "bytes": 3415,
+          "sha256": "0B4364B835A84590D8C52DC2E581D1AA71FB96626084E4AD0A49CDF32C266F35"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScope.java",
+          "bytes": 2749,
+          "sha256": "254CFDD585D7903CAA9C6E1B99C13F140380BA0EFC708C4E67065A07FA6B0E06"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+          "bytes": 25038,
+          "sha256": "3C38A1805664C2339E6E64C02870AEAA79EB1A8376CCDE1BF25DF2C4ABEC2774"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+          "bytes": 11851,
+          "sha256": "8BAF484F84265F1B8E6F27641DDEC1D400EDD42D7B72755FFAF0700F86B501BA"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentProjectionGrpcServiceTest.java",
+          "bytes": 15626,
+          "sha256": "8AC3F337367249CF36D5655D72FD204A0A742F2852CF773174EEB1CF72C5146C"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQueryAdapterIT.java",
+          "bytes": 17672,
+          "sha256": "C30FC24412AA557FCC2736F49D367ED25CC1BA339710AD47B46D70FDE8659318"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java",
+          "bytes": 26738,
+          "sha256": "FC985AA7310ADC039B87F08C1964936874F37ED465CA545915542BED40796BFD"
+        }
+      ]
+    },
+    {
+      "name": "v2-assignment-authority",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-assignment-authority",
+      "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "branch": "codex/v2-assignment-authority",
+      "status": [
+        " M services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/AssignmentApi.java",
+        " M services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/SubjectApi.java",
+        " M services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/assignment/AssignTeacherRequest.java",
+        " M services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/assignment/AssignmentResponse.java",
+        " M services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/CreateSubjectRequest.java",
+        " M services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/SubjectResponse.java",
+        " M services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/UpdateSubjectRequest.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAssembler.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentController.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentService.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectAssembler.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectController.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+        "?? .agent/v2-assignment-authority/AGENTS.md",
+        "?? .agent/v2-assignment-authority/packet.md",
+        "?? services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/AddSubjectTeacherRequest.java",
+        "?? services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/AssignmentSummaryResponse.java",
+        "?? services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/InitialAssignmentRequest.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAuthority.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Assignment.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/SubjectLessonType.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/SubjectLessonTypeId.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/UserRoleGrant.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/AssignmentClosureNotReadyException.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AssignmentRepository.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectLessonTypeRepository.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRoleGrantRepository.java",
+        "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityContractTest.java",
+        "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentClosureContractTest.java",
+        "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcContractTest.java",
+        "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentLockContractTest.java",
+        "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityContractTest.java"
+      ],
+      "files": [
+        {
+          "path": ".agent/v2-assignment-authority/AGENTS.md",
+          "bytes": 567,
+          "sha256": "49EE60E90F1927A9053785B0CF30D7A48D8132238FA34D40DE9FD59775CA42AB"
+        },
+        {
+          "path": ".agent/v2-assignment-authority/packet.md",
+          "bytes": 3786,
+          "sha256": "FDFD0B31546A410AB372FEA08D11492CFBC4F838205D7627F489F64C443A7A87"
+        },
+        {
+          "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/AssignmentApi.java",
+          "bytes": 4395,
+          "sha256": "1600895268625A5CA743E49726AE0287F94293C28056E882AA8FBB9FBAE3295E"
+        },
+        {
+          "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/SubjectApi.java",
+          "bytes": 6784,
+          "sha256": "2E7B0B691FA16F3120FB3E1445FBBC48DFADD873021B19B3DFF59D2543A026D7"
+        },
+        {
+          "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/assignment/AssignmentResponse.java",
+          "bytes": 3660,
+          "sha256": "0B31272F0F3E7BEE66DF26CD1E139EBA98DD2DC7D0A9CCF59799CF5A03F376B1"
+        },
+        {
+          "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/assignment/AssignTeacherRequest.java",
+          "bytes": 2640,
+          "sha256": "6DD90B7CE0CD94B9AEFCC49E75154688BC81EA24E1DA647A9E37C172D0A3D464"
+        },
+        {
+          "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/AddSubjectTeacherRequest.java",
+          "bytes": 649,
+          "sha256": "76EA8EB538E2D1C9F56F6A8C26F48C075BF6C0F67C0B91FDF5CC9F4FA8738859"
+        },
+        {
+          "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/AssignmentSummaryResponse.java",
+          "bytes": 544,
+          "sha256": "41057933F19CC92ED59817E64A9C62230D8F2189491F25393D6C550CEAE739E4"
+        },
+        {
+          "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/CreateSubjectRequest.java",
+          "bytes": 2417,
+          "sha256": "F238ACB1E03E80D7D82C9EFAECF2A745FF47C88A0C5649718F11A79BFFC2F03C"
+        },
+        {
+          "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/InitialAssignmentRequest.java",
+          "bytes": 681,
+          "sha256": "86214904B8A6D9DAF58DACA22DDB9BF0B0827CA20435D7A1A65A94B2E4EF6684"
+        },
+        {
+          "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/SubjectResponse.java",
+          "bytes": 3524,
+          "sha256": "B6E8B5D319F80F847E37CC983571A6EBC9AD3036CA298EC81106DFFB2824DDD8"
+        },
+        {
+          "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/UpdateSubjectRequest.java",
+          "bytes": 1434,
+          "sha256": "0379CB5ABCAEAC2C936BCE3FD385711D668DE00CCF2D53D167C53EB300A669F5"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAssembler.java",
+          "bytes": 2392,
+          "sha256": "54BBA98BD696915428A37D4E66076B54326C2F1C8E6AEF9C3E9FD0CC97BC99A7"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAuthority.java",
+          "bytes": 8410,
+          "sha256": "D6AFC5666A8DE674DA5559370C7B3F173FEABDF87D7809BDD5ACBAD634945113"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentController.java",
+          "bytes": 2959,
+          "sha256": "617E11566C33B23C38B246B4B5499347620F5AD3A29F9A1503A850572C22C388"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentService.java",
+          "bytes": 7889,
+          "sha256": "CB403F86E61C2823E44F10921E7FFCA3195602A1EDB2F53015757CD5511B5AF8"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Assignment.java",
+          "bytes": 2288,
+          "sha256": "D33B663751AEF2991FA79FC84C1CD82BB12C3699E622F7B0B39E62516E3B7F1F"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/SubjectLessonType.java",
+          "bytes": 900,
+          "sha256": "00EC6C67C6471846693CD7D0F128215195167588030041AB71E57B17A8036488"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/SubjectLessonTypeId.java",
+          "bytes": 1038,
+          "sha256": "1AC01D236D2C49229509698B5D56C72E2D6763958FE28B6112EDE4E4529B1682"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/UserRoleGrant.java",
+          "bytes": 1120,
+          "sha256": "6135E0C7A2F119C2B117180D1A6DFF16A4EDE3642A6A0674BD414416116AC87E"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/AssignmentClosureNotReadyException.java",
+          "bytes": 348,
+          "sha256": "AB2716FB053981A223E9D1021A81622E3FEB6BF3FD6F96CC0B9262296C7D49B4"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java",
+          "bytes": 10565,
+          "sha256": "6A6330D6F2E759C1292FDC8928FE252FDE7366417B34569B5D21F7A194053D45"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+          "bytes": 35387,
+          "sha256": "30538CA5074BFD87C85DF630497F3AAC65280D559FE9BDA1591C5795D01ED4B1"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AssignmentRepository.java",
+          "bytes": 2770,
+          "sha256": "BDFE153249B09307E5B82B21EF4D31824298CE6FCF237BA579B6C373A3425362"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java",
+          "bytes": 1962,
+          "sha256": "9AB7B3477E3C7622BFC9FFE76947B7C96F5BE7256D9C9E1FC49C0B2A5B7030DA"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectLessonTypeRepository.java",
+          "bytes": 666,
+          "sha256": "91CD1004600488CAEFA65BD71F68D09CD7E9E6D5FE15710536B576C9ACB94453"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+          "bytes": 1974,
+          "sha256": "1C4CC4AA344DFFF782DC7C9B2F98DB8A4E1C31C7F1D757D78C6BA1C341A8B56A"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRoleGrantRepository.java",
+          "bytes": 375,
+          "sha256": "2E8E29785F4D828312EDE38B9CC6C7E0179698ED226CAA558AB858128171FEEB"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+          "bytes": 8210,
+          "sha256": "BF2CB36AB5F0174E051F23AC735AB09F51D26993F225BF8E4DFBEF3E4F9C27FC"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectAssembler.java",
+          "bytes": 3248,
+          "sha256": "E833FD9738341C23011C3B448B148DF0BC4A8FC4BD2A464F172FEC363E865D0C"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectController.java",
+          "bytes": 4089,
+          "sha256": "A69A278F8A3D387CF99EB59BDEC3E3024160048D2608982B10CAE5F13D4F36FA"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+          "bytes": 14917,
+          "sha256": "C7384FA81368E2F735350C3816319E25EBB578A0C4BC899F436B9BA5C291D9A8"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityContractTest.java",
+          "bytes": 7141,
+          "sha256": "2BB9EB7F63303CCA275C7C0DE39B26CF16891C4EE1ECCA57474D92388449F59C"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentClosureContractTest.java",
+          "bytes": 2674,
+          "sha256": "94ADB57A709CD00E9AAC758B442F11985A3C2A2CF5BE545BC8EECCA13C31EE35"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcContractTest.java",
+          "bytes": 7181,
+          "sha256": "6EE62C3F2ADB097BA4BB19F4CA091FF5EFB8C002CAAB565ECEAFE359C7D4F7B5"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentLockContractTest.java",
+          "bytes": 2799,
+          "sha256": "CD44B1157C344CBDB4CB783321CDCE0FFB2CD0D04A198ADA1FDA3C0BF1C27E92"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityContractTest.java",
+          "bytes": 6968,
+          "sha256": "7412C196BEA04546A8FB43E581EC4DB298317B3A9FED5F2F301F85293250AA5D"
+        }
+      ]
+    },
+    {
+      "name": "v2-binding-proto",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-binding-proto",
+      "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "branch": "codex/v2-binding-proto",
+      "status": [
+        " M AGENTS.md",
+        " M proto/academic.proto",
+        " M proto/schedule.proto",
+        " M services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+        " M services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+        " M services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+        "?? .agent/v2-binding-proto/checks.json",
+        "?? .agent/v2-binding-proto/diff.md",
+        "?? .agent/v2-binding-proto/evidence.md",
+        "?? .agent/v2-binding-proto/h5-classpath.init.gradle",
+        "?? .agent/v2-binding-proto/h6-classpath.init.gradle",
+        "?? .agent/v2-binding-proto/h7-classpath.init.gradle",
+        "?? .agent/v2-binding-proto/h8-classpath.init.gradle",
+        "?? .agent/v2-binding-proto/h8b-task-args.json",
+        "?? .agent/v2-binding-proto/h9-classpath.init.gradle",
+        "?? .agent/v2-binding-proto/packet.md",
+        "?? .agent/v2-binding-proto/source-check.ps1",
+        "?? .agent/v2-binding-proto/summary.md"
+      ],
+      "files": [
+        {
+          "path": ".agent/v2-binding-proto/checks.json",
+          "bytes": 46234,
+          "sha256": "3E5DB43DCC4783C4BB24C904789BE0EBB9EA7465A2ACCB57437007B5FAD08321"
+        },
+        {
+          "path": ".agent/v2-binding-proto/diff.md",
+          "bytes": 3354,
+          "sha256": "F1D2CB57EF749C373EB7696EF3D6C2BAAA6AD893827D7FCF569523B138BACE6A"
+        },
+        {
+          "path": ".agent/v2-binding-proto/evidence.md",
+          "bytes": 32087,
+          "sha256": "CF5F3A797A3237B057245A0A4914679AF598E28D26E34A2665F3313C28688408"
+        },
+        {
+          "path": ".agent/v2-binding-proto/h5-classpath.init.gradle",
+          "bytes": 11151,
+          "sha256": "8DCA42C0EC1B28D68B241A5F9CDFEF5E959BA6A03B84087DCFBCE7C2474543E9"
+        },
+        {
+          "path": ".agent/v2-binding-proto/h6-classpath.init.gradle",
+          "bytes": 11191,
+          "sha256": "80BDC99416480BA8F60307706EB6704711B5CC06A356AD3688C3765EA1808E85"
+        },
+        {
+          "path": ".agent/v2-binding-proto/h7-classpath.init.gradle",
+          "bytes": 11191,
+          "sha256": "DDEA58433BE51049D572EEFC3AA4D011CE684327C4E31C157385A6BF40B8FE94"
+        },
+        {
+          "path": ".agent/v2-binding-proto/h8-classpath.init.gradle",
+          "bytes": 11191,
+          "sha256": "5E825556384378382403ACA8F5EBE9744CD329FBA1464D7C5DC2A88E794B0D70"
+        },
+        {
+          "path": ".agent/v2-binding-proto/h8b-task-args.json",
+          "bytes": 1466,
+          "sha256": "6E4BAFEDB487D6AE3FBA49C65E583CABEF884629972D1C0C3EC56C091C3BF064"
+        },
+        {
+          "path": ".agent/v2-binding-proto/h9-classpath.init.gradle",
+          "bytes": 11191,
+          "sha256": "BA53E6114D7F26451983AA78525B93EA2BFED1BA16FA13BEA0C17A6F0963A394"
+        },
+        {
+          "path": ".agent/v2-binding-proto/packet.md",
+          "bytes": 6061,
+          "sha256": "651BF8D1E3DB242F37AC1F39BC2DF35387BCBD9BA2C90EF36721FBBB83A646E1"
+        },
+        {
+          "path": ".agent/v2-binding-proto/source-check.ps1",
+          "bytes": 4540,
+          "sha256": "1278F2F536E5B0073C913031FBD71076C173E768A7542BEFEB5DDEA851730C6C"
+        },
+        {
+          "path": ".agent/v2-binding-proto/summary.md",
+          "bytes": 6182,
+          "sha256": "DA621982C7E5C7A6D82CAB52E5E2C192AF94F7AA4956C64DDFB7649A6042F94A"
+        },
+        {
+          "path": "AGENTS.md",
+          "bytes": 5710,
+          "sha256": "064AFD607D7C32D4E602F6E69AB291829694D422FD9CEC11822F77C057120BE3"
+        },
+        {
+          "path": "proto/academic.proto",
+          "bytes": 9442,
+          "sha256": "980C12514EB3E2B1E1C90A94207115CC70A2AC64458BAB4B99F14467016C45B9"
+        },
+        {
+          "path": "proto/schedule.proto",
+          "bytes": 7557,
+          "sha256": "984538E5ED0414F06A9BB9CAE4AF2BC981CB50A32190EF5FA06B0858C1AAB0FB"
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+          "bytes": 11932,
+          "sha256": "3886D055A127DF7BA2DCDE605334926D25938963209FDF3BB3D1F0F0FD96C52C"
+        },
+        {
+          "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+          "bytes": 4441,
+          "sha256": "9314F3404E0FC6FA702106F467A180E4296F32ED86375652881A976B29C0F3DA"
+        },
+        {
+          "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+          "bytes": 2167,
+          "sha256": "D2FCF168798DA4676D25557C6421E5A43400EA146D6836429BCBF3815066BCB1"
+        }
+      ]
+    },
+    {
+      "name": "v2-integration-a2-l3",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-integration-a2-l3",
+      "head": "d7ec16572db325d944f1a1fbd3b4960b827d09c3",
+      "branch": "codex/v2-integration-a2-l3",
+      "status": [
+        " M AGENTS.md",
+        "?? .agent/integration-i1/checks.json",
+        "?? .agent/integration-i1/h36-defect-gate.md",
+        "?? .agent/integration-i1/h37-classpath.init.gradle",
+        "?? .agent/integration-i1/i2-checks.json",
+        "?? .agent/integration-i1/i2-packet.md",
+        "?? .agent/integration-i1/i2-source-freeze.md",
+        "?? .agent/integration-i1/i2-summary.md",
+        "?? .agent/integration-i1/i2-union-manifest.sha256",
+        "?? .agent/integration-i1/i3-checks.json",
+        "?? .agent/integration-i1/i3-packet.md",
+        "?? .agent/integration-i1/i3-source-freeze.md",
+        "?? .agent/integration-i1/i3-summary.md",
+        "?? .agent/integration-i1/i3-union-manifest.sha256",
+        "?? .agent/integration-i1/i4-checks.json",
+        "?? .agent/integration-i1/i4-conflict-ledger.md",
+        "?? .agent/integration-i1/i4-packet.md",
+        "?? .agent/integration-i1/i4-source-freeze.md",
+        "?? .agent/integration-i1/i4-union-manifest.sha256",
+        "?? .agent/integration-i1/i5-checks.json",
+        "?? .agent/integration-i1/i5-diff.md",
+        "?? .agent/integration-i1/i5-evidence.md",
+        "?? .agent/integration-i1/i5-packet.md",
+        "?? .agent/integration-i1/i5-runtime-evidence.json",
+        "?? .agent/integration-i1/i5-summary.md",
+        "?? .agent/integration-i1/i5-union-manifest.sha256",
+        "?? .agent/integration-i1/packet.md",
+        "?? .agent/integration-i1/source-freeze.md",
+        "?? .agent/integration-i1/summary.md",
+        "?? .agent/integration-i1/union-manifest.sha256",
+        "?? .agent/v2-requests-ui/vitest-client-environment.ts",
+        "?? docs/sources/manifest.yaml"
+      ],
+      "files": [
+        {
+          "path": ".agent/integration-i1/checks.json",
+          "bytes": 10522,
+          "sha256": "F90629915F8D40160C10BE52750B3C78F48F45D83935C23C7E859ED5A4B8E496"
+        },
+        {
+          "path": ".agent/integration-i1/h36-defect-gate.md",
+          "bytes": 4743,
+          "sha256": "B3D9C52EC5A1F6D54FD39314447665AA12045B83F5B6A745713C3D036277F72F"
+        },
+        {
+          "path": ".agent/integration-i1/h37-classpath.init.gradle",
+          "bytes": 1394,
+          "sha256": "3D99F381F57F76F117B5EC7AC4C4B0C3B21AD13AB5B2A1FD51D475DB3020DB60"
+        },
+        {
+          "path": ".agent/integration-i1/i2-checks.json",
+          "bytes": 14212,
+          "sha256": "2FA4C216248AB762DF83DD008E73C351EFAC1293D5DF7D881F263EDDBED64BCA"
+        },
+        {
+          "path": ".agent/integration-i1/i2-packet.md",
+          "bytes": 4577,
+          "sha256": "0BA85B94D517928A1F7B545D4D34CAEED8A8D5911ECBBE6658EAF9ACE98E0D35"
+        },
+        {
+          "path": ".agent/integration-i1/i2-source-freeze.md",
+          "bytes": 4864,
+          "sha256": "C091640EFC042F14F857CB6A3CBB64D017238B21D7C19D615343B86FC4A36ADB"
+        },
+        {
+          "path": ".agent/integration-i1/i2-summary.md",
+          "bytes": 2587,
+          "sha256": "1710D13F6DA4BC485C872BB5A6FD43034CEF594839414A798BF9AC74632F9CC3"
+        },
+        {
+          "path": ".agent/integration-i1/i2-union-manifest.sha256",
+          "bytes": 4959,
+          "sha256": "E5F63E0541F80A67DAF1C1B012ACD045E3C5127B4397D6541CA6B5079CBBC04D"
+        },
+        {
+          "path": ".agent/integration-i1/i3-checks.json",
+          "bytes": 10439,
+          "sha256": "06AA5AFFFDEDA4EA9C2C3009A85B9B8606CFE3DF0390226950FA9899BDE8CA79"
+        },
+        {
+          "path": ".agent/integration-i1/i3-packet.md",
+          "bytes": 4511,
+          "sha256": "3222DF240B80F634252C71C02548A39D75C50D9EE35969874E7ECB93458F6BC2"
+        },
+        {
+          "path": ".agent/integration-i1/i3-source-freeze.md",
+          "bytes": 2269,
+          "sha256": "1CEF671532D586C175449FF27A151C22306FCB324731053F22A6A40B671F26E7"
+        },
+        {
+          "path": ".agent/integration-i1/i3-summary.md",
+          "bytes": 2368,
+          "sha256": "4D30718B15927990C6BEF6EBA01FC771CF5CA0BB16F0A1C5503B00C25FF16967"
+        },
+        {
+          "path": ".agent/integration-i1/i3-union-manifest.sha256",
+          "bytes": 4913,
+          "sha256": "93C4DF660655AB8206F796FA79A55FEC1C7A242C99B6D423243D04A2035C4E5F"
+        },
+        {
+          "path": ".agent/integration-i1/i4-checks.json",
+          "bytes": 12422,
+          "sha256": "58D6298B4A7145DA53CA5B6D5AD40E0F206E8B9B63F146278A4DDFA6E0BC65D9"
+        },
+        {
+          "path": ".agent/integration-i1/i4-conflict-ledger.md",
+          "bytes": 3076,
+          "sha256": "26B146E66DC5B54E6CA388AF8D8518814373E3F708C8DE452B97BCDF15E384F4"
+        },
+        {
+          "path": ".agent/integration-i1/i4-packet.md",
+          "bytes": 4382,
+          "sha256": "DAB15436A6020B8D456623EB96E1C4E0C4A4DDD4246195A7E8EE1CBB961EBE89"
+        },
+        {
+          "path": ".agent/integration-i1/i4-source-freeze.md",
+          "bytes": 5173,
+          "sha256": "F4D12626E5460929E6F802EBB34794F0C251EC61C2A9F1BACE0CC3BA94749E94"
+        },
+        {
+          "path": ".agent/integration-i1/i4-union-manifest.sha256",
+          "bytes": 6497,
+          "sha256": "28447CAB436CE49C2AADEC9103A4293E358D5BCBE569C9B61C85F7C655FABDA9"
+        },
+        {
+          "path": ".agent/integration-i1/i5-checks.json",
+          "bytes": 7133,
+          "sha256": "DA2BF2A15DC1D427AA837503A11C426EC61E2EBACC0AFCA4474C41155F416A7E"
+        },
+        {
+          "path": ".agent/integration-i1/i5-diff.md",
+          "bytes": 4214,
+          "sha256": "FB8DAA114E1ECC6B26F83F68E5790A928FE4AFB93584FDA8AF7509ACC81F0B0A"
+        },
+        {
+          "path": ".agent/integration-i1/i5-evidence.md",
+          "bytes": 3763,
+          "sha256": "2CACA71F223AFCB2598DF08C55D0D4026F7493C1918E7F8FC9574694516E4FEF"
+        },
+        {
+          "path": ".agent/integration-i1/i5-packet.md",
+          "bytes": 4319,
+          "sha256": "D9317F74C90CBBCB360B9CD902F8E47AF061E85456EC2EB3F82DAF7C14BF8707"
+        },
+        {
+          "path": ".agent/integration-i1/i5-runtime-evidence.json",
+          "bytes": 1149,
+          "sha256": "A3274B9A8B64408E2A92E6E9DC6FD1D405FFA3D6FCDF566FB2799D8DCDB4D5DA"
+        },
+        {
+          "path": ".agent/integration-i1/i5-summary.md",
+          "bytes": 1431,
+          "sha256": "FD3D6EE7B4B656E2210BD9353FAFDCE772704452799C32E44C87C91AD80423A0"
+        },
+        {
+          "path": ".agent/integration-i1/i5-union-manifest.sha256",
+          "bytes": 8488,
+          "sha256": "E7E80631913FF9B91655C5BAED57F2D24D5EB854C356EEA7A8DEF585212C91EC"
+        },
+        {
+          "path": ".agent/integration-i1/packet.md",
+          "bytes": 4273,
+          "sha256": "F28423F5DCA0FEB1D8417BABB05E16C23274D4CBA76FF289E6185B1A3CBD9CA3"
+        },
+        {
+          "path": ".agent/integration-i1/source-freeze.md",
+          "bytes": 5622,
+          "sha256": "75C50F1910F513B0AD5A30C5AD69D951901E52BF85F145946D18FC69AFF888CA"
+        },
+        {
+          "path": ".agent/integration-i1/summary.md",
+          "bytes": 3038,
+          "sha256": "C00371949F6ADE6862777B423324A6D601A9A6D759ED493E3CFC7AC090C8356E"
+        },
+        {
+          "path": ".agent/integration-i1/union-manifest.sha256",
+          "bytes": 3326,
+          "sha256": "CF8396460FC0DCF58ADAD0AEF66F42D2BED1FDABCBA421CADBA0F992CAFE237A"
+        },
+        {
+          "path": ".agent/v2-requests-ui/vitest-client-environment.ts",
+          "bytes": 221,
+          "sha256": "CF3212D7D65917AB03161C487471EFD6A088B7463A0EF76C542D93CA65782205"
+        },
+        {
+          "path": ".env.prod.example",
+          "bytes": 8942,
+          "sha256": "55D5CC19B526001D5E0B87413184C104A23FEB0D8BFDBF3D9BDB916B7CDC0687"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "bytes": 13446,
+          "sha256": "1D6ED2F8EB9ACD7FF9E2D928B9A3C773DC909FB19CC752FECA38839A356774DF"
+        },
+        {
+          "path": "AGENTS.md",
+          "bytes": 5735,
+          "sha256": "55A35E2A06A03246ACAB9BA4FFA0B0D7BA12E41A99E84A6BE74710A4E0B832F3"
+        },
+        {
+          "path": "Canonical SHA-256 (UTF-8, sorted rows joined by LF, no trailing LF): D3FF3DFDC7C093935CCE3DEF4B4C0A4151F876F1572C3A3851A4480A588FC204",
+          "state": "deleted-or-not-file"
+        },
+        {
+          "path": "docker-compose.e2e.yml",
+          "bytes": 19500,
+          "sha256": "EA3D7A5EA29E824BCF666E38EEAA14CB06CD0B9F175C6D3D8FCBC4267FA4F178"
+        },
+        {
+          "path": "docker-compose.prod.yml",
+          "bytes": 45051,
+          "sha256": "F601260775C6BECDE42C5CEBD157D7F6AD0BD62CBC7B1D0A204C8963C9A41CA3"
+        },
+        {
+          "path": "docs/openapi/mobile-bff.json",
+          "bytes": 59492,
+          "sha256": "D4F97E0476CD681A9460247D9F904C7901241269B73221A097EC6BE45132CDA0"
+        },
+        {
+          "path": "docs/operations/deploy/prod-deploy-checklist.md",
+          "bytes": 19959,
+          "sha256": "0B9CAD94786B06169C1D605714F3A37BBE4DCE5A918B97508EA4A193BF7CF74C"
+        },
+        {
+          "path": "docs/operations/runbooks/backup-restore.md",
+          "bytes": 11324,
+          "sha256": "574B2CCE59EAD4192238187C330E184C6C2657D1FCBBAC5B5510AFD6C77F02B4"
+        },
+        {
+          "path": "docs/operations/runbooks/cert-renewal.md",
+          "bytes": 11275,
+          "sha256": "EE919BD62D227BDC0741C491DF0F31798CD5012309ABC24070D870D17D93F974"
+        },
+        {
+          "path": "docs/operations/runbooks/loki-major-upgrade.md",
+          "bytes": 5692,
+          "sha256": "9CD74B21022DEBC3F0172E780EB1FB69D07E92514385835C7A4327CA18115C46"
+        },
+        {
+          "path": "docs/sources/manifest.yaml",
+          "bytes": 15200,
+          "sha256": "9CF40BB682C405B61E0C32143DC3CC59F16D3EAA9AF064744177CF552748D886"
+        },
+        {
+          "path": "docs/testing/M16-vps-verify.md",
+          "bytes": 15568,
+          "sha256": "4D4CC4B95B33ED8DD0AEF6CDF85EECCAAC0477F89646FD18B6558B39E8585F10"
+        },
+        {
+          "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+          "bytes": 45002,
+          "sha256": "5D697D0D0615BB5BB93F0C4735B090D3420112B7B97F4FA6C3598CC31B2CA66E"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/attachment-validation.test.ts",
+          "bytes": 3234,
+          "sha256": "B04D4FF29FEE30C644FB214CB263CFD59BA3D94D9AE852EF08364AAD846093F6"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/attachment-validation.ts",
+          "bytes": 5622,
+          "sha256": "7953EC9B0A4F558EE99473825B18D61711FD424675F262D17C300A02E4A4B9C6"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/request-attachment-action.test.ts",
+          "bytes": 8417,
+          "sha256": "1FC0DBAD10232F474A7A1F73DEECFB4273DA2B8878A04A19234A380E88366665"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/request-attachment-action.ts",
+          "bytes": 5099,
+          "sha256": "D34D0319DBC217F8B11A0194BEB00705F17C823E33DB33E81FC2061F97601FEF"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestAttachmentField.vue",
+          "bytes": 6626,
+          "sha256": "E3FB0F2CB1567A9BA26D63C451153D0DD4176BD6CC618235472C87120A403B37"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestCard.vue",
+          "bytes": 9094,
+          "sha256": "A82FB839AB93FC15B35E54A54020C64583E4502D1C57A8BC733D63809102BFC9"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/requests-controller.test.ts",
+          "bytes": 16208,
+          "sha256": "9AE7D8598FFD3BCC4FB7253DF8E646BEA7F514B89C878A823C24174AD0F6568A"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/requests-controller.ts",
+          "bytes": 29473,
+          "sha256": "3AF75AA67AA0F27BEA21CC393D0CFDB184748710E2ADAE397ECC1E4726C64F85"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/requests.pcss",
+          "bytes": 24601,
+          "sha256": "9A8C139BBA15D931D39F05CB55579E9396AF3BB04E570DA8EBBC8FA2FD8EFF48"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestsScreen.test.ts",
+          "bytes": 8476,
+          "sha256": "3780B1FB3E9A0BBEBD227A3368E169CD03B20D37DC683DA172F160F6C2FC314D"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestsScreen.vue",
+          "bytes": 6060,
+          "sha256": "2F1561D3B98714C46CD63E3D38990E5DB945909AFB38B7B8722E289217D098D8"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/types.ts",
+          "bytes": 4099,
+          "sha256": "0ABE090F32EDA8AC08260C537CA3C38816A4A8F14750A1AD46313F6B94027F52"
+        },
+        {
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+          "bytes": 11148,
+          "sha256": "D90E583F3D5C90E01E8351C211B1F89052A67A5297D841BA4CDC764010681348"
+        },
+        {
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+          "bytes": 36033,
+          "sha256": "655F9CC6156DA9CB72BE91BFF9E2EE76A1348E7FF645328E50269EDFB8A72F7F"
+        },
+        {
+          "path": "nginx/scripts/init-letsencrypt.sh",
+          "bytes": 3533,
+          "sha256": "19953F6895AF52E61E26DD97B8CB72435E3ADB7D978E370946D35529D94F5258"
+        },
+        {
+          "path": "proto/academic.proto",
+          "bytes": 11248,
+          "sha256": "2EF807ACD1E3A31057A553B01EAFE466ABA87BBC16D62B5D4C30C165C9CBCD32"
+        },
+        {
+          "path": "proto/schedule.proto",
+          "bytes": 7557,
+          "sha256": "984538E5ED0414F06A9BB9CAE4AF2BC981CB50A32190EF5FA06B0858C1AAB0FB"
+        },
+        {
+          "path": "README.md",
+          "bytes": 30929,
+          "sha256": "816136C47D608C590DDF63B9C16E32451A4A1C82ED6AE1FBE16CD99E5AC99CC3"
+        },
+        {
+          "path": "scripts/preflight-deploy.sh",
+          "bytes": 6837,
+          "sha256": "E940074644C99297FEA88B415B6FC9DCCE203EF7B80ECC71D1DC3E17F3950C4A"
+        },
+        {
+          "path": "scripts/validate-env-prod.sh",
+          "bytes": 17804,
+          "sha256": "6F64C95863D69E7476517AD14A88215E278799C6CE480AEA9F533C85986F9548"
+        },
+        {
+          "path": "services/academic-service/academic-app/build.gradle.kts",
+          "bytes": 5754,
+          "sha256": "0DAB34508BE348798C1848A3D8D0A0C0C31BB7E923C0B9D66DC3E34D28FD4DF2"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+          "bytes": 43980,
+          "sha256": "E5849ED4538C250ED6C616CB783F8C0155F5E9C5EBD64ADD60D76DDDF4D07E64"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+          "bytes": 3143,
+          "sha256": "09F12A55F148C8FE3432E44976C1C7702E48F755BC1DE1646D24825877F51B48"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormat.java",
+          "bytes": 150,
+          "sha256": "83029C6ED4C4AD7391EF6128486CF1D45C34FC770A398B4F590845502A6BEBBB"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormatState.java",
+          "bytes": 196,
+          "sha256": "D8E20EFA3F4FBD9D5812ABF9C749BEB5E6B5C121E052A081D9F29E333AB57ACA"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadException.java",
+          "bytes": 935,
+          "sha256": "C3B3D44FFA33BF791CA420EE16DFEE63E036F0B916AB99B9398F0F9C6F901955"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadModels.java",
+          "bytes": 5324,
+          "sha256": "55AFEBC88AB0DA09D115EDE2E6CA868E61B7ECEFC27369F3E9DF7232EFB5EA2D"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadRepository.java",
+          "bytes": 12873,
+          "sha256": "579A98B36E589E4C5290CEBECD3971EFD58F6FC72CD11AA9B604C812186D5550"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadService.java",
+          "bytes": 27656,
+          "sha256": "DFB12285B1F2413359FA422D7743C4B57F68533D7116673AFA510375C2D03B58"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/JdbcStudentProjectionQueryAdapter.java",
+          "bytes": 10947,
+          "sha256": "61E8AC56B2E934D13AECD0844E40606DF64384A6089C4F2EF96FC39D9A13D504"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionException.java",
+          "bytes": 2086,
+          "sha256": "57FD0A2C1A1336FF3272029A1AEF5D305AEFD145AAFA92BA5A841B0E9E8D7F2F"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionGrpcErrors.java",
+          "bytes": 4248,
+          "sha256": "68F243B3D885EE83E75929C2E8265A060631BE07CCC068EAB1FC8CE0845DE777"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQuery.java",
+          "bytes": 3415,
+          "sha256": "0B4364B835A84590D8C52DC2E581D1AA71FB96626084E4AD0A49CDF32C266F35"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScope.java",
+          "bytes": 2749,
+          "sha256": "254CFDD585D7903CAA9C6E1B99C13F140380BA0EFC708C4E67065A07FA6B0E06"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+          "bytes": 25038,
+          "sha256": "3C38A1805664C2339E6E64C02870AEAA79EB1A8376CCDE1BF25DF2C4ABEC2774"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java",
+          "bytes": 13246,
+          "sha256": "F9AC077159005EF780B01B106785832D0E0762AF3DA9A941AFCF779DF6970C5D"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+          "bytes": 14658,
+          "sha256": "2C40B6FC2A1CF557FA83E59A61D86661B34719BE81F034F81A52B036961E0700"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentProjectionGrpcServiceTest.java",
+          "bytes": 15736,
+          "sha256": "88B88E029C9E050F18B8B3476D07C4B450553EEB00F69E9C7D3F19765D4A5DF9"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+          "bytes": 42155,
+          "sha256": "513C784FB21994DDB215F4EFC546774CDC4D37C626150CCEF6BC1586595DB077"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+          "bytes": 41142,
+          "sha256": "39D7AD63EB5D807FA7A869AC4FCC8FEFAABAF55C84DBD7570A077159284191FB"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQueryAdapterIT.java",
+          "bytes": 17672,
+          "sha256": "C30FC24412AA557FCC2736F49D367ED25CC1BA339710AD47B46D70FDE8659318"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java",
+          "bytes": 26738,
+          "sha256": "FC985AA7310ADC039B87F08C1964936874F37ED465CA545915542BED40796BFD"
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+          "bytes": 26316,
+          "sha256": "B8061B3E0F824210D338F9BA7FB08B33A3F1F331D07ABD81E5B3EE2513B90B1E"
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+          "bytes": 12068,
+          "sha256": "D0D715C22A77CBADFE61177454428B606A5F0476359C2B8FD879573A4A221C25"
+        },
+        {
+          "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+          "bytes": 4441,
+          "sha256": "9314F3404E0FC6FA702106F467A180E4296F32ED86375652881A976B29C0F3DA"
+        },
+        {
+          "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+          "bytes": 2167,
+          "sha256": "D2FCF168798DA4676D25557C6421E5A43400EA146D6836429BCBF3815066BCB1"
+        },
+        {
+          "path": "tests/e2e/.env.ci",
+          "state": "sensitive-name-not-read"
+        }
+      ]
+    },
+    {
+      "name": "v2-map-read",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-map-read",
+      "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "branch": "codex/v2-map-read",
+      "status": [
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+        " M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+        " M services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+        "?? .agent/v2-map-read/AGENTS.md",
+        "?? .agent/v2-map-read/evidence/checks.json",
+        "?? .agent/v2-map-read/source-manifest.json",
+        "?? .agent/v2-map-read/source-summary.md",
+        "?? .agent/v2-map-repository-it/contract.md",
+        "?? .agent/v2-map-repository-it/evidence/checks.json",
+        "?? .agent/v2-map-repository-it/summary.md",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormat.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormatState.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadException.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadModels.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadRepository.java",
+        "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadService.java",
+        "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java",
+        "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+        "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java"
+      ],
+      "files": [
+        {
+          "path": ".agent/v2-map-read/AGENTS.md",
+          "bytes": 685,
+          "sha256": "D9115083B6EF1BF15E775E457E2F5ACDA2C6A7C51C135E643BBD4B135D99E432"
+        },
+        {
+          "path": ".agent/v2-map-read/evidence/checks.json",
+          "bytes": 10791,
+          "sha256": "BBC7C266BC516BD95359554CD2D284B38997881C72C21770A3C25A47DA58289D"
+        },
+        {
+          "path": ".agent/v2-map-read/source-manifest.json",
+          "bytes": 12209,
+          "sha256": "E16EEBA8BA3FBF0260E1BEE755D0CC45C859358CDFBE4F097CB8CB687371324C"
+        },
+        {
+          "path": ".agent/v2-map-read/source-summary.md",
+          "bytes": 4541,
+          "sha256": "87119DBA490B7C10147C855DA3505884C88B3F00B3B287D0D51FC3AF9B615370"
+        },
+        {
+          "path": ".agent/v2-map-repository-it/contract.md",
+          "bytes": 7025,
+          "sha256": "21659DDD96ACF98FADF17DB4A07B3A8838572C5E52F73BF05AF7081CE404A930"
+        },
+        {
+          "path": ".agent/v2-map-repository-it/evidence/checks.json",
+          "bytes": 20526,
+          "sha256": "98B38453083E478FD3C93E38213FD963BE5B9F04B709543A96CE9BDBF14F42AB"
+        },
+        {
+          "path": ".agent/v2-map-repository-it/summary.md",
+          "bytes": 10641,
+          "sha256": "71C107997535AB0F88D11D5DACB2B48844CD8A4AFD781934AA920620F7DE2F70"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+          "bytes": 39957,
+          "sha256": "C29987CCCB30ACA6C2DE2ECFA2DF2019A3CD4C9FC4AE6C3CF25591A8976A8876"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+          "bytes": 2931,
+          "sha256": "3D7267482244397C457F5AD716B0AE575C08C82EDF525F01DAD253CDC5691FA5"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormat.java",
+          "bytes": 150,
+          "sha256": "83029C6ED4C4AD7391EF6128486CF1D45C34FC770A398B4F590845502A6BEBBB"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormatState.java",
+          "bytes": 196,
+          "sha256": "D8E20EFA3F4FBD9D5812ABF9C749BEB5E6B5C121E052A081D9F29E333AB57ACA"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadException.java",
+          "bytes": 935,
+          "sha256": "C3B3D44FFA33BF791CA420EE16DFEE63E036F0B916AB99B9398F0F9C6F901955"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadModels.java",
+          "bytes": 5324,
+          "sha256": "55AFEBC88AB0DA09D115EDE2E6CA868E61B7ECEFC27369F3E9DF7232EFB5EA2D"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadRepository.java",
+          "bytes": 12873,
+          "sha256": "579A98B36E589E4C5290CEBECD3971EFD58F6FC72CD11AA9B604C812186D5550"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadService.java",
+          "bytes": 27656,
+          "sha256": "DFB12285B1F2413359FA422D7743C4B57F68533D7116673AFA510375C2D03B58"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java",
+          "bytes": 13104,
+          "sha256": "15A92266A8851B9D3CE0E97A10BA73C3693B5E9F609A58CDB27CD7354D6567F9"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+          "bytes": 13811,
+          "sha256": "498758B8803E8E179150137447B1EA5D28757A71276F587CB0C7288D97D175A2"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+          "bytes": 42155,
+          "sha256": "513C784FB21994DDB215F4EFC546774CDC4D37C626150CCEF6BC1586595DB077"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+          "bytes": 41142,
+          "sha256": "39D7AD63EB5D807FA7A869AC4FCC8FEFAABAF55C84DBD7570A077159284191FB"
+        }
+      ]
+    },
+    {
+      "name": "v2-requests-contract",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-contract",
+      "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "branch": "codex/v2-requests-contract",
+      "status": [
+        " M .env.prod.example",
+        " M .github/workflows/ci.yml",
+        " M README.md",
+        " M docker-compose.e2e.yml",
+        " M docs/openapi/mobile-bff.json",
+        " M docs/operations/deploy/prod-deploy-checklist.md",
+        " M docs/operations/runbooks/backup-restore.md",
+        " M docs/operations/runbooks/cert-renewal.md",
+        " M docs/operations/runbooks/loki-major-upgrade.md",
+        " M docs/testing/M16-vps-verify.md",
+        " M frontends/mobile-core/src/api/generated/mobile-bff.ts",
+        " M nginx/scripts/init-letsencrypt.sh",
+        " M scripts/preflight-deploy.sh",
+        " M scripts/validate-env-prod.sh",
+        " M services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+        " M services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+        " M tests/e2e/.env.ci",
+        "?? .agent/requests-contract-r5/AGENTS-pointer.md",
+        "?? .agent/requests-contract-r5/checks.json",
+        "?? .agent/requests-contract-r5/diff.md",
+        "?? .agent/requests-contract-r5/evidence.md",
+        "?? .agent/requests-contract-r5/isolated-synthetic.env.prod",
+        "?? .agent/requests-contract-r5/packet.md",
+        "?? .agent/requests-contract-r5/preflight-mock/bin/docker",
+        "?? .agent/requests-contract-r5/preflight-mock/bin/docker.cmd",
+        "?? .agent/requests-contract-r5/preflight-mock/infra/alertmanager/alertmanager.yml",
+        "?? .agent/requests-contract-r5/preflight-mock/infra/blackbox/blackbox.yml",
+        "?? .agent/requests-contract-r5/preflight-mock/infra/loki/loki.yml",
+        "?? .agent/requests-contract-r5/preflight-mock/infra/prometheus/prometheus.yml",
+        "?? .agent/requests-contract-r5/preflight-mock/infra/tempo/tempo.yml",
+        "?? .agent/requests-contract-r5/preflight-mock/nginx/conf.d/default.conf",
+        "?? .agent/requests-contract-r5/preflight-mock/nginx/scripts/entrypoint.sh",
+        "?? .agent/requests-contract-r5/preflight-mock/scripts/backup.sh",
+        "?? .agent/requests-contract-r5/preflight-mock/scripts/restore.sh",
+        "?? .agent/requests-contract-r5/preflight-mock/scripts/validate-env-prod.sh",
+        "?? .agent/requests-contract-r5/runtime-evidence.json",
+        "?? .agent/requests-contract-r5/source-manifest.json",
+        "?? .agent/requests-contract-r5/summary.md",
+        "?? .agent/requests-contract-r5/validator-broadcast-address.env",
+        "?? .agent/requests-contract-r5/validator-fixture.env",
+        "?? .agent/requests-contract-r5/validator-malformed-ip.env",
+        "?? .agent/requests-contract-r5/validator-malformed-subnet.env",
+        "?? .agent/requests-contract-r5/validator-network-address.env",
+        "?? .agent/requests-contract-r5/validator-out-of-subnet.env",
+        "?? .agent/requests-contract-r5/validator-public-subnet.env",
+        "?? .agent/requests-contract-r5/validator-trailing-dot-ip.env",
+        "?? .agent/requests-contract-r5/validator-trailing-dot-subnet.env",
+        "?? .agent/requests-contract-r5/validator-unaligned-subnet.env"
+      ],
+      "files": [
+        {
+          "path": ".agent/requests-contract-r5/AGENTS-pointer.md",
+          "bytes": 1245,
+          "sha256": "C3CE01A131E8F6DB8A8D6A0282F22894AC32F3042486E76F357C510925C4827C"
+        },
+        {
+          "path": ".agent/requests-contract-r5/checks.json",
+          "bytes": 13353,
+          "sha256": "DD0678FD5B39F50DAB0319CEC1F7DE11144E81B2A1506076F6520D4015392427"
+        },
+        {
+          "path": ".agent/requests-contract-r5/diff.md",
+          "bytes": 3875,
+          "sha256": "3B7E40BD6B7FFA0561C5FB4A826CB1ECA4D067AF7A02015FB1E0A8BB448B82EB"
+        },
+        {
+          "path": ".agent/requests-contract-r5/evidence.md",
+          "bytes": 11330,
+          "sha256": "071345DFF4DC51319BFC9FCA15130712F3682D46AFB24893B8B70A79263558E3"
+        },
+        {
+          "path": ".agent/requests-contract-r5/isolated-synthetic.env.prod",
+          "bytes": 1354,
+          "sha256": "1B5EC4E173079019AB38A6ADFD4185FD8EA4B1255B851160E5055C5A7206525E"
+        },
+        {
+          "path": ".agent/requests-contract-r5/packet.md",
+          "bytes": 8124,
+          "sha256": "676B64152C54E77C295DFE2B33620EC042E112C6CA78C0F0485898B998B51378"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/bin/docker",
+          "bytes": 317,
+          "sha256": "ACFD6CBAD8AE9277D3B564EFAFEB232439560D873859062D56336A9AED2429D6"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/bin/docker.cmd",
+          "bytes": 267,
+          "sha256": "A9E4A77DFC452D309DACD715933285BA325021ED4765754D504327105342BB2C"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/infra/alertmanager/alertmanager.yml",
+          "bytes": 21,
+          "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/infra/blackbox/blackbox.yml",
+          "bytes": 21,
+          "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/infra/loki/loki.yml",
+          "bytes": 21,
+          "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/infra/prometheus/prometheus.yml",
+          "bytes": 21,
+          "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/infra/tempo/tempo.yml",
+          "bytes": 21,
+          "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/nginx/conf.d/default.conf",
+          "bytes": 21,
+          "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/nginx/scripts/entrypoint.sh",
+          "bytes": 21,
+          "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/scripts/backup.sh",
+          "bytes": 21,
+          "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/scripts/restore.sh",
+          "bytes": 21,
+          "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+        },
+        {
+          "path": ".agent/requests-contract-r5/preflight-mock/scripts/validate-env-prod.sh",
+          "bytes": 62,
+          "sha256": "94E2C80295DBC3570CEBBABB39A6C66DA529E240C07C8846DDA44CCE6D2BF670"
+        },
+        {
+          "path": ".agent/requests-contract-r5/runtime-evidence.json",
+          "bytes": 2473,
+          "sha256": "CC89D0DBEF02E3ACD342A52C8CF19D9188F51951B86A1EB2604E4C9258BCD819"
+        },
+        {
+          "path": ".agent/requests-contract-r5/source-manifest.json",
+          "bytes": 12608,
+          "sha256": "ED35EDC347D30D610F7530DA767C90674A6F1853E4C76331535D8098FE3992F6"
+        },
+        {
+          "path": ".agent/requests-contract-r5/summary.md",
+          "bytes": 4297,
+          "sha256": "D00E85DDBE11A8DC81C3A07868DC93FEE2AC1D95140937D01E31E9D8EEF10F5F"
+        },
+        {
+          "path": ".agent/requests-contract-r5/validator-broadcast-address.env",
+          "bytes": 2532,
+          "sha256": "2F010CEBDDE5696EE59E864BA6922A5E7FEE5199B88A677F12B5875AFF107AD4"
+        },
+        {
+          "path": ".agent/requests-contract-r5/validator-fixture.env",
+          "bytes": 2531,
+          "sha256": "30FCF1C1AC9033621BEFBC5F30C88C10398206ECFD10551E98C25896FA7C79E7"
+        },
+        {
+          "path": ".agent/requests-contract-r5/validator-malformed-ip.env",
+          "bytes": 2532,
+          "sha256": "A1772395F54C025C720FEAC6C845E569925F90DA16A68A2E82B6360C4FFC6B59"
+        },
+        {
+          "path": ".agent/requests-contract-r5/validator-malformed-subnet.env",
+          "bytes": 2531,
+          "sha256": "8221A704D3CFD4BF33C164A98687C4B4E90DF34FA13C97AD359B5EEA3C8D39E2"
+        },
+        {
+          "path": ".agent/requests-contract-r5/validator-network-address.env",
+          "bytes": 2530,
+          "sha256": "56E980E1740C4CECB70F5D689BA3FA31276BA89F707526C6A87ED154EDC4C615"
+        },
+        {
+          "path": ".agent/requests-contract-r5/validator-out-of-subnet.env",
+          "bytes": 2531,
+          "sha256": "F8FCD3880062BCBA57CEE9FC6FFCCF272022B1ECD548F772507C366C00BC518E"
+        },
+        {
+          "path": ".agent/requests-contract-r5/validator-public-subnet.env",
+          "bytes": 2525,
+          "sha256": "DC51A6EE050C9C815C40E8338CC7B0167EB1C3000027E6EAC5F426C21E12C959"
+        },
+        {
+          "path": ".agent/requests-contract-r5/validator-trailing-dot-ip.env",
+          "bytes": 2532,
+          "sha256": "49B52CA981A03EDF421034A327BB115D073036C16061EB4B7C1A55E6C7C7A695"
+        },
+        {
+          "path": ".agent/requests-contract-r5/validator-trailing-dot-subnet.env",
+          "bytes": 2532,
+          "sha256": "D3E6E4EBD98DCD8DF024B5871A7B165EFA89767B387EEC3DC979402640993115"
+        },
+        {
+          "path": ".agent/requests-contract-r5/validator-unaligned-subnet.env",
+          "bytes": 2531,
+          "sha256": "E5813AFE8609BC78E5D52F28EEBFA05A118DEE7D0BEE5F3AFD3006A1C4A0D64F"
+        },
+        {
+          "path": ".env.prod.example",
+          "bytes": 8799,
+          "sha256": "1D77EDA0ADB35354E61D1F44743876E94D143EC37E1C51BE9DD4E6F9354C8C8C"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "bytes": 13446,
+          "sha256": "1D6ED2F8EB9ACD7FF9E2D928B9A3C773DC909FB19CC752FECA38839A356774DF"
+        },
+        {
+          "path": "docker-compose.e2e.yml",
+          "bytes": 19334,
+          "sha256": "4D840B4CA3CCCF66D0E1EA4C795154F8DF140DD3A575C65C92EF779608272232"
+        },
+        {
+          "path": "docs/openapi/mobile-bff.json",
+          "bytes": 59492,
+          "sha256": "D4F97E0476CD681A9460247D9F904C7901241269B73221A097EC6BE45132CDA0"
+        },
+        {
+          "path": "docs/operations/deploy/prod-deploy-checklist.md",
+          "bytes": 19959,
+          "sha256": "0B9CAD94786B06169C1D605714F3A37BBE4DCE5A918B97508EA4A193BF7CF74C"
+        },
+        {
+          "path": "docs/operations/runbooks/backup-restore.md",
+          "bytes": 11324,
+          "sha256": "574B2CCE59EAD4192238187C330E184C6C2657D1FCBBAC5B5510AFD6C77F02B4"
+        },
+        {
+          "path": "docs/operations/runbooks/cert-renewal.md",
+          "bytes": 11275,
+          "sha256": "EE919BD62D227BDC0741C491DF0F31798CD5012309ABC24070D870D17D93F974"
+        },
+        {
+          "path": "docs/operations/runbooks/loki-major-upgrade.md",
+          "bytes": 5692,
+          "sha256": "9CD74B21022DEBC3F0172E780EB1FB69D07E92514385835C7A4327CA18115C46"
+        },
+        {
+          "path": "docs/testing/M16-vps-verify.md",
+          "bytes": 15568,
+          "sha256": "4D4CC4B95B33ED8DD0AEF6CDF85EECCAAC0477F89646FD18B6558B39E8585F10"
+        },
+        {
+          "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+          "bytes": 45002,
+          "sha256": "5D697D0D0615BB5BB93F0C4735B090D3420112B7B97F4FA6C3598CC31B2CA66E"
+        },
+        {
+          "path": "nginx/scripts/init-letsencrypt.sh",
+          "bytes": 3533,
+          "sha256": "19953F6895AF52E61E26DD97B8CB72435E3ADB7D978E370946D35529D94F5258"
+        },
+        {
+          "path": "README.md",
+          "bytes": 30929,
+          "sha256": "816136C47D608C590DDF63B9C16E32451A4A1C82ED6AE1FBE16CD99E5AC99CC3"
+        },
+        {
+          "path": "scripts/preflight-deploy.sh",
+          "bytes": 6837,
+          "sha256": "E940074644C99297FEA88B415B6FC9DCCE203EF7B80ECC71D1DC3E17F3950C4A"
+        },
+        {
+          "path": "scripts/validate-env-prod.sh",
+          "bytes": 15322,
+          "sha256": "7FA889714468B3081D090F906D91C992272C679B8068440D9C3F35961D53BAD8"
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+          "bytes": 26316,
+          "sha256": "B8061B3E0F824210D338F9BA7FB08B33A3F1F331D07ABD81E5B3EE2513B90B1E"
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+          "bytes": 12068,
+          "sha256": "D0D715C22A77CBADFE61177454428B606A5F0476359C2B8FD879573A4A221C25"
+        },
+        {
+          "path": "tests/e2e/.env.ci",
+          "state": "sensitive-name-not-read"
+        }
+      ]
+    },
+    {
+      "name": "v2-requests-harness",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness",
+      "head": "73fd5f27ceb429ad0692b073189f8a527c550830",
+      "branch": "codex/v2-requests-harness",
+      "status": [
+        " M .agent/student-role-orchestrator/requests-runtime/R3-EVIDENCE.md",
+        " M .agent/student-role-orchestrator/requests-runtime/probe.mjs",
+        " M .agent/student-role-orchestrator/requests-runtime/r10-docker-network-proof.ps1",
+        " M .agent/student-role-orchestrator/requests-runtime/r10-network-proof-source-check.ps1",
+        " M .agent/student-role-orchestrator/requests-runtime/r3-cleanup-failure-injection.ps1",
+        " M .agent/student-role-orchestrator/requests-runtime/r6-source-contract-check.ps1",
+        " M .agent/student-role-orchestrator/requests-runtime/r8-edge-reservation-check.ps1",
+        " M .agent/student-role-orchestrator/requests-runtime/r8-mongo-projection-check.ps1",
+        " M .agent/student-role-orchestrator/requests-runtime/r8-probe-callsite-check.ps1",
+        " M .agent/student-role-orchestrator/requests-runtime/runner.ps1",
+        "?? .agent/student-role-orchestrator/requests-runtime/r11-docker-network-proof.json",
+        "?? .agent/student-role-orchestrator/requests-runtime/r11-source-stability-check.ps1",
+        "?? .agent/student-role-orchestrator/requests-runtime/r12-artifact-snapshot-check.ps1",
+        "?? .agent/student-role-orchestrator/requests-runtime/r13-network-create-recovery-check.ps1",
+        "?? .agent/student-role-orchestrator/requests-runtime/r13-network-recovery-pass.stderr.log",
+        "?? .agent/student-role-orchestrator/requests-runtime/r13-network-recovery-pass.stdout.log",
+        "?? .agent/student-role-orchestrator/requests-runtime/r13-network-recovery-regression.stderr.log",
+        "?? .agent/student-role-orchestrator/requests-runtime/r13-network-recovery-regression.stdout.log"
+      ],
+      "files": [
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/probe.mjs",
+          "bytes": 47147,
+          "sha256": "1388EA8F0AF3FEDEB4842C83673BDF9B9A8B208C97C9DE0CFEC5792690DC9109"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r10-docker-network-proof.ps1",
+          "bytes": 947,
+          "sha256": "0918C18D7C6915CC1C8F06EC94E4B86D7EBACC390F7E29F4DFF8255E49D2E2C8"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r10-network-proof-source-check.ps1",
+          "bytes": 4828,
+          "sha256": "E6F0F92C641DBB5FB56D1190F10B8501498631B23C228F2F28B6CDE5355717B5"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r11-docker-network-proof.json",
+          "bytes": 22117,
+          "sha256": "AA60A4A472CDDFC70C5C32CE737A8C877CAB14302CB5F547406CAC2EEBF20803"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r11-source-stability-check.ps1",
+          "bytes": 5314,
+          "sha256": "A743B839CD776C1141B813991234D748F6576BDA0D739AFAC3B9CCD9933D9C6B"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r12-artifact-snapshot-check.ps1",
+          "bytes": 15563,
+          "sha256": "6F4992FA888597B4F5030E63CB97C8CB2D2EC9B4410E68B9D5969FF7F232EC66"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r13-network-create-recovery-check.ps1",
+          "bytes": 10162,
+          "sha256": "46C8E13A596F691BF00188AACE4CDAA92869FE49E9830B57A3CFDC706C72050D"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r13-network-recovery-pass.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r13-network-recovery-pass.stdout.log",
+          "bytes": 10623,
+          "sha256": "E48F710E00B80CB6F52E7D51097B92082CE27A4FB90EA8C4A83956B8F02AEE68"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r13-network-recovery-regression.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r13-network-recovery-regression.stdout.log",
+          "bytes": 3186,
+          "sha256": "BD9AB322639044076BE2FC4BBD32D89E11AC6535BD3CF0B80FC34B7375075EFF"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r3-cleanup-failure-injection.ps1",
+          "bytes": 2736,
+          "sha256": "BAF03194D0EEEA59013E05A54832AC89946B071DB9F445468D95F3E7D7FA7E78"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/R3-EVIDENCE.md",
+          "bytes": 55458,
+          "sha256": "F13F80A7499D139F1F31E6B2D354871C659FD1E7BD34D448E22A94D10ECAAAA8"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r6-source-contract-check.ps1",
+          "bytes": 10067,
+          "sha256": "3C36387AD3CDC33E3A26F16CD928CF2E295252E4FF43F3B694C600B375226E94"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r8-edge-reservation-check.ps1",
+          "bytes": 13414,
+          "sha256": "63BD96B2C0DA42A1E7680ECEE679E1AD5A48D08E3A41271760C11E62B109E5D3"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r8-mongo-projection-check.ps1",
+          "bytes": 19968,
+          "sha256": "FEAF0244D24DAAB89F177BD2175ADF3C9E7F66EC179796713FDDA87888002C94"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/r8-probe-callsite-check.ps1",
+          "bytes": 3621,
+          "sha256": "AEC6FAB3128C6533C43E403EFE58780C67A502CCA7F3E48C4017F607B0F71CC0"
+        },
+        {
+          "path": ".agent/student-role-orchestrator/requests-runtime/runner.ps1",
+          "bytes": 160634,
+          "sha256": "67F6D0E471FCE5DC7835023D32BB5BD3D26EEB00426AD9AD7A7C2C62409FCA3D"
+        }
+      ]
+    },
+    {
+      "name": "v2-requests-ui",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-ui",
+      "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "branch": "codex/v2-requests-ui",
+      "status": [
+        " M frontends/mobile-core/src/features/requests/RequestAttachmentField.vue",
+        " M frontends/mobile-core/src/features/requests/RequestCard.vue",
+        " M frontends/mobile-core/src/features/requests/RequestsScreen.test.ts",
+        " M frontends/mobile-core/src/features/requests/RequestsScreen.vue",
+        " M frontends/mobile-core/src/features/requests/requests-controller.test.ts",
+        " M frontends/mobile-core/src/features/requests/requests-controller.ts",
+        " M frontends/mobile-core/src/features/requests/requests.pcss",
+        " M frontends/mobile-core/src/features/requests/types.ts",
+        " M frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+        " M frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+        "?? .agent/v2-requests-ui/AGENTS.md",
+        "?? .agent/v2-requests-ui/checks.json",
+        "?? .agent/v2-requests-ui/diff.md",
+        "?? .agent/v2-requests-ui/evidence.md",
+        "?? .agent/v2-requests-ui/packet.md",
+        "?? .agent/v2-requests-ui/runtime-evidence.json",
+        "?? .agent/v2-requests-ui/summary.md",
+        "?? .agent/v2-requests-ui/vitest-client-environment.ts",
+        "?? frontends/mobile-core/src/features/requests/attachment-validation.test.ts",
+        "?? frontends/mobile-core/src/features/requests/attachment-validation.ts",
+        "?? frontends/mobile-core/src/features/requests/request-attachment-action.test.ts",
+        "?? frontends/mobile-core/src/features/requests/request-attachment-action.ts"
+      ],
+      "files": [
+        {
+          "path": ".agent/v2-requests-ui/AGENTS.md",
+          "bytes": 436,
+          "sha256": "C38E3A7CCAA8230E3213A7816C9A445AD7DC56F696B8016902644E4620A0D08C"
+        },
+        {
+          "path": ".agent/v2-requests-ui/checks.json",
+          "bytes": 22009,
+          "sha256": "D78AA19D71DF6442B835890D0E5E80C9C5407D297D95E9077667F3E44C74DBD4"
+        },
+        {
+          "path": ".agent/v2-requests-ui/diff.md",
+          "bytes": 5513,
+          "sha256": "4FE102B835A3BD972C3D03F6CF27156633FFB1AB2989BFE709A5E6D2D10AFF71"
+        },
+        {
+          "path": ".agent/v2-requests-ui/evidence.md",
+          "bytes": 25645,
+          "sha256": "31DCCA483103858827F6BEF351CBFD70854AB6CA86FA9ED7DF3BD5318A458584"
+        },
+        {
+          "path": ".agent/v2-requests-ui/packet.md",
+          "bytes": 10951,
+          "sha256": "2E1549EC39B14A9B5D1ABDFED73912B97E5C02DB5DCDF95AECE066CED6C28FDD"
+        },
+        {
+          "path": ".agent/v2-requests-ui/runtime-evidence.json",
+          "bytes": 743,
+          "sha256": "4A9E2B5529D039676AB56920A431AB41715DDABC259DEBC8C5A6C629EE0C12DF"
+        },
+        {
+          "path": ".agent/v2-requests-ui/summary.md",
+          "bytes": 6089,
+          "sha256": "FD65045A01E89E31136F1610CD7F5A66EC9E9A7CC72BC4C107D92E2537A36351"
+        },
+        {
+          "path": ".agent/v2-requests-ui/vitest-client-environment.ts",
+          "bytes": 221,
+          "sha256": "CF3212D7D65917AB03161C487471EFD6A088B7463A0EF76C542D93CA65782205"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/attachment-validation.test.ts",
+          "bytes": 3234,
+          "sha256": "B04D4FF29FEE30C644FB214CB263CFD59BA3D94D9AE852EF08364AAD846093F6"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/attachment-validation.ts",
+          "bytes": 5622,
+          "sha256": "7953EC9B0A4F558EE99473825B18D61711FD424675F262D17C300A02E4A4B9C6"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/request-attachment-action.test.ts",
+          "bytes": 8417,
+          "sha256": "1FC0DBAD10232F474A7A1F73DEECFB4273DA2B8878A04A19234A380E88366665"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/request-attachment-action.ts",
+          "bytes": 5099,
+          "sha256": "D34D0319DBC217F8B11A0194BEB00705F17C823E33DB33E81FC2061F97601FEF"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestAttachmentField.vue",
+          "bytes": 6626,
+          "sha256": "E3FB0F2CB1567A9BA26D63C451153D0DD4176BD6CC618235472C87120A403B37"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestCard.vue",
+          "bytes": 9094,
+          "sha256": "A82FB839AB93FC15B35E54A54020C64583E4502D1C57A8BC733D63809102BFC9"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/requests-controller.test.ts",
+          "bytes": 16208,
+          "sha256": "9AE7D8598FFD3BCC4FB7253DF8E646BEA7F514B89C878A823C24174AD0F6568A"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/requests-controller.ts",
+          "bytes": 29473,
+          "sha256": "3AF75AA67AA0F27BEA21CC393D0CFDB184748710E2ADAE397ECC1E4726C64F85"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/requests.pcss",
+          "bytes": 24601,
+          "sha256": "9A8C139BBA15D931D39F05CB55579E9396AF3BB04E570DA8EBBC8FA2FD8EFF48"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestsScreen.test.ts",
+          "bytes": 8476,
+          "sha256": "3780B1FB3E9A0BBEBD227A3368E169CD03B20D37DC683DA172F160F6C2FC314D"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestsScreen.vue",
+          "bytes": 6060,
+          "sha256": "2F1561D3B98714C46CD63E3D38990E5DB945909AFB38B7B8722E289217D098D8"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/types.ts",
+          "bytes": 4099,
+          "sha256": "0ABE090F32EDA8AC08260C537CA3C38816A4A8F14750A1AD46313F6B94027F52"
+        },
+        {
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+          "bytes": 11148,
+          "sha256": "D90E583F3D5C90E01E8351C211B1F89052A67A5297D841BA4CDC764010681348"
+        },
+        {
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+          "bytes": 36033,
+          "sha256": "655F9CC6156DA9CB72BE91BFF9E2EE76A1348E7FF645328E50269EDFB8A72F7F"
+        }
+      ]
+    },
+    {
+      "name": "v2-runtime-build",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build",
+      "head": "d7ec16572db325d944f1a1fbd3b4960b827d09c3",
+      "branch": "codex/v2-runtime-build",
+      "status": [],
+      "files": [
+        {
+          "path": ".env.prod.example",
+          "bytes": 8958,
+          "sha256": "749087F607ACE4652936C3B966EE20279901109C242C7EA823D5FA8A7B5436F2"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "bytes": 13459,
+          "sha256": "8CD5C894DF6438F384004F21A083EFE5151997B7627F00C588AC9B084A1ED5CD"
+        },
+        {
+          "path": "Canonical SHA-256 (UTF-8, sorted rows joined by LF, no trailing LF): D3FF3DFDC7C093935CCE3DEF4B4C0A4151F876F1572C3A3851A4480A588FC204",
+          "state": "deleted-or-not-file"
+        },
+        {
+          "path": "docker-compose.e2e.yml",
+          "bytes": 19506,
+          "sha256": "89BBF8C46758934C6AD9A4CA45AE898B159496AF6503F8A195C636ABAE382E61"
+        },
+        {
+          "path": "docker-compose.prod.yml",
+          "bytes": 45056,
+          "sha256": "766607EFA9B1A95CC87E53C5134F14A3D586D4DE64E9239DE80B01E6CF8B7C84"
+        },
+        {
+          "path": "docs/openapi/mobile-bff.json",
+          "bytes": 61550,
+          "sha256": "08AFDFC4FBB10530B913BB6E390AD8BA998DC7C8F9B48627E757C61938245E34"
+        },
+        {
+          "path": "docs/operations/deploy/prod-deploy-checklist.md",
+          "bytes": 19959,
+          "sha256": "0B9CAD94786B06169C1D605714F3A37BBE4DCE5A918B97508EA4A193BF7CF74C"
+        },
+        {
+          "path": "docs/operations/runbooks/backup-restore.md",
+          "bytes": 11324,
+          "sha256": "574B2CCE59EAD4192238187C330E184C6C2657D1FCBBAC5B5510AFD6C77F02B4"
+        },
+        {
+          "path": "docs/operations/runbooks/cert-renewal.md",
+          "bytes": 11275,
+          "sha256": "EE919BD62D227BDC0741C491DF0F31798CD5012309ABC24070D870D17D93F974"
+        },
+        {
+          "path": "docs/operations/runbooks/loki-major-upgrade.md",
+          "bytes": 5692,
+          "sha256": "9CD74B21022DEBC3F0172E780EB1FB69D07E92514385835C7A4327CA18115C46"
+        },
+        {
+          "path": "docs/testing/M16-vps-verify.md",
+          "bytes": 15568,
+          "sha256": "4D4CC4B95B33ED8DD0AEF6CDF85EECCAAC0477F89646FD18B6558B39E8585F10"
+        },
+        {
+          "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+          "bytes": 46353,
+          "sha256": "58CA1920D13116255C537B7596C20709633FC29AE2B909A2B55C9CFAA01D1BCD"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/attachment-validation.test.ts",
+          "bytes": 3307,
+          "sha256": "2FF0AE4BF055260681A2F4E7EAE9BFBFC4ACC1ED07D66374B26CFB8ABDCE8478"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/attachment-validation.ts",
+          "bytes": 5750,
+          "sha256": "2C2F1C7FD4B13065DAAAD3B4540F6764D94B962783F39B830DCCE5321A28D040"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/request-attachment-action.test.ts",
+          "bytes": 8662,
+          "sha256": "15534450AEDF6A92FA91684D62AB905B128A17BC03832517513156A9BA7A380B"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/request-attachment-action.ts",
+          "bytes": 5240,
+          "sha256": "9A118D6EA87E8DCDD89A5705DF9311093219A2BDD18EE38BD15FABEB9FC54F01"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestAttachmentField.vue",
+          "bytes": 6634,
+          "sha256": "99A945B97E70062F1676A5021AF7B79B6A1C1BD6E1F6E4153B077FC87BEDBB7F"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestCard.vue",
+          "bytes": 9156,
+          "sha256": "BBE50880149FCA297D1F028814FBA7235D90A4E1773C5BF1600C72E153A5CA26"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/requests-controller.test.ts",
+          "bytes": 16385,
+          "sha256": "AB4F694B5AF1EEC75BCD077214B2565D2800DDFD3FCC614EBF8AE54CDF8FE01F"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/requests-controller.ts",
+          "bytes": 29545,
+          "sha256": "3B1155F34B3719ACB4C80AAFFCBD629C21850FA2288D3DA9304394195EEA7315"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/requests.pcss",
+          "bytes": 24633,
+          "sha256": "31B5B53475D71A46A59BB9AE8B368014603C1C3C62BD8872E42EB256A7614257"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestsScreen.test.ts",
+          "bytes": 8516,
+          "sha256": "BAE3D13E5193D4AEB56C4636D60E2859CE3A37D9E6BB094311F3255E7A81AEB4"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/RequestsScreen.vue",
+          "bytes": 6073,
+          "sha256": "54B141876FD54F74C277C70E93090ECB02FD618B0D889F4C96AC42CD80188F89"
+        },
+        {
+          "path": "frontends/mobile-core/src/features/requests/types.ts",
+          "bytes": 4106,
+          "sha256": "9A1E91BEF3FAB488F525AF8E45FD6404E4CBF68814209CB0E8C7AD5E65E92C19"
+        },
+        {
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+          "bytes": 11413,
+          "sha256": "53A57D20184822641CCA605ED30CADF6527F2969F586272DC361F2D136A26C2F"
+        },
+        {
+          "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+          "bytes": 36167,
+          "sha256": "230798B51DB02F3CE950F3527668EF4B64A93864C2345DC062C081EF332F9220"
+        },
+        {
+          "path": "nginx/scripts/init-letsencrypt.sh",
+          "bytes": 3541,
+          "sha256": "D2E9BCD282883F651BE35E887592DC619E8EC5B4408DCB6004F839C38A30337E"
+        },
+        {
+          "path": "proto/academic.proto",
+          "bytes": 11313,
+          "sha256": "5F85A6691F8C27769059B0A68D5173604B81756D20BDC19EF6BE3584BBC7A2BC"
+        },
+        {
+          "path": "proto/schedule.proto",
+          "bytes": 7614,
+          "sha256": "9A244EAE37560B2A9B547F12A225B53730E428A277E7CFBE24130F7023D1DA47"
+        },
+        {
+          "path": "README.md",
+          "bytes": 30931,
+          "sha256": "A6E9B2A8ADB4028BEEE2C4401E22267AA48C6D1CCF8B7BEF4D1FBD9935CB8DB4"
+        },
+        {
+          "path": "scripts/preflight-deploy.sh",
+          "bytes": 6851,
+          "sha256": "ECC60A30EA666FF00F13F61130A9E88B0ECEA974F65FCA37DD7B763C48EE1487"
+        },
+        {
+          "path": "scripts/validate-env-prod.sh",
+          "bytes": 17990,
+          "sha256": "09BE60CABD3E249A6524C9989F485F945F1D9F81F59732FD07FB776CD808AB8E"
+        },
+        {
+          "path": "services/academic-service/academic-app/build.gradle.kts",
+          "bytes": 5760,
+          "sha256": "B9A63981600B1D3ED13D99D0AE68B32FEE9C47045D4898DD8DF9EB5D2EBE275C"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+          "bytes": 44358,
+          "sha256": "099F0DBBE4342ABCDF11B04E554B114FBD60132DC4FD8C54D962D1FE05260C82"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+          "bytes": 3163,
+          "sha256": "2717B2C9FDF57F5B52D59E8489F4E4B7F93D4C6A71FE9F0AA5B23A4A88C33DAB"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormat.java",
+          "bytes": 157,
+          "sha256": "145D831E60C7B8B84A81037E0F1EA3849B66279A85734254FB279B79C3CE06F0"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormatState.java",
+          "bytes": 205,
+          "sha256": "F12AE0EEE285F90944A32BB1301EDF5170C31538E9D0097DE640E41065EDA36C"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadException.java",
+          "bytes": 969,
+          "sha256": "D731880908ACC0A5FDCE062AF98A6A93F83B71C6E8D61897610D7CDBA9553E7E"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadModels.java",
+          "bytes": 5487,
+          "sha256": "D64CAAE8677150DF5FCEDC730048CA3BB31DF993D76CB83C2DE054D0165D7087"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadRepository.java",
+          "bytes": 13205,
+          "sha256": "1F8013C4A98B24BFC39D56D0873CC971ADA6FBF6115C1D8E28A63783D4546EB6"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadService.java",
+          "bytes": 28266,
+          "sha256": "FB6E01496B629B8F2C90F52747C411AE8F106EA720887CFC9680F0982B260447"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/JdbcStudentProjectionQueryAdapter.java",
+          "bytes": 11236,
+          "sha256": "706F1CD36C7B6C09703DD14A21FE08AE957F77556657697895BA9B509A50DD4C"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionException.java",
+          "bytes": 2150,
+          "sha256": "37F456B133AFC16C3614CD7B004EBC5ADF7C8D43917A9A2A60DC88551FEF5CF8"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionGrpcErrors.java",
+          "bytes": 4334,
+          "sha256": "689C7378C644E8750D09E9776C328781D13EA44FA88B775A5792CEDA9E7E3251"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQuery.java",
+          "bytes": 3530,
+          "sha256": "ECBBBE769F83CC36E402145D1758093CF6694CF07BE90C7FA2E0A4A055D1098D"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScope.java",
+          "bytes": 2822,
+          "sha256": "A82303A4B05C74E8B52C3896CC6BE2BD85CF3D66FA8C1AD5282F5E29469B95AD"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+          "bytes": 25562,
+          "sha256": "325CA6A8F755F1218247BBFD85B0B77A834627223D4A13EF78A5B6B27069B152"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java",
+          "bytes": 13512,
+          "sha256": "4BF828B7AC2C6919F128CDE7CEBE1AA2D4D099BBA35F863BA8738A7AFDD44528"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+          "bytes": 14764,
+          "sha256": "6E1C57DFDE58E52D90453EA36662A4A26CA0A3448060BD20CFABCAB2E99D349C"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentProjectionGrpcServiceTest.java",
+          "bytes": 16042,
+          "sha256": "ABCB937701E182C69383C45C67EC3FFCD16B84B70759660DD8B7EB489639B88D"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+          "bytes": 43062,
+          "sha256": "5842B29AD6D4BC4D00F2D8F6E71B1F15DF4934D8186906FF1F8EB37D454B8008"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+          "bytes": 41901,
+          "sha256": "6332CA53CB5BCA91865FAA7BB4558932611300E9418DAF4980F1A0394DEEA1EF"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQueryAdapterIT.java",
+          "bytes": 18083,
+          "sha256": "F57BB520BDEB2C9F1C88781335F1ED5B63B7E9D60EDDE68001959BBFE83BDF48"
+        },
+        {
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java",
+          "bytes": 27328,
+          "sha256": "7393C41D40D0ED925230C91525C574EC151C7A46C70CCF66611F77CC9CADB80A"
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+          "bytes": 26321,
+          "sha256": "CEFC1122984A3DD58D4A65CAE262CBE993BF3D0E07A31AB01BB3D695032A6518"
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+          "bytes": 12083,
+          "sha256": "AFBEF9B31E08D09A44CF938DB427ED7F4E36D66FB8B1AD3FF1AEEEC1C0398083"
+        },
+        {
+          "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+          "bytes": 4493,
+          "sha256": "F9AAB19A8FBDE18124377CE927C35998FA470C35B9DC09E85E5830919C58A635"
+        },
+        {
+          "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+          "bytes": 2179,
+          "sha256": "686C83A89AC0E58024AD1B055A306C171521035F4D6B6FE239BDEBA93CD1DAE6"
+        },
+        {
+          "path": "tests/e2e/.env.ci",
+          "state": "sensitive-name-not-read"
+        }
+      ]
+    },
+    {
+      "name": "build-i6-external",
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\build-i6",
+      "head": "external orchestration files",
+      "branch": "N/A",
+      "status": [
+        "STOP WIP not accepted"
+      ],
+      "files": [
+        {
+          "path": "ast-final.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "ast-final.stdout.log",
+          "bytes": 123,
+          "sha256": "32687AF217509B8D6ADF13CDA393152B6908C92963857D06E19E6684CAE7BD90"
+        },
+        {
+          "path": "ast.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "ast.stdout.log",
+          "bytes": 121,
+          "sha256": "FFB0F34DE3098FDFC9ABF5176B21A1BD4F18202A00D813464CD96E1B1CE310BB"
+        },
+        {
+          "path": "checks.json",
+          "bytes": 3184,
+          "sha256": "9DCAC5A28E5B66ACC047B2C91DAC7D09433C2C102C89D981113DAA0819EDC717"
+        },
+        {
+          "path": "contract.md",
+          "bytes": 3165,
+          "sha256": "E2515DAB6171370102556D91C26DCED66E07C6F08C4C72AC007C9A84CA85248A"
+        },
+        {
+          "path": "evidence.md",
+          "bytes": 7257,
+          "sha256": "EAB5FBE554D27B6702ABD2B0D0940A252DFAE77388B5382EA9A29B0703D7337E"
+        },
+        {
+          "path": "negative-final.stderr.log",
+          "bytes": 311,
+          "sha256": "DEDDF517B8F6FEEE116CF8D5E8993495D7948677BA920A8F3B04CA8A084B00F0"
+        },
+        {
+          "path": "negative-final.stdout.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "producer-pure-check.ps1",
+          "bytes": 18023,
+          "sha256": "4DE048F73F82FE7925D303DE9663DC3F88E132BD617ACCBF7B004A1E363D15F9"
+        },
+        {
+          "path": "producer.ps1",
+          "bytes": 30140,
+          "sha256": "A910597C4FC4895EC7E504DC480DE3CCE17E836771361220BF1A1C5C5DD80EEB"
+        },
+        {
+          "path": "pure-check-final.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "pure-check-final.stdout.log",
+          "bytes": 217,
+          "sha256": "04298F939D5F56EBFF1905E0DC71644525A461B8FF29F2FB3B75E2749A0C2ACE"
+        },
+        {
+          "path": "pure-check.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "pure-check.stdout.log",
+          "bytes": 216,
+          "sha256": "0BECA22543B157BC401EA1A8F85394072C345B55C83954CCA93A2C388AEBEBD4"
+        },
+        {
+          "path": "summary.md",
+          "bytes": 1063,
+          "sha256": "603718C8006D190AA3ACB1517195EEA901FF93EF78C095EFC1F8AB88A2F60AAB"
+        },
+        {
+          "path": "timestamp-parity-regression.md",
+          "bytes": 2041,
+          "sha256": "1F58BF55089CDE608AA968ED65F4C40501AFED287BD3166E30358ADB964583CA"
+        },
+        {
+          "path": "runs/20260915T212634422Z-d9304e9e87784c78bb118b747f4b5c14/001-git-revision.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T212634422Z-d9304e9e87784c78bb118b747f4b5c14/001-git-revision.stdout.log",
+          "bytes": 41,
+          "sha256": "A1534A0DF340D42F44574EC938E6E7B4F40C04D155B19C3C502D66D5EB03DE88"
+        },
+        {
+          "path": "runs/20260915T212634422Z-d9304e9e87784c78bb118b747f4b5c14/run-report.json",
+          "bytes": 1663,
+          "sha256": "71E16C3C71BC6C61D422DD913DF27CC985BA4919A08146AD55227A2A17240273"
+        },
+        {
+          "path": "runs/20260915T213153343Z-abd8d7211fbe4d98a7a83ae5787543f2/001-git-revision.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T213153343Z-abd8d7211fbe4d98a7a83ae5787543f2/001-git-revision.stdout.log",
+          "bytes": 41,
+          "sha256": "A1534A0DF340D42F44574EC938E6E7B4F40C04D155B19C3C502D66D5EB03DE88"
+        },
+        {
+          "path": "runs/20260915T213153343Z-abd8d7211fbe4d98a7a83ae5787543f2/run-report.json",
+          "bytes": 1663,
+          "sha256": "E710CCAE6BA482F73EE5913D5B162D3B09229F6448D6769CA696D056D9FBDF53"
+        },
+        {
+          "path": "runs/20260915T213227207Z-2028c110825f4b0db042695b8dc466fc/001-git-revision.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T213227207Z-2028c110825f4b0db042695b8dc466fc/001-git-revision.stdout.log",
+          "bytes": 41,
+          "sha256": "A1534A0DF340D42F44574EC938E6E7B4F40C04D155B19C3C502D66D5EB03DE88"
+        },
+        {
+          "path": "runs/20260915T213227207Z-2028c110825f4b0db042695b8dc466fc/002-git-status.stderr.log",
+          "bytes": 162,
+          "sha256": "132E8E1CE98F64E45D886AEAA6E5B30169CCB44DC531997B31304652EFF1FFAB"
+        },
+        {
+          "path": "runs/20260915T213227207Z-2028c110825f4b0db042695b8dc466fc/002-git-status.stdout.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T213227207Z-2028c110825f4b0db042695b8dc466fc/003-gradle-version.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T213227207Z-2028c110825f4b0db042695b8dc466fc/003-gradle-version.stdout.log",
+          "bytes": 542,
+          "sha256": "1BFC42C21FA155D532AC6FC796E83924A9891944F1C36A288A62F8E02E74AF93"
+        },
+        {
+          "path": "runs/20260915T213227207Z-2028c110825f4b0db042695b8dc466fc/004-java-version.stderr.log",
+          "bytes": 200,
+          "sha256": "9B79ED806F5F8F45931B6BAE64D6AD8F081EB738BA6DCFEF89F4850B582E930C"
+        },
+        {
+          "path": "runs/20260915T213227207Z-2028c110825f4b0db042695b8dc466fc/004-java-version.stdout.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T213227207Z-2028c110825f4b0db042695b8dc466fc/005-node-version.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T213227207Z-2028c110825f4b0db042695b8dc466fc/005-node-version.stdout.log",
+          "bytes": 10,
+          "sha256": "DB3D2FEB713E4945F390F5D41FB44FD8AAF6B8D4C564A2AF9E63262172FB5A98"
+        },
+        {
+          "path": "runs/20260915T213344370Z-5cea65131d13403d9ca01afe1bc62628/001-git-revision.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T213344370Z-5cea65131d13403d9ca01afe1bc62628/001-git-revision.stdout.log",
+          "bytes": 41,
+          "sha256": "A1534A0DF340D42F44574EC938E6E7B4F40C04D155B19C3C502D66D5EB03DE88"
+        },
+        {
+          "path": "runs/20260915T213344370Z-5cea65131d13403d9ca01afe1bc62628/run-report.json",
+          "bytes": 1663,
+          "sha256": "12EFAA2A8D19FDCCD5A10F2994B546CE3853F4C5D76E43BB526202400F3A0343"
+        },
+        {
+          "path": "runs/20260915T213407029Z-b4b596df28c74e929b0f6e6c9ebddeea/001-git-revision.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T213407029Z-b4b596df28c74e929b0f6e6c9ebddeea/001-git-revision.stdout.log",
+          "bytes": 41,
+          "sha256": "A1534A0DF340D42F44574EC938E6E7B4F40C04D155B19C3C502D66D5EB03DE88"
+        },
+        {
+          "path": "runs/20260915T213407029Z-b4b596df28c74e929b0f6e6c9ebddeea/run-report.json",
+          "bytes": 1663,
+          "sha256": "9889ED128BBB45C9E79D80B4E9FF827E71DF56879963005CB0A95952028B159F"
+        },
+        {
+          "path": "runs/20260915T213423537Z-f75032dd8d2b4b1c82f6ea9c6b9f1fd6/001-git-revision.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T213423537Z-f75032dd8d2b4b1c82f6ea9c6b9f1fd6/001-git-revision.stdout.log",
+          "bytes": 41,
+          "sha256": "A1534A0DF340D42F44574EC938E6E7B4F40C04D155B19C3C502D66D5EB03DE88"
+        },
+        {
+          "path": "runs/20260915T213423537Z-f75032dd8d2b4b1c82f6ea9c6b9f1fd6/run-report.json",
+          "bytes": 1663,
+          "sha256": "46917E17DA287520944B60ADDB3B3E04A7E2195AE1D636D2E98870B63F2FC2E1"
+        },
+        {
+          "path": "runs/20260915T213527854Z-4e60a10d81414403a452bd10e0f982ae/001-git-revision.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T213527854Z-4e60a10d81414403a452bd10e0f982ae/001-git-revision.stdout.log",
+          "bytes": 41,
+          "sha256": "A1534A0DF340D42F44574EC938E6E7B4F40C04D155B19C3C502D66D5EB03DE88"
+        },
+        {
+          "path": "runs/20260915T213527854Z-4e60a10d81414403a452bd10e0f982ae/run-report.json",
+          "bytes": 1655,
+          "sha256": "10F238A7233A4891343E13334928C660A0C5D2690D1EFD24FC0D7067E1109BF0"
+        },
+        {
+          "path": "runs/20260915T213650170Z-27ac301f7496486c98a2f3c0ad267ad5/001-git-revision.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T213650170Z-27ac301f7496486c98a2f3c0ad267ad5/001-git-revision.stdout.log",
+          "bytes": 41,
+          "sha256": "A1534A0DF340D42F44574EC938E6E7B4F40C04D155B19C3C502D66D5EB03DE88"
+        },
+        {
+          "path": "runs/20260915T213650170Z-27ac301f7496486c98a2f3c0ad267ad5/run-report.json",
+          "bytes": 1659,
+          "sha256": "0162BB08BBB06EC9B56DA7DDCB1EEE653D540465CFB33099F00EBE0140002FBB"
+        },
+        {
+          "path": "runs/20260915T220901571Z-0ac70cd334ac4b7ab995b1fb81f9388c/001-git-revision.stderr.log",
+          "bytes": 0,
+          "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "path": "runs/20260915T220901571Z-0ac70cd334ac4b7ab995b1fb81f9388c/001-git-revision.stdout.log",
+          "bytes": 41,
+          "sha256": "A1534A0DF340D42F44574EC938E6E7B4F40C04D155B19C3C502D66D5EB03DE88"
+        },
+        {
+          "path": "runs/20260915T220901571Z-0ac70cd334ac4b7ab995b1fb81f9388c/run-report.json",
+          "bytes": 1662,
+          "sha256": "13030528F467E1B1404997B7AE98C4C291F7A17033D760D0BABCE406A24E2C20"
+        }
+      ]
+    }
+  ]
+}

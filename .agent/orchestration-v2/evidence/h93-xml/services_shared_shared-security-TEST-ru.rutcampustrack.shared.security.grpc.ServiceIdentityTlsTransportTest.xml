@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.shared.security.grpc.ServiceIdentityTlsTransportTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-20T13:00:22" hostname="DITEK-PK" time="7.74">
+  <properties/>
+  <testcase name="wrongHostPeerCannotReachHandler(Path)" classname="ru.rutcampustrack.shared.security.grpc.ServiceIdentityTlsTransportTest" time="3.435"/>
+  <testcase name="untrustedPeerCannotReachHandler(Path)" classname="ru.rutcampustrack.shared.security.grpc.ServiceIdentityTlsTransportTest" time="1.456"/>
+  <testcase name="localTlsBindsPrincipalAndReachesTestHandler(Path)" classname="ru.rutcampustrack.shared.security.grpc.ServiceIdentityTlsTransportTest" time="1.475"/>
+  <testcase name="plaintextClientCallCredentialsFailBeforeSendingToken()" classname="ru.rutcampustrack.shared.security.grpc.ServiceIdentityTlsTransportTest" time="0.014"/>
+  <testcase name="plaintextServerRejectsInjectedTokenBeforeHandler()" classname="ru.rutcampustrack.shared.security.grpc.ServiceIdentityTlsTransportTest" time="0.015"/>
+  <testcase name="localTlsBindsReverseDirectionPrincipalAndReachesTestHandler(Path)" classname="ru.rutcampustrack.shared.security.grpc.ServiceIdentityTlsTransportTest" time="1.341"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[сент. 20, 2026 4:00:26 PM io.grpc.netty.TcpMetrics loadEpollInfo
+INFO: Epoll available during static init of TcpMetrics:false
+]]></system-err>
+</testsuite>

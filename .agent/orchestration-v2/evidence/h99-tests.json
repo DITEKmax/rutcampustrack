@@ -1,0 +1,56 @@
+[
+  {
+    "directory": "services/attendance-service/attendance-app/build/test-results/test",
+    "name": "ru.rutcampustrack.attendance.report.ReportServiceTest",
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:02:21.0009287Z"
+  },
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.academic.integration.CacheIT",
+    "tests": 10,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:03:36.3314126Z"
+  },
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.academic.integration.EventIT",
+    "tests": 6,
+    "failures": 6,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:03:36.3266536Z"
+  },
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:03:36.3345475Z"
+  },
+  {
+    "directory": "services/attendance-service/attendance-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:04:23.3904629Z"
+  },
+  {
+    "directory": "services/attendance-service/attendance-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.attendance.integration.ReportIT",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:04:23.3883662Z"
+  }
+]

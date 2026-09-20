@@ -1,0 +1,161 @@
+# OWNER STOP COMPLETE — 2026-09-20 retrospective checkpoint
+
+Latest owner STOP supersedes all older GO/ACTIVE/RESERVED entries below. All four leads STOP_ACK; root runtime developer STOP_ACK + FINAL; no active leaves or owned commands. Heavy FREE. H103 finished exit1 (test compilation, AtomicBooleanAssert.hasValue at HistoricalMembershipIT:179,182), 0 tests. H105 NEVER SPAWNED/NEVER RUN, pending allocation cancelled. Docker host census empty; H102 owned containers gone. No auto-resume.
+Read checkpoint: checkpoints/2026-09-20-retrospective-stop/REPORT.md. Raw source snapshots, 0-drift manifests and partial generated outputs preserved. Accepted base3d4115f3; recurring/historical WIP NOT integrated/reviewed/runtime accepted. Resume only on explicit new owner GO, then scoped ownership/checks; do not repeat accepted unchanged checks.
+
+--- Earlier chronological history (not active authorization) ---
+# Active work snapshot — 2026-09-20, after H101
+
+Owner GO active; all three owner date/attendance decisions RESOLVED. Acceptedbase3d4115f3; newfeature still WIP, no commit/review/union yet. HeavyFREE. Two isolated sameauthor code corrections, no heavy authorlease. Slot3 read-only combined-runtime scout active.
+
+- Lessons recurring_complete_20sep source37 freeze H101 0E2B5E857315779A5F244D3F213AA0D708B65A7909F93E28E2E75A75AE711F9F. H101 compile/9unitsPASS/PG41of44PASS, source0drift. BOTH cap/insert race orders and actual populated V17→V18 PASS. Exact3IT fixture corrections authorized appended L5B-RECURRING-COMPLETE.md SHA0EB9383B70A18F16EEAA5A217205AF1A18EB7672E576E8C273D6E0DB70CB65DE. Productfrozen. Await finalfreeze then3IT rerun; generatorcommand/ownedoutputs requested, NOT_RUN.
+- Attendance historical sameauthor: H98 Academic35PASS, Attendance59/61 then H99 Report18PASS/Mongo15PASS/Historical4PASS. H100 Cache10PASS, Event6setupfail missing subject lesson type and cleanupNPE. Current batched amendment L5B-HISTORICAL-TEST-COMPLETION.md latestSHA E625779E9070D0DA38A6313D95552E044B15FE48D3C3547384399FAA93A8C8F5: EventIT coherentfixture, HistoricalMembershipIT realPG atomicrollback/concurrenttransferread missingacceptancecoverage, minimal HistoricalMembershipService guard-order fix plus unit. Root found nullbounds guard AFTER dereference at63. No otherproductchanges. Await freeze then targetedunit+2IT.
+- H100/H101 newly observed container IDs all auto-removed verified by no-such-object; oldcontainers untouched. See h100-h101-owned-container-followup.json. No processrunning.
+- Root canonical owner decision note docs/product/decisions/2026-09-20-retrospective-attendance.md valid. Added standalone valid product_decisions property to PREEXISTING untracked docs/sources/manifest.yaml; wholeoldregistry semantically corrupt/truncated hashes. Trialrepairreverted, do not guess inventory repair/import wholefile. Evidence retrospective-owner-decisions-registration.json. Separate recovery remainsfuture, productunblocked.
+
+After corrections: retainedpass targetedchecks, generated Schedule contracts, freshfullSol review, assigneddeveloper union plus real combined producer/datedroster/ABSENT/cancel/statistics proof. Late student enrollment AFTER alreadyclosed materialization remains separatefuture reconciliation. No falseproductionready/percentageincrement. MainAstra medium/leadsAstra low/Luna max/Sol high/TerraNEVER.
+
+---
+# Active work snapshot — 2026-09-20, after H97
+
+Owner GO remains active. Historical STOP entries below are superseded; do not pause or restart accepted work because of them. Authoritative current work packets:
+- L5B-RECURRING-COMPLETE.md (SHA742AFA41BF82218A56D3AA0F6F750F16A9C1C1E2852E621D3BBDAF52232ACBD7), governing IMPLEMENT58540. Lessons fresh Luna completion developer preserves existing recurring worktree WIP. Complete the whole packet: real PostgreSQL tests/remaining source/contracts. A later small defect reminder does NOT replace this task. No heavy/generation without root lease.
+- L5B-HISTORICAL-ATTENDANCE-IMPLEMENT.md (SHA2ABEAC042818EEF4AE98F40B979CA776D162D98F27A513A95CBAF8E3A801437D). Attendance sole writer Academic+proto+Attendance in its isolated worktree. Finish source/tests including history consistency and cancellation ordering; root H98 awaits nearest coherent source freeze.
+
+Owner policies RESOLVED: initial recurring lessons from semester start within assignment; automatic historical Н; initial student cohort membership from current semester start; transfers actual Moscow DATE with half-open intervals. No repeated product questions for these rules. Late enrollment AFTER already materialized closed lessons still needs separate reconciliation; do not claim that future scenario ready.
+
+Accepted base3d4115f3; full prior runtime13e5fd/H88/H89. Current feature is NOT accepted/production-ready yet. H97 narrow PASS: 3 date tests +4 architecture checks, all Schedule product/test sources compile, source0drift. H95 sandbox classpath failure disappeared in approved host execution H96; use the established verification context, no dependencies/ACL workarounds. Source freeze EA44 records partial31 paths, not final source completion.
+
+Heavy leases and subsequent execution state: consult SLOTS.md and latest dated entries below. Root owns all heavy scheduling; two disjoint writers, no shared checkout writes or parallel Gradle/Docker. Rules remain main Astra medium, leads Astra low, Luna max implementation, Sol high independent review, Terra NEVER. No push/deploy/main merge/E promotion.
+
+---
+# Historical execution log (earlier STOP/GO states are history)
+# OWNER GO — resumed 2026-09-20
+
+User accepts batching related fixes and checks before final review. Root owns heavy queue. RULES remain applicable. No push/deploy/main merge/E promotion.
+
+Accepted product candidate 13e5fd1985b798bbb61bcc85969e6a74b1fc6837, parent ed9b63c9449b23fa3f5dbf2feb52cd8f9e9cfe83 (L5A union), parent426. L5A: H76 68 unit/consumer + H77 49PG PASS, full Sol PASS0. Mass-cancel removal: exact11 paths, H86 17PG + targeted generated-types/aliases TypeScript PASS, full Sol PASS0, trackedclean and rawfreeze0drift verified. Evidence mass-cancel-commit-verification.json, mass-cancel-final-review.md. Combined H88/H89 now PASS; see latest paragraph below.
+
+Requests finalbatch ACCEPTED: H87 actual exit0/I1PASS/I2PASS corrected single-attempt probe52A / runner033236, counters2→2, ownedcleanupempty/source0drift. Fresh complete Sol recheck PASS0 saved evidence/h87-final-batch-review.md. Trusted runtime still426/H57; H87 does not prove13e5fd. Prior failed evidence preserved.
+
+Current: H88 PASS sixjars/PWA on clean r3 at13e5fd; manifestD553835C9C2BF9FB2F3CCFE6A0263FE609180D4097D044A949703D1ADC70E079. H89 combined runtime PASS exit0 I1/I2/counters2→2, exactownedcleanupempty/source0drift/cleangit. Accepted nextbase13e5fd + H88manifestD553; heavyFREE. Requests checkpoint71bcc275 acceptedexact10; remaining7dirtytracked preserved. All four leads and all leaves released/idle; no source writers. Earlier STOP below is historical, superseded by GO.
+
+---
+
+# CURRENT — OWNER STOP 2026-09-20
+
+STOP COMPLETE. All four directions STOP_ACK; all leaves completed/released. No automatic resume, new stages/checks/spawns. All prior GO/live allocations below or in historical packets are superseded.
+
+Read checkpoints/2026-09-20-safe-stop/REPORT.md and STOP-ACKS.md, worktrees.json, critical-hashes.json. Previous CURRENT is preserved there as CURRENT-before-stop.md; its ACTIVE statements are history only.
+
+Trusted build: clean v2-runtime-build-r2 HEAD426a15b6b42e816deaa3ca5c50437e0964aaf85e; H57 six jars/PWA PASS, H58 source validation PASS; manifest61E73ED658D43CD878AFE6DA6AB703D2C73844E8114329FD991566BF9C009F4F. E b822 unchanged. No push/deploy/main merge.
+
+L5A source accepted f59b3b9951c971bde42265ae67df8754dc594a58; accepted test-only commit27860f24eb380c782311bbe0cbb65c3d2c75d85d H75 7/0/0/0/fullSolPASS. Current deadlock claim WITHDRAWN: actual FOR NO KEY UPDATE/H74 passes unchanged product; H73 cancelled.
+
+L5A union coherent WIP: v2-integration-l5a branch codex/l5a-union-20260920 HEAD426; 46 staged files, no unstaged tracked, own untracked evidence preserved.44 imported +2 composites. ManifestEA25A1E220E1FDC184F2321FBC0F08E7E3C897A22ABFD5AD71C58A08573E6284. Root semantic review, H76/H77 and independent full review PENDING; no accepted union commit. Resume from WIP, do not recopy blindly.
+
+Requests runner05C76B696BF987370C0597C3AF76C9DB94FB588AA3AC3087D6907110EBBB9716 / probe1093B32778D8A7AF7CBC3E8F691073597257EB3091AC6A51DF8B12DE8E8731D6 final FULLSolPASS reported by Attendance at STOP. Source PASS only; H71 NOTRUN; I1/I2 open. H68 reached six services ready/HTTPS200 then harness parse failure; prior owned cleanup verified. Both overwritten-evidence incidents remain explicit, no reconstructed proof. H62 fixtureKEEP, no secret reads.
+
+L5B v3 design accepted only, no implementation/activation. Canonical public mass-cancel removed. One-off bells and university-vs-semester studyday questions pending owner response. Access source contract accepted, service-auth implementation open. Full backlog and ~45% (40–50 low confidence) readiness in REPORT.
+
+Next ownerGO: scoped checkpoint/ownership verification; finish root acceptance of final harness review and H71 on unchanged426; critical read L5A WIP then H76/H77/fresh review. Heavy stages sequential. H71 does not prove future union. No repeat of unchanged accepted H75/H57/H67. Main Astra medium, four leads Astra low, Luna max/Sol high, Terra NEVER; max3 leaves/one heavy queue.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## New owner GO: next L5B stage
+Active packet NEXT-L5B-START.md. Access and Lessons bounded contract preparation, max1 Luna readonly gap scout each; no product writes until root freeze. Baseline accepted13e5fd/r3/H88/H89. HeavyFREE. Earlier all-idle describes previous completed batch.
+
+
+L5B first dependency implementation authorized: L5B-SERVICE-IDENTITY-IMPLEMENT.md frozen root contract. Access dispatches fresh Luna max solewriter isolated v2-l5b-service-identity at13e5fd, after scout release. Directed service credentials + TLS + exact RPC admission, no close activation/proto/migration. Heavy FREE until sourcefreeze/lease.
+
+
+Lessons fence-enrollment bounded source map completed .agent/l5b-fence-enrollment/RESULT.md; scout released. It identifies recurring creator/regen mismatch with V17 canonical snapshots and retained deletes, static evidence only. Root opened generation builder/deletion and V17 originals. No domain implementation authorized yet; Access auth writer remains sole product writer.
+
+
+H90 ACTIVE root heavy: 16-path source freeze3ECEFD3869DFF63369C59AF93611DB38ED148D1E39FF2E6B16BB2B197C4E63A4, author manifest5474DE53AA1C6B3C02A510CE5530EE830338511A568D7EED4A28EA4C75B537CC. All hashes/inventory verified; Access author source frozen/released. Batched shared-security/Academic/Schedule selected tests incl real local TLS. No final review yet.
+
+
+H90 ended compileTestJava FAIL, testsNOTRUN/source0drift. H91 ACTIVE root: updated16freeze88160EF6425DD1E180D1992FECAA1F082E43F908DA56E7EF3C9218EF87CD98BA, authorECE2FF24. Exactly2sharedtestfiles changed; product/dependenciesunchanged. --continue collects independent failures sequentially. No final review yet.
+
+
+H91 complete exit1/source0drift: Academic+Schedule 42 tests PASS, shared TLS fixture compile error at line266 IOException. Same author correction authorized only TLS test; H92 shared tests planned; H91 app evidence retained conditional on test-only delta. Heavy FREE.
+
+H92 ACTIVE root shared-only Gradle after exact one TLS-test signature correction. Full16freeze9CCA55FDDF21C752BB7D269D994683F468E373376140F4C4835226E72564D964, authorBD00A18D. Other15 unchanged; H91 app42PASS retained. Author frozen/released.
+
+H92 PASS exit0 fresh3sharedclasses/source0drift. H91 app42PASS retained after exacttest-only correction. Full16 source frozen9CCA55FD; independent full Sol review next; heavyFREE.
+
+H92 fullSol review FAIL one Medium test coverage gap: configured reverse-audience credential absent from fixture; product guard correct. Same-author exactone-test correction authorized; H93 sharedbatch reserved. Review evidence/h92-full-review.md; heavyFREE.
+
+H93 ACTIVE shared batch: author completed/released, full16freeze738036ECFE075EFD3BF356188EC2045084D59D9ABA3F324F973E118A527DD4C0; exactone-test fixture correction, allother15unchanged. H91app42 retained. Fresh full review follows.
+
+H93 PASS exit0 22sharedtests/3classes source0drift. H91app42PASS unchanged. Fresh full independent Sol recheck allocated, source frozen738036EC; heavyFREE.
+
+H93 full freshSol recheck PASS0 all16, review saved evidence/h93-full-recheck.md. Root accepted dependency and authorized sameauthor exact16localcommit only. HeavyFREE, no source edits. Commitpending.
+
+ACCEPTED L5B service-identity dependency checkpoint3d4115f3a4c4ddba473689e27ac1a0efb519a202 parent13e5fd, exact16paths/rawhash0drift/trackedclean. H93shared22 + H91apps42 PASS; freshfullSolPASS0. Result RESULT-20260920-L5B-SERVICE-IDENTITY.md. No whole-L5B activation, no push/mainmerge/deploy/E change. Next domain dependency recurring assignment-backed physical writer/enrollment per Lessons source map; no domain writer allocated. HeavyFREE.
+
+Author completed/idle confirmed; all leaves released and heavyFREE. Bounded stage complete, no background execution pending.
+
+Owner GO continue product: next S3 recurring assignment-backed canonical writer/fence. Active packet L5B-RECURRING-WRITER-START.md, baseline3d4115f3. Lessons boundedcontract slot1readonly gapscout if needed; no productwrite untilfreeze. HeavyFREE.
+
+Root implementationfreeze L5B-RECURRING-WRITER-IMPLEMENT.md created, isolatedv2-l5b-recurring-writer at3d4115f3. Midsemester datepolicy async ownerquestionpending; independentfence/writer/read/gates authorized, no guessedpastactivation. Lessons transitions gapscout→freshLunadeveloper afterrelease, max1writer. HeavyFREE.
+
+Owner answered midsemesterpolicy: create fromsemesterstart withinassignmentinterval/cap, includespast; cancelled/removed excludedstats whilehistoryretained. Supersedes pendingdategate in IMPLEMENT packet. See datedowneramendment. Workcontinues.
+
+Owner secondanswer: retrospective attendance automatically Н/ABSENT forallapplicable students, existingmarks notoverwritten/cancelledexcluded. No no-auto-mark option. Root scopes historicalroster/semester+cancelrace dependency; Lessonswritercontinues independentcode. See IMPLEMENT datedamendment.
+
+Owner initialmembershipanswer: initialcohort fromcurrentsemesterstart; transfersdated separately. No moredate/defaultquestions pending forscope. Accessauthoritygap requires explicitnewenrollmenthistory/provenance, no guessedlegacybackfill.
+
+Historical attendance root freeze: L5B-HISTORICAL-ATTENDANCE-IMPLEMENT.md; owner dates/defaults resolved. New isolated worktree v2-l5b-historical-attendance base3d4115f3; Attendance authorized fresh Luna solewriter Academic+proto+Attendance. Explicit newgroup coverage/history, datedRPC echo, autoABSENT/cancellation convergence/report filtering. Lessons owns Schedule independent. HeavyFREE; checksNOTRUN thisstage.
+
+
+H94 root partial WIP compile/unit: Lessons writer safely interrupted after unanswered milestones, 31paths actualfreeze. NOT sourceDONE: realPG/replay/race tests and generatedcontracts pending; completion unknown. Attendance independentwriter continues. Root soleheavy H94 starts; sourcewrites Lessonsheld.
+
+
+H94 finished exit1/source0drift, testsNOTRUN. Product compileJava missing java.time.LocalDate import in ScheduleItem.java (6 compiler diagnostics same cause). Partialfreeze0B4D2D preserved. H95 narrow sameauthor compile-repair lease authorized via Lessons, each attempt separate immutable logs/sourcehashes; no PG/Docker/generation/review yet. Attendance separate writer unaffected.
+
+
+H95-01/02 author executed exactselector after LocalDate import fix, both compileJava exit1, testsNOTRUN: unresolved existing schedule contract/shared packages while upstream UP-TO-DATE and classfiles exist. No blind03; author bounded classpath/readability/incremental diagnosis under sameheavy lease. Author actual childUUID01a0befb-6032-7692-b654-dcdac4947859 now known from directmessage; preserved evidence in ownworktree .agent/l5b-recurring-writer/h95-01 and h95-02. Attendance continues source-only independent; nofreezeyet.
+
+
+H95-03 differential rerun29tasks failed existing shared-moduleclasspath; author explicitly released/frozen/noactiveprocess/noH95-04. Root H96 host-context identicalscopedrerun authorized, freezeF6593295F550352A97793D0FC1EE34FACE5BE5DFC6BD24E5A0DA28D0918108C8; exact31source onlyLocalDateimport delta fromH94. No ACL/config/dependency changes.
+
+
+H96 hostcontext differential complete exit1/source0drift: PRODUCT compileJava PASSED including shared modules; test compilation one actual AssertJ typing error RecurringDateCalculatorTest:29 ObjectAssert.last().isBefore unavailable. TestsNOTRUN. H95 broadclasspath failure absent in approved host execution; keep using that known check context, no dependency/configfix. HeavyFREE, narrow testfix then H97dateunit planned.
+
+
+H97 PASS exit0/source0drift: 3dateunits+4automaticarchitecture checks, product/testcompilePASS. Still partial31source, noPG/fullreview/generatedconsumerproof. Nextfresh Schedule completion packet L5B-RECURRING-COMPLETE.md, preserveWIP; codeonly until rootlease. Attendance preparingfullsourcefreeze independently. HeavyFREE.
+
+
+
+Historical writer explicitfreeze/no-more-writes, 34sourcepaths rootcaptured. H98 root batched Academic+Attendance compile/changedunits starts in approvedhostcontext. RealPG/Mongo notrun; deterministic concurrentMongo barrier test still needs authorimplementation aftercompile (root does not write tests). Schedulefreshcompletion independentcodecontinues.
+
+
+H98 finished exit1/source0drift: bothservices/alltestscompile; Academic35PASS, Attendance59/61PASS. Two actualfailures only ReportServiceTest restubbing triggersoldMockitoanswer nullmatcher/NPE beforeproductcall. Bounded sameauthor L5B-HISTORICAL-TEST-COMPLETION.md authorized: exactunitfix+ReportITstatusfixture+realMongo persistedbarrier test. No Academic/productchanges; retainAcademic35. HeavyFREE.
+
+
+Historicaltestcompletion frozen: rootverified EXACT3Attendance testdelta, Academic/proto/productbyteunchanged vsH98. H99 full35freezeA7AEB044A8C415547D1FB5933E89848AE8CC8FC8CE42FC1D5C773D947197A1D8. Serial reportunit + Academic3PGIT + Attendance2MongoIT batch starts; actual persistedrace source inspected byroot+lead, executionpending. Remoteauthorities mocked boundaries; combinedproducerunionpending.
+
+
+H99 complete exit1/source0drift: Attendance18unit+15realMongoPASS (incl deterministicconcurrentclosecancel and persistedstats), Academic HistoricalMembershipIT4PASS; CacheIT9/10/EventIT0/6 all7failed dueinvalid generatedgroupfixture programtype0 beforetestedoperation. Sameauthor exact2Academictestfixturecorrection authorized via appendedH99 amendment; productunchanged, priorPASS retained. Testcontainers4newIDs auto-removedverified/noexistingcontainercleanup. HeavyFREE.
+
+
+H100 completed exit1/source0drift: CacheIT10 PASS retained, EventIT6 setupfailure missing subject lesson type plus cleanup NPE. Exact EventIT fixture amendment authorizes sameauthor correction only. H101 root soleheavy Schedule37 frozen paths active; no parallel checks.
+
+
+Prepared clean isolated v2-l5b-retrospective-union at3d4115f3, branchcodex/l5b-retrospective-union-20260920. No writer/sourceimports yet. Root decision: one fresh fullSol review of integrated feature after sourcechecks/generation, preserving all requirements. Originalworktrees/main untouched.
+
+H102 PASS29/0/0/0/source0drift on37freeze73A276C1382318C7DA893C821BAA55C3B26B37A848FD9D0C1A5A9906CD528336. H1019units+15otherPG PASS retained; H97date3+arch4 retained. H104 EXCLUSIVE heavylease dispatched Lessons sameauthor generatorpacket27E659D...FBB0BE; rootH103 waits. Source not featureaccepted until generation/union/fullreview/runtime.
+
+H103 sourcefreeze r2 8B66B8E846CB4509FC4D6E16CEBD2443104FD5CA56502D58CE20A0EB3853F5AA READY NOTRUN; preparedr1 retained. Author corrected rollback first_name predicate; releasedslot3. H104 generation ongoing: snapshotwrapper firstattempt failed beforetests due unquoted -P; corrected invocation/generators reportedPASS, typecheck pending knownexistingcompiler. Root amendedgeneration A580012FCC884F090C3F559BAA784477A69F7116A3D109BD22E7C9EC81A8DC89 to include thirdmini-app consumer (final4outputs). Root new runtimeauthor /root/l5b_retrospective_runtime_developer solewriterharness71 exactopt-in sourcepacket69B4143F...F0A828, slot2codeonly. Correctedscoutreleased; no hiddenliveprocess/rootheavy.

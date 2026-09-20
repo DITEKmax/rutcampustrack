@@ -167,6 +167,35 @@ async def test_dispatcher_has_all_event_types():
 
 
 @pytest.mark.asyncio
+async def test_cancelled_late_checkin_closes_actions_without_false_rejection():
+    dispatcher = _make_dispatcher()
+    tracker = MagicMock()
+    tracker.get_all = AsyncMock(return_value=[{"chat_id": 10, "message_id": 20}])
+    tracker.delete = AsyncMock()
+    dispatcher._request_tracker = tracker
+    dispatcher._bot.edit_message_reply_markup = AsyncMock()
+    dispatcher._bot.send_message = AsyncMock()
+
+    await dispatcher._handle_late_checkin_decided({
+        "event_type": "late_checkin.decided",
+        "payload": {
+            "request_id": "req-1",
+            "user_id": 100,
+            "status": "cancelled",
+            "resolution_reason": "geo_confirmed",
+        },
+    })
+
+    dispatcher._bot.edit_message_reply_markup.assert_awaited_once_with(
+        chat_id=10, message_id=20, reply_markup=None
+    )
+    dispatcher._bot.send_message.assert_awaited_once()
+    assert "подтверждено по геолокации" in dispatcher._bot.send_message.await_args.kwargs["text"]
+    assert "Отклонено" not in dispatcher._bot.send_message.await_args.kwargs["text"]
+    tracker.delete.assert_awaited_once_with("late_checkin", "req-1")
+
+
+@pytest.mark.asyncio
 async def test_dispatch_routes_otp_verified():
     mock_handler = AsyncMock()
     dispatcher = _make_dispatcher(handlers_override={"otp.verified": mock_handler})

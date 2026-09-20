@@ -1,0 +1,412 @@
+{
+  "capturedAt": "2026-09-07T18:51:53.6366811Z",
+  "status": "PAUSED",
+  "mainHead": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "mainBranch": "main",
+  "ownerFilesChecked": 47,
+  "ownerMismatches": [],
+  "skillsLockAbsent": true,
+  "configSha256": "1CE988CB4230EDCBED60FCD3A96D583F809C8FE274F9B3277A3D3894704CEE28",
+  "bundles": [
+    {
+      "name": "integration",
+      "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\student-role-02\\integration",
+      "branch": "codex/student-role-02-integration",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "baseline": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "files": 42,
+      "added": 3613.0,
+      "removed": 385.0,
+      "untracked": 0,
+      "categories": [
+        {
+          "category": "backend-build-proto-tests",
+          "files": 19,
+          "added": 1965.0,
+          "removed": 9.0
+        },
+        {
+          "category": "frontend",
+          "files": 22,
+          "added": 1221.0,
+          "removed": 326.0
+        },
+        {
+          "category": "openapi",
+          "files": 1,
+          "added": 427.0,
+          "removed": 50.0
+        }
+      ],
+      "paths": [
+        "docs/openapi/mobile-bff.json",
+        "frontends/mobile-core/fixtures/homework-completion-completed.json",
+        "frontends/mobile-core/fixtures/homework-completion-undone.json",
+        "frontends/mobile-core/fixtures/homework-feed.json",
+        "frontends/mobile-core/fixtures/manifest.json",
+        "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+        "frontends/mobile-core/src/api/student-client.ts",
+        "frontends/mobile-core/src/api/types.ts",
+        "frontends/mobile-core/src/features/today/TodayScreen.vue",
+        "frontends/mobile-core/src/features/today/today-screen.pcss",
+        "frontends/mobile-core/src/index.ts",
+        "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+        "frontends/mobile-core/src/shared/components/MobileShell.vue",
+        "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+        "frontends/mobile-core/src/shared/components/mobile-shell.pcss",
+        "frontends/mobile-core/src/shared/host.ts",
+        "frontends/mobile-core/src/shared/navigation.ts",
+        "frontends/mobile-core/src/shared/shell-contract.ts",
+        "frontends/mobile-core/src/styles/tokens.pcss",
+        "frontends/mobile-core/src/test-adapter/fixture-transport.test.ts",
+        "frontends/mobile-core/src/test-adapter/homework-fixtures.ts",
+        "frontends/mobile-core/tests/contract.test.mjs",
+        "frontends/mobile-core/tests/navigation.test.mjs",
+        "proto/academic.proto",
+        "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+        "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java",
+        "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+        "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java",
+        "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java",
+        "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+        "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+        "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java",
+        "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+        "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkJsonConfiguration.java",
+        "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkNoStoreFilter.java",
+        "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java",
+        "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+        "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+        "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentQueryHomeworkTest.java"
+      ]
+    },
+    {
+      "name": "homework-ui",
+      "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\student-role-02\\homework-ui",
+      "branch": "codex/student-role-02-homework-ui",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "files": 25,
+      "added": 2320.0,
+      "removed": 47.0,
+      "untracked": 19,
+      "categories": [
+        {
+          "category": "frontend",
+          "files": 25,
+          "added": 2320.0,
+          "removed": 47.0
+        }
+      ],
+      "paths": [
+        "frontends/mobile-core/src/features/today/TodayScreen.vue",
+        "frontends/mobile-core/src/features/today/today-screen.pcss",
+        "frontends/mobile-core/src/index.ts",
+        "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+        "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+        "frontends/mobile-core/src/styles/tokens.pcss",
+        "frontends/mobile-core/src/assets/homework-check.svg",
+        "frontends/mobile-core/src/assets/homework-direction.svg",
+        "frontends/mobile-core/src/assets/homework-expand-chevron.svg",
+        "frontends/mobile-core/src/assets/homework-expand.svg",
+        "frontends/mobile-core/src/assets/homework-external-link.svg",
+        "frontends/mobile-core/src/assets/homework-handle-completed.svg",
+        "frontends/mobile-core/src/assets/homework-handle.svg",
+        "frontends/mobile-core/src/assets/homework-return-today-chevron.svg",
+        "frontends/mobile-core/src/assets/homework-return-today.svg",
+        "frontends/mobile-core/src/domain/homework.test.ts",
+        "frontends/mobile-core/src/domain/homework.ts",
+        "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+        "frontends/mobile-core/src/features/homework/homework-focus.test.ts",
+        "frontends/mobile-core/src/features/homework/homework-focus.ts",
+        "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+        "frontends/mobile-core/src/features/homework/use-homework.test.ts",
+        "frontends/mobile-core/src/features/homework/use-homework.ts",
+        "frontends/mobile-core/src/shared/theme.test.ts",
+        "frontends/mobile-core/src/shared/theme.ts"
+      ]
+    },
+    {
+      "name": "requests-domain",
+      "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\student-role-02\\requests-domain",
+      "branch": "codex/student-role-02-requests-domain",
+      "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "baseline": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "files": 32,
+      "added": 3695.0,
+      "removed": 5.0,
+      "untracked": 18,
+      "categories": [
+        {
+          "category": "backend-build-proto-tests",
+          "files": 32,
+          "added": 3695.0,
+          "removed": 5.0
+        }
+      ],
+      "paths": [
+        "event-schemas/excuse.decided.json",
+        "event-schemas/excuse.requested.json",
+        "event-schemas/late_checkin.decided.json",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/AttachmentState.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRepository.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRetentionJob.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestBucket.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentLateCheckinBudgetRepository.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestReceiptRepository.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDescriptorDocument.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDocument.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLateCheckinBudgetDocument.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLessonSnapshotDocument.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentRequestReceiptDocument.java",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java"
+      ]
+    },
+    {
+      "name": "requests-transport",
+      "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\student-role-02\\requests-transport",
+      "branch": "codex/student-role-02-requests-transport",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "files": 53,
+      "added": 6921.0,
+      "removed": 29.0,
+      "untracked": 26,
+      "categories": [
+        {
+          "category": "backend-build-proto-tests",
+          "files": 47,
+          "added": 5206.0,
+          "removed": 16.0
+        },
+        {
+          "category": "frontend",
+          "files": 5,
+          "added": 878.0,
+          "removed": 10.0
+        },
+        {
+          "category": "openapi",
+          "files": 1,
+          "added": 837.0,
+          "removed": 3.0
+        }
+      ],
+      "paths": [
+        "docs/openapi/mobile-bff.json",
+        "event-schemas/excuse.decided.json",
+        "event-schemas/excuse.requested.json",
+        "event-schemas/late_checkin.decided.json",
+        "frontends/mobile-core/scripts/generate-types.mjs",
+        "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+        "frontends/mobile-core/src/api/student-client.ts",
+        "frontends/mobile-core/src/api/types.ts",
+        "proto/attendance.proto",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java",
+        "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+        "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+        "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java",
+        "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+        "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/security/MobileIdentityFilter.java",
+        "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java",
+        "services/mobile-bff/mobile-bff-app/src/main/resources/application.yml",
+        "frontends/mobile-core/src/api/student-client.test.ts",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java",
+        "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/InvalidIdempotencyKeyException.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/PayloadTooLargeException.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcErrors.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapper.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestTransportException.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/AttachmentState.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRepository.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRetentionJob.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestBucket.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentLateCheckinBudgetRepository.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestReceiptRepository.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDescriptorDocument.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDocument.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLateCheckinBudgetDocument.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLessonSnapshotDocument.java",
+        "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentRequestReceiptDocument.java",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+        "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java",
+        "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacade.java"
+      ]
+    },
+    {
+      "name": "dependency-checks",
+      "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\student-role-02\\dependency-checks",
+      "branch": "codex/student-role-02-dependency-checks",
+      "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "files": 43,
+      "added": 2354.0,
+      "removed": 1660.0,
+      "untracked": 3,
+      "categories": [
+        {
+          "category": "backend-build-proto-tests",
+          "files": 37,
+          "added": 1135.0,
+          "removed": 431.0
+        },
+        {
+          "category": "frontend",
+          "files": 1,
+          "added": 1.0,
+          "removed": 3.0
+        },
+        {
+          "category": "openapi",
+          "files": 5,
+          "added": 1218.0,
+          "removed": 1226.0
+        }
+      ],
+      "paths": [
+        "build.gradle.kts",
+        "docs/openapi/attendance.json",
+        "docs/openapi/auth.json",
+        "docs/openapi/mobile-bff.json",
+        "docs/openapi/notification.json",
+        "docs/openapi/schedule.json",
+        "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+        "gradle/libs.versions.toml",
+        "services/academic-service/academic-api-contract/build.gradle.kts",
+        "services/academic-service/academic-app/build.gradle.kts",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java",
+        "services/api-gateway/build.gradle.kts",
+        "services/api-gateway/src/main/resources/application-prod.yml",
+        "services/api-gateway/src/main/resources/application.yml",
+        "services/attendance-service/attendance-api-contract/build.gradle.kts",
+        "services/attendance-service/attendance-app/build.gradle.kts",
+        "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+        "services/auth-service/auth-api-contract/build.gradle.kts",
+        "services/auth-service/auth-app/build.gradle.kts",
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+        "services/document-renderer-service/document-renderer-app/build.gradle.kts",
+        "services/mobile-bff/mobile-bff-api-contract/build.gradle.kts",
+        "services/mobile-bff/mobile-bff-app/build.gradle.kts",
+        "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+        "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+        "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java",
+        "services/notification-service/notification-api-contract/build.gradle.kts",
+        "services/notification-service/notification-app/build.gradle.kts",
+        "services/schedule-service/schedule-api-contract/build.gradle.kts",
+        "services/schedule-service/schedule-app/build.gradle.kts",
+        "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java",
+        "services/shared/shared-events/build.gradle.kts",
+        "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java",
+        "services/shared/shared-logback/build.gradle.kts",
+        "services/shared/shared-observability/build.gradle.kts",
+        "services/shared/shared-outbox/build.gradle.kts",
+        "services/shared/shared-security/build.gradle.kts",
+        "services/shared/shared-test-containers/build.gradle.kts",
+        "services/shared/shared-web-api/build.gradle.kts",
+        "services/shared/shared-web/build.gradle.kts",
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java",
+        "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterTest.java",
+        "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java"
+      ]
+    }
+  ],
+  "ownerMismatchCount": 0,
+  "currentUniquePaths": 146,
+  "overlappingPaths": [
+    {
+      "Name": "docs/openapi/mobile-bff.json",
+      "Count": 3
+    },
+    {
+      "Name": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+      "Count": 3
+    },
+    {
+      "Name": "frontends/mobile-core/src/api/student-client.ts",
+      "Count": 2
+    },
+    {
+      "Name": "frontends/mobile-core/src/api/types.ts",
+      "Count": 2
+    },
+    {
+      "Name": "frontends/mobile-core/src/features/today/today-screen.pcss",
+      "Count": 2
+    },
+    {
+      "Name": "frontends/mobile-core/src/features/today/TodayScreen.vue",
+      "Count": 2
+    },
+    {
+      "Name": "frontends/mobile-core/src/index.ts",
+      "Count": 2
+    },
+    {
+      "Name": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+      "Count": 2
+    },
+    {
+      "Name": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+      "Count": 2
+    },
+    {
+      "Name": "frontends/mobile-core/src/styles/tokens.pcss",
+      "Count": 2
+    },
+    {
+      "Name": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+      "Count": 2
+    },
+    {
+      "Name": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+      "Count": 2
+    },
+    {
+      "Name": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+      "Count": 2
+    },
+    {
+      "Name": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java",
+      "Count": 2
+    },
+    {
+      "Name": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+      "Count": 2
+    }
+  ]
+}

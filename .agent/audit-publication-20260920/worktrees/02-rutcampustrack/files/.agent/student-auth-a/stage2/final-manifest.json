@@ -1,0 +1,871 @@
+﻿{
+    "schema":  "student-auth-stage2-final-manifest-v1",
+    "status":  "FINAL_EVIDENCE_READY",
+    "baselineRevision":  "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "risk":  "S3",
+    "effectiveSourceCount":  70,
+    "tombstoneCount":  2,
+    "effectiveSources":  [
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthApi.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  5929,
+                                 "sha256":  "FD00B81E44CA422922055459E25031341F3261E6563F0F6B97339D297A29E37A"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthSessionApi.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  3736,
+                                 "sha256":  "C0E33F5A93054B34DD9326E2CC865274384122D07B135457CCF1B2067954DEB2"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalSessionAdmissionApi.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  1323,
+                                 "sha256":  "DB14CD24EB3448A12059A8D968A618E79EFF2B7629BDCC57215E4D3F51A92DD3"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryEvent.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  1614,
+                                 "sha256":  "3A745E2B1270F07E1F0523678D93BAB911AF0EBD1DCF4B4CB2EC9B4D66FDCD0F"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryPage.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  565,
+                                 "sha256":  "593D09DEDFFD0F6B279594350B70088B76BD669B836BC071020E45A3135B9F9D"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionRequest.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  625,
+                                 "sha256":  "A874654D1E410590F43E59B11318F80C6C35A32AC9D0A32D940A53665A089452"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionResponse.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  2969,
+                                 "sha256":  "1841B46A85ADB96212A9D167A9253A9CB9002021C96C6CEB0954DAD8C3E45912"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionSummary.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  2023,
+                                 "sha256":  "38813017B0E10E4F6C9C1398EC8EB5D6546C0352151DA6E78362587B70BBD572"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionsPage.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  558,
+                                 "sha256":  "02AEFD0580AD2F1B939D4C5EACE3CCE17F06B66B440FF7AFA7273AE61B9A6990"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ChangePasswordRequest.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  432,
+                                 "sha256":  "B14B14589F06191D481FCBE5E2AB7E9EABA53DB83F6B63C775A7050185E58E13"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/CurrentSessionResponse.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  2930,
+                                 "sha256":  "DA0899902573AB79D06C6713E44222322B96290F441DD7C4B913D809E965E9A1"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordPolicyResponse.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  1598,
+                                 "sha256":  "5124D523F20AE93C4C3404D8419D37C8FB1B7C18A9198885E177121C3483BF7D"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RoleGrantResponse.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  1507,
+                                 "sha256":  "216D5BCE545AB120EECA05E14FB22E58085B407EB4CA9DBBDAB83DF076DABA24"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleRequest.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  1165,
+                                 "sha256":  "B62255C419C0BAD4F2854E6FAC4C358DC9E59AB1F9EC84617A6673E47B82AD56"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleResponse.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  1072,
+                                 "sha256":  "613957796DCA67F271ECB876D45791CECB7719C5DDE07A96C7D06893553777F2"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/TokenResponse.java",
+                                 "kind":  "contract",
+                                 "status":  "present",
+                                 "bytes":  414,
+                                 "sha256":  "CFAE88CCBC5614E81A60AE8416C85074EE726E93731469FECADBD068904C9490"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  14626,
+                                 "sha256":  "C3549B3329C505DDDB664EC36203DD40D4157F5A0856143A7504CA705302F5CD"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  3519,
+                                 "sha256":  "2789D114AEB2F9CFDB68A3ECE71996554E09D067DEF92C62FEF0612D392C9A5D"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthController.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  4596,
+                                 "sha256":  "7FB6A294B33C9D895CA65F6E038BCD5A4E206DA2901B93207F9159BEAC3D99E1"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthSessionController.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  9279,
+                                 "sha256":  "05198B75FE4FBAAE3EC196974DF081D5BAE53073ACDE3EFF5763180F91071E28"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalSessionAdmissionController.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  1265,
+                                 "sha256":  "516A07387DAD8F172A1D002D24B21D2BEF6B59E9BED321B2C9C10748C0C5E991"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  7564,
+                                 "sha256":  "2CF5F9237652BD4842C0182A538E9846E0F3FA2E3BCD34EB9A294CB7DC25AFEA"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/security/SessionPrincipal.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  1736,
+                                 "sha256":  "503F580C7ABB4B0B9040484DA9D203EEFE72C43EE789D91A5819BE3A1217004D"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  29997,
+                                 "sha256":  "EB630E8528FF2D030C37D4C75AA001AD7F0A473AC2D4F1DFCFAEB51E9E1D4F17"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  41181,
+                                 "sha256":  "2C0E5E2377EE2E9EED234A2E28914180D482A1CC27D2D1AA66F41820671BE850"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/OtpService.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  11967,
+                                 "sha256":  "BA58F785FF3FF5A438BFFFD78CC1FA76FC0219929E9F7EEBCEC6BAFDE4DCCC94"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/TmaService.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  4966,
+                                 "sha256":  "ECA95F16B49EAE37D14032CBAF37278BB6F7B017D4CC65C1AF0875AF77668140"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  4573,
+                                 "sha256":  "7F3F6D9B2F78BED99B22D89B8F943481CD4DB5FBD672EE977D39533418FABD13"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/AuthSessionException.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  1132,
+                                 "sha256":  "95B5FA10D0A6B1B22D3D29F5753CAAA8A9EBC074C78573F2CAE5C19CA572717A"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  4056,
+                                 "sha256":  "F5F06EF05CC7D3F15C2941E407128DE63B4FF0A1C6D1300CB0E655B2D0FD8D1A"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionException.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  928,
+                                 "sha256":  "0C50ED738589F8EE064ADCE4AA81001F4A212362621F8DADA46BF713A55BFDA2"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionService.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  12672,
+                                 "sha256":  "89AE726537B778AB769935A858AE542415870F8C3972330B17456AE09923490A"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionLifecycleService.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  15753,
+                                 "sha256":  "410FF98941CE148B0738AC55E5300C3B98FFE442D2F5BBAAF27FE0CC9E35A0CD"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapter.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  18159,
+                                 "sha256":  "30C34F7C8D3F77A5F6AC4B3CA37F76FA6E40AEA2A9B1E646849EDF2320E6ABD1"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  30752,
+                                 "sha256":  "3CFFE7E059FF6E7D00467988ACAFBC493E1EF3B3F10A1D3D50BCBDD4A343A002"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthMethod.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  105,
+                                 "sha256":  "60BEE3DC0D44DF2E3F3813E7FD67F0401678D6F4173AF32CAAD9F726DA5566A8"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthRole.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  182,
+                                 "sha256":  "2232E8973B0804A43BBF84D51FBAF432F35C72A1C6A709A175B302DCE35857FD"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleGrant.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  1696,
+                                 "sha256":  "171B2644B245770368A865B7907942578EC12343B8A4282F7023F5824C940DCE"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleStatus.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  702,
+                                 "sha256":  "89CF00BAE0BC524F8783BB860352DB2F40A31C5BDFEBB4352ECF0A879B002B57"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SecurityEvent.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  1185,
+                                 "sha256":  "8FFDA7A8CC0019AA8D8D158219357D7AB550BD1B66881A58652DC873D5FB5963"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionRevokeReason.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  162,
+                                 "sha256":  "0C076E9BF5CF002542EF35931E0BAC26FB5F1F5558BD39C7FDFAF6E1C0C5857F"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionSnapshot.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  3854,
+                                 "sha256":  "615ACD1676E9E74AD34A1E73A48A45255269E7EF410CBD3BBBF5A70DAA34D61E"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionState.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  5452,
+                                 "sha256":  "F89E60C86A9E3A5CAE9E3790ECDA3D258E024B38969030E246DB26AE0360D32F"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/AuthSessionQueryPort.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  5315,
+                                 "sha256":  "924EE9BB53304386DCB7BF25F57BD4C7450B3ACB862EB036876D991DE97FF7B9"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/CredentialSessionTransactionPort.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  3946,
+                                 "sha256":  "0CFB943D94A7FBD702C37F7255D62B03E4B0C733DFCA7272D94B4ACA5758E7C2"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/SessionStatePort.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  14167,
+                                 "sha256":  "C88C575F7E4CA105C5E005993073F709E6BC6558FFCC65420EEAC3F4EEF27376"
+                             },
+                             {
+                                 "path":  "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtClaims.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  559,
+                                 "sha256":  "91F3605EB1FC14075F81D285F11BB0F678ED650B228F17DD63D2710EF042E961"
+                             },
+                             {
+                                 "path":  "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java",
+                                 "kind":  "product",
+                                 "status":  "present",
+                                 "bytes":  23230,
+                                 "sha256":  "E8633DE82330BCCB8A9805E37351F5E9F439A27FD1C95524B760592B614E3FF5"
+                             },
+                             {
+                                 "path":  "services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+                                 "kind":  "migration",
+                                 "status":  "present",
+                                 "bytes":  7618,
+                                 "sha256":  "1D15418FA4869D1288B3FA25F688A237087294F360AEA6729F524DE2F5B67F90"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  3741,
+                                 "sha256":  "9CF04488883754455CF16E03CE32F3A76D6679A3637FED32440164E559F47E7F"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  15943,
+                                 "sha256":  "C2560630626231DF08E19FA74E22952F3C9FF8583F07A10A2466FC87DA63D5D6"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  13792,
+                                 "sha256":  "4A7FF34CB06C855883FCEF139045959C253A19A8B40E7D296CEA3816A57B902E"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  2632,
+                                 "sha256":  "ADECF04711EF2DAFCB1929DAD110369F60F4D399B46B82196C19CF040DA38F2A"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  9928,
+                                 "sha256":  "8062DE5291CB1B7DB03AFE84A11ECF48C91D4B6E4D88866D7FFAE2EA9F2EBE78"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  28120,
+                                 "sha256":  "FB13C6300FB7EDB776135BCE4C3FE7276E8FCB220411C75B277A9EAEB6621389"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LogoutLifecycleIT.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  9322,
+                                 "sha256":  "76B4EA927B4C2703833764D4B36593CBA65CDFB16A6E722457E9662B18D07C79"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  3928,
+                                 "sha256":  "70D867278CD72C081449C8CE7D0CE977C3A97FB3B9F5A031799B51F8CB1C5C4C"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  9112,
+                                 "sha256":  "DD8AC12B26BD65F7ADE5F4521E102F7A8DD81BBB0ACCEC9BB2242F6B49FFB928"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  23300,
+                                 "sha256":  "0117888BEFE3F6DF17BBB9A339872F162D6E0028AB62E06DC9513128B2B9280A"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  19078,
+                                 "sha256":  "9CB433E2D0F0ACF3BDC8215527E841F2B9E60A52FFF65F0392955ECB7A73BFF6"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  11662,
+                                 "sha256":  "49772316029E561FD97FE6BD28EEABBDDCD54916EA6788174BE7368DF33ED6CD"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  3392,
+                                 "sha256":  "91FC1DDDCE3910AAE09F4FCF862B94EF6A62C6F13923A18721865BCA4221A2D5"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapterIT.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  13281,
+                                 "sha256":  "3D0E03D9770687C2FBC99B3BD666794B05FF8E01D9BB1E8217FB47491764E649"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  46221,
+                                 "sha256":  "0E02899F1467E284A318E96583B2B77F902F9DF98F98233EE09671997649A933"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  3176,
+                                 "sha256":  "E1BFD70821025BC673A75ACD0A8D1A96643A216C5911AF9D94502221B4B8530D"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  20025,
+                                 "sha256":  "B58AA5F0B213A79C2265FDDE09AFDDEDC18A065CAA61ED330F31A2F6EF390936"
+                             },
+                             {
+                                 "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  38791,
+                                 "sha256":  "0121159CBACFCA33A81B27D3B3F8D5BF34832894B65DE7AFA2B1FBBCECF2DA82"
+                             },
+                             {
+                                 "path":  "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/DualModeUserContextFilterTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  7934,
+                                 "sha256":  "2CCB149F9FD57627BE6C18CF4B30A6DD49A234F146595A03663428C5B8EB87CB"
+                             },
+                             {
+                                 "path":  "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtValidatorTest.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  14470,
+                                 "sha256":  "4D3C3DD677B902F875F655584F530BA43FBDAE0DE687426EF122EAA42E190B26"
+                             },
+                             {
+                                 "path":  "services/shared/shared-security/src/testFixtures/java/ru/rutcampustrack/shared/security/InternalJwtTestFactory.java",
+                                 "kind":  "test",
+                                 "status":  "present",
+                                 "bytes":  3355,
+                                 "sha256":  "DA186908CBC27F752195EBBBF8A874004E183F507EF928C78B32D24910CBCF52"
+                             }
+                         ],
+    "deletedTombstones":  [
+                              {
+                                  "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalIssuerController.java",
+                                  "kind":  "product",
+                                  "status":  "deleted-tombstone",
+                                  "bytes":  null,
+                                  "sha256":  null
+                              },
+                              {
+                                  "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalIssuerIT.java",
+                                  "kind":  "test",
+                                  "status":  "deleted-tombstone",
+                                  "bytes":  null,
+                                  "sha256":  null
+                              }
+                          ],
+    "approvedCorrections":  [
+                                {
+                                    "id":  "jdbc-session-authority-spring-proxy",
+                                    "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+                                    "supersedesAcceptedSha256":  "05B2FE5045CF8AA9CCAF90010D31726A311E85C5633892EAF1F233E6D8231B48",
+                                    "currentSha256":  "3CFFE7E059FF6E7D00467988ACAFBC493E1EF3B3F10A1D3D50BCBDD4A343A002",
+                                    "currentBytes":  30752,
+                                    "delta":  "public final class -\u003e public class for Spring proxying",
+                                    "evidence":  ".agent/student-auth-a/stage2/failures/boot-01/failure.md; .agent/student-auth-a/stage2/primary-runtime.md"
+                                },
+                                {
+                                    "id":  "jdbc-query-adapter-spring-constructor",
+                                    "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapter.java",
+                                    "currentSha256":  "30C34F7C8D3F77A5F6AC4B3CA37F76FA6E40AEA2A9B1E646849EDF2320E6ABD1",
+                                    "currentBytes":  18159,
+                                    "delta":  "@Autowired selected JdbcTemplate constructor",
+                                    "evidence":  ".agent/student-auth-a/stage2/failures/boot-02/failure.md; .agent/student-auth-a/stage2/primary-runtime.md"
+                                },
+                                {
+                                    "id":  "auth-session-ws-ticket-cleanup",
+                                    "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthSessionController.java",
+                                    "currentSha256":  "05198B75FE4FBAAE3EC196974DF081D5BAE53073ACDE3EFF5763180F91071E28",
+                                    "currentBytes":  9279,
+                                    "delta":  "invalidateAllFor(userId) follows successful durable logout/logoutAll/changePassword",
+                                    "evidence":  ".agent/student-auth-a/stage2/failures/affected-01/failure.md; .agent/student-auth-a/stage2/affected-final.md"
+                                }
+                            ],
+    "foundationReferences":  [
+                                 {
+                                     "path":  ".agent/student-auth-a/admission-producer/final-gate/manifest.json",
+                                     "bytes":  4755,
+                                     "sha256":  "EE2DFCDD70DD7AA90B0D32A36C38B683E9D05D0C42940CD86B1126FFA6F77901"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/admission-producer/final-gate/independent-review-pass.md",
+                                     "bytes":  3664,
+                                     "sha256":  "F9B363CCF7B8B1787025424FF578EF76F6C210F21A19701AE1CF7F704E20BA2C"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/admission-producer/shared-alg-repair/final-independent-recheck.md",
+                                     "bytes":  3920,
+                                     "sha256":  "5C79187BCA743D025E83D8C6023B33B3FBDAA13FD8E1B9F0A735E73FF01342E3"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/session-domain/repair-01/manifest.json",
+                                     "bytes":  8707,
+                                     "sha256":  "2200AED1C86FA3D54BC2AF1C3E6BD642A2923B36858406B349255935BEA8BA64"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/session-domain/repair-01/review-result.md",
+                                     "bytes":  5619,
+                                     "sha256":  "8DEEF183CB78106BEC45A9AA8D9435E77145E16F9899DC24BA5CE7C4C4662FAF"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/session-domain/repair-01/root-verification.md",
+                                     "bytes":  387,
+                                     "sha256":  "852425F9F3F2B4377A4AB46B68D854CA66502211BBE6CB0CB9B9C957062A9D3B"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/session-jdbc/final/manifest.json",
+                                     "bytes":  7624,
+                                     "sha256":  "BE8FCAE645C6AFB687A8311914463829D3F699A7FF58B92CA7DBE192F8E1DC9B"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/session-jdbc/final/independent-recheck-pass.md",
+                                     "bytes":  1639,
+                                     "sha256":  "8C6694E5CBAED9E68CB9B4DEB80ECB467522C61CB6FADEA727E78A752E95BDF1"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/session-jdbc/final/runtime-evidence.md",
+                                     "bytes":  3463,
+                                     "sha256":  "9616AB8A47C9B04F7D052FD79AC16C56FDB37D0C7D35B4C50EF9EDDD396AE02D"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/session-jdbc/final/junit/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml",
+                                     "bytes":  10769,
+                                     "sha256":  "FBFD63D70E69BA91458CA14207E8987CD65A09384864B408EA23990CA31D6354"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/stage2/packet.md",
+                                     "bytes":  8130,
+                                     "sha256":  "EEA5F1C24E6082397D431D41A2D741919C15F3204AE16BBBF4425919438D2CC9"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/stage2/unit-state.md",
+                                     "bytes":  2906,
+                                     "sha256":  "0D1CE349C3952A6A5DA523EEAFE96AA3D9BBA98824DD75E4F2FAB1722492DC39"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/stage2/primary-runtime.md",
+                                     "bytes":  3866,
+                                     "sha256":  "53CD49BDAA8612BAD2CF5A7A5E90478B2A5477F0E6E38FB9E9C9015B2A5867CA"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/stage2/query-runtime.md",
+                                     "bytes":  2681,
+                                     "sha256":  "154BE3AA05AA892F28D14F2AE1731AD62A96ABC15432F94CA3D9BC7C822FE085"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/stage2/affected-final.md",
+                                     "bytes":  3413,
+                                     "sha256":  "84902086642F6885671DB0DEE6DD1AF4C4467A3EAF47A31962250515F7E9D0F4"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/stage2/openapi-runtime.md",
+                                     "bytes":  3957,
+                                     "sha256":  "A07CC9F0C8AAE7A50ED6D21BBF37430A24FCFA332E1C9143CEE705BCD715EFFD"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/stage2/failures/boot-01/failure.md",
+                                     "bytes":  4648,
+                                     "sha256":  "44C5EB54CA9ECE6E036710400AFFC56BA8901CF3A06A8F91BCEF280DC64934F4"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/stage2/failures/boot-02/failure.md",
+                                     "bytes":  4317,
+                                     "sha256":  "4C620C608E02C2788D33BF6C729660FA307A974768E69B2A9B6A9D62B41F2513"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/stage2/failures/affected-01/failure.md",
+                                     "bytes":  4407,
+                                     "sha256":  "7E5E8AD35278BF6BBBD88233C68C4D03B406A662732B788820D2BADF50C802B2"
+                                 },
+                                 {
+                                     "path":  ".agent/student-auth-a/stage2/junit/openapi/failure-94003.md",
+                                     "bytes":  1082,
+                                     "sha256":  "B7F48F500599E9CF839D934A168705188D7DD93C35C0D4D6144EC96D8B12BCAB"
+                                 }
+                             ],
+    "finalEvidence":  [
+                          {
+                              "id":  "AuthApiContractTest",
+                              "path":  ".agent/student-auth-a/stage2/junit/unit/TEST-ru.rutcampustrack.auth.arch.AuthApiContractTest.xml",
+                              "uniqueKey":  "AuthApiContractTest",
+                              "provenance":  "final-unit",
+                              "bytes":  847,
+                              "sha256":  "B8ADE415B5DEB4EFF4D63F10D51BD8FE165FF6735B20928373E00E2947C1E639",
+                              "tests":  3,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "AuthSessionControllerTest",
+                              "path":  ".agent/student-auth-a/stage2/junit/affected-final/unit/TEST-ru.rutcampustrack.auth.controller.AuthSessionControllerTest.xml",
+                              "uniqueKey":  "AuthSessionControllerTest",
+                              "provenance":  "corrected-affected-unit",
+                              "bytes":  4165,
+                              "sha256":  "345276B281D40161CC9A1076A3B89C8B6F32DD546EFDA1FA70BB124A818A9DC6",
+                              "tests":  8,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "JwtAuthenticationFilterPurposeTest",
+                              "path":  ".agent/student-auth-a/stage2/junit/unit/JwtAuthenticationFilterPurposeTest.xml",
+                              "uniqueKey":  "JwtAuthenticationFilterPurposeTest",
+                              "provenance":  "final-unit",
+                              "bytes":  2652,
+                              "sha256":  "7B6EB3415D8EB68D57013F90A0E57662BBA86CB9404B20C88A886D536AA15DFA",
+                              "tests":  9,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "JwtTokenPurposeTest",
+                              "path":  ".agent/student-auth-a/stage2/junit/unit/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+                              "uniqueKey":  "JwtTokenPurposeTest",
+                              "provenance":  "final-unit",
+                              "bytes":  2668,
+                              "sha256":  "69ED9F53E556446EE05C6359D87F6904ED0A57F0654C2FAE3B9EA368B190639F",
+                              "tests":  15,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "SessionAdmissionServiceTest",
+                              "path":  ".agent/student-auth-a/stage2/junit/unit/TEST-ru.rutcampustrack.auth.session.SessionAdmissionServiceTest.xml",
+                              "uniqueKey":  "SessionAdmissionServiceTest",
+                              "provenance":  "final-unit",
+                              "bytes":  2401,
+                              "sha256":  "7684D72E8D1E579C9805EF7404B1FF33293A61D0943F51FD9E33E68AB552EF0C",
+                              "tests":  13,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "OtpServiceTest",
+                              "path":  ".agent/student-auth-a/stage2/junit/affected-final/unit/TEST-ru.rutcampustrack.auth.service.OtpServiceTest.xml",
+                              "uniqueKey":  "OtpServiceTest",
+                              "provenance":  "corrected-affected-unit",
+                              "bytes":  2052,
+                              "sha256":  "7B5A16B56DA3545BE66EF57DA1AFAE0247DD8D4447EC097EC8BF1FB85CD9B483",
+                              "tests":  9,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "AuthIT",
+                              "path":  ".agent/student-auth-a/stage2/junit/integration-primary/TEST-ru.rutcampustrack.auth.integration.AuthIT.xml",
+                              "uniqueKey":  "AuthIT",
+                              "provenance":  "final-integration",
+                              "bytes":  26784,
+                              "sha256":  "C378078C68D2F68FEA25CEEF47E3CEB7715E40FC1DC10182759BC11C1A314DEA",
+                              "tests":  11,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "SessionAuthFlowIT",
+                              "path":  ".agent/student-auth-a/stage2/junit/integration-primary/TEST-ru.rutcampustrack.auth.integration.SessionAuthFlowIT.xml",
+                              "uniqueKey":  "SessionAuthFlowIT",
+                              "provenance":  "final-integration",
+                              "bytes":  2422,
+                              "sha256":  "654A9C8C678AFB175A1D74724B631695E716F3FCF56449F6161BA6764D97DB1E",
+                              "tests":  8,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "JdbcAuthSessionQueryAdapterIT",
+                              "path":  ".agent/student-auth-a/stage2/junit/integration-query/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcAuthSessionQueryAdapterIT.xml",
+                              "uniqueKey":  "JdbcAuthSessionQueryAdapterIT",
+                              "provenance":  "final-integration",
+                              "bytes":  8221,
+                              "sha256":  "F511B4D0CF69D00A9DDCB7A8AD2486A60476E351039F618F3F5EBEBFCA2D5CB8",
+                              "tests":  3,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "LogoutLifecycleIT",
+                              "path":  ".agent/student-auth-a/stage2/junit/affected-final/integration/TEST-ru.rutcampustrack.auth.integration.LogoutLifecycleIT.xml",
+                              "uniqueKey":  "LogoutLifecycleIT",
+                              "provenance":  "corrected-affected-integration",
+                              "bytes":  25925,
+                              "sha256":  "0DECAE6D49FCC5AFB934AB282B0581F91123F1302D116E9D0985F606F9F1B6E8",
+                              "tests":  3,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "OtpIT",
+                              "path":  ".agent/student-auth-a/stage2/junit/affected-final/integration/TEST-ru.rutcampustrack.auth.integration.OtpIT.xml",
+                              "uniqueKey":  "OtpIT",
+                              "provenance":  "corrected-affected-integration",
+                              "bytes":  6148,
+                              "sha256":  "3FC49EB2733D3570286EE91E84EBA232824F80F4CB6BFB5D3B08232124A85C5E",
+                              "tests":  8,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "TmaIT",
+                              "path":  ".agent/student-auth-a/stage2/failures/affected-01/junit/TEST-ru.rutcampustrack.auth.integration.TmaIT.xml",
+                              "uniqueKey":  "TmaIT",
+                              "provenance":  "affected-01-green-suite-preserved-from-exit-1-aggregate",
+                              "bytes":  2104,
+                              "sha256":  "A9398B9AE28960FF60DDD5A7F8288D8C7FD310B96B1926D05BE6DCF7E7995CEC",
+                              "tests":  8,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "SameSiteCookieContractIT",
+                              "path":  ".agent/student-auth-a/stage2/failures/affected-01/junit/TEST-ru.rutcampustrack.auth.integration.SameSiteCookieContractIT.xml",
+                              "uniqueKey":  "SameSiteCookieContractIT",
+                              "provenance":  "affected-01-green-suite-preserved-from-exit-1-aggregate",
+                              "bytes":  2090,
+                              "sha256":  "E34348B515B3DAA4F7929975057132E331D0118A55FCBBD083EE87CE444368E1",
+                              "tests":  5,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "OpenApiSnapshotIT-export",
+                              "path":  ".agent/student-auth-a/stage2/junit/openapi/export/TEST-ru.rutcampustrack.auth.integration.OpenApiSnapshotIT.xml",
+                              "uniqueKey":  "OpenApiSnapshotIT",
+                              "provenance":  "java-first-export",
+                              "bytes":  25978,
+                              "sha256":  "8E4B3AB4006AA123CA4C2ECEA8BE8618E7FE49A5154A9196AE7A8327B978FA91",
+                              "tests":  1,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          },
+                          {
+                              "id":  "OpenApiSnapshotIT-compare",
+                              "path":  ".agent/student-auth-a/stage2/junit/openapi/compare/TEST-ru.rutcampustrack.auth.integration.OpenApiSnapshotIT.xml",
+                              "uniqueKey":  "OpenApiSnapshotIT",
+                              "provenance":  "property-free-compare",
+                              "bytes":  25875,
+                              "sha256":  "9D4999AA4CCF68D6E2234726D92D0AEC1E45CCB4B89383D10371CCF58B289BF2",
+                              "tests":  1,
+                              "skipped":  0,
+                              "failures":  0,
+                              "errors":  0
+                          }
+                      ],
+    "finalCounts":  {
+                        "unit":  {
+                                     "artifactCount":  6,
+                                     "uniqueSuiteCount":  6,
+                                     "tests":  57,
+                                     "skipped":  0,
+                                     "failures":  0,
+                                     "errors":  0
+                                 },
+                        "integration":  {
+                                            "artifactCount":  9,
+                                            "uniqueSuiteCount":  8,
+                                            "tests":  47,
+                                            "skipped":  0,
+                                            "failures":  0,
+                                            "errors":  0,
+                                            "openApiExportCompareUniqueTests":  1
+                                        }
+                    },
+    "checks":  {
+                   "exportAndCompare":  "sessions 1097/54903, both exit 0",
+                   "affected":  "sessions 97448/87435, both exit 0",
+                   "xmlCopyAndParse":  "exit 0; byte-identical copies; all result fields zero",
+                   "dockerCleanup":  "exit 0; empty docker ps",
+                   "sourceHashSelfAudit":  "exit 0; reproducible script verified every listed source/reference/XML/generated artifact and unique counts 57 unit/47 integration",
+                   "gitDiffCheck":  "exit 0; no diff-check errors; pre-existing LF/CRLF warnings only"
+               },
+    "limitations":  [
+                        "Gateway and BFF integration/admission remain outside this Stage2 scope.",
+                        "WS ticket protocol and open-socket revalidation remain outside this Stage2 scope.",
+                        "Frontend UI genuine TMA host QA remains outside this Stage2 scope.",
+                        "TMA and SameSite are counted as green suites from the preserved affected-01 aggregate (exit 1); corrected rerun covered LogoutLifecycleIT and OtpIT.",
+                        "Manifest records evidence and does not replace the required independent final review."
+                    ],
+    "generatedArtifacts":  [
+                               {
+                                   "path":  "docs/openapi/auth.json",
+                                   "kind":  "generated-contract",
+                                   "status":  "present",
+                                   "bytes":  58141,
+                                   "sha256":  "61BFB083D71A4EB7F40C7BF7C0B464798CE7F884F00E52E7FE579E816A5CE9D2",
+                                   "provenance":  ".agent/student-auth-a/stage2/openapi-runtime.md"
+                               }
+                           ]
+}

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT" tests="2" skipped="0" failures="2" errors="0" timestamp="2026-09-19T17:30:18" hostname="DITEK-PK" time="0.017">
+  <properties/>
+  <testcase name="semesterDateMutationAndAssignmentCreateRaceIsSerialized()" classname="ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT" time="0.009">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)" type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.insertGroup(AbstractAssignmentAuthorityIT.java:124)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.newFixture(AbstractAssignmentAuthorityIT.java:32)
+	at app//ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT.createFixture(SemesterAssignmentAuthorityIT.java:37)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: value too long for type character varying(32)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 11 more
+</failure>
+  </testcase>
+  <testcase name="referencedSemesterDateChangeIsRejectedButNameOnlyUpdateKeepsEligibility()" classname="ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT" time="0.007">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)" type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.insertGroup(AbstractAssignmentAuthorityIT.java:124)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.newFixture(AbstractAssignmentAuthorityIT.java:32)
+	at app//ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT.createFixture(SemesterAssignmentAuthorityIT.java:37)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: value too long for type character varying(32)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 11 more
+</failure>
+  </testcase>
+  <system-out><![CDATA[{"ts":"2026-09-19T20:30:18.753+03:00","v":"1","level":"INFO","logger":"org.springframework.test.context.support.AnnotationConfigContextLoaderUtils","thread":"Test worker","msg":"Could not detect default configuration classes for test class [ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT]: SemesterAssignmentAuthorityIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.","service":"academic-service"}
+{"ts":"2026-09-19T20:30:18.776+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.test.context.SpringBootTestContextBootstrapper","thread":"Test worker","msg":"Found @SpringBootConfiguration ru.rutcampustrack.academic.AcademicApplication for test class ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT","service":"academic-service"}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

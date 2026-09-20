@@ -1,0 +1,36 @@
+﻿{
+    "started_at":  "2026-09-05T23:39:05.5829168+03:00",
+    "finished_at":  "2026-09-05T23:39:05.9493976+03:00",
+    "inventory_scan_finished_at":  "2026-09-05T23:39:05.0982719+03:00",
+    "sources":  [
+                    {
+                        "source_id":  "kit",
+                        "files":  1040,
+                        "bytes":  74522370,
+                        "newest_file_write_utc":  "2026-09-05T20:35:34.3613771Z",
+                        "matches_inventory":  true
+                    },
+                    {
+                        "source_id":  "design",
+                        "files":  231,
+                        "bytes":  28342548,
+                        "newest_file_write_utc":  "2026-08-18T10:47:52.4398153Z",
+                        "matches_inventory":  true
+                    },
+                    {
+                        "source_id":  "research",
+                        "files":  8,
+                        "bytes":  116075,
+                        "newest_file_write_utc":  "2026-08-30T19:00:29.0477117Z",
+                        "matches_inventory":  true
+                    },
+                    {
+                        "source_id":  "repo-history",
+                        "files":  946,
+                        "bytes":  15040440,
+                        "newest_file_write_utc":  "2026-09-05T20:07:35.4995296Z",
+                        "matches_inventory":  true
+                    }
+                ],
+    "stable":  true
+}

@@ -1,0 +1,68 @@
+{
+  "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "capturedAt": "2026-09-07T15:33:35.1936438Z",
+  "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\student-role-02\\homework-ui",
+  "purpose": "Author final source freeze, visual evidence incomplete, not acceptance",
+  "files": [
+    {
+      "path": "frontends/mobile-core/src/assets/homework-check.svg",
+      "sha256": "4D07219CF9D1257201BBE71F2099C1E7BFF39BCDAD45A5EB040995FCF19E8574"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-direction.svg",
+      "sha256": "6DC517AD12797EE54C49F6AF5FB7E3B3779142B0F311D987130FFD31C1A95659"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-expand.svg",
+      "sha256": "6BEDC61327EADE0DCB64591C8E2887403028DC4CA451F3F084249DD9650653A4"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-external-link.svg",
+      "sha256": "E5AA676AC9B9E3F3F4B09FDFA9F59165E82DE77D5AE48165A0E98EAF32D1562C"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-handle-completed.svg",
+      "sha256": "9AAEBE81842869F51C78B79809B050E21D4C900B7FD3F0B372EE9433B6D30596"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-handle.svg",
+      "sha256": "F608B1DF37C17DBF232A62F0F5187EFCC6CE91A97821164BAD6BD6CF8C653069"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-return-today.svg",
+      "sha256": "B63BCCB9B3A30CD426E1CB5C9D55A58A040F01B75EE2C845B95F56B0361062F6"
+    },
+    {
+      "path": "frontends/mobile-core/src/domain/homework.test.ts",
+      "sha256": "80F72B1B17166C72144AC605ACAB4ECD8FF0ECEF610B7CEE9640E9A8C3E282DC"
+    },
+    {
+      "path": "frontends/mobile-core/src/domain/homework.ts",
+      "sha256": "F3E0D2C338403D7AAC91B0993F455CB8C2175A212C385F23CD8F3905CEE57F89"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+      "sha256": "86AE6C90614E3AB7B4BC31EA97584131D2187E8CEF49FDBC8F42CA25960F85B8"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+      "sha256": "E1BFC5AD2DF56ED7851C5C8F9BD18B57F13E427A6E98BA2B84FFE9AA07CFFE29"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/homework/use-homework.test.ts",
+      "sha256": "EB8DA0B972FC4B76F55D7D40C1F237F8E892A0FC76B7A1FA01E2A152B08BEA18"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/homework/use-homework.ts",
+      "sha256": "03C72E19A41901A6C77F19E7D1C43EEA9CF384BBAE7CDEF1F6BCC61A8EA6BE8E"
+    },
+    {
+      "path": "frontends/mobile-core/src/index.ts",
+      "sha256": "154B6DF775AFF9C8253B78F458A761B52F5F51476799255338E91BEDE01C5FF1"
+    },
+    {
+      "path": "frontends/mobile-core/src/styles/tokens.pcss",
+      "sha256": "1D2671D87C42D9A3A1B3A43120EBFCD6BBE41BB29C3A35B804613CB639305ECE"
+    }
+  ]
+}

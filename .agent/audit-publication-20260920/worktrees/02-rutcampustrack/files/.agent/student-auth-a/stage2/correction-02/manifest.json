@@ -1,0 +1,311 @@
+{
+    "schema":  "student-auth-stage2-correction-02-manifest-v1",
+    "status":  "FINAL_CORRECTION_EVIDENCE_READY",
+    "baselineRevision":  "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "risk":  "S3",
+    "correctionBase":  {
+                           "path":  ".agent/student-auth-a/stage2/final-manifest.json",
+                           "bytes":  59166,
+                           "sha256":  "95A17B2E59C108FA5A1C00EF0E226C1402EAB6C3E4100F4EC91F00EB21C50DA1"
+                       },
+    "reviewFail":  {
+                       "path":  ".agent/student-auth-a/stage2/review-fail.md",
+                       "bytes":  9529,
+                       "sha256":  "931C3F750E2D1C245D820B6D5AAECABCFB3DAB3C624379FA526F567501678996"
+                   },
+    "sourceDelta":  [
+                        {
+                            "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthSessionController.java",
+                            "bytes":  9955,
+                            "sha256":  "E7969850CBAC7A0797A87A911E1DBE2C9A472BA22313476D43E2ED8E7E16E95F",
+                            "kind":  "production",
+                            "status":  "modified",
+                            "previousBytes":  9279,
+                            "previousSha256":  "05198B75FE4FBAAE3EC196974DF081D5BAE53073ACDE3EFF5763180F91071E28"
+                        },
+                        {
+                            "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+                            "bytes":  30508,
+                            "sha256":  "5BA0986B0CFABCD849D6859F1099392F7B1ABF297F0571412953D65466668268",
+                            "kind":  "production",
+                            "status":  "modified",
+                            "previousBytes":  29997,
+                            "previousSha256":  "EB630E8528FF2D030C37D4C75AA001AD7F0A473AC2D4F1DFCFAEB51E9E1D4F17"
+                        },
+                        {
+                            "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/OtpService.java",
+                            "bytes":  16026,
+                            "sha256":  "0236BA509AA81EF5C668970B4ACCD25689E1D2A512C65EE9645F5B363C2FDBBC",
+                            "kind":  "production",
+                            "status":  "modified",
+                            "previousBytes":  11967,
+                            "previousSha256":  "BA58F785FF3FF5A438BFFFD78CC1FA76FC0219929E9F7EEBCEC6BAFDE4DCCC94"
+                        },
+                        {
+                            "path":  "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/TmaService.java",
+                            "bytes":  5274,
+                            "sha256":  "42B5E5C5679555560C773FC44BE0057EF87C05D9BFD7E796E4EECA7737884E2C",
+                            "kind":  "production",
+                            "status":  "modified",
+                            "previousBytes":  4966,
+                            "previousSha256":  "ECA95F16B49EAE37D14032CBAF37278BB6F7B017D4CC65C1AF0875AF77668140"
+                        },
+                        {
+                            "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+                            "bytes":  16918,
+                            "sha256":  "922CDAD1016F4BB66DD421A08A238DF15593C8FCB2970D1A02B516065C6B994E",
+                            "kind":  "test",
+                            "status":  "modified",
+                            "previousBytes":  13792,
+                            "previousSha256":  "4A7FF34CB06C855883FCEF139045959C253A19A8B40E7D296CEA3816A57B902E"
+                        },
+                        {
+                            "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+                            "bytes":  16486,
+                            "sha256":  "D62B247CB0D9C1EB7A468499451D2373CEDBBF159C0E44E8306F72E1C5A5AF3C",
+                            "kind":  "test",
+                            "status":  "modified",
+                            "previousBytes":  11662,
+                            "previousSha256":  "49772316029E561FD97FE6BD28EEABBDDCD54916EA6788174BE7368DF33ED6CD"
+                        },
+                        {
+                            "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LogoutLifecycleIT.java",
+                            "bytes":  10747,
+                            "sha256":  "949A780959F11D7A8D085C3ADE0366626698AC3C086CF3CDA715DBD1F4F782A3",
+                            "kind":  "test",
+                            "status":  "modified",
+                            "previousBytes":  9322,
+                            "previousSha256":  "76B4EA927B4C2703833764D4B36593CBA65CDFB16A6E722457E9662B18D07C79"
+                        },
+                        {
+                            "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java",
+                            "bytes":  12016,
+                            "sha256":  "59000E6E022B774C57DD51E50D0E2F3C9718F6D08A4EDB3CDBF14ADF662A423C",
+                            "kind":  "test",
+                            "status":  "modified",
+                            "previousBytes":  9112,
+                            "previousSha256":  "DD8AC12B26BD65F7ADE5F4521E102F7A8DD81BBB0ACCEC9BB2242F6B49FFB928"
+                        },
+                        {
+                            "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/AuthServiceRepositoryFailureTest.java",
+                            "bytes":  4393,
+                            "sha256":  "B44B7A9A1CEEAB1F17835F751341CB4BAB1457F1FF7DE44DF7665E706D232BD4",
+                            "kind":  "test",
+                            "status":  "added",
+                            "previousBytes":  null,
+                            "previousSha256":  null
+                        },
+                        {
+                            "path":  "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceRepositoryFailureTest.java",
+                            "bytes":  3240,
+                            "sha256":  "79ECBD87950006F8B48ABC9D6B3C8906259C5E0F4C55732B53E85AA35F2EDD7F",
+                            "kind":  "test",
+                            "status":  "added",
+                            "previousBytes":  null,
+                            "previousSha256":  null
+                        }
+                    ],
+    "junit":  [
+                  {
+                      "path":  ".agent/student-auth-a/stage2/correction-02/junit/unit/TEST-ru.rutcampustrack.auth.controller.AuthSessionControllerTest.xml",
+                      "bytes":  5318,
+                      "sha256":  "7FA3EBE48E3BAADCE2AA6462BC9FDCB7D2F47E1B12AD0D16D46E3815FDBDD8D6",
+                      "id":  "AuthSessionControllerTest",
+                      "suite":  "AuthSessionControllerTest",
+                      "phase":  "unit",
+                      "session":  "93390",
+                      "tests":  9,
+                      "skipped":  0,
+                      "failures":  0,
+                      "errors":  0
+                  },
+                  {
+                      "path":  ".agent/student-auth-a/stage2/correction-02/junit/unit/TEST-ru.rutcampustrack.auth.service.AuthServiceRepositoryFailureTest.xml",
+                      "bytes":  535,
+                      "sha256":  "BFC419BBB74BB566B30217BCCEDA4A788E9D4B8348613223F19B9055B161B28B",
+                      "id":  "AuthServiceRepositoryFailureTest",
+                      "suite":  "AuthServiceRepositoryFailureTest",
+                      "phase":  "unit",
+                      "session":  "93390",
+                      "tests":  1,
+                      "skipped":  0,
+                      "failures":  0,
+                      "errors":  0
+                  },
+                  {
+                      "path":  ".agent/student-auth-a/stage2/correction-02/junit/unit/TEST-ru.rutcampustrack.auth.service.OtpServiceTest.xml",
+                      "bytes":  2735,
+                      "sha256":  "5CB525A9082742DAF7A09B3D8D4B0D182542039F78AF69112C590E4F53A414FB",
+                      "id":  "OtpServiceTest",
+                      "suite":  "OtpServiceTest",
+                      "phase":  "unit",
+                      "session":  "93390",
+                      "tests":  13,
+                      "skipped":  0,
+                      "failures":  0,
+                      "errors":  0
+                  },
+                  {
+                      "path":  ".agent/student-auth-a/stage2/correction-02/junit/unit/TEST-ru.rutcampustrack.auth.service.TmaServiceRepositoryFailureTest.xml",
+                      "bytes":  535,
+                      "sha256":  "52701E992D7E97F0308D44E8805C1009674703D707E195E24EE399A6C61B5DC9",
+                      "id":  "TmaServiceRepositoryFailureTest",
+                      "suite":  "TmaServiceRepositoryFailureTest",
+                      "phase":  "unit",
+                      "session":  "93390",
+                      "tests":  1,
+                      "skipped":  0,
+                      "failures":  0,
+                      "errors":  0
+                  },
+                  {
+                      "path":  ".agent/student-auth-a/stage2/correction-02/junit/affected/TEST-ru.rutcampustrack.auth.integration.LogoutLifecycleIT.xml",
+                      "bytes":  25922,
+                      "sha256":  "6CA93FB799F3E30809DB75AA324456FD4B23720669D8596D7B84C5EBB39D3571",
+                      "id":  "LogoutLifecycleIT",
+                      "suite":  "LogoutLifecycleIT",
+                      "phase":  "affected-pg-redis",
+                      "session":  "67640",
+                      "tests":  3,
+                      "skipped":  0,
+                      "failures":  0,
+                      "errors":  0
+                  },
+                  {
+                      "path":  ".agent/student-auth-a/stage2/correction-02/junit/affected/TEST-ru.rutcampustrack.auth.integration.OtpIT.xml",
+                      "bytes":  7646,
+                      "sha256":  "3D12DDD37676FB91F60C496F04FC474EA6D0C1D3052863784BAC698EB22DB8B2",
+                      "id":  "OtpIT",
+                      "suite":  "OtpIT",
+                      "phase":  "affected-pg-redis",
+                      "session":  "67640",
+                      "tests":  9,
+                      "skipped":  0,
+                      "failures":  0,
+                      "errors":  0
+                  },
+                  {
+                      "path":  ".agent/student-auth-a/stage2/correction-02/junit/affected/TEST-ru.rutcampustrack.auth.integration.SessionAuthFlowIT.xml",
+                      "bytes":  2422,
+                      "sha256":  "A738F3A0280189EAFF1F87AE691A25030E296A8004BAF084857F854B4B67BD78",
+                      "id":  "SessionAuthFlowIT",
+                      "suite":  "SessionAuthFlowIT",
+                      "phase":  "affected-pg-redis",
+                      "session":  "67640",
+                      "tests":  8,
+                      "skipped":  0,
+                      "failures":  0,
+                      "errors":  0
+                  },
+                  {
+                      "path":  ".agent/student-auth-a/stage2/correction-02/junit/openapi/TEST-ru.rutcampustrack.auth.integration.OpenApiSnapshotIT.xml",
+                      "bytes":  25875,
+                      "sha256":  "5AAC78005FFF5C69D44B37B87C94FA76403AB29C60B1C910CB8C506B7AFB6FC8",
+                      "id":  "OpenApiSnapshotIT",
+                      "suite":  "OpenApiSnapshotIT",
+                      "phase":  "openapi-compare",
+                      "session":  "98527",
+                      "tests":  1,
+                      "skipped":  0,
+                      "failures":  0,
+                      "errors":  0
+                  }
+              ],
+    "commands":  [
+                     {
+                         "id":  "compile-source-defect",
+                         "command":  ".\\gradlew.bat :services:auth-service:auth-app:compileJava :services:auth-service:auth-app:compileTestJava --no-daemon --no-parallel --max-workers=1 --console=plain",
+                         "session":  "60085",
+                         "exitCode":  1,
+                         "result":  "compileTestJava failed on stale verifyNoInteractions import; corrected and recorded in failures/compile-01/failure.md"
+                     },
+                     {
+                         "id":  "compile-infrastructure-defect",
+                         "command":  ".\\gradlew.bat :services:auth-service:auth-app:compileJava :services:auth-service:auth-app:compileTestJava --no-daemon --no-parallel --max-workers=1 --console=plain",
+                         "session":  "12186",
+                         "exitCode":  1,
+                         "result":  "Java compilation completed; Gradle failed moving generated problems-report.html; stale generated report removed"
+                     },
+                     {
+                         "id":  "compile-green",
+                         "command":  ".\\gradlew.bat :services:auth-service:auth-app:compileJava :services:auth-service:auth-app:compileTestJava --no-daemon --no-parallel --max-workers=1 --console=plain",
+                         "session":  "13664",
+                         "exitCode":  0,
+                         "result":  "compileJava and compileTestJava passed"
+                     },
+                     {
+                         "id":  "focused-unit",
+                         "command":  ".\\gradlew.bat :services:auth-service:auth-app:test --tests ru.rutcampustrack.auth.controller.AuthSessionControllerTest --tests ru.rutcampustrack.auth.service.OtpServiceTest --tests ru.rutcampustrack.auth.service.AuthServiceRepositoryFailureTest --tests ru.rutcampustrack.auth.service.TmaServiceRepositoryFailureTest --no-daemon --no-parallel --max-workers=1 --console=plain",
+                         "session":  "93390",
+                         "exitCode":  0,
+                         "result":  "24/24 focused unit tests passed"
+                     },
+                     {
+                         "id":  "affected-pg-redis",
+                         "command":  ".\\gradlew.bat :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.LogoutLifecycleIT --tests ru.rutcampustrack.auth.integration.OtpIT --tests ru.rutcampustrack.auth.integration.SessionAuthFlowIT --no-daemon --no-parallel --max-workers=1 --console=plain",
+                         "session":  "65967",
+                         "exitCode":  0,
+                         "result":  "affected PostgreSQL/Redis integration suites passed; XML was later captured by the already-started session 67640"
+                     },
+                     {
+                         "id":  "openapi-compare",
+                         "command":  ".\\gradlew.bat :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.OpenApiSnapshotIT --no-daemon --no-parallel --max-workers=1 --console=plain",
+                         "session":  "98527",
+                         "exitCode":  0,
+                         "result":  "property-free OpenAPI snapshot compare passed"
+                     },
+                     {
+                         "id":  "affected-xml-capture",
+                         "command":  ".\\gradlew.bat :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.LogoutLifecycleIT --tests ru.rutcampustrack.auth.integration.OtpIT --tests ru.rutcampustrack.auth.integration.SessionAuthFlowIT --no-daemon --no-parallel --max-workers=1 --console=plain",
+                         "session":  "67640",
+                         "exitCode":  0,
+                         "result":  "same affected suites passed; run was already started before fast-path no-rerun instruction and produced the saved XML"
+                     }
+                 ],
+    "correction":  {
+                       "defects":  [
+                                       "best-effort Redis WS-ticket cleanup after durable logout/logout-all/password change",
+                                       "cookie-only logout returns authoritative revoke result and cleans user tickets",
+                                       "one atomic Redis OTP proof check/consume shared by direct and by-code routes",
+                                       "UserRepository DataAccessException maps to AUTHORITY_UNAVAILABLE in AuthService, OtpService and TmaService"
+                                   ],
+                       "scope":  [
+                                     "AuthSessionController.java",
+                                     "AuthService.java",
+                                     "OtpService.java",
+                                     "TmaService.java",
+                                     "AuthSessionControllerTest.java",
+                                     "OtpServiceTest.java",
+                                     "LogoutLifecycleIT.java",
+                                     "OtpIT.java",
+                                     "AuthServiceRepositoryFailureTest.java",
+                                     "TmaServiceRepositoryFailureTest.java"
+                                 ],
+                       "decision":  "bounded correction accepted by root; no Gateway/BFF/shared contract/SQL/V24/OpenAPI source redesign"
+                   },
+    "checks":  {
+                   "sourceCompile":  "session 13664 exit 0",
+                   "focusedUnit":  "session 93390 exit 0; 24/24, skipped/failures/errors 0",
+                   "affectedPgRedis":  "sessions 65967 and 67640 exit 0; LogoutLifecycleIT 3/3, OtpIT 9/9, SessionAuthFlowIT 8/8",
+                   "openApiCompare":  "session 98527 exit 0; OpenApiSnapshotIT 1/1",
+                   "gitDiffCheck":  "exit 0; LF/CRLF conversion warnings only",
+                   "manifestVerify":  "generate-correction-manifest.ps1 -Verify; run after generation"
+               },
+    "runtime":  {
+                    "environment":  "Windows PowerShell, shared checkout, Java 21/Gradle wrapper, DITEK-PK",
+                    "containers":  "PostgreSQL/Redis Testcontainers used by affected integration run; root-observed Docker process state is stopped/empty after runs; no fast-path re-probe",
+                    "durableEvidence":  "cookie-only logout ticket consume returned 404 after cleanup; mixed direct/by-code OTP race produced one 200, one 401 and one auth_sessions row delta"
+                },
+    "limitations":  [
+                        "This manifest covers the four review defects and affected selectors; broader accepted Stage2 evidence remains in final-manifest.json.",
+                        "Gateway/BFF integration, full WS protocol/open-socket revalidation, frontend UI and genuine TMA host QA remain outside this bounded correction.",
+                        "The saved affected XML came from session 67640, which was already running before the fast-path no-rerun instruction; no further rerun is performed.",
+                        "Fresh independent Sol recheck of this stable correction diff is still required by the root workflow.",
+                        "No deploy, migration, destructive database action, commit, stage or reset was performed."
+                    ],
+    "generator":  {
+                      "path":  ".agent/student-auth-a/stage2/correction-02/generate-correction-manifest.ps1",
+                      "purpose":  "recompute source/XML/review/base hashes and counts",
+                      "verify":  "invoke with -Verify; no product/runtime command"
+                  }
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-11T09:27:56" hostname="DITEK-PK" time="3.135">
+  <properties/>
+  <testcase name="cookieLogoutAuthorityFailureReturns503WithoutClearingCookie()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="2.652"/>
+  <testcase name="logoutSupportsCookieOnlyAndBearerOnlyWithDurableServiceDelegation()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.037"/>
+  <testcase name="currentSessionUsesAuthoritativeIdentityAndNoStore()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.011"/>
+  <testcase name="currentPasswordInvalidIsAnHttp400ProblemWithoutCache()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.261"/>
+  <testcase name="foreignAuthenticatedPrincipalCannotRevokeAnotherSessionCookie()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.037"/>
+  <testcase name="publicAuthResponsesAreNoStoreAndTokenResponseKeepsTmaRefreshField()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.132"/>
+  <system-out><![CDATA[12:27:56.871 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.2.Final
+12:27:58.332 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+12:27:58.332 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+12:27:58.341 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 6 ms
+12:27:58.780 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+12:27:58.780 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+12:27:58.782 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+12:27:59.037 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+12:27:59.037 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+12:27:59.037 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

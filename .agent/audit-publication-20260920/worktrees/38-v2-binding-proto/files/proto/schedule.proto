@@ -1,0 +1,213 @@
+syntax = "proto3";
+
+package rutcampustrack.schedule;
+
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.schedule.grpc";
+
+service ScheduleGrpcService {
+
+  // Получить активную пару для группы в данный момент
+  rpc GetActiveLesson (ActiveLessonRequest) returns (LessonResponse);
+
+  // Получить пару по ID
+  rpc GetLessonById (LessonByIdRequest) returns (LessonResponse);
+
+  // Получить все пары группы за период
+  rpc GetLessonsByGroup (LessonsByGroupRequest) returns (LessonsResponse);
+
+  // Получить компактную информацию о парах по списку ID (для валидации в excuse-сервисе)
+  rpc GetLessonsByIds (LessonsByIdsRequest) returns (LessonsByIdsResponse);
+
+  // Phase 61 D-04: резолв пары по natural key (group_id, date, lesson_number).
+  // Используется academic-service для проверки существования пары перед созданием ДЗ.
+  // NOT_FOUND если на дату нет lesson в статусах planned/active/closed.
+  rpc ResolveLesson (ResolveLessonRequest) returns (LessonResponse);
+
+  // Подсчёт ссылок на subject в расписании для pre-check удаления Subject.
+  // Используется academic-service в SubjectService.deleteSubject:
+  // если non_planned_lessons_count > 0 → 409 Conflict с предупреждением.
+  rpc CountSubjectReferences (CountSubjectReferencesRequest) returns (CountSubjectReferencesResponse);
+
+  // История перемещений и других lifecycle-событий одной logical occurrence.
+  rpc GetOccurrenceHistory (OccurrenceHistoryRequest) returns (OccurrenceHistoryResponse);
+
+  // Зарезервировать привязку домашней работы к occurrence.
+  rpc ReserveHomeworkBinding (ReserveHomeworkBindingRequest) returns (HomeworkBindingResponse);
+
+  // Подтвердить привязку домашней работы после публикации.
+  rpc ConfirmHomeworkBinding (ConfirmHomeworkBindingRequest) returns (HomeworkBindingResponse);
+
+  // Прочитать текущие привязки домашних работ для occurrences.
+  rpc GetHomeworkBindings (HomeworkBindingsRequest) returns (HomeworkBindingsResponse);
+}
+
+message ActiveLessonRequest {
+  int64 group_id = 1;
+  string timestamp = 2;  // ISO-8601
+}
+
+message LessonByIdRequest {
+  int64 lesson_id = 1;
+}
+
+// Phase 61 D-04: natural-key резолв пары.
+message ResolveLessonRequest {
+  int64 group_id = 1;
+  string date = 2;          // ISO-8601 date, например "2026-05-01"
+  int32 lesson_number = 3;  // 1..8
+}
+
+message LessonsByGroupRequest {
+  int64 group_id = 1;
+  int64 semester_id = 2;
+  string date_from = 3;  // ISO date
+  string date_to = 4;
+}
+
+message LessonResponse {
+  int64 id = 1;
+  int64 schedule_item_id = 2;
+  int64 group_id = 3;
+  int64 subject_id = 4;
+  // D-16: teacher_id removed. Teacher access resolved via JOIN
+  // ScheduleItem × TeacherSubjectGroup (teacher is not bound to a slot).
+  reserved 5;
+  reserved "teacher_id";
+  string date = 6;
+  int32 lesson_number = 7;
+  string start_time = 8;
+  string end_time = 9;
+  string status = 10;       // planned, active, closed, cancelled
+  bool is_geo_blocked = 11;
+  string room = 12;
+  bool is_blocked_by_headman = 13;
+  // JS-STUDENT-01-r1: historical room provenance is not present in the
+  // current schedule schema. Empty state means UNKNOWN, never UNCHANGED.
+  string room_change_state = 14; // unchanged, changed, unknown
+  optional string previous_room = 15;
+  int64 occurrence_id = 16;
+  int64 assignment_id = 17;
+  int64 semester_id = 18;
+  int64 assigned_teacher_id = 19;
+  string lesson_type = 20;
+  int64 generation = 21;
+  int64 revision = 22;
+  string valid_from = 23;
+  string valid_until = 24;
+  bool current = 25;
+}
+
+message LessonsResponse {
+  repeated LessonResponse lessons = 1;
+  // Stable source timestamp for authorized schedule caching/ETag generation.
+  optional string updated_at = 2;
+}
+
+message LessonsByIdsRequest {
+  repeated int64 lesson_ids = 1;
+}
+
+message LessonsByIdsResponse {
+  repeated LessonInfo lessons = 1;
+}
+
+message LessonInfo {
+  int64 lesson_id = 1;
+  int64 group_id = 2;
+  int64 subject_id = 3;
+  string starts_at = 4;  // ISO datetime (date + "T" + start_time)
+  // Phase v9 — обогащение excuse.requested: бот и веб показывают детали пары
+  // без дополнительных round-trip'ов. Все поля обязательны к заполнению
+  // в schedule-service LessonQueryGrpcService.
+  int32 lesson_number = 5;  // 1..8
+  string date = 6;          // ISO-8601 date (YYYY-MM-DD)
+  int64 occurrence_id = 7;
+  int64 assignment_id = 8;
+  int64 semester_id = 9;
+  int64 teacher_id = 10;
+  string lesson_type = 11;
+  int64 generation = 12;
+  int64 revision = 13;
+  string status = 14;
+}
+
+message CountSubjectReferencesRequest {
+  int64 subject_id = 1;
+}
+
+message CountSubjectReferencesResponse {
+  // Количество активных (is_active=true) schedule_items с этим subject_id.
+  int64 schedule_items_count = 1;
+  // Количество one-off уроков с этим subject_id (все, независимо от даты).
+  int64 one_off_lessons_count = 2;
+  // Количество lessons со статусом active/closed/cancelled (т.е. не planned)
+  // по активным schedule_items. Если > 0 — возможна потеря посещаемости,
+  // academic-service возвращает 409 без force=true.
+  int64 non_planned_lessons_count = 3;
+  // Количество всех lessons (любой статус) по активным schedule_items +
+  // используется фронтом для информирования старосты.
+  int64 total_lessons_count = 4;
+}
+
+message OccurrenceHistoryRequest {
+  int64 occurrence_id = 1;
+}
+
+message OccurrenceHistoryResponse {
+  repeated LessonInfo instances = 1;
+  repeated LessonLifecycleEntry entries = 2;
+}
+
+message LessonLifecycleEntry {
+  int64 revision = 1;
+  string action = 2;
+  LessonInfo lesson = 3;
+  optional LessonInfo target_lesson = 4;
+  int64 generation = 5;
+  optional string reason = 6;
+  int64 actor_id = 7;
+  string occurred_at = 8;
+}
+
+enum HomeworkBindingState {
+  HOMEWORK_BINDING_STATE_UNSPECIFIED = 0;
+  HOMEWORK_BINDING_STATE_PENDING = 1;
+  HOMEWORK_BINDING_STATE_ACTIVE = 2;
+  HOMEWORK_BINDING_STATE_ARCHIVED = 3;
+}
+
+message ReserveHomeworkBindingRequest {
+  int64 occurrence_id = 1;
+  string request_key = 2;
+  int64 expected_revision = 3;
+  bytes payload_hash = 4;
+}
+
+message ConfirmHomeworkBindingRequest {
+  int64 binding_id = 1;
+  int64 homework_id = 2;
+  string request_key = 3;
+}
+
+message HomeworkBindingResponse {
+  int64 binding_id = 1;
+  int64 occurrence_id = 2;
+  rutcampustrack.schedule.LessonInfo current_lesson = 3;
+  optional int64 homework_id = 4;
+  HomeworkBindingState state = 5;
+  int64 revision = 6;
+  int64 group_id = 7;
+  int64 subject_id = 8;
+  int64 semester_id = 9;
+  string date = 10;
+  int32 lesson_number = 11;
+}
+
+message HomeworkBindingsRequest {
+  repeated int64 occurrence_ids = 1;
+}
+
+message HomeworkBindingsResponse {
+  repeated HomeworkBindingResponse bindings = 1;
+}

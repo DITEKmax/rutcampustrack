@@ -1,0 +1,54 @@
+[
+  {
+    "path": "docs/openapi/schedule.json",
+    "sha256": "52EE384A311BFCE1CEBEEAA6148916E834A26E56793D6BA469DE6C4056E26C50"
+  },
+  {
+    "path": "frontends/pwa/src/api/generated/academic.types.ts",
+    "sha256": "6C1E786E7895C23B0BDA7F99E9A1524882337E956B9758FF298ACBD169F40C5E"
+  },
+  {
+    "path": "frontends/pwa/src/api/generated/attendance.types.ts",
+    "sha256": "1A5220BE00B22635957D7FD3841B02174FD89BBF5372935FB3EE94588418BEE1"
+  },
+  {
+    "path": "frontends/pwa/src/api/generated/auth.types.ts",
+    "sha256": "F4DCA3A88FE770C196F47230788DB962BD6DC300CFF586D43B7113B247B52342"
+  },
+  {
+    "path": "frontends/pwa/src/api/generated/schedule.types.ts",
+    "sha256": "5D51AC1B9CF971C4F223463EE005F62EEC00A859FD345345F4EEDF0FADC9781A"
+  },
+  {
+    "path": "frontends/web-panel/src/app/api/generated/academic.types.ts",
+    "sha256": "6C1E786E7895C23B0BDA7F99E9A1524882337E956B9758FF298ACBD169F40C5E"
+  },
+  {
+    "path": "frontends/web-panel/src/app/api/generated/attendance.types.ts",
+    "sha256": "1A5220BE00B22635957D7FD3841B02174FD89BBF5372935FB3EE94588418BEE1"
+  },
+  {
+    "path": "frontends/web-panel/src/app/api/generated/auth.types.ts",
+    "sha256": "F4DCA3A88FE770C196F47230788DB962BD6DC300CFF586D43B7113B247B52342"
+  },
+  {
+    "path": "frontends/web-panel/src/app/api/generated/schedule.types.ts",
+    "sha256": "5D51AC1B9CF971C4F223463EE005F62EEC00A859FD345345F4EEDF0FADC9781A"
+  },
+  {
+    "path": "frontends/mini-app/src/api/generated/academic.types.ts",
+    "sha256": "490C81E61D7A02D121AE27E810F36C5B7CE58E1609E14D2B5FC04B83E3E4107D"
+  },
+  {
+    "path": "frontends/mini-app/src/api/generated/attendance.types.ts",
+    "sha256": "76072B1B7EE411BFEA9AA03E674570E724856F47FA66B31078D4F02777B8D78E"
+  },
+  {
+    "path": "frontends/mini-app/src/api/generated/auth.types.ts",
+    "sha256": "5352F456843D0A6C08CD958FE0049B07B0D63BFD2978FC3B3486EAFA15050C15"
+  },
+  {
+    "path": "frontends/mini-app/src/api/generated/schedule.types.ts",
+    "sha256": "ED461C99BD7E331C923B123D512D9E1638EDF0A700721C05E931E9DE9F458B77"
+  }
+]

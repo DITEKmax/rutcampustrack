@@ -1,0 +1,2834 @@
+{
+  "generatedAt": "2026-09-07T20:20:06.596Z",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "browser": {
+    "engine": "Microsoft Edge",
+    "executablePath": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+    "headless": true
+  },
+  "context": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "deviceScaleFactor": 1,
+    "timezoneId": "Europe/Moscow",
+    "locale": "ru-RU"
+  },
+  "fixture": {
+    "source": "copied actual HomeworkScreen/useHomework fixture",
+    "expectedTitle": "Собери консольное приложение и добавь тесты.",
+    "expectedDescription": "Добавь короткое README и приложи ссылку на репозиторий. Репозиторий должен быть доступен преподавателю.",
+    "emptyDescriptionTitle": "Спроектируй таблицу сравнения протоколов.",
+    "note": "Distinct brief/detail values are source-faithful representatives used to make field mapping observable."
+  },
+  "scenes": {
+    "current": {
+      "name": "01-open-current",
+      "file": "screenshots-final\\01-open-current.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 844,
+          "top": 0,
+          "right": 374,
+          "bottom": 844,
+          "left": 16
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 179.78125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 179.78125,
+            "right": 374,
+            "bottom": 378.21875,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 425.15625,
+            "width": 358,
+            "height": 198.4375,
+            "top": 425.15625,
+            "right": 374,
+            "bottom": 623.59375,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "expectedFrame": "4601:142",
+      "state": "open",
+      "accessibilityViolations": [],
+      "presentation": {
+        "before": {
+          "subject": "Основы программирования",
+          "title": "Собери консольное приложение и добавь тесты.",
+          "description": null,
+          "descriptionFontPx": null,
+          "actions": {
+            "x": 32,
+            "y": 256.21875,
+            "width": 326,
+            "height": 44,
+            "top": 256.21875,
+            "right": 358,
+            "bottom": 300.21875,
+            "left": 32
+          },
+          "expand": {
+            "x": 314,
+            "y": 256.21875,
+            "width": 44,
+            "height": 44,
+            "top": 256.21875,
+            "right": 358,
+            "bottom": 300.21875,
+            "left": 314
+          },
+          "expandCount": 1,
+          "materialCount": 1,
+          "error": null,
+          "children": [
+            "",
+            "homework-card__title",
+            "homework-card__actions",
+            "homework-completion"
+          ]
+        },
+        "emptyBefore": {
+          "subject": "Компьютерные сети",
+          "title": "Спроектируй таблицу сравнения протоколов.",
+          "description": null,
+          "descriptionFontPx": null,
+          "actions": {
+            "x": 32,
+            "y": 501.59375,
+            "width": 326,
+            "height": 44,
+            "top": 501.59375,
+            "right": 358,
+            "bottom": 545.59375,
+            "left": 32
+          },
+          "expand": null,
+          "expandCount": 0,
+          "materialCount": 1,
+          "error": null,
+          "children": [
+            "",
+            "homework-card__title",
+            "homework-card__actions",
+            "homework-completion"
+          ]
+        }
+      }
+    },
+    "expanded": {
+      "name": "02-expanded",
+      "file": "screenshots-final\\02-expanded.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 844,
+          "top": 0,
+          "right": 374,
+          "bottom": 844,
+          "left": 16
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 179.78125,
+            "width": 358,
+            "height": 264.609375,
+            "top": 179.78125,
+            "right": 374,
+            "bottom": 444.390625,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 491.328125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 491.328125,
+            "right": 374,
+            "bottom": 689.765625,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты.Добавь короткое README и приложи ссылку на репозиторий. Репозиторий должен быть доступен преподавателю. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "expectedFrame": "4601:848562",
+      "state": "expanded",
+      "accessibilityViolations": [],
+      "presentation": {
+        "expanded": {
+          "subject": "Основы программирования",
+          "title": "Собери консольное приложение и добавь тесты.",
+          "description": "Добавь короткое README и приложи ссылку на репозиторий. Репозиторий должен быть доступен преподавателю.",
+          "descriptionFontPx": 12,
+          "actions": {
+            "x": 32,
+            "y": 322.390625,
+            "width": 326,
+            "height": 44,
+            "top": 322.390625,
+            "right": 358,
+            "bottom": 366.390625,
+            "left": 32
+          },
+          "expand": {
+            "x": 314,
+            "y": 322.390625,
+            "width": 44,
+            "height": 44,
+            "top": 322.390625,
+            "right": 358,
+            "bottom": 366.390625,
+            "left": 314
+          },
+          "expandCount": 1,
+          "materialCount": 1,
+          "error": null,
+          "children": [
+            "",
+            "homework-card__title",
+            "homework-card__description",
+            "homework-card__actions",
+            "homework-completion"
+          ]
+        }
+      }
+    },
+    "completed": {
+      "name": "03-completed-multiple",
+      "file": "screenshots-final\\03-completed-multiple.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 844,
+          "top": 0,
+          "right": 374,
+          "bottom": 844,
+          "left": 16
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 179.78125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 179.78125,
+            "right": 374,
+            "bottom": 378.21875,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 390.21875,
+            "width": 358,
+            "height": 198.4375,
+            "top": 390.21875,
+            "right": 374,
+            "bottom": 588.65625,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬВыполнено сегодняОсновы программированияСобери консольное приложение и добавь тесты. Материалы ВыполненоКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Выполнено"
+      },
+      "expectedFrame": "4601:848636",
+      "state": "completed-multiple",
+      "accessibilityViolations": []
+    },
+    "historical": {
+      "name": "04-historical",
+      "file": "screenshots-final\\04-historical.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 844,
+          "top": 0,
+          "right": 374,
+          "bottom": 844,
+          "left": 16
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 123.78125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 123.78125,
+            "right": 374,
+            "bottom": 322.21875,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 369.15625,
+            "width": 358,
+            "height": 198.4375,
+            "top": 369.15625,
+            "right": 374,
+            "bottom": 567.59375,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания АВГУСТ28 августаИстория транспортаКонспект по теме Материалы Проведи, чтобы выполнить29 августаМатематикаПовторение формулВыполнено"
+      },
+      "expectedFrame": "4788:146",
+      "state": "historical",
+      "accessibilityViolations": []
+    },
+    "noMaterials": {
+      "name": "05-no-materials",
+      "file": "screenshots-final\\05-no-materials.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 844,
+          "top": 0,
+          "right": 374,
+          "bottom": 844,
+          "left": 16
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 179.78125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 179.78125,
+            "right": 374,
+            "bottom": 378.21875,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 425.15625,
+            "width": 358,
+            "height": 198.4375,
+            "top": 425.15625,
+            "right": 374,
+            "bottom": 623.59375,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты.Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "expectedFrame": "4922:343",
+      "state": "materials-none",
+      "materialButtons": 1,
+      "noMaterialPresentation": {
+        "subject": "Основы программирования",
+        "title": "Собери консольное приложение и добавь тесты.",
+        "description": null,
+        "descriptionFontPx": null,
+        "actions": {
+          "x": 32,
+          "y": 256.21875,
+          "width": 326,
+          "height": 44,
+          "top": 256.21875,
+          "right": 358,
+          "bottom": 300.21875,
+          "left": 32
+        },
+        "expand": {
+          "x": 314,
+          "y": 256.21875,
+          "width": 44,
+          "height": 44,
+          "top": 256.21875,
+          "right": 358,
+          "bottom": 300.21875,
+          "left": 314
+        },
+        "expandCount": 1,
+        "materialCount": 0,
+        "error": null,
+        "children": [
+          "",
+          "homework-card__title",
+          "homework-card__actions homework-card__actions--no-material",
+          "homework-completion"
+        ]
+      },
+      "noMaterialText": "Основы программированияСобери консольное приложение и добавь тесты.Проведи, чтобы выполнить",
+      "availableMaterialVisible": true,
+      "accessibilityViolations": []
+    },
+    "interaction": {
+      "keyboard": {
+        "active": "Снять отметку «Выполнено» с задания «Математика»",
+        "activeTag": "BUTTON",
+        "focusedCompletion": true,
+        "state": "completed"
+      },
+      "reversal": {
+        "open": "false"
+      },
+      "materialEvidence": "Открыт материал: https://example.test/history",
+      "failure": {
+        "name": "06-failure-recovery",
+        "file": "screenshots-final\\06-failure-recovery.png",
+        "png": {
+          "width": 390,
+          "height": 844
+        },
+        "computed": {
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "rootFontPx": 16,
+          "media": {
+            "light": false,
+            "dark": true
+          },
+          "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+          "fontFaces": [
+            {
+              "family": "Onest Variable",
+              "status": "unloaded"
+            },
+            {
+              "family": "Onest Variable",
+              "status": "loaded"
+            },
+            {
+              "family": "Onest Variable",
+              "status": "unloaded"
+            },
+            {
+              "family": "Onest Variable",
+              "status": "loaded"
+            }
+          ],
+          "fontCheck": true,
+          "groupHeadingFontPx": 17,
+          "navItems": [
+            {
+              "active": false,
+              "disabled": false,
+              "label": "Сегодня",
+              "icon": null
+            },
+            {
+              "active": true,
+              "disabled": false,
+              "label": "Задания",
+              "icon": null
+            },
+            {
+              "active": false,
+              "disabled": true,
+              "label": "Учёт",
+              "icon": null
+            },
+            {
+              "active": false,
+              "disabled": true,
+              "label": "Ещё",
+              "icon": null
+            },
+            {
+              "active": false,
+              "disabled": true,
+              "label": "Профиль",
+              "icon": null
+            }
+          ],
+          "background": "rgb(11, 11, 12)",
+          "content": {
+            "x": 16,
+            "y": -364,
+            "width": 358,
+            "height": 1233.40625,
+            "top": -364,
+            "right": 374,
+            "bottom": 869.40625,
+            "left": 16
+          },
+          "cardCount": 4,
+          "cardBounds": [
+            {
+              "x": 16,
+              "y": -184.21875,
+              "width": 358,
+              "height": 198.4375,
+              "top": -184.21875,
+              "right": 374,
+              "bottom": 14.21875,
+              "left": 16
+            },
+            {
+              "x": 16,
+              "y": 61.15625,
+              "width": 358,
+              "height": 198.4375,
+              "top": 61.15625,
+              "right": 374,
+              "bottom": 259.59375,
+              "left": 16
+            },
+            {
+              "x": 16,
+              "y": 306.53125,
+              "width": 358,
+              "height": 244.4375,
+              "top": 306.53125,
+              "right": 374,
+              "bottom": 550.96875,
+              "left": 16
+            },
+            {
+              "x": 16,
+              "y": 562.96875,
+              "width": 358,
+              "height": 198.4375,
+              "top": 562.96875,
+              "right": 374,
+              "bottom": 761.40625,
+              "left": 16
+            }
+          ],
+          "horizontalOverflow": false,
+          "bodyScroll": {
+            "width": 390,
+            "height": 1309
+          },
+          "scrollY": 364,
+          "scrollingElementScrollTop": 364,
+          "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬВыполнено сегодняИстория транспортаПрочитать главу 4 Материалы ВыполненоЗавтра, 8 сентябряМатематикаРешить задачи 1–10 Материалы Проведи, чтобы выполнить9 сентябряКомпьютерные сетиПовторить протоколы Материалы недоступны: ссылка не поддерживается. Проведи, чтобы выполнитьСохранение временно недоступно Повторить ФизикаЛабораторная работаПроведи, чтобы выполнить"
+        },
+        "state": "failed-completion",
+        "keyboard": {
+          "active": "Снять отметку «Выполнено» с задания «Математика»",
+          "activeTag": "BUTTON",
+          "focusedCompletion": true,
+          "state": "completed"
+        },
+        "reversal": {
+          "open": "false"
+        },
+        "materialEvidence": "Открыт материал: https://example.test/history",
+        "accessibilityViolations": []
+      }
+    },
+    "offline": {
+      "offline": {
+        "completionButtons": [
+          {
+            "disabled": true,
+            "label": "Задание «История транспорта». Изменение доступно только онлайн"
+          },
+          {
+            "disabled": true,
+            "label": "Задание «Математика». Изменение доступно только онлайн"
+          },
+          {
+            "disabled": true,
+            "label": "Задание «Компьютерные сети». Изменение доступно только онлайн"
+          },
+          {
+            "disabled": true,
+            "label": "Задание «Физика». Изменение доступно только онлайн"
+          }
+        ],
+        "materialButtons": 2,
+        "disclosureButtons": 4
+      },
+      "screenshot": {
+        "name": "07-offline",
+        "file": "screenshots-final\\07-offline.png",
+        "png": {
+          "width": 390,
+          "height": 844
+        },
+        "computed": {
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "rootFontPx": 16,
+          "media": {
+            "light": false,
+            "dark": true
+          },
+          "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+          "fontFaces": [
+            {
+              "family": "Onest Variable",
+              "status": "unloaded"
+            },
+            {
+              "family": "Onest Variable",
+              "status": "loaded"
+            },
+            {
+              "family": "Onest Variable",
+              "status": "unloaded"
+            },
+            {
+              "family": "Onest Variable",
+              "status": "loaded"
+            }
+          ],
+          "fontCheck": true,
+          "groupHeadingFontPx": 17,
+          "navItems": [
+            {
+              "active": false,
+              "disabled": false,
+              "label": "Сегодня",
+              "icon": null
+            },
+            {
+              "active": true,
+              "disabled": false,
+              "label": "Задания",
+              "icon": null
+            },
+            {
+              "active": false,
+              "disabled": true,
+              "label": "Учёт",
+              "icon": null
+            },
+            {
+              "active": false,
+              "disabled": true,
+              "label": "Ещё",
+              "icon": null
+            },
+            {
+              "active": false,
+              "disabled": true,
+              "label": "Профиль",
+              "icon": null
+            }
+          ],
+          "background": "rgb(11, 11, 12)",
+          "content": {
+            "x": 16,
+            "y": -384,
+            "width": 358,
+            "height": 1207.59375,
+            "top": -384,
+            "right": 374,
+            "bottom": 823.59375,
+            "left": 16
+          },
+          "cardCount": 4,
+          "cardBounds": [
+            {
+              "x": 16,
+              "y": -184.03125,
+              "width": 358,
+              "height": 198.4375,
+              "top": -184.03125,
+              "right": 374,
+              "bottom": 14.40625,
+              "left": 16
+            },
+            {
+              "x": 16,
+              "y": 61.34375,
+              "width": 358,
+              "height": 198.4375,
+              "top": 61.34375,
+              "right": 374,
+              "bottom": 259.78125,
+              "left": 16
+            },
+            {
+              "x": 16,
+              "y": 306.71875,
+              "width": 358,
+              "height": 198.4375,
+              "top": 306.71875,
+              "right": 374,
+              "bottom": 505.15625,
+              "left": 16
+            },
+            {
+              "x": 16,
+              "y": 517.15625,
+              "width": 358,
+              "height": 198.4375,
+              "top": 517.15625,
+              "right": 374,
+              "bottom": 715.59375,
+              "left": 16
+            }
+          ],
+          "horizontalOverflow": false,
+          "bodyScroll": {
+            "width": 390,
+            "height": 1250
+          },
+          "scrollY": 384,
+          "scrollingElementScrollTop": 384,
+          "activeText": "Задания Офлайн · задания доступны только для просмотра Посмотреть предыдущие СЕНТЯБРЬВыполнено сегодняИстория транспортаПрочитать главу 4 Материалы ВыполненоЗавтра, 8 сентябряМатематикаРешить задачи 1–10 Материалы Доступно только онлайн9 сентябряКомпьютерные сетиПовторить протоколы Материалы недоступны: ссылка не поддерживается. Доступно только онлайнФизикаЛабораторная работаДоступно только онлайн"
+        },
+        "state": "offline-read-only",
+        "offline": {
+          "completionButtons": [
+            {
+              "disabled": true,
+              "label": "Задание «История транспорта». Изменение доступно только онлайн"
+            },
+            {
+              "disabled": true,
+              "label": "Задание «Математика». Изменение доступно только онлайн"
+            },
+            {
+              "disabled": true,
+              "label": "Задание «Компьютерные сети». Изменение доступно только онлайн"
+            },
+            {
+              "disabled": true,
+              "label": "Задание «Физика». Изменение доступно только онлайн"
+            }
+          ],
+          "materialButtons": 2,
+          "disclosureButtons": 4
+        },
+        "accessibilityViolations": []
+      }
+    },
+    "emptyNoMaterials": {
+      "name": "08-no-materials-empty",
+      "file": "screenshots-final\\08-no-materials-empty.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 844,
+          "top": 0,
+          "right": 374,
+          "bottom": 844,
+          "left": 16
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 179.78125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 179.78125,
+            "right": 374,
+            "bottom": 378.21875,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 425.15625,
+            "width": 358,
+            "height": 144.4375,
+            "top": 425.15625,
+            "right": 374,
+            "bottom": 569.59375,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов.Проведи, чтобы выполнить"
+      },
+      "expectedFrame": "4922:343",
+      "state": "materials-none-empty-detail",
+      "presentation": {
+        "subject": "Компьютерные сети",
+        "title": "Спроектируй таблицу сравнения протоколов.",
+        "description": null,
+        "descriptionFontPx": null,
+        "actions": null,
+        "expand": null,
+        "expandCount": 0,
+        "materialCount": 0,
+        "error": null,
+        "children": [
+          "",
+          "homework-card__title",
+          "homework-completion"
+        ]
+      },
+      "accessibilityViolations": []
+    },
+    "unsafeMaterials": {
+      "name": "09-unsafe-material",
+      "file": "screenshots-final\\09-unsafe-material.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 1187.40625,
+          "top": 0,
+          "right": 374,
+          "bottom": 1187.40625,
+          "left": 16
+        },
+        "cardCount": 4,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 179.78125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 179.78125,
+            "right": 374,
+            "bottom": 378.21875,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 425.15625,
+            "width": 358,
+            "height": 198.4375,
+            "top": 425.15625,
+            "right": 374,
+            "bottom": 623.59375,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 670.53125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 670.53125,
+            "right": 374,
+            "bottom": 868.96875,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 880.96875,
+            "width": 358,
+            "height": 198.4375,
+            "top": 880.96875,
+            "right": 374,
+            "bottom": 1079.40625,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 1229
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬВыполнено сегодняИстория транспортаПрочитать главу 4 Материалы ВыполненоЗавтра, 8 сентябряМатематикаРешить задачи 1–10 Материалы Проведи, чтобы выполнить9 сентябряКомпьютерные сетиПовторить протоколы Материалы недоступны: ссылка не поддерживается. Проведи, чтобы выполнитьФизикаЛабораторная работаПроведи, чтобы выполнить"
+      },
+      "state": "unsafe-material",
+      "presentation": {
+        "subject": "Компьютерные сети",
+        "title": "Повторить протоколы",
+        "description": null,
+        "descriptionFontPx": null,
+        "actions": {
+          "x": 32,
+          "y": 746.96875,
+          "width": 326,
+          "height": 44,
+          "top": 746.96875,
+          "right": 358,
+          "bottom": 790.96875,
+          "left": 32
+        },
+        "expand": {
+          "x": 314,
+          "y": 746.96875,
+          "width": 44,
+          "height": 44,
+          "top": 746.96875,
+          "right": 358,
+          "bottom": 790.96875,
+          "left": 314
+        },
+        "expandCount": 1,
+        "materialCount": 0,
+        "error": "Материалы недоступны: ссылка не поддерживается.",
+        "children": [
+          "",
+          "homework-card__title",
+          "homework-card__actions",
+          "homework-completion"
+        ]
+      },
+      "accessibilityViolations": []
+    }
+  },
+  "matrix": [
+    {
+      "name": "matrix-light-16",
+      "file": "screenshots-final\\matrix-light-16.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": true,
+          "dark": false
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(252, 251, 254)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 844,
+          "top": 0,
+          "right": 374,
+          "bottom": 844,
+          "left": 16
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 179.78125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 179.78125,
+            "right": 374,
+            "bottom": 378.21875,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 425.15625,
+            "width": 358,
+            "height": 198.4375,
+            "top": 425.15625,
+            "right": 374,
+            "bottom": 623.59375,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "light",
+      "requestedRootFont": 16
+    },
+    {
+      "name": "matrix-light-20",
+      "file": "screenshots-final\\matrix-light-20.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 20,
+        "media": {
+          "light": true,
+          "dark": false
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 21.25,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(252, 251, 254)",
+        "content": {
+          "x": 20,
+          "y": 0,
+          "width": 350,
+          "height": 961.6875,
+          "top": 0,
+          "right": 370,
+          "bottom": 961.6875,
+          "left": 20
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 20,
+            "y": 224.75,
+            "width": 350,
+            "height": 271.625,
+            "top": 224.75,
+            "right": 370,
+            "bottom": 496.375,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 555.0625,
+            "width": 350,
+            "height": 271.625,
+            "top": 555.0625,
+            "right": 370,
+            "bottom": 826.6875,
+            "left": 20
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 1010
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "light",
+      "requestedRootFont": 20
+    },
+    {
+      "name": "matrix-light-24",
+      "file": "screenshots-final\\matrix-light-24.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 24,
+        "media": {
+          "light": true,
+          "dark": false
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 25.5,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(252, 251, 254)",
+        "content": {
+          "x": 24,
+          "y": 0,
+          "width": 342,
+          "height": 1186.34375,
+          "top": 0,
+          "right": 366,
+          "bottom": 1186.34375,
+          "left": 24
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 24,
+            "y": 269.6875,
+            "width": 342,
+            "height": 358.3125,
+            "top": 269.6875,
+            "right": 366,
+            "bottom": 628,
+            "left": 24
+          },
+          {
+            "x": 24,
+            "y": 698.421875,
+            "width": 342,
+            "height": 325.921875,
+            "top": 698.421875,
+            "right": 366,
+            "bottom": 1024.34375,
+            "left": 24
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 1240
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "light",
+      "requestedRootFont": 24
+    },
+    {
+      "name": "matrix-no-preference-16",
+      "file": "screenshots-final\\matrix-no-preference-16.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": true,
+          "dark": false
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(252, 251, 254)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 844,
+          "top": 0,
+          "right": 374,
+          "bottom": 844,
+          "left": 16
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 179.78125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 179.78125,
+            "right": 374,
+            "bottom": 378.21875,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 425.15625,
+            "width": 358,
+            "height": 198.4375,
+            "top": 425.15625,
+            "right": 374,
+            "bottom": 623.59375,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "no-preference",
+      "requestedRootFont": 16
+    },
+    {
+      "name": "matrix-no-preference-20",
+      "file": "screenshots-final\\matrix-no-preference-20.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 20,
+        "media": {
+          "light": true,
+          "dark": false
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 21.25,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(252, 251, 254)",
+        "content": {
+          "x": 20,
+          "y": 0,
+          "width": 350,
+          "height": 961.6875,
+          "top": 0,
+          "right": 370,
+          "bottom": 961.6875,
+          "left": 20
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 20,
+            "y": 224.75,
+            "width": 350,
+            "height": 271.625,
+            "top": 224.75,
+            "right": 370,
+            "bottom": 496.375,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 555.0625,
+            "width": 350,
+            "height": 271.625,
+            "top": 555.0625,
+            "right": 370,
+            "bottom": 826.6875,
+            "left": 20
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 1010
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "no-preference",
+      "requestedRootFont": 20
+    },
+    {
+      "name": "matrix-no-preference-24",
+      "file": "screenshots-final\\matrix-no-preference-24.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 24,
+        "media": {
+          "light": true,
+          "dark": false
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 25.5,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(252, 251, 254)",
+        "content": {
+          "x": 24,
+          "y": 0,
+          "width": 342,
+          "height": 1186.34375,
+          "top": 0,
+          "right": 366,
+          "bottom": 1186.34375,
+          "left": 24
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 24,
+            "y": 269.6875,
+            "width": 342,
+            "height": 358.3125,
+            "top": 269.6875,
+            "right": 366,
+            "bottom": 628,
+            "left": 24
+          },
+          {
+            "x": 24,
+            "y": 698.421875,
+            "width": 342,
+            "height": 325.921875,
+            "top": 698.421875,
+            "right": 366,
+            "bottom": 1024.34375,
+            "left": 24
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 1240
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "no-preference",
+      "requestedRootFont": 24
+    },
+    {
+      "name": "matrix-dark-16",
+      "file": "screenshots-final\\matrix-dark-16.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 844,
+          "top": 0,
+          "right": 374,
+          "bottom": 844,
+          "left": 16
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 179.78125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 179.78125,
+            "right": 374,
+            "bottom": 378.21875,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 425.15625,
+            "width": 358,
+            "height": 198.4375,
+            "top": 425.15625,
+            "right": 374,
+            "bottom": 623.59375,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "dark",
+      "requestedRootFont": 16
+    },
+    {
+      "name": "matrix-dark-20",
+      "file": "screenshots-final\\matrix-dark-20.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 20,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 21.25,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 20,
+          "y": 0,
+          "width": 350,
+          "height": 961.6875,
+          "top": 0,
+          "right": 370,
+          "bottom": 961.6875,
+          "left": 20
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 20,
+            "y": 224.75,
+            "width": 350,
+            "height": 271.625,
+            "top": 224.75,
+            "right": 370,
+            "bottom": 496.375,
+            "left": 20
+          },
+          {
+            "x": 20,
+            "y": 555.0625,
+            "width": 350,
+            "height": 271.625,
+            "top": 555.0625,
+            "right": 370,
+            "bottom": 826.6875,
+            "left": 20
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 1010
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "dark",
+      "requestedRootFont": 20
+    },
+    {
+      "name": "matrix-dark-24",
+      "file": "screenshots-final\\matrix-dark-24.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 24,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 25.5,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 24,
+          "y": 0,
+          "width": 342,
+          "height": 1186.34375,
+          "top": 0,
+          "right": 366,
+          "bottom": 1186.34375,
+          "left": 24
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 24,
+            "y": 269.6875,
+            "width": 342,
+            "height": 358.3125,
+            "top": 269.6875,
+            "right": 366,
+            "bottom": 628,
+            "left": 24
+          },
+          {
+            "x": 24,
+            "y": 698.421875,
+            "width": 342,
+            "height": 325.921875,
+            "top": 698.421875,
+            "right": 366,
+            "bottom": 1024.34375,
+            "left": 24
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 1240
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "dark",
+      "requestedRootFont": 24
+    },
+    {
+      "name": "responsive-320",
+      "file": "screenshots-final\\responsive-320.png",
+      "png": {
+        "width": 320,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 320,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 288,
+          "height": 844,
+          "top": 0,
+          "right": 304,
+          "bottom": 844,
+          "left": 16
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 179.78125,
+            "width": 288,
+            "height": 217.28125,
+            "top": 179.78125,
+            "right": 304,
+            "bottom": 397.0625,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 444,
+            "width": 288,
+            "height": 217.28125,
+            "top": 444,
+            "right": 304,
+            "bottom": 661.28125,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 320,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "dark",
+      "requestedRootFont": 16,
+      "requestedViewport": {
+        "width": 320,
+        "height": 844
+      }
+    },
+    {
+      "name": "responsive-390",
+      "file": "screenshots-final\\responsive-390.png",
+      "png": {
+        "width": 390,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 844,
+          "top": 0,
+          "right": 374,
+          "bottom": 844,
+          "left": 16
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 16,
+            "y": 179.78125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 179.78125,
+            "right": 374,
+            "bottom": 378.21875,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 425.15625,
+            "width": 358,
+            "height": 198.4375,
+            "top": 425.15625,
+            "right": 374,
+            "bottom": 623.59375,
+            "left": 16
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 390,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "dark",
+      "requestedRootFont": 16,
+      "requestedViewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "name": "responsive-430",
+      "file": "screenshots-final\\responsive-430.png",
+      "png": {
+        "width": 430,
+        "height": 844
+      },
+      "computed": {
+        "viewport": {
+          "width": 430,
+          "height": 844,
+          "dpr": 1
+        },
+        "rootFontPx": 16,
+        "media": {
+          "light": false,
+          "dark": true
+        },
+        "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+        "fontFaces": [
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "unloaded"
+          },
+          {
+            "family": "Onest Variable",
+            "status": "loaded"
+          }
+        ],
+        "fontCheck": true,
+        "groupHeadingFontPx": 17,
+        "navItems": [
+          {
+            "active": false,
+            "disabled": false,
+            "label": "Сегодня",
+            "icon": null
+          },
+          {
+            "active": true,
+            "disabled": false,
+            "label": "Задания",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Учёт",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Ещё",
+            "icon": null
+          },
+          {
+            "active": false,
+            "disabled": true,
+            "label": "Профиль",
+            "icon": null
+          }
+        ],
+        "background": "rgb(11, 11, 12)",
+        "content": {
+          "x": 36,
+          "y": 0,
+          "width": 358,
+          "height": 844,
+          "top": 0,
+          "right": 394,
+          "bottom": 844,
+          "left": 36
+        },
+        "cardCount": 2,
+        "cardBounds": [
+          {
+            "x": 36,
+            "y": 179.78125,
+            "width": 358,
+            "height": 198.4375,
+            "top": 179.78125,
+            "right": 394,
+            "bottom": 378.21875,
+            "left": 36
+          },
+          {
+            "x": 36,
+            "y": 425.15625,
+            "width": 358,
+            "height": 198.4375,
+            "top": 425.15625,
+            "right": 394,
+            "bottom": 623.59375,
+            "left": 36
+          }
+        ],
+        "horizontalOverflow": false,
+        "bodyScroll": {
+          "width": 430,
+          "height": 886
+        },
+        "scrollY": 0,
+        "scrollingElementScrollTop": 0,
+        "activeText": "Задания Посмотреть предыдущие СЕНТЯБРЬСегодня, 1 сентябряОсновы программированияСобери консольное приложение и добавь тесты. Материалы Проведи, чтобы выполнитьЗавтра, 2 сентябряКомпьютерные сетиСпроектируй таблицу сравнения протоколов. Материалы Проведи, чтобы выполнить"
+      },
+      "state": "open",
+      "requestedColorScheme": "dark",
+      "requestedRootFont": 16,
+      "requestedViewport": {
+        "width": 430,
+        "height": 844
+      }
+    }
+  ]
+}

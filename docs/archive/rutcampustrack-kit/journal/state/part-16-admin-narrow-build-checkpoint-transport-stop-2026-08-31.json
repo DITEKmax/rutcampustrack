@@ -1,0 +1,66 @@
+{
+  "date": "2026-08-31",
+  "reason": "third_write_transport_failure",
+  "transport": {
+    "threshold": "3/3",
+    "writeHttp504": 3,
+    "writeTransportClosed": 4,
+    "diagnosticTransportClosed": 6,
+    "lastFailure": "Transport closed during atomic 768 bank write"
+  },
+  "stableFigmaState": {
+    "documentA": 47374,
+    "page20A": 182,
+    "completedBanks": [1024],
+    "notStartedBanks": [768, 600, 425, 300],
+    "admin768Frames": 0,
+    "r7Done": false,
+    "fullAuditDone": false,
+    "rendersDone": false
+  },
+  "bank1024": {
+    "deltaA": 26,
+    "dataWrites": 294,
+    "equalSkipped": 140,
+    "unmapped": 0,
+    "frames": {
+      "131": { "id": "3883:48039", "frame": [1024, 1080], "mainHeight": 579 },
+      "132": { "id": "3883:48316", "frame": [1024, 2721], "mainHeight": 2645 },
+      "133": { "id": "3883:49754", "frame": [1024, 3082], "mainHeight": 3006 },
+      "134": { "id": "3883:50861", "frame": [1024, 1280], "mainHeight": 1204 },
+      "135": { "id": "3883:51519", "frame": [1024, 2302], "mainHeight": 2226 }
+    }
+  },
+  "systemActivityWidth768LiveProbe": {
+    "704": [704, 694],
+    "552": [552, 694],
+    "393": [393, 1082],
+    "276": [276, 1082],
+    "metricValuePair2": [80, 40],
+    "overflow": 0,
+    "residualProbeNodes": 0
+  },
+  "latestAttempt": {
+    "mode": "per-frame",
+    "frame": "300/133",
+    "expected": { "deltaA": 6, "frameHeight": 3532, "mainHeight": 3456, "groupCreate": [276, 374] },
+    "transientActual": { "groupsRegistry": [276, 2119], "groupPromotion": [276, 883], "groupCreate": [276, 322] },
+    "cause": "G8 forecast assumed actions WRAP, but 84 + 12 + 105 = 201 fits in the live 228 px action row",
+    "rolledBack": true,
+    "readback": { "page20A": 270, "matchingFrames": 0 },
+    "consecutiveTransportFailuresForFrame": 0
+  },
+  "progressAfterTransportResume": {
+    "completedBanks": [1024, 768, 600, 425],
+    "completed300Frames": [131, 132],
+    "page20A": 270,
+    "transportFailuresOnPermanentFrames": 0
+  },
+  "tabsR4Gate": {
+    "frame": "300/133",
+    "failedConfiguration": { "layout": "equal", "layoutAlign": "INHERIT", "tabs": [282, 40], "parentGeometryWidth": 276, "parentRenderWidth": 282, "overflowX": 6 },
+    "provedConfiguration": { "layout": "equal", "layoutAlign": "STRETCH", "tabs": [276, 40], "groupsRegistry": [276, 2119], "overflowX": 0 },
+    "probeResidualA": 0
+  },
+  "resumeFrom": "After owner approves the proved screen-only Tabs configuration, retry 300/133 with Tabs layout=equal plus layoutAlign=STRETCH, deltaA +6, GroupCreate 276x322, main 3404, frame 3480."
+}

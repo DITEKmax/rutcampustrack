@@ -1,0 +1,82 @@
+{
+  "schema": "rct.student-requests-h62-edge-fix.v1",
+  "rulesSha256": "b256a175274987da9710d804b3c050a5dbcb47d8448cc03644d74168b52a437a",
+  "packetSha256": "25f8632b8a9debc63e8d2ee1bb79a4c2ceff57dec5214938c28ec8601da1418c",
+  "packetPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\REQUESTS-H62-EDGE-FIX.md",
+  "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+  "correction": {
+    "beforeRunnerSha256": "13aafbf6f6f437ab75910abf2feae79d3d2e710443efe4f77c6816986445b99a",
+    "afterRunnerSha256": "9a2d703548110a142597b02196f5483f0f61d7329dfbfed313e38f1afc0b4b9d",
+    "preservedFailureEvidencePath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h62-edge-diagnosis\\h62-edge-fix-evidence.outer-failure.json",
+    "preservedFailureEvidenceSha256": "f2c0a09be9e390a478db89461528990da2148bdd91680b5d1e42922ccb068c3c"
+  },
+  "runnerSha256": "9a2d703548110a142597b02196f5483f0f61d7329dfbfed313e38f1afc0b4b9d",
+  "unionRoot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2",
+  "fixture": {
+    "root": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h62-edge-diagnosis\\fixture",
+    "nginxConfig": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h62-edge-diagnosis\\fixture\\nginx\\nginx.conf",
+    "defaultConfig": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h62-edge-diagnosis\\fixture\\nginx\\default.conf",
+    "certificate": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h62-edge-diagnosis\\fixture\\keys\\server.crt",
+    "privateKey": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h62-edge-diagnosis\\fixture\\keys\\server.key",
+    "nginxSha256": "bc18f838fae0d8aa9e99c2ec5d99c2669efe8a9dff47068bab6b34985184be20",
+    "defaultSha256": "d0ccfae3573bc6a233354288c47d1b0eb3601ce6ef9f7cb2887fa5690f0e1b17",
+    "certificateBytes": 1008,
+    "privateKeyBytes": 1703,
+    "tlsContentsPrinted": false
+  },
+  "checks": {
+    "parser": "PASS",
+    "converter": "PASS",
+    "writerNoBom": "PASS",
+    "apiContract": "PASS",
+    "unexpectedSourceRejected": "PASS",
+    "diagnosticsRedactedAndBounded": "PASS",
+    "outerFailurePath": "PASS",
+    "docker": "NOT_RUN",
+    "gradle": "NOT_RUN"
+  },
+  "outerFailurePath": {
+    "status": "PASS",
+    "astExtracted": true,
+    "outerTryStartOffset": 162130,
+    "outerTryEndOffset": 167717,
+    "diagnosticFailure": {
+      "name": "diagnostics-failure",
+      "diagnosticCalls": 1,
+      "cleanupCalls": 1,
+      "reportWrites": 1,
+      "events": [
+        "diagnostics",
+        "cleanup"
+      ],
+      "diagnosticsBeforeCleanup": true,
+      "processExitCode": 1,
+      "failurePresent": true,
+      "failureMessage": "original edge failure <redacted>",
+      "failureRedacted": true,
+      "cleanupStatus": "PASS",
+      "cleanupFailureEvidence": false,
+      "invocationError": "original edge failure <redacted>"
+    },
+    "cleanupFailure": {
+      "name": "cleanup-failure",
+      "diagnosticCalls": 1,
+      "cleanupCalls": 1,
+      "reportWrites": 1,
+      "events": [
+        "diagnostics",
+        "cleanup"
+      ],
+      "diagnosticsBeforeCleanup": true,
+      "processExitCode": 1,
+      "failurePresent": true,
+      "failureMessage": "original edge failure <redacted>; injected cleanup failure <redacted>",
+      "failureRedacted": true,
+      "cleanupStatus": "FAIL",
+      "cleanupFailureEvidence": true,
+      "invocationError": "original edge failure <redacted>"
+    },
+    "defect": null,
+    "boundedGuardProposal": null
+  }
+}

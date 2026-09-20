@@ -1,0 +1,18 @@
+{
+  "created": "2026-09-20T00:57:40.1111761+03:00",
+  "command": "Read-only git diff-name-only/ls-tree/merge-base/rev-parse/status plus JSON counts and contract structure",
+  "exit_code": 0,
+  "source_head": "27860f24eb380c782311bbe0cbb65c3d2c75d85d",
+  "target_head": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+  "merge_base": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "source_unique_paths": 46,
+  "source_only": 44,
+  "overlaps": 2,
+  "already_identical": 0,
+  "target_tracked_clean": true,
+  "contract_sections": 9,
+  "trailing_whitespace": 0,
+  "runtime": "N/A inventory only; no build/test/checkout/cherry-pick",
+  "contract_sha256": "9522C3830530590FC36DBFD906BCEEAA22FF48F481BBD1B9D8528CA98A89BE8F",
+  "inventory_sha256": "15B218A3B4C6B344E6389D633C73B0EA91B6102DA444317A1D3B47C5CD2A7042"
+}

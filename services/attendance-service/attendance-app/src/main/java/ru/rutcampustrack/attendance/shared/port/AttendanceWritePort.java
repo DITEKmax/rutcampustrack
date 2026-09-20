@@ -3,6 +3,8 @@ package ru.rutcampustrack.attendance.shared.port;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 
+import java.time.LocalDate;
+
 /**
  * Write port for cross-domain attendance mutations.
  *
@@ -44,4 +46,17 @@ public interface AttendanceWritePort {
      */
     void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status,
               AttendanceSource source, String excuseReason);
+
+    void markWithLesson(
+            Long studentId,
+            Long lessonId,
+            Long groupId,
+            Long subjectId,
+            Long semesterId,
+            Integer lessonNumber,
+            LocalDate lessonDate,
+            AttendanceStatus status,
+            AttendanceSource source,
+            Long markedBy
+    );
 }

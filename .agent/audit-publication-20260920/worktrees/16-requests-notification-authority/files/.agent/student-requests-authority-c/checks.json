@@ -1,0 +1,85 @@
+{
+  "schema": "rct.verification.v1",
+  "recordedAt": "2026-09-08",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "scope": "Requests notification authority P1 resume",
+  "criteria": [
+    "Canonical persisted request data and current Academic headmen are the only notification authority.",
+    "Invalid lookup/status/attachment data fails closed before private queue tasks.",
+    "The exact bot secret boundary protects Resolve/Fetch while public student RPCs keep their existing boundary.",
+    "Generated Python stubs are package-correct and produced by the pinned generator."
+  ],
+  "checks": [
+    {
+      "name": "protobuf-generation",
+      "status": "PASS",
+      "command": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/services/notification-bot/.venv/Scripts/python.exe -m grpc_tools.protoc -I .agent/student-requests-authority-c/proto-gen --python_out .agent/student-requests-authority-c/proto-gen --grpc_python_out .agent/student-requests-authority-c/proto-gen .agent/student-requests-authority-c/proto-gen/bot/grpc_client/attendance.proto",
+      "workingDirectory": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-notification-authority",
+      "exitCode": 0,
+      "environment": "Windows; Python 3.13.5; grpcio-tools 1.73.0",
+      "evidence": "generator-evidence.md"
+    },
+    {
+      "name": "focused-python-tests",
+      "status": "PASS",
+      "command": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/services/notification-bot/.venv/Scripts/python.exe -m pytest -o addopts= tests\\test_headman_alerts.py tests\\test_attendance_request_grpc_client.py",
+      "workingDirectory": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-notification-authority/services/notification-bot",
+      "exitCode": 0,
+      "environment": "Windows win32; Python 3.13.5; pytest 9.0.3; asyncio 1.3.0",
+      "output": "18 passed in 4.33s",
+      "evidence": "runtime-evidence.md"
+    },
+    {
+      "name": "scoped-python-compile",
+      "status": "PASS",
+      "command": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/services/notification-bot/.venv/Scripts/python.exe -m py_compile bot\\grpc_client\\attendance_client.py bot\\grpc_client\\attendance_pb2.py bot\\grpc_client\\attendance_pb2_grpc.py bot\\notifications\\headman_alerts.py tests\\test_attendance_request_grpc_client.py tests\\test_headman_alerts.py",
+      "workingDirectory": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-notification-authority/services/notification-bot",
+      "exitCode": 0,
+      "environment": "Windows; Python 3.13.5",
+      "evidence": "runtime-evidence.md"
+    },
+    {
+      "name": "current-path-manifest-verification",
+      "status": "PASS",
+      "command": "PowerShell hash comparison for all entries in .agent/student-requests-authority-c/current-path-manifest.txt",
+      "workingDirectory": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-notification-authority",
+      "exitCode": 0,
+      "environment": "Windows PowerShell",
+      "output": "CURRENT_MANIFEST_OK checked=14",
+      "evidence": "current-path-manifest.txt"
+    },
+    {
+      "name": "focused-java-gradle-initial",
+      "status": "FAIL",
+      "command": ":services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.grpc.AttendanceRequestBotGrpcServiceTest --tests ru.rutcampustrack.attendance.studentrequest.StudentRequestServiceAuthorizationTest --tests ru.rutcampustrack.attendance.grpc.StudentRequestGrpcErrorsTest",
+      "workingDirectory": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-notification-authority",
+      "exitCode": 1,
+      "environment": "Windows PowerShell/PTY; Gradle wrapper; --no-parallel; --max-workers=1; --console=plain",
+      "output": ":services:attendance-service:attendance-app:compileTestJava failed with five cannot-find-symbol errors for generated public Student request message classes; tests did not execute",
+      "evidence": "gradle-failure.md; XML_COUNT=0; result directory absent; root correction addendum recorded; corrected rerun is recorded separately"
+    },
+    {
+      "name": "focused-java-gradle-rerun",
+      "status": "PASS",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.grpc.AttendanceRequestBotGrpcServiceTest --tests ru.rutcampustrack.attendance.studentrequest.StudentRequestServiceAuthorizationTest --tests ru.rutcampustrack.attendance.grpc.StudentRequestGrpcErrorsTest --no-parallel --max-workers=1 --console=plain",
+      "workingDirectory": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-notification-authority",
+      "exitCode": 0,
+      "environment": "Windows PowerShell/PTY; Gradle wrapper; --no-parallel; --max-workers=1; --console=plain",
+      "output": "BUILD SUCCESSFUL in 21s; XML_COUNT=3; tests=20; failures=0; errors=0",
+      "evidence": "gradle-success.md; current-path-manifest.txt"
+    }
+  ],
+  "runtime": {
+    "status": "PARTIAL_PASS",
+    "mode": "Python fake bot/fake queue and in-process gRPC client/handler mocks",
+    "evidence": "runtime-evidence.md",
+    "externalTelegram": "N/A",
+    "containers": "N/A",
+    "realJavaGrpcServer": "N/A; focused Java tests use direct adapter/domain/interceptor mocks and do not start a server"
+  },
+  "limitations": [
+    "No production, Docker, Testcontainers, real Telegram, secrets, deployment or migration was used.",
+    "Full bot suite and independent Sol review remain outside this recorded check run.",
+    "Imported EventConsumerIT and RabbitDecisionRetryIT are preserved at their accepted hashes; they are not re-run here."
+  ]
+}

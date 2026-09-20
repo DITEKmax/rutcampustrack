@@ -1,0 +1,61 @@
+{
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2 + working-tree changes",
+  "worktree": "codex/student-role-02-requests-domain",
+  "environment": {
+    "os": "Windows 11",
+    "java": "OpenJDK 21.0.10 Microsoft",
+    "gradle": "8.12",
+    "docker": "Testcontainers runtime used successfully; unique mongo:7.0 container and random host port",
+    "sandbox": "Gradle commands required elevated local filesystem/JVM access; no shared runtime cleanup"
+  },
+  "checks": [
+    {
+      "id": "compile-java",
+      "criterion": "Attendance production sources compile on the final working tree",
+      "command": ".\\gradlew.bat --no-daemon :services:attendance-service:attendance-app:integrationTest --rerun-tasks --tests ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": "The final integration task executed attendance-app:compileJava and completed BUILD SUCCESSFUL."
+    },
+    {
+      "id": "test-classes",
+      "criterion": "New and affected tests compile",
+      "command": ".\\gradlew.bat --no-daemon :services:attendance-service:attendance-app:integrationTest --rerun-tasks --tests ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": "The final integration task executed attendance-app:compileTestJava and testClasses before integrationTest."
+    },
+    {
+      "id": "focused-unit-regression",
+      "criterion": "Authorization and affected excuse/late behavior remain green",
+      "command": ".\\gradlew.bat --no-daemon :services:attendance-service:attendance-app:test --rerun-tasks --tests ru.rutcampustrack.attendance.studentrequest.StudentRequestServiceAuthorizationTest --tests ru.rutcampustrack.attendance.excuse.ExcuseEventPublisherTest --tests ru.rutcampustrack.attendance.excuse.ExcuseServiceTest --tests ru.rutcampustrack.attendance.latecheckin.LateCheckinEventContractTest --tests ru.rutcampustrack.attendance.latecheckin.LateCheckinServiceTest",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": "55 tests: authorization 5, ExcuseEventPublisher 4, ExcuseService 10, LateCheckinEventContract 5, LateCheckinService 21; skipped=0, failures=0, errors=0."
+    },
+    {
+      "id": "student-request-mongo-runtime",
+      "criterion": "Real Mongo replica-set scenarios prove transactional domain invariants",
+      "command": ".\\gradlew.bat --no-daemon :services:attendance-service:attendance-app:integrationTest --rerun-tasks --tests ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": "build/test-results/integrationTest/TEST-ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT.xml: tests=10, skipped=0, failures=0, errors=0; logs show mongo:7.0 and ServerDescription type=REPLICA_SET_PRIMARY, setName=docker-rs."
+    },
+    {
+      "id": "event-schema-json",
+      "criterion": "Changed event schemas remain syntactically valid JSON",
+      "command": "$paths = @('event-schemas/excuse.requested.json','event-schemas/late_checkin.decided.json'); foreach ($path in $paths) { Get-Content -Raw $path | ConvertFrom-Json | Out-Null }; Write-Output 'json-ok'",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": "PowerShell emitted json-ok for both changed schemas."
+    },
+    {
+      "id": "diff-whitespace",
+      "criterion": "Tracked diff has no whitespace errors",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": "No diff-check findings; Git emitted only the known LF/CRLF conversion warnings for dirty tracked files."
+    }
+  ]
+}

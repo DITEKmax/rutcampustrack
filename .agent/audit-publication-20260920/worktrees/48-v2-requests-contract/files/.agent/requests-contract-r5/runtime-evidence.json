@@ -1,0 +1,60 @@
+{
+  "status": "PASS_BUNDLED4_SOURCE_PURE_PENDING_SOL_REVIEW",
+  "applicable": true,
+  "scope": [
+    "clean E2E Compose interpolation",
+    "runtime Springdoc OpenAPI required multipart body",
+    "nginx init-letsencrypt Compose caller wiring",
+    "preflight Compose exit propagation",
+    "production Compose caller env-file wiring in seven named paths",
+    "canonical IPv4 gateway validation"
+  ],
+  "baseRevision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "environment": "Windows PowerShell worktree; isolated synthetic/mock checks only; no service startup/deploy",
+  "reason": "Bundled4 preflight direct exit handling, validator canonical IPv4 guard, and seven-path explicit production Compose caller inventory passed. Historical H16 synthetic production Compose config returned exit 0; no real preflight, Docker production config after this source-only extension, bootstrap or deployment ran.",
+  "requiredFollowUp": [
+    "Fresh independent Sol recheck of the repaired R5 diff and union acceptance",
+    "Parent integration of the bounded source and evidence scope"
+  ],
+  "generatedArtifacts": {
+    "docs/openapi/mobile-bff.json": {
+      "sha256": "D4F97E0476CD681A9460247D9F904C7901241269B73221A097EC6BE45132CDA0",
+      "status": "GENERATED_H11_CANONICAL_UPDATE"
+    },
+    "frontends/mobile-core/src/api/generated/mobile-bff.ts": {
+      "sha256": "5D697D0D0615BB5BB93F0C4735B090D3420112B7B97F4FA6C3598CC31B2CA66E",
+      "status": "GENERATED_H11_CANONICAL_TYPES"
+    }
+  },
+  "secrets": "not read",
+  "bundled4": {
+    "preflightMock": {
+      "composeExit0": 0,
+      "preflightExit0": 0,
+      "composeExit17": 17,
+      "preflightExit17": 4,
+      "stderr": "synthetic compose failure without error keyword",
+      "logs": [
+        "preflight-mock/mock-exit0.log",
+        "preflight-mock/mock-exit17.log"
+      ]
+    },
+    "explicitCallerInventory": {
+      "pathCount": 7,
+      "occurrenceCount": 35,
+      "assertionExit": 0
+    },
+    "validatorMatrix": {
+      "syntaxExit": 0,
+      "positiveExit": 0,
+      "negativeCount": 9,
+      "negativeExit": 3
+    },
+    "h16SyntheticCompose": {
+      "command": "docker compose --env-file .agent/requests-contract-r5/isolated-synthetic.env.prod -f docker-compose.prod.yml config --quiet",
+      "exitCode": 0,
+      "fixtureSha256": "1B5EC4E173079019AB38A6ADFD4185FD8EA4B1255B851160E5055C5A7206525E",
+      "startup": "not run"
+    }
+  }
+}

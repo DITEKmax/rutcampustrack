@@ -1,0 +1,55 @@
+{
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "environment": "Windows; Java 21; Gradle wrapper 8.12",
+  "generatedAt": "2026-09-07T17:09:14.9445863Z",
+  "artifacts": [
+    {
+      "file": "services\\academic-service\\academic-app\\build\\libs\\academic-app-0.1.0.jar",
+      "sha256": "E91E10E5D7609EF00321CCAD0212B122C49423B695EB5659220B806763267A0C",
+      "bytes": 97456845,
+      "lastWriteTime": "2026-09-07T20:07:56.9222116+03:00"
+    },
+    {
+      "file": "services\\api-gateway\\build\\libs\\api-gateway-0.1.0.jar",
+      "sha256": "124E11D90AC89C1D5DC16EA9E4D5751BD5412F80565851FB805183F069F5773A",
+      "bytes": 62585651,
+      "lastWriteTime": "2026-09-07T20:07:58.0235687+03:00"
+    },
+    {
+      "file": "services\\attendance-service\\attendance-app\\build\\libs\\attendance-app-0.1.0.jar",
+      "sha256": "05E6AD53CD53C9490AD392AC7293271760946AAE0BB3A95F7A7D3473515EA771",
+      "bytes": 92851267,
+      "lastWriteTime": "2026-09-07T20:07:59.4035924+03:00"
+    },
+    {
+      "file": "services\\auth-service\\auth-app\\build\\libs\\auth-app-0.1.0.jar",
+      "sha256": "FF3B78750E3E81DCDA966899E9C35F3C7B62650B84F86B8076AEF55C4027974D",
+      "bytes": 85610619,
+      "lastWriteTime": "2026-09-07T20:08:00.4914637+03:00"
+    },
+    {
+      "file": "services\\document-renderer-service\\document-renderer-app\\build\\libs\\document-renderer-app-0.1.0.jar",
+      "sha256": "730C78A238F3F149561F2D382DE5F93AE69EE3E6DFD9E7FFDE43FE0277FFAACC",
+      "bytes": 46751076,
+      "lastWriteTime": "2026-09-07T20:08:02.3280169+03:00"
+    },
+    {
+      "file": "services\\mobile-bff\\mobile-bff-app\\build\\libs\\mobile-bff-app-0.1.0.jar",
+      "sha256": "4178B2678C7783272D950F01E5920EB02895EF0982C5A9D1275E215F95AB1763",
+      "bytes": 44909348,
+      "lastWriteTime": "2026-09-07T20:08:12.6453684+03:00"
+    },
+    {
+      "file": "services\\notification-service\\notification-app\\build\\libs\\notification-app-0.1.0.jar",
+      "sha256": "689FCF42CFBB9C64FA523320181AE6B5654339EF0062FDEBD300F62FF7862628",
+      "bytes": 72914555,
+      "lastWriteTime": "2026-09-07T20:08:13.6462937+03:00"
+    },
+    {
+      "file": "services\\schedule-service\\schedule-app\\build\\libs\\schedule-app-0.1.0.jar",
+      "sha256": "A861F4B9AEFAA37E0E189328FFDD8DF8FA0893EE3D75CC0E68437929A1A04D1C",
+      "bytes": 90597391,
+      "lastWriteTime": "2026-09-07T20:08:16.0109236+03:00"
+    }
+  ]
+}

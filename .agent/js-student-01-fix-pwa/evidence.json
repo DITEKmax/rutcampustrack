@@ -1,0 +1,62 @@
+{
+  "task": "JS-STUDENT-01 F3 PWA FIX-r2",
+  "baseRevision": "cedce8c60aee04261ca87a18b898b148719bee89",
+  "capturedAt": "2026-09-06T20:20:00+03:00",
+  "environment": {
+    "os": "Windows",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "browserTarget": "system Chrome (task-owned Playwright context planned)",
+    "worktree": ".agent/worktrees/js-student-01/fix-pwa"
+  },
+  "scope": [
+    "frontends/pwa-vue/**",
+    ".agent/js-student-01-fix-pwa/**"
+  ],
+  "defect": {
+    "severity": "S2",
+    "request": "Root FIX-r2 F3: production HTTPS non-localhost PWA shell must install/offline reload; local dev must not install stale SW.",
+    "reproduction": "Frozen src/main.ts registers only when window.location.hostname === 'localhost'. A secure production origin such as https://student.example cannot enter registration, so no rct-student-pwa-v3 shell cache/controller exists for offline reload.",
+    "evidence": "cedce8c6:frontends/pwa-vue/src/main.ts:10 contains the hostname gate; vite.config.ts:16 additionally requires VITE_ENABLE_LOCAL_PWA_SW=true.",
+    "impact": "A deployed HTTPS PWA outside localhost cannot use the already implemented generated shell precache or recover its IndexedDB offline schedule after network loss."
+  },
+  "baselineChecks": [
+    {
+      "command": "npm ci",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "Installed 222 packages; npm audit found 0 vulnerabilities."
+    },
+    {
+      "command": "npm run typecheck --workspace @rct/pwa-vue",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "vue-tsc completed with no diagnostics."
+    },
+    {
+      "command": "npm run lint --workspace @rct/pwa-vue",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "eslint completed with --max-warnings=0."
+    },
+    {
+      "command": "npm run build --workspace @rct/pwa-vue",
+      "cwd": "frontends",
+      "exitCode": 1,
+      "status": "ENVIRONMENT_BLOCKED",
+      "evidence": "esbuild could not read the worktree Vite config and reported Access is denied while traversing ../../../../../../../..; this is the sandbox/worktree path boundary already observed by the FE lane, not a TypeScript diagnostic.",
+      "nextStep": "Ask root for the approved escalation route or root-side build/runtime execution; no Terra escalation is implied."
+    }
+  ],
+  "runtime": {
+    "status": "PENDING_IMPLEMENTATION",
+    "plannedOrigin": "non-localhost secure loopback (127.0.0.1; HTTPS with task-owned certificate if available, otherwise explicitly limited HTTP secure-context fallback)",
+    "plannedFlow": "one online fixture load -> active SW/controller + full generated precache -> stop task-owned server -> offline reload -> Today shell/snapshot, offline state and disabled mutation",
+    "liveBackend": "deferred to integration owner; fixture transport is not backend evidence"
+  },
+  "limitations": [
+    "The frozen foundation material still documents localhost-only registration; FIX-r2 is the owner-directed narrow product delta and does not rewrite that shared document.",
+    "No trusted non-localhost certificate is available yet; HTTPS verification is attempted in an isolated browser context without global CA/hosts/firewall changes.",
+    "The standalone preview and screenshot are created after implementation and recorded separately."
+  ]
+}

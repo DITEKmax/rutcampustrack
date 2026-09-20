@@ -270,6 +270,7 @@ export class NotificationBellComponent {
       case 'attendance.marked': return 'Посещаемость подтверждена';
       case 'late_checkin.requested': return 'Запрос на отметку';
       case 'late_checkin.decided':
+        if (this.isCancelled(item)) return 'Присутствие подтверждено';
         return this.isApproved(item) ? 'Отметка подтверждена' : 'Отметка отклонена';
       case 'excuse.requested': return 'Новый тикет об у.п.';
       case 'excuse.decided':
@@ -303,6 +304,7 @@ export class NotificationBellComponent {
         return `${student || 'Студент'} просит отметить ${n}${subj}${d}.`.replace(/\s+/g, ' ').trim();
       }
       case 'late_checkin.decided': {
+        if (this.isCancelled(item)) return 'Запрос закрыт после успешной геоотметки.';
         const v = this.isApproved(item) ? 'подтверждена' : 'отклонена';
         return `Ваша отметка ${v}.`;
       }
@@ -333,6 +335,11 @@ export class NotificationBellComponent {
   private isApproved(item: NotificationRecord): boolean {
     const raw = item.payload?.['status'];
     return typeof raw === 'string' && raw.toLowerCase() === 'approved';
+  }
+
+  private isCancelled(item: NotificationRecord): boolean {
+    const raw = item.payload?.['status'];
+    return typeof raw === 'string' && raw.toLowerCase() === 'cancelled';
   }
 
   private formatRuDate(iso: string): string {

@@ -1,0 +1,17 @@
+{
+  "outcome": "PRESENT",
+  "lessonId": "77",
+  "attendance": {
+    "status": "PRESENT",
+    "source": "STUDENT_GEO",
+    "markedAt": "2026-09-06T08:30:00Z"
+  },
+  "request": null,
+  "retryAt": null,
+  "serverNow": "2026-09-06T08:30:00Z",
+  "_links": {
+    "today": {
+      "href": "https://ruttrack.example/api/v1/student/today"
+    }
+  }
+}

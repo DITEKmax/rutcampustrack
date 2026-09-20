@@ -1,0 +1,146 @@
+[
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/test",
+    "name": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:47:52.3450659Z"
+  },
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/test",
+    "name": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:47:52.3470792Z"
+  },
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/test",
+    "name": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:47:52.3385226Z"
+  },
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/test",
+    "name": "ru.rutcampustrack.academic.group.GroupServiceTest",
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:47:52.3420408Z"
+  },
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/test",
+    "name": "ru.rutcampustrack.academic.grpc.HistoricalMembershipGrpcTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:47:52.3430419Z"
+  },
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/test",
+    "name": "ru.rutcampustrack.academic.history.HistoricalMembershipServiceTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:47:52.3430419Z"
+  },
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/test",
+    "name": "ru.rutcampustrack.academic.user.UserServiceConflictTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:47:52.3450659Z"
+  },
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/test",
+    "name": "ru.rutcampustrack.academic.user.UserServiceTelegramRequiredTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:47:52.3445561Z"
+  },
+  {
+    "directory": "services/attendance-service/attendance-app/build/test-results/test",
+    "name": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:48:30.1666642Z"
+  },
+  {
+    "directory": "services/attendance-service/attendance-app/build/test-results/test",
+    "name": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:48:30.1687963Z"
+  },
+  {
+    "directory": "services/attendance-service/attendance-app/build/test-results/test",
+    "name": "ru.rutcampustrack.attendance.event.LessonEventServiceParallelTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:48:30.1603068Z"
+  },
+  {
+    "directory": "services/attendance-service/attendance-app/build/test-results/test",
+    "name": "ru.rutcampustrack.attendance.event.LessonEventServiceTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:48:30.1682640Z"
+  },
+  {
+    "directory": "services/attendance-service/attendance-app/build/test-results/test",
+    "name": "ru.rutcampustrack.attendance.grpc.AcademicGrpcClientTest",
+    "tests": 15,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:48:30.1613047Z"
+  },
+  {
+    "directory": "services/attendance-service/attendance-app/build/test-results/test",
+    "name": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest",
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:48:30.1613047Z"
+  },
+  {
+    "directory": "services/attendance-service/attendance-app/build/test-results/test",
+    "name": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:48:30.1672057Z"
+  },
+  {
+    "directory": "services/attendance-service/attendance-app/build/test-results/test",
+    "name": "ru.rutcampustrack.attendance.report.ReportServiceTest",
+    "tests": 18,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:48:30.1661275Z"
+  }
+]

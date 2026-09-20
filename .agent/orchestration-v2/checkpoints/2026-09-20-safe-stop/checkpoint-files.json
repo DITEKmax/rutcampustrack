@@ -1,0 +1,34 @@
+[
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\checkpoints\\2026-09-20-safe-stop\\checkpoint-verification.json",
+    "Hash": "C873D9EC090C80E33E4F1E5D91B1E22084EC643C4612B583B91BCA68D56605ED"
+  },
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\checkpoints\\2026-09-20-safe-stop\\critical-hashes.json",
+    "Hash": "8807938804E97AC42CA8A810BA5EC39419005015892A50F5BF117E781663C411"
+  },
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\checkpoints\\2026-09-20-safe-stop\\CURRENT-before-stop.md",
+    "Hash": "3650DC9DB70CD5768C897CD6CCCEA2D7420B38A401395A04A0F125168A629303"
+  },
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\checkpoints\\2026-09-20-safe-stop\\l5a-staged.patch",
+    "Hash": "14875A0FF1DDB181EDB77B5BAC6B777AB8BBF18362F4903CA7121555F89C2A89"
+  },
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\checkpoints\\2026-09-20-safe-stop\\REPORT.md",
+    "Hash": "251FFFB2EABF27A20536E5599B240E48104B045CE126C0ED77741B93785C7952"
+  },
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\checkpoints\\2026-09-20-safe-stop\\requests-tracked.patch",
+    "Hash": "BEBC0FB2A03BEA8C21B8B4AD82856084AC389FDDA1650C1C93F4907C51475173"
+  },
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\checkpoints\\2026-09-20-safe-stop\\STOP-ACKS.md",
+    "Hash": "86593612B2130273FC6C44F027197A6B6C666298C976BE160B64B22542750C13"
+  },
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\checkpoints\\2026-09-20-safe-stop\\worktrees.json",
+    "Hash": "B21C22903D213A9F6F2170658361ACA0CE4520A2AF54BC99D35D0712605D5B45"
+  }
+]

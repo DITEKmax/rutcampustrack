@@ -1,0 +1,59 @@
+{
+  "schema": "rct.student-requests-h68-inherited-pipe-boundary.v1",
+  "checkPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-process-drain-fix\\h68-inherited-pipe-boundary-check.ps1",
+  "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+  "runnerSha256": "05c76b696bf987370c0597c3af76c9db94fb588aa3ac3087d6907110ebbb9716",
+  "nodeScriptSha256": "ad23be1ab2fd4582bc059326ed17d21cf16922694acabef1b183022c68df1ce3",
+  "command": "bounded outer pwsh supervisor -> AST-extracted production Invoke-ExternalSafe -> node -e parent exits after spawning known descendant with inherited stdout/stderr",
+  "controlledRuntime": "Synthetic Node parent/descendant only; no network, ports, Docker, Gradle, credentials or keys.",
+  "outerSupervisor": {
+    "deadlineMilliseconds": 7000,
+    "completed": true,
+    "timedOut": false,
+    "exitCode": 0,
+    "elapsedMilliseconds": 917,
+    "supervisorKilledWorker": false
+  },
+  "helper": {
+    "status": "helper-returned",
+    "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+    "runnerSha256": "05c76b696bf987370c0597c3af76c9db94fb588aa3ac3087d6907110ebbb9716",
+    "nodeScriptSha256": "ad23be1ab2fd4582bc059326ed17d21cf16922694acabef1b183022c68df1ce3",
+    "helperExitCode": 0,
+    "helperElapsedMilliseconds": 140,
+    "helperOutputLength": 69,
+    "helperStdoutLength": 44,
+    "helperStderrLength": 23,
+    "helperOutputIsDrainTimeout": false,
+    "parentPid": 38640,
+    "descendantPid": 2344
+  },
+  "parent": {
+    "pid": 38640,
+    "aliveBeforeFixtureCleanup": false,
+    "fixtureCleanupAttempted": false,
+    "absentAfterFixtureCleanup": true
+  },
+  "descendant": {
+    "pid": 2344,
+    "aliveBeforeFixtureCleanup": false,
+    "runnerCleanup": "not-demonstrated-descendant-was-already-absent-before-fixture-cleanup",
+    "fixtureCleanupAttempted": false,
+    "fixtureCleanup": "recorded-descendant-pid-was-already-absent",
+    "absentAfterFixtureCleanup": true
+  },
+  "checks": {
+    "boundedOuterReturn": true,
+    "helperReturned": true,
+    "helperExit124": false,
+    "parentExitedBeforeObservation": true,
+    "descendantHeldInheritedPipes": false,
+    "runnerCleanupNotClaimed": true,
+    "fixtureKnownPidCleanup": true
+  },
+  "limitations": [
+    "On this Windows Node runtime the un-detached descendant was already absent when the parent had exited; inherited-handle retention was not observed, so the helper exit 0 is not a drain-timeout proof.",
+    "The fixture records the exact parent/descendant PIDs and checks their absence; it terminates a recorded PID only when it is still present. This is fixture cleanup evidence, not runner cleanup and not a universal daemon-orphan guarantee.",
+    "The bounded outer supervisor prevents an unexpected helper close/dispose wait from hanging this check; a supervisor timeout is recorded as a failed check."
+  ]
+}

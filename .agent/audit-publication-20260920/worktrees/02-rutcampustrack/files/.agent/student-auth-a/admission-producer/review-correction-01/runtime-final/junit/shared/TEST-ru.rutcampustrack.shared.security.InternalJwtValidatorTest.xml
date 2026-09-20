@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-09-10T20:18:10" hostname="DITEK-PK" time="2.184">
+  <properties/>
+  <testcase name="everyFrozenRequiredClaimMustBePresent()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.335"/>
+  <testcase name="missingAndWrongTypeClaims_throw()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.371"/>
+  <testcase name="canonicalAndSemanticInvariants_areRequired()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.23"/>
+  <testcase name="blankAndNullToken_throwWithoutBearerInMessage()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.156"/>
+  <testcase name="validToken_returnsCompleteFrozenClaims()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.193"/>
+  <testcase name="terminalToken_isReadOnlyAndCanOmitGroup()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.123"/>
+  <testcase name="expiredToken_throws()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.265"/>
+  <testcase name="wrongSignatureIssuerAudienceAndPurpose_throw()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.216"/>
+  <testcase name="timeClaims_mustBeWholeSecondAndOrdered()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.286"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

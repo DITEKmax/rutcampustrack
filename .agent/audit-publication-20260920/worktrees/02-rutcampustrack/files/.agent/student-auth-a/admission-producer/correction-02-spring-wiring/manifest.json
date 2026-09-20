@@ -1,0 +1,27 @@
+{
+  "schema": "admission-spring-wiring-correction-v1",
+  "status": "SOURCE_READY",
+  "release": "RELEASE",
+  "risk": "S3",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "priorCorrection": "../correction-01/manifest.json",
+  "sourceGuard": {
+    "path": "../source-hashes.json",
+    "sha256": "DF8896D704B015E75C7266BCC0E6AAB1F56BDCC98D03276E75878C1342DCDA98",
+    "bytes": 5613,
+    "entries": 17,
+    "postCorrection": "3 expected drifts; 12 other existing entries unchanged; 2 deleted entries absent"
+  },
+  "files": [
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+      "beforeSha256": "A8799DE7C76BD2324621C89DDE56D57658440CFB0DEFDD1730257588DED06E6A",
+      "beforeBytes": 20270,
+      "afterSha256": "6C06F2AD5E4D5EBBAC99574802C112B41234942A091FA2A2AEE37F481D9C5E4A",
+      "afterBytes": 22027,
+      "byteDelta": 1757,
+      "correction": "positive HTTP flow uses Spring-created production service/controller with preinitialized singleton dependencies"
+    }
+  ],
+  "runtime": "N/A; static compile-risk/diff-only correction gate"
+}

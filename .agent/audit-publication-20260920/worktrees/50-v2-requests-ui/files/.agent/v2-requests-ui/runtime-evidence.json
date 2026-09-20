@@ -1,0 +1,14 @@
+{
+  "status": "N/A",
+  "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "environment": "Windows PowerShell; isolated frontend worktree",
+  "reason": "Frozen R4 contract forbids browser/product runtime in this leaf; main owns runtime lease after review and integration.",
+  "required_matrix": [
+    "Requests OPEN/ARCHIVE/options concurrent settlement",
+    "attachment success, HTTP 410, HTTP 5xx/network failure",
+    "blocked popup (window.open returns null)",
+    "owner/session change and teardown while attachment fetch is pending",
+    "matching and mismatching MIME/extension selection"
+  ],
+  "evidence": "Static pre-fix reproductions and expected observable outcomes are recorded in evidence.md; no runtime claim is made."
+}

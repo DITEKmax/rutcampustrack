@@ -1,0 +1,245 @@
+import groovy.json.JsonOutput
+import java.nio.file.DirectoryStream
+import java.nio.file.Files
+import java.nio.file.Path
+import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.compile.JavaCompile
+
+// H8 is a one-invocation diagnostic only. This is a private copy of the H7
+// capture logic with fresh report names; it does not change any repository
+// build script or dependency declaration.
+def h5TargetTaskOrder = [
+    ':services:schedule-service:schedule-app:compileJava',
+    ':services:schedule-service:schedule-app:compileTestJava',
+    ':services:academic-service:academic-app:compileJava',
+    ':services:academic-service:academic-app:compileTestJava',
+    ':services:attendance-service:attendance-app:compileJava',
+    ':services:attendance-service:attendance-app:compileTestJava',
+    ':services:mobile-bff:mobile-bff-app:compileJava',
+    ':services:mobile-bff:mobile-bff-app:compileTestJava',
+    ':services:document-renderer-service:document-renderer-app:compileJava',
+    ':services:document-renderer-service:document-renderer-app:compileTestJava'
+]
+
+def h5TargetRank = [:]
+h5TargetTaskOrder.eachWithIndex { String taskPath, int index ->
+    h5TargetRank[taskPath] = index + 1
+}
+
+def h5RepresentativeRelativePaths = [
+    'ru/rutcampustrack/shared/observability/GrpcDeadlineArchRules.class',
+    'ru/rutcampustrack/shared/testcontainers/IntegrationTestNamingRule.class',
+    'ru/rutcampustrack/shared/outbox/OutboxRecord.class',
+    'ru/rutcampustrack/shared/outbox/OutboxStorage.class',
+    'ru/rutcampustrack/schedule/lesson/LessonService.class',
+    'ru/rutcampustrack/schedule/lesson/repository/LessonRepository.class',
+    'ru/rutcampustrack/shared/web/api/exception/ErrorResponse.class'
+]
+
+def h5RepresentativePackageRelativePaths = [
+    'ru/rutcampustrack/shared/observability',
+    'ru/rutcampustrack/shared/testcontainers',
+    'ru/rutcampustrack/shared/outbox',
+    'ru/rutcampustrack/schedule/lesson',
+    'ru/rutcampustrack/schedule/lesson/repository',
+    'ru/rutcampustrack/shared/web/api/exception'
+]
+
+int h5DirectoryEnumerationLimit = 64
+int h5DirectorySampleLimit = 8
+int h5DirectoryEntryLimit = 32
+
+def h5SafePart = { String value ->
+    value.replaceAll('[^A-Za-z0-9._-]', '_')
+}
+
+def h5PathRecord = { String label, File file ->
+    if (file == null) {
+        return [label: label, path: '<null>', exists: false, readable: false, isDirectory: false]
+    }
+    return [
+        label: label,
+        path: file.absolutePath,
+        exists: file.exists(),
+        readable: file.canRead(),
+        isDirectory: file.isDirectory(),
+        length: file.isFile() ? file.length() : null
+    ]
+}
+
+def h5SourceDirs = { project, JavaCompile compileTask ->
+    def dirs = []
+    try {
+        SourceSetContainer sourceSets = project.extensions.findByType(SourceSetContainer)
+        String sourceSetName = compileTask.name == 'compileTestJava' ? 'test' :
+            (compileTask.name == 'compileJava' ? 'main' : null)
+        if (sourceSetName != null) {
+            def sourceSet = sourceSets?.findByName(sourceSetName)
+            if (sourceSet != null) {
+                dirs.addAll(sourceSet.allSource.srcDirs)
+            }
+        }
+    } catch (Throwable ignored) {
+        // Fall back to the task's resolved source files below.
+    }
+    if (dirs.isEmpty()) {
+        try {
+            dirs.addAll(compileTask.source.files.collect { File sourceFile -> sourceFile.parentFile })
+        } catch (Throwable ignored) {
+            // The report records an empty source-dir list if source resolution fails.
+        }
+    }
+    return dirs.findAll { it != null }.collect { it.absoluteFile }.unique { it.absolutePath }
+}
+
+gradle.allprojects { project ->
+    project.tasks.withType(JavaCompile).configureEach { JavaCompile compileTask ->
+        // The invocation also passes --rerun-tasks and --no-build-cache; this
+        // setting removes incremental compilation as a causal variable.
+        compileTask.options.incremental = false
+
+        compileTask.doFirst {
+            File reportDirectory = new File(project.rootProject.projectDir, '.agent/v2-binding-proto')
+            if (!reportDirectory.exists()) {
+                reportDirectory.mkdirs()
+            }
+
+            Integer targetRank = h5TargetRank[compileTask.path]
+            String reportPrefix = targetRank == null
+                ? "h8-classpath-reached-${h5SafePart(compileTask.path)}"
+                : String.format('h8-classpath-target-%02d-%s', targetRank, h5SafePart(compileTask.path))
+            File reportFile = new File(reportDirectory, "${reportPrefix}.log")
+            def report = [
+                schema: 'h8-classpath-v1',
+                taskPath: compileTask.path,
+                taskName: compileTask.name,
+                projectPath: project.path,
+                targetRank: targetRank,
+                incrementalDisabled: true,
+                classpathOrderPreserved: true,
+                classpath: [],
+                sourceDirs: [],
+                mainOutput: null,
+                taskOutput: null,
+                targetedDirectoryEnumeration: [],
+                targetedDirectoryEnumerationLimit: h5DirectoryEnumerationLimit,
+                targetedDirectorySampleLimit: h5DirectorySampleLimit,
+                targetedDirectoryEntryLimit: h5DirectoryEntryLimit,
+                captureErrors: []
+            ]
+
+            try {
+                // Do not sort or otherwise normalize this collection: its
+                // iteration order is the effective compiler classpath order.
+                compileTask.classpath.each { File entry ->
+                    report.classpath << h5PathRecord("classpath[${report.classpath.size()}]", entry.absoluteFile)
+                }
+            } catch (Throwable error) {
+                report.captureErrors << [area: 'classpath', type: error.class.name, message: error.message]
+            }
+
+            try {
+                h5SourceDirs(project, compileTask).eachWithIndex { File sourceDir, int index ->
+                    report.sourceDirs << h5PathRecord("sourceDir[${index}]", sourceDir)
+                }
+            } catch (Throwable error) {
+                report.captureErrors << [area: 'sourceDirs', type: error.class.name, message: error.message]
+            }
+
+            try {
+                def mainCompileTask = project.tasks.findByName('compileJava')
+                if (mainCompileTask instanceof JavaCompile) {
+                    report.mainOutput = h5PathRecord(
+                        'mainOutput',
+                        mainCompileTask.destinationDirectory.get().asFile.absoluteFile
+                    )
+                }
+            } catch (Throwable error) {
+                report.captureErrors << [area: 'mainOutput', type: error.class.name, message: error.message]
+            }
+
+            try {
+                report.taskOutput = h5PathRecord(
+                    'taskOutput',
+                    compileTask.destinationDirectory.get().asFile.absoluteFile
+                )
+            } catch (Throwable error) {
+                report.captureErrors << [area: 'taskOutput', type: error.class.name, message: error.message]
+            }
+
+            int enumeratedDirectories = 0
+            report.classpath.each { Map entry ->
+                if (enumeratedDirectories >= h5DirectoryEnumerationLimit || !entry.isDirectory || !entry.exists) {
+                    return
+                }
+                File classpathDirectory = new File(entry.path)
+                def candidates = h5RepresentativeRelativePaths.collect { String relativePath ->
+                    File candidate = new File(classpathDirectory, relativePath)
+                    h5PathRecord(relativePath, candidate.absoluteFile)
+                }
+                def directoryEnumeration = h5RepresentativePackageRelativePaths.collect { String relativePath ->
+                    File packageDirectory = new File(classpathDirectory, relativePath).absoluteFile
+                    def directoryRecord = h5PathRecord(relativePath, packageDirectory)
+                    if (!directoryRecord.exists) {
+                        directoryRecord.listDirectory = [status: 'MISSING']
+                    } else if (!directoryRecord.isDirectory) {
+                        directoryRecord.listDirectory = [status: 'NOT_DIRECTORY']
+                    } else {
+                        DirectoryStream<Path> stream = null
+                        try {
+                            stream = Files.newDirectoryStream(packageDirectory.toPath())
+                            int observedCount = 0
+                            def sample = []
+                            boolean truncated = false
+                            for (Path child : stream) {
+                                observedCount++
+                                if (sample.size() < h5DirectorySampleLimit) {
+                                    sample << child.fileName.toString()
+                                }
+                                if (observedCount >= h5DirectoryEntryLimit) {
+                                    truncated = true
+                                    break
+                                }
+                            }
+                            directoryRecord.listDirectory = [
+                                status: 'SUCCESS',
+                                observedCount: observedCount,
+                                sample: sample,
+                                sampleLimit: h5DirectorySampleLimit,
+                                entryLimit: h5DirectoryEntryLimit,
+                                truncated: truncated
+                            ]
+                        } catch (Throwable error) {
+                            directoryRecord.listDirectory = [
+                                status: 'ERROR',
+                                type: error.class.name,
+                                message: error.message
+                            ]
+                        } finally {
+                            if (stream != null) {
+                                stream.close()
+                            }
+                        }
+                    }
+                    directoryRecord
+                }
+                report.targetedDirectoryEnumeration << [
+                    classpathIndex: report.classpath.indexOf(entry),
+                    directory: entry.path,
+                    readable: entry.readable,
+                    candidates: candidates,
+                    packageDirectories: directoryEnumeration
+                ]
+                enumeratedDirectories++
+            }
+            report.targetedDirectoryEnumerationTruncated = report.classpath.count { it.isDirectory && it.exists } > h5DirectoryEnumerationLimit
+
+            try {
+                reportFile.setText(JsonOutput.prettyPrint(JsonOutput.toJson(report)) + System.lineSeparator(), 'UTF-8')
+                logger.lifecycle("H8_CLASSPATH_REPORT=${reportFile.absolutePath}")
+            } catch (Throwable error) {
+                logger.warn("H8_CLASSPATH_REPORT_WRITE_FAILED=${reportFile.absolutePath}: ${error.class.name}: ${error.message}")
+            }
+        }
+    }
+}

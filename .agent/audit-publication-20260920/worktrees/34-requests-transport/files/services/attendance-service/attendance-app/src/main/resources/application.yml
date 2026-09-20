@@ -1,0 +1,107 @@
+server:
+  port: 9093
+  tomcat:
+    mbeanregistry:
+      enabled: true
+
+spring:
+  application:
+    name: attendance-service
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 12MB
+  data:
+    mongodb:
+      # M13 G7: ?replicaSet=rs0 для MongoTransactionManager multi-doc transactions
+      # (bitnami/mongodb single-node RS). В Testcontainers MongoDBContainer
+      # RS mode автоматический — для IT override через DynamicPropertySource
+      # не требует replicaSet явно (getReplicaSetUrl возвращает URI с ним).
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://rct_user:rct_dev_pass@mongo-attendance:27017/attendance_db?authSource=admin&replicaSet=rs0}
+    redis:
+      host: redis
+      port: 6379
+      password: ${REDIS_PASSWORD:rct_dev_pass}
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: ${RABBITMQ_USER:rct_user}
+    password: ${RABBITMQ_PASSWORD:rct_dev_pass}
+
+grpc:
+  server:
+    port: ${ATTENDANCE_GRPC_PORT:19093}
+    max-inbound-message-size: 25165824
+  auth:
+    secret: ${GRPC_SECRET:}
+  client:
+    schedule-service:
+      address: static://schedule-service:19092
+      negotiation-type: plaintext
+    academic-service:
+      address: static://academic-service:19091
+      negotiation-type: plaintext
+    document-renderer-service:
+      address: static://document-renderer-service:19095
+      negotiation-type: plaintext
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+rutcampustrack:
+  security:
+    # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
+    # SPRING_DATA_MONGODB_URI содержит password в URI (mongodb://user:pass@host).
+    required-env-vars: SPRING_DATA_MONGODB_URI,REDIS_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET
+    internal-jwt:
+      # M03a: pull RSA public key from auth-service /auth/public-key.
+      auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
+      public-key-refresh-minutes: 60
+      clock-skew-seconds: 30
+      # M14 G1 (CSO CRIT-01): strict by default — см. academic-app/application.yml.
+      legacy-headers-enabled: ${RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED:false}
+
+# M04 QA1: INFO-default для secure-by-default. DEBUG включается через
+# application-dev.yml (SPRING_PROFILES_ACTIVE=dev) или env-override.
+logging:
+  level:
+    ru.rutcampustrack: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      # M04 QA6: always — partial degradation видна (DB/Rabbit/Redis/Mongo down).
+      # /actuator/health не public, детали утекают только аутентифицированным.
+      show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  info:
+    git:
+      enabled: true
+      mode: full
+    build:
+      enabled: true
+  # M04 QA2 (NEW-58/59) — distributed tracing OTel → Tempo.
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://tempo:4318/v1/traces}
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        grpc.client.duration: true

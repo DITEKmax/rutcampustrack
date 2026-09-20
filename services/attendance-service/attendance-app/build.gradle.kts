@@ -58,6 +58,7 @@ dependencies {
 
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
     implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
+    implementation("com.google.api.grpc:proto-google-common-protos:2.29.0")
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
 
     compileOnly("org.projectlombok:lombok")

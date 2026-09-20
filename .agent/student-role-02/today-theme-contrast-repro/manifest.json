@@ -1,0 +1,17 @@
+[
+  {
+    "source": ".agent/student-role-02/mobile-theme/today-defect-reproduction.json",
+    "snapshot": "today-defect-reproduction.json",
+    "sha256": "51E8A34267D713F75B81F4E243318654E4C64BBF12B1E3133CA72F9666131F59"
+  },
+  {
+    "source": ".agent/student-role-02/mobile-theme/screenshots/today-defect-explicit-light-16.png",
+    "snapshot": "today-defect-explicit-light-16.png",
+    "sha256": "D8340328E02BAEA7B8506460E0C08ED94A69E24BD5F24608B8B7F0D321B102C3"
+  },
+  {
+    "source": ".agent/student-role-02/mobile-theme/screenshots/today-defect-explicit-dark-16.png",
+    "snapshot": "today-defect-explicit-dark-16.png",
+    "sha256": "5FC98B63D8177AE8A20CA2B6F4F98A22AEC3276AC0BEF518BE175C4189B4AC3B"
+  }
+]

@@ -234,7 +234,10 @@ function RequestCard({
             className="text-xs font-medium px-2 py-1 rounded"
             style={{
               background: 'var(--bg-secondary)',
-              color: request.status === 'approved' ? 'var(--color-success)' : 'var(--color-error)',
+              color:
+                request.status === 'approved' || request.status === 'cancelled'
+                  ? 'var(--color-success)'
+                  : 'var(--color-error)',
             }}
           >
             {statusLabel(request.status)}
@@ -251,6 +254,7 @@ function RequestCard({
 function statusLabel(status: LateCheckinRequest['status']) {
   if (status === 'approved') return 'Одобрено'
   if (status === 'rejected') return 'Отклонено'
+  if (status === 'cancelled') return 'Подтверждено геолокацией'
   return 'На рассмотрении'
 }
 

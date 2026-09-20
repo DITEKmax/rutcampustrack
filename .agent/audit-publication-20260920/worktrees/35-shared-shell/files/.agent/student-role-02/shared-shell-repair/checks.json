@@ -1,0 +1,103 @@
+{
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "branch": "codex/student-role-02-shared-shell",
+  "environment": {
+    "os": "Windows PowerShell",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/shared-shell"
+  },
+  "checks": [
+    {
+      "criterion": "All mobile-core, PWA, and TMA TypeScript contracts compile",
+      "command": "npm run typecheck",
+      "cwd": "frontends",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "mobile-core tsc and pwa-vue/tma-vue vue-tsc completed without errors"
+    },
+    {
+      "criterion": "Navigation stack and shell policy cover nested/root and observable behavior",
+      "command": "node --experimental-strip-types --test mobile-core/tests/contract.test.mjs mobile-core/tests/navigation.test.mjs",
+      "cwd": "frontends",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "10 tests passed, including initial nested, cross-root, replace, root navigation, and subscriber cases"
+    },
+    {
+      "criterion": "Changed source and bounded tests satisfy lint",
+      "command": ".\\node_modules\\.bin\\eslint.cmd mobile-core/src/shared mobile-core/src/features/today/TodayScreen.vue mobile-core/src/index.ts mobile-core/tests/navigation.test.mjs --max-warnings=0",
+      "cwd": "frontends",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Scoped ESLint completed without findings"
+    },
+    {
+      "criterion": "Back touch target uses the canonical semantic token alias",
+      "command": "rg -n -- '--rct-control-min-touch|control/min-touch|min-(block|inline)-size: var\\(--rct-control-min-touch\\)' frontends/mobile-core/src/styles/tokens.pcss frontends/mobile-core/src/shared/components/mobile-shell.pcss",
+      "cwd": "worktree root",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "tokens.pcss maps control/min-touch 44px to 2.75rem; both Back dimensions use the alias"
+    },
+    {
+      "criterion": "Compiled MobileShell reacts to host-owned keyboard state",
+      "command": "node --experimental-strip-types .agent/student-role-02/shared-shell/mobile-shell-runtime-probe.mjs",
+      "cwd": "worktree root",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "before=true, after=false, propType=Boolean, propDefault=undefined"
+    },
+    {
+      "criterion": "Actual Vue component handles external stack mutations, host replacement/unmount, and accessible name",
+      "command": "node --experimental-strip-types .agent/student-role-02/shared-shell/mobile-shell-lifecycle-probe.mjs",
+      "cwd": "worktree root",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "external push task/dock=false; external replace root/dock=true; accessibleName=Посещаемость. Раздел пока недоступен; host A/B each subscribed and unsubscribed exactly once"
+    },
+    {
+      "criterion": "PWA and TMA production builds remain green",
+      "command": "npm run build",
+      "cwd": "frontends",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "pwa-vue and tma-vue vue-tsc plus Vite builds completed; 106/107 modules transformed"
+    },
+    {
+      "criterion": "No whitespace errors in scoped tracked diff",
+      "command": "git diff --check",
+      "cwd": "worktree root",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "No diff-check errors; Git emitted only existing LF→CRLF warnings"
+    },
+    {
+      "criterion": "Repair evidence JSON is syntactically valid",
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('.agent/student-role-02/shared-shell-repair/checks.json','utf8')); console.log('checks.json valid')\"",
+      "cwd": "worktree root",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "checks.json valid"
+    },
+    {
+      "criterion": "Full workspace lint is assessed without changing unrelated fixture debt",
+      "command": "npm run lint",
+      "cwd": "frontends",
+      "exit_code": 1,
+      "status": "KNOWN_UNRELATED_FAILURE",
+      "evidence": "Only pre-existing mobile-core/src/test-adapter/fixture-transport.test.ts:94 @typescript-eslint/no-this-alias; PWA and TMA lint completed without findings"
+    }
+  ],
+  "runtime": {
+    "server": "Existing fixture server http://localhost:5175/ was not restarted",
+    "component_probe": "mobile-shell-lifecycle-probe.mjs",
+    "keyboard_probe": "mobile-shell-runtime-probe.mjs",
+    "telegram_host": "N/A for this callback-boundary repair"
+  },
+  "limitations": [
+    "The worktree remains dirty with the pre-existing shared-shell foundation, Today extraction, and related files; no unrelated changes were reset.",
+    "Full product/API runtime and genuine Telegram host verification remain outside this bounded repair.",
+    "The known fixture lint finding is outside the assigned scope and remains open for its owner."
+  ]
+}

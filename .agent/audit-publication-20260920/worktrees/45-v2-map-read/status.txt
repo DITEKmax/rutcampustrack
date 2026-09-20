@@ -1,0 +1,8 @@
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java
+ M services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java
+?? .agent/v2-map-read/
+?? .agent/v2-map-repository-it/
+?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/
+?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java
+?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/

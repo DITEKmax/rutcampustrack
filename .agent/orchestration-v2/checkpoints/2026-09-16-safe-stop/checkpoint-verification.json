@@ -1,0 +1,8 @@
+{
+  "verifiedAt": "2026-09-16T01:12:26.8419812+03:00",
+  "worktrees": 10,
+  "hashedFiles": 379,
+  "mismatches": [],
+  "snapshotSha256": "2A8F63423A5FF33E67A54523CB16DAF5A29913C72204AAC8C1B618BE26471555",
+  "note": "Integrity check, not product tests. Files remain in original worktrees; this is not an external backup."
+}

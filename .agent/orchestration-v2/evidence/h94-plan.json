@@ -1,0 +1,16 @@
+{
+  "arguments": [
+    ":services:schedule-service:schedule-app:test",
+    "--tests",
+    "*RecurringDateCalculatorTest",
+    "--continue",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report"
+  ],
+  "resultDirectories": [
+    "services/schedule-service/schedule-app/build/test-results/test"
+  ],
+  "meaning": "Compile product and all test sources; execute current new date-calculation unit tests only. Not a completion gate."
+}

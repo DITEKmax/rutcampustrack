@@ -1,0 +1,125 @@
+# Ответ на разведку части 7 — решения приняты, файлы обновлены
+
+Разведка принята. Прежде чем начинать сборку, **перечитай заново** (файлы заменены
+10.08, старые копии в контексте недействительны):
+
+- `design/figma-spec.md` — часть 7 переписана, плюс правки в частях 5, 6 и в списке токенов
+- `design/COMPONENT_REGISTRY.md` — строки `AttendanceStatusBadge`, `AttendanceStatusPicker`,
+  `UserRoleStatusList`, `EntityStatusCell`, термин «блокировка пары»
+- `specs/wireframes/headman/111-headman-home.md` и `112-headman-attendance.md`
+
+---
+
+## 1. Четыре блокирующих решения
+
+**1.1. `AttendanceStatusPicker`, выбрано «у», причина не введена.**
+Такого состояния нет и не будет. Клик по кругу «у» **статус не ставит** — открывается
+ввод причины: у `variant=cell` поповер поверх ячейки (`popover/max-width`,
+`color/surface/float`, `shadow/raised`), у `variant=row` раскрытие внутри строки.
+Статус применяется только после сохранения; Esc и клик мимо ничего не меняют.
+Незавершённый ввод живёт внутри формы: кнопка подтверждения `disabled` с
+`disabled-reason`, пока поле пусто. Подробности — `figma-spec` §7.4 части 7.
+
+**1.2. `AttendanceStatusBadge status=pending`.**
+Строка реестра не меняется: `pending` остаётся значением этого компонента. Носитель —
+**пилюля `radius/full` со словом «на подтверждении», без символа**, заливка
+`color/state/*/bg`, текст `color/state/*/text`. Ось `shape` начинает работать: круг у
+статусов отметки, пилюля у `pending`. Это временное решение сборки, оно занесено в
+`figma-code-gaps.md`; при переносе в код развилка будет пересмотрена. Собирай как
+описано, вопрос заново не поднимай.
+
+**1.3. Будущее в `AttendanceTrendChart`.**
+Пунктир остаётся различением **двух серий между собой** и о времени ничего не говорит.
+Будущее **не рисуется линией вовсе**: серия обрывается на последней известной точке,
+будущий отрезок оси размечен подписями, но без линии и точек, рядом пояснение
+«дальше данных нет». Новых носителей не заводится.
+
+**1.4. `UserRoleStatusList`.**
+Да, собирается из экземпляров `EntityStatusCell`. Своей разметки статуса не заводит.
+У `EntityStatusCell` становится два потребителя — 132 и 134.
+
+---
+
+## 2. Что исправлено в документах по твоей разведке
+
+Всё перечисленное уже внесено, повторно докладывать об этих расхождениях не нужно:
+
+- `ProgressScale` **есть** в реестре отдельной строкой — §17 п. 2 части 7 был неверен, исправлен.
+- `state=indeterminate` у `ProgressScale` снят. Ось: `default | error | complete`, 3 × 3 = **9 вариантов**.
+- `AttendanceStatusBadge`: `ring` = **только автоматическое «н»** (`source=auto_scheduler`);
+  `ring` допустим лишь при `status=absent`.
+- `AttendanceStatusPicker`: карандаш отменён, `blocked` снят, ось приведена к автомату спеки 112.
+- `LessonAttendanceCounter`: ось `default | loading | no-active-lesson | error` — 4 варианта.
+- `PendingRequestsCounter`: ось `default | loading | empty | error` — 4 варианта.
+- `AttendanceTrendChart`: состояния переименованы под спеку 113 — `empty-series`, `partial-series`.
+- Имена токенов: `journal/column-width` (68), `journal/metric-column-width` (80),
+  `schedule/cell-size` (80), `name-column/width` (224). Прежние `size/journal-column`
+  и `size/schedule-cell` из спеки убраны вместе с устаревшими значениями 2.5rem и 5rem.
+- 112: убран старый автомат `marked → триггер редактирования → editing`.
+  Вход в правку — клик по самому отмеченному кругу.
+- 111: `LessonBlockToggle` описан по Р-11 — блокировка запрещает студенту любое
+  взаимодействие с парой, а не только геоотметку; `geo-block` выведен из обихода.
+
+Спасибо за имена токенов и за `ProgressScale` — обе находки верные. Дополнение:
+`size/schedule-cell` был устаревшим по той же причине, ты его не назвал.
+
+---
+
+## 3. Ожидаемый состав части 7
+
+16 компонентов. Числа вариантов после решений:
+
+| Компонент | Вариантов |
+|---|---|
+| `shared/MetricValue` | 6 |
+| `shared/MetricDelta` | 5 |
+| `shared/StatCard` | 4 + boolean `has-delta` |
+| `shared/DefinitionList` | 2 |
+| `shared/ProgressScale` | 9 |
+| `attendance/AttendanceStatusBadge` | 14 (7 значений × 2 размера; `pending` — пилюля) |
+| `attendance/AttendanceStatusPicker` | 16 (8 состояний × 2 варианта) |
+| `attendance/TicketStatusBadge` | 4 |
+| `admin/UserRoleStatusList` | 1, data-driven, из `EntityStatusCell` |
+| `attendance/LessonAttendanceCounter` | 4 |
+| `attendance/PendingRequestsCounter` | 4 |
+| `schedule/LessonBlockToggle` | 4 + boolean `focus-ring` |
+| `shared/CountdownTimer` | 2 |
+| `attendance/AttendanceTrendChart` | 15 |
+| `shared/ChartDataTable` | 1 |
+| `attendance/AttendanceRankingList` | 1 + boolean `me-mark` |
+
+Если по ходу сборки число разойдётся с этим списком — **останавливайся и говори**,
+не подгоняй.
+
+---
+
+## 4. Порядок сборки и контрольные точки
+
+Собирай партиями, после каждой — отчёт и остановка.
+
+1. **Партия A — значения:** `MetricValue`, `MetricDelta`, `StatCard`, `DefinitionList`, `ProgressScale`.
+2. **Контрольная точка:** `AttendanceStatusBadge` целиком, скриншоты в обеих темах, до `Picker`.
+   Проверяются форма (круг против пилюли), кольцо только у автоматического «н», зачёркивание
+   у `cancelled`, прочерк у `none`.
+3. **Партия B — отметка:** `AttendanceStatusPicker` (оба варианта, включая `reason-entry`),
+   `TicketStatusBadge`.
+4. **Партия C — счётчики и статусы:** `UserRoleStatusList`, `LessonAttendanceCounter`,
+   `PendingRequestsCounter`, `LessonBlockToggle`, `CountdownTimer`.
+5. **Партия D — графики:** `AttendanceTrendChart`, `ChartDataTable`, `AttendanceRankingList`.
+
+Заглушки поздних частей (`LoadingState`, `EmptyState`, `ErrorState` из части 10) заводи
+именованными подписанными каркасами, как в предыдущих частях, и перечисли их в отчёте.
+
+**В каждом отчёте — числами, а не словами:** непривязанные paints, недействительные
+`VariableID`, геометрия вне шкалы, отсоединённые экземпляры, пересечения секций, обе
+темы, длинная русская строка.
+
+---
+
+## 5. Правила, которые не отменяются
+
+- Документы ведёт владелец. Ты в `design/`, `specs/` и `tasks/` **не пишешь** — сообщаешь
+  о расхождении в отчёте.
+- Вопрос — не поручение. Если что-то непонятно, останавливайся и спрашивай, а не решай.
+- Имена компонентов и токенов совпадают с реестром и `tokens-v2.json` посимвольно.
+- Значения токенов в Figma не дублируются числами в описаниях.

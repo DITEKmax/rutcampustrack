@@ -1,0 +1,30 @@
+# B0 source-ready file hashes
+
+Captured: 2026-09-09 after root readback PASS and final academic proto EOF normalization.
+Exact target count: 25.
+
+1A9FB1B357AC394AFC44906FE6888756DE1B1329E729F6BEB695B25534DB4B45  proto/academic.proto  (10670 bytes)
+44FFABEB7965D5935D481E1628C3C1DD590CA15E1323E09E2E82376A22ACE858  proto/schedule.proto  (5836 bytes)
+C0E33F5A93054B34DD9326E2CC865274384122D07B135457CCF1B2067954DEB2  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthSessionApi.java  (3736 bytes)
+DB14CD24EB3448A12059A8D968A618E79EFF2B7629BDCC57215E4D3F51A92DD3  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalSessionAdmissionApi.java  (1323 bytes)
+3A745E2B1270F07E1F0523678D93BAB911AF0EBD1DCF4B4CB2EC9B4D66FDCD0F  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryEvent.java  (1614 bytes)
+593D09DEDFFD0F6B279594350B70088B76BD669B836BC071020E45A3135B9F9D  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryPage.java  (565 bytes)
+A874654D1E410590F43E59B11318F80C6C35A32AC9D0A32D940A53665A089452  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionRequest.java  (625 bytes)
+1841B46A85ADB96212A9D167A9253A9CB9002021C96C6CEB0954DAD8C3E45912  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionResponse.java  (2969 bytes)
+38813017B0E10E4F6C9C1398EC8EB5D6546C0352151DA6E78362587B70BBD572  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionSummary.java  (2023 bytes)
+02AEFD0580AD2F1B939D4C5EACE3CCE17F06B66B440FF7AFA7273AE61B9A6990  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionsPage.java  (558 bytes)
+DA0899902573AB79D06C6713E44222322B96290F441DD7C4B913D809E965E9A1  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/CurrentSessionResponse.java  (2930 bytes)
+5124D523F20AE93C4C3404D8419D37C8FB1B7C18A9198885E177121C3483BF7D  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordPolicyResponse.java  (1598 bytes)
+216D5BCE545AB120EECA05E14FB22E58085B407EB4CA9DBBDAB83DF076DABA24  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RoleGrantResponse.java  (1507 bytes)
+B62255C419C0BAD4F2854E6FAC4C358DC9E59AB1F9EC84617A6673E47B82AD56  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleRequest.java  (1165 bytes)
+613957796DCA67F271ECB876D45791CECB7719C5DDE07A96C7D06893553777F2  services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleResponse.java  (1072 bytes)
+69A98D54A45BD0EE9FFAD47184862DC9F3B4DF65C1818DCE20B1545CD30DBD61  services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentMapApi.java  (4572 bytes)
+CB6AD4EB2FFE3E48CB74FC8183EEA50AD290F467D9226CB88F09B9D1881991B8  services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentMapModels.java  (5879 bytes)
+074BBF6E161307C560835976416EB68815816DB21579AD4250334A14F7AB2E98  services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/assignment/CloseAssignmentRequest.java  (466 bytes)
+8248DB5C0FC227A9615E93850190220C853D095ACA7E1B1C1D499599812E431F  services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/assignment/ReplaceAssignmentRequest.java  (1628 bytes)
+523017E5F74AC1E136FA1EF7650198DC2D132804EBCC6929E5A6123ECA41A6EA  services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/homework/HomeworkPublicationPendingResponse.java  (1172 bytes)
+61350AC7EC3E5A929686429DDB83FB27DC3543E01C01C5BB3BF8018B1210FD15  services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/HomeworkPublicationState.java  (118 bytes)
+4A59DCD0C19D684CA15D2A323EB0D9D32B29CF6900C3F9C23DDF5E968EF2D546  services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/LessonLifecycleEntryResponse.java  (3325 bytes)
+8D8197B7C384A7A06456200AC17E9C1BAA624A5E36513AA3E2269622C18D6B5D  services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/TransferLessonRequest.java  (1832 bytes)
+9D6B02B87269EF3D48F1020CE22AC3F4D6BEEC15CA2C7E40FAD730B5BD1514C5  services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/TransferLessonResponse.java  (903 bytes)
+D7908BFA997252E65CA3D1E342A78CD98B34EB4D8F000CAC452179838ED3B988  services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/enums/LessonType.java  (115 bytes)

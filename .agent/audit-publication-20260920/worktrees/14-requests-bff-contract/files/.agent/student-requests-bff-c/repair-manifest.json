@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "scope": "student-requests-bff-c",
+  "status": "READY_FOR_REVIEW",
+  "baseRevision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "worktree": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract",
+  "immutableImport": {
+    "productPathCount": 82,
+    "sourceManifest": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/requests-transport/.agent/student-role-02/diff.json",
+    "sourceManifestSha256": "4725C54BF3F6300557697C4A756ED1565D5CCD8005F229C6C60AE3250744B2C4",
+    "guardResult": "IMPORT_VERIFY_PASS productPaths=82 repairs=2"
+  },
+  "acceptedRepairs": {
+    "count": 2,
+    "manifest": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-isolation/.agent/student-requests-isolation-c/repair-manifest.json",
+    "manifestSha256": "7B64350F73272787BD383E89611B75BE10959B02B4A0342695E45C46769462F3"
+  },
+  "ownedDelta": [
+    {
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+      "kind": "production",
+      "sha256": "6D4F1AAA69A2112358459041BD80C1917755476707E118E9EDE6F5DED0AF91C1"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java",
+      "kind": "production",
+      "sha256": "651B83E0E7B629F2750EE51231915B9A55D072E3F04FB31EDD6C0D4864198286"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+      "kind": "production",
+      "sha256": "450845E563AC7A37091A027DC5E717D0B19331327DA75E7473CF25261A05CDAC"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClientErrorTest.java",
+      "kind": "test",
+      "sha256": "6471F65AB71698F27B2B7FDD2A9E79741EB7E558F4DF833B2613B9BBAFDB2C40"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contract/StudentRequestDetailJsonTest.java",
+      "kind": "test",
+      "sha256": "3F6027AE9E51D4EF743FEE0ACCF20B1CFC7AFCC32FE0B7B67765A9307B44D2C9"
+    }
+  ],
+  "verification": {
+    "focusedGradleExitCode": 0,
+    "focusedXml": {
+      "MobileAttendanceClientErrorTest": {
+        "tests": 17,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "sha256": "87098D308BE390CC907C71D4C3A8B824BE28F4D1B32319000B2A449AA7AA776F"
+      },
+      "StudentRequestDetailJsonTest": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "sha256": "292DB928565C03F02777B0D934C6565475C9CD00728C7C587D3BC2EE16C33D54"
+      }
+    },
+    "gitDiffCheckExitCode": 0,
+    "runtime": "N/A: focused unit and serialization lane"
+  },
+  "doNotClaim": [
+    "live HTTP/Gateway/Nginx/Redis/Mongo integration",
+    "Testcontainers or external service runtime",
+    "independent Sol review",
+    "changes outside the five owned files"
+  ]
+}

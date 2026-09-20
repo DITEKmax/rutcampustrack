@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon/attendance-graph" clip-path="url(#clip0_0_170)">
+<path id="attendance-graph" d="M0.5 0.5V15.5H15.5M6.512 7.7H6.5L2.9 11.3H2.912M9.512 9.5H9.5L6.5 7.7M9.5 9.5L14.3 4.1H14.312" stroke="#C8C2D6" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="clip0_0_170">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>

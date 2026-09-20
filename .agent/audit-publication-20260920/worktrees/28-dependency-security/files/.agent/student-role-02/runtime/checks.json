@@ -1,0 +1,133 @@
+{
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "branch": "codex/student-role-02-dependency-security",
+  "environment": "Windows; Java 21; Gradle wrapper 8.12; Docker Desktop Linux engine",
+  "checks": [
+    {
+      "id": "scope-exact",
+      "command": "scope comparison against frozen 26-path contract",
+      "exitCode": 0,
+      "evidence": [
+        "runtime/git-scope-diff.json"
+      ],
+      "result": "26 expected, 26 actual, no missing, no unexpected"
+    },
+    {
+      "id": "git-diff-check",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "evidence": [
+        "runtime/git-scope-diff.json"
+      ],
+      "result": "clean"
+    },
+    {
+      "id": "post-correction-dependency-insight-async-http-client",
+      "command": ".\\gradlew.bat :services:notification-service:notification-app:dependencyInsight --configuration runtimeClasspath --dependency org.asynchttpclient:async-http-client --no-daemon --console=plain",
+      "exitCode": 0,
+      "evidence": [
+        "runtime/dependency-insight/async-http-client-notification-post-correction.txt"
+      ],
+      "result": "2.15.0 selected by constraint; web-push 2.12.4 request aligned"
+    },
+    {
+      "id": "post-correction-dependency-insight-async-http-client-netty-utils",
+      "command": ".\\gradlew.bat :services:notification-service:notification-app:dependencyInsight --configuration runtimeClasspath --dependency org.asynchttpclient:async-http-client-netty-utils --no-daemon --console=plain",
+      "exitCode": 0,
+      "evidence": [
+        "runtime/dependency-insight/async-http-client-netty-utils-notification-post-correction.txt"
+      ],
+      "result": "2.15.0 selected by constraint"
+    },
+    {
+      "id": "post-correction-dependency-insight-jose4j",
+      "command": ".\\gradlew.bat :services:notification-service:notification-app:dependencyInsight --configuration runtimeClasspath --dependency org.bitbucket.b_c:jose4j --no-daemon --console=plain",
+      "exitCode": 0,
+      "evidence": [
+        "runtime/dependency-insight/jose4j-notification-post-correction.txt"
+      ],
+      "result": "0.9.6 selected"
+    },
+    {
+      "id": "post-correction-dependency-insight-docx4j",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:dependencyInsight --configuration runtimeClasspath --dependency org.docx4j:docx4j-core --no-daemon --console=plain",
+      "exitCode": 0,
+      "evidence": [
+        "runtime/dependency-insight/docx4j-attendance-post-correction.txt"
+      ],
+      "result": "11.5.14 selected; provider 11.5.14 wins conflict"
+    },
+    {
+      "id": "springdoc-focused-contract",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.events.GroupUpdatedContractIT --no-daemon --console=plain",
+      "exitCode": 0,
+      "evidence": [
+        "dependency-security-defect-gate.md"
+      ],
+      "result": "focused Spring Boot/Springdoc compatibility test passed"
+    },
+    {
+      "id": "notification-webpush-focused",
+      "command": ".\\gradlew.bat :services:notification-service:notification-app:test --tests ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest --no-daemon --console=plain --no-problems-report",
+      "exitCode": 0,
+      "evidence": [
+        "runtime/notification-webpush-focused-escalated.log"
+      ],
+      "result": "BUILD SUCCESSFUL; Mockito PushService mock"
+    },
+    {
+      "id": "attendance-docx-focused",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.report.DocxRendererTest --tests ru.rutcampustrack.attendance.report.HeadmanWeeklyTemplateSmokeTest --no-daemon --console=plain --no-problems-report",
+      "exitCode": 0,
+      "evidence": [
+        "runtime/attendance-docx-focused-escalated.log"
+      ],
+      "result": "BUILD SUCCESSFUL"
+    },
+    {
+      "id": "all-eight-bootjars",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:bootJar :services:api-gateway:bootJar :services:attendance-service:attendance-app:bootJar :services:auth-service:auth-app:bootJar :services:document-renderer-service:document-renderer-app:bootJar :services:mobile-bff:mobile-bff-app:bootJar :services:notification-service:notification-app:bootJar :services:schedule-service:schedule-app:bootJar --no-daemon --no-problems-report",
+      "exitCode": 0,
+      "evidence": [
+        "runtime/bootjars-post-correction-escalated.log",
+        "runtime/bootjar-hashes-post-correction.json"
+      ],
+      "result": "BUILD SUCCESSFUL; 77 tasks"
+    },
+    {
+      "id": "trivy-covered-full-rootfs",
+      "command": "docker run --rm --network none aquasec/trivy@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969 rootfs --scanners vuln --offline-scan --format json --output /out/backend-rootfs-post-correction-2026-09-07-rootfs.json --exit-code 1 /scope",
+      "exitCode": 1,
+      "expected": true,
+      "evidence": [
+        "runtime/trivy-post-correction-rootfs.log",
+        "runtime/trivy-reports/backend-rootfs-post-correction-2026-09-07-rootfs.json",
+        "runtime/trivy-post-correction-rootfs-summary.json"
+      ],
+      "result": "coverage valid; 8 root JARs, 1141 packages, 0 HIGH, 0 CRITICAL, 57 MEDIUM"
+    },
+    {
+      "id": "trivy-high-critical-gate",
+      "command": "docker run --rm --network none aquasec/trivy@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969 rootfs --scanners vuln --severity HIGH,CRITICAL --offline-scan --format json --output /out/backend-rootfs-post-correction-high-critical-2026-09-07.json --exit-code 1 /scope",
+      "exitCode": 0,
+      "evidence": [
+        "runtime/trivy-post-correction-high-critical.log",
+        "runtime/trivy-reports/backend-rootfs-post-correction-high-critical-2026-09-07.json",
+        "runtime/trivy-post-correction-high-critical-summary.json"
+      ],
+      "result": "8 root JARs, 1141 packages, 0 HIGH, 0 CRITICAL"
+    },
+    {
+      "id": "scan-input-hash-match",
+      "command": "SHA-256 compare of each rebuilt Boot JAR and its read-only staged scan input",
+      "exitCode": 0,
+      "evidence": [
+        "runtime/scan-input-hash-verification.json"
+      ],
+      "result": "8/8 hashes match"
+    }
+  ],
+  "knownLimitations": [
+    "full-check-failure-index.md"
+  ]
+}

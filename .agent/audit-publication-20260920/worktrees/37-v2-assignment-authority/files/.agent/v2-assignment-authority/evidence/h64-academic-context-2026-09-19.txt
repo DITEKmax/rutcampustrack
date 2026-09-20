@@ -1,0 +1,11 @@
+start=2026-09-19T19:10:49.8559638Z
+end=2026-09-19T19:12:05.6218229Z
+exit_code=0
+identity=ditek-pk\maksd
+java=openjdk version "21.0.10" 2026-01-20 LTS
+OpenJDK Runtime Environment Microsoft-13106404 (build 21.0.10+7-LTS)
+OpenJDK 64-Bit Server VM Microsoft-13106404 (build 21.0.10+7-LTS, mixed mode, sharing)
+TESTCONTAINERS_REUSE_ENABLE=false
+command=.\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT --tests ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT --tests ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT --tests ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT --tests ru.rutcampustrack.academic.subject.SubjectServiceIT --tests ru.rutcampustrack.academic.integration.AcademicGrpcIT --no-daemon --no-parallel --max-workers=1 --no-problems-report
+stdout=.agent/v2-assignment-authority/evidence/h64-academic-stdout-2026-09-19.log
+stderr=.agent/v2-assignment-authority/evidence/h64-academic-stderr-2026-09-19.log

@@ -1,0 +1,71 @@
+const imgIconPrevious = "https://www.figma.com/api/mcp/asset/343c8a77-7b3d-4862-8982-e7f27cdc1ac7.svg";
+
+function IconPrevious({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[16px]"} data-node-id="4597:3579" data-name="icon/previous">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconPrevious} />
+    </div>
+  );
+}
+
+export default function Component18() {
+  return (
+    <div className="bg-[var(--color-surface-base,#0b0b0c)] overflow-clip relative rounded-[24px] size-full" data-node-id="4610:848937" data-name="18 · Новая заявка / выбор типа">
+      <div className="absolute content-stretch flex flex-col gap-[12px] h-[812px] items-start left-[16px] overflow-clip py-[20px] top-0 w-[358px]" data-node-id="4610:848938" data-name="content">
+        <div className="content-stretch flex gap-[10px] items-center overflow-clip relative shrink-0 w-[358px]" data-node-id="4610:848939" data-name="header">
+          <div className="bg-[var(--color-surface-float,#292531)] content-stretch flex items-center justify-center overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4610:848940" data-name="back">
+            <IconPrevious className="relative shrink-0 size-[16px]" />
+          </div>
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] h-[32px] leading-[normal] not-italic relative shrink-0 text-[22px] text-[color:var(--color-text-primary,#edeaf3)] w-[304px]" data-node-id="4610:848942">
+            Новая заявка
+          </p>
+        </div>
+        <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex gap-[14px] h-[92px] items-center overflow-clip px-[16px] relative rounded-[24px] shrink-0 w-[358px]" data-node-id="4610:848995" data-name="request-option">
+          <div className="bg-[var(--color-status-excused-fill,#f5b443)] content-stretch flex items-center justify-center overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4610:848996" data-name="Frame">
+            <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[18px] text-[color:var(--color-status-excused-on-fill,#0b0b0c)] whitespace-nowrap" data-node-id="4610:848997">
+              у
+            </p>
+          </div>
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4610:848998">
+            Уважительная причина
+          </p>
+        </div>
+        <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex gap-[14px] h-[92px] items-center overflow-clip px-[16px] relative rounded-[24px] shrink-0 w-[358px]" data-node-id="4610:848999" data-name="request-option">
+          <div className="content-stretch flex gap-[6px] h-[44px] items-center relative shrink-0 w-[111px]" data-node-id="4610:849000" data-name="Frame">
+            <div className="bg-[var(--color-status-absent-fill,#f27f7f)] content-stretch flex items-center justify-center overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4610:849001" data-name="Frame">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[18px] text-[color:var(--color-status-absent-on-fill,#0b0b0c)] whitespace-nowrap" data-node-id="4610:849002">
+                н
+              </p>
+            </div>
+            <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[15px] text-[color:var(--color-text-secondary,#c8c2d6)] whitespace-nowrap" data-node-id="4610:849003">
+              →
+            </p>
+            <div className="bg-[var(--color-status-present-fill,#61dfb8)] content-stretch flex items-center justify-center overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4610:849004" data-name="Frame">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[18px] text-[color:var(--color-status-present-on-fill,#0b0b0c)] whitespace-nowrap" data-node-id="4610:849005">
+                +
+              </p>
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4610:849006">
+            Забыл отметиться
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## icon/previous
+**Node ID:** 4597:3579
+
+Временная локальная векторная заглушка смысла «предыдущий». Один stroke-вектор и метрика совпадают с icon/chevron-down; заменить финальной иконкой через instance swap.
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

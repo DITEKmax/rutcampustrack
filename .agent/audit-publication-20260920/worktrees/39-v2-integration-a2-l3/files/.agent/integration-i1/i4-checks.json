@@ -1,0 +1,201 @@
+{
+  "schema": "integration-i4-checks-v1",
+  "date": "2026-09-15",
+  "risk": "S3",
+  "target": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3",
+  "branch": "codex/v2-integration-a2-l3",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "current_head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "rules_sha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "source_manifest": ".agent/worktrees/v2-map-read/.agent/v2-map-read/source-manifest.json",
+  "source_manifest_sha256": "E16EEBA8BA3FBF0260E1BEE755D0CC45C859358CDFBE4F097CB8CB687371324C",
+  "prior_union_sha256": "604CD4D36A70710B7C1790805DA70721B97741AB7CA0924E46BAF3850F614C6A",
+  "union_manifest": ".agent/integration-i1/i4-union-manifest.sha256",
+  "union_rows": 44,
+  "union_sha256": "28447CAB436CE49C2AADEC9103A4293E358D5BCBE569C9B61C85F7C655FABDA9",
+  "checks": [
+    {
+      "id": "rules-and-baseline",
+      "criterion": "The assigned v2 rules, target base and read-only map source are frozen.",
+      "command": "Get-FileHash RULES.md; git rev-parse HEAD; git -c safe.directory=<map-source> -C <map-source> rev-parse HEAD/status",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Rules SHA256 matches B256A175...52A437A; target and map source are at b8220ac92125a8afa37598b270aa4fab7aa1f470. The source remains read-only and pre-existing dirty scope is preserved."
+    },
+    {
+      "id": "source-manifest-hashes",
+      "criterion": "All accepted map source entries and candidate model destinations still match their manifest hashes.",
+      "command": "Read source-manifest.json; SHA256 each of its 8 files and 4 candidate destination files.",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "8/8 files and 4/4 candidate model destinations matched; source manifest SHA256 is E16EEBA8...371324C."
+    },
+    {
+      "id": "union-recompute",
+      "criterion": "The current product union is exactly 44 unique rows with no file hash mismatch and a reproducible canonical hash.",
+      "command": "Parse i4-union-manifest.sha256; require LF/no trailing LF; recompute every target SHA256 and UTF-8 LF canonical SHA256.",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "44 rows, 44 unique paths, 0 file mismatches; canonical union SHA256 28447CAB436CE49C2AADEC9103A4293E358D5BCBE569C9B61C85F7C655FABDA9."
+    },
+    {
+      "id": "product-scope",
+      "criterion": "Only the frozen 44 product paths are represented in the current target union.",
+      "command": "Compare union rows with git diff --name-only plus git ls-files --others --exclude-standard, excluding owned .agent metadata, docs/sources metadata and pre-existing AGENTS.md edit.",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "expected=44 actual=44 missing=0 extra=0; foreign dirty work remains preserved."
+    },
+    {
+      "id": "transfer-and-adaptation",
+      "criterion": "Eight new map paths are exact copies; CampusMapGrpcReadTest and StudentProjectionGrpcServiceTest retain only recorded constructor adaptations.",
+      "command": "Compare target/source SHA256 for 8 exact paths, adapted CampusMapGrpcReadTest, adapted StudentProjectionGrpcServiceTest, and 3 composed overlaps.",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "8 exact source transfers matched; CampusMapGrpcReadTest source/final SHA256 15A92266...6567F9/F9AC0771...970C5D; StudentProjectionGrpcServiceTest source/final SHA256 8AC3F337...5146C/88B88E02...4A5DF9; composed overlap hashes match i4-conflict-ledger.md."
+    },
+    {
+      "id": "fqcn-and-selector",
+      "criterion": "The five unit and two PostgreSQL integration selectors resolve to their original FQCNs, including the grpc package for StudentProjectionGrpcServiceTest.",
+      "command": "Read package/class declarations in target and read-only originals; inspect i4-source-freeze.md selector lines.",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "7/7 FQCNs match originals: CampusMapReadServiceTest (map), CampusMapGrpcReadTest (grpc), StudentHomeworkGrpcIdentityInterceptorTest (grpc), StudentProjectionGrpcServiceTest (grpc), StudentProjectionScopeServiceTest (studentprojection), CampusMapReadRepositoryIT (map), StudentProjectionQueryAdapterIT (studentprojection). Wrong studentprojection.StudentProjectionGrpcServiceTest selector is absent."
+    },
+    {
+      "id": "provenance-wording",
+      "criterion": "The freeze records 8 exact-copy new paths plus 1 constructor-adapted new path and does not claim runtime PASS.",
+      "command": "Inspect i4-packet.md, i4-source-freeze.md, i4-conflict-ledger.md and docs/sources/manifest.yaml.",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "The 8+1 transfer boundary, 3 composed overlaps, existing projection-test adaptation, corrected selectors, and source-only limits are recorded."
+    }
+  ],
+  "runtime_evidence": {
+    "status": "PASS_H37_COMPILE_DIAGNOSTIC_H38_PENDING",
+    "heavy_lease": "H37 released; H38 preauthorized exclusive",
+    "environment": "Windows PowerShell; parent-managed Docker/Testcontainers; no snapshot update",
+    "h36_first_failure": {
+      "exit_code": 1,
+      "failure_stage": ":services:academic-service:academic-app:compileJava before any selected test class",
+      "defect_gate": ".agent/integration-i1/h36-defect-gate.md"
+    },
+    "h37_classpath_diagnostic": {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:compileJava --no-daemon --no-parallel --max-workers=1 --no-problems-report --no-build-cache --init-script .agent/integration-i1/h37-classpath.init.gradle",
+      "exit_code": 0,
+      "status": "PASS",
+      "incremental": false,
+      "source_count": 356,
+      "classpath_entries": 153,
+      "classpath_missing": 0,
+      "toolchain_language": 21,
+      "compiler_present": true,
+      "init_script": ".agent/integration-i1/h37-classpath.init.gradle",
+      "stdout_log": {
+        "path": ".agent/integration-i1/h37-classpath.stdout.log",
+        "sha256": "88275360CF4C24F611BCF7E69F1F07D0C0363F41C0484188FF7FF00B642ACBB2"
+      },
+      "stderr_log": {
+        "path": ".agent/integration-i1/h37-classpath.stderr.log",
+        "sha256": "4FFFC66A9D07E3CD5F17B416E968A3AD4AD99418AA37FE661BF20E354F0AE053"
+      },
+      "context_log": {
+        "path": ".agent/integration-i1/h37-classpath.context.log",
+        "sha256": "FA012CF2E3B9EA0CD777749D208A4A169CA7FEB7D90080146045ED4FAF51151E"
+      },
+      "exit_log": {
+        "path": ".agent/integration-i1/h37-classpath.exit.log",
+        "sha256": "2CE241842444C67148F496D64D2DEC537D5207A23DFCE4F37196EA9B4068E014"
+      },
+      "environment": {
+        "user_name": "maksd",
+        "user_profile": "C:/Users/maksd",
+        "java_home": "C:/Users/maksd/.jdks/ms-21.0.10",
+        "gradle_user_home": "<unset>",
+        "default_gradle_cache": "C:/Users/maksd/.gradle/caches"
+      },
+      "evidence": "BUILD SUCCESSFUL in 1m 18s; the init log reports target=:services:academic-service:academic-app incremental=false sourceCount=356 classpathEntries=153 classpathMissing=0 toolchainLanguage=21 compilerPresent=true."
+    },
+    "stdout_log": {
+      "path": ".agent/integration-i1/h36-unit.stdout.log",
+      "sha256": "73EFC90DAA2C86D5FC734A3458EA8A1B1C4529482179EDC5024DC08FA07FB3DB"
+    },
+    "stderr_log": {
+      "path": ".agent/integration-i1/h36-unit.stderr.log",
+      "sha256": "89FBE4803EDCFBC37D0B570EFA76FB8ADA6C7EFC121FDE936D319D8C4933A199"
+    },
+    "context_log": {
+      "path": ".agent/integration-i1/h36-unit.context.log",
+      "sha256": "E29BDABCB2DBFFF2B6312125BC490B1C907BF387B2D3632F3F69B13CADC3D008"
+    },
+    "exit_log": {
+      "path": ".agent/integration-i1/h36-unit.exit.log",
+      "sha256": "593CBC3069F98713CBCA24B225664884E3D02CF96A835AF9AA09D5262B2A4CA3"
+    },
+    "compile_source_inventory": {
+      "main_java": 121,
+      "generated_java": 230,
+      "existing_main_classes": 694,
+      "compiler_errors": 100
+    },
+    "junit_xml": {
+      "current_nonzero_for_each_selected_class": false,
+      "status": "STALE_ONLY",
+      "stale_files": [
+        "services/academic-service/academic-app/build/test-results/test/TEST-ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest.xml",
+        "services/academic-service/academic-app/build/test-results/test/TEST-ru.rutcampustrack.academic.grpc.StudentProjectionGrpcServiceTest.xml",
+        "services/academic-service/academic-app/build/test-results/test/TEST-ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeServiceTest.xml"
+      ],
+      "stale_timestamp": "2026-09-15T00:11:17+03:00",
+      "run_started": "2026-09-15T17:07:10Z"
+    },
+    "cleanup": "H37 Gradle single-use daemon stopped; no Testcontainers or PostgreSQL IT resource was started.",
+    "required_unit_selector": ".\\gradlew.bat :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.map.CampusMapReadServiceTest --tests ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest --tests ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest --tests ru.rutcampustrack.academic.grpc.StudentProjectionGrpcServiceTest --tests ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeServiceTest --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+    "required_integration_selectors": [
+      ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT --no-daemon --no-parallel --max-workers=1 --no-problems-report"
+    ],
+    "required_evidence": "Capture complete stdout/stderr/context/exit; require nonzero JUnit XML for each of five unit and two IT FQCNs; capture owned Testcontainers dynamic ports and cleanup; stop at first actual failure.",
+    "defect_gate": ".agent/integration-i1/h36-defect-gate.md",
+    "phase_transition": "H36 compile failure held; H37 bounded incremental=false compile PASS; H38 original five-unit selector then two IT selectors is preauthorized under the same escalated context. H37 does not establish a sole cause for H36."
+  },
+  "diff": {
+    "product_paths": 44,
+    "new_map_exact_copy_paths": 8,
+    "new_map_constructor_adaptation_paths": 1,
+    "composed_overlap_paths": 3,
+    "existing_projection_constructor_adaptation_paths": 1,
+    "metadata_paths": [
+      ".agent/integration-i1/i4-packet.md",
+      ".agent/integration-i1/i4-source-freeze.md",
+      ".agent/integration-i1/i4-conflict-ledger.md",
+      ".agent/integration-i1/i4-union-manifest.sha256",
+      ".agent/integration-i1/i4-static.log",
+      ".agent/integration-i1/i4-checks.json",
+      "docs/sources/manifest.yaml"
+    ],
+    "source_worktree_written": false,
+    "foreign_work_preserved": true
+  },
+  "attempts": [
+    {
+      "command": "Initial source-manifest target comparison before exempting known composed/adapted paths",
+      "exit_code": 1,
+      "status": "HARNESS_CORRECTION",
+      "evidence": "The check incorrectly treated the accepted adapted CampusMapGrpcReadTest as exact; no product file changed. The predicate was corrected and the complete static check then exited 0."
+    },
+    {
+      "command": "Initial FQCN inventory before appending origin paths as separate array entries",
+      "exit_code": 1,
+      "status": "HARNESS_CORRECTION",
+      "evidence": "PowerShell concatenated two path strings in the first inventory implementation; no product file changed. The inventory was corrected and the complete static check then exited 0."
+    }
+  ],
+  "limitations": [
+    "H36 stopped at compileJava exit 1 before tests; H37 diagnostic compile PASS does not make H36 tests current and no selected test XML is claimed yet.",
+    "No fresh Sol high review of the full 44-path union has run.",
+    "No producer/data/full-server/deployment/main-merge claim is made; source, E and original worktrees remain read-only.",
+    "The initial static harness attempts were corrected as verification harness issues, not product defects; the H36 compile failure is a recorded bounded defect gate and H37 leaves source cause unconfirmed."
+  ],
+  "status": "READY_FOR_H38_RUNTIME"
+}

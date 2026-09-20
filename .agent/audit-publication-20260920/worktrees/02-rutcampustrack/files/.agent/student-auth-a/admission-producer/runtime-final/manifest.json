@@ -1,0 +1,189 @@
+{
+  "schema": "admission-producer-runtime-final-v1",
+  "status": "HEAVY RELEASE",
+  "release": "RELEASE",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "sourceGuard": {
+    "original": {
+      "path": "../source-hashes.json",
+      "sha256": "DF8896D704B015E75C7266BCC0E6AAB1F56BDCC98D03276E75878C1342DCDA98",
+      "bytes": 5613,
+      "entries": 17
+    },
+    "post": {
+      "expectedDrifts": [
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+          "sha256": "097B05FF70E8B3A80357D3C5E61F1A9AEE12ACE1079A2AF4345EC959F2DA49A3",
+          "bytes": 15485
+        },
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+          "sha256": "2C68897A1550FCC30B4D295E3E596F67416A22AFBE7D00F342A921AB8BB121BE",
+          "bytes": 9917
+        },
+        {
+          "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+          "sha256": "6C06F2AD5E4D5EBBAC99574802C112B41234942A091FA2A2AEE37F481D9C5E4A",
+          "bytes": 22027
+        }
+      ],
+      "unchangedExisting": 12,
+      "deletedAbsent": 2,
+      "bad": 0,
+      "exitCode": 0
+    }
+  },
+  "correctionManifests": [
+    {
+      "path": "../correction-01/manifest.json",
+      "sha256": "98C6348592C6ADC8B729D7B6084A61A9C0BC7E261179701C6F4123E11F9717AC",
+      "bytes": 1707
+    },
+    {
+      "path": "../correction-02-spring-wiring/manifest.json",
+      "sha256": "1B5FDEBBFEE0F9C71D01BD794C1C22A638716332B9A675A2F4C98CFF02CCE5D0",
+      "bytes": 1150
+    }
+  ],
+  "priorFailureEvidence": {
+    "path": "../runtime-failure-01/manifest.json",
+    "sha256": "21E86F90299A5348BC0199EEDAA6FC8EA5CED568AF8C58E6E88649FFB0369916",
+    "bytes": 4590,
+    "authFocusedExit": 1,
+    "failures": 4
+  },
+  "commands": [
+    {
+      "id": "shared-focused",
+      "start": "2026-09-10T18:37:03Z",
+      "command": ".\\gradlew.bat :services:shared:shared-security:test --tests 'ru.rutcampustrack.shared.security.InternalJwtValidatorTest' --tests 'ru.rutcampustrack.shared.security.DualModeUserContextFilterTest' --no-daemon --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 0,
+      "build": "BUILD SUCCESSFUL in 59s",
+      "aggregate": {"tests": 16, "failures": 0, "errors": 0, "skipped": 0}
+    },
+    {
+      "id": "auth-focused-failure-archived",
+      "start": null,
+      "startNote": "not recorded in runtime-failure-01; archived provenance only",
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:test --tests 'ru.rutcampustrack.auth.service.JwtTokenPurposeTest' --tests 'ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest' --tests 'ru.rutcampustrack.auth.session.SessionAdmissionServiceTest' --tests 'ru.rutcampustrack.auth.arch.AuthApiContractTest' --no-daemon --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 1,
+      "build": "BUILD FAILED in 1m16s",
+      "aggregate": {"tests": 25, "failures": 4, "errors": 0, "skipped": 0},
+      "evidence": "../runtime-failure-01/manifest.json"
+    },
+    {
+      "id": "auth-focused-retry",
+      "start": "2026-09-10T19:02:50Z",
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:test --tests 'ru.rutcampustrack.auth.service.JwtTokenPurposeTest' --tests 'ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest' --tests 'ru.rutcampustrack.auth.session.SessionAdmissionServiceTest' --tests 'ru.rutcampustrack.auth.arch.AuthApiContractTest' --no-daemon --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 0,
+      "build": "BUILD SUCCESSFUL in 1m15s",
+      "aggregate": {"tests": 25, "failures": 0, "errors": 0, "skipped": 0}
+    },
+    {
+      "id": "admission-it",
+      "start": "2026-09-10T19:04:24Z",
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:integrationTest --tests 'ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT' --no-daemon --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 0,
+      "build": "BUILD SUCCESSFUL in 1m1s",
+      "aggregate": {"tests": 5, "failures": 0, "errors": 0, "skipped": 0}
+    }
+  ],
+  "runtime": {
+    "containerId": "ac2c415009ee07cf53513227ea55979b4e32462e02f980c881aca7f86ea33eff",
+    "port": 55775,
+    "postgres": "16.13",
+    "image": "postgres:16",
+    "reuse": false,
+    "flyway": "validated/applied 24 migrations through V24",
+    "sourcePostguard": {"bad": 0, "java": 0, "portsFree": true},
+    "dockerPs": {"mode": "escalated read-only", "exitCode": 0, "containers": 0}
+  },
+  "xml": [
+    {
+      "id": "InternalJwtValidatorTest",
+      "path": "runtime-final/junit/TEST-ru.rutcampustrack.shared.security.InternalJwtValidatorTest.xml",
+      "source": "services/shared/shared-security/build/test-results/test/TEST-ru.rutcampustrack.shared.security.InternalJwtValidatorTest.xml",
+      "sha256": "4A2CB52F2DC2F98BF1343E623AAD7E4C29006E8E5F53A7BD0E3918F9E8F3CF65",
+      "bytes": 1510,
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "byteEqual": true
+    },
+    {
+      "id": "DualModeUserContextFilterTest",
+      "path": "runtime-final/junit/TEST-ru.rutcampustrack.shared.security.DualModeUserContextFilterTest.xml",
+      "source": "services/shared/shared-security/build/test-results/test/TEST-ru.rutcampustrack.shared.security.DualModeUserContextFilterTest.xml",
+      "sha256": "C248B3DA9361E70D837FECF89E8234DD749D2B50592A7C4133E67F8ED4DF7F9F",
+      "bytes": 2561,
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "byteEqual": true
+    },
+    {
+      "id": "JwtTokenPurposeTest",
+      "path": "runtime-final/junit/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+      "source": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+      "sha256": "D3DFB11B99E8F78736BC70727212FC50DA5EF04B51BB28906CDA9E4BA208E5A3",
+      "bytes": 2719,
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "byteEqual": true
+    },
+    {
+      "id": "JwtAuthenticationFilterPurposeTest",
+      "path": "runtime-final/junit/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml",
+      "source": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml",
+      "sha256": "18BED7275734AF15CE0C069447B4C77BED019B9065C776B16FF1D643F91FA167",
+      "bytes": 1143,
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "byteEqual": true
+    },
+    {
+      "id": "SessionAdmissionServiceTest",
+      "path": "runtime-final/junit/TEST-ru.rutcampustrack.auth.session.SessionAdmissionServiceTest.xml",
+      "source": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.session.SessionAdmissionServiceTest.xml",
+      "sha256": "76745B4CB43067B91D83233BBE3C3FBE43BEB346F11F6B441275E40958728C52",
+      "bytes": 1406,
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "byteEqual": true
+    },
+    {
+      "id": "AuthApiContractTest",
+      "path": "runtime-final/junit/TEST-ru.rutcampustrack.auth.arch.AuthApiContractTest.xml",
+      "source": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.arch.AuthApiContractTest.xml",
+      "sha256": "51AD0AEF24DB978E4792936016A4C224647BEB01A277BB8FA7556F68292F4BCB",
+      "bytes": 847,
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "byteEqual": true
+    },
+    {
+      "id": "InternalSessionAdmissionIT",
+      "path": "runtime-final/junit/TEST-ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT.xml",
+      "source": "services/auth-service/auth-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT.xml",
+      "sha256": "725D84B9500E24D2779B6401D36DC05D9395C2214D3CEDC03A8BAB9F189E3C86",
+      "bytes": 10696,
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "byteEqual": true
+    }
+  ],
+  "copyCheck": {"count": 7, "exitCode": 0, "result": "byte-for-byte equal"}
+}

@@ -1,0 +1,107 @@
+{
+  "schema": "rct.runtime-evidence.v1",
+  "task": "JS-STUDENT-01-r1",
+  "runId": "20260906-182524",
+  "startedAt": "2026-09-06T18:25:24.6122844+03:00",
+  "status": "FAIL",
+  "stage": "pending-with-rabbit-outage",
+  "resources": {
+    "network": "rct-js-student-01",
+    "containers": [
+      "rct-js-student-01-pg-academic",
+      "rct-js-student-01-pg-schedule",
+      "rct-js-student-01-mongo",
+      "rct-js-student-01-redis",
+      "rct-js-student-01-rabbit"
+    ],
+    "ports": [
+      25431,
+      25432,
+      27027,
+      26379,
+      25672,
+      35672,
+      29090,
+      29091,
+      29191,
+      29092,
+      29192,
+      29093,
+      29193,
+      29080,
+      28080
+    ]
+  },
+  "services": {
+    "academic": {
+      "pid": 45924,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\academic.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\academic.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29091/actuator/health"
+    },
+    "auth": {
+      "pid": 48236,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\auth.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\auth.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29090/actuator/health"
+    },
+    "schedule": {
+      "pid": 40360,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\schedule.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\schedule.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29092/actuator/health"
+    },
+    "attendance": {
+      "pid": 40756,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\attendance.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\attendance.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29093/actuator/health"
+    },
+    "mobile-bff": {
+      "pid": 29224,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\mobile-bff.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\mobile-bff.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29080/actuator/health"
+    },
+    "gateway": {
+      "pid": 21404,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\gateway.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-182524\\gateway.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:28080/actuator/health"
+    }
+  },
+  "assertions": [
+    {
+      "name": "isolated infrastructure ready",
+      "passed": true,
+      "evidence": {
+        "anonymousStorage": true,
+        "containers": 5
+      }
+    },
+    {
+      "name": "six real service processes ready",
+      "passed": true,
+      "evidence": {
+        "serviceCount": 6,
+        "hiddenProcesses": true
+      }
+    },
+    {
+      "name": "real auth login through gateway",
+      "passed": true,
+      "evidence": {
+        "tokenRecorded": false,
+        "httpStatus": 200
+      }
+    }
+  ],
+  "error": "Assertion failed: same key/payload replays byte-equivalent ACK",
+  "completedAt": "2026-09-06T18:27:39.0648211+03:00"
+}

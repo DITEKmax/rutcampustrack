@@ -1,0 +1,59 @@
+diff --git a/.agent/orchestration-v2/evidence/h85-probe-before-final-correction.mjs b/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/probe.mjs
+index fd040fa5..3e7901d1 100644
+--- a/.agent/orchestration-v2/evidence/h85-probe-before-final-correction.mjs
++++ b/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/probe.mjs
+@@ -592,6 +592,10 @@ function makeMockTransport({ statusCode = 413, headers = { 'cache-control': 'no-
+   };
+ }
+ 
++async function createInitialExcuseRequest(origin, postOptions, requestCall = httpsRequest) {
++  return requestCall(origin, '/api/v1/student/requests/excuse', postOptions);
++}
++
+ async function runSelfTest() {
+   const pdf = makeDeterministicPdf();
+   const png = makeDeterministicPng();
+@@ -733,6 +737,19 @@ async function runSelfTest() {
+     chunkedTransportFailed = true;
+   }
+   assertThat(fixedTransportFailed && chunkedTransportFailed, 'transport errors without an HTTP response were accepted');
++  let initialCreateAttempts = 0;
++  let initialCreateTransportFailed = false;
++  try {
++    await createInitialExcuseRequest('https://mock.invalid', { method: 'POST' }, async () => {
++      initialCreateAttempts += 1;
++      const error = new Error('synthetic initial create transport failure');
++      error.code = 'ECONNRESET';
++      throw error;
++    });
++  } catch {
++    initialCreateTransportFailed = true;
++  }
++  assertThat(initialCreateTransportFailed && initialCreateAttempts === 1, 'initial create transport failure was retried or accepted');
+   return {
+     schema: 'rct.student-requests-probe.v1',
+     status: 'PASS',
+@@ -760,7 +777,7 @@ async function runSelfTest() {
+       corruptionRejected: true,
+       nullableExpiredAtAccepted: true
+     },
+-    transport: { fixedEarlyEpipe413: true, chunkedEarlyEpipe413: true, noResponseErrorsFail: true, mode: 'MOCKTRANSPORT' }
++    transport: { fixedEarlyEpipe413: true, chunkedEarlyEpipe413: true, noResponseErrorsFail: true, initialCreateTransportFailureOneAttempt: true, mode: 'MOCKTRANSPORT' }
+   };
+ }
+ 
+@@ -825,13 +842,7 @@ async function runRuntimeProbe(diagnosticSecrets = []) {
+       'Idempotency-Key': idempotencyKey
+     }
+   };
+-  let firstResponse;
+-  try {
+-    firstResponse = await httpsRequest(origin, '/api/v1/student/requests/excuse', postOptions);
+-  } catch (error) {
+-    firstResponse = await httpsRequest(origin, '/api/v1/student/requests/excuse', postOptions);
+-    firstResponse.retriedAfterAmbiguousTransport = error.code ?? error.name;
+-  }
++  const firstResponse = await createInitialExcuseRequest(origin, postOptions);
+   const firstJson = jsonResponse(firstResponse);
+   assertThat(firstResponse.status === 200 && firstJson?.summary?.id, `I1 create failed with HTTP ${firstResponse.status}`);
+   assertNoStore(firstResponse, 'I1 response');

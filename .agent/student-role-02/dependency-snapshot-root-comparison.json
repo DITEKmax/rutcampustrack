@@ -1,0 +1,51 @@
+[
+  {
+    "suite": "ru.rutcampustrack.academic.integration.OpenApiSnapshotIT",
+    "xmlSha256": "A9B11731404B8DBC84CC71FB4FBADB0249E4D354C8D2406E516BAB32E5D06AA8",
+    "equalAfterEolNormalization": false,
+    "semanticDiffs": []
+  },
+  {
+    "suite": "ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT",
+    "xmlSha256": "40A617F9928043BCD29A2FBFE75EB406B3F8584A969ECEADD7156CBEEA41FA99",
+    "equalAfterEolNormalization": false,
+    "semanticDiffs": [
+      "/components/schemas/ErrorResponse/properties/extras/additionalProperties/type: removed",
+      "/components/schemas/FieldError/properties/rejectedValue/type: removed"
+    ]
+  },
+  {
+    "suite": "ru.rutcampustrack.auth.integration.OpenApiSnapshotIT",
+    "xmlSha256": "34B44D586DC5BD077C2641759AF7053DB2BF3D9DBD5ACCF17B66FB5DF4688E0D",
+    "equalAfterEolNormalization": false,
+    "semanticDiffs": [
+      "/components/schemas/TmaAuthRequest/required: added",
+      "/components/schemas/OtpVerifyRequest/required: array length changed",
+      "/components/schemas/OtpVerifyRequest/required/0: value/type changed",
+      "/components/schemas/OtpVerifyByCodeRequest/required: added",
+      "/components/schemas/RefreshRequest/required: added",
+      "/components/schemas/LoginRequest/required: added",
+      "/components/schemas/ChangePasswordRequest/required: added"
+    ]
+  },
+  {
+    "suite": "ru.rutcampustrack.notification.OpenApiSnapshotIT",
+    "xmlSha256": "04B268A5A5533A9950FE9783654355B62E732905BEA3DEFC4EFA68E7240B4480",
+    "equalAfterEolNormalization": false,
+    "semanticDiffs": [
+      "/paths//internal/alert/post/requestBody/content/application/json/schema/additionalProperties/type: removed",
+      "/components/schemas/EntityModelNotificationHistoryDto/properties/payload/additionalProperties/type: removed"
+    ]
+  },
+  {
+    "suite": "ru.rutcampustrack.schedule.integration.OpenApiSnapshotIT",
+    "xmlSha256": "329B56CC3D0C28FCA5992BE53389A8CDC8A7EA738C21187C4417BDACF8541D34",
+    "equalAfterEolNormalization": false,
+    "semanticDiffs": [
+      "/components/schemas/EntityModelScheduleItemResponse/properties/startTime/example: removed",
+      "/components/schemas/EntityModelScheduleItemResponse/properties/endTime/example: removed",
+      "/components/schemas/EntityModelLessonResponse/properties/startTime/example: removed",
+      "/components/schemas/EntityModelLessonResponse/properties/endTime/example: removed"
+    ]
+  }
+]

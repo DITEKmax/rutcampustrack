@@ -1,0 +1,224 @@
+[
+  {
+    "id": "JS-STUDENT-01",
+    "status": "accepted",
+    "evidence": ".agent/vertical-js-student-01/be-summary.md; runtime-evidence/summary.md; js-student-01-main-merge/summary.md; ancestry8002b9->3d",
+    "remaining": "accepted PWA scope of generic story; does not certify desktop or genuine Telegram host"
+  },
+  {
+    "id": "JS-STUDENT-02",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-03",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-04",
+    "status": "excluded",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-05",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-06",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-07",
+    "status": "partial",
+    "evidence": ".agent/student-role-02/matrix.md; geo integration; H89; scoped source results",
+    "remaining": "component/domain work located; own full client criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-08",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-09",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "install/standalone acceptance not established"
+  },
+  {
+    "id": "JS-STUDENT-10",
+    "status": "partial",
+    "evidence": ".agent/vertical-js-student-01/runtime-evidence/summary.md; live14",
+    "remaining": "offline schedule/read-only accepted; original offline statistics superseded by schedule/homework policy, full source reconciliation needed"
+  },
+  {
+    "id": "JS-STUDENT-11",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-12",
+    "status": "accepted",
+    "evidence": ".agent/vertical-js-student-01/be-summary.md; runtime-evidence/summary.md; js-student-01-main-merge/summary.md; ancestry8002b9->3d",
+    "remaining": "accepted PWA scope of generic story; does not certify desktop or genuine Telegram host"
+  },
+  {
+    "id": "JS-STUDENT-13",
+    "status": "partial",
+    "evidence": ".agent/student-role-02/matrix.md; geo integration; H89; scoped source results",
+    "remaining": "component/domain work located; own full client criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-14",
+    "status": "partial",
+    "evidence": ".agent/student-role-02/matrix.md; geo integration; H89; scoped source results",
+    "remaining": "component/domain work located; own full client criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-15",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-16",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-17",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-18",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-19",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-20",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-21",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-22",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-23",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-24",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-25",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-26",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-27",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-WEB-01",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-WEB-02",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-WEB-03",
+    "status": "partial",
+    "evidence": ".agent/student-role-02/matrix.md; geo integration; H89; scoped source results",
+    "remaining": "component/domain work located; own full client criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-WEB-04",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "bounded operation accepted/implemented; full own targetclient criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-WEB-05",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-WEB-06",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  },
+  {
+    "id": "JS-STUDENT-WEB-07",
+    "status": "partial",
+    "evidence": ".agent/student-role-02/matrix.md; geo integration; H89; scoped source results",
+    "remaining": "component/domain work located; own full client criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-WEB-08",
+    "status": "partial",
+    "evidence": ".agent/student-role-02/matrix.md; geo integration; H89; scoped source results",
+    "remaining": "component/domain work located; own full client criteria not closed"
+  },
+  {
+    "id": "JS-STUDENT-WEB-09",
+    "status": "partial",
+    "evidence": "readiness-20260920/REPORT.md evidence groups; live14/H89",
+    "remaining": "live14 proves PWA password flow, not explicit web-panel target; root rejects scout full-web acceptance"
+  },
+  {
+    "id": "JS-STUDENT-WEB-10",
+    "status": "unknown",
+    "evidence": "no complete acceptance established",
+    "remaining": "implementation not established in bounded assessment; not classified absent"
+  }
+]

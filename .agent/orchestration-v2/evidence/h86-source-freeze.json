@@ -1,0 +1,61 @@
+{
+  "baseRevision": "ed9b63c9449b23fa3f5dbf2feb52cd8f9e9cfe83",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-mass-cancel-removal",
+  "files": [
+    {
+      "path": "docs/openapi/schedule.json",
+      "deleted": false,
+      "sha256": "86F121AEE4041292EF772BFCB587B101CC3C777A92D7AE00F43BF827DE3B74B9"
+    },
+    {
+      "path": "frontends/mini-app/src/api/generated/schedule.types.ts",
+      "deleted": false,
+      "sha256": "3AF08746C6E0AA42A1089F04D8A0436C5AF5B22921F98E8BEBB2841322A54880"
+    },
+    {
+      "path": "frontends/pwa/src/api/generated/schedule.types.ts",
+      "deleted": false,
+      "sha256": "3AF08746C6E0AA42A1089F04D8A0436C5AF5B22921F98E8BEBB2841322A54880"
+    },
+    {
+      "path": "frontends/web-panel/src/app/api/generated/schedule.types.ts",
+      "deleted": false,
+      "sha256": "3AF08746C6E0AA42A1089F04D8A0436C5AF5B22921F98E8BEBB2841322A54880"
+    },
+    {
+      "path": "frontends/web-panel/src/app/api/schema.ts",
+      "deleted": false,
+      "sha256": "4D5DCD7C073730AFD2BBC3CFA1E6BEFD9009263409D73C98631179C532329C42"
+    },
+    {
+      "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/api/LessonApi.java",
+      "deleted": false,
+      "sha256": "BF787905F4CD63EBADC307A0B4FD4BAED03ABC07F4BE99CDF923026D72AB99ED"
+    },
+    {
+      "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/MassCancelRequest.java",
+      "deleted": true,
+      "sha256": null
+    },
+    {
+      "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/MassCancelResponse.java",
+      "deleted": true,
+      "sha256": null
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonController.java",
+      "deleted": false,
+      "sha256": "8050F5020B825F4D85FAEFA318F2B7134481DF08DA372FE3A123B0E6147C6073"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java",
+      "deleted": false,
+      "sha256": "4397805FE84D2B2E8663A0ABA66D5998AF0F25687BDB711E3CB3FC4A1D932A56"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "deleted": false,
+      "sha256": "94E295C02C07A4F6E4B662284A545B9398A8218BFC9A80187026CD568500C7E7"
+    }
+  ]
+}

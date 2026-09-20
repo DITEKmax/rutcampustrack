@@ -1,0 +1,25 @@
+{
+  "sourceDiffExit": 0,
+  "files": [
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+      "mainSha256": "7C9AD22C1EDA49FE8C92C8B9FF7D23E667A3FC19BAC72342BC0F122BD8319798",
+      "compiledCheckoutSha256": "37E99769B5B6209A64351734C2AD5060BA4DE0FBEE3366422E11B85060072141"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java",
+      "mainSha256": "DAA1B905A2312EE62A6C8FA974E99F4801C29B3CD76B0F19EA67FB30DF215B24",
+      "compiledCheckoutSha256": "34C2B7985C7B95CD8FBFEEFC11497219EFA8D888FCC26354CEED722FE2508B2E"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtProperties.java",
+      "mainSha256": "0AFC93141A435E794253579235905F7F462A87C6562ECB10708D6A5D7E3FAE4E",
+      "compiledCheckoutSha256": "B8C7BB672EE6041A08F1A6B4261D4C352C2B8B22C8D1BDDFC1AB0016FA551721"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/entity/User.java",
+      "mainSha256": "9B0046F6A3A1E9F65E972C00DB7CE1185DD8EFE541C7EC4D7CDBF17B3580475C",
+      "compiledCheckoutSha256": "F9E9B94016FFCBABFF8F726E45E4CCDC5414FEAE3ACC60EBC16F7047E95D53BF"
+    }
+  ]
+}

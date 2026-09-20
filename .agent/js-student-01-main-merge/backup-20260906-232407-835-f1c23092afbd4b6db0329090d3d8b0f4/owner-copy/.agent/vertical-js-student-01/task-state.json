@@ -1,0 +1,47 @@
+{
+  "schema": "rct.task-state.v1",
+  "task": "vertical-js-student-01",
+  "updatedAt": "2026-09-06T15:48:44+03:00",
+  "risk": "S3",
+  "owner": "/root/geo_contract_owner",
+  "role": "developer",
+  "routing": {
+    "requestedModel": "gpt-5.6-sol",
+    "requestedEffort": "high",
+    "observedRuntimeModel": null,
+    "observedRuntimeEffort": null,
+    "note": "The parent supplied requested routing; runtime metadata was not exposed to this worker."
+  },
+  "phase": "contract-foundation",
+  "contractRevision": "JS-STUDENT-01-r1",
+  "contractStatus": "freeze-ready",
+  "productImplementationStatus": "not-started",
+  "worktrees": {
+    "contract": "created-by-root",
+    "fe": "planned",
+    "be": "planned",
+    "integration": "planned"
+  },
+  "gates": {
+    "expiredSessionOfflineVisibility": "owner-decided: visible until explicit logout/account switch",
+    "dockerInspection": "daemon-ready; container inventory verified by root",
+    "contractFreeze": "ready for root selective commit and independent review",
+    "openApi": "OpenAPI 3.0.1 update and no-drift checks passed",
+    "generatedTypesAndFixtures": "passed",
+    "foundationRuntime": "passed on task-owned port 19080; integrated story pending"
+  },
+  "ownership": {
+    "globalState": ".agent/vertical-js-student-01/",
+    "shared": [
+      "contracts",
+      "generated types",
+      "contract fixtures",
+      "lockfiles",
+      "shared build/config",
+      "task docs/status"
+    ],
+    "futureBackendAndIntegration": "/root/geo_contract_owner",
+    "futureFrontend": "separate developer after freeze",
+    "gitMutations": "/root only while foundation is prepared"
+  }
+}

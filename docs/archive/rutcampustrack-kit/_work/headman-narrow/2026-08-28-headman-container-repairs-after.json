@@ -1,0 +1,169 @@
+{
+  "schema": "rutcampustrack.headman-container-repairs.v2",
+  "capturedAt": "2026-08-28",
+  "stage": "after-with-pc113-gates",
+  "document": {
+    "A": 46614,
+    "baselineA": 46466,
+    "deltaFromBaselineA": 148
+  },
+  "page18": {
+    "topLevelFrames": 77,
+    "A": 532,
+    "overlapPairs": 0
+  },
+  "semesterTotals": {
+    "setId": "1112:15201",
+    "setA": 121,
+    "deltaA": 30,
+    "newVariant": {
+      "id": "3298:172",
+      "name": "width=1024",
+      "geometry": "960x336",
+      "A": 30,
+      "cards": [
+        {"geometry": "472x160", "x": 0, "y": 0},
+        {"geometry": "472x160", "x": 488, "y": 0},
+        {"geometry": "472x160", "x": 0, "y": 176},
+        {"geometry": "472x160", "x": 488, "y": 176}
+      ]
+    },
+    "threshold": {
+      "availableBlockWidth": 904,
+      "screenWidthWith32pxMargins": 968,
+      "calculation": "444 + 16 + 444; 904 + 32 + 32"
+    },
+    "desktopRootGeometryDelta": 0
+  },
+  "completedContainerRepairs": [
+    {
+      "master": "block/SubjectStats",
+      "scope": "table viewports only",
+      "nodes": ["2012:64193", "2241:314526", "2241:315354"],
+      "change": "clipsContent=true; overflowDirection=HORIZONTAL",
+      "A": 0,
+      "desktopRootGeometryDelta": 0
+    },
+    {
+      "master": "block/TrendPanel · 113",
+      "nodes": ["2312:579", "2312:580"],
+      "change": "layoutSizingHorizontal FIXED->FILL; explicit horizontal viewport preserved",
+      "A": 0,
+      "desktopRootGeometryDelta": 0
+    },
+    {
+      "master": "block/SubjectsList",
+      "rootNodes": ["1148:24875", "1148:25062", "1148:25190"],
+      "nestedTableInstances": ["1148:24897", "2241:322161", "2241:322336"],
+      "change": "component root is the explicit horizontal viewport; nested instance exposes wide content to it",
+      "A": 0,
+      "desktopRootGeometryDelta": 0
+    },
+    {
+      "master": "block/LessonManagement",
+      "nodes": ["2307:341527", "2239:313792"],
+      "change": "clipsContent false->true; overflowDirection NONE->HORIZONTAL",
+      "A": 0,
+      "desktopRootGeometryDelta": 0
+    }
+  ],
+  "revertedSubjectStatsFilterRepair": {
+    "sourceNodes": ["2012:64152", "2241:314516", "2241:315344"],
+    "failedLiveDelta": {
+      "width1440": "filter height 110->127 (+17 px)"
+    },
+    "restoredDesktop": {
+      "width1920": "1824x110",
+      "width1440": "1376x110",
+      "width1280": "1216x110",
+      "layoutWrap": "NO_WRAP",
+      "padding": [24, 24, 24, 24]
+    },
+    "disposableProbe": {
+      "width1440": "paddingRight 24->0 + WRAP/HUG => 1376x110, child bounds unchanged",
+      "width1280": "paddingRight 24->0 + WRAP/HUG => 1216x110, child bounds unchanged",
+      "width1024": "960x127 while children occupy y=24..164; invalid clipped geometry",
+      "temporaryNodesRemaining": 0
+    },
+    "conclusion": "No zero-A common-master path proved. A true width=1024 layout branch would clone an 827 A variant and requires owner approval."
+  },
+  "screenAudit": [
+    {"id":"3250:128191","screen":"ПК-111","height":4137,"A":12,"geometryOutsideScreen":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"clean"},
+    {"id":"3250:129378","screen":"ПК-112","height":2658,"A":10,"geometryOutsideScreen":2119,"ownedByHorizontalViewport":2119,"unowned":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"clean; two horizontal journal viewports"},
+    {"id":"3250:135506","screen":"ПК-113","height":6898,"A":10,"geometryOutsideScreen":838,"ownedByHorizontalViewport":823,"unowned":15,"renderOutsideScreen":5,"rectangularUnderlays":0,"visual":"rings 2x2 and tables fixed; filter overflows visibly; protected trend chart clips its last point/date"},
+    {"id":"3250:138329","screen":"ПК-114 list","height":1143,"A":5,"geometryOutsideScreen":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"clean"},
+    {"id":"3250:138628","screen":"ПК-114 composer","height":1193,"A":5,"geometryOutsideScreen":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"clean; required marks adjacent to labels"},
+    {"id":"3250:139289","screen":"ПК-115","height":1137,"A":8,"geometryOutsideScreen":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"clean"},
+    {"id":"3250:139521","screen":"ПК-116","height":2124,"A":4,"geometryOutsideScreen":530,"ownedByHorizontalViewport":530,"unowned":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"clean horizontal table viewport"},
+    {"id":"3250:141483","screen":"ПК-116.1","height":1352,"A":5,"geometryOutsideScreen":57,"ownedByHorizontalViewport":57,"unowned":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"clean horizontal block viewport"},
+    {"id":"3250:141966","screen":"ПК-117","height":1424,"A":5,"geometryOutsideScreen":52,"ownedByHorizontalViewport":52,"unowned":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"clean horizontal grid viewport"},
+    {"id":"3250:142570","screen":"ПК-118","height":1328,"A":5,"geometryOutsideScreen":65,"ownedByHorizontalViewport":65,"unowned":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"clean; 960 viewport contains 1216 grid"},
+    {"id":"3250:143175","screen":"ПК-119","height":2480,"A":7,"geometryOutsideScreen":0,"renderOutsideScreen":0,"rectangularUnderlays":0,"visual":"clean"}
+  ],
+  "pc113OpenGates": [
+    {
+      "code": "SUBJECT_STATS_1024_LAYOUT_BRANCH",
+      "filter": "1192 px union inside 912 px available",
+      "screenRenderWidth": 1248,
+      "requiredDecision": "approve width=1024 branch, expected +827 A, or choose a different layout"
+    },
+    {
+      "code": "ATTENDANCE_TREND_CHART_PROTECTED_OVERFLOW",
+      "container": "960x640",
+      "fixedPlotWidth": 1104,
+      "geometryOutsideScreenNodes": 12,
+      "visibleResult": "last point/date clipped",
+      "requiredDecision": "AttendanceTrendChart is explicitly protected; its pending 156 A proposal remains undecided"
+    }
+  ],
+  "attendanceJournal": {
+    "weekEdit": {"viewport":"960x1120","grid":"1824x1120","overflowX":864,"rowHeight":32,"headerHeight":160,"firstColumnWidth":224,"visibleStatusMarks":336},
+    "subjectEdit": {"viewport":"960x1024","grid":"2176x1024","overflowX":1216,"rowHeight":32,"headerHeight":64,"firstColumnWidth":224,"visibleStatusMarks":392},
+    "visibleStatusMarksTotal":728,
+    "badStatusMarkGeometry":0,
+    "directPhysicalPage5StatusMarksA":847,
+    "historical972Status":"unscoped stale number; no raw snapshot"
+  },
+  "radiusVerification": {
+    "ScheduleSlotCell": {"radius24":48,"nameMatchesWithRadius0":4},
+    "LessonManagementCell": {"radius24":48},
+    "LessonAttendanceRoster": {"radius24":1},
+    "TicketCard": {"radius24":4},
+    "AppButton": {"radius999":58},
+    "TextInput": {"radius16":9,"radius24":9},
+    "StatsDetail": {"radius0":2},
+    "graphDataTable": {"radius16":1}
+  },
+  "typography": {
+    "literalInterVisible": 0,
+    "textsAtLeast28px": [
+      {"id":"I3250:128194;3245:75022;565:1769;491:65","value":"18","fontSize":32,"lineHeightPercent":115},
+      {"id":"I3250:128194;3245:75023;565:1769;491:65","value":"3","fontSize":32,"lineHeightPercent":115}
+    ]
+  },
+  "r7": {
+    "screen113Height": "7250->6898 (-352)",
+    "shiftedFollowing1024Frames": 8,
+    "shiftY": -352,
+    "gapAfter113": 200,
+    "overlapPairs": 0
+  },
+  "formFieldClosure": {
+    "directConsumersA":156,
+    "requiredDirectA":135,
+    "acceptedScreenOccurrences":287,
+    "requiredAcceptedOccurrences":238,
+    "badRequiredMarkGap":0,
+    "directAndScreenGeometryDelta":0,
+    "A_delta":0,
+    "teacherDirectA":0,
+    "teacherScreenOccurrences":0,
+    "before":"2026-08-28-formfield-required-position-before.json",
+    "after":"2026-08-28-formfield-required-position-after.json"
+  },
+  "nextWidth": {
+    "width":768,
+    "status":"not_started",
+    "reason":"two unresolved ПК-113 gates"
+  }
+}

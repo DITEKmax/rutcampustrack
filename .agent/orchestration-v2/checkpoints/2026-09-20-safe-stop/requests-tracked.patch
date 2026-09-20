@@ -1,0 +1,2512 @@
+diff --git a/.agent/student-role-orchestrator/requests-runtime/R3-EVIDENCE.md b/.agent/student-role-orchestrator/requests-runtime/R3-EVIDENCE.md
+index 57a7cf53..1ff18493 100644
+--- a/.agent/student-role-orchestrator/requests-runtime/R3-EVIDENCE.md
++++ b/.agent/student-role-orchestrator/requests-runtime/R3-EVIDENCE.md
+@@ -173,3 +173,312 @@ Source file SHA-256 values at the prepared R9/R10 source release (PowerShell `Ge
+ | `r10-docker-network-proof.ps1` | `0D5C828D706424CC063D2D7B6890B98FA4DC9DF15B1C4C884165FBB2B55407CE` |
+ | `r10-network-proof-source-check.ps1` | `2268854FC9BE38F7405F0B373B18FBC0F6091C4BEADE7F224FD0506C28A46E74` |
+ | `r10-docker-network-proof.json` | `0D07C5C7B346F3C0E0E68173C184A811CF283A004AAD9C7F7916CBC298F2A9BA` |
++
++## R11 bundled correction (33-finding ledger)
++
++R11 started from the clean H32 source checkpoint `73fd5f27ceb429ad0692b073189f8a527c550830` and changed only the assigned `requests-runtime/**` scope. The original E sources, accepted seeds, product worktrees and historical H32 report remain read-only. No Docker, Gradle, build producer, ValidateOnly, server, browser or product runtime was run in this lane.
++
++The four fresh findings are closed as follows:
++
++- F1 HIGH: `Start-OwnedContainer` now emits `docker create --pull=never`, registers the returned or strictly recovered ID immediately, and then emits `docker start`. Ambiguous create results can be recovered only through an exact container name plus both `rct.runtime-owner=student-requests-gate` and current `rct.runtime-run` labels. A foreign-label match is rejected without adoption or deletion. The updated `r8-edge-reservation-check.ps1` injects start failure, owned create recovery and foreign mismatch; all paths pass and the start failure remains in the cleanup ledger.
++- F2 HIGH: source validation records the exact expected revision, clean tracked status, edge source bytes/hashes and revision blob hashes. `New-RuntimeConfig` consumes the validated read-once edge text cache. `Assert-UnionSourceStability` runs before resource creation, before config/edge reservation and before infrastructure/backend/edge starts, rejecting dirty state, changed bytes or changed revision blobs. `r11-source-stability-check.ps1` uses temporary fixtures to reject both a clean-status between-phase byte swap and dirty state.
++- F3 MEDIUM: the Node probe now requires the API `summary.status=PENDING` mapping for the domain `SUBMITTED` ticket, accepts only a null/absent decision, requires every I1 attachment to be `ACTIVE`, accepts only a null/absent `expiredAt`, and requires `uploadedAt < expiresAt`. Mongo document and outbox projections carry `expired_at`; canonical comparison rejects non-null lifecycle expiry and equal/reversed upload/expiry timestamps independently in both stored documents and outbox payloads. The self-test and Mongo projection fixture exercise response, document and outbox mutations.
++- F4 LOW: a future network proof initializes top-level `runId`, `environment.runtimeMode=network-proof` and a runner SHA source anchor before the first Docker command. Its bounded plan now includes an actual invalid-entrypoint `create → register → start` failure path, with expected/worst-case owned container bounds of `3/4`; all proof commands use `--pull=never`. The wrapper defaults to the new `r11-docker-network-proof.json` path; historical `r10-docker-network-proof.json` remains byte-identical at SHA-256 `0D07C5C7B346F3C0E0E68173C184A811CF283A004AAD9C7F7916CBC298F2A9BA`. The new proof report was not generated in this source-only lane.
++
++## R11 pure checks and release
++
++Environment: PowerShell `7.6.5`, Node `v24.14.0`, worktree branch `codex/v2-requests-harness`, source base `73fd5f27ceb429ad0692b073189f8a527c550830`. Every command below exited `0`; checks use only temporary fixtures/stubs where noted.
++
++| Check | Result |
++| --- | --- |
++| `node --check .agent/student-role-orchestrator/requests-runtime/probe.mjs` | PASS, exit 0 |
++| `node .agent/student-role-orchestrator/requests-runtime/probe.mjs --self-test` | PASS, exit 0; valid PNG, API PENDING/ACTIVE lifecycle, null/absent decision and expiry, invalid decision/timestamp/order mutations, fixed/chunked 413 EPIPE and no-response transport gates |
++| `pwsh -NoProfile -NonInteractive -File .../r8-edge-reservation-check.ps1` | PASS, exit 0; actual launcher create/register/start, invalid-entrypoint start failure with `--entrypoint`, injected create failures, owned recovery and foreign mismatch |
++| `pwsh -NoProfile -NonInteractive -File .../r11-source-stability-check.ps1` | PASS, exit 0; exact revision/clean state, tracked blob/hash pin, clean-status byte swap and dirty fixture rejection |
++| `pwsh -NoProfile -NonInteractive -File .../r8-mongo-projection-check.ps1` | PASS, exit 0; emitted Mongo JS, `expired_at` projection, independent non-null expiry and equal-time lifecycle rejection in documents/outbox, plus descriptor corruption rejection |
++| `pwsh -NoProfile -NonInteractive -File .../r8-probe-callsite-check.ps1` | PASS, exit 0; Node syntax/self-test, header and lifecycle callsite gates |
++| `pwsh -NoProfile -NonInteractive -File .../r6-source-contract-check.ps1` | PASS, exit 0; preflight diagnostics, trusted provenance and cached edge source/guard assertions |
++| `pwsh -NoProfile -NonInteractive -File .../r10-network-proof-source-check.ps1` | PASS, exit 0; shared proof helper, metadata-before-command, invalid-executable start-failure path, 3/4 bounds and new evidence path assertions |
++| Existing pure suite (`r3-cleanup`, `r3-subnet`, `r6-build`, `r7-mongo`, `r7-boundary`, `r8-auth`, `r8-reparse`) | PASS, exit 0 for each; no Docker mutation |
++| `git diff --check` and scoped PowerShell AST parse | PASS, exit 0 |
++
++Source SHA-256 values at this R11 source/evidence state (the evidence file is omitted to avoid a self-reference):
++
++| File | SHA-256 |
++| --- | --- |
++| `runner.ps1` | `6FD840FC564AAE8AA3AA537212E7F8C212DA93E4067DF81A318D5536A6E8D334` |
++| `probe.mjs` | `BA3D4A459F076A00E8CA8970D871F07DF5F51B93ACEFD7AB19E06AEFC320066E` |
++| `r8-edge-reservation-check.ps1` | `614C28C33D8B99A733D49B94C061E3C8A76C4580DC3D3D583365DB6F00E16BD4` |
++| `r8-mongo-projection-check.ps1` | `95053E5E8703B7190D5AD8B277718C3C46F73E9C187B1F951061744794EE12D0` |
++| `r6-source-contract-check.ps1` | `8F38488EFC21B293BD3020995B92F38A484B98285DA318A68B700E31A29E5091` |
++| `r10-docker-network-proof.ps1` | `0918C18D7C6915CC1C8F06EC94E4B86D7EBACC390F7E29F4DFF8255E49D2E2C8` |
++| `r10-network-proof-source-check.ps1` | `3D369BA421947D2FC4E7DDDC786552AE7D4257643271E509F4F41D3A9D62B988` |
++| `r11-source-stability-check.ps1` | `9600BF2776B8CD4D4BABE8BC706AE8AC6CABD319A9EFC3F67765A04B698124B9` |
++
++Docker proof/runtime remains **NOT_RUN** in R11. Release is ready for root's fresh independent full Sol review; only after that review and a separate root lease may the new proof path and later original I1/I2 runtime be executed.
++
++## R12 strict API/Mongo lifecycle correction — current source evidence (2026-09-15 evening)
++
++### Scope and contract
++
++This replacement-author R3 pass is S3 source/check/proof-proposal work in the sole writer worktree `C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness`, branch `codex/v2-requests-harness`, expected base/revision `73fd5f27ceb429ad0692b073189f8a527c550830`. The orchestration rules pin is `A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A`. Changes remain confined to `.agent/student-role-orchestrator/requests-runtime/**`; the previously released author had no live ownership, and no foreign worktree or product source was changed.
++
++The current contract closes the four R3 findings in the 33-finding bundle. Container lifecycle must create and register the real ID before start, recover only an exact name with both current owner and run labels, reject foreign matches, and preserve actual start failures. Source provenance must verify the expected revision, clean tracked state, immutable tracked blob/edge bytes and hashes before resource or edge startup, then use the validated read-once cache. I1 must validate the actual BFF DTO (`summary.status=PENDING`, exact camelCase attachment fields, `decision` null/absent, `expiredAt` null/absent, and strict `uploadedAt < expiresAt`) and the persisted Mongo ticket state (`SUBMITTED`) while comparing Mongo documents and outbox descriptors through their separate snake_case projection shape. The future proof must anchor `runId`, `runtimeMode=network-proof`, and its runner SHA before the first Docker command, include invalid-entrypoint create/register/start failure, use `--pull=never`, and pin bounded resources. These checks are source/pure evidence only; they do not claim changed-launcher runtime success.
++
++### Critical source references and correction
++
++The E originals remain read-only: `C:/Users/maksd/.codex/worktrees/6a61/rutcampustrack/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java:659` emits `ExcuseTicketStatus.SUBMITTED` and `:679` emits `AttachmentState.ACTIVE`. The BFF contract source is `C:/Users/maksd/.codex/worktrees/6a61/rutcampustrack/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java`; its public fields are camelCase `contentType`, `sizeBytes`, `uploadedAt`, `expiresAt`, and `expiredAt`, with `summary.status` represented as `PENDING`.
++
++The prior generic DTO fixture accepted aliases and did not independently prove API, Mongo, and outbox mutations; the first final audit also showed that the Mongo snapshot counted the request without checking its persisted state. `probe.mjs` now reads only exact public API names, rejects extra snake_case attachment aliases, requires the exact API enum value `ACTIVE`, enforces the actual summary/lesson fields and lifecycle values, rejects `selectedLesson`, and uses a strict UTC Instant wire form. `runner.ps1` now has explicit `Api` and `Mongo` descriptor formats, so `$Probe.i1.files` is compared as the API shape while stored document and outbox payloads are compared as snake_case; API format also rejects extra snake_case aliases and non-exact state casing. Its request snapshot projects `status`, and I1/I2 assertions require the real persisted `SUBMITTED` state behind API `PENDING`. `r8-mongo-projection-check.ps1` constructs both real shapes, rejects a wrong persisted ticket state, and injects missing/extra-field aliases, non-null expiry, equal-time expiry, content-type, and digest mutations across the API, document, and outbox descriptor paths. `r11-source-stability-check.ps1` adds revision and clean-status byte-swap negatives.
++
++### Pure checks and exit codes
++
++Environment for this evidence: PowerShell `7.6.5`, Node `v24.14.0`, branch `codex/v2-requests-harness`, source revision `73fd5f27ceb429ad0692b073189f8a527c550830`. The complete pure ledger below was rerun after the strict correction; every command exited `0` and no Docker/Gradle/build/server/port operation was issued.
++
++| Check | Evidence | Exit |
++| --- | --- | ---: |
++| Node syntax | `node --check .agent/student-role-orchestrator/requests-runtime/probe.mjs` | 0 |
++| Probe self-test | `node .agent/student-role-orchestrator/requests-runtime/probe.mjs --self-test`; exact API camelCase/`ACTIVE` fixture, PENDING lifecycle, null/absent decision and expiredAt, content/size/timestamp/expiry aliases and lifecycle/order mutations, fixed/chunked 413 EPIPE and no-response failure | 0 |
++| Probe callsite | `pwsh -NoProfile -NonInteractive -File .agent/student-role-orchestrator/requests-runtime/r8-probe-callsite-check.ps1`; required API field markers and nullable lifecycle gates | 0 |
++| Mongo projection and DB state | `pwsh -NoProfile -NonInteractive -File .agent/student-role-orchestrator/requests-runtime/r8-mongo-projection-check.ps1`; persisted ticket `SUBMITTED` projection plus separate API camelCase and Mongo/outbox snake_case fixtures with alias, expiry, content, and digest rejection | 0 |
++| Source stability | `pwsh -NoProfile -NonInteractive -File .agent/student-role-orchestrator/requests-runtime/r11-source-stability-check.ps1`; exact revision/clean state, tracked blob/edge hashes, dirty fixture and between-phase byte-swap rejection | 0 |
++| Source contract | `pwsh -NoProfile -NonInteractive -File .agent/student-role-orchestrator/requests-runtime/r6-source-contract-check.ps1`; preflight ordering, cached validated source, exact descriptor formats, response lifecycle gates | 0 |
++| Edge/lifecycle pure check | `pwsh -NoProfile -NonInteractive -File .agent/student-role-orchestrator/requests-runtime/r8-edge-reservation-check.ps1`; create/register/start ordering, injected start failure, owned recovery and foreign-label rejection | 0 |
++| Network proof source | `pwsh -NoProfile -NonInteractive -File .agent/student-role-orchestrator/requests-runtime/r10-network-proof-source-check.ps1`; pre-command metadata, invalid-entrypoint path, 3/4 resource bounds, `--pull=never`, new report path | 0 |
++| Existing pure ledger | `r3-cleanup-failure-injection.ps1`, `r3-subnet-parser-check.ps1`, `r6-build-manifest-check.ps1`, `r7-mongo-query-check.ps1`, `r7-preflight-boundary-check.ps1`, `r8-auth-pacing-check.ps1`, and `r8-reparse-ancestor-check.ps1` | 0 each |
++| Scoped PowerShell parse | `pwsh -NoProfile -NonInteractive -Command '<ParseFile all *.ps1 under requests-runtime>'` | 0 |
++| Whitespace | `git diff --check` | 0 |
++
++### Current source hashes
++
++These are SHA-256 values from `Get-FileHash -Algorithm SHA256` after the correction. `R3-EVIDENCE.md` is omitted to avoid a self-referential value.
++
++| File | SHA-256 |
++| --- | --- |
++| `probe.mjs` | `B346B3979AE25AEDD7B1EF43A6F9DA8A162316EA85B4C834174BED3D50DF75B9` |
++| `runner.ps1` | `A1585F026768E06EED7E05F480969ABCCDB690D90579859F5E7EFCE5F5340E94` |
++| `r8-mongo-projection-check.ps1` | `D557881DF3587F7BBA3EED4814075E9BC2ECB32DFD4C4957B72912645A9A437B` |
++| `r8-probe-callsite-check.ps1` | `8CDC6421F202896737513585493A9BD294CF846E252D82B980C1EE32F1875CAC` |
++| `r6-source-contract-check.ps1` | `BCCC1026BBCBD8A664BF8E9FCF9F2EF02D42E8027628B9E59B161793ACBEE8CB` |
++| `r11-source-stability-check.ps1` | `A743B839CD776C1141B813991234D748F6576BDA0D739AFAC3B9CCD9933D9C6B` |
++| `r10-docker-network-proof.ps1` | `0918C18D7C6915CC1C8F06EC94E4B86D7EBACC390F7E29F4DFF8255E49D2E2C8` |
++| `r10-network-proof-source-check.ps1` | `E6F0F92C641DBB5FB56D1190F10B8501498631B23C228F2F28B6CDE5355717B5` |
++| `r8-edge-reservation-check.ps1` | `63BD96B2C0DA42A1E7680ECEE679E1AD5A48D08E3A41271760C11E62B109E5D3` |
++
++### Runtime, diff, and limitations
++
++Changed-launcher Docker proof, Gradle/build producer, ValidateOnly, browser, server/port startup, and actual I1/I2 API/Mongo/outbox runtime remain **NOT_RUN** in this R3 lane. The historical H32 report `r10-docker-network-proof.json` remains byte-identical at SHA-256 `0D07C5C7B346F3C0E0E68173C184A811CF283A004AAD9C7F7916CBC298F2A9BA`; that isolated historical PASS does not validate the changed launcher. The new R11 proof report is intentionally not generated here. Actual Docker mutation is reserved for root's future lease after fresh independent Sol review.
++
++The current scoped working set is the evidence file plus `probe.mjs`, `runner.ps1`, `r10-docker-network-proof.ps1`, `r10-network-proof-source-check.ps1`, `r6-source-contract-check.ps1`, `r8-edge-reservation-check.ps1`, `r8-mongo-projection-check.ps1`, `r8-probe-callsite-check.ps1`, and the new `r11-source-stability-check.ps1`, all below `requests-runtime/**`. No commit, push, merge, deploy, or foreign cleanup was performed. Fresh independent Sol review must re-open the E/BFF originals, inspect the complete stable diff, and decide whether this source/pure evidence is sufficient before any runtime lease.
++
++## R13 bounded artifact handoff correction — current source evidence (2026-09-15 evening)
++
++### Scope, criteria, and decision
++
++This is the fresh R3 S3 correction in the sole writer worktree
++`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness`, branch
++`codex/v2-requests-harness`, starting at HEAD
++`73fd5f27ceb429ad0692b073189f8a527c550830`. The applicable orchestration rules are
++`RULES.md` SHA-256
++`B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A`.
++Only `.agent/student-role-orchestrator/requests-runtime/**` was touched; existing WIP in
++that scope was retained. Product sources, E originals, frozen contract, accepted seeds,
++and foreign worktrees remain read-only. No child, Terra, Docker, Gradle, build producer,
++ValidateOnly, server, browser, install, secret, push, deploy, or merge operation was used.
++Academic diagnostic port `127.0.0.1:18520` was left unchanged.
++
++The three confirmed full-review defects are closed together:
++
++- **F1 HIGH — artifact handoff TOCTOU.** `New-VerifiedArtifactSnapshot` reads each trusted
++  JAR and every PWA file into a manifest-checked buffer while holding a read share,
++  rejects size/hash/reparse changes at the read boundary, writes a task-owned
++  `runDir\artifacts` copy, verifies the copy, and returns only those paths. Backend JAR
++  mounts use `artifactSnapshot.Jars`; Nginx uses `artifactSnapshot.PwaDist`; cleanup
++  checks the exact owned run/artifact path and verifies absence. A real pure check swaps
++  source JAR/PWA files after freeze, proves production mount helpers still receive the
++  owned copies, and proves a fresh snapshot rejects both changed inputs.
++- **F2 MEDIUM — API enum and pure assertion flow.** `canonicalAttachmentDescriptor` keeps
++  the exact API `state: 'ACTIVE'` value instead of lowercasing it. The self-test exposes
++  `detailEvidence.attachments` as its serialized API fixture, and
++  `r8-mongo-projection-check.ps1` feeds that actual Node output into production
++  `Assert-I1MongoDelta` before separately constructing Mongo/outbox snake_case
++  projections. A lowercase API state is rejected by the Node corruption matrix.
++- **F3 MEDIUM — exact-root edge route.** `Convert-EdgeToRuntimeConfig` replaces the E
++  exact-root `/` redirect with a static PWA index route and replaces the panel prefix
++  route with the copied PWA tree fallback. The production helper regression check
++  proves `/` serves `/index.html`, the prefix serves `$uri`/`$uri/` or `/index.html`,
++  the panel proxy is removed, and the source E text remains unchanged.
++
++The cached E edge bytes are also explicitly bound to the expected revision blobs:
++`Resolve-EdgeSources` sends the captured bytes to `git hash-object --path=<tracked path>
++--stdin`, compares both returned IDs with `HEAD:path`, and retains a raw byte SHA for
++the between-phase source guard. The `--path` clean filter makes the comparison correct
++for the accepted Windows CRLF checkout while still hashing the exact captured buffer;
++the pure check changes one cached byte and observes a different blob ID.
++
++### Pure checks and exit codes
++
++Environment: PowerShell `7.6.5`, Node `v24.14.0`, branch
++`codex/v2-requests-harness`, HEAD `73fd5f27ceb429ad0692b073189f8a527c550830`.
++All checks below were run after the final source edits and exited `0`.
++
++| Check | Evidence | Exit |
++| --- | --- | ---: |
++| `r3-cleanup-failure-injection.ps1` | Actual cleanup function with injected owned `rm` exit `23`; error caught, cleanup status `FAIL`, owned failure recorded | 0 |
++| `r3-subnet-parser-check.ps1` | Candidate collision/malformed CIDR fixtures fail closed | 0 |
++| `r6-build-manifest-check.ps1` | Trusted manifest/PWA fixture, extra JAR/content swap/stale revision/wrong pin/digest negatives | 0 |
++| `r7-mongo-query-check.ps1` | Actual generated Mongo JavaScript parses and observes ObjectId ticket/string attachment/regex linkage | 0 |
++| `r7-preflight-boundary-check.ps1` | Copied runner invalid-repo exit `1`; redacted report and sentinel preservation | 0 |
++| `r8-auth-pacing-check.ps1` | Fake clock and distinct I1 `0`/I2 `12000` records; session GET gate | 0 |
++| `r8-edge-reservation-check.ps1` | Actual launcher create/register/start, start-failure/recovery/foreign ownership, IPAM and `--pull=never` gates | 0 |
++| `r8-mongo-projection-check.ps1` | Generated Mongo query plus actual Node serialized API fixture through production PowerShell I1 assertion; API/Mongo/outbox mutation negatives | 0 |
++| `r8-probe-callsite-check.ps1` | Node syntax/self-test, exact API `ACTIVE`, response-aware 413 and CurrentSessionResponse callsites | 0 |
++| `r8-reparse-ancestor-check.ps1` | Temporary junction ancestor rejected; direct path accepted | 0 |
++| `r6-source-contract-check.ps1` | Provenance, cached edge source, tracked-path blob binding, lifecycle and snapshot callsite guards | 0 |
++| `r10-network-proof-source-check.ps1` | Future proof invokes shared production network/launcher helpers and bounded owned cleanup | 0 |
++| `r11-source-stability-check.ps1` | Revision/blob/clean-status and between-phase edge byte swaps rejected | 0 |
++| `r12-artifact-snapshot-check.ps1` | Actual snapshot, six JAR/full PWA copy, post-freeze swaps, fresh-input negatives, production Java/edge mounts, edge blob binding, exact-root transform, owned cleanup | 0 |
++| `node --check probe.mjs` | Node syntax | 0 |
++| `node probe.mjs --self-test` | Deterministic 10 MiB PDF/PNG, API camelCase `ACTIVE`, PENDING/SUBMITTED lifecycle and transport negatives | 0 |
++| Scoped PowerShell AST | `ParseFile` for all 16 scoped `*.ps1` files | 0 |
++| Historical H32 hash | `r10-docker-network-proof.json` remains SHA-256 `0D07C5C7B346F3C0E0E68173C184A811CF283A004AAD9C7F7916CBC298F2A9BA` | 0 |
++| Scoped whitespace | `git diff --check -- .agent/student-role-orchestrator/requests-runtime` | 0 |
++
++The only failed command in preparation was an initial run of
++`r3-cleanup-failure-injection.ps1` that exposed the new artifact cleanup fields were
++missing from its synthetic report. The check was updated to initialize the production
++shape, rerun, and then passed with the injected exit `23`; this was a check-fixture
++compatibility correction, not a production failure.
++
++### Source inventory and hashes
++
++`Get-FileHash -Algorithm SHA256` after the final source edits gives the following complete
++changed/new code and proof inventory. `R3-EVIDENCE.md` is intentionally omitted from the
++hash table to avoid a self-referential evidence hash. The historical H32 JSON is included
++and was independently checked unchanged.
++
++| File | Bytes | SHA-256 |
++| --- | ---: | --- |
++| `runner.ps1` | 156942 | `063A503957BBF7DE29F6B218D0A66C9491206CC6148B39DCAE0905151591C667` |
++| `probe.mjs` | 47147 | `1388EA8F0AF3FEDEB4842C83673BDF9B9A8B208C97C9DE0CFEC5792690DC9109` |
++| `r3-cleanup-failure-injection.ps1` | 2736 | `BAF03194D0EEEA59013E05A54832AC89946B071DB9F445468D95F3E7D7FA7E78` |
++| `r6-source-contract-check.ps1` | 10067 | `3C36387AD3CDC33E3A26F16CD928CF2E295252E4FF43F3B694C600B375226E94` |
++| `r8-edge-reservation-check.ps1` | 13414 | `63BD96B2C0DA42A1E7680ECEE679E1AD5A48D08E3A41271760C11E62B109E5D3` |
++| `r8-mongo-projection-check.ps1` | 19968 | `FEAF0244D24DAAB89F177BD2175ADF3C9E7F66EC179796713FDDA87888002C94` |
++| `r8-probe-callsite-check.ps1` | 3621 | `AEC6FAB3128C6533C43E403EFE58780C67A502CCA7F3E48C4017F607B0F71CC0` |
++| `r10-docker-network-proof.ps1` | 947 | `0918C18D7C6915CC1C8F06EC94E4B86D7EBACC390F7E29F4DFF8255E49D2E2C8` |
++| `r10-network-proof-source-check.ps1` | 4828 | `E6F0F92C641DBB5FB56D1190F10B8501498631B23C228F2F28B6CDE5355717B5` |
++| `r11-source-stability-check.ps1` | 5314 | `A743B839CD776C1141B813991234D748F6576BDA0D739AFAC3B9CCD9933D9C6B` |
++| `r12-artifact-snapshot-check.ps1` | 15563 | `6F4992FA888597B4F5030E63CB97C8CB2D2EC9B4410E68B9D5969FF7F232EC66` |
++| `r10-docker-network-proof.json` (historical) | 17960 | `0D07C5C7B346F3C0E0E68173C184A811CF283A004AAD9C7F7916CBC298F2A9BA` |
++
++`git status --short` showed only these request-runtime scoped paths (the evidence file,
++the listed modified checks/source, and the two listed new checks); no path outside the
++assigned directory was changed. The pre-existing 10 WIP files were preserved and no
++commit/push/merge was performed.
++
++### Runtime evidence, proof proposal, and limitations
++
++This was source/pure work only. Changed-launcher Docker proof, build producer/manifest
++generation, `ValidateOnly`, server/port startup, browser, and actual Requests I1/I2
++API/Mongo/outbox runtime are **NOT_RUN**. The historical H32 report is not reused as
++proof of the changed launcher. The synthetic JAR/PWA fixture proves the production
++snapshot/mount boundary and fail-closed swaps, but it is not build provenance and does
++not prove a real Java or Nginx process started.
++
++After fresh independent Sol full review accepts the stable scoped diff, root may use this
++exact bounded proof command under a separate lease (it was not executed here):
++
++```powershell
++pwsh -NoProfile -NonInteractive -File C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-requests-harness\.agent\student-role-orchestrator\requests-runtime\r10-docker-network-proof.ps1 -Subnet 172.30.185.0/24 -EvidencePath C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-requests-harness\.agent\student-role-orchestrator\requests-runtime\r11-docker-network-proof.json
++```
++
++The bounded proof permits one bridge network, 3 expected/4 worst-case owned containers,
++no host ports or volumes, an existing local pinned image, and `--pull=never`; it should verify actual IPAM, the post-start static edge
++address, dynamic allocation, invalid-entrypoint create/register/start failure, local
++image `--pull=never`, exact ownership labels, cleanup and verified absence. Only then
++should the root-owned producer provide a clean expected-revision manifest and decide any
++later ValidateOnly/full runtime lease. No runtime PASS is proposed by this evidence.
++
++### Actual core handoff snippet
++
++The mount boundary is visible in the production runner at
++`runner.ps1:492-516` (snapshot copy/manifest verification),
++`runner.ps1:1488` (PWA snapshot path returned to edge config), and
++`runner.ps1:1542` (backend JAR snapshot consumed). The edge byte binding is at
++`runner.ps1:924-927`; API enum preservation is at `probe.mjs:230-268` and serialized
++Node evidence at `probe.mjs:714`.
++
++## R13 MEDIUM ambiguous network-create recovery correction — 2026-09-15
++
++### Scope and frozen criteria
++
++This bounded correction owns only `requests-runtime/runner.ps1`, the meaningful pure
++production-helper injection `r13-network-create-recovery-check.ps1`, and this scoped
++evidence. Existing WIP in the worktree and all product/E/original files remain
++preserved. The defect was the network analogue of the already-correct container
++create/register path: a daemon-side network could exist after a client exception,
++non-zero result, empty output, or malformed ID, while `$script:ownedNetwork` was
++still unset and `Remove-OwnedResources` had no safe identity to inspect.
++
++Required behavior is now explicit: recover only `script:networkName` whose inspected
++`.Name` is exact and whose labels are both
++`rct.runtime-owner=student-requests-gate` and `rct.runtime-run=$script:runId`;
++validate the inspected ID, register it before later runtime operations, preserve the
++original create failure in recovery evidence, and fail closed for foreign or absent
++networks. Cleanup must inspect labels again, remove only the registered owned ID, and
++verify absence.
++
++### Regression and correction evidence
++
++The exact pure check was first run against immutable `HEAD:runner.ps1` before the
++correction. It exited `1`: the exception/non-zero/empty/malformed create cases
++exposed the missing recovery/registration, while foreign and absent cases remained
++unadopted; the old success path also lacked the new recovery metadata asserted by
++the final check. Raw stdout and the empty stderr are retained at
++`r13-network-recovery-regression.stdout.log` and
++`r13-network-recovery-regression.stderr.log`.
++
++The same production helper extraction and injection then ran against the corrected
++working tree and exited `0`. It covered normal success, client exception, non-zero
++exit, empty ID, malformed ID, foreign owner label, foreign run label, foreign name,
++absent network, original-failure visibility, exact ID registration, and verified
++cleanup. Raw output is retained at `r13-network-recovery-pass.stdout.log` and
++`r13-network-recovery-pass.stderr.log`.
++
++### Checks, commands, exits, and hashes
++
++Environment: PowerShell `7.6.5`, branch `codex/v2-requests-harness`, current HEAD
++`73fd5f27ceb429ad0692b073189f8a527c550830`; no Docker or Gradle lease was used.
++
++| Check | Command | Exit | Evidence |
++| --- | --- | ---: | --- |
++| Baseline regression | `pwsh -NoProfile -NonInteractive -File .agent/student-role-orchestrator/requests-runtime/r13-network-create-recovery-check.ps1 -UseHeadRunner` | 1 | `r13-network-recovery-regression.stdout.log`; SHA-256 `BD9AB322639044076BE2FC4BBD32D89E11AC6535BD3CF0B80FC34B7375075EFF` |
++| Corrected production helper injection | `pwsh -NoProfile -NonInteractive -File .agent/student-role-orchestrator/requests-runtime/r13-network-create-recovery-check.ps1` | 0 | `r13-network-recovery-pass.stdout.log`; SHA-256 `E48F710E00B80CB6F52E7D51097B92082CE27A4FB90EA8C4A83956B8F02AEE68` |
++| Existing cleanup failure injection | `pwsh -NoProfile -NonInteractive -File .agent/student-role-orchestrator/requests-runtime/r3-cleanup-failure-injection.ps1` | 0 | actual owned `rm` exit 23 remains FAIL/caught and recorded |
++| Existing subnet parser | `pwsh -NoProfile -NonInteractive -File .agent/student-role-orchestrator/requests-runtime/r3-subnet-parser-check.ps1` | 0 | collision and malformed CIDR fixtures |
++| Existing source/launcher/provenance checks | `r6-source-contract-check.ps1`, `r8-edge-reservation-check.ps1`, `r8-mongo-projection-check.ps1`, `r8-probe-callsite-check.ps1`, `r10-network-proof-source-check.ps1`, `r11-source-stability-check.ps1`, `r12-artifact-snapshot-check.ps1` | 0 each | all actual stdout PASS |
++| Scoped PowerShell AST | `ParseFile` over all 17 scoped `*.ps1` files | 0 | `{"status":"PASS","files":17,"errors":[]}` |
++| Scoped whitespace | `git diff --check -- .agent/student-role-orchestrator/requests-runtime/runner.ps1 .agent/student-role-orchestrator/requests-runtime/r13-network-create-recovery-check.ps1` | 0 | no check errors; Git emitted only existing LF/CRLF normalization warning |
++
++Current source hashes are `runner.ps1` SHA-256
++`67F6D0E471FCE5DC7835023D32BB5BD3D26EEB00426AD9AD7A7C2C62409FCA3D` and
++`r13-network-create-recovery-check.ps1` SHA-256
++`46C8E13A596F691BF00188AACE4CDAA92869FE49E9830B57A3CFDC706C72050D`.
++The pass stderr log is empty with SHA-256
++`E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855`; the
++baseline stderr log is the same empty file hash.
++
++### Diff and runtime limits
++
++The code delta is limited to the new `Resolve-AmbiguousOwnedNetwork` helper and the
++ambiguous create/recovery branch in `New-RequestsOwnedNetwork` at current
++`runner.ps1:1154-1241`, plus the scoped pure check and its raw logs. The helper's
++recovery inspect is the only adoption path; foreign name/owner/run cases never enter
++the cleanup ledger. No Docker mutation, Docker network proof, Gradle/build producer,
++ValidateOnly, service startup, browser, or Requests I1/I2 runtime was run here, so
++runtime evidence is **N/A** for this pure repair. The historical H32 JSON remains
++untouched and is not evidence for this changed launcher.
++
++The source is frozen for fresh independent Sol review at the hashes above; no commit,
++push, merge, deploy, product change, or foreign resource cleanup was performed.
+diff --git a/.agent/student-role-orchestrator/requests-runtime/probe.mjs b/.agent/student-role-orchestrator/requests-runtime/probe.mjs
+index 67b4f937..fd040fa5 100644
+--- a/.agent/student-role-orchestrator/requests-runtime/probe.mjs
++++ b/.agent/student-role-orchestrator/requests-runtime/probe.mjs
+@@ -194,14 +194,51 @@ function makeOversizeMultipart(size = MAX_GATEWAY_BYTES + 1) {
+ }
+ 
+ function redact(value, secrets = []) {
+-  let text = typeof value === 'string' ? value : JSON.stringify(value);
+-  for (const secret of secrets.filter((item) => typeof item === 'string' && item.length > 0)) {
+-    text = text.split(secret).join(REDACTED);
++  const registered = secrets
++    .filter((item) => typeof item === 'string' && item.length > 0)
++    .sort((left, right) => right.length - left.length);
++  const registeredPattern = registered.length > 0
++    ? new RegExp(registered.map((item) => item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g')
++    : null;
++  const replaceText = (text) => {
++    const safe = registeredPattern ? text.replace(registeredPattern, REDACTED) : text;
++    return safe
++      .replace(/(Bearer\s+)[A-Za-z0-9._~+/=-]+/gi, `$1${REDACTED}`)
++      .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, REDACTED);
++  };
++  const sensitiveTextPattern = /("?(?:accessToken|refreshToken|password|authorization|cookie|set-cookie)"?\s*[:=]\s*)("[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*'|[^,;}\s]+)/gi;
++  const replacePlainText = (text, quoteValue) => replaceText(text)
++    .replace(sensitiveTextPattern, `$1${quoteValue ? `"${REDACTED}"` : REDACTED}`);
++  const sensitiveKey = /^(?:accessToken|refreshToken|password|authorization|cookie|set-cookie)$/i;
++  const sanitize = (input) => {
++    if (typeof input === 'string') return replacePlainText(input, false);
++    if (Array.isArray(input)) return input.map((item) => sanitize(item));
++    if (input && typeof input === 'object') {
++      return Object.fromEntries(Object.entries(input).map(([key, item]) => [
++        key,
++        sensitiveKey.test(key) && typeof item === 'string' && item.length > 0 ? REDACTED : sanitize(item)
++      ]));
++    }
++    return input;
++  };
++  if (typeof value === 'string') return replacePlainText(value, true);
++  return JSON.stringify(sanitize(value));
++}
++
++function registerDiagnosticSecret(registry, value) {
++  if (!Array.isArray(registry) || typeof value !== 'string' || value.length === 0) return;
++  if (!registry.includes(value)) registry.push(value);
++}
++
++function registerCookieSecrets(registry, cookieHeader) {
++  if (typeof cookieHeader !== 'string' || cookieHeader.length === 0) return;
++  registerDiagnosticSecret(registry, cookieHeader);
++  for (const pair of cookieHeader.split(';')) {
++    const trimmed = pair.trim();
++    registerDiagnosticSecret(registry, trimmed);
++    const separator = trimmed.indexOf('=');
++    if (separator > 0) registerDiagnosticSecret(registry, trimmed.slice(separator + 1));
+   }
+-  return text
+-    .replace(/(Bearer\s+)[A-Za-z0-9._~+/=-]+/gi, `$1${REDACTED}`)
+-    .replace(/("?(?:accessToken|refreshToken|password|authorization|cookie|set-cookie)"?\s*[:=]\s*)("[^"]*"|'[^']*'|[^,;}\s]+)/gi, `$1"${REDACTED}"`)
+-    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, REDACTED);
+ }
+ 
+ function bodyText(response) {
+@@ -218,16 +255,10 @@ function jsonResponse(response) {
+   }
+ }
+ 
+-function propertyValue(object, names) {
+-  if (!object || typeof object !== 'object') return undefined;
+-  for (const name of names) {
+-    if (Object.prototype.hasOwnProperty.call(object, name)) return object[name];
+-  }
+-  return undefined;
+-}
+-
+ function canonicalInstant(value, label) {
+   assertThat(typeof value === 'string' && value.length > 0, `${label} is missing`);
++  assertThat(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(value),
++    `${label} is not a UTC Instant wire value`);
+   const parsed = Date.parse(value);
+   assertThat(Number.isFinite(parsed), `${label} is not an ISO timestamp`);
+   return new Date(parsed).toISOString();
+@@ -235,29 +266,45 @@ function canonicalInstant(value, label) {
+ 
+ function canonicalAttachmentDescriptor(item, label) {
+   assertThat(item && typeof item === 'object', `${label} is not an object`);
+-  const id = propertyValue(item, ['id']);
+-  const name = propertyValue(item, ['name']);
+-  const contentType = propertyValue(item, ['content_type', 'contentType']);
+-  const size = propertyValue(item, ['sizeBytes', 'size']);
+-  const digest = propertyValue(item, ['sha256']);
+-  const state = propertyValue(item, ['state']);
+-  const uploadedAt = propertyValue(item, ['uploaded_at', 'uploadedAt']);
+-  const expiresAt = propertyValue(item, ['expires_at', 'expiresAt']);
++  // This validator consumes the public BFF wire DTO. Mongo's snake_case
++  // projection is normalized separately by runner.ps1; aliases here would
++  // let a generic DTO pass as an API response.
++  for (const alias of ['content_type', 'size', 'uploaded_at', 'expires_at', 'expired_at']) {
++    assertThat(!Object.prototype.hasOwnProperty.call(item, alias), `${label}.${alias} is not a public API field`);
++  }
++  const id = item.id;
++  const name = item.name;
++  const contentType = item.contentType;
++  const size = item.sizeBytes;
++  const digest = item.sha256;
++  const state = item.state;
++  const uploadedAt = item.uploadedAt;
++  const expiresAt = item.expiresAt;
++  const expiredAt = item.expiredAt;
+   assertThat(typeof id === 'string' && id.length > 0, `${label}.id is missing`);
+   assertThat(typeof name === 'string' && name.length > 0, `${label}.name is missing`);
+   assertThat(typeof contentType === 'string' && contentType.length > 0, `${label}.content_type is missing`);
+   assertThat(Number.isSafeInteger(size) && size >= 0, `${label}.size is invalid`);
+   assertThat(typeof digest === 'string' && /^[0-9a-f]{64}$/i.test(digest), `${label}.sha256 is invalid`);
+-  assertThat(typeof state === 'string' && state.length > 0, `${label}.state is missing`);
++  assertThat(state === 'ACTIVE', `${label}.state must be exactly ACTIVE for a newly submitted request`);
++  const canonicalUploadedAt = canonicalInstant(uploadedAt, `${label}.uploaded_at`);
++  const canonicalExpiresAt = canonicalInstant(expiresAt, `${label}.expires_at`);
++  assertThat(Date.parse(canonicalUploadedAt) < Date.parse(canonicalExpiresAt), `${label}.uploaded_at must be before expires_at for a newly submitted request`);
++  assertThat(expiredAt === undefined || expiredAt === null, `${label}.expired_at must be null or absent for a newly submitted request`);
++  const canonicalExpiredAt = null;
+   return {
+     id,
+     name,
+-    content_type: contentType,
+-    size,
++    contentType,
++    sizeBytes: size,
+     sha256: digest.toLowerCase(),
+-    state: state.toLowerCase(),
+-    uploaded_at: canonicalInstant(uploadedAt, `${label}.uploaded_at`),
+-    expires_at: canonicalInstant(expiresAt, `${label}.expires_at`)
++    // Preserve the exact public enum emitted by StudentRequestApiModels.
++    // PowerShell normalizes stored Mongo descriptors separately, but the
++    // serialized API evidence must retain ACTIVE rather than lowercasing it.
++    state,
++    uploadedAt: canonicalUploadedAt,
++    expiresAt: canonicalExpiresAt,
++    expiredAt: canonicalExpiredAt
+   };
+ }
+ 
+@@ -271,19 +318,48 @@ function assertStudentSessionContract(session, label = 'Auth session') {
+ 
+ function assertRequestDetailContract(detail, submittedPayload, label = 'I1 response') {
+   assertThat(detail && typeof detail === 'object', `${label} is not a JSON object`);
++  assertThat(!Object.prototype.hasOwnProperty.call(detail, 'selectedLesson'),
++    `${label}.selectedLesson is not part of StudentRequestApiModels.Detail`);
+   assertThat(detail.reason === submittedPayload.reason, `${label} reason does not match submitted payload`);
+   assertThat(detail.comment === submittedPayload.comment, `${label} comment does not match submitted payload`);
+   const summary = detail.summary;
+   assertThat(summary && summary.kind === 'EXCUSE', `${label} summary.kind is not EXCUSE`);
++  assertThat(summary.status === 'PENDING', `${label} summary.status is not PENDING (SUBMITTED domain tickets map to the API pending state)`);
+   assertThat(summary.origin === 'MANUAL', `${label} summary.origin is not MANUAL`);
++  assertThat(typeof summary.id === 'string' && summary.id.length > 0, `${label} summary.id is missing`);
++  assertThat(typeof summary.createdAt === 'string', `${label} summary.createdAt is missing`);
++  assertThat(typeof summary.updatedAt === 'string', `${label} summary.updatedAt is missing`);
++  canonicalInstant(summary.createdAt, `${label}.summary.createdAt`);
++  canonicalInstant(summary.updatedAt, `${label}.summary.updatedAt`);
+   const submittedLessonIds = submittedPayload.lessonIds.map((value) => String(value)).sort();
+-  const returnedLessons = Array.isArray(summary.lessons) ? summary.lessons : [];
+-  const returnedLessonIds = returnedLessons.map((lesson) => String(propertyValue(lesson, ['lessonId', 'id']))).sort();
++  assertThat(Array.isArray(summary.lessons), `${label}.summary.lessons must be an array`);
++  const returnedLessons = summary.lessons;
++  const returnedLessonIds = returnedLessons.map((lesson, index) => {
++    assertThat(lesson && typeof lesson === 'object', `${label}.summary.lessons[${index}] is not an object`);
++    assertThat(typeof lesson.id === 'string' && lesson.id.length > 0, `${label}.summary.lessons[${index}].id is missing`);
++    assertThat(Number.isInteger(lesson.lessonNumber), `${label}.summary.lessons[${index}].lessonNumber is invalid`);
++    assertThat(typeof lesson.status === 'string' && lesson.status.length > 0, `${label}.summary.lessons[${index}].status is missing`);
++    assertThat(typeof lesson.blocked === 'boolean', `${label}.summary.lessons[${index}].blocked is invalid`);
++    return lesson.id;
++  }).sort();
+   assertThat(JSON.stringify(returnedLessonIds) === JSON.stringify(submittedLessonIds), `${label} summary.lessons do not match submitted lessonIds`);
+-  const selectedLesson = detail.selectedLesson ?? summary.selectedLesson ?? returnedLessons[0];
+-  const selectedLessonId = propertyValue(selectedLesson, ['lessonId', 'id']);
+-  assertThat(selectedLessonId !== undefined && submittedLessonIds.includes(String(selectedLessonId)), `${label} selectedLesson does not match submitted lessonIds`);
+-  return { reason: detail.reason, comment: detail.comment, kind: summary.kind, origin: summary.origin, lessonIds: returnedLessonIds, selectedLessonId: String(selectedLessonId) };
++  const selectedLessonId = returnedLessons[0]?.id;
++  assertThat(selectedLessonId !== undefined && submittedLessonIds.includes(String(selectedLessonId)), `${label} summary lesson does not match submitted lessonIds`);
++  const decision = detail.decision;
++  assertThat(decision === undefined || decision === null, `${label}.decision must be null or absent for a newly submitted request`);
++  assertThat(Array.isArray(detail.attachments), `${label}.attachments must be an array`);
++  const attachments = detail.attachments.map((item, index) => canonicalAttachmentDescriptor(item, `${label}.attachments[${index}]`));
++  return {
++    reason: detail.reason,
++    comment: detail.comment,
++    kind: summary.kind,
++    status: summary.status,
++    origin: summary.origin,
++    lessonIds: returnedLessonIds,
++    selectedLessonId: String(selectedLessonId),
++    decision: decision ?? null,
++    attachments
++  };
+ }
+ 
+ function header(response, name) {
+@@ -538,12 +614,47 @@ async function runSelfTest() {
+   assertThat(!safe.includes('access-secret') && !safe.includes('password-secret'), 'self-test redaction removes credentials');
+   const detailPayload = { lessonIds: ['123'], reason: 'OTHER', comment: 'runtime fixture' };
+   const detailFixture = {
+-    summary: { kind: 'EXCUSE', origin: 'MANUAL', lessons: [{ lessonId: 123 }] },
++    summary: {
++      id: 'request-1',
++      kind: 'EXCUSE',
++      status: 'PENDING',
++      origin: 'MANUAL',
++      lessons: [{ id: '123', lessonNumber: 1, status: 'scheduled', blocked: false }],
++      createdAt: '2026-09-14T00:00:00Z',
++      updatedAt: '2026-09-14T00:00:00Z'
++    },
+     reason: 'OTHER',
+     comment: 'runtime fixture',
+-    selectedLesson: { lessonId: 123 }
++    decision: null,
++    attachments: [{
++      id: 'att-1',
++      name: 'fixture.pdf',
++      contentType: 'application/pdf',
++      sizeBytes: 7,
++      sha256: 'a'.repeat(64),
++      state: 'ACTIVE',
++      uploadedAt: '2026-09-14T00:00:00.000Z',
++      expiresAt: '2026-09-15T00:00:00.000Z',
++      expiredAt: null
++    }, {
++      id: 'att-2',
++      name: 'fixture.png',
++      contentType: 'image/png',
++      sizeBytes: 9,
++      sha256: 'b'.repeat(64),
++      state: 'ACTIVE',
++      uploadedAt: '2026-09-14T00:00:01.000Z',
++      expiresAt: '2026-09-15T00:00:01.000Z',
++      expiredAt: null
++    }],
+   };
+   const detailEvidence = assertRequestDetailContract(detailFixture, detailPayload, 'self-test detail');
++  const detailWithoutExpiredAt = JSON.parse(JSON.stringify(detailFixture));
++  delete detailWithoutExpiredAt.attachments[0].expiredAt;
++  assertRequestDetailContract(detailWithoutExpiredAt, detailPayload, 'detail without nullable expiredAt');
++  const detailWithoutDecision = JSON.parse(JSON.stringify(detailFixture));
++  delete detailWithoutDecision.decision;
++  assertRequestDetailContract(detailWithoutDecision, detailPayload, 'detail without nullable decision');
+   const sessionFixture = {
+     sessionId: '5e0d2c6a-5cf1-4e17-8e65-40ce6e2cf420',
+     userId: '42',
+@@ -573,10 +684,22 @@ async function runSelfTest() {
+   const corruptions = [
+     ['reason', (value) => { value.reason = 'ILLNESS'; }],
+     ['comment', (value) => { value.comment = 'corrupted'; }],
++    ['summary.status', (value) => { value.summary.status = 'SUBMITTED'; }],
+     ['summary.kind', (value) => { value.summary.kind = 'LATE_CHECKIN'; }],
+     ['summary.origin', (value) => { value.summary.origin = 'AUTO_GEO_FAILURE'; }],
+-    ['summary.lessons', (value) => { value.summary.lessons[0].lessonId = 999; }],
+-    ['selectedLesson', (value) => { value.selectedLesson.lessonId = 999; }]
++    ['summary.lessons', (value) => { value.summary.lessons[0].id = '999'; }],
++    ['summary.lessonId-alias', (value) => { delete value.summary.lessons[0].id; value.summary.lessons[0].lessonId = '123'; }],
++    ['selectedLesson-extra', (value) => { value.selectedLesson = { id: '123' }; }],
++    ['attachment.state', (value) => { value.attachments[0].state = 'EXPIRED'; }],
++    ['attachment.state-case', (value) => { value.attachments[0].state = 'active'; }],
++    ['decision', (value) => { value.decision = { comment: 'corrupted' }; }],
++    ['attachment.contentType-alias', (value) => { delete value.attachments[0].contentType; value.attachments[0].content_type = 'application/pdf'; }],
++    ['attachment.size-alias', (value) => { delete value.attachments[0].sizeBytes; value.attachments[0].size = 7; }],
++    ['attachment.uploadedAt-alias', (value) => { delete value.attachments[0].uploadedAt; value.attachments[0].uploaded_at = '2026-09-14T00:00:00.000Z'; }],
++    ['attachment.expiresAt-alias', (value) => { delete value.attachments[0].expiresAt; value.attachments[0].expires_at = '2026-09-15T00:00:00.000Z'; }],
++    ['attachment.expiredAt-alias', (value) => { delete value.attachments[0].expiredAt; value.attachments[0].expired_at = '2026-09-14T12:00:00.000Z'; }],
++    ['attachment.temporal-order', (value) => { value.attachments[0].uploadedAt = '2026-09-16T00:00:00.000Z'; }],
++    ['attachment.expiredAt', (value) => { value.attachments[0].expiredAt = '2026-09-14T12:00:00.000Z'; }]
+   ];
+   for (const [name, corrupt] of corruptions) {
+     const candidate = JSON.parse(JSON.stringify(detailFixture));
+@@ -625,20 +748,31 @@ async function runSelfTest() {
+     },
+     framing: { fixedUsesContentLength: true, chunkedOmitsContentLength: true, transferEncoding: 'chunked' },
+     authSession: { dto: 'CurrentSessionResponse', valid: sessionEvidence, corruptionRejected: true },
+-    detailContract: { responsePayloadFields: ['reason', 'comment', 'summary.lessons', 'summary.kind', 'summary.origin', 'selectedLesson'], corruptionRejected: true },
++    apiAttachmentFixture: detailEvidence.attachments,
++    detailContract: {
++      responsePayloadFields: [
++        'summary.id', 'summary.lessons[].id', 'summary.kind', 'summary.status=PENDING',
++        'summary.origin', 'summary.createdAt', 'summary.updatedAt',
++        'reason', 'comment', 'decision=null|absent',
++        'attachments[].contentType', 'attachments[].sizeBytes', 'attachments[].state=ACTIVE',
++        'attachments[].uploadedAt<expiresAt', 'attachments[].expiredAt=null|absent'
++      ],
++      corruptionRejected: true,
++      nullableExpiredAtAccepted: true
++    },
+     transport: { fixedEarlyEpipe413: true, chunkedEarlyEpipe413: true, noResponseErrorsFail: true, mode: 'MOCKTRANSPORT' }
+   };
+ }
+ 
+-async function runRuntimeProbe() {
++async function runRuntimeProbe(diagnosticSecrets = []) {
+   const origin = argValue('--origin');
+   const certPath = argValue('--ca');
+   const login = argValue('--login', 'student');
+   const password = argValue('--password', 'password');
++  registerDiagnosticSecret(diagnosticSecrets, password);
+   assertThat(origin && certPath, 'runtime probe requires --origin and --ca');
+   const ca = fs.readFileSync(certPath);
+   const agent = new https.Agent({ ca, rejectUnauthorized: true, keepAlive: true });
+-  const diagnosticSecrets = [password];
+   if (hasArg('--health-only')) return runHealthOnly(origin, agent);
+   let accessToken = null;
+   let cookie = '';
+@@ -650,9 +784,10 @@ async function runRuntimeProbe() {
+   });
+   const loginJson = jsonResponse(loginResponse);
+   accessToken = loginJson?.accessToken;
++  registerDiagnosticSecret(diagnosticSecrets, accessToken);
+   cookie = parseCookies(loginResponse.headers);
++  registerCookieSecrets(diagnosticSecrets, cookie);
+   assertThat(loginResponse.status === 200 && typeof accessToken === 'string' && accessToken.length > 0, `login failed with HTTP ${loginResponse.status}`);
+-  diagnosticSecrets.push(accessToken, cookie);
+   const sessionResponse = await httpsRequest(origin, '/api/auth/session', { agent, token: accessToken, cookie });
+   const session = jsonResponse(sessionResponse);
+   assertThat(sessionResponse.status === 200, `Auth session failed with HTTP ${sessionResponse.status}`);
+@@ -709,19 +844,19 @@ async function runRuntimeProbe() {
+   const responseAttachments = firstJson.attachments.map((item, index) => canonicalAttachmentDescriptor(item, `I1 response attachments[${index}]`));
+   const expectedDigests = responseAttachments.map((descriptor) => ({
+     ...descriptor,
+-    sizeBytes: descriptor.size
++    sizeBytes: descriptor.sizeBytes
+   }));
+   for (const expected of expectedFiles) {
+     const actual = expectedDigests.find((item) => item.name === expected.name);
+-    assertThat(actual && actual.size === expected.bytes.length && actual.sha256 === sha256(expected.bytes)
+-      && actual.content_type === expected.contentType, `I1 metadata mismatch for ${expected.name}`);
++    assertThat(actual && actual.sizeBytes === expected.bytes.length && actual.sha256 === sha256(expected.bytes)
++      && actual.contentType === expected.contentType, `I1 metadata mismatch for ${expected.name}`);
+   }
+   const downloaded = [];
+   for (const attachment of firstJson.attachments) {
+     const streamed = await downloadAttachment(origin, `/api/v1/student/requests/${firstJson.summary.id}/attachments/${attachment.id}`, { agent, token: accessToken, cookie });
+     assertThat(streamed.status === 200, `I1 attachment download failed with HTTP ${streamed.status}`);
+     assertThat(streamed.cacheControl.toLowerCase().includes('no-store'), `I1 attachment download missing no-store for ${attachment.name}`);
+-    const attachmentSize = propertyValue(attachment, ['sizeBytes', 'size']);
++    const attachmentSize = attachment.sizeBytes;
+     assertThat(streamed.bytes === attachmentSize && streamed.sha256 === attachment.sha256, `I1 downloaded bytes mismatch for ${attachment.name}`);
+     downloaded.push({ id: attachment.id, bytes: streamed.bytes, sha256: streamed.sha256 });
+   }
+@@ -864,11 +999,14 @@ function downloadAttachment(origin, requestPath, options) {
+ }
+ 
+ async function main() {
+-  const result = hasArg('--self-test') ? await runSelfTest() : await runRuntimeProbe();
+-  process.stdout.write(`${redact(result)}\n`);
++  const diagnosticSecrets = [];
++  try {
++    const result = hasArg('--self-test') ? await runSelfTest() : await runRuntimeProbe(diagnosticSecrets);
++    process.stdout.write(`${redact(result, diagnosticSecrets)}\n`);
++  } catch (error) {
++    process.stdout.write(`${redact({ schema: 'rct.student-requests-probe.v1', status: 'FAIL', error: error.message }, diagnosticSecrets)}\n`);
++    process.exitCode = 1;
++  }
+ }
+ 
+-main().catch((error) => {
+-  process.stdout.write(`${redact({ schema: 'rct.student-requests-probe.v1', status: 'FAIL', error: error.message })}\n`);
+-  process.exitCode = 1;
+-});
++main();
+diff --git a/.agent/student-role-orchestrator/requests-runtime/r10-docker-network-proof.ps1 b/.agent/student-role-orchestrator/requests-runtime/r10-docker-network-proof.ps1
+index f9a52599..373bf476 100644
+--- a/.agent/student-role-orchestrator/requests-runtime/r10-docker-network-proof.ps1
++++ b/.agent/student-role-orchestrator/requests-runtime/r10-docker-network-proof.ps1
+@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Stop'
+ 
+ $runnerPath = Join-Path $PSScriptRoot 'runner.ps1'
+ $resolvedEvidencePath = if ([string]::IsNullOrWhiteSpace($EvidencePath)) {
+-    Join-Path $PSScriptRoot 'r10-docker-network-proof.json'
++    Join-Path $PSScriptRoot 'r11-docker-network-proof.json'
+ } else {
+     [IO.Path]::GetFullPath($EvidencePath)
+ }
+diff --git a/.agent/student-role-orchestrator/requests-runtime/r10-network-proof-source-check.ps1 b/.agent/student-role-orchestrator/requests-runtime/r10-network-proof-source-check.ps1
+index 059beee7..627de6dc 100644
+--- a/.agent/student-role-orchestrator/requests-runtime/r10-network-proof-source-check.ps1
++++ b/.agent/student-role-orchestrator/requests-runtime/r10-network-proof-source-check.ps1
+@@ -38,8 +38,21 @@ Assert-That ($proof -match "runner\.ps1") 'proof wrapper does not resolve runner
+ Assert-That ($proof -match "'-NetworkProof'") 'proof wrapper does not select the runner proof branch'
+ Assert-That ($proof -notmatch '(?im)^\s*docker\b') 'proof wrapper copied a Docker command instead of invoking production logic'
+ Assert-That ($runner -match 'maxNetworks = 1') 'proof resource bound is missing'
+-Assert-That ($runner -match 'maxContainersExpected = 2') 'proof expected container bound is missing'
+-Assert-That ($runner -match 'maxContainersWorstCase = 3') 'proof worst-case container bound is missing'
++Assert-That ($runner -match 'maxContainersExpected = 3') 'proof expected container bound is missing'
++Assert-That ($runner -match 'maxContainersWorstCase = 4') 'proof worst-case container bound is missing'
++Assert-That ($runner -match '\[string\]\$Entrypoint') 'owned launcher has no controlled entrypoint parameter for start-failure proof'
++Assert-That ($runner -match "'--entrypoint'") 'owned launcher does not emit the controlled entrypoint argument'
++Assert-That ($runner -match 'invalid-exec') 'proof does not exercise an invalid-executable start failure'
++Assert-That ($runner -match 'invalidExecStartFailure = \$true') 'proof does not record the invalid-executable start failure'
++Assert-That ($runner -match 'invalidExecContainerRegistered = \$true') 'proof does not record registration before invalid-executable start failure'
+ Assert-That ($runner -match 'Remove-OwnedResources') 'proof does not use owned cleanup'
++Assert-That ($runner -match '\$script:report\.runId = \$script:runId') 'proof report runId is not initialized'
++Assert-That ($runner -match '\$script:report\.environment\.runtimeMode = ''network-proof''') 'proof report runtimeMode is not network-proof'
++Assert-That ($runner -match 'sourceAnchor = .requests-runtime/runner\.ps1 -NetworkProof production branch') 'proof report source anchor is missing'
++Assert-That ($proof -match 'r11-docker-network-proof\.json') 'new proof wrapper still defaults to the historical H32 report path'
++$launcher = [regex]::Match($runner, '(?s)function Start-OwnedContainer\s*\{.*?\n\}')
++Assert-That $launcher.Success 'Start-OwnedContainer function is missing'
++Assert-That ($launcher.Value -match "docker|Invoke-DockerSafe") 'Start-OwnedContainer does not invoke the actual Docker helper'
++Assert-That ($launcher.Value.IndexOf('Register-OwnedContainer', [StringComparison]::Ordinal) -lt $launcher.Value.IndexOf("@('start'", [StringComparison]::Ordinal)) 'Start-OwnedContainer does not register before start'
+ 
+ Write-Output 'R10 network proof source check: PASS (wrapper invokes runner production network helper and launcher; no copied Docker command; bounds and owned cleanup are declared)'
+diff --git a/.agent/student-role-orchestrator/requests-runtime/r3-cleanup-failure-injection.ps1 b/.agent/student-role-orchestrator/requests-runtime/r3-cleanup-failure-injection.ps1
+index 9e986ab6..7f0aed7e 100644
+--- a/.agent/student-role-orchestrator/requests-runtime/r3-cleanup-failure-injection.ps1
++++ b/.agent/student-role-orchestrator/requests-runtime/r3-cleanup-failure-injection.ps1
+@@ -18,6 +18,7 @@ $script:ownedContainers = [System.Collections.Generic.List[string]]::new()
+ $script:ownedContainers.Add('container-1')
+ $script:ownedNetwork = $null
+ $script:keysDir = $null
++$script:artifactSnapshotRoot = $null
+ $script:report = [ordered]@{
+     cleanup = [ordered]@{
+         status = 'NOT_RUN'
+@@ -28,6 +29,9 @@ $script:report = [ordered]@{
+         networkRemoved = $false
+         networkVerifiedAbsent = $false
+         keysRemoved = $false
++        artifactRoot = $null
++        artifactRemoved = $false
++        artifactVerifiedAbsent = $false
+         errors = @()
+     }
+ }
+diff --git a/.agent/student-role-orchestrator/requests-runtime/r6-source-contract-check.ps1 b/.agent/student-role-orchestrator/requests-runtime/r6-source-contract-check.ps1
+index 4e0600a2..bdf63505 100644
+--- a/.agent/student-role-orchestrator/requests-runtime/r6-source-contract-check.ps1
++++ b/.agent/student-role-orchestrator/requests-runtime/r6-source-contract-check.ps1
+@@ -20,6 +20,8 @@ Assert-Check $mongo.Success 'Get-MongoSnapshot function was not found'
+ Assert-Check ($mongo.Value -match 'Assert-That \(\$RequestId -match ''\^\[0-9a-fA-F\]\{24\}\$''') 'Mongo request id is not validated as 24 hexadecimal characters'
+ Assert-Check ($source -match 'Read-MongoJson -ContainerId \$script:infra\.mongo\.Id') 'Mongo snapshot query is not emitted through the owned read-only helper'
+ Assert-Check ($mongo.Value -match 'requestTickets') 'Mongo snapshot does not include the request ticket delta query'
++Assert-Check ($mongo.Value -match 'requestTicketStatus') 'Mongo snapshot does not include the persisted request ticket status mapping'
++Assert-Check ($mongo.Value -match "find\(reqFilter,\{_id:1,status:1\}\)") 'Mongo snapshot does not project the persisted request ticket status'
+ Assert-Check ($mongo.Value -match 'requestAttachments') 'Mongo snapshot does not include attachment linkage evidence'
+ Assert-Check ($mongo.Value -match 'requestOutbox') 'Mongo snapshot does not include outbox linkage evidence'
+ 
+@@ -45,10 +47,52 @@ Assert-Check ($source -match 'Sort-CanonicalPathObjects') 'trusted PWA file list
+ Assert-Check ($source -match 'currentPwa\.manifestSha256') 'current PWA file list digest is not checked against the trusted manifest'
+ Assert-Check ($source -match '\$bytes = \[IO\.File\]::ReadAllBytes\(\$manifestPath\)') 'trusted manifest is not read into one byte buffer'
+ Assert-Check ($source -notmatch 'Get-Sha256Hex -Path \$manifestPath') 'trusted manifest hash still uses a separate path read'
++Assert-Check ($source -match 'function New-VerifiedArtifactSnapshot') 'verified task-owned artifact snapshot helper is missing'
++Assert-Check ($source -match 'Read-VerifiedArtifactBytes') 'artifact snapshot does not use a guarded single-read byte helper'
++Assert-Check ($source -match 'Copy-VerifiedArtifactFile') 'artifact snapshot does not copy and verify consumed artifact bytes'
++Assert-Check ($source -match '\$script:artifactSnapshot\.Jars') 'backend startup does not consume the owned jar snapshot'
++Assert-Check ($source -match '\$script:artifactSnapshot\.PwaDist') 'edge runtime config does not consume the owned PWA snapshot'
++Assert-Check ($source -match 'artifactVerifiedAbsent') 'artifact snapshot cleanup verification is missing'
++Assert-Check ($source -match 'Get-GitBlobHashForBytes') 'cached edge source bytes are not bound to a Git revision blob'
++Assert-Check ($source -match 'RelativePathForGit') 'cached edge blob binding does not apply the tracked path clean filter'
++Assert-Check ($source -match 'cached nginx bytes do not match the expected revision blob') 'cached nginx blob/bytes equality is not fail-closed'
++Assert-Check ($source -match 'cached default\.conf bytes do not match the expected revision blob') 'cached default.conf blob/bytes equality is not fail-closed'
+ Assert-Check ($probe -match 'function httpsFixedOversize') 'fixed oversize probe has no response-aware transport handler'
+ Assert-Check ($probe -match 'statusCode === 0') 'MOCKTRANSPORT no-response error case is missing'
+ Assert-Check ($probe -match 'fixedEarlyEpipe413') 'fixed 413 early-close pure evidence is missing'
+ Assert-Check ($probe -match 'httpsFixedOversize\(origin') 'runtime I2 is not wired to the response-aware fixed request'
+ 
++$runtimeConfig = [regex]::Match($source, '(?s)function New-RuntimeConfig\s*\{.*?\n\}')
++Assert-Check $runtimeConfig.Success 'New-RuntimeConfig function was not found'
++Assert-Check ($runtimeConfig.Value -notmatch 'Resolve-EdgeSources') 'New-RuntimeConfig re-resolves edge sources after the validation boundary'
++Assert-Check ($runtimeConfig.Value -match 'validatedEdgeSources') 'New-RuntimeConfig does not use the immutable validated edge source cache'
++Assert-Check ($source -match 'function Assert-UnionSourceStability') 'exact UnionRepo source stability guard is missing'
++Assert-Check ($source -match 'function Get-UnionTrackedBlobHash') 'exact revision tracked source blob pin is missing'
++Assert-Check ($source -match 'Get-Sha256Hex -Path \$edge\.Path') 'between-phase edge source byte swap is not guarded'
++Assert-Check ($source -match "Assert-UnionSourceStability -Context 'edge start preflight'") 'edge start has no final source stability guard'
++$resourceGuard = $source.IndexOf("Assert-UnionSourceStability -Context 'runtime resource preflight'", [StringComparison]::Ordinal)
++$runIdentity = if ($resourceGuard -ge 0) { $source.IndexOf('New-RunIdentity', $resourceGuard, [StringComparison]::Ordinal) } else { -1 }
++Assert-Check ($resourceGuard -ge 0 -and $runIdentity -gt $resourceGuard) 'runtime resource creation is not preceded by the exact source stability guard'
++Assert-Check ($source -match 'Get-ExactObjectProperty') 'attachment projection does not use exact field names'
++Assert-Check ($source -match "-Context 'I1 probe API attachments' -Format Api") 'I1 Mongo delta does not validate the public API attachment shape separately'
++Assert-Check ($source -match "-Context 'I1 Mongo request attachments' -Format Mongo") 'I1 Mongo delta does not validate stored attachment shape separately'
++Assert-Check ($source -match "-Context 'I1 outbox payload attachments' -Format Mongo") 'I1 outbox delta does not validate stored payload shape separately'
++Assert-Check ($source -match '\$After\.requestTicketStatus -ceq ''SUBMITTED''') 'I1 delta does not verify the persisted SUBMITTED ticket state behind API PENDING'
++Assert-Check ($probe -match 'const contentType = item\.contentType') 'probe accepts no strict public contentType field'
++Assert-Check ($probe -match 'const size = item\.sizeBytes') 'probe accepts no strict public sizeBytes field'
++Assert-Check ($probe -match '(?m)^\s*state,\s*$') 'probe does not preserve the exact public ACTIVE state in serialized output'
++Assert-Check ($probe -notmatch 'state:\s*state\.toLowerCase\(\)') 'probe lowercases the public attachment state'
++Assert-Check ($probe -notmatch "\['content_type', 'contentType'\]") 'probe still accepts snake_case content type aliases as API data'
++Assert-Check ($probe -notmatch "\['sizeBytes', 'size'\]") 'probe still accepts generic size aliases as API data'
++Assert-Check ($probe -match "\['content_type', 'size', 'uploaded_at', 'expires_at', 'expired_at'\]") 'probe does not reject extra snake_case attachment aliases beside API fields'
++Assert-Check ($probe -match "state === 'ACTIVE'") 'probe does not require the exact API ACTIVE attachment state'
++Assert-Check ($probe -match 'selectedLesson.*not part of StudentRequestApiModels.Detail') 'probe does not guard against the removed selectedLesson pseudo-field'
++
++$transform = [regex]::Match($source, '(?s)function Convert-EdgeToRuntimeConfig\s*\{.*?\n\}')
++Assert-Check $transform.Success 'Convert-EdgeToRuntimeConfig function was not found'
++Assert-Check ($transform.Value -match 'location = /') 'runtime edge transform does not replace the exact root location'
++Assert-Check ($transform.Value -match 'try_files /index\.html =200') 'runtime exact root does not serve the copied PWA index'
++Assert-Check ($transform.Value -match 'web-panel-nginx:80') 'runtime edge transform has no source prefix match for the existing panel route'
++
+ Assert-Check (Test-Path -LiteralPath $evidencePath -PathType Leaf) 'R6 evidence file is missing'
+ Write-Output 'R6 source contract check: PASS (Mongo query helper and runtime evidence gates, Academic readiness ordering, preflight diagnostics, and trusted provenance gates present)'
+diff --git a/.agent/student-role-orchestrator/requests-runtime/r8-edge-reservation-check.ps1 b/.agent/student-role-orchestrator/requests-runtime/r8-edge-reservation-check.ps1
+index c4859e40..5e60502e 100644
+--- a/.agent/student-role-orchestrator/requests-runtime/r8-edge-reservation-check.ps1
++++ b/.agent/student-role-orchestrator/requests-runtime/r8-edge-reservation-check.ps1
+@@ -22,7 +22,7 @@ function Get-FunctionDefinitionText {
+     return $definition.Extent.Text
+ }
+ 
+-foreach ($name in @('Assert-That', 'Convert-IPv4ToUInt32', 'Test-CidrOverlap', 'Get-DeterministicNetworkPlan', 'Assert-EdgeIpReservation', 'Start-OwnedContainer', 'Start-Edge')) {
++foreach ($name in @('Assert-That', 'Convert-IPv4ToUInt32', 'Test-CidrOverlap', 'Get-DeterministicNetworkPlan', 'Assert-EdgeIpReservation', 'Register-OwnedContainer', 'Resolve-AmbiguousOwnedContainer', 'Start-OwnedContainer', 'Start-Edge')) {
+     Invoke-Expression (Get-FunctionDefinitionText -Name $name)
+ }
+ $productionStartOwned = Get-FunctionDefinitionText -Name 'Start-OwnedContainer'
+@@ -31,6 +31,7 @@ $script:edgeMode = 'normal'
+ $script:edgeOperational = $false
+ $script:preStartInspect = $false
+ $script:dockerCalls = [System.Collections.Generic.List[object]]::new()
++$script:launcherMode = 'normal'
+ $script:ownedContainers = [System.Collections.Generic.List[string]]::new()
+ $script:ownedContainerNames = [System.Collections.Generic.List[string]]::new()
+ $script:services = [ordered]@{}
+@@ -49,9 +50,15 @@ function Invoke-DockerSafe {
+     $verb = [string]$DockerArgs[0]
+     if ($verb -eq 'create' -and $script:edgeMode -eq 'occupied') { throw 'synthetic Docker IPAM refused occupied edge address' }
+     if ($verb -eq 'start') {
++        if ($script:launcherMode -eq 'start-failure') { return [pscustomobject]@{ ExitCode = 23; Output = 'synthetic start failure' } }
+         $script:edgeOperational = $true
+         return [pscustomobject]@{ ExitCode = 0; Output = 'abcdef123456' }
+     }
++    if ($verb -eq 'container') {
++        if ($script:launcherMode -eq 'create-recovery') { return [pscustomobject]@{ ExitCode = 0; Output = 'abcdef123456|/synthetic-recovered|student-requests-gate|synthetic-edge' } }
++        if ($script:launcherMode -eq 'foreign-recovery') { return [pscustomobject]@{ ExitCode = 0; Output = 'abcdef123456|/synthetic-foreign|foreign-owner|foreign-run' } }
++        return [pscustomobject]@{ ExitCode = 1; Output = 'No such container' }
++    }
+     if ($verb -eq 'inspect') {
+         if (-not $script:edgeOperational) {
+             $script:preStartInspect = $true
+@@ -60,6 +67,9 @@ function Invoke-DockerSafe {
+         return [pscustomobject]@{ ExitCode = 0; Output = '172.30.185.10' }
+     }
+     if ($verb -eq 'run' -or $verb -eq 'create') {
++        if ($verb -eq 'create' -and ($script:launcherMode -eq 'create-recovery' -or $script:launcherMode -eq 'foreign-recovery')) {
++            return [pscustomobject]@{ ExitCode = 23; Output = 'synthetic ambiguous create failure' }
++        }
+         $image = @($DockerArgs | Select-Object -Last 1)[0]
+         if ([string]$image -eq 'missing:image') { throw 'synthetic missing image; pull is forbidden' }
+         return [pscustomobject]@{ ExitCode = 0; Output = 'abcdef123456' }
+@@ -158,12 +168,32 @@ $script:dockerCalls.Clear()
+ Invoke-Expression $productionStartOwned
+ $null = Start-OwnedContainer -Name 'synthetic-create' -Image 'synthetic:image' -CreateOnly
+ $null = Start-OwnedContainer -Name 'synthetic-run' -Image 'synthetic:image'
+-$launchCalls = @($script:dockerCalls | Where-Object { $_.args[0] -eq 'create' -or $_.args[0] -eq 'run' })
+-if ($launchCalls.Count -ne 2 -or @($launchCalls | Where-Object { $_.args -notcontains '--pull=never' }).Count -ne 0) { throw 'owned create/run argv omitted --pull=never' }
++$createCalls = @($script:dockerCalls | Where-Object { $_.args[0] -eq 'create' })
++$startCalls = @($script:dockerCalls | Where-Object { $_.args[0] -eq 'start' })
++if ($createCalls.Count -ne 2 -or $startCalls.Count -ne 1 -or @($createCalls | Where-Object { $_.args -notcontains '--pull=never' }).Count -ne 0) { throw 'owned create/start argv did not register before start with --pull=never' }
++$script:launcherMode = 'start-failure'
++$script:ownedContainers.Clear()
++$script:ownedContainerNames.Clear()
++$startRejected = $false
++try { Start-OwnedContainer -Name 'synthetic-start-failure' -Image 'synthetic:image' -Entrypoint '/synthetic/missing-executable' | Out-Null } catch { $startRejected = $true }
++$startFailureCreate = @($script:dockerCalls | Where-Object { $_.args[0] -eq 'create' -and $_.args -contains 'synthetic-start-failure' }) | Select-Object -Last 1
++if (-not $startRejected -or $script:ownedContainers.Count -ne 1 -or $script:ownedContainers[0] -ne 'abcdef123456' -or $null -eq $startFailureCreate -or $startFailureCreate.args -notcontains '--entrypoint' -or $startFailureCreate.args -notcontains '/synthetic/missing-executable') { throw 'invalid-entrypoint start failure was not retained in the owned cleanup ledger' }
++$script:launcherMode = 'create-recovery'
++$script:ownedContainers.Clear()
++$script:ownedContainerNames.Clear()
++$recovered = Start-OwnedContainer -Name 'synthetic-recovered' -Image 'synthetic:image' -CreateOnly
++if ($recovered.Id -ne 'abcdef123456' -or $script:ownedContainers.Count -ne 1) { throw 'ambiguous create recovery did not register the exact owned container' }
++$script:launcherMode = 'foreign-recovery'
++$script:ownedContainers.Clear()
++$script:ownedContainerNames.Clear()
++$foreignRejected = $false
++try { Start-OwnedContainer -Name 'synthetic-foreign' -Image 'synthetic:image' -CreateOnly | Out-Null } catch { $foreignRejected = $true }
++if (-not $foreignRejected -or $script:ownedContainers.Count -ne 0 -or @($script:dockerCalls | Where-Object { $_.args[0] -eq 'rm' }).Count -ne 0) { throw 'foreign ambiguous container was adopted or deleted' }
++$script:launcherMode = 'normal'
+ $script:dockerCalls.Clear()
+ $missingRejected = $false
+ try { Start-OwnedContainer -Name 'synthetic-missing' -Image 'missing:image' | Out-Null } catch { $missingRejected = $true }
+-$missingCall = $script:dockerCalls | Select-Object -First 1
++$missingCall = @($script:dockerCalls | Where-Object { $_.args[0] -eq 'create' }) | Select-Object -First 1
+ if (-not $missingRejected -or $null -eq $missingCall -or $missingCall.args -notcontains '--pull=never') { throw 'missing owned image did not fail closed with --pull=never' }
+ 
+-Write-Output 'R8 edge/runtime launch check: PASS (IPAM plan .128/25 excludes static .10 with gateway .1; aligned second /24 and invalid-boundary cases; create-only path makes no operational-IP claim; post-start inspect verifies .10; occupied edge fails closed; all owned create/run argv include --pull=never)'
++Write-Output 'R8 edge/runtime launch check: PASS (IPAM plan .128/25 excludes static .10 with gateway .1; aligned second /24 and invalid-boundary cases; create-only path makes no operational-IP claim; post-start inspect verifies .10; occupied edge fails closed; create registers before start and start-failure/recovery ownership cases fail closed; all owned create argv include --pull=never)'
+diff --git a/.agent/student-role-orchestrator/requests-runtime/r8-mongo-projection-check.ps1 b/.agent/student-role-orchestrator/requests-runtime/r8-mongo-projection-check.ps1
+index 51a090f0..e166656e 100644
+--- a/.agent/student-role-orchestrator/requests-runtime/r8-mongo-projection-check.ps1
++++ b/.agent/student-role-orchestrator/requests-runtime/r8-mongo-projection-check.ps1
+@@ -10,6 +10,7 @@ $ErrorActionPreference = 'Stop'
+ # Node stubs; no Docker or live Mongo process is used.
+ $runnerPath = Join-Path $PSScriptRoot 'runner.ps1'
+ $runnerText = Get-Content -LiteralPath $runnerPath -Raw
++$probePath = Join-Path $PSScriptRoot 'probe.mjs'
+ $tokens = $null
+ $errors = $null
+ $runnerAst = [System.Management.Automation.Language.Parser]::ParseFile($runnerPath, [ref]$tokens, [ref]$errors)
+@@ -24,7 +25,7 @@ function Get-FunctionDefinitionText {
+ 
+ foreach ($name in @(
+         'Assert-That', 'Assert-JsonString', 'Assert-JsonInteger', 'Assert-Sha256Value',
+-        'Get-MongoSnapshot', 'Get-OptionalObjectProperty', 'Convert-AttachmentTimestamp',
++        'Get-MongoSnapshot', 'Get-ExactObjectProperty', 'Convert-AttachmentTimestamp',
+         'Convert-AttachmentDescriptorToCanonicalObject', 'Convert-AttachmentDescriptorsToCanonicalText',
+         'Assert-I1MongoDelta')) {
+     Invoke-Expression (Get-FunctionDefinitionText -Name $name)
+@@ -58,9 +59,10 @@ try {
+     $nodeHarness = @'
+ const observed = { db: null, objectIds: [], counts: [], finds: [], prints: [] };
+ const requestId = 'REQUEST_ID';
++const ticket = { _id: requestId, status: 'SUBMITTED' };
+ const descriptors = [
+-  { id: 'att-1', name: 'fixture.pdf', content_type: 'application/pdf', size: 7, sha256: 'a'.repeat(64), state: 'stored', uploaded_at: '2026-09-14T00:00:00.000Z', expires_at: '2026-09-15T00:00:00.000Z' },
+-  { id: 'att-2', name: 'fixture.png', content_type: 'image/png', size: 9, sha256: 'b'.repeat(64), state: 'stored', uploaded_at: '2026-09-14T00:00:01.000Z', expires_at: '2026-09-15T00:00:01.000Z' }
++  { id: 'att-1', name: 'fixture.pdf', content_type: 'application/pdf', size: 7, sha256: 'a'.repeat(64), state: 'ACTIVE', uploaded_at: '2026-09-14T00:00:00.000Z', expires_at: '2026-09-15T00:00:00.000Z', expired_at: null },
++  { id: 'att-2', name: 'fixture.png', content_type: 'image/png', size: 9, sha256: 'b'.repeat(64), state: 'ACTIVE', uploaded_at: '2026-09-14T00:00:01.000Z', expires_at: '2026-09-15T00:00:01.000Z', expired_at: null }
+ ];
+ const attachments = descriptors.map((item, index) => ({ _id: item.id, ...item, type: item.content_type, request_id: requestId, position: index }));
+ const outbox = [{ _id: 'out-1', event_type: 'excuse.requested', status: 'NEW', payload: JSON.stringify({ payload: { ticket_id: requestId, attachments: descriptors } }) }];
+@@ -76,7 +78,7 @@ function collection(name) {
+     },
+     find(filter, projection) {
+       observed.finds.push({ name, filter, projection });
+-      const values = name === 'request_attachments' ? attachments : outbox;
++      const values = name === 'excuse_tickets' ? [ticket] : name === 'request_attachments' ? attachments : outbox;
+       const cursor = { sort() { return cursor; }, toArray() { return values; } };
+       return cursor;
+     }
+@@ -96,50 +98,157 @@ console.log(JSON.stringify(observed));
+     if (@($observed.objectIds).Count -ne 1 -or $observed.objectIds[0] -cne $requestId) { throw 'generated query did not construct ObjectId from the original request id' }
+     $ticketCalls = @($observed.counts | Where-Object { $_.name -eq 'excuse_tickets' -and $null -ne $_.filter.PSObject.Properties['_id'] })
+     if ($ticketCalls.Count -ne 1 -or $ticketCalls[0].filter._id.bsonType -ne 'ObjectId' -or $ticketCalls[0].filter._id.value -cne $requestId -or [int]$ticketCalls[0].filter.student_id -ne 42) { throw 'ticket query did not preserve ObjectId and student filter semantics' }
++    $ticketFind = @($observed.finds | Where-Object { $_.name -eq 'excuse_tickets' })
++    if ($ticketFind.Count -ne 1 -or $ticketFind[0].filter._id.bsonType -ne 'ObjectId' -or $ticketFind[0].filter._id.value -cne $requestId -or $null -eq $ticketFind[0].projection.PSObject.Properties['status']) { throw 'ticket status projection did not preserve the persisted SUBMITTED state query' }
+     $attachmentFind = @($observed.finds | Where-Object { $_.name -eq 'request_attachments' })
+     if ($attachmentFind.Count -ne 1 -or $attachmentFind[0].filter.request_id -cne $requestId) { throw 'attachment query did not preserve the original string request_id' }
+-    foreach ($field in @('_id', 'name', 'type', 'size', 'sha256', 'state', 'uploaded_at', 'expires_at', 'request_id', 'position')) {
++    foreach ($field in @('_id', 'name', 'type', 'size', 'sha256', 'state', 'uploaded_at', 'expires_at', 'expired_at', 'request_id', 'position')) {
+         if ($null -eq $attachmentFind[0].projection.PSObject.Properties[$field]) { throw "attachment projection omitted $field" }
+     }
+     $outboxFind = @($observed.finds | Where-Object { $_.name -eq 'attendance_outbox' })
+     if ($outboxFind.Count -ne 1 -or $null -eq $outboxFind[0].projection.PSObject.Properties['payload']) { throw 'outbox projection omitted payload' }
+     $printed = (($observed.prints[0]) | ConvertFrom-Json -Depth 20)
++    if ($printed.requestTicketStatus -cne 'SUBMITTED') { throw 'generated request snapshot did not expose the persisted SUBMITTED ticket state' }
+     $printedExpiry = [DateTimeOffset]$printed.requestAttachments[0].expires_at
+     if (@($printed.requestAttachments).Count -ne 2 -or $printed.requestAttachments[0].content_type -ne 'application/pdf' -or $printedExpiry -ne [DateTimeOffset]::Parse('2026-09-15T00:00:00.000Z')) { throw 'generated attachment projection lost descriptor fields' }
+     if (@($printed.requestOutbox).Count -ne 1 -or @($printed.requestOutbox[0].payloadAttachments).Count -ne 2) { throw 'generated outbox projection did not preserve all payload attachments' }
+     if ($printed.requestOutbox[0].payloadAttachments[1].sha256 -ne ('b' * 64)) { throw 'generated outbox payload attachment digest was not projected' }
+ 
+-    function New-Descriptor {
+-        param([string]$Id, [string]$Name, [string]$ContentType, [int]$Size, [string]$Sha, [string]$Uploaded, [string]$Expires)
+-        return [pscustomobject]@{ id = $Id; name = $Name; content_type = $ContentType; size = $Size; sizeBytes = $Size; sha256 = $Sha; state = 'stored'; uploaded_at = $Uploaded; expires_at = $Expires }
++    # Feed the PowerShell production assertion with the exact serialized
++    # attachment DTO emitted by the real Node probe self-test. A handwritten
++    # ACTIVE fixture here could mask a state-normalization defect in probe.mjs.
++    $probeOutput = @(& node $probePath --self-test 2>&1)
++    if ($LASTEXITCODE -ne 0) { throw "Node probe self-test failed before Mongo assertion: $($probeOutput -join ' ')" }
++    $probeLines = @($probeOutput | ForEach-Object { [string]$_ } | Where-Object { $_.Trim().Length -gt 0 })
++    $probeSelfTest = $probeLines[-1] | ConvertFrom-Json -Depth 20
++    $files = @($probeSelfTest.apiAttachmentFixture)
++    if ($files.Count -ne 2 -or @($files | Where-Object { $_.state -cne 'ACTIVE' }).Count -ne 0) {
++        throw 'PowerShell Mongo assertion did not receive the Node probe serialized API ACTIVE descriptors'
+     }
+-    $files = @(
+-        (New-Descriptor -Id 'att-1' -Name 'fixture.pdf' -ContentType 'application/pdf' -Size 7 -Sha ('a' * 64) -Uploaded '2026-09-14T00:00:00.000Z' -Expires '2026-09-15T00:00:00.000Z'),
+-        (New-Descriptor -Id 'att-2' -Name 'fixture.png' -ContentType 'image/png' -Size 9 -Sha ('b' * 64) -Uploaded '2026-09-14T00:00:01.000Z' -Expires '2026-09-15T00:00:01.000Z')
+-    )
+     $probe = [pscustomobject]@{ i1 = [pscustomobject]@{ requestId = $requestId; files = $files } }
+     $before = [pscustomobject]@{ excuseTickets = 0; receipts = 0; attachments = 0; outboxRequested = 0 }
+-    $documents = @($files | ForEach-Object { [pscustomobject]@{ id = $_.id; name = $_.name; content_type = $_.content_type; size = $_.size; sha256 = $_.sha256; state = $_.state; uploaded_at = $_.uploaded_at; expires_at = $_.expires_at; request_id = $requestId } })
+-    $outboxAttachments = @($files | ForEach-Object { [pscustomobject]@{ id = $_.id; name = $_.name; content_type = $_.content_type; size = $_.size; sha256 = $_.sha256; state = $_.state; uploaded_at = $_.uploaded_at; expires_at = $_.expires_at } })
+-    $after = [pscustomobject]@{ excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestAttachments = $documents; requestOutbox = @([pscustomobject]@{ payloadTicketId = $requestId; payloadAttachments = $outboxAttachments }) }
++    $documents = @($files | ForEach-Object { [pscustomobject]@{ id = $_.id; name = $_.name; content_type = $_.contentType; size = $_.sizeBytes; sha256 = $_.sha256; state = $_.state; uploaded_at = $_.uploadedAt; expires_at = $_.expiresAt; expired_at = $null; request_id = $requestId } })
++    $outboxAttachments = @($files | ForEach-Object { [pscustomobject]@{ id = $_.id; name = $_.name; content_type = $_.contentType; size = $_.sizeBytes; sha256 = $_.sha256; state = $_.state; uploaded_at = $_.uploadedAt; expires_at = $_.expiresAt; expired_at = $null } })
++    $after = [pscustomobject]@{ excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestTicketStatus = 'SUBMITTED'; requestAttachments = $documents; requestOutbox = @([pscustomobject]@{ payloadTicketId = $requestId; payloadAttachments = $outboxAttachments }) }
+     $null = Assert-I1MongoDelta -Before $before -After $after -Probe $probe
++    $wrongStateAfter = [pscustomobject]@{ excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestTicketStatus = 'APPROVED'; requestAttachments = $documents; requestOutbox = $after.requestOutbox }
++    $wrongStateRejected = $false
++    try { Assert-I1MongoDelta -Before $before -After $wrongStateAfter -Probe $probe } catch { $wrongStateRejected = $true }
++    if (-not $wrongStateRejected) { throw 'persisted APPROVED ticket state was accepted for a newly submitted API PENDING request' }
++
++    $apiAliasFile = [pscustomobject]@{
++        id = $files[0].id; name = $files[0].name; content_type = $files[0].contentType; sizeBytes = $files[0].sizeBytes
++        sha256 = $files[0].sha256; state = $files[0].state; uploadedAt = $files[0].uploadedAt; expiresAt = $files[0].expiresAt; expiredAt = $null
++    }
++    $apiAliasProbe = [pscustomobject]@{ i1 = [pscustomobject]@{ requestId = $requestId; files = @($apiAliasFile, $files[1]) } }
++    $apiAliasRejected = $false
++    try { Assert-I1MongoDelta -Before $before -After $after -Probe $apiAliasProbe } catch { $apiAliasRejected = $true }
++    if (-not $apiAliasRejected) { throw 'API attachment snake_case alias was accepted as a StudentRequestApiModels.Attachment' }
++
++    $apiExtraAliasFile = [pscustomobject]@{
++        id = $files[0].id; name = $files[0].name; contentType = $files[0].contentType; sizeBytes = $files[0].sizeBytes
++        sha256 = $files[0].sha256; state = $files[0].state; uploadedAt = $files[0].uploadedAt; expiresAt = $files[0].expiresAt
++        expiredAt = $null; expired_at = '2026-09-14T12:00:00.000Z'
++    }
++    $apiExtraAliasProbe = [pscustomobject]@{ i1 = [pscustomobject]@{ requestId = $requestId; files = @($apiExtraAliasFile, $files[1]) } }
++    $apiExtraAliasRejected = $false
++    try { Assert-I1MongoDelta -Before $before -After $after -Probe $apiExtraAliasProbe } catch { $apiExtraAliasRejected = $true }
++    if (-not $apiExtraAliasRejected) { throw 'API attachment extra expired_at alias was accepted beside expiredAt' }
++
++    $mongoAliasDocument = [pscustomobject]@{
++        id = $documents[0].id; name = $documents[0].name; contentType = $files[0].contentType; size = $documents[0].size
++        sha256 = $documents[0].sha256; state = $documents[0].state; uploaded_at = $documents[0].uploaded_at
++        expires_at = $documents[0].expires_at; expired_at = $null; request_id = $requestId
++    }
++    $mongoAliasAfter = [pscustomobject]@{
++        excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestTicketStatus = 'SUBMITTED'
++        requestAttachments = @($mongoAliasDocument, $documents[1]); requestOutbox = $after.requestOutbox
++    }
++    $mongoAliasRejected = $false
++    try { Assert-I1MongoDelta -Before $before -After $mongoAliasAfter -Probe $probe } catch { $mongoAliasRejected = $true }
++    if (-not $mongoAliasRejected) { throw 'Mongo attachment camelCase alias was accepted as a stored projection' }
++
++    $outboxAliasAttachment = [pscustomobject]@{
++        id = $outboxAttachments[0].id; name = $outboxAttachments[0].name; contentType = $files[0].contentType; size = $outboxAttachments[0].size
++        sha256 = $outboxAttachments[0].sha256; state = $outboxAttachments[0].state; uploaded_at = $outboxAttachments[0].uploaded_at
++        expires_at = $outboxAttachments[0].expires_at; expired_at = $null
++    }
++    $outboxAliasAfter = [pscustomobject]@{
++        excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestTicketStatus = 'SUBMITTED'
++        requestAttachments = $documents
++        requestOutbox = @([pscustomobject]@{ payloadTicketId = $requestId; payloadAttachments = @($outboxAliasAttachment, $outboxAttachments[1]) })
++    }
++    $outboxAliasRejected = $false
++    try { Assert-I1MongoDelta -Before $before -After $outboxAliasAfter -Probe $probe } catch { $outboxAliasRejected = $true }
++    if (-not $outboxAliasRejected) { throw 'outbox attachment camelCase alias was accepted as a stored projection' }
++
+     $dateCanonical = Convert-AttachmentTimestamp -Value ([DateTime]::Parse('2026-09-14T00:00:00.000Z')) -Context 'synthetic Mongo DateTime'
+     if ($dateCanonical -ne '2026-09-14T00:00:00.000Z') { throw 'Mongo DateTime timestamp was not canonicalized' }
+ 
++    $expiredAt = '2026-09-14T12:00:00.000Z'
++    $expiredDocument = [pscustomobject]@{
++        id = $documents[0].id; name = $documents[0].name; content_type = $documents[0].content_type; size = $documents[0].size
++        sha256 = $documents[0].sha256; state = $documents[0].state; uploaded_at = $documents[0].uploaded_at
++        expires_at = $documents[0].expires_at; expired_at = $expiredAt; request_id = $requestId
++    }
++    $expiredDocuments = @($expiredDocument, $documents[1])
++    $expiredDocumentAfter = [pscustomobject]@{
++        excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestTicketStatus = 'SUBMITTED'
++        requestAttachments = $expiredDocuments; requestOutbox = $after.requestOutbox
++    }
++    $nonNullDocumentExpiredAtRejected = $false
++    try { Assert-I1MongoDelta -Before $before -After $expiredDocumentAfter -Probe $probe } catch { $nonNullDocumentExpiredAtRejected = $true }
++    if (-not $nonNullDocumentExpiredAtRejected) { throw 'Mongo attachment with non-null expired_at was accepted for a newly submitted request' }
++
++    $expiredOutboxAttachment = [pscustomobject]@{
++        id = $outboxAttachments[0].id; name = $outboxAttachments[0].name; content_type = $outboxAttachments[0].content_type; size = $outboxAttachments[0].size
++        sha256 = $outboxAttachments[0].sha256; state = $outboxAttachments[0].state; uploaded_at = $outboxAttachments[0].uploaded_at
++        expires_at = $outboxAttachments[0].expires_at; expired_at = $expiredAt
++    }
++    $expiredOutboxAttachments = @($expiredOutboxAttachment, $outboxAttachments[1])
++    $expiredOutbox = [pscustomobject]@{ payloadTicketId = $requestId; payloadAttachments = $expiredOutboxAttachments }
++    $expiredOutboxAfter = [pscustomobject]@{
++        excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestTicketStatus = 'SUBMITTED'
++        requestAttachments = $documents; requestOutbox = @($expiredOutbox)
++    }
++    $nonNullOutboxExpiredAtRejected = $false
++    try { Assert-I1MongoDelta -Before $before -After $expiredOutboxAfter -Probe $probe } catch { $nonNullOutboxExpiredAtRejected = $true }
++    if (-not $nonNullOutboxExpiredAtRejected) { throw 'Outbox attachment with non-null expired_at was accepted for a newly submitted request' }
++
++    $equalDocument = [pscustomobject]@{
++        id = $documents[0].id; name = $documents[0].name; content_type = $documents[0].content_type; size = $documents[0].size
++        sha256 = $documents[0].sha256; state = $documents[0].state; uploaded_at = $documents[0].uploaded_at
++        expires_at = $documents[0].uploaded_at; expired_at = $null; request_id = $requestId
++    }
++    $equalDocuments = @($equalDocument, $documents[1])
++    $equalOutboxAttachment = [pscustomobject]@{
++        id = $outboxAttachments[0].id; name = $outboxAttachments[0].name; content_type = $outboxAttachments[0].content_type; size = $outboxAttachments[0].size
++        sha256 = $outboxAttachments[0].sha256; state = $outboxAttachments[0].state; uploaded_at = $outboxAttachments[0].uploaded_at
++        expires_at = $outboxAttachments[0].uploaded_at; expired_at = $null
++    }
++    $equalOutbox = [pscustomobject]@{ payloadTicketId = $requestId; payloadAttachments = @($equalOutboxAttachment, $outboxAttachments[1]) }
++    $equalExpiryAfter = [pscustomobject]@{
++        excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestTicketStatus = 'SUBMITTED'
++        requestAttachments = $equalDocuments; requestOutbox = @($equalOutbox)
++    }
++    $equalExpiryRejected = $false
++    try { Assert-I1MongoDelta -Before $before -After $equalExpiryAfter -Probe $probe } catch { $equalExpiryRejected = $true }
++    if (-not $equalExpiryRejected) { throw 'attachment expiry equal to upload time was accepted' }
++
+     $badDocuments = @($documents | ForEach-Object { $_ })
+-    $badDocuments[0] = [pscustomobject]@{ id = $documents[0].id; name = $documents[0].name; content_type = 'application/bad'; size = $documents[0].size; sha256 = $documents[0].sha256; state = $documents[0].state; uploaded_at = $documents[0].uploaded_at; expires_at = $documents[0].expires_at; request_id = $requestId }
+-    $badAfter = [pscustomobject]@{ excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestAttachments = $badDocuments; requestOutbox = $after.requestOutbox }
++    $badDocuments[0] = [pscustomobject]@{ id = $documents[0].id; name = $documents[0].name; content_type = 'application/bad'; size = $documents[0].size; sha256 = $documents[0].sha256; state = $documents[0].state; uploaded_at = $documents[0].uploaded_at; expires_at = $documents[0].expires_at; expired_at = $null; request_id = $requestId }
++    $badAfter = [pscustomobject]@{ excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestTicketStatus = 'SUBMITTED'; requestAttachments = $badDocuments; requestOutbox = $after.requestOutbox }
+     $documentCorruptionRejected = $false
+     try { Assert-I1MongoDelta -Before $before -After $badAfter -Probe $probe } catch { $documentCorruptionRejected = $true }
+     if (-not $documentCorruptionRejected) { throw 'corrupt Mongo attachment document was accepted' }
+     $badOutbox = [pscustomobject]@{ payloadTicketId = $requestId; payloadAttachments = @($outboxAttachments | ForEach-Object { $_ }) }
+     $badOutbox.payloadAttachments[1].sha256 = ('c' * 64)
+-    $badOutboxAfter = [pscustomobject]@{ excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestAttachments = $documents; requestOutbox = @($badOutbox) }
++    $badOutboxAfter = [pscustomobject]@{ excuseTickets = 1; receipts = 1; attachments = 2; outboxRequested = 1; requestTickets = 1; requestTicketStatus = 'SUBMITTED'; requestAttachments = $documents; requestOutbox = @($badOutbox) }
+     $outboxCorruptionRejected = $false
+     try { Assert-I1MongoDelta -Before $before -After $badOutboxAfter -Probe $probe } catch { $outboxCorruptionRejected = $true }
+     if (-not $outboxCorruptionRejected) { throw 'corrupt outbox attachment payload was accepted' }
+ 
+-    Write-Output 'R8 Mongo projection check: PASS (generated JS syntax/stub query observed ObjectId and string linkage; all descriptor fields projected; document and outbox corruption rejected)'
++    Write-Output 'R8 Mongo projection check: PASS (persisted SUBMITTED ticket state plus actual API camelCase, Mongo snake_case and outbox descriptor shapes are compared separately; aliases, expiry and content mutations rejected)'
+ } finally {
+     if (Test-Path -LiteralPath $tempRoot) { Remove-Item -LiteralPath $tempRoot -Recurse -Force }
+ }
+diff --git a/.agent/student-role-orchestrator/requests-runtime/r8-probe-callsite-check.ps1 b/.agent/student-role-orchestrator/requests-runtime/r8-probe-callsite-check.ps1
+index 370d4455..c3ea2e13 100644
+--- a/.agent/student-role-orchestrator/requests-runtime/r8-probe-callsite-check.ps1
++++ b/.agent/student-role-orchestrator/requests-runtime/r8-probe-callsite-check.ps1
+@@ -18,6 +18,8 @@ if ($probeText -notmatch 'value !== undefined && value !== null') { throw 'Node
+ if ($probeText -notmatch 'api/auth/session') { throw 'Auth session GET is missing from probe source' }
+ if ($probeText -notmatch 'assertStudentSessionContract') { throw 'CurrentSessionResponse session-shape validator is missing from probe source' }
+ if ($probeText -notmatch '\$\.userId|session\.userId') { throw 'Auth session validator does not read the top-level userId field' }
++if ($probeText -match 'state:\s*state\.toLowerCase\(\)') { throw 'probe lowercases the public API attachment state before serialization' }
++if ($probeText -notmatch 'apiAttachmentFixture:\s*detailEvidence\.attachments') { throw 'probe self-test does not expose the serialized API attachment fixture used by PowerShell assertions' }
+ 
+ $output = @(& node $probePath --self-test 2>&1)
+ $exitCode = $LASTEXITCODE
+@@ -26,6 +28,11 @@ $lines = @($output | ForEach-Object { [string]$_ } | Where-Object { $_.Trim().Le
+ $result = $lines[-1] | ConvertFrom-Json -Depth 12
+ if ($result.status -ne 'PASS' -or $result.mode -ne 'source-self-test') { throw 'probe self-test did not report source-self-test PASS' }
+ if ($result.detailContract.corruptionRejected -ne $true) { throw 'detail corruption regression evidence is missing' }
++if ($result.detailContract.nullableExpiredAtAccepted -ne $true) { throw 'nullable API expiredAt acceptance evidence is missing' }
++if (@($result.apiAttachmentFixture).Count -ne 2 -or @($result.apiAttachmentFixture | Where-Object { $_.state -cne 'ACTIVE' }).Count -ne 0) { throw 'serialized Node API attachment fixture did not preserve exact ACTIVE state' }
++foreach ($field in @('summary.status=PENDING', 'decision=null|absent', 'attachments[].contentType', 'attachments[].sizeBytes', 'attachments[].state=ACTIVE', 'attachments[].uploadedAt<expiresAt', 'attachments[].expiredAt=null|absent')) {
++    if (@($result.detailContract.responsePayloadFields) -notcontains $field) { throw "strict I1 API lifecycle field evidence is missing: $field" }
++}
+ if ($result.authSession.dto -ne 'CurrentSessionResponse' -or $result.authSession.valid.userId -ne '42' -or $result.authSession.valid.activeRole -ne 'STUDENT' -or $result.authSession.corruptionRejected -ne $true) { throw 'faithful CurrentSessionResponse fixture or corruption evidence is missing' }
+ if ($result.transport.fixedEarlyEpipe413 -ne $true -or $result.transport.noResponseErrorsFail -ne $true) { throw 'response-aware 413/transport evidence is incomplete' }
+ 
+diff --git a/.agent/student-role-orchestrator/requests-runtime/runner.ps1 b/.agent/student-role-orchestrator/requests-runtime/runner.ps1
+index 6fa34846..40df768d 100644
+--- a/.agent/student-role-orchestrator/requests-runtime/runner.ps1
++++ b/.agent/student-role-orchestrator/requests-runtime/runner.ps1
+@@ -25,6 +25,10 @@ $script:acceptedBrowserRoot = Join-Path $script:taskRoot '..\browser-runtime'
+ $script:acceptedLiveRoot = Join-Path $script:taskRoot '..\runtime-live'
+ $script:seedAcademicPath = Join-Path $script:acceptedLiveRoot 'seed-academic.sql'
+ $script:seedSchedulePath = Join-Path $script:acceptedBrowserRoot 'seed-schedule.sql'
++$script:validatedEdgeSources = $null
++$script:validatedSourceAnchor = $null
++$script:artifactSnapshotRoot = $null
++$script:artifactSnapshot = $null
+ $script:runId = $null
+ $script:runDir = $null
+ $script:keysDir = $null
+@@ -61,6 +65,7 @@ $script:report = [ordered]@{
+         academicDiagnostics = 18520
+     }
+     commands = [System.Collections.Generic.List[object]]::new()
++    probeDiagnosticsHistory = [System.Collections.Generic.List[object]]::new()
+     environment = [ordered]@{
+         hostOs = [Environment]::OSVersion.VersionString
+         powershell = $PSVersionTable.PSVersion.ToString()
+@@ -84,6 +89,9 @@ $script:report = [ordered]@{
+         networkRemoved = $false
+         networkVerifiedAbsent = $false
+         keysRemoved = $false
++        artifactRoot = $null
++        artifactRemoved = $false
++        artifactVerifiedAbsent = $false
+         errors = @()
+     }
+     limitations = @(
+@@ -98,6 +106,13 @@ function Assert-That {
+     if (-not $Condition) { throw $Message }
+ }
+ 
++function Test-ReportHasFailure {
++    if ($script:report -is [System.Collections.IDictionary]) {
++        return @($script:report.Keys) -contains 'failure'
++    }
++    return $script:report.PSObject.Properties.Name -contains 'failure'
++}
++
+ function Add-PhaseDiagnostic {
+     param(
+         [Parameter(Mandatory = $true)][string]$Name,
+@@ -143,8 +158,9 @@ function Protect-ReportText {
+     foreach ($secret in @($script:runtimeSecrets)) {
+         if (-not [string]::IsNullOrEmpty($secret)) { $safe = $safe.Replace($secret, '<redacted>') }
+     }
+-    $safe = [regex]::Replace($safe, '(?i)("?(?:password|token|secret|authorization|cookie|set-cookie|accessToken|refreshToken)"?\s*[:=]\s*)("[^"]*"|[^,;\s}\]]+)', '$1<redacted>')
+     $safe = [regex]::Replace($safe, '(?i)Bearer\s+[A-Za-z0-9._~+/=-]+', 'Bearer <redacted>')
++    $safe = [regex]::Replace($safe, '(?i)("?(?:password|token|secret|authorization|cookie|set-cookie|accessToken|refreshToken)"?\s*[:=]\s*)"(?:\\.|[^"\\])*"', '$1"<redacted>"')
++    $safe = [regex]::Replace($safe, '(?i)("?(?:password|token|secret|authorization|cookie|set-cookie|accessToken|refreshToken)"?\s*[:=]\s*)(?!")([^,;\s}\]]+)', '$1<redacted>')
+     return $safe
+ }
+ 
+@@ -182,16 +198,51 @@ function Invoke-ExternalSafe {
+         foreach ($argument in $ArgumentList) { $null = $startInfo.ArgumentList.Add([string]$argument) }
+         $process = [Diagnostics.Process]::new()
+         $process.StartInfo = $startInfo
+-        $null = $process.Start()
+-        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+-            try { $process.Kill($true) } catch { }
+-            $process.WaitForExit()
+-            Add-CommandEvidence -FilePath $FilePath -ArgumentList $ArgumentList -Purpose $Purpose -ExitCode 124 -AllowFailure:$AllowFailure
+-            if (-not $AllowFailure) { throw "$Purpose timed out after $TimeoutSeconds seconds" }
+-            return [pscustomobject]@{ ExitCode = 124; Output = 'external command timed out' }
++        $started = $false
++        $stdoutTask = $null
++        $stderrTask = $null
++        $drainWaitMilliseconds = [Math]::Max(1000, [Math]::Min(5000, $TimeoutSeconds * 1000))
++        try {
++            $null = $process.Start()
++            $started = $true
++            # Start both drains before waiting for process completion. A child
++            # may fill either redirected pipe while it is still running.
++            $stdoutTask = $process.StandardOutput.ReadToEndAsync()
++            $stderrTask = $process.StandardError.ReadToEndAsync()
++            if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
++                try { $process.Kill($true) } catch { }
++                try { $null = $process.WaitForExit($drainWaitMilliseconds) } catch { }
++                if ($null -ne $stdoutTask -and -not $stdoutTask.IsCompleted) { $null = $stdoutTask.Wait($drainWaitMilliseconds) }
++                if ($null -ne $stderrTask -and -not $stderrTask.IsCompleted) { $null = $stderrTask.Wait($drainWaitMilliseconds) }
++                if ($null -ne $stdoutTask -and -not $stdoutTask.IsCompleted) { try { $process.StandardOutput.Close() } catch { }; $null = $stdoutTask.Wait(250) }
++                if ($null -ne $stderrTask -and -not $stderrTask.IsCompleted) { try { $process.StandardError.Close() } catch { }; $null = $stderrTask.Wait(250) }
++                Add-CommandEvidence -FilePath $FilePath -ArgumentList $ArgumentList -Purpose $Purpose -ExitCode 124 -AllowFailure:$AllowFailure
++                if (-not $AllowFailure) { throw "$Purpose timed out after $TimeoutSeconds seconds" }
++                return [pscustomobject]@{ ExitCode = 124; Output = 'external command timed out'; Stdout = ''; Stderr = '' }
++            }
++            $stdoutDrained = $stdoutTask.Wait($drainWaitMilliseconds)
++            $stderrDrained = $stderrTask.Wait($drainWaitMilliseconds)
++            if (-not ($stdoutDrained -and $stderrDrained)) {
++                if (-not $stdoutDrained) { try { $process.StandardOutput.Close() } catch { }; $null = $stdoutTask.Wait(250) }
++                if (-not $stderrDrained) { try { $process.StandardError.Close() } catch { }; $null = $stderrTask.Wait(250) }
++                try { if (-not $process.HasExited) { $process.Kill($true) } } catch { }
++                Add-CommandEvidence -FilePath $FilePath -ArgumentList $ArgumentList -Purpose $Purpose -ExitCode 124 -AllowFailure:$AllowFailure
++                if (-not $AllowFailure) { throw "$Purpose output drain timed out after $drainWaitMilliseconds milliseconds" }
++                return [pscustomobject]@{ ExitCode = 124; Output = 'external command output drain timed out'; Stdout = ''; Stderr = '' }
++            }
++            $stdout = [string]$stdoutTask.GetAwaiter().GetResult()
++            $stderr = [string]$stderrTask.GetAwaiter().GetResult()
++            $output = @($stdout, $stderr) -join [Environment]::NewLine
++            $exitCode = $process.ExitCode
++        } finally {
++            if ($started) {
++                try {
++                    if (-not $process.HasExited) { $process.Kill($true) }
++                } catch { }
++                try { $null = $process.WaitForExit($drainWaitMilliseconds) } catch { }
++            }
++            $process.Dispose()
+         }
+-        $output = @($process.StandardOutput.ReadToEnd(), $process.StandardError.ReadToEnd()) -join [Environment]::NewLine
+-        $exitCode = $process.ExitCode
+     } else {
+         $output = @(& $FilePath @ArgumentList 2>&1) -join [Environment]::NewLine
+         $exitCode = $LASTEXITCODE
+@@ -200,6 +251,9 @@ function Invoke-ExternalSafe {
+     if (-not $AllowFailure -and $exitCode -ne 0) {
+         throw "$Purpose failed with exit code $exitCode"
+     }
++    if ($TimeoutSeconds -gt 0) {
++        return [pscustomobject]@{ ExitCode = $exitCode; Output = ($output -join [Environment]::NewLine); Stdout = [string]$stdout; Stderr = [string]$stderr }
++    }
+     return [pscustomobject]@{ ExitCode = $exitCode; Output = ($output -join [Environment]::NewLine) }
+ }
+ 
+@@ -225,6 +279,103 @@ function Get-UnionRevision {
+     return $revision
+ }
+ 
++function Get-UnionTrackedStatus {
++    $result = Invoke-ExternalSafe -FilePath 'git' -ArgumentList @(
++        '-c', "safe.directory=$($script:unionRoot)", '-C', $script:unionRoot,
++        'status', '--porcelain=v1', '--untracked-files=all'
++    ) -Purpose 'verify union tracked source is clean'
++    return [string]$result.Output
++}
++
++function Get-UnionTrackedBlobHash {
++    param([Parameter(Mandatory = $true)][string]$RelativePath)
++    Assert-That ($RelativePath -notmatch '[\\:]' -and -not $RelativePath.StartsWith('/') -and $RelativePath -notmatch '(^|/)\.\.(/|$)') "invalid tracked source path: $RelativePath"
++    $result = Invoke-ExternalSafe -FilePath 'git' -ArgumentList @(
++        '-c', "safe.directory=$($script:unionRoot)", '-C', $script:unionRoot,
++        'rev-parse', "$ExpectedUnionRevision`:$RelativePath"
++    ) -Purpose "resolve exact revision blob for $RelativePath"
++    $blob = $result.Output.Trim()
++    Assert-That ($blob -match '^[0-9a-f]{40}$') "tracked source blob is not a full SHA-1: $RelativePath"
++    return $blob
++}
++
++function Get-GitBlobHashForBytes {
++    param(
++        [Parameter(Mandatory = $true)][byte[]]$Bytes,
++        [Parameter(Mandatory = $true)][string]$Context,
++        [string]$RelativePathForGit = ''
++    )
++    Assert-That ($null -ne $script:unionRoot) "$Context requires a resolved UnionRepo"
++    if (-not [string]::IsNullOrWhiteSpace($RelativePathForGit)) {
++        Assert-That ($RelativePathForGit -notmatch '[\\:]' -and -not $RelativePathForGit.StartsWith('/') -and $RelativePathForGit -notmatch '(^|/)\.\.(/|$)') "$Context has an invalid Git path"
++    }
++    $startInfo = [Diagnostics.ProcessStartInfo]::new()
++    $startInfo.FileName = 'git'
++    $startInfo.UseShellExecute = $false
++    $startInfo.RedirectStandardInput = $true
++    $startInfo.RedirectStandardOutput = $true
++    $startInfo.RedirectStandardError = $true
++    # Feed the exact cached bytes to Git. --path applies the same clean
++    # filter used by the tracked source blob (including Windows CRLF
++    # normalization), so the resulting object id is comparable to HEAD:path.
++    $gitArguments = [System.Collections.Generic.List[string]]::new()
++    foreach ($argument in @('-c', "safe.directory=$($script:unionRoot)", '-C', $script:unionRoot, 'hash-object')) {
++        [void]$gitArguments.Add([string]$argument)
++    }
++    if (-not [string]::IsNullOrWhiteSpace($RelativePathForGit)) { [void]$gitArguments.Add("--path=$RelativePathForGit") }
++    [void]$gitArguments.Add('--stdin')
++    foreach ($argument in $gitArguments) {
++        $null = $startInfo.ArgumentList.Add([string]$argument)
++    }
++    $process = [Diagnostics.Process]::new()
++    $process.StartInfo = $startInfo
++    $stdout = ''
++    $stderr = ''
++    $exitCode = 1
++    try {
++        $null = $process.Start()
++        $process.StandardInput.BaseStream.Write($Bytes, 0, $Bytes.Length)
++        $process.StandardInput.Close()
++        $stdout = $process.StandardOutput.ReadToEnd()
++        $stderr = $process.StandardError.ReadToEnd()
++        $process.WaitForExit()
++        $exitCode = $process.ExitCode
++    } finally {
++        $process.Dispose()
++    }
++    Add-CommandEvidence -FilePath 'git' -ArgumentList $gitArguments.ToArray() -Purpose $Context -ExitCode $exitCode
++    Assert-That ($exitCode -eq 0) "$Context failed with exit code $exitCode"
++    Assert-That ([string]::IsNullOrWhiteSpace($stderr)) "$Context wrote unexpected diagnostics"
++    $blob = ([string]$stdout).Trim()
++    Assert-That ($blob -match '^[0-9a-f]{40}$') "$Context returned an invalid Git blob id"
++    return $blob
++}
++
++function Assert-UnionSourceStability {
++    param([Parameter(Mandatory = $true)][string]$Context)
++    Assert-That ($null -ne $script:unionRoot) "$Context requires a resolved UnionRepo"
++    Assert-That ($ExpectedUnionRevision -match '^[0-9a-f]{40}$') "$Context requires the exact expected union revision pin"
++    $revision = Get-UnionRevision
++    Assert-That ($revision -ceq $ExpectedUnionRevision) "$Context found a changed union revision"
++    $status = Get-UnionTrackedStatus
++    Assert-That ([string]::IsNullOrWhiteSpace($status)) "$Context found a dirty or untracked union worktree"
++    if ($null -ne $script:validatedSourceAnchor) {
++        Assert-That ($script:validatedSourceAnchor.revision -ceq $revision) "$Context does not match the validated source revision"
++        Assert-That ($script:validatedSourceAnchor.trackedStatus -eq '') "$Context does not match the validated clean source state"
++        foreach ($edge in @(
++                [pscustomobject]@{ Name = 'nginx'; Path = $script:validatedEdgeSources.nginxPath; Sha256 = $script:validatedSourceAnchor.nginxSha256; Blob = $script:validatedSourceAnchor.nginxBlob },
++                [pscustomobject]@{ Name = 'default'; Path = $script:validatedEdgeSources.defaultPath; Sha256 = $script:validatedSourceAnchor.defaultSha256; Blob = $script:validatedSourceAnchor.defaultBlob }
++            )) {
++            Assert-That (Test-Path -LiteralPath $edge.Path -PathType Leaf) "$Context source file disappeared: $($edge.Name)"
++            Assert-That ((Get-Sha256Hex -Path $edge.Path) -ceq $edge.Sha256) "$Context source bytes changed: $($edge.Name)"
++            $relativePath = if ($edge.Name -eq 'nginx') { 'tests/e2e/infra/nginx/nginx.conf' } else { 'tests/e2e/infra/nginx/default.conf' }
++            $blob = Get-UnionTrackedBlobHash -RelativePath $relativePath
++            Assert-That ($blob -ceq $edge.Blob) "$Context tracked source blob changed: $($edge.Name)"
++        }
++    }
++    return $revision
++}
++
+ function Get-JarSpec {
+     return @(
+         [ordered]@{ Name = 'auth'; Relative = 'services/auth-service/auth-app/build/libs'; Pattern = 'auth-app-*.jar' },
+@@ -275,6 +426,174 @@ function Get-PwaDistManifest {
+     }
+ }
+ 
++function Assert-PwaManifestIdentity {
++    param(
++        [Parameter(Mandatory = $true)][object]$Expected,
++        [Parameter(Mandatory = $true)][object]$Actual,
++        [Parameter(Mandatory = $true)][string]$Context
++    )
++    Assert-That ([int]$Actual.fileCount -eq [int]$Expected.fileCount) "$Context file count changed"
++    Assert-That ([string]$Actual.manifestSha256 -ceq [string]$Expected.manifestSha256) "$Context manifest digest changed"
++    $expectedFiles = @(Sort-CanonicalPathObjects -Items @($Expected.files))
++    $actualFiles = @(Sort-CanonicalPathObjects -Items @($Actual.files))
++    Assert-That ($actualFiles.Count -eq $expectedFiles.Count) "$Context file set changed"
++    for ($index = 0; $index -lt $expectedFiles.Count; $index++) {
++        Assert-That ($actualFiles[$index].relativePath -ceq $expectedFiles[$index].relativePath) "$Context relative path changed: $($expectedFiles[$index].relativePath)"
++        Assert-That ([int64]$actualFiles[$index].bytes -eq [int64]$expectedFiles[$index].bytes) "$Context byte count changed: $($expectedFiles[$index].relativePath)"
++        Assert-That ([string]$actualFiles[$index].sha256 -ceq [string]$expectedFiles[$index].sha256) "$Context digest changed: $($expectedFiles[$index].relativePath)"
++    }
++}
++
++function Read-VerifiedArtifactBytes {
++    param(
++        [Parameter(Mandatory = $true)][string]$Path,
++        [Parameter(Mandatory = $true)][int64]$ExpectedBytes,
++        [Parameter(Mandatory = $true)][string]$ExpectedSha256,
++        [Parameter(Mandatory = $true)][string]$Context
++    )
++    Assert-That ($ExpectedBytes -ge 0 -and $ExpectedBytes -le [int32]::MaxValue) "$Context has an unsupported byte count"
++    Assert-Sha256Value -Value $ExpectedSha256 -Context "$Context expected SHA-256" | Out-Null
++    $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
++    Assert-That (-not $item.PSIsContainer) "$Context source is not a file"
++    Assert-That (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) "$Context source is a reparse point"
++    Assert-That ([int64]$item.Length -eq $ExpectedBytes) "$Context source size changed before read"
++    $stream = $null
++    try {
++        # FileShare.Read prevents a writer/delete from changing the opened file
++        # while the bytes are consumed. The post-read path check catches a
++        # replacement that happened before or immediately after this handle.
++        $stream = [IO.File]::Open($item.FullName, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::Read)
++        Assert-That ([int64]$stream.Length -eq $ExpectedBytes) "$Context source size changed at read boundary"
++        $bytes = [byte[]]::new([int]$ExpectedBytes)
++        $offset = 0
++        while ($offset -lt $bytes.Length) {
++            $read = $stream.Read($bytes, $offset, $bytes.Length - $offset)
++            Assert-That ($read -gt 0) "$Context source ended before the manifest byte count"
++            $offset += $read
++        }
++    } finally {
++        if ($null -ne $stream) { $stream.Dispose() }
++    }
++    $actualSha = Get-Sha256BytesHex -Bytes $bytes
++    Assert-That ($actualSha -ceq $ExpectedSha256.ToLowerInvariant()) "$Context source bytes do not match the trusted artifact manifest"
++    $after = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
++    Assert-That (-not $after.PSIsContainer) "$Context source changed to a directory after read"
++    Assert-That (($after.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) "$Context source became a reparse point after read"
++    Assert-That ([int64]$after.Length -eq $ExpectedBytes) "$Context source size changed during read"
++    Assert-That ((Get-Sha256Hex -Path $after.FullName) -ceq $ExpectedSha256.ToLowerInvariant()) "$Context source changed during read"
++    return [pscustomobject]@{ Bytes = $bytes; BytesCount = [int64]$bytes.Length; Sha256 = $actualSha; SourcePath = $after.FullName }
++}
++
++function Copy-VerifiedArtifactFile {
++    param(
++        [Parameter(Mandatory = $true)][string]$SourceRoot,
++        [Parameter(Mandatory = $true)][string]$SourceRelativePath,
++        [Parameter(Mandatory = $true)][string]$DestinationRoot,
++        [Parameter(Mandatory = $true)][string]$DestinationRelativePath,
++        [Parameter(Mandatory = $true)][int64]$ExpectedBytes,
++        [Parameter(Mandatory = $true)][string]$ExpectedSha256,
++        [Parameter(Mandatory = $true)][string]$Context
++    )
++    $source = Assert-AbsolutePathConfined -Root $SourceRoot -RelativePath $SourceRelativePath -Context "$Context source path"
++    $destination = Assert-AbsolutePathConfined -Root $DestinationRoot -RelativePath $DestinationRelativePath -Context "$Context destination path"
++    Assert-That (-not (Test-Path -LiteralPath $destination.FullPath)) "$Context destination already exists"
++    $parent = Split-Path -Parent $destination.FullPath
++    if (-not (Test-Path -LiteralPath $parent -PathType Container)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
++    $null = Assert-AbsolutePathConfined -Root $DestinationRoot -RelativePath $DestinationRelativePath -Context "$Context destination path after directory creation"
++    $read = Read-VerifiedArtifactBytes -Path $source.FullPath -ExpectedBytes $ExpectedBytes -ExpectedSha256 $ExpectedSha256 -Context $Context
++    [IO.File]::WriteAllBytes($destination.FullPath, $read.Bytes)
++    $destinationItem = Get-Item -LiteralPath $destination.FullPath -Force -ErrorAction Stop
++    Assert-That (-not $destinationItem.PSIsContainer) "$Context owned copy is not a file"
++    Assert-That (($destinationItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) "$Context owned copy is a reparse point"
++    Assert-That ([int64]$destinationItem.Length -eq $ExpectedBytes) "$Context owned copy size is wrong"
++    Assert-That ((Get-Sha256Hex -Path $destinationItem.FullName) -ceq $ExpectedSha256.ToLowerInvariant()) "$Context owned copy bytes are wrong"
++    return [pscustomobject]@{
++        Path = $destinationItem.FullName
++        File = $destinationItem.Name
++        Bytes = [int64]$destinationItem.Length
++        Sha256 = $ExpectedSha256.ToLowerInvariant()
++        SourcePath = $read.SourcePath
++    }
++}
++
++function Assert-OwnedArtifactPath {
++    Assert-That ($script:runDir -and $script:artifactSnapshotRoot) 'owned artifact snapshot was not initialized'
++    $resolvedRun = [IO.Path]::GetFullPath($script:runDir).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
++    $resolvedArtifacts = [IO.Path]::GetFullPath($script:artifactSnapshotRoot).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
++    Assert-That ($resolvedArtifacts.StartsWith("$resolvedRun$([IO.Path]::DirectorySeparatorChar)", [StringComparison]::OrdinalIgnoreCase)) 'artifact snapshot escaped the owned run directory'
++    Assert-That ([IO.Path]::GetFileName($resolvedArtifacts) -eq 'artifacts') 'cleanup target is not the exact owned artifact directory'
++    $runItem = Get-Item -LiteralPath $resolvedRun -Force
++    Assert-That (($runItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) 'owned run directory is a reparse point'
++    Assert-That (Test-Path -LiteralPath $resolvedArtifacts -PathType Container) 'owned artifact directory is missing'
++    $root = Get-Item -LiteralPath $resolvedArtifacts -Force
++    Assert-That (($root.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) 'owned artifact directory is a reparse point'
++    $directories = [System.Collections.Generic.Stack[string]]::new()
++    $directories.Push($resolvedArtifacts)
++    while ($directories.Count -gt 0) {
++        $current = $directories.Pop()
++        foreach ($child in @(Get-ChildItem -LiteralPath $current -Force)) {
++            Assert-That (($child.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) "owned artifact snapshot contains a reparse point: $($child.FullName)"
++            if ($child.PSIsContainer) { $directories.Push($child.FullName) }
++        }
++    }
++    return $resolvedArtifacts
++}
++
++function New-VerifiedArtifactSnapshot {
++    Assert-That ($script:runDir -and $script:report.jars -and $script:report.source.pwaDist) 'trusted artifacts are missing before snapshot creation'
++    $artifactRoot = [IO.Path]::GetFullPath((Join-Path $script:runDir 'artifacts'))
++    $script:artifactSnapshotRoot = $artifactRoot
++    Assert-That (-not (Test-Path -LiteralPath $artifactRoot)) 'owned artifact snapshot path already exists'
++    New-Item -ItemType Directory -Path $artifactRoot -Force | Out-Null
++    $jarRoot = Join-Path $artifactRoot 'jars'
++    $pwaRoot = Join-Path $artifactRoot 'pwa'
++    New-Item -ItemType Directory -Path $jarRoot -Force | Out-Null
++    New-Item -ItemType Directory -Path $pwaRoot -Force | Out-Null
++    Assert-OwnedArtifactPath | Out-Null
++
++    $jarCopies = [ordered]@{}
++    foreach ($spec in @(Get-JarSpec)) {
++        $trusted = $script:report.jars[$spec.Name]
++        Assert-That ($null -ne $trusted) "trusted jar entry is missing: $($spec.Name)"
++        $sourceRelative = [string]$trusted.sourceRelativePath
++        Assert-That (-not [string]::IsNullOrWhiteSpace($sourceRelative)) "trusted jar source path is missing: $($spec.Name)"
++        $sourceDirectory = Assert-AbsolutePathConfined -Root $script:unionRoot -RelativePath $spec.Relative.Replace('\', '/') -Context "trusted $($spec.Name) jar directory"
++        $directoryItem = Get-Item -LiteralPath $sourceDirectory.FullPath -Force
++        Assert-That (($directoryItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) "trusted $($spec.Name) jar directory is a reparse point"
++        $executableJars = @(Get-ChildItem -LiteralPath $sourceDirectory.FullPath -File | Where-Object {
++                $_.Name -notlike '*-plain.jar' -and $_.Name -notlike '*-sources.jar' -and $_.Name -notlike '*-javadoc.jar'
++            })
++        Assert-That ($executableJars.Count -eq 1 -and $executableJars[0].FullName -eq [string]$trusted.path) "trusted $($spec.Name) jar changed before snapshot"
++        $copy = Copy-VerifiedArtifactFile -SourceRoot $script:unionRoot -SourceRelativePath $sourceRelative -DestinationRoot $jarRoot -DestinationRelativePath ([string]$trusted.file) -ExpectedBytes ([int64]$trusted.bytes) -ExpectedSha256 ([string]$trusted.sha256) -Context "snapshot $($spec.Name) jar"
++        $jarCopies[$spec.Name] = [ordered]@{
++            path = $copy.Path
++            file = $copy.File
++            bytes = $copy.Bytes
++            sha256 = $copy.Sha256
++            sourcePath = [string]$trusted.path
++            sourceRelativePath = $sourceRelative
++        }
++    }
++
++    $trustedPwa = $script:report.source.pwaDist
++    $currentPwa = Get-PwaDistManifest -Directory $script:pwaDistPath
++    Assert-PwaManifestIdentity -Expected $trustedPwa -Actual $currentPwa -Context 'trusted PWA source before snapshot'
++    foreach ($file in @(Sort-CanonicalPathObjects -Items @($trustedPwa.files))) {
++        $copy = Copy-VerifiedArtifactFile -SourceRoot $script:pwaDistPath -SourceRelativePath ([string]$file.relativePath) -DestinationRoot $pwaRoot -DestinationRelativePath ([string]$file.relativePath) -ExpectedBytes ([int64]$file.bytes) -ExpectedSha256 ([string]$file.sha256) -Context "snapshot PWA $($file.relativePath)"
++    }
++    $copiedPwa = Get-PwaDistManifest -Directory $pwaRoot
++    Assert-PwaManifestIdentity -Expected $trustedPwa -Actual $copiedPwa -Context 'owned PWA snapshot'
++
++    $script:artifactSnapshot = [pscustomobject]@{ Root = $artifactRoot; Jars = $jarCopies; PwaDist = $copiedPwa }
++    $script:report.source.runtimeArtifacts = [ordered]@{
++        root = $artifactRoot
++        jars = @($jarCopies.GetEnumerator() | ForEach-Object { [ordered]@{ name = $_.Key; path = $_.Value.path; bytes = $_.Value.bytes; sha256 = $_.Value.sha256 } })
++        pwaDist = $copiedPwa
++        trustedManifestSha256 = [string]$script:report.source.buildManifest.actualSha256
++    }
++    return $script:artifactSnapshot
++}
++
+ function Sort-CanonicalPathObjects {
+     param([Parameter(Mandatory = $true)][object[]]$Items)
+     $sorted = [System.Collections.Generic.List[object]]::new()
+@@ -577,7 +896,7 @@ function Resolve-TrustedBuildArtifacts {
+         Assert-That ([int64]$jarItem.Length -eq $bytesValue) "trusted jar size changed after the successful build: $name"
+         $actualJarSha = Get-Sha256Hex -Path $relative.FullPath
+         Assert-That ($actualJarSha -eq $shaValue) "trusted jar hash changed after the successful build: $name"
+-        $trustedJars[$name] = [ordered]@{ path = $relative.FullPath; file = $fileName; sha256 = $actualJarSha; bytes = [int64]$jarItem.Length }
++        $trustedJars[$name] = [ordered]@{ path = $relative.FullPath; sourceRelativePath = $relative.Relative; file = $fileName; sha256 = $actualJarSha; bytes = [int64]$jarItem.Length }
+     }
+     Assert-That ($seenNames.Count -eq $specs.Count) 'trusted build manifest omitted one or more expected jar roles'
+     Assert-CanonicalPathList -Items @($jarEntries | ForEach-Object { [pscustomobject]@{ relativePath = [string](Get-JsonPropertyValue -Object $_ -Name 'relativePath' -Context 'manifest.artifacts.jars[]') } }) -Context 'manifest.artifacts.jars'
+@@ -640,23 +959,43 @@ function Resolve-EdgeSources {
+     $defaultPath = Join-Path $script:unionRoot 'tests\e2e\infra\nginx\default.conf'
+     Assert-That (Test-Path -LiteralPath $nginxPath -PathType Leaf) 'accepted e2e nginx.conf is missing from union'
+     Assert-That (Test-Path -LiteralPath $defaultPath -PathType Leaf) 'accepted e2e default.conf is missing from union'
+-    $nginx = Get-Content -LiteralPath $nginxPath -Raw
+-    $default = Get-Content -LiteralPath $defaultPath -Raw
++    # Read each accepted edge source once into an immutable string. Runtime
++    # config generation receives these exact validated bytes; it never
++    # re-resolves or re-reads the source paths after resources are allocated.
++    $nginxBytes = [IO.File]::ReadAllBytes($nginxPath)
++    $defaultBytes = [IO.File]::ReadAllBytes($defaultPath)
++    $utf8 = [Text.UTF8Encoding]::new($false, $true)
++    try {
++        $nginx = $utf8.GetString($nginxBytes)
++        $default = $utf8.GetString($defaultBytes)
++    } catch {
++        throw 'accepted e2e edge sources are not valid UTF-8'
++    }
++    $expectedNginxBlob = Get-UnionTrackedBlobHash -RelativePath 'tests/e2e/infra/nginx/nginx.conf'
++    $expectedDefaultBlob = Get-UnionTrackedBlobHash -RelativePath 'tests/e2e/infra/nginx/default.conf'
++    $actualNginxBlob = Get-GitBlobHashForBytes -Bytes $nginxBytes -RelativePathForGit 'tests/e2e/infra/nginx/nginx.conf' -Context 'bind cached nginx bytes to expected revision blob'
++    $actualDefaultBlob = Get-GitBlobHashForBytes -Bytes $defaultBytes -RelativePathForGit 'tests/e2e/infra/nginx/default.conf' -Context 'bind cached default.conf bytes to expected revision blob'
++    Assert-That ($actualNginxBlob -ceq $expectedNginxBlob) 'cached nginx bytes do not match the expected revision blob'
++    Assert-That ($actualDefaultBlob -ceq $expectedDefaultBlob) 'cached default.conf bytes do not match the expected revision blob'
+     Assert-That ($nginx -match '(?m)^\s*client_max_body_size\s+2m;') 'accepted Nginx global 2m cap is missing'
+     Assert-That ($nginx -match '(?s)map\s+\$uri\s+\$student_requests_cache_control.*?student/requests.*?no-store') 'accepted Requests no-store map is missing'
+     Assert-That ($default -match '(?s)location\s*=\s*/api/v1/student/requests/excuse\s*\{.*?client_max_body_size\s+24m;.*?proxy_set_header\s+Forwarded\s+"";') 'accepted Requests location or canonical headers are missing'
+     Assert-That ($default -notmatch '(?s)location\s*=\s*/api/v1/student/requests/excuse\s*\{.*?proxy_request_buffering\s+off;') 'accepted Requests location unexpectedly disables request buffering'
+     Assert-That ($default -match 'listen\s+443\s+ssl;') 'accepted TLS listener is missing'
+-    return [ordered]@{
++    return [pscustomobject]@{
+         nginxPath = $nginxPath
+-        nginxSha256 = Get-Sha256Hex -Path $nginxPath
++        nginxSha256 = Get-Sha256BytesHex -Bytes $nginxBytes
++        nginxBlob = $expectedNginxBlob
+         defaultPath = $defaultPath
+-        defaultSha256 = Get-Sha256Hex -Path $defaultPath
++        defaultSha256 = Get-Sha256BytesHex -Bytes $defaultBytes
++        defaultBlob = $expectedDefaultBlob
+         globalMaxBodySize = '2m'
+         requestsMaxBodySize = '24m'
+         requestBuffering = 'on (inherited default)'
+         cacheControl = 'no-store for /api/v1/student/requests and descendants'
+         trustedForwardHeaders = 'X-Forwarded-For/Proto/Host/Port overwritten; Forwarded empty'
++        nginxText = $nginx
++        defaultText = $default
+     }
+ }
+ 
+@@ -677,7 +1016,23 @@ function Test-SourceContract {
+     Assert-That ($ExpectedUnionRevision -match '^[0-9a-f]{40}$') 'expected union revision pin is required'
+     $script:report.unionRevision = Get-UnionRevision
+     Assert-That ($script:report.unionRevision -eq $ExpectedUnionRevision) 'union revision does not match the main expected revision pin'
+-    $script:report.source = Resolve-EdgeSources
++    $unionStatusBeforeSources = Get-UnionTrackedStatus
++    Assert-That ([string]::IsNullOrWhiteSpace($unionStatusBeforeSources)) 'union worktree is dirty or contains untracked files before source validation'
++    $edge = Resolve-EdgeSources
++    $script:validatedEdgeSources = $edge
++    $script:report.source = [ordered]@{
++        nginxPath = $edge.nginxPath
++        nginxSha256 = $edge.nginxSha256
++        nginxBlob = $edge.nginxBlob
++        defaultPath = $edge.defaultPath
++        defaultSha256 = $edge.defaultSha256
++        defaultBlob = $edge.defaultBlob
++        globalMaxBodySize = $edge.globalMaxBodySize
++        requestsMaxBodySize = $edge.requestsMaxBodySize
++        requestBuffering = $edge.requestBuffering
++        cacheControl = $edge.cacheControl
++        trustedForwardHeaders = $edge.trustedForwardHeaders
++    }
+     $script:report.source.acceptedAcademicSeed = [ordered]@{ path = $script:seedAcademicPath; sha256 = Get-Sha256Hex -Path $script:seedAcademicPath }
+     $script:report.source.acceptedScheduleSeed = [ordered]@{ path = $script:seedSchedulePath; sha256 = Get-Sha256Hex -Path $script:seedSchedulePath }
+     $probe = Get-Content -LiteralPath $script:probePath -Raw
+@@ -689,6 +1044,23 @@ function Test-SourceContract {
+     $trusted = Resolve-TrustedBuildArtifacts
+     $script:report.jars = $trusted.Jars
+     $script:report.source.pwaDist = $trusted.PwaDist
++    $script:validatedSourceAnchor = [ordered]@{
++        revision = $script:report.unionRevision
++        trackedStatus = ([string]$unionStatusBeforeSources).Trim()
++        nginxSha256 = $edge.nginxSha256
++        defaultSha256 = $edge.defaultSha256
++        nginxBlob = $edge.nginxBlob
++        defaultBlob = $edge.defaultBlob
++    }
++    $script:report.source.sourceAnchor = [ordered]@{
++        revision = $script:validatedSourceAnchor.revision
++        trackedStatus = 'clean'
++        nginxBlob = $script:validatedSourceAnchor.nginxBlob
++        nginxSha256 = $script:validatedSourceAnchor.nginxSha256
++        defaultBlob = $script:validatedSourceAnchor.defaultBlob
++        defaultSha256 = $script:validatedSourceAnchor.defaultSha256
++    }
++    Assert-UnionSourceStability -Context 'source validation completion' | Out-Null
+     return $script:report
+ }
+ 
+@@ -826,6 +1198,28 @@ function Get-DeterministicNetworkPlan {
+     }
+ }
+ 
++function Resolve-AmbiguousOwnedNetwork {
++    param([Parameter(Mandatory = $true)][string]$Name)
++    $format = '{{.Id}}|{{.Name}}|{{index .Labels "rct.runtime-owner"}}|{{index .Labels "rct.runtime-run"}}'
++    $inspect = Invoke-DockerSafe -DockerArgs @('network', 'inspect', '--format', $format, $Name) -Purpose "recover ambiguous owned network $Name" -AllowFailure
++    if ($inspect.ExitCode -ne 0) {
++        if ([string]$inspect.Output -match '(?i)(no such object|no such network|not found)') { return $null }
++        throw "ambiguous owned network recovery inspect failed for $Name with exit code $($inspect.ExitCode)"
++    }
++    $lines = @($inspect.Output -split '\r?\n' | Where-Object { $_ -match '\S' })
++    Assert-That ($lines.Count -eq 1) "ambiguous owned network recovery returned an unexpected result for $Name"
++    $parts = $lines[0].Trim().Split('|')
++    Assert-That ($parts.Count -eq 4) "ambiguous owned network recovery metadata is incomplete for $Name"
++    $networkId = $parts[0].Trim()
++    $actualName = $parts[1].Trim()
++    $expectedRun = [string]$script:runId
++    Assert-That ($networkId -match '^[0-9a-fA-F]{12,64}$') "ambiguous owned network recovery returned an invalid id for $Name"
++    if ($actualName -cne $Name -or $parts[2] -cne 'student-requests-gate' -or $parts[3] -cne $expectedRun) {
++        throw "refusing to adopt ambiguous network $Name with a foreign name or ownership label"
++    }
++    return $networkId
++}
++
+ function New-RequestsOwnedNetwork {
+     param([Parameter(Mandatory = $true)][System.Collections.IDictionary]$NetworkPlan)
+     $networkArgs = @(
+@@ -833,10 +1227,55 @@ function New-RequestsOwnedNetwork {
+         '--gateway', [string]$NetworkPlan.gateway, '--ip-range', [string]$NetworkPlan.dynamicIpRange,
+         '--label', 'rct.runtime-owner=student-requests-gate', '--label', "rct.runtime-run=$($script:runId)", $script:networkName
+     )
+-    $networkResult = Invoke-DockerSafe -DockerArgs $networkArgs -Purpose 'create collision-checked owned Docker network with edge-excluding IPAM range'
+-    $networkId = ($networkResult.Output -split '\r?\n' | Where-Object { $_ -match '^[0-9a-f]{12,64}$' } | Select-Object -First 1)
+-    Assert-That (-not [string]::IsNullOrWhiteSpace($networkId)) 'Docker did not return the owned network id'
+-    $script:ownedNetwork = $networkId.Trim()
++    $networkResult = $null
++    $createException = $null
++    try {
++        # Docker can create the network and still fail while reporting the
++        # result (for example, an interrupted client). Keep the original
++        # failure visible, then recover only an exact name with both labels.
++        $networkResult = Invoke-DockerSafe -DockerArgs $networkArgs -Purpose 'create collision-checked owned Docker network with edge-excluding IPAM range' -AllowFailure
++    } catch {
++        $createException = $_.Exception.Message
++    }
++    $networkId = $null
++    $createFailure = $null
++    $recoveryRequired = $false
++    if ($null -ne $createException) {
++        $createFailure = $createException
++        $recoveryRequired = $true
++    } elseif ($null -eq $networkResult -or $networkResult.ExitCode -ne 0) {
++        $createFailure = if ($null -eq $networkResult) { 'Docker network create returned no result' } else { "Docker network create failed with exit code $($networkResult.ExitCode)" }
++        $recoveryRequired = $true
++    } else {
++        $outputLines = @($networkResult.Output -split '\r?\n' | Where-Object { $_ -match '\S' })
++        $networkId = ($outputLines | Where-Object { $_ -match '^[0-9a-fA-F]{12,64}$' } | Select-Object -First 1)
++        if ([string]::IsNullOrWhiteSpace($networkId)) {
++            $createFailure = if ($outputLines.Count -gt 0) { 'Docker returned a malformed owned network id' } else { 'Docker did not return the owned network id' }
++            $recoveryRequired = $true
++        }
++    }
++    if ($recoveryRequired) {
++        try {
++            $networkId = Resolve-AmbiguousOwnedNetwork -Name $script:networkName
++        } catch {
++            throw "network create failed: $createFailure; ambiguous recovery refused: $($_.Exception.Message)"
++        }
++        if ($null -eq $networkId) { throw $createFailure }
++        $script:report.network.createRecovery = [ordered]@{
++            status = 'RECOVERED'
++            originalFailure = Protect-ReportText $createFailure
++            exactName = $script:networkName
++            ownershipLabels = 'rct.runtime-owner=student-requests-gate; rct.runtime-run=<runId>'
++        }
++    } else {
++        $script:report.network.createRecovery = [ordered]@{ status = 'NOT_NEEDED' }
++    }
++    Assert-That (-not [string]::IsNullOrWhiteSpace($networkId)) 'Docker did not return or recover the owned network id'
++    $networkId = $networkId.Trim()
++    Assert-That ($networkId -match '^[0-9a-fA-F]{12,64}$') 'Docker returned an invalid owned network id'
++    # Register immediately after validating the create/recovery ID. Every
++    # subsequent runtime operation can therefore reach owned cleanup.
++    $script:ownedNetwork = $networkId
+     $script:report.network.id = $script:ownedNetwork
+     $script:report.network.name = $script:networkName
+     $script:report.network.subnet = [string]$NetworkPlan.subnet
+@@ -883,28 +1322,143 @@ function New-RunIdentity {
+     $script:runId = "${stamp}-${suffix}"
+     $script:runDir = Join-Path $script:taskRoot (Join-Path 'runs' $script:runId)
+     $script:keysDir = Join-Path $script:runDir 'keys'
++    $script:artifactSnapshotRoot = Join-Path $script:runDir 'artifacts'
+     New-Item -ItemType Directory -Path $script:keysDir -Force | Out-Null
+     $script:networkName = "rct-requests-gate-$($script:runId)"
+     $script:report.runId = $script:runId
+ }
+ 
+ function Convert-EdgeToRuntimeConfig {
+-    param([Parameter(Mandatory = $true)][string]$NginxPath, [Parameter(Mandatory = $true)][string]$DefaultPath)
+-    $nginx = Get-Content -LiteralPath $NginxPath -Raw
+-    $default = Get-Content -LiteralPath $DefaultPath -Raw
+-    $diagnosticFormat = "`n    log_format requests_gate '`$request `$status `$upstream_addr `$upstream_status';`n    access_log /var/log/nginx/requests-gate.log requests_gate;`n"
++    param(
++        [Parameter(Mandatory = $true)][string]$NginxPath,
++        [Parameter(Mandatory = $true)][string]$DefaultPath,
++        [AllowNull()][string]$NginxContent = $null,
++        [AllowNull()][string]$DefaultContent = $null
++    )
++    $hasCachedContent = $PSBoundParameters.ContainsKey('NginxContent') -and $PSBoundParameters.ContainsKey('DefaultContent')
++    if ($hasCachedContent) {
++        Assert-That ($null -ne $NginxContent -and $null -ne $DefaultContent) 'cached edge source content must be non-null'
++        $nginx = $NginxContent
++        $default = $DefaultContent
++    } else {
++        # This fallback keeps the helper independently testable. Production
++        # always passes the validated, read-once source strings from
++        # $script:validatedEdgeSources below.
++        $nginx = [IO.File]::ReadAllText($NginxPath)
++        $default = [IO.File]::ReadAllText($DefaultPath)
++    }
++    $lineEnding = if ($default.Contains("`r`n")) { "`r`n" } else { "`n" }
++    $diagnosticFormat = "${lineEnding}    log_format requests_gate '`$request `$status `$upstream_addr `$upstream_status';${lineEnding}    access_log /var/log/nginx/requests-gate.log requests_gate;${lineEnding}"
+     $nginx = $nginx.Replace('    access_log /var/log/nginx/access.log main;', "    access_log /var/log/nginx/access.log main;$diagnosticFormat")
+-    $staticLocation = @'
+-    location / {
+-        root /usr/share/nginx/html;
+-        index index.html;
+-        try_files $uri $uri/ /index.html;
+-    }
+-'@
+-    $default = [regex]::Replace($default, '(?s)    location / \{\s*proxy_pass http://web-panel-nginx:80/;.*?\n    \}', $staticLocation.TrimEnd())
++    $staticRootLocation = @(
++        '    location = / {',
++        '        root /usr/share/nginx/html;',
++        '        index index.html;',
++        '        try_files /index.html =200;',
++        '    }'
++    ) -join $lineEnding
++    $staticLocation = @(
++        '    location / {',
++        '        root /usr/share/nginx/html;',
++        '        index index.html;',
++        '        try_files $uri $uri/ /index.html;',
++        '    }'
++    ) -join $lineEnding
++    $uiLocations = @(
++        [ordered]@{
++            Name = 'presentation'
++            Route = '/presentation/'
++            Upstream = 'landing-nginx'
++            Replacement = @(
++                '    location /presentation/ {',
++                '        return 404;',
++                '    }'
++            ) -join $lineEnding
++        },
++        [ordered]@{
++            Name = 'app'
++            Route = '/app/'
++            Upstream = 'pwa-nginx'
++            Replacement = @(
++                '    location /app/ {',
++                '        rewrite ^/app/(.*)$ /$1 break;',
++                '        root /usr/share/nginx/html;',
++                '        index index.html;',
++                '        try_files $uri $uri/ /index.html;',
++                '    }'
++            ) -join $lineEnding
++        },
++        [ordered]@{
++            Name = 'mini-app'
++            Route = '/mini-app/'
++            Upstream = 'mini-app-nginx'
++            Replacement = @(
++                '    location /mini-app/ {',
++                '        return 404;',
++                '    }'
++            ) -join $lineEnding
++        }
++    )
++    foreach ($uiLocation in $uiLocations) {
++        $locationPattern = '(?s)    location\s+' + [regex]::Escape($uiLocation.Route) + '\s*\{\s*proxy_pass\s+http://' + [regex]::Escape($uiLocation.Upstream) + ':80/;\s*proxy_set_header\s+Host\s+\$host;\s*\}'
++        $locationMatches = [regex]::Matches($default, $locationPattern)
++        Assert-That ($locationMatches.Count -eq 1) "accepted Nginx $($uiLocation.Name) location is missing or has unexpected directives"
++        $locationMatch = $locationMatches[0]
++        $default = $default.Remove($locationMatch.Index, $locationMatch.Length).Insert($locationMatch.Index, $uiLocation.Replacement)
++    }
++    $rootReplacements = @(
++        [ordered]@{
++            Name = 'root redirect'
++            Pattern = '(?s)    location\s*=\s*/\s*\{\s*return\s+301\s+/login;\s*\}'
++            Replacement = $staticRootLocation
++        },
++        [ordered]@{
++            Name = 'web-panel root'
++            Pattern = '(?s)    location\s+/\s*\{\s*proxy_pass http://web-panel-nginx:80/;.*?\n    \}'
++            Replacement = $staticLocation
++        }
++    )
++    foreach ($rootReplacement in $rootReplacements) {
++        $rootMatches = [regex]::Matches($default, $rootReplacement.Pattern)
++        Assert-That ($rootMatches.Count -eq 1) "accepted Nginx $($rootReplacement.Name) location is missing or has unexpected directives"
++        $rootMatch = $rootMatches[0]
++        $default = $default.Remove($rootMatch.Index, $rootMatch.Length).Insert($rootMatch.Index, $rootReplacement.Replacement)
++    }
+     return [ordered]@{ Nginx = $nginx; Default = $default }
+ }
+ 
++function Register-OwnedContainer {
++    param(
++        [Parameter(Mandatory = $true)][string]$Name,
++        [Parameter(Mandatory = $true)][string]$Id
++    )
++    $normalizedId = $Id.Trim()
++    Assert-That ($normalizedId -match '^[0-9a-fA-F]{12,64}$') "Docker returned an invalid id for owned $Name container"
++    if (-not $script:ownedContainers.Contains($normalizedId)) { $script:ownedContainers.Add($normalizedId) }
++    if (-not $script:ownedContainerNames.Contains($Name)) { $script:ownedContainerNames.Add($Name) }
++}
++
++function Resolve-AmbiguousOwnedContainer {
++    param([Parameter(Mandatory = $true)][string]$Name)
++    $format = '{{.Id}}|{{.Name}}|{{index .Config.Labels "rct.runtime-owner"}}|{{index .Config.Labels "rct.runtime-run"}}'
++    $inspect = Invoke-DockerSafe -DockerArgs @('container', 'inspect', '--format', $format, $Name) -Purpose "recover ambiguous owned $Name create" -AllowFailure
++    if ($inspect.ExitCode -ne 0) {
++        if ([string]$inspect.Output -match '(?i)(no such object|no such container|not found)') { return $null }
++        throw "ambiguous owned container recovery inspect failed for $Name with exit code $($inspect.ExitCode)"
++    }
++    $lines = @($inspect.Output -split '\r?\n' | Where-Object { $_ -match '\S' })
++    Assert-That ($lines.Count -eq 1) "ambiguous owned container recovery returned an unexpected result for $Name"
++    $parts = $lines[0].Trim().Split('|')
++    Assert-That ($parts.Count -eq 4) "ambiguous owned container recovery metadata is incomplete for $Name"
++    $actualName = $parts[1].Trim().TrimStart('/')
++    $expectedRun = [string]$script:runId
++    if ($actualName -cne $Name -or $parts[2] -cne 'student-requests-gate' -or $parts[3] -cne $expectedRun) {
++        throw "refusing to adopt ambiguous container $Name with a foreign name or ownership label"
++    }
++    Assert-That ($parts[0] -match '^[0-9a-fA-F]{12,64}$') "ambiguous owned container recovery returned an invalid id for $Name"
++    return $parts[0].Trim()
++}
++
+ function Start-OwnedContainer {
+     param(
+         [Parameter(Mandatory = $true)][string]$Name,
+@@ -914,17 +1468,13 @@ function Start-OwnedContainer {
+         [hashtable]$Environment = @{},
+         [hashtable[]]$Mounts = @(),
+         [string]$Ip = $null,
++        [string]$Entrypoint = $null,
+         [string[]]$Command = @(),
+         [switch]$CreateOnly
+     )
+     $dockerArgs = [System.Collections.Generic.List[string]]::new()
+-    if ($CreateOnly) {
+-        [void]$dockerArgs.Add('create')
+-    } else {
+-        [void]$dockerArgs.Add('run')
+-        [void]$dockerArgs.Add('-d')
+-    }
+-    # Docker defaults --pull to missing. Make every owned create/run fail closed
++    [void]$dockerArgs.Add('create')
++    # Docker defaults --pull to missing. Make every owned create fail closed
+     # when a pinned image is absent instead of reaching the registry implicitly.
+     [void]$dockerArgs.Add('--pull=never')
+     foreach ($value in @('--name', $Name, '--label', 'rct.runtime-owner=student-requests-gate', '--label', "rct.runtime-run=$($script:runId)", '--network', $script:networkName)) { [void]$dockerArgs.Add([string]$value) }
+@@ -937,13 +1487,43 @@ function Start-OwnedContainer {
+         [void]$dockerArgs.Add('--mount')
+         [void]$dockerArgs.Add("type=bind,source=$($mount.Source),target=$($mount.Target)$mode")
+     }
++    if (-not [string]::IsNullOrWhiteSpace($Entrypoint)) {
++        [void]$dockerArgs.Add('--entrypoint')
++        [void]$dockerArgs.Add($Entrypoint)
++    }
+     [void]$dockerArgs.Add($Image)
+     foreach ($argument in $Command) { [void]$dockerArgs.Add([string]$argument) }
+-    $result = Invoke-DockerSafe -DockerArgs $dockerArgs.ToArray() -Purpose "start owned $Name container"
+-    $id = ($result.Output -split '\r?\n' | Where-Object { $_ -match '^[0-9a-f]{12,64}$' } | Select-Object -First 1)
+-    Assert-That (-not [string]::IsNullOrWhiteSpace($id)) "Docker did not return an id for owned $Name container"
+-    $script:ownedContainers.Add($id.Trim())
+-    $script:ownedContainerNames.Add($Name)
++
++    # Docker can create the container and still fail while reporting the
++    # result (for example, an interrupted client). Recover only an exact name
++    # with both ownership labels; a foreign match is never adopted or deleted.
++    $createResult = $null
++    $createException = $null
++    try {
++        $createResult = Invoke-DockerSafe -DockerArgs $dockerArgs.ToArray() -Purpose "create owned $Name container" -AllowFailure
++    } catch {
++        $createException = $_.Exception.Message
++    }
++    $id = $null
++    if ($null -ne $createException -or ($null -ne $createResult -and $createResult.ExitCode -ne 0)) {
++        $id = Resolve-AmbiguousOwnedContainer -Name $Name
++        if ($null -eq $id) {
++            $failure = if ($null -ne $createException) { $createException } else { "create owned $Name container failed with exit code $($createResult.ExitCode)" }
++            throw $failure
++        }
++    } else {
++        $id = ($createResult.Output -split '\r?\n' | Where-Object { $_ -match '^[0-9a-fA-F]{12,64}$' } | Select-Object -First 1)
++        if ([string]::IsNullOrWhiteSpace($id)) { $id = Resolve-AmbiguousOwnedContainer -Name $Name }
++        Assert-That (-not [string]::IsNullOrWhiteSpace($id)) "Docker did not return an id for owned $Name container"
++    }
++
++    # Register immediately after create/recovery, before any start operation.
++    # A start failure therefore remains visible to the owned cleanup ledger.
++    Register-OwnedContainer -Name $Name -Id $id
++    if ($CreateOnly) { return [pscustomobject]@{ Id = $id.Trim(); Name = $Name } }
++
++    $startResult = Invoke-DockerSafe -DockerArgs @('start', $id.Trim()) -Purpose "start owned $Name container" -AllowFailure
++    Assert-That ($startResult.ExitCode -eq 0) "starting owned $Name container failed with exit code $($startResult.ExitCode)"
+     return [pscustomobject]@{ Id = $id.Trim(); Name = $Name }
+ }
+ 
+@@ -1070,16 +1650,18 @@ function Assert-OwnedKeysPath {
+ }
+ 
+ function New-RuntimeConfig {
+-    $edge = Resolve-EdgeSources
+-    $config = Convert-EdgeToRuntimeConfig -NginxPath $edge.nginxPath -DefaultPath $edge.defaultPath
++    Assert-That ($null -ne $script:validatedEdgeSources) 'validated edge sources are missing before runtime config generation'
++    Assert-That ($null -ne $script:artifactSnapshot) 'verified artifact snapshot is missing before runtime config generation'
++    $edge = $script:validatedEdgeSources
++    $config = Convert-EdgeToRuntimeConfig -NginxPath $edge.nginxPath -DefaultPath $edge.defaultPath -NginxContent $edge.nginxText -DefaultContent $edge.defaultText
+     $configDir = Join-Path $script:runDir 'nginx'
+     New-Item -ItemType Directory -Path $configDir -Force | Out-Null
+     $certPath = Join-Path $script:keysDir 'server.crt'
+     $keyPath = Join-Path $script:keysDir 'server.key'
+     New-LocalTlsCertificate -KeyPath $keyPath -CertificatePath $certPath
+-    [IO.File]::WriteAllText((Join-Path $configDir 'nginx.conf'), $config.Nginx, [Text.Encoding]::UTF8)
+-    [IO.File]::WriteAllText((Join-Path $configDir 'default.conf'), $config.Default, [Text.Encoding]::UTF8)
+-    $pwaManifest = Get-PwaDistManifest -Directory $script:pwaDistPath
++    [IO.File]::WriteAllText((Join-Path $configDir 'nginx.conf'), $config.Nginx, [Text.UTF8Encoding]::new($false))
++    [IO.File]::WriteAllText((Join-Path $configDir 'default.conf'), $config.Default, [Text.UTF8Encoding]::new($false))
++    $pwaManifest = $script:artifactSnapshot.PwaDist
+     $script:report.source.runtimeNginx = [ordered]@{
+         configSha256 = Get-Sha256Hex -Path (Join-Path $configDir 'nginx.conf')
+         defaultSha256 = Get-Sha256Hex -Path (Join-Path $configDir 'default.conf')
+@@ -1132,14 +1714,14 @@ function Start-JavaService {
+ 
+ function Start-BackendServices {
+     param([Parameter(Mandatory = $true)][hashtable]$Secrets, [Parameter(Mandatory = $true)][hashtable]$Config)
+-    $jars = $script:report.jars
++    Assert-That ($null -ne $script:artifactSnapshot) 'verified artifact snapshot is missing before backend startup'
++    $jars = $script:artifactSnapshot.Jars
+     $common = @{
+         SPRING_PROFILES_ACTIVE = 'prod'; TZ = 'Europe/Moscow';
+         RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED = 'false'; JAVA_TOOL_OPTIONS = '-Djava.security.egd=file:/dev/./urandom'
+         # Runtime-only observability: prod source keeps its restricted exposure;
+         # this disposable runner publishes the exact metrics endpoint needed by I2.
+         MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE = 'health,info,metrics'
+-        MANAGEMENT_ENDPOINT_METRICS_ENABLED = 'true'
+         MANAGEMENT_ENDPOINT_METRICS_ACCESS = 'unrestricted'
+     }
+     # Keep a pre-created edge reservation in the service map while dynamic
+@@ -1289,6 +1871,95 @@ function Start-Edge {
+     $script:report.assertions.edge = [ordered]@{ tls = $true; edgePort = 18514; trustedNginxIp = $edgeIp; trustedGatewayPeer = $edgeIp; reservationBeforeDynamic = $true; defaultRequestBuffering = 'on'; canonicalForwarded = 'empty' }
+ }
+ 
++function Limit-EdgeDiagnosticText {
++    param(
++        [AllowNull()][string]$Text,
++        [int]$MaxCharacters = 12000
++    )
++    if ($null -eq $Text) { return $null }
++    $safe = Protect-ReportText $Text
++    if ($safe.Length -le $MaxCharacters) { return $safe }
++    return $safe.Substring(0, $MaxCharacters) + '<truncated>'
++}
++
++function Capture-EdgeFailureDiagnostics {
++    param(
++        [Parameter(Mandatory = $true)][string]$ContainerId,
++        [Parameter(Mandatory = $true)][string]$FailureMessage
++    )
++    $capture = [ordered]@{
++        schema = 'rct.edge-failure.v1'
++        status = 'START'
++        failure = Limit-EdgeDiagnosticText -Text $FailureMessage -MaxCharacters 4000
++        state = $null
++        logs = $null
++    }
++    try {
++        $state = Invoke-DockerSafe -DockerArgs @('inspect', '--format', '{{json .State}}', $ContainerId) -Purpose 'capture failed edge container state' -AllowFailure
++        if ($state.ExitCode -eq 0) {
++            try {
++                $stateJson = [string]$state.Output | ConvertFrom-Json -Depth 8
++                $capture.state = [ordered]@{
++                    status = Limit-EdgeDiagnosticText -Text ([string]$stateJson.Status) -MaxCharacters 200
++                    exitCode = $stateJson.ExitCode
++                    oomKilled = [bool]$stateJson.OOMKilled
++                    error = Limit-EdgeDiagnosticText -Text ([string]$stateJson.Error) -MaxCharacters 4000
++                    captureExitCode = $state.ExitCode
++                }
++            } catch {
++                $capture.state = [ordered]@{
++                    status = 'unavailable'
++                    exitCode = $null
++                    oomKilled = $null
++                    error = Limit-EdgeDiagnosticText -Text $_.Exception.Message -MaxCharacters 4000
++                    captureExitCode = $state.ExitCode
++                }
++            }
++        } else {
++            $capture.state = [ordered]@{
++                status = 'unavailable'
++                exitCode = $null
++                oomKilled = $null
++                error = Limit-EdgeDiagnosticText -Text ([string]$state.Output) -MaxCharacters 4000
++                captureExitCode = $state.ExitCode
++            }
++        }
++    } catch {
++        $capture.state = [ordered]@{
++            status = 'unavailable'
++            exitCode = $null
++            oomKilled = $null
++            error = Limit-EdgeDiagnosticText -Text $_.Exception.Message -MaxCharacters 4000
++            captureExitCode = $null
++        }
++    }
++    try {
++        $logs = Invoke-DockerSafe -DockerArgs @('logs', '--tail', '80', '--timestamps', $ContainerId) -Purpose 'capture recent failed edge logs' -AllowFailure
++        $capture.logs = [ordered]@{
++            tail = 80
++            exitCode = $logs.ExitCode
++            text = Limit-EdgeDiagnosticText -Text ([string]$logs.Output)
++        }
++    } catch {
++        $capture.logs = [ordered]@{
++            tail = 80
++            exitCode = $null
++            text = Limit-EdgeDiagnosticText -Text $_.Exception.Message -MaxCharacters 4000
++        }
++    }
++    $capture.status = 'CAPTURED'
++    $script:report.edgeFailureDiagnostics = $capture
++}
++
++function Get-EdgeFailureContainerId {
++    if ($script:services -is [System.Collections.IDictionary] -and $script:services.Contains('edge') -and $null -ne $script:services.edge) {
++        return [string]$script:services.edge.Id
++    }
++    $owned = [string[]]$script:ownedContainers.ToArray()
++    if ($owned.Count -gt 0) { return $owned[$owned.Count - 1] }
++    return $null
++}
++
+ function Get-MongoSnapshot {
+     param([Parameter(Mandatory = $true)][long]$StudentId, [string]$RequestId = '')
+     $rid = if ([string]::IsNullOrWhiteSpace($RequestId)) {
+@@ -1308,25 +1979,24 @@ print(JSON.stringify({
+   attachments:d.request_attachments.countDocuments({owner_student_id:sid}),
+   outboxRequested:d.attendance_outbox.countDocuments({event_type:'excuse.requested'}),
+   requestTickets:d.excuse_tickets.countDocuments(reqFilter),
+-  requestAttachments:d.request_attachments.find(attFilter,{_id:1,name:1,type:1,size:1,sha256:1,state:1,uploaded_at:1,expires_at:1,request_id:1,position:1}).sort({position:1}).toArray().map(x=>({id:String(x._id),name:x.name,content_type:x.type,size:x.size,sha256:x.sha256,state:x.state,uploaded_at:x.uploaded_at==null?null:new Date(x.uploaded_at).toISOString(),expires_at:x.expires_at==null?null:new Date(x.expires_at).toISOString(),request_id:x.request_id})),
+-  requestOutbox:d.attendance_outbox.find(outFilter,{_id:1,event_type:1,payload:1,status:1}).toArray().map(x=>{const envelope=JSON.parse(x.payload),payload=envelope.payload||{};return {id:String(x._id),event_type:x.event_type,status:x.status,payloadTicketId:payload.ticket_id==null?null:String(payload.ticket_id),payloadAttachments:(payload.attachments||[]).map(a=>({id:a.id,name:a.name,content_type:a.content_type,size:a.size,sha256:a.sha256,state:a.state,uploaded_at:a.uploaded_at,expires_at:a.expires_at}))}})
++  requestTicketStatus:rid===null?null:(d.excuse_tickets.find(reqFilter,{_id:1,status:1}).sort({_id:1}).toArray().map(x=>x.status)[0]??null),
++  requestAttachments:d.request_attachments.find(attFilter,{_id:1,name:1,type:1,size:1,sha256:1,state:1,uploaded_at:1,expires_at:1,expired_at:1,request_id:1,position:1}).sort({position:1}).toArray().map(x=>({id:String(x._id),name:x.name,content_type:x.type,size:x.size,sha256:x.sha256,state:x.state,uploaded_at:x.uploaded_at==null?null:new Date(x.uploaded_at).toISOString(),expires_at:x.expires_at==null?null:new Date(x.expires_at).toISOString(),expired_at:x.expired_at==null?null:new Date(x.expired_at).toISOString(),request_id:x.request_id})),
++  requestOutbox:d.attendance_outbox.find(outFilter,{_id:1,event_type:1,payload:1,status:1}).toArray().map(x=>{const envelope=JSON.parse(x.payload),payload=envelope.payload||{};return {id:String(x._id),event_type:x.event_type,status:x.status,payloadTicketId:payload.ticket_id==null?null:String(payload.ticket_id),payloadAttachments:(payload.attachments||[]).map(a=>({id:a.id,name:a.name,content_type:a.content_type,size:a.size,sha256:a.sha256,state:a.state,uploaded_at:a.uploaded_at,expires_at:a.expires_at,expired_at:a.expired_at==null?null:a.expired_at}))}})
+ }));
+ "@
+     $json = Read-MongoJson -ContainerId $script:infra.mongo.Id -JavaScript $scriptText -Purpose 'capture redacted Mongo Requests snapshot'
+     try { return ($json | ConvertFrom-Json -Depth 8) } catch { throw 'Mongo snapshot was not valid JSON' }
+ }
+ 
+-function Get-OptionalObjectProperty {
++function Get-ExactObjectProperty {
+     param(
+         [Parameter(Mandatory = $true)][object]$Object,
+-        [Parameter(Mandatory = $true)][string[]]$Names
++        [Parameter(Mandatory = $true)][string]$Name
+     )
+     if ($null -eq $Object) { return $null }
+-    foreach ($name in $Names) {
+-        $property = $Object.PSObject.Properties[$name]
+-        if ($null -ne $property) { return $property.Value }
+-    }
+-    return $null
++    $property = $Object.PSObject.Properties[$Name]
++    if ($null -eq $property) { return $null }
++    return $property.Value
+ }
+ 
+ function Convert-AttachmentTimestamp {
+@@ -1347,22 +2017,47 @@ function Convert-AttachmentTimestamp {
+ }
+ 
+ function Convert-AttachmentDescriptorToCanonicalObject {
+-    param([AllowNull()][object]$Item, [Parameter(Mandatory = $true)][string]$Context)
++    param(
++        [AllowNull()][object]$Item,
++        [Parameter(Mandatory = $true)][string]$Context,
++        [ValidateSet('Api', 'Mongo')][string]$Format = 'Mongo'
++    )
+     Assert-That ($null -ne $Item) "$Context must be an attachment descriptor"
+-    $id = Get-OptionalObjectProperty -Object $Item -Names @('id')
+-    $name = Get-OptionalObjectProperty -Object $Item -Names @('name')
+-    $contentType = Get-OptionalObjectProperty -Object $Item -Names @('content_type', 'contentType')
+-    $size = Get-OptionalObjectProperty -Object $Item -Names @('size', 'sizeBytes')
+-    $sha256 = Get-OptionalObjectProperty -Object $Item -Names @('sha256')
+-    $state = Get-OptionalObjectProperty -Object $Item -Names @('state')
+-    $uploadedAt = Get-OptionalObjectProperty -Object $Item -Names @('uploaded_at', 'uploadedAt')
+-    $expiresAt = Get-OptionalObjectProperty -Object $Item -Names @('expires_at', 'expiresAt')
++    $contentTypeName = if ($Format -eq 'Api') { 'contentType' } else { 'content_type' }
++    $sizeName = if ($Format -eq 'Api') { 'sizeBytes' } else { 'size' }
++    $uploadedAtName = if ($Format -eq 'Api') { 'uploadedAt' } else { 'uploaded_at' }
++    $expiresAtName = if ($Format -eq 'Api') { 'expiresAt' } else { 'expires_at' }
++    $expiredAtName = if ($Format -eq 'Api') { 'expiredAt' } else { 'expired_at' }
++    $id = Get-ExactObjectProperty -Object $Item -Name 'id'
++    $name = Get-ExactObjectProperty -Object $Item -Name 'name'
++    $contentType = Get-ExactObjectProperty -Object $Item -Name $contentTypeName
++    $size = Get-ExactObjectProperty -Object $Item -Name $sizeName
++    $sha256 = Get-ExactObjectProperty -Object $Item -Name 'sha256'
++    $state = Get-ExactObjectProperty -Object $Item -Name 'state'
++    $uploadedAt = Get-ExactObjectProperty -Object $Item -Name $uploadedAtName
++    $expiresAt = Get-ExactObjectProperty -Object $Item -Name $expiresAtName
++    $expiredAt = Get-ExactObjectProperty -Object $Item -Name $expiredAtName
++    if ($Format -eq 'Api') {
++        foreach ($alias in @('content_type', 'size', 'uploaded_at', 'expires_at', 'expired_at')) {
++            Assert-That ($null -eq $Item.PSObject.Properties[$alias]) "$Context has non-public API field '$alias'"
++        }
++    }
+     Assert-That ($id -is [string] -and -not [string]::IsNullOrWhiteSpace([string]$id)) "$Context.id must be a non-empty string"
+     Assert-That ($name -is [string] -and -not [string]::IsNullOrWhiteSpace([string]$name)) "$Context.name must be a non-empty string"
+     Assert-That ($contentType -is [string] -and -not [string]::IsNullOrWhiteSpace([string]$contentType)) "$Context.content_type must be a non-empty string"
+     $sizeValue = Assert-JsonInteger -Value $size -Context "$Context.size" -NonNegative
+     $digestValue = Assert-Sha256Value -Value $sha256 -Context "$Context.sha256"
+-    Assert-That ($state -is [string] -and -not [string]::IsNullOrWhiteSpace([string]$state)) "$Context.state must be a non-empty string"
++    $stateIsActive = if ($Format -eq 'Api') {
++        $state -is [string] -and ([string]$state) -ceq 'ACTIVE'
++    } else {
++        $state -is [string] -and (([string]$state) -ceq 'ACTIVE' -or ([string]$state) -ceq 'active')
++    }
++    Assert-That $stateIsActive "$Context.state must be ACTIVE for a newly submitted request"
++    $canonicalUploadedAt = Convert-AttachmentTimestamp -Value $uploadedAt -Context "$Context.uploaded_at"
++    $canonicalExpiresAt = Convert-AttachmentTimestamp -Value $expiresAt -Context "$Context.expires_at"
++    Assert-That ([DateTimeOffset]::Parse($canonicalUploadedAt) -lt [DateTimeOffset]::Parse($canonicalExpiresAt)) "$Context.uploaded_at must be before expires_at for a newly submitted request"
++    Assert-That ($null -eq $expiredAt) "$Context.expired_at must be null or absent for a newly submitted request"
++    $canonicalExpiredAt = $null
+     return [ordered]@{
+         id = [string]$id
+         name = [string]$name
+@@ -1370,18 +2065,23 @@ function Convert-AttachmentDescriptorToCanonicalObject {
+         size = $sizeValue
+         sha256 = $digestValue
+         state = ([string]$state).ToLowerInvariant()
+-        uploaded_at = Convert-AttachmentTimestamp -Value $uploadedAt -Context "$Context.uploaded_at"
+-        expires_at = Convert-AttachmentTimestamp -Value $expiresAt -Context "$Context.expires_at"
++        uploaded_at = $canonicalUploadedAt
++        expires_at = $canonicalExpiresAt
++        expired_at = $canonicalExpiredAt
+     }
+ }
+ 
+ function Convert-AttachmentDescriptorsToCanonicalText {
+-    param([Parameter(Mandatory = $true)][object[]]$Items, [Parameter(Mandatory = $true)][string]$Context)
++    param(
++        [Parameter(Mandatory = $true)][object[]]$Items,
++        [Parameter(Mandatory = $true)][string]$Context,
++        [ValidateSet('Api', 'Mongo')][string]$Format = 'Mongo'
++    )
+     $index = 0
+     $canonical = @($Items | ForEach-Object {
+             $itemContext = "$Context[$index]"
+             $index++
+-            Convert-AttachmentDescriptorToCanonicalObject -Item $_ -Context $itemContext
++            Convert-AttachmentDescriptorToCanonicalObject -Item $_ -Context $itemContext -Format $Format
+         })
+     $canonical = @($canonical | Sort-Object -Property id)
+     return ConvertTo-Json -InputObject ([object[]]$canonical) -Depth 10 -Compress
+@@ -1394,16 +2094,17 @@ function Assert-I1MongoDelta {
+     Assert-That ([int64]$After.attachments -eq ([int64]$Before.attachments + 2)) 'I1 must create exactly two attachment documents'
+     Assert-That ([int64]$After.outboxRequested -eq ([int64]$Before.outboxRequested + 1)) 'I1 must create exactly one excuse.requested outbox event'
+     Assert-That ([int64]$After.requestTickets -eq 1) 'I1 request id must identify exactly one ticket'
++    Assert-That ($After.requestTicketStatus -ceq 'SUBMITTED') 'I1 persisted request ticket must retain the SUBMITTED database state (API maps it to PENDING)'
+     Assert-That (@($After.requestAttachments).Count -eq 2) 'I1 request id must identify exactly two attachments'
+     foreach ($attachment in @($After.requestAttachments)) {
+         Assert-That ([string]$attachment.request_id -ceq [string]$Probe.i1.requestId) 'I1 Mongo attachment request_id must retain the submitted request id string'
+     }
+-    $expected = Convert-AttachmentDescriptorsToCanonicalText -Items @($Probe.i1.files) -Context 'I1 probe attachments'
+-    $actualDocuments = Convert-AttachmentDescriptorsToCanonicalText -Items @($After.requestAttachments) -Context 'I1 Mongo request attachments'
++    $expected = Convert-AttachmentDescriptorsToCanonicalText -Items @($Probe.i1.files) -Context 'I1 probe API attachments' -Format Api
++    $actualDocuments = Convert-AttachmentDescriptorsToCanonicalText -Items @($After.requestAttachments) -Context 'I1 Mongo request attachments' -Format Mongo
+     Assert-That ($actualDocuments -ceq $expected) 'I1 Mongo attachment descriptors do not exactly match the probe response contract'
+     $ticketEvents = @($After.requestOutbox | Where-Object { $_.payloadTicketId -ceq [string]$Probe.i1.requestId })
+     Assert-That ($ticketEvents.Count -eq 1) 'I1 must persist exactly one expected outbox event for the ticket id'
+-    $actualOutbox = Convert-AttachmentDescriptorsToCanonicalText -Items @($ticketEvents[0].payloadAttachments) -Context 'I1 outbox payload attachments'
++    $actualOutbox = Convert-AttachmentDescriptorsToCanonicalText -Items @($ticketEvents[0].payloadAttachments) -Context 'I1 outbox payload attachments' -Format Mongo
+     Assert-That ($actualOutbox -ceq $expected) 'I1 outbox attachment descriptors do not exactly match the request metadata contract'
+ }
+ 
+@@ -1412,6 +2113,7 @@ function Assert-I2MongoUnchanged {
+     foreach ($field in @('excuseTickets', 'receipts', 'attachments', 'outboxRequested')) {
+         Assert-That ([int64]$After.$field -eq [int64]$Before.$field) "I2 changed Mongo/outbox counter $field"
+     }
++    Assert-That ($After.requestTicketStatus -ceq $Before.requestTicketStatus) 'I2 changed the persisted request ticket status'
+     Assert-That (@($After.requestAttachments).Count -eq @($Before.requestAttachments).Count) 'I2 changed request attachment documents'
+ }
+ 
+@@ -1452,7 +2154,20 @@ function Invoke-RequestsProbe {
+     }
+     $args = @($script:probePath, '--origin', 'https://127.0.0.1:18514', '--ca', (Join-Path $script:keysDir 'server.crt'), '--login', 'student', '--password', 'password') + $ExtraArguments
+     $result = Invoke-ExternalSafe -FilePath 'node' -ArgumentList $args -Purpose 'Requests Node HTTPS probe' -TimeoutSeconds 300 -AllowFailure
+-    $safeOutput = Protect-ReportText $result.Output
++    $typedStdout = if ($result.PSObject.Properties.Name -contains 'Stdout') { [string]$result.Stdout } else { [string]$result.Output }
++    $typedStderr = if ($result.PSObject.Properties.Name -contains 'Stderr') { [string]$result.Stderr } else { '' }
++    $probeDiagnostic = [ordered]@{
++        mode = $probeMode
++        exitCode = $result.ExitCode
++        stderr = Limit-EdgeDiagnosticText -Text $typedStderr -MaxCharacters 12000
++    }
++    $script:report.probeDiagnostics = $probeDiagnostic
++    if (-not ($script:report -is [System.Collections.IDictionary] -and @($script:report.Keys) -contains 'probeDiagnosticsHistory')) {
++        $script:report.probeDiagnosticsHistory = [System.Collections.Generic.List[object]]::new()
++    }
++    while ($script:report.probeDiagnosticsHistory.Count -ge 8) { $script:report.probeDiagnosticsHistory.RemoveAt(0) }
++    $script:report.probeDiagnosticsHistory.Add($probeDiagnostic)
++    $safeOutput = Protect-ReportText $typedStdout
+     Assert-That ($result.ExitCode -eq 0) 'Requests Node HTTPS probe failed; raw probe output was withheld'
+     try { $probe = ($safeOutput | ConvertFrom-Json -Depth 12) } catch { throw 'Requests probe did not return valid redacted JSON' }
+     if ($null -ne $pacingRecord) {
+@@ -1509,6 +2224,7 @@ function Remove-OwnedResources {
+     $script:report.cleanup.status = 'RUNNING'
+     $script:report.cleanup.ownedContainers = @($script:ownedContainers.ToArray())
+     $script:report.cleanup.ownedNetwork = $script:ownedNetwork
++    $script:report.cleanup.artifactRoot = $script:artifactSnapshotRoot
+ 
+     $containerIds = [string[]]$script:ownedContainers.ToArray()
+     [array]::Reverse($containerIds)
+@@ -1532,6 +2248,22 @@ function Remove-OwnedResources {
+         }
+     }
+ 
++    if ($script:artifactSnapshotRoot) {
++        try {
++            if (Test-Path -LiteralPath $script:artifactSnapshotRoot) {
++                $null = Assert-OwnedArtifactPath
++                Remove-Item -LiteralPath $script:artifactSnapshotRoot -Recurse -Force
++                Assert-That (-not (Test-Path -LiteralPath $script:artifactSnapshotRoot)) 'owned artifact directory still exists after cleanup'
++                $script:report.cleanup.artifactRemoved = $true
++                $script:report.cleanup.artifactVerifiedAbsent = $true
++            } else {
++                $script:report.cleanup.artifactVerifiedAbsent = $true
++            }
++        } catch {
++            $errors.Add("artifacts: $($_.Exception.Message)")
++        }
++    }
++
+     if ($script:keysDir -and (Test-Path -LiteralPath $script:keysDir)) {
+         try {
+             Assert-OwnedKeysPath
+@@ -1564,7 +2296,19 @@ function Invoke-RequestsNetworkProof {
+     $script:runDir = $null
+     $script:keysDir = $null
+     $script:currentPhase = 'network-proof'
+-    $script:report.scope = 'R10 Docker IPAM and owned-launch proof; product services are NOT_RUN'
++    # Proof reports have their own identity and evidence path. This metadata is
++    # initialized before the first Docker command; the historical H32 report
++    # is retained verbatim and is never rewritten by a later proof.
++    $script:report.runId = $script:runId
++    $script:report.environment.runtimeMode = 'network-proof'
++    $script:report.source = [ordered]@{
++        mode = 'network-proof'
++        sourceAnchor = 'requests-runtime/runner.ps1 -NetworkProof production branch'
++        runnerPath = $script:runnerPath
++        runnerSha256 = Get-Sha256Hex -Path $script:runnerPath
++    }
++    if ([string]::IsNullOrWhiteSpace($EvidencePath)) { $EvidencePath = Join-Path $script:taskRoot 'r11-docker-network-proof.json' }
++    $script:report.scope = 'R11 Docker IPAM and owned-launch proof; product services are NOT_RUN'
+     $script:report.status = 'NOT_RUN'
+     $script:report.runtime = 'NOT_RUN'
+     $script:report.networkProof = [ordered]@{
+@@ -1574,11 +2318,13 @@ function Invoke-RequestsNetworkProof {
+         dynamicAddress = $null
+         edgeAddress = $null
+         maxNetworks = 1
+-        maxContainersExpected = 2
+-        maxContainersWorstCase = 3
++        maxContainersExpected = 3
++        maxContainersWorstCase = 4
+         hostPorts = @()
+         productServicesStarted = $false
+         pullPolicy = '--pull=never'
++        invalidExecStartFailure = $false
++        invalidExecContainerRegistered = $false
+     }
+     $reportPath = if ([string]::IsNullOrWhiteSpace($EvidencePath)) {
+         Join-Path $script:taskRoot 'r10-docker-network-proof.json'
+@@ -1640,6 +2386,28 @@ function Invoke-RequestsNetworkProof {
+         $script:report.networkProof.edgeAddress = $edgeReservation.actual
+         Add-PhaseDiagnostic -Name $script:currentPhase -Status 'PASS' -Message 'dynamic allocation stayed in .128/25 and static .10 became operational only after start'
+ 
++        # Exercise the production create/register/start path with a deliberately
++        # invalid executable. Docker create succeeds, the ID is registered before
++        # start, and the OCI runtime must reject the missing entrypoint. The
++        # resulting stopped container remains in the owned cleanup ledger.
++        $script:currentPhase = 'network-proof-start-failure'
++        $invalidExecName = "rct-requests-$($script:runId)-invalid-exec"
++        $invalidExecRejected = $false
++        try {
++            $null = Start-OwnedContainer -Name $invalidExecName -Image $proofImage -Entrypoint '/rct-proof/missing-executable'
++        } catch {
++            $invalidExecRejected = $true
++        }
++        Assert-That $invalidExecRejected 'invalid executable proof container unexpectedly started'
++        $invalidExecCreateCommands = @($script:report.commands | Where-Object { $_.purpose -eq "create owned $invalidExecName container" })
++        $invalidExecStartCommands = @($script:report.commands | Where-Object { $_.purpose -eq "start owned $invalidExecName container" })
++        Assert-That ($invalidExecCreateCommands.Count -eq 1 -and $invalidExecCreateCommands[0].exitCode -eq 0) 'invalid executable proof did not create the owned container successfully'
++        Assert-That ($invalidExecStartCommands.Count -eq 1 -and $invalidExecStartCommands[0].exitCode -ne 0) 'invalid executable proof did not fail at the docker start boundary'
++        Assert-That (@($script:ownedContainerNames | Where-Object { $_ -ceq $invalidExecName }).Count -eq 1) 'invalid executable proof did not register the container before start'
++        $script:report.networkProof.invalidExecStartFailure = $true
++        $script:report.networkProof.invalidExecContainerRegistered = $true
++        Add-PhaseDiagnostic -Name $script:currentPhase -Status 'PASS' -Message 'invalid executable failed at docker start after create and immediate ownership registration'
++
+         $script:currentPhase = 'network-proof-pull-policy'
+         $missingImage = 'nginx@sha256:' + (('0' * 64) -join '')
+         $missingName = "rct-requests-$($script:runId)-missing"
+@@ -1658,11 +2426,11 @@ function Invoke-RequestsNetworkProof {
+         Assert-That ($missingAfter.ExitCode -eq 0 -and [string]::IsNullOrWhiteSpace($missingAfter.Output)) 'missing-image create left a container behind'
+         $script:report.networkProof.missingImageAbsent = $true
+         $script:report.networkProof.missingContainerAbsent = $true
+-        $launchCommands = @($script:report.commands | Where-Object { $_.command -match '\bdocker (create|run)\b' })
+-        Assert-That ($launchCommands.Count -ge 3) 'proof did not exercise create, run and missing-image launcher calls'
+-        Assert-That (@($launchCommands | Where-Object { $_.command -notmatch '(^|\s)--pull=never(\s|$)' }).Count -eq 0) 'an owned create/run command omitted --pull=never'
++        $launchCommands = @($script:report.commands | Where-Object { $_.command -match '\bdocker create\b' })
++        Assert-That ($launchCommands.Count -ge 4) 'proof did not exercise create, invalid-start and missing-image launcher calls'
++        Assert-That (@($launchCommands | Where-Object { $_.command -notmatch '(^|\s)--pull=never(\s|$)' }).Count -eq 0) 'an owned create command omitted --pull=never'
+         $script:report.networkProof.pullPolicyVerified = $true
+-        Add-PhaseDiagnostic -Name $script:currentPhase -Status 'PASS' -Message 'create/run and missing-image paths all carried --pull=never and never requested a download'
++        Add-PhaseDiagnostic -Name $script:currentPhase -Status 'PASS' -Message 'create/start and missing-image paths all carried --pull=never and never requested a download'
+         $script:report.networkProof.status = 'PASS'
+         $script:report.status = 'PASS'
+     } catch {
+@@ -1716,7 +2484,13 @@ function Invoke-RequestsNetworkProof {
+ function Invoke-FullRuntime {
+     $script:currentPhase = 'runtime-preflight'
+     Add-PhaseDiagnostic -Name $script:currentPhase -Status 'START' -Message 'owned ports, pinned images and collision-checked disposable network'
++    # Pin and re-check the exact clean source state before creating any run
++    # directory, network or container. A dirty/swap fixture therefore fails
++    # without a resource leak, while the edge bytes used later remain the
++    # validated read-once strings.
++    Assert-UnionSourceStability -Context 'runtime resource preflight' | Out-Null
+     New-RunIdentity
++    $null = New-VerifiedArtifactSnapshot
+     Assert-HostPortsFree
+     $script:images = Get-PinnedImages
+     Assert-PinnedImagesPresent
+@@ -1732,23 +2506,28 @@ function Invoke-FullRuntime {
+         dbAcademic = $script:runtimeSecrets[0]; dbSchedule = $script:runtimeSecrets[1]; redis = $script:runtimeSecrets[2]; rabbit = $script:runtimeSecrets[3]; grpc = $script:runtimeSecrets[4]; internalIssuer = $script:runtimeSecrets[5]; tma = New-RandomSecret
+     }
+     $script:runtimeSecrets += $secrets.tma
++    Assert-UnionSourceStability -Context 'runtime config preflight' | Out-Null
+     $edgeConfig = New-RuntimeConfig
+     $edgeConfig.NginxIp = $networkPlan.edgeIp
+     Add-PhaseDiagnostic -Name $script:currentPhase -Status 'PASS' -Message 'owned network and source artifacts are ready'
+     $script:currentPhase = 'edge-reservation'
+     Add-PhaseDiagnostic -Name $script:currentPhase -Status 'START' -Message 'prepare the static edge IPv4 before dynamic backend allocation; operational address is verified after start'
++    Assert-UnionSourceStability -Context 'edge reservation preflight' | Out-Null
+     Start-Edge -Config $edgeConfig -ReserveOnly
+     Add-PhaseDiagnostic -Name $script:currentPhase -Status 'PASS' -Message 'static edge endpoint was created before backend startup and excluded from the dynamic IPAM range'
+     $script:currentPhase = 'infrastructure'
+     Add-PhaseDiagnostic -Name $script:currentPhase -Status 'START' -Message 'five disposable infrastructure containers and Mongo rs0'
++    Assert-UnionSourceStability -Context 'infrastructure start preflight' | Out-Null
+     Start-Infrastructure -Secrets $secrets
+     Add-PhaseDiagnostic -Name $script:currentPhase -Status 'PASS' -Message 'infrastructure readiness passed'
+     $script:currentPhase = 'backend-services'
+     Add-PhaseDiagnostic -Name $script:currentPhase -Status 'START' -Message 'six Java services with runtime-only actuator diagnostics'
++    Assert-UnionSourceStability -Context 'backend start preflight' | Out-Null
+     Start-BackendServices -Secrets $secrets -Config $edgeConfig
+     Add-PhaseDiagnostic -Name $script:currentPhase -Status 'PASS' -Message 'backend service readiness and disposable fixture passed'
+     $script:currentPhase = 'edge'
+     Add-PhaseDiagnostic -Name $script:currentPhase -Status 'START' -Message 'owned Nginx TLS edge with actual PWA dist'
++    Assert-UnionSourceStability -Context 'edge start preflight' | Out-Null
+     Start-Edge -Config $edgeConfig -StartReserved
+     Add-PhaseDiagnostic -Name $script:currentPhase -Status 'PASS' -Message 'Nginx syntax and HTTPS health passed'
+ 
+@@ -1781,7 +2560,7 @@ function Invoke-FullRuntime {
+         status = 'PASS'; exactFiles = 2; eachFileBytes = 10485760; totalMultipartBelowCap = $true; idempotencyReplaySameId = $true
+         requestId = $probeI1.i1.requestId; session = $probeI1.i1.session; detail = $probeI1.i1.detail; authPacingWaitMilliseconds = $probeI1.authPacingWaitMilliseconds; authPacing = $probeI1.authPacing
+         files = @($probeI1.i1.files | ForEach-Object { [ordered]@{ name = $_.name; bytes = $_.sizeBytes; sha256 = $_.sha256 } });
+-        mongo = [ordered]@{ excuseTicketsDelta = 1; receiptsDelta = 1; attachmentDocumentsDelta = 2; requestedOutboxDelta = 1 }
++        mongo = [ordered]@{ excuseTicketsDelta = 1; receiptsDelta = 1; attachmentDocumentsDelta = 2; requestedOutboxDelta = 1; persistedTicketStatus = $afterI1.requestTicketStatus }
+     }
+     $script:report.assertions.i2 = [ordered]@{
+         status = 'PASS'; session = $probeI2.i2.session; authPacingWaitMilliseconds = $probeI2.authPacingWaitMilliseconds; authPacing = $probeI2.authPacing; fixed = $probeI2.i2.fixed; chunked = $probeI2.i2.chunked; bodyBytes = $probeI2.i2.bodyBytes
+@@ -1792,8 +2571,9 @@ function Invoke-FullRuntime {
+ 
+ if ($NetworkProof) {
+     if ([string]::IsNullOrWhiteSpace($NetworkProofSubnet)) { Write-Error 'NetworkProofSubnet is required with -NetworkProof'; exit 1 }
+-    $script:processExitCode = Invoke-RequestsNetworkProof -Subnet $NetworkProofSubnet -EvidencePath $NetworkProofEvidencePath
+-    if ($script:processExitCode -eq 0) { Write-Output "NETWORK_PROOF_PASS: evidence written to $NetworkProofEvidencePath" }
++    $proofEvidencePath = if ([string]::IsNullOrWhiteSpace($NetworkProofEvidencePath)) { Join-Path $script:taskRoot 'r11-docker-network-proof.json' } else { [IO.Path]::GetFullPath($NetworkProofEvidencePath) }
++    $script:processExitCode = Invoke-RequestsNetworkProof -Subnet $NetworkProofSubnet -EvidencePath $proofEvidencePath
++    if ($script:processExitCode -eq 0) { Write-Output "NETWORK_PROOF_PASS: evidence written to $proofEvidencePath" }
+     if ($script:processExitCode -ne 0) { exit $script:processExitCode }
+     exit 0
+ }
+@@ -1821,7 +2601,33 @@ try {
+     $script:processExitCode = 1
+     $script:report.status = 'FAIL'
+     $script:report.runtime = if ($ValidateOnly) { 'NOT_RUN' } else { 'FAIL' }
+-    $script:report.failure = [ordered]@{ message = Protect-ReportText $_.Exception.Message }
++    $originalFailure = Protect-ReportText $_.Exception.Message
++    $script:report.failure = [ordered]@{ message = $originalFailure }
++    if ($script:currentPhase -in @('edge-reservation', 'edge')) {
++        try {
++            $edgeFailureContainerId = Get-EdgeFailureContainerId
++            if (-not [string]::IsNullOrWhiteSpace($edgeFailureContainerId)) {
++                Capture-EdgeFailureDiagnostics -ContainerId $edgeFailureContainerId -FailureMessage $originalFailure
++            } else {
++                $script:report.edgeFailureDiagnostics = [ordered]@{
++                    schema = 'rct.edge-failure.v1'
++                    status = 'NO_OWNED_CONTAINER'
++                    failure = $originalFailure
++                    state = $null
++                    logs = $null
++                }
++            }
++        } catch {
++            $script:report.edgeFailureDiagnostics = [ordered]@{
++                schema = 'rct.edge-failure.v1'
++                status = 'CAPTURE_FAILED'
++                failure = $originalFailure
++                captureError = Limit-EdgeDiagnosticText -Text $_.Exception.Message -MaxCharacters 4000
++                state = $null
++                logs = $null
++            }
++        }
++    }
+     try { Add-PhaseDiagnostic -Name $script:currentPhase -Status 'FAIL' -Message $_.Exception.Message } catch { }
+     Write-Error $script:report.failure.message
+ } finally {
+@@ -1845,7 +2651,7 @@ try {
+             $script:report.runtime = 'FAIL'
+             $script:report.cleanup.status = 'FAIL'
+             $message = Protect-ReportText $_.Exception.Message
+-            if ($script:report.PSObject.Properties.Name -contains 'failure') {
++            if (Test-ReportHasFailure) {
+                 $script:report.failure.message = "$($script:report.failure.message); $message"
+             } else {
+                 $script:report.failure = [ordered]@{ message = $message }
+@@ -1860,7 +2666,7 @@ try {
+             $script:report.status = 'FAIL'
+             $script:report.cleanup.status = 'FAIL'
+             $message = Protect-ReportText "runtime report write failed: $($_.Exception.Message)"
+-            if ($script:report.PSObject.Properties.Name -contains 'failure') {
++            if (Test-ReportHasFailure) {
+                 $script:report.failure.message = "$($script:report.failure.message); $message"
+             } else {
+                 $script:report.failure = [ordered]@{ message = $message }
+@@ -1877,7 +2683,7 @@ try {
+             $script:report.status = 'FAIL'
+             $script:report.runtime = 'FAIL'
+             $message = Protect-ReportText "preflight report write failed: $($_.Exception.Message)"
+-            if ($script:report.PSObject.Properties.Name -contains 'failure') {
++            if (Test-ReportHasFailure) {
+                 $script:report.failure.message = "$($script:report.failure.message); $message"
+             } else {
+                 $script:report.failure = [ordered]@{ message = $message }

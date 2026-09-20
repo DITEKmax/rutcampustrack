@@ -1,0 +1,2 @@
+?? .agent/profile-ui/
+?? frontends/mobile-core/src/features/profile/

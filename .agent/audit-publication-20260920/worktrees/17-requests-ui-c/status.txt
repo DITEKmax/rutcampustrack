@@ -1,0 +1,3 @@
+?? .agent/student-requests-ui-c/
+?? frontends/.requests-harness/
+?? frontends/mobile-core/src/features/requests/

@@ -1,0 +1,1151 @@
+{
+  "kind": "fresh-d3-source-recovery-mutation",
+  "generatedAt": "2026-09-08T07:42:34.933Z",
+  "cwd": "C:\\Users\\maksd\\.codex\\worktrees\\34a5\\rutcampustrack",
+  "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "baseRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "sourceRevision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "preflightSha256": "32ADDCDCBAAB87C73225417E471D9B028F82CEE818ED05D7FE196E53E7AFC849",
+  "pathCount": 39,
+  "statusCounts": {
+    "A": 21,
+    "M": 18
+  },
+  "writtenCount": 39,
+  "guardPassCount": 39,
+  "errors": [],
+  "rows": [
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/fixtures/homework-completion-completed.json",
+      "sourceGitBlobObjectId": "0136691116f086e7e0cee8105417ceed8301e978",
+      "sourceGitBlobBytes": 80,
+      "sourceRawSha256": "AABBDFD60FD6E1598BB367A245483E7175BFBEEDA09BF3B0D3BA1D9C88DFDCC3",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:13.573Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:14.076Z",
+        "exists": true,
+        "rawSha256": "AABBDFD60FD6E1598BB367A245483E7175BFBEEDA09BF3B0D3BA1D9C88DFDCC3",
+        "bytes": 80,
+        "gitBlobObjectId": "0136691116f086e7e0cee8105417ceed8301e978",
+        "status": "?? frontends/mobile-core/fixtures/homework-completion-completed.json"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/fixtures/homework-completion-undone.json",
+      "sourceGitBlobObjectId": "96d5d176fb7a326fec0800e8468147121e66dc5e",
+      "sourceGitBlobBytes": 66,
+      "sourceRawSha256": "33AFD3AEF747A7D83F48A786D1127102E392A6423D3908F17DF9E14DC1AA6BAE",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:14.286Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:14.682Z",
+        "exists": true,
+        "rawSha256": "33AFD3AEF747A7D83F48A786D1127102E392A6423D3908F17DF9E14DC1AA6BAE",
+        "bytes": 66,
+        "gitBlobObjectId": "96d5d176fb7a326fec0800e8468147121e66dc5e",
+        "status": "?? frontends/mobile-core/fixtures/homework-completion-undone.json"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/fixtures/homework-feed.json",
+      "sourceGitBlobObjectId": "d67280ed4efd0f479b9ecd878284062488d348d7",
+      "sourceGitBlobBytes": 1107,
+      "sourceRawSha256": "966B29D6DDC21759CA0E0262FD39A1558B40B26E7CBD9FC0FA967ABF4B7FB514",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:14.864Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:15.237Z",
+        "exists": true,
+        "rawSha256": "966B29D6DDC21759CA0E0262FD39A1558B40B26E7CBD9FC0FA967ABF4B7FB514",
+        "bytes": 1107,
+        "gitBlobObjectId": "d67280ed4efd0f479b9ecd878284062488d348d7",
+        "status": "?? frontends/mobile-core/fixtures/homework-feed.json"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/fixtures/manifest.json",
+      "sourceGitBlobObjectId": "f1caee72bfc2031616c5f4a8a39b5c0430782215",
+      "sourceGitBlobBytes": 1149,
+      "sourceRawSha256": "AB57D82151AE89AAF8B6EDFD299307C49D075EAC18BF02979BD1923D8EB06EB1",
+      "preflightDestinationRawSha256": "E8B582245098E8C0373B56C1AC28CAC0AA93F3D0A5C7B6DDB0AF12C84D30BCB9",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:15.414Z",
+        "exists": true,
+        "rawSha256": "E8B582245098E8C0373B56C1AC28CAC0AA93F3D0A5C7B6DDB0AF12C84D30BCB9",
+        "bytes": 892,
+        "gitBlobObjectId": "8ef9cee2bbb0b65c76763022be256adaf9bd58ff",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:15.832Z",
+        "exists": true,
+        "rawSha256": "AB57D82151AE89AAF8B6EDFD299307C49D075EAC18BF02979BD1923D8EB06EB1",
+        "bytes": 1149,
+        "gitBlobObjectId": "f1caee72bfc2031616c5f4a8a39b5c0430782215",
+        "status": "M frontends/mobile-core/fixtures/manifest.json"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/student-client.ts",
+      "sourceGitBlobObjectId": "32e8b5c4409993c7f9e9396641e6b847a2534a98",
+      "sourceGitBlobBytes": 3814,
+      "sourceRawSha256": "052F55329A72A6269CF4612A4D5906CEBD6C08F70C106043FE263290F7810813",
+      "preflightDestinationRawSha256": "6D1ED13E9DAFEDB54B77C569A6A1F8E33FAEF96CF162FD74BA4A0C0564737362",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:16.007Z",
+        "exists": true,
+        "rawSha256": "6D1ED13E9DAFEDB54B77C569A6A1F8E33FAEF96CF162FD74BA4A0C0564737362",
+        "bytes": 3237,
+        "gitBlobObjectId": "45fdeeab71d8b69944a9661b482aeffd56322ea1",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:16.414Z",
+        "exists": true,
+        "rawSha256": "052F55329A72A6269CF4612A4D5906CEBD6C08F70C106043FE263290F7810813",
+        "bytes": 3814,
+        "gitBlobObjectId": "32e8b5c4409993c7f9e9396641e6b847a2534a98",
+        "status": "M frontends/mobile-core/src/api/student-client.ts"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/types.ts",
+      "sourceGitBlobObjectId": "4e7e7244101d4bd5a8794edc347c312dfdde70eb",
+      "sourceGitBlobBytes": 1112,
+      "sourceRawSha256": "F7928ACAF0151393D056B54F26127EA722969953516B11792D1F6C3823A63873",
+      "preflightDestinationRawSha256": "EC0AB03B60E71BFF0C5C928ABFF275C2CE8727B9BEA85D006EBD625573D14135",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:16.591Z",
+        "exists": true,
+        "rawSha256": "EC0AB03B60E71BFF0C5C928ABFF275C2CE8727B9BEA85D006EBD625573D14135",
+        "bytes": 780,
+        "gitBlobObjectId": "7c6fbc424871d2aa36e529d1057f9560f0ff4a7c",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:17.220Z",
+        "exists": true,
+        "rawSha256": "F7928ACAF0151393D056B54F26127EA722969953516B11792D1F6C3823A63873",
+        "bytes": 1112,
+        "gitBlobObjectId": "4e7e7244101d4bd5a8794edc347c312dfdde70eb",
+        "status": "M frontends/mobile-core/src/api/types.ts"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/today/TodayScreen.vue",
+      "sourceGitBlobObjectId": "909f4b4f466c53b460a9739f2a5178cece7294c1",
+      "sourceGitBlobBytes": 12228,
+      "sourceRawSha256": "D2757AAB5FF69AE4DCF099FEC20F830E0747730AEEB573A0914F9DA02C878EA0",
+      "preflightDestinationRawSha256": "315D6C52CAD2970310D57622E64D78061D1BC6BEDE8717E07DE4C64BE9FECAFB",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:17.543Z",
+        "exists": true,
+        "rawSha256": "315D6C52CAD2970310D57622E64D78061D1BC6BEDE8717E07DE4C64BE9FECAFB",
+        "bytes": 12585,
+        "gitBlobObjectId": "000a25e43cd2a0582503445f40f872587fa5b94c",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:17.942Z",
+        "exists": true,
+        "rawSha256": "D2757AAB5FF69AE4DCF099FEC20F830E0747730AEEB573A0914F9DA02C878EA0",
+        "bytes": 12228,
+        "gitBlobObjectId": "909f4b4f466c53b460a9739f2a5178cece7294c1",
+        "status": "M frontends/mobile-core/src/features/today/TodayScreen.vue"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/today/today-screen.pcss",
+      "sourceGitBlobObjectId": "4e2a36f27e8f37068bf611ac8319ed35456f0b9e",
+      "sourceGitBlobBytes": 10057,
+      "sourceRawSha256": "A5FD754B451F93489CBF1652BE90AB50A520EC5E8AB1BD89F773C9E8BA84B860",
+      "preflightDestinationRawSha256": "1995A82BC6C6C86D18551E0EE549A99AA6664C425A7AE8D09DC66208D4422EFC",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:18.133Z",
+        "exists": true,
+        "rawSha256": "1995A82BC6C6C86D18551E0EE549A99AA6664C425A7AE8D09DC66208D4422EFC",
+        "bytes": 12320,
+        "gitBlobObjectId": "7545e42ee95d5fc4a83bf16d03cc2522e44f9b8c",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:18.583Z",
+        "exists": true,
+        "rawSha256": "A5FD754B451F93489CBF1652BE90AB50A520EC5E8AB1BD89F773C9E8BA84B860",
+        "bytes": 10057,
+        "gitBlobObjectId": "4e2a36f27e8f37068bf611ac8319ed35456f0b9e",
+        "status": "M frontends/mobile-core/src/features/today/today-screen.pcss"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/index.ts",
+      "sourceGitBlobObjectId": "eb8940942aa995d51cc463a62678ba0fd669b59e",
+      "sourceGitBlobBytes": 1256,
+      "sourceRawSha256": "C41AF226F41A436F9323A10A4CF0096E84714D2C1823C49A96F8CAD47D2CCB69",
+      "preflightDestinationRawSha256": "CD93B15685772C62288A6A951B4D3BF0B4D764DA90551EBB9220DA971DA22346",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:18.739Z",
+        "exists": true,
+        "rawSha256": "CD93B15685772C62288A6A951B4D3BF0B4D764DA90551EBB9220DA971DA22346",
+        "bytes": 1005,
+        "gitBlobObjectId": "b23072ec6749fa50837bcd0d418f54842222d347",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:19.132Z",
+        "exists": true,
+        "rawSha256": "C41AF226F41A436F9323A10A4CF0096E84714D2C1823C49A96F8CAD47D2CCB69",
+        "bytes": 1256,
+        "gitBlobObjectId": "eb8940942aa995d51cc463a62678ba0fd669b59e",
+        "status": "M frontends/mobile-core/src/index.ts"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+      "sourceGitBlobObjectId": "7014ba13520ca18e658bbe1e481370d80358d4d5",
+      "sourceGitBlobBytes": 1883,
+      "sourceRawSha256": "48B5BA2E8398628377A545309D5BDBD0708CE4C33E138FCCFC00B9F81EC28562",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:19.295Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:19.618Z",
+        "exists": true,
+        "rawSha256": "48B5BA2E8398628377A545309D5BDBD0708CE4C33E138FCCFC00B9F81EC28562",
+        "bytes": 1883,
+        "gitBlobObjectId": "7014ba13520ca18e658bbe1e481370d80358d4d5",
+        "status": "?? frontends/mobile-core/src/shared/components/MobileBottomNav.vue"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/MobileShell.vue",
+      "sourceGitBlobObjectId": "5cc76b13dfbc2c57346de3c193dcc8d392b64885",
+      "sourceGitBlobBytes": 4308,
+      "sourceRawSha256": "5F1DAE4030128D146ABD10672A73FE94983A091EF186AB0FD338E125D079CFAE",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:19.786Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:20.117Z",
+        "exists": true,
+        "rawSha256": "5F1DAE4030128D146ABD10672A73FE94983A091EF186AB0FD338E125D079CFAE",
+        "bytes": 4308,
+        "gitBlobObjectId": "5cc76b13dfbc2c57346de3c193dcc8d392b64885",
+        "status": "?? frontends/mobile-core/src/shared/components/MobileShell.vue"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+      "sourceGitBlobObjectId": "3ec935cdb3cde312c0f3c55acd66cea11c60876d",
+      "sourceGitBlobBytes": 2572,
+      "sourceRawSha256": "1B716DD5ABCD418B756C98253F24B87778EED26FEADD0FB8A6434008F718AA1A",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:20.289Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:20.650Z",
+        "exists": true,
+        "rawSha256": "1B716DD5ABCD418B756C98253F24B87778EED26FEADD0FB8A6434008F718AA1A",
+        "bytes": 2572,
+        "gitBlobObjectId": "3ec935cdb3cde312c0f3c55acd66cea11c60876d",
+        "status": "?? frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/mobile-shell.pcss",
+      "sourceGitBlobObjectId": "3c90437597b2442e226b22d00ef09f7b850a3aa6",
+      "sourceGitBlobBytes": 588,
+      "sourceRawSha256": "9DF1A2079BB1356CD87253A2702BE1C7ED1BF284212CCA97C851FD17EB6E3B18",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:20.800Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:21.100Z",
+        "exists": true,
+        "rawSha256": "9DF1A2079BB1356CD87253A2702BE1C7ED1BF284212CCA97C851FD17EB6E3B18",
+        "bytes": 588,
+        "gitBlobObjectId": "3c90437597b2442e226b22d00ef09f7b850a3aa6",
+        "status": "?? frontends/mobile-core/src/shared/components/mobile-shell.pcss"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/host.ts",
+      "sourceGitBlobObjectId": "d986baebe0a2a8f30c0a24e57d33c05876cd9608",
+      "sourceGitBlobBytes": 785,
+      "sourceRawSha256": "B48FC3B170B44DFCC7EB4B2534153C3BF62D792A639F75F973A19D80F810501D",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:21.251Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:21.553Z",
+        "exists": true,
+        "rawSha256": "B48FC3B170B44DFCC7EB4B2534153C3BF62D792A639F75F973A19D80F810501D",
+        "bytes": 785,
+        "gitBlobObjectId": "d986baebe0a2a8f30c0a24e57d33c05876cd9608",
+        "status": "?? frontends/mobile-core/src/shared/host.ts"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/navigation.ts",
+      "sourceGitBlobObjectId": "e57e7d3f944f5cbdc4ae0fca84b388de0a2ebd15",
+      "sourceGitBlobBytes": 4682,
+      "sourceRawSha256": "F101000CFC8968F6B31A7A720E0577E91E49FB3BC9EAF2AEDC1416DF32D75F9B",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:21.712Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:22.043Z",
+        "exists": true,
+        "rawSha256": "F101000CFC8968F6B31A7A720E0577E91E49FB3BC9EAF2AEDC1416DF32D75F9B",
+        "bytes": 4682,
+        "gitBlobObjectId": "e57e7d3f944f5cbdc4ae0fca84b388de0a2ebd15",
+        "status": "?? frontends/mobile-core/src/shared/navigation.ts"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/shell-contract.ts",
+      "sourceGitBlobObjectId": "c8decb3ccf70157c6133805cbd1055d159063a8e",
+      "sourceGitBlobBytes": 1075,
+      "sourceRawSha256": "815A67E3F1688749F0F977550773D32E8FB57CB46A65D2228BDDAA3802A2000B",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:22.251Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:22.600Z",
+        "exists": true,
+        "rawSha256": "815A67E3F1688749F0F977550773D32E8FB57CB46A65D2228BDDAA3802A2000B",
+        "bytes": 1075,
+        "gitBlobObjectId": "c8decb3ccf70157c6133805cbd1055d159063a8e",
+        "status": "?? frontends/mobile-core/src/shared/shell-contract.ts"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/styles/tokens.pcss",
+      "sourceGitBlobObjectId": "eba300575e231ca1bc962200e1a61c96d6a1fef9",
+      "sourceGitBlobBytes": 3650,
+      "sourceRawSha256": "7577E08BBF9E846B9C1C751D54F6027754A83C94392907F3F3E5C2F9616C9B0B",
+      "preflightDestinationRawSha256": "24D0D9FD1B13CF1BAB62D412DE0FA0422941989FB56D8F114BCB4A5EC31A0D03",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:22.786Z",
+        "exists": true,
+        "rawSha256": "24D0D9FD1B13CF1BAB62D412DE0FA0422941989FB56D8F114BCB4A5EC31A0D03",
+        "bytes": 3678,
+        "gitBlobObjectId": "3f2c355ef0026082a497774a98b793b5f85ee31e",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:23.258Z",
+        "exists": true,
+        "rawSha256": "7577E08BBF9E846B9C1C751D54F6027754A83C94392907F3F3E5C2F9616C9B0B",
+        "bytes": 3650,
+        "gitBlobObjectId": "eba300575e231ca1bc962200e1a61c96d6a1fef9",
+        "status": "M frontends/mobile-core/src/styles/tokens.pcss"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/test-adapter/fixture-transport.test.ts",
+      "sourceGitBlobObjectId": "e9627da501b91ba81e599ad8eb9e7f17468736e4",
+      "sourceGitBlobBytes": 5735,
+      "sourceRawSha256": "7C48E2B4398EEE3D0B5F7E75FAB113794EB4A76FBB2FC5A8DB046E604247FF9B",
+      "preflightDestinationRawSha256": "7BEFECC2972C627B93E06510250E8CB0D8FDCEAFF6E96653AA61F0840F6E38FA",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:23.445Z",
+        "exists": true,
+        "rawSha256": "7BEFECC2972C627B93E06510250E8CB0D8FDCEAFF6E96653AA61F0840F6E38FA",
+        "bytes": 5906,
+        "gitBlobObjectId": "0df97e3e479e9e7815fc31f80368c1c97f1ee0db",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:23.893Z",
+        "exists": true,
+        "rawSha256": "7C48E2B4398EEE3D0B5F7E75FAB113794EB4A76FBB2FC5A8DB046E604247FF9B",
+        "bytes": 5735,
+        "gitBlobObjectId": "e9627da501b91ba81e599ad8eb9e7f17468736e4",
+        "status": "M frontends/mobile-core/src/test-adapter/fixture-transport.test.ts"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/test-adapter/homework-fixtures.ts",
+      "sourceGitBlobObjectId": "68e84fedde1091282408ddd2601503cd4cc5ffe8",
+      "sourceGitBlobBytes": 555,
+      "sourceRawSha256": "F6980DE0CF8666DBC085862E317DB2EA0540D3D7A0C71C15F62A29EBED2603A3",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:24.040Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:24.349Z",
+        "exists": true,
+        "rawSha256": "F6980DE0CF8666DBC085862E317DB2EA0540D3D7A0C71C15F62A29EBED2603A3",
+        "bytes": 555,
+        "gitBlobObjectId": "68e84fedde1091282408ddd2601503cd4cc5ffe8",
+        "status": "?? frontends/mobile-core/src/test-adapter/homework-fixtures.ts"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/tests/contract.test.mjs",
+      "sourceGitBlobObjectId": "afca0960f571607ad0006b3099a016b48052094d",
+      "sourceGitBlobBytes": 2623,
+      "sourceRawSha256": "274F0059993D43BE298EACC4BA00659C543523021FC33D83124C733CA15FD571",
+      "preflightDestinationRawSha256": "66A5A5F9668CD0B72CD8196EE4B32009B63D75480F34AE83177EFCA25E5B0640",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:24.511Z",
+        "exists": true,
+        "rawSha256": "66A5A5F9668CD0B72CD8196EE4B32009B63D75480F34AE83177EFCA25E5B0640",
+        "bytes": 1289,
+        "gitBlobObjectId": "8809d2e2836c9e59ee8d2f486c3f56fae72f44e5",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:24.901Z",
+        "exists": true,
+        "rawSha256": "274F0059993D43BE298EACC4BA00659C543523021FC33D83124C733CA15FD571",
+        "bytes": 2623,
+        "gitBlobObjectId": "afca0960f571607ad0006b3099a016b48052094d",
+        "status": "M frontends/mobile-core/tests/contract.test.mjs"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/tests/navigation.test.mjs",
+      "sourceGitBlobObjectId": "2352063d1a5eb25fb9c8bd2fb93ebacc6d564ed0",
+      "sourceGitBlobBytes": 3277,
+      "sourceRawSha256": "31BB8726437133DC485A5EB3C1DC58072BAAC4A24FBD343F59C597B73B19DAEB",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:25.054Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:25.372Z",
+        "exists": true,
+        "rawSha256": "31BB8726437133DC485A5EB3C1DC58072BAAC4A24FBD343F59C597B73B19DAEB",
+        "bytes": 3277,
+        "gitBlobObjectId": "2352063d1a5eb25fb9c8bd2fb93ebacc6d564ed0",
+        "status": "?? frontends/mobile-core/tests/navigation.test.mjs"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "proto/academic.proto",
+      "sourceGitBlobObjectId": "1edbb56f194cf8d726eb463fa0c178687c00c93e",
+      "sourceGitBlobBytes": 5305,
+      "sourceRawSha256": "04FF22416CB97BD79075F481E8DB5169197F88E18EE88D2EE232800315486525",
+      "preflightDestinationRawSha256": "F17A98782CDC3A26FEA139B842739BCB380A5F5BA19409A13C20B580B8D10E0A",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:25.537Z",
+        "exists": true,
+        "rawSha256": "F17A98782CDC3A26FEA139B842739BCB380A5F5BA19409A13C20B580B8D10E0A",
+        "bytes": 4701,
+        "gitBlobObjectId": "169b1ba4653de90c737f936ee3b7f860ded1578e",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:25.996Z",
+        "exists": true,
+        "rawSha256": "04FF22416CB97BD79075F481E8DB5169197F88E18EE88D2EE232800315486525",
+        "bytes": 5305,
+        "gitBlobObjectId": "1edbb56f194cf8d726eb463fa0c178687c00c93e",
+        "status": "M proto/academic.proto"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "sourceGitBlobObjectId": "2f62acc7a8222724b07cf78af4f6318bd2c82b6d",
+      "sourceGitBlobBytes": 25426,
+      "sourceRawSha256": "2B6AE50091315A1473D16FA52DC8749E7602975A934B7D2980B5DAD0A21AEF48",
+      "preflightDestinationRawSha256": "A8613618A5A0974382644173562E6B1C41EC4D99ADA53E94FF89D66CD9371C02",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:26.158Z",
+        "exists": true,
+        "rawSha256": "A8613618A5A0974382644173562E6B1C41EC4D99ADA53E94FF89D66CD9371C02",
+        "bytes": 18798,
+        "gitBlobObjectId": "afb481f4ec66c61a8ce3f92263df8ea4acfa81cb",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:26.515Z",
+        "exists": true,
+        "rawSha256": "2B6AE50091315A1473D16FA52DC8749E7602975A934B7D2980B5DAD0A21AEF48",
+        "bytes": 25426,
+        "gitBlobObjectId": "2f62acc7a8222724b07cf78af4f6318bd2c82b6d",
+        "status": "M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java",
+      "sourceGitBlobObjectId": "ce7d21e4a2ffca957f900a1ce584cf4f834425cf",
+      "sourceGitBlobBytes": 644,
+      "sourceRawSha256": "4DA9E957B5C54175808F4DEEDF9363333272A5309B019318ED636B14018C0667",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:26.660Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:26.943Z",
+        "exists": true,
+        "rawSha256": "4DA9E957B5C54175808F4DEEDF9363333272A5309B019318ED636B14018C0667",
+        "bytes": 644,
+        "gitBlobObjectId": "ce7d21e4a2ffca957f900a1ce584cf4f834425cf",
+        "status": "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+      "sourceGitBlobObjectId": "3fa1010911426140c8752712bfbad0ec505e28bb",
+      "sourceGitBlobBytes": 2112,
+      "sourceRawSha256": "6B88450D1A7CAF7F54C2C1CDCD41F8A89D956F4D342FC5902C112E47D55AEB3B",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:27.097Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:27.420Z",
+        "exists": true,
+        "rawSha256": "6B88450D1A7CAF7F54C2C1CDCD41F8A89D956F4D342FC5902C112E47D55AEB3B",
+        "bytes": 2112,
+        "gitBlobObjectId": "3fa1010911426140c8752712bfbad0ec505e28bb",
+        "status": "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java",
+      "sourceGitBlobObjectId": "ac5ba1f5d1356a00969f031925e7bbfd75abf5b8",
+      "sourceGitBlobBytes": 5380,
+      "sourceRawSha256": "32897B42552FC0B0E226C78E6EA24E559CB8BC9DAF1C30BB7DDCBAC4122C996B",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:27.585Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:27.924Z",
+        "exists": true,
+        "rawSha256": "32897B42552FC0B0E226C78E6EA24E559CB8BC9DAF1C30BB7DDCBAC4122C996B",
+        "bytes": 5380,
+        "gitBlobObjectId": "ac5ba1f5d1356a00969f031925e7bbfd75abf5b8",
+        "status": "?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java",
+      "sourceGitBlobObjectId": "f07d7afefa0fea20962da36dbfcee8f46af2a11c",
+      "sourceGitBlobBytes": 1945,
+      "sourceRawSha256": "ABFDE13D154246C3E9D9080AE012D4D18C071B8B0D1E33EDEED476F03C822D82",
+      "preflightDestinationRawSha256": "C3D3E80F55D3C19CB0B92A0CCCFB98FE0ACF9BDA53F0454FF54811D75103941C",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:28.088Z",
+        "exists": true,
+        "rawSha256": "C3D3E80F55D3C19CB0B92A0CCCFB98FE0ACF9BDA53F0454FF54811D75103941C",
+        "bytes": 734,
+        "gitBlobObjectId": "88259259f72e67f5dbfc080f72d27831ae81ee65",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:28.505Z",
+        "exists": true,
+        "rawSha256": "ABFDE13D154246C3E9D9080AE012D4D18C071B8B0D1E33EDEED476F03C822D82",
+        "bytes": 1945,
+        "gitBlobObjectId": "f07d7afefa0fea20962da36dbfcee8f46af2a11c",
+        "status": "M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+      "sourceGitBlobObjectId": "ac55cdd643607ef3f762b0260491efc0196a39b6",
+      "sourceGitBlobBytes": 2915,
+      "sourceRawSha256": "9A3D25908EBCEBAB53D729686F535D911BA5EDA8DDEC252F5818FAC48DAD1DA6",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:28.672Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:28.998Z",
+        "exists": true,
+        "rawSha256": "9A3D25908EBCEBAB53D729686F535D911BA5EDA8DDEC252F5818FAC48DAD1DA6",
+        "bytes": 2915,
+        "gitBlobObjectId": "ac55cdd643607ef3f762b0260491efc0196a39b6",
+        "status": "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java",
+      "sourceGitBlobObjectId": "651ccee33bf8e19ed114b175b22352bd553171b7",
+      "sourceGitBlobBytes": 14957,
+      "sourceRawSha256": "FE9E0FCB350A0C0D195950620030E997DCC41320A6A8410A519D1FEEFE6B88FD",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:29.155Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:29.473Z",
+        "exists": true,
+        "rawSha256": "FE9E0FCB350A0C0D195950620030E997DCC41320A6A8410A519D1FEEFE6B88FD",
+        "bytes": 14957,
+        "gitBlobObjectId": "651ccee33bf8e19ed114b175b22352bd553171b7",
+        "status": "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java",
+      "sourceGitBlobObjectId": "8286d789b7efd0a8ecbd2190fa4366290bca5399",
+      "sourceGitBlobBytes": 5809,
+      "sourceRawSha256": "22529D2964743FD7495E5A7925AC2C20C5C7B55C62C4BE44DE2EC6ABBCA2683C",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:29.641Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:29.990Z",
+        "exists": true,
+        "rawSha256": "22529D2964743FD7495E5A7925AC2C20C5C7B55C62C4BE44DE2EC6ABBCA2683C",
+        "bytes": 5809,
+        "gitBlobObjectId": "8286d789b7efd0a8ecbd2190fa4366290bca5399",
+        "status": "?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+      "sourceGitBlobObjectId": "ad684bac21da10f9facc3ac2d8269f408965cde6",
+      "sourceGitBlobBytes": 15642,
+      "sourceRawSha256": "BBD4095D093440E9122878FD8F35D9C9C9C86E2896D8CBFB338DED39D1CB3171",
+      "preflightDestinationRawSha256": "E9D985079752E11EFB1A85817D4A07BC4D40A4171F6F18B910CC0D010248C3EA",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:30.147Z",
+        "exists": true,
+        "rawSha256": "E9D985079752E11EFB1A85817D4A07BC4D40A4171F6F18B910CC0D010248C3EA",
+        "bytes": 9918,
+        "gitBlobObjectId": "f8bc3723c94e09ef74b3ac2ff4c164872bc652a2",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:30.502Z",
+        "exists": true,
+        "rawSha256": "BBD4095D093440E9122878FD8F35D9C9C9C86E2896D8CBFB338DED39D1CB3171",
+        "bytes": 15642,
+        "gitBlobObjectId": "ad684bac21da10f9facc3ac2d8269f408965cde6",
+        "status": "M services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+      "sourceGitBlobObjectId": "58c37a9eb041a859c275c79bc0950e82a7da347b",
+      "sourceGitBlobBytes": 11321,
+      "sourceRawSha256": "A563B2D9497A284B671580F151B0A95AC485BCA0716FA5E85ADE9960F865AFB4",
+      "preflightDestinationRawSha256": "98A41117C3585FD4A2DE64B651950E656B464E2618FDE2209DF7CEB0663CE665",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:30.649Z",
+        "exists": true,
+        "rawSha256": "98A41117C3585FD4A2DE64B651950E656B464E2618FDE2209DF7CEB0663CE665",
+        "bytes": 9782,
+        "gitBlobObjectId": "469849233dfe238df0200c0c2752e57c596909b5",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:31.011Z",
+        "exists": true,
+        "rawSha256": "A563B2D9497A284B671580F151B0A95AC485BCA0716FA5E85ADE9960F865AFB4",
+        "bytes": 11321,
+        "gitBlobObjectId": "58c37a9eb041a859c275c79bc0950e82a7da347b",
+        "status": "M services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java",
+      "sourceGitBlobObjectId": "2ce689da41875a41fd515df5864b20c2c18c7132",
+      "sourceGitBlobBytes": 5996,
+      "sourceRawSha256": "C30EC30A09B5EBBCB7389340BBBBD6A94D2D58C67206D264D9FD1AE14613CDE1",
+      "preflightDestinationRawSha256": "3C4417339C085DA1E501B916586C52B4BE0477F6B722B4AFBA45BCC1E638BFC8",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:31.156Z",
+        "exists": true,
+        "rawSha256": "3C4417339C085DA1E501B916586C52B4BE0477F6B722B4AFBA45BCC1E638BFC8",
+        "bytes": 2938,
+        "gitBlobObjectId": "92d041f48b762c9a0768a1a544ad424002b30db9",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:31.558Z",
+        "exists": true,
+        "rawSha256": "C30EC30A09B5EBBCB7389340BBBBD6A94D2D58C67206D264D9FD1AE14613CDE1",
+        "bytes": 5996,
+        "gitBlobObjectId": "2ce689da41875a41fd515df5864b20c2c18c7132",
+        "status": "M services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+      "sourceGitBlobObjectId": "8a428305cd7483b7c7bc952ec83078dfa2a0fb5c",
+      "sourceGitBlobBytes": 3631,
+      "sourceRawSha256": "43949E2725D15029335BF528E0D482420FA27AECEA2C6502EEA75639E2DA6258",
+      "preflightDestinationRawSha256": "D5812606273F0B15221CB65D4C248D567AA5C010E1AA8465A719E298DD469DE1",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:31.730Z",
+        "exists": true,
+        "rawSha256": "D5812606273F0B15221CB65D4C248D567AA5C010E1AA8465A719E298DD469DE1",
+        "bytes": 3689,
+        "gitBlobObjectId": "32007098372f48c38f3c9c9f36fc6b5f7bbd15de",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:32.113Z",
+        "exists": true,
+        "rawSha256": "43949E2725D15029335BF528E0D482420FA27AECEA2C6502EEA75639E2DA6258",
+        "bytes": 3631,
+        "gitBlobObjectId": "8a428305cd7483b7c7bc952ec83078dfa2a0fb5c",
+        "status": "M services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkJsonConfiguration.java",
+      "sourceGitBlobObjectId": "4c0d2d9a1665261f5543269e3e0737c9740f1d86",
+      "sourceGitBlobBytes": 1863,
+      "sourceRawSha256": "4C6C3919B814EEAD59A78AF9D91E2D744CAF8E70B3FF8B7C79184E1766D646A6",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:32.267Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:32.574Z",
+        "exists": true,
+        "rawSha256": "4C6C3919B814EEAD59A78AF9D91E2D744CAF8E70B3FF8B7C79184E1766D646A6",
+        "bytes": 1863,
+        "gitBlobObjectId": "4c0d2d9a1665261f5543269e3e0737c9740f1d86",
+        "status": "?? services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkJsonConfiguration.java"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkNoStoreFilter.java",
+      "sourceGitBlobObjectId": "97eb763f9ebe8af03e7893cb5fee3b7573c983e3",
+      "sourceGitBlobBytes": 2123,
+      "sourceRawSha256": "382D30397C038442EBAD2F69D00F013C1CEC159B75379D149D94C3B8A5143833",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:32.755Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:33.150Z",
+        "exists": true,
+        "rawSha256": "382D30397C038442EBAD2F69D00F013C1CEC159B75379D149D94C3B8A5143833",
+        "bytes": 2123,
+        "gitBlobObjectId": "97eb763f9ebe8af03e7893cb5fee3b7573c983e3",
+        "status": "?? services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkNoStoreFilter.java"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java",
+      "sourceGitBlobObjectId": "9d85bca89c563b2716fb0018922d791b777052d0",
+      "sourceGitBlobBytes": 3179,
+      "sourceRawSha256": "B702BEB407BC73CF2B1E4B9C29DA407319D68AD90F5DC5BF579033C6356C0202",
+      "preflightDestinationRawSha256": "4BB102E63B91F0EE837F6AD2B9593B004B5E3AD17D13D3EDCA22670C56F87894",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:33.310Z",
+        "exists": true,
+        "rawSha256": "4BB102E63B91F0EE837F6AD2B9593B004B5E3AD17D13D3EDCA22670C56F87894",
+        "bytes": 2737,
+        "gitBlobObjectId": "36f4ef63c8ecaf973bb1783e5edb960aa7acc00a",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:33.686Z",
+        "exists": true,
+        "rawSha256": "B702BEB407BC73CF2B1E4B9C29DA407319D68AD90F5DC5BF579033C6356C0202",
+        "bytes": 3179,
+        "gitBlobObjectId": "9d85bca89c563b2716fb0018922d791b777052d0",
+        "status": "M services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java"
+      },
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+      "sourceGitBlobObjectId": "c362b0eb6f63c560ca2db605ff5f220c781280ef",
+      "sourceGitBlobBytes": 17239,
+      "sourceRawSha256": "8427C9F876B586D87BE675D079282D6A3B377202844ACF68113D775A75A5BB26",
+      "preflightDestinationRawSha256": "8B63A1B0F47C6F1F107E98B8A26588988E1027DA92444FF15506569A86525133",
+      "before": {
+        "capturedAt": "2026-09-08T07:42:33.846Z",
+        "exists": true,
+        "rawSha256": "8B63A1B0F47C6F1F107E98B8A26588988E1027DA92444FF15506569A86525133",
+        "bytes": 11265,
+        "gitBlobObjectId": "34935f652aa100ab3dafc16c2a7ab712a6cc5b0a",
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:34.238Z",
+        "exists": true,
+        "rawSha256": "8427C9F876B586D87BE675D079282D6A3B377202844ACF68113D775A75A5BB26",
+        "bytes": 17239,
+        "gitBlobObjectId": "c362b0eb6f63c560ca2db605ff5f220c781280ef",
+        "status": "M services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java"
+      },
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentQueryHomeworkTest.java",
+      "sourceGitBlobObjectId": "a530b2ce257d45ce4f559a4382daecc41926f57a",
+      "sourceGitBlobBytes": 8126,
+      "sourceRawSha256": "E1BF434887EA979AAAEE030955657432A9BAF6FDB0DA5EE780016D8C92BE3B42",
+      "preflightDestinationRawSha256": null,
+      "before": {
+        "capturedAt": "2026-09-08T07:42:34.410Z",
+        "exists": false,
+        "rawSha256": null,
+        "bytes": null,
+        "gitBlobObjectId": null,
+        "workingDiffExitCode": 0,
+        "indexDiffExitCode": 0,
+        "status": ""
+      },
+      "guardPass": true,
+      "written": true,
+      "after": {
+        "capturedAt": "2026-09-08T07:42:34.758Z",
+        "exists": true,
+        "rawSha256": "E1BF434887EA979AAAEE030955657432A9BAF6FDB0DA5EE780016D8C92BE3B42",
+        "bytes": 8126,
+        "gitBlobObjectId": "a530b2ce257d45ce4f559a4382daecc41926f57a",
+        "status": "?? services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentQueryHomeworkTest.java"
+      },
+      "error": null
+    }
+  ],
+  "mutationPass": true
+}

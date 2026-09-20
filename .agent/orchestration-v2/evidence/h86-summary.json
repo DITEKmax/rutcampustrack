@@ -1,0 +1,26 @@
+{
+  "tests": "17",
+  "failures": "0",
+  "errors": "0",
+  "skipped": "0",
+  "time": "3.782",
+  "cases": [
+    "blockLesson_closed_returns422()",
+    "massCancelLessons_removedRoute_doesNotMutateLessonOrPublishEvent()",
+    "getLessons_lowercaseStatusCsv_isAccepted()",
+    "blockLesson_notHeadman_returns403()",
+    "cancelLesson_alreadyCancelled_returns422()",
+    "cancelLesson_activeLesson_succeeds()",
+    "blockLesson_cancelled_returns422()",
+    "toggleGeoBlock_success()",
+    "unblockLesson_success()",
+    "cancelLesson_planned_success()",
+    "blockLesson_planned_success()",
+    "restoreLesson_planned_returns422()",
+    "apiDocs_omitRemovedMassCancelContract()",
+    "restoreLesson_cancelled_success()",
+    "blockLesson_active_success()",
+    "cancelLesson_missingReason_returns400()",
+    "cancelLesson_closedLesson_succeeds()"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "scope": "L5A calendar fixture correction",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "branch": "codex/v2-assignment-authority",
+  "rules_sha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "changed_files": {
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcContractTest.java": "E04DCF86C6E8D4CAAA6157C4C0A7796E9652155790D318536309ACC6D96477FE",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentLockContractTest.java": "854015C34FC35CBF3F5940C9CB0874E37A410EAC40D607C3858B6C356F27879F"
+  },
+  "behavior": {
+    "grpc_service_clock": "LocalDate.now(Europe/Moscow)",
+    "grpc_semester_horizon": "today.minusDays(30) through today.plusDays(90)",
+    "grpc_assignments": "active today.minusDays(10), future today.plusDays(30), expired through yesterday",
+    "semester_service_clock": "LocalDate.now()",
+    "semester_lock_horizon": "today.minusDays(30) through today.plusDays(60)",
+    "historical_id_fixture": "unchanged static dates",
+    "preserved_assertions": "assignment identity/effective end, current/future/expired filtering, row lock and no save"
+  },
+  "planned_h54_command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.config.SubjectTypeUserTypeTest --tests ru.rutcampustrack.academic.assignment.AssignmentAuthorityContractTest --tests ru.rutcampustrack.academic.assignment.AssignmentClosureContractTest --tests ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcContractTest --tests ru.rutcampustrack.academic.semester.SemesterAssignmentLockContractTest --tests ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+  "checks": {
+    "git_diff_check": {"status": "PASS", "exit_code": 0, "notes": "Existing LF/CRLF conversion warnings only."},
+    "trailing_whitespace_scan": {"status": "PASS", "exit_code": 0},
+    "gradle": {"status": "NOTRUN_ROOT_H70", "exit_code": null},
+    "docker": {"status": "NOTRUN", "exit_code": null}
+  },
+  "prior_evidence": "H54 six focused unit selectors previously passed 15/0/0/0 before this date fixture correction; that result is retained as historical evidence and does not verify these changed fixtures.",
+  "runtime_status": "No runtime claim; root owns the later H70 unit lease."
+}

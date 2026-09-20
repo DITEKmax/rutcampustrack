@@ -1,0 +1,102 @@
+{
+  "schema": "rct-verification",
+  "contract": {
+    "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/student-auth-a/profile/resume4-security-verification-contract.md",
+    "sha256": "4EDFF91F229C9BD38B0D4DEDFA6F9CA060A0A5040D411E4BC2780DCBC548D177",
+    "bytes": 6229
+  },
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "cwd": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui",
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "vueTsc": "3.3.11 (CLI TypeScript 5.9.3)",
+    "eslint": "10.10.0",
+    "eslintPluginVue": "10.11.0",
+    "vitest": "4.1.4",
+    "vite": "7.3.6",
+    "dependencySource": "C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/frontends/node_modules (read-only)"
+  },
+  "outputArtifact": {
+    "path": ".agent/profile-ui/evidence/resume4-security/checks-output.md",
+    "bytes": 8307,
+    "sha256": "33DC0646D5D3B2CCE1C1C21C32DE102353BA50233598E2A30D442825E2C44362"
+  },
+  "checks": [
+    {
+      "id": "pilot-vue-tsc",
+      "criterion": "Pilot callback pattern compiles across the strict profile project.",
+      "status": "PASS",
+      "command": "node 'C:\\Users\\maksd\\.codex\\worktrees\\d650\\rutcampustrack\\frontends\\node_modules\\vue-tsc\\bin\\vue-tsc.js' --noEmit -p '.agent\\profile-ui\\vue-tsconfig.json'",
+      "startedUtc": "2026-09-08T17:51:11.7183044Z",
+      "endedUtc": "2026-09-08T17:52:24.0120408Z",
+      "exitCode": 0,
+      "outputSection": "checks-output.md#pilot-strict-vue-typecheck-before-propagation"
+    },
+    {
+      "id": "pilot-eslint-security",
+      "criterion": "SecurityScreen callback pattern has zero lint errors/warnings.",
+      "status": "PASS",
+      "command": "node 'C:\\Users\\maksd\\.codex\\worktrees\\d650\\rutcampustrack\\frontends\\node_modules\\eslint\\bin\\eslint.js' --config '.agent\\profile-ui\\eslint.config.mjs' --max-warnings=0 'frontends\\mobile-core\\src\\features\\profile\\SecurityScreen.vue'",
+      "startedUtc": "2026-09-08T17:52:30.0471210Z",
+      "endedUtc": "2026-09-08T17:53:50.6818680Z",
+      "exitCode": 0,
+      "outputSection": "checks-output.md#pilot-security-only-eslint-before-propagation"
+    },
+    {
+      "id": "full-vue-tsc",
+      "criterion": "Strict Vue typecheck covers all seven profile SFCs.",
+      "status": "PASS",
+      "command": "node 'C:\\Users\\maksd\\.codex\\worktrees\\d650\\rutcampustrack\\frontends\\node_modules\\vue-tsc\\bin\\vue-tsc.js' --noEmit -p '.agent\\profile-ui\\vue-tsconfig.json'",
+      "startedUtc": "2026-09-08T18:27:10.9969996Z",
+      "endedUtc": "2026-09-08T18:28:06.6259951Z",
+      "exitCode": 0,
+      "outputSection": "checks-output.md#full-strict-vue-typecheck-after-propagation"
+    },
+    {
+      "id": "full-eslint",
+      "criterion": "Seven profile SFCs have zero errors and zero warnings.",
+      "status": "PASS",
+      "command": "node 'C:\\Users\\maksd\\.codex\\worktrees\\d650\\rutcampustrack\\frontends\\node_modules\\eslint\\bin\\eslint.js' --config '.agent\\profile-ui\\eslint.config.mjs' --max-warnings=0 'frontends\\mobile-core\\src\\features\\profile\\MoreScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\ProfileScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\RoleSwitchScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\AppearanceScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\SecurityScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\SessionsScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\AccountHistoryScreen.vue'",
+      "startedUtc": "2026-09-08T18:28:12.2210227Z",
+      "endedUtc": "2026-09-08T18:30:29.3512913Z",
+      "exitCode": 0,
+      "outputSection": "checks-output.md#full-focused-eslint-after-propagation"
+    },
+    {
+      "id": "profile-state-vitest",
+      "criterion": "Existing profile-state regression suite remains 20/20.",
+      "status": "PASS",
+      "command": "node 'C:\\Users\\maksd\\.codex\\worktrees\\d650\\rutcampustrack\\frontends\\node_modules\\vitest\\vitest.mjs' run 'frontends\\mobile-core\\src\\features\\profile\\profile-state.test.ts'",
+      "startedUtc": "2026-09-08T18:30:35.8726915Z",
+      "endedUtc": "2026-09-08T18:31:44.2767968Z",
+      "exitCode": 0,
+      "result": "1 file passed; 20 tests passed",
+      "outputSection": "checks-output.md#focused-profile-state-vitest-after-propagation"
+    },
+    {
+      "id": "harness-vite-build",
+      "criterion": "Existing evidence harness imports and builds all seven profile SFCs.",
+      "status": "PASS",
+      "command": "node --input-type=module -e \"import { build } from 'file:///C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/frontends/node_modules/vite/dist/node/index.js'; import config from './.agent/profile-ui/evidence/resume-2026-09-08/harness/vite.config.mjs'; await build({ ...config, configFile: false, build: { ...(config.build ?? {}), write: false } });\"",
+      "startedUtc": "2026-09-08T18:31:49.9856030Z",
+      "endedUtc": "2026-09-08T18:32:44.1739389Z",
+      "exitCode": 0,
+      "result": "44 modules transformed",
+      "outputSection": "checks-output.md#existing-vite-harness-build-after-propagation"
+    },
+    {
+      "id": "default-eslint-warning-baseline",
+      "criterion": "Reproduce and account for the pre-correction callback warning gate before changing code.",
+      "status": "WARN",
+      "command": "node 'C:\\Users\\maksd\\.codex\\worktrees\\d650\\rutcampustrack\\frontends\\node_modules\\eslint\\bin\\eslint.js' --config '.agent\\profile-ui\\eslint.config.mjs' --max-warnings=0 'frontends\\mobile-core\\src\\features\\profile\\MoreScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\ProfileScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\RoleSwitchScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\AppearanceScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\SecurityScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\SessionsScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\AccountHistoryScreen.vue'",
+      "startedUtc": "2026-09-08T17:39:30.9856663Z",
+      "endedUtc": "2026-09-08T17:40:34.9736236Z",
+      "exitCode": 1,
+      "result": "0 errors; 17 vue/require-default-prop warnings on optional callbacks; dated contract authorized explicit undefined/default pattern",
+      "outputSection": "checks-output.md#reproduced-default-eslint-warning-gate-recorded-no-code-change"
+    }
+  ]
+}

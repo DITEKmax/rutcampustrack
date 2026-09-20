@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-05",
+  "risk": "S1",
+  "goal": "Проверка агентной обвязки без продуктовой разработки.",
+  "baseRevision": "87784165874e2da6fc261abc1c01584e24624289",
+  "scope": {
+    "allowedWrites": [
+      ".agent/bootstrap/agent-check.md",
+      ".agent/bootstrap/agent-check.json"
+    ],
+    "forbidden": [
+      "product code",
+      "configuration",
+      "Figma",
+      "API contracts",
+      "databases",
+      "DATABASES_OVERVIEW.md",
+      "user configuration",
+      "secrets",
+      "memory writes"
+    ]
+  },
+  "criteria": [
+    "Read applicable instruction files.",
+    "Validate TOML and skills front matter.",
+    "Record exact-byte SHA-256 for 12 project files.",
+    "Separate configuration/API evidence from runtime evidence.",
+    "Run applicable documentation checks with exit codes."
+  ],
+  "participants": {
+    "root": "/root",
+    "developer": "/root/bootstrap_developer",
+    "explorer": "/root/bootstrap_explorer",
+    "reviewer": "/root/bootstrap_reviewer"
+  },
+  "modelEffort": {
+    "root": {
+      "requested": { "model": "gpt-6-astra", "effort": "low", "source": "user scope plus .codex/config.toml" },
+      "observed": { "model": null, "effort": null, "status": "UNVERIFIED" }
+    },
+    "explorer": {
+      "requested": { "model": "gpt-5.6-luna", "effort": "medium", "source": "root-reported structured spawn" },
+      "observed": { "model": null, "effort": null, "status": "UNVERIFIED" }
+    },
+    "developer": {
+      "requested": { "model": "gpt-5.6-terra", "effort": "medium", "source": "assigned task packet" },
+      "observed": { "model": null, "effort": null, "status": "UNVERIFIED" }
+    },
+    "reviewer": {
+      "requested": { "model": "gpt-5.6-sol", "effort": "high", "source": "root plan; not launched" },
+      "observed": { "model": null, "effort": null, "status": "UNVERIFIED" }
+    }
+  },
+  "projectFiles": [
+    { "path": "AGENTS.md", "sha256": "82e6ce5ca3eabd088afbd7e7fc89544ec1b5e78f5a63876dee0463dd97acd759" },
+    { "path": "frontends/AGENTS.md", "sha256": "4ff6effd59e9eb3afc3245b4f0c28cdd6b4d53178870d01c8edb1eb1201a3b50" },
+    { "path": "services/AGENTS.md", "sha256": "dadad5fed3f707c52a3c5824198b75a564f3f2d5918d4da172bdd6b9db50d476" },
+    { "path": "tests/AGENTS.md", "sha256": "58c78156ebabc076dc482a6f1ac90d6e813598920abd2cc33b974b051346d867" },
+    { "path": "docs/agent-workflow.md", "sha256": "daa588fc331cc5b4042b2f2d6c8e4d1a78e90bda79cdab60006dbb8dadfcb3d4" },
+    { "path": ".codex/config.toml", "sha256": "1479e0c2cc371385125f13f7494fc0f7f98405bb670f391ba04aa1465794d1a0" },
+    { "path": ".codex/agents/developer.toml", "sha256": "0255698fe31e7f60dce18503726ed296dd74210f596039753b65b1bbdf61f7d2" },
+    { "path": ".codex/agents/explorer.toml", "sha256": "18a30ac452a92565397903c4712ae9e30e9fbf57e1aa164217ed6c9b85515657" },
+    { "path": ".codex/agents/reviewer.toml", "sha256": "7b89ed609463267db8b20c29d0193d54cf8265371f01da94a9041a02aefaab2b" },
+    { "path": ".agents/skills/rct-source-resolution/SKILL.md", "sha256": "3860dcd425467637b850e25ee3c47054e82eef9416509ba163f0a47ac021af7d" },
+    { "path": ".agents/skills/rct-verification/SKILL.md", "sha256": "0e6fcff4a21736a932bc2afb7740b9171df89d95599bc349d688bc8f3ab810aa" },
+    { "path": ".agents/skills/rutcampustrack-design/SKILL.md", "sha256": "ade844d0da8923709e07f01c7ca26f4a50f5223b100903fb1341cafef62416a5" }
+  ],
+  "checks": [
+    { "command": "git rev-parse HEAD", "exitCode": 0, "status": "PASS", "evidence": "Base revision matched." },
+    { "command": "git status --short", "exitCode": 0, "status": "PASS", "evidence": "Baseline foreign changes preserved; known Git warnings ignored." },
+    { "command": "python -c tomllib validation", "exitCode": 0, "status": "PASS", "evidence": "config and 3 role TOML files parsed." },
+    { "command": "python -c front-matter validation with utf-8-sig", "exitCode": 0, "status": "PASS", "evidence": "3/3 skills have required front matter." },
+    { "command": "rg ownership/bootstrap .agent", "exitCode": 1, "status": "PASS", "evidence": "No ownership or bootstrap match; rg exit 1 denotes no matches." },
+    { "command": "python -c design-source path check", "exitCode": 0, "status": "PASS_WITH_GAP", "evidence": "Seven required UI/source paths are missing." },
+    { "command": "python -c JSON parse and exact-byte SHA-256 reread", "exitCode": 0, "status": "PASS", "evidence": "12/12 recorded hashes matched repeat reads." },
+    { "command": "python -c scoped text format", "exitCode": 0, "status": "PASS", "evidence": "Both artifacts end with LF and have no trailing spaces." },
+    { "command": "git status --short -- .agent/bootstrap", "exitCode": 0, "status": "PASS", "evidence": "Only the assigned untracked bootstrap directory is shown." }
+  ],
+  "capabilities": {
+    "spawnRoleRegistry": { "status": "PASS", "provenance": "root-reported API observation", "detail": "developer/explorer/reviewer role types are advertised." },
+    "nativeRoleFileLoading": { "status": "UNVERIFIED", "provenance": "manual file reads only" },
+    "actualSessionModelEffort": { "status": "UNVERIFIED", "provenance": "available metadata lacks model and effort" },
+    "figmaToolDiscovery": { "status": "PASS", "provenance": "root-reported tool discovery" },
+    "figmaAuthAndReadExecution": { "status": "UNVERIFIED", "provenance": "not executed" },
+    "browserRuntime": { "status": "UNVERIFIED", "provenance": "not executed" },
+    "productRuntime": { "status": "NOT_APPLICABLE", "provenance": "documentation-only scope" }
+  },
+  "limits": [
+    "Reviewer is planned but not launched; review is not PASS.",
+    "Missing design/source paths block future UI implementation until separately resolved.",
+    "Managed workspace is workspace-write with restricted network; role write restrictions are behavioural, not ACL.",
+    "Known Git ignore and notification-bot pytest-cache permission warnings were not treated as defects."
+  ],
+  "resultRecipient": "/root"
+}

@@ -1,0 +1,143 @@
+{
+  "schema": "rct.checks.v1",
+  "recordedAt": "2026-09-08",
+  "status": "INCOMPLETE_WITH_RECORDED_FINDING",
+  "risk": "S3",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "branch": "codex/student-role-02-requests-transport",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/requests-transport",
+  "environment": "Windows PowerShell; OpenJDK 21.0.10 LTS; Node v24.14.0; npm 11.9.0; Python 3.12.10; Docker-backed Testcontainers",
+  "checks": [
+    {
+      "name": "Worktree root and revision guard",
+      "command": "git rev-parse --show-toplevel; git rev-parse HEAD",
+      "exitCode": 0,
+      "evidence": "Expected assigned worktree and baseline d3c31acb8cce53791a4981e5858a37d44fdc9a0e."
+    },
+    {
+      "name": "Attendance compile",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:compileJava --rerun-tasks --console=plain",
+      "exitCode": 0,
+      "evidence": "BUILD SUCCESSFUL."
+    },
+    {
+      "name": "EventConsumer focused unit test",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:test --tests \"*EventConsumerTest\" --rerun-tasks --console=plain",
+      "exitCode": 0,
+      "evidence": "10 tests, 0 failures."
+    },
+    {
+      "name": "Rabbit decision retry/DLQ isolated integration",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"*RabbitDecisionRetryIT\" --rerun-tasks --console=plain",
+      "exitCode": 0,
+      "evidence": "2 tests, 0 failures/errors; invalid envelope and transient three-attempt decision path reach DLQ."
+    },
+    {
+      "name": "EventConsumer isolated integration",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"*EventConsumerIT\" --rerun-tasks --console=plain",
+      "exitCode": 0,
+      "evidence": "BUILD SUCCESSFUL after task-owned main/DLQ queue purge in the fixture."
+    },
+    {
+      "name": "Combined neighboring integration regression",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"*EventConsumerIT\" --tests \"*RabbitDecisionRetryIT\" --rerun-tasks --console=plain",
+      "exitCode": 1,
+      "evidence": "11 tests; RabbitDecisionRetryIT.transientDecisionFailure_retriesThreeTimesThenDeadLetters failed at line 93 with WantedButNotInvoked."
+    },
+    {
+      "name": "Attendance full unit suite",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:test --console=plain",
+      "exitCode": 0,
+      "evidence": "BUILD SUCCESSFUL."
+    },
+    {
+      "name": "Mobile BFF full unit suite",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:test --console=plain",
+      "exitCode": 0,
+      "evidence": "BUILD SUCCESSFUL."
+    },
+    {
+      "name": "Frontend typecheck",
+      "command": "npm run typecheck",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "Workspace typecheck passed."
+    },
+    {
+      "name": "Frontend lint",
+      "command": "npm run lint",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "Workspace lint passed."
+    },
+    {
+      "name": "Frontend contract tests",
+      "command": "npm run test:contract",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "11/11 passed."
+    },
+    {
+      "name": "Generated frontend type drift",
+      "command": "npm run generate:types:check",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "Generated types match the checked-in OpenAPI snapshot."
+    },
+    {
+      "name": "StudentApi focused client tests",
+      "command": "npx vitest run mobile-core/src/api/student-client.test.ts",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "4/4 passed."
+    },
+    {
+      "name": "Attendance protobuf generation",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:generateProto --console=plain",
+      "exitCode": 0,
+      "evidence": "BUILD SUCCESSFUL."
+    },
+    {
+      "name": "JSON schema and OpenAPI parsing",
+      "command": "Get-ChildItem -LiteralPath event-schemas -File -Filter '*.json' | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json | Out-Null }; Get-Content -LiteralPath docs/openapi/mobile-bff.json -Raw | ConvertFrom-Json | Out-Null; Write-Output 'JSON parse PASS'",
+      "exitCode": 0,
+      "evidence": "JSON parse PASS."
+    },
+    {
+      "name": "Notification bot Python bytecode check",
+      "command": "python -m compileall -q services/notification-bot/bot",
+      "exitCode": 0,
+      "evidence": "compileall passed."
+    },
+    {
+      "name": "Whitespace diff check",
+      "command": "git -c core.whitespace=cr-at-eol diff --check",
+      "exitCode": 0,
+      "evidence": "No diff-check errors; Git emitted line-ending notices only."
+    },
+    {
+      "name": "Python pytest availability",
+      "command": "python -m pytest --version",
+      "exitCode": 1,
+      "status": "BLOCKED",
+      "evidence": "No module named pytest; no product change made."
+    },
+    {
+      "name": "Python ruff availability",
+      "command": "ruff --version",
+      "exitCode": 1,
+      "status": "BLOCKED",
+      "evidence": "ruff command not found; no product change made."
+    }
+  ],
+  "resources": {
+    "ownedGradleSession": "none active; latest combined run completed with exit 1",
+    "ownedTestcontainers": "stopped with isolated test context",
+    "unattributedJavaProcesses": "present; process command inspection denied, left untouched"
+  },
+  "limitations": [
+    "Combined integration fixture contamination remains open; see defect gate item 10.",
+    "Gateway/XFF and full ingress byte-limit runtime are deferred to root baseline.",
+    "Field source validation is a broker-boundary check, not cryptographic producer proof."
+  ]
+}

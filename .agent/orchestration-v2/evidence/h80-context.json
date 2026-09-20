@@ -1,0 +1,8 @@
+{
+  "container": "9c884fe7b800569bfbfe5430de8cd98055994d9e21c464dbbb4106f337c05463",
+  "image": "mongo:7@sha256:45d9c9b48aa1b56b5e3a9f906763fe432f376abb3bc2832438022b6d2534e4fe",
+  "exitCode": 0,
+  "network": "none",
+  "command": "mongosh --nodb --quiet --file /h80-native.js",
+  "scriptSha256": "5CA5943B382AD8802DC24CBBF35B5C08C87A2F0F87E241AA0CD7C6E5971104A4"
+}

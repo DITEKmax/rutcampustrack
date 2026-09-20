@@ -1,0 +1,64 @@
+{
+  "schema": "rutcampustrack.headman-narrow.fluid-nav.after.v1",
+  "capturedAt": "2026-08-28",
+  "fluidity": {
+    "changedContainers": [
+      {"id":"1081:324","after":"FILL"},
+      {"id":"1973:260920","after":"FILL"},
+      {"id":"1084:853","after":"FILL"},
+      {"id":"1084:1059","after":"FILL"},
+      {"id":"1084:1184","after":"FILL"}
+    ],
+    "auditedGeometryNodes":1332,
+    "auditedTextNodes":528,
+    "geometryDelta":0,
+    "textDelta":0,
+    "rootHeightDelta":0,
+    "A_delta":0,
+    "consumerFrames": {
+      "count":6,
+      "geometryAndADelta":0,
+      "ids":["1949:6682","2275:82758","2262:332237","2368:342004","2368:342813","2368:343622"]
+    },
+    "alreadyFluidNoSourceChange":["block/HomeworkToday","block/ExcuseRequestsCounter","block/LateCheckinRequestsCounter"],
+    "pendingGate": {
+      "master":"block/LessonCounters",
+      "reason":"No FIXED→FILL combination preserves both the 1280 child geometry and the 240 px root height.",
+      "probe": {
+        "allFillRootHeight":"240→108",
+        "currentFillDesktopChildren":"1216/596/596→596/596/596 with different wrap",
+        "countersFill":"desktop unchanged but current card remains 1216 px at narrow"
+      },
+      "minimalBranch": {
+        "variant":"width=1024",
+        "A_delta":6,
+        "root":"960x240",
+        "current":"960x108",
+        "counters":"468x108 each",
+        "desktopGeometryDelta":0
+      }
+    }
+  },
+  "navDrawer": {
+    "masterId":"2827:694163",
+    "afterA":59,
+    "A_delta":36,
+    "studentGeometryDelta":0,
+    "studentTextDelta":0,
+    "variants":[
+      {"id":"2791:4251","name":"role=student, role-placement=outside","w":224,"h":316,"A":10,"overflow":"NONE"},
+      {"id":"2827:694111","name":"role=student, role-placement=inside","w":224,"h":380,"A":12,"overflow":"NONE"},
+      {"id":"3237:5179","name":"role=headman, role-placement=outside","w":224,"h":550,"A":17,"overflow":"VERTICAL","labels":["Разделы","Управление"]},
+      {"id":"3237:5189","name":"role=headman, role-placement=inside","w":224,"h":614,"A":19,"overflow":"VERTICAL","labels":["Разделы","Управление"],"role":"Староста"}
+    ],
+    "labelFont":"Onest Regular 12",
+    "roleControlGeometryDelta":{"width":8,"height":0},
+    "roleBlockGeometryDelta":0
+  },
+  "page18": {
+    "frames":66,
+    "A":456,
+    "new1024Frames":0
+  },
+  "status":"STOPPED_AWAITING_LESSONCOUNTERS_1024_BRANCH"
+}

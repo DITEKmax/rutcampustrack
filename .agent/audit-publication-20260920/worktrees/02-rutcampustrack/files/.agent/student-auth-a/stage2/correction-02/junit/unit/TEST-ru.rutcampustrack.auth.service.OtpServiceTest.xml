@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.service.OtpServiceTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-09-11T11:20:40" hostname="DITEK-PK" time="0.76">
+  <properties/>
+  <testcase name="repository failure during OTP verification is typed 503 and cannot touch proof" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.64"/>
+  <testcase name="requestOtp: repository failure is typed authority unavailable before Redis work" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.011"/>
+  <testcase name="verifyOtpByCode: repository failure is typed authority unavailable before consume" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.011"/>
+  <testcase name="OtpService source: использует MessageDigest.isEqual вместо String.equals для request.code()" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.01"/>
+  <testcase name="verifyOtpByCode: null IP → используется literal 'unknown' как key" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.009"/>
+  <testcase name="verifyOtpByCode: counter &lt; limit, mismatch → инкремент counter + OtpExpiredException" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.007"/>
+  <testcase name="verifyOtpByCode: counter == limit (20) → 429 OtpRateLimitException БЕЗ проверки кода" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.007"/>
+  <testcase name="verifyOtp: корректный код того же размера — не падает в OtpExpiredException (mismatch-путь)" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.015"/>
+  <testcase name="verifyOtpByCode: разные IP — независимые counters" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.007"/>
+  <testcase name="verifyOtp: null код не падает по NPE (защита от Bad Input до MessageDigest.isEqual)" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.007"/>
+  <testcase name="verifyOtp: missing reverse proof is expired and cannot issue a session" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.007"/>
+  <testcase name="verifyOtpByCode: первый mismatch → counter=1 + EXPIRE на ключ" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.008"/>
+  <testcase name="verifyOtp: неверный код того же размера → OtpExpiredException (mismatch branch)" classname="ru.rutcampustrack.auth.service.OtpServiceTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

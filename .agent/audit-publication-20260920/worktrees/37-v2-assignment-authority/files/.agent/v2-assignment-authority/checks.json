@@ -1,0 +1,64 @@
+{
+  "scope": "L5A source-stage assignment authority",
+  "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-assignment-authority",
+  "checks": [
+    {
+      "name": "git diff --check",
+      "status": "PASS",
+      "exit_code": 0,
+      "environment": "PowerShell, assigned worktree",
+      "evidence": "Static whitespace check; existing LF/CRLF warnings only."
+    },
+    {
+      "name": "academic-app compileJava",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:compileJava --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "status": "PASS",
+      "exit_code": 0,
+      "environment": "OpenJDK 21.0.10 LTS, single H43 lease, no Docker",
+      "evidence": "evidence/compile-java-2026-09-19.log; BUILD SUCCESSFUL, 15 actionable tasks."
+    },
+    {
+      "name": "academic-app focused unit tests",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.assignment.AssignmentAuthorityContractTest --tests ru.rutcampustrack.academic.assignment.AssignmentClosureContractTest --tests ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcContractTest --tests ru.rutcampustrack.academic.semester.SemesterAssignmentLockContractTest --tests ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "status": "PASS",
+      "exit_code": 0,
+      "environment": "OpenJDK 21.0.10 LTS, single H46 lease, no Docker",
+      "evidence": "evidence/unit-tests-2026-09-19.log; five fresh XML reports, tests=13, failures=0, errors=0, skipped=0."
+    },
+    {
+      "name": "academic-app compileTestJava",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:compileTestJava --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "status": "PASS",
+      "exit_code": 0,
+      "environment": "OpenJDK 21.0.10 LTS, single H45 lease, no Docker",
+      "evidence": "evidence/compile-test-java-2026-09-19.log; BUILD SUCCESSFUL in 37s, 23 actionable tasks (8 executed, 15 up-to-date)."
+    },
+    {
+      "name": "academic-app focused integration tests",
+      "command": "$env:TESTCONTAINERS_REUSE_ENABLE='false'; .\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT --tests ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT --tests ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT --tests ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "status": "FAIL",
+      "exit_code": 1,
+      "environment": "H47 normal context failed Docker provider; H48 and H49 used elevated Docker 28.5.2/PostgreSQL 16.13 with process-local TESTCONTAINERS_REUSE_ENABLE=false",
+      "evidence": "evidence/integration-tests-2026-09-19.log (H47), evidence/integration-tests-h48-2026-09-19.log plus evidence/h48-xml/ (H48), evidence/integration-tests-h49-2026-09-19.log plus evidence/h49-xml/ (H49). H49 fresh XML: 15 tests, 14 failures, 0 errors, 0 skips. First application cause across all four classes: SubjectType -> byte[] ClassCastException in VarbinaryJdbcType$1.doBind:100; the attempted @Convert + SqlTypes.OTHER mapping is not accepted as fixed. H49 owned container/Ryuk filters were empty after Ryuk cleanup."
+    },
+    {
+      "name": "post-H49 SubjectTypeUserType source correction",
+      "status": "NOTRUN",
+      "exit_code": null,
+      "environment": "Source-only freeze after H49; H50 heavy queue not allocated",
+      "evidence": "mapping-proposal.md; SubjectTypeUserType.java and SubjectTypeUserTypeTest.java hashes are recorded in source-summary.md. No compile or unit execution claimed after this edit."
+    },
+    {
+      "name": "runtime evidence",
+      "status": "BLOCKED",
+      "exit_code": null,
+      "environment": "H49 Docker context and PostgreSQL were reached, but application assertions remain blocked by the confirmed Hibernate parameter mapping defect",
+      "evidence": "No product/runtime PASS claimed; H49 task-owned Testcontainers/Ryuk cleanup was verified empty after wait. Read-only candidate correction is in mapping-proposal.md."
+    }
+  ],
+  "limitations": [
+    "Compile PASS does not prove REST, PostgreSQL, gRPC, authorization, or concurrency criteria.",
+    "Existing warning output is unrelated to the requested L5A behavior and is recorded without code changes."
+  ]
+}

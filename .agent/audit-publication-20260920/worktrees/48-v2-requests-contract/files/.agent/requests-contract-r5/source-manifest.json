@@ -1,0 +1,324 @@
+{
+  "schema": "rct-source-manifest",
+  "capturedAt": "2026-09-15",
+  "risk": "S3",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-contract",
+  "branch": "codex/v2-requests-contract",
+  "baseRevision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "workingTree": "uncommitted bounded source diff; no commit or push",
+  "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "scope": {
+    "productFiles": 17,
+    "evidenceFiles": 39,
+    "generatedArtifactsCanonical": true,
+    "forbiddenChangesObserved": [],
+    "manifestSelfHash": "excluded; hash this file after transfer if an immutable checkpoint is needed",
+    "scopeExclusions": [
+      "R4 Requests UI files and findings 2, 3 and 5",
+      "unrelated roles/import paths",
+      "production env/secrets",
+      "real preflight, bootstrap, TLS and deploy execution",
+      "Docker production config after bundled4 source-only extension"
+    ]
+  },
+  "files": [
+    {
+      "path": ".env.prod.example",
+      "bytes": 8799,
+      "sha256": "1D77EDA0ADB35354E61D1F44743876E94D143EC37E1C51BE9DD4E6F9354C8C8C"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 13446,
+      "sha256": "1D6ED2F8EB9ACD7FF9E2D928B9A3C773DC909FB19CC752FECA38839A356774DF"
+    },
+    {
+      "path": "README.md",
+      "bytes": 30929,
+      "sha256": "816136C47D608C590DDF63B9C16E32451A4A1C82ED6AE1FBE16CD99E5AC99CC3"
+    },
+    {
+      "path": "docker-compose.e2e.yml",
+      "bytes": 19334,
+      "sha256": "4D840B4CA3CCCF66D0E1EA4C795154F8DF140DD3A575C65C92EF779608272232"
+    },
+    {
+      "path": "docs/openapi/mobile-bff.json",
+      "bytes": 59492,
+      "sha256": "D4F97E0476CD681A9460247D9F904C7901241269B73221A097EC6BE45132CDA0"
+    },
+    {
+      "path": "docs/operations/deploy/prod-deploy-checklist.md",
+      "bytes": 19959,
+      "sha256": "0B9CAD94786B06169C1D605714F3A37BBE4DCE5A918B97508EA4A193BF7CF74C"
+    },
+    {
+      "path": "docs/operations/runbooks/backup-restore.md",
+      "bytes": 11324,
+      "sha256": "574B2CCE59EAD4192238187C330E184C6C2657D1FCBBAC5B5510AFD6C77F02B4"
+    },
+    {
+      "path": "docs/operations/runbooks/cert-renewal.md",
+      "bytes": 11275,
+      "sha256": "EE919BD62D227BDC0741C491DF0F31798CD5012309ABC24070D870D17D93F974"
+    },
+    {
+      "path": "docs/operations/runbooks/loki-major-upgrade.md",
+      "bytes": 5692,
+      "sha256": "9CD74B21022DEBC3F0172E780EB1FB69D07E92514385835C7A4327CA18115C46"
+    },
+    {
+      "path": "docs/testing/M16-vps-verify.md",
+      "bytes": 15568,
+      "sha256": "4D4CC4B95B33ED8DD0AEF6CDF85EECCAAC0477F89646FD18B6558B39E8585F10"
+    },
+    {
+      "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+      "bytes": 45002,
+      "sha256": "5D697D0D0615BB5BB93F0C4735B090D3420112B7B97F4FA6C3598CC31B2CA66E"
+    },
+    {
+      "path": "nginx/scripts/init-letsencrypt.sh",
+      "bytes": 3533,
+      "sha256": "19953F6895AF52E61E26DD97B8CB72435E3ADB7D978E370946D35529D94F5258"
+    },
+    {
+      "path": "scripts/preflight-deploy.sh",
+      "bytes": 6837,
+      "sha256": "E940074644C99297FEA88B415B6FC9DCCE203EF7B80ECC71D1DC3E17F3950C4A"
+    },
+    {
+      "path": "scripts/validate-env-prod.sh",
+      "bytes": 15322,
+      "sha256": "7FA889714468B3081D090F906D91C992272C679B8068440D9C3F35961D53BAD8"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+      "bytes": 26316,
+      "sha256": "B8061B3E0F824210D338F9BA7FB08B33A3F1F331D07ABD81E5B3EE2513B90B1E"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+      "bytes": 12068,
+      "sha256": "D0D715C22A77CBADFE61177454428B606A5F0476359C2B8FD879573A4A221C25"
+    },
+    {
+      "path": "tests/e2e/.env.ci",
+      "state": "sensitive-name-not-read"
+    },
+    {
+      "path": ".agent/requests-contract-r5/AGENTS-pointer.md",
+      "bytes": 1245,
+      "sha256": "C3CE01A131E8F6DB8A8D6A0282F22894AC32F3042486E76F357C510925C4827C"
+    },
+    {
+      "path": ".agent/requests-contract-r5/checks.json",
+      "bytes": 13353,
+      "sha256": "DD0678FD5B39F50DAB0319CEC1F7DE11144E81B2A1506076F6520D4015392427"
+    },
+    {
+      "path": ".agent/requests-contract-r5/diff.md",
+      "bytes": 3875,
+      "sha256": "3B7E40BD6B7FFA0561C5FB4A826CB1ECA4D067AF7A02015FB1E0A8BB448B82EB"
+    },
+    {
+      "path": ".agent/requests-contract-r5/evidence.md",
+      "bytes": 11330,
+      "sha256": "071345DFF4DC51319BFC9FCA15130712F3682D46AFB24893B8B70A79263558E3"
+    },
+    {
+      "path": ".agent/requests-contract-r5/gradle-h10.log",
+      "bytes": 1161,
+      "sha256": "FD14D7FA767C7E991E4A6C6400D5B13B7DF152DA27553E885EE864635BD29BEA"
+    },
+    {
+      "path": ".agent/requests-contract-r5/gradle-h11.log",
+      "bytes": 1035,
+      "sha256": "9ED45F1CB2FCC3A6DCAFD45697630D82EAEEE7D15DDACDD38B95C6BDD073D7A1"
+    },
+    {
+      "path": ".agent/requests-contract-r5/gradle-h4.log",
+      "bytes": 897,
+      "sha256": "E4DAE981FE88A634F336E08EA39C8D17EBBB297424119A97A2B8C054E643247F"
+    },
+    {
+      "path": ".agent/requests-contract-r5/h11-npm-compose.log",
+      "bytes": 934,
+      "sha256": "A96A12B66D0678AA31323124AE7329F22A7F7C3A5DE0AD1C00BDB764C8E3BFB8"
+    },
+    {
+      "path": ".agent/requests-contract-r5/nginx-bundled2.log",
+      "bytes": 1094,
+      "sha256": "DE174EEBF757533A380ABA92713F603C061BAAED211526171BC6E2BB53B41BF4"
+    },
+    {
+      "path": ".agent/requests-contract-r5/packet.md",
+      "bytes": 8124,
+      "sha256": "676B64152C54E77C295DFE2B33620EC042E112C6CA78C0F0485898B998B51378"
+    },
+    {
+      "path": ".agent/requests-contract-r5/runtime-evidence.json",
+      "bytes": 2473,
+      "sha256": "CC89D0DBEF02E3ACD342A52C8CF19D9188F51951B86A1EB2604E4C9258BCD819"
+    },
+    {
+      "path": ".agent/requests-contract-r5/summary.md",
+      "bytes": 4297,
+      "sha256": "D00E85DDBE11A8DC81C3A07868DC93FEE2AC1D95140937D01E31E9D8EEF10F5F"
+    },
+    {
+      "path": ".agent/requests-contract-r5/validator-broadcast-address.env",
+      "bytes": 2532,
+      "sha256": "2F010CEBDDE5696EE59E864BA6922A5E7FEE5199B88A677F12B5875AFF107AD4"
+    },
+    {
+      "path": ".agent/requests-contract-r5/validator-fixture.env",
+      "bytes": 2531,
+      "sha256": "30FCF1C1AC9033621BEFBC5F30C88C10398206ECFD10551E98C25896FA7C79E7"
+    },
+    {
+      "path": ".agent/requests-contract-r5/validator-malformed-ip.env",
+      "bytes": 2532,
+      "sha256": "A1772395F54C025C720FEAC6C845E569925F90DA16A68A2E82B6360C4FFC6B59"
+    },
+    {
+      "path": ".agent/requests-contract-r5/validator-malformed-subnet.env",
+      "bytes": 2531,
+      "sha256": "8221A704D3CFD4BF33C164A98687C4B4E90DF34FA13C97AD359B5EEA3C8D39E2"
+    },
+    {
+      "path": ".agent/requests-contract-r5/validator-network-address.env",
+      "bytes": 2530,
+      "sha256": "56E980E1740C4CECB70F5D689BA3FA31276BA89F707526C6A87ED154EDC4C615"
+    },
+    {
+      "path": ".agent/requests-contract-r5/validator-out-of-subnet.env",
+      "bytes": 2531,
+      "sha256": "F8FCD3880062BCBA57CEE9FC6FFCCF272022B1ECD548F772507C366C00BC518E"
+    },
+    {
+      "path": ".agent/requests-contract-r5/validator-public-subnet.env",
+      "bytes": 2525,
+      "sha256": "DC51A6EE050C9C815C40E8338CC7B0167EB1C3000027E6EAC5F426C21E12C959"
+    },
+    {
+      "path": ".agent/requests-contract-r5/validator-unaligned-subnet.env",
+      "bytes": 2531,
+      "sha256": "E5813AFE8609BC78E5D52F28EEBFA05A118DEE7D0BEE5F3AFD3006A1C4A0D64F"
+    },
+    {
+      "path": ".agent/requests-contract-r5/isolated-synthetic.env.prod",
+      "bytes": 1354,
+      "sha256": "1B5EC4E173079019AB38A6ADFD4185FD8EA4B1255B851160E5055C5A7206525E"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/.env.prod",
+      "bytes": 69,
+      "sha256": "26DE174574128D6DE576AE1DD8F7C52837464680524D4C676997C1BB9A98AD0F"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/bin/docker",
+      "bytes": 317,
+      "sha256": "ACFD6CBAD8AE9277D3B564EFAFEB232439560D873859062D56336A9AED2429D6"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/bin/docker.cmd",
+      "bytes": 267,
+      "sha256": "A9E4A77DFC452D309DACD715933285BA325021ED4765754D504327105342BB2C"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/infra/alertmanager/alertmanager.yml",
+      "bytes": 21,
+      "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/infra/blackbox/blackbox.yml",
+      "bytes": 21,
+      "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/infra/loki/loki.yml",
+      "bytes": 21,
+      "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/infra/prometheus/prometheus.yml",
+      "bytes": 21,
+      "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/infra/tempo/tempo.yml",
+      "bytes": 21,
+      "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/mock-exit0.log",
+      "bytes": 1393,
+      "sha256": "D94CDB2D3E644F5A6A08F42F4438636463AD8F1E61498F4A9B5CF79FBF197825"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/mock-exit17.log",
+      "bytes": 1342,
+      "sha256": "6BBD492B3760CE0990CFB8A731BC2D6EAB33D5BC10DFB32A69831F45C999852C"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/nginx/conf.d/default.conf",
+      "bytes": 21,
+      "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/nginx/dhparam.pem",
+      "bytes": 21,
+      "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/nginx/scripts/entrypoint.sh",
+      "bytes": 21,
+      "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/scripts/backup.sh",
+      "bytes": 21,
+      "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/scripts/restore.sh",
+      "bytes": 21,
+      "sha256": "3FC6638B483CCD288BA7EB1ABABB0636C5B4BA883BA235DFBE1827FB47896660"
+    },
+    {
+      "path": ".agent/requests-contract-r5/preflight-mock/scripts/validate-env-prod.sh",
+      "bytes": 62,
+      "sha256": "94E2C80295DBC3570CEBBABB39A6C66DA529E240C07C8846DDA44CCE6D2BF670"
+    },
+    {
+      "path": ".agent/requests-contract-r5/validator-trailing-dot-ip.env",
+      "bytes": 2532,
+      "sha256": "49B52CA981A03EDF421034A327BB115D073036C16061EB4B7C1A55E6C7C7A695"
+    },
+    {
+      "path": ".agent/requests-contract-r5/validator-trailing-dot-subnet.env",
+      "bytes": 2532,
+      "sha256": "D3E6E4EBD98DCD8DF024B5871A7B165EFA89767B387EEC3DC979402640993115"
+    }
+  ],
+  "checks": {
+    "lastVerified": [
+      "bash -n scripts/preflight-deploy.sh: exit 0",
+      "bash -n scripts/validate-env-prod.sh: exit 0",
+      "isolated preflight mock Compose exit 0/17: preflight exits 0/4",
+      "bundled4 explicit caller inventory: exit 0, 35 occurrences",
+      "validator syntax and one-positive/nine-negative matrix: exit 0",
+      "H11 Gradle snapshot/update/assertion, frontend generation/guard and E2E config: exit 0 (historical accepted evidence)",
+      "H16 synthetic production Compose config: exit 0 (historical accepted evidence)"
+    ],
+    "notRunAfterResume": [
+      "H11 generation or Gradle rerun",
+      "real preflight, Docker production config after bundled4 source-only extension, certbot, openssl or nginx startup",
+      "script/bootstrap/TLS/deployment/provisioning",
+      "shellcheck: unavailable; no install attempted",
+      "fresh Sol review and main integration"
+    ],
+    "shellcheck": "unavailable; no install attempted"
+  }
+}

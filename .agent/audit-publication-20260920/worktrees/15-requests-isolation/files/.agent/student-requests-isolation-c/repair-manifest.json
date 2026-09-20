@@ -1,0 +1,52 @@
+{
+  "schema": "rct.repair-manifest.v1",
+  "recordedAt": "2026-09-08",
+  "baseRevision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "scope": "requests-isolation bounded two-IT repair",
+  "diffBaseline": {
+    "kind": "assigned-git-baseline",
+    "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+    "delta": "EventConsumerIT +45/-0; RabbitDecisionRetryIT +139/-0 (new file at this baseline)"
+  },
+  "actualRepairDeltaAgainstSourceBaseline": {
+    "sourceWorktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/requests-transport",
+    "EventConsumerIT": "+39/-0",
+    "RabbitDecisionRetryIT": "+40/-1"
+  },
+  "productFiles": [
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "status": "modified",
+      "sourceBaselineSha256": "EB08344837F1821D46EBD46093778153B12764D280764760F920CE2C6DC1B3AC",
+      "diffInsertions": 45,
+      "diffDeletions": 0,
+      "lines": 314,
+      "sha256": "1FE05ED7FA57A2DC3CFA1EA77635B414D94B986D7DFFEAFC78EA544D3485FF32"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java",
+      "status": "added",
+      "sourceBaselineSha256": "CDD850FECDC8C07984D36677EC32820E6599ABA3771DA009E5E78D3367E97EC6",
+      "diffInsertions": 139,
+      "diffDeletions": 0,
+      "lines": 139,
+      "sha256": "95BFF3CE808623BFCD370499410A33BFC3C38465AF9097FE3016F80D49E51EDA"
+    }
+  ],
+  "runtimeEvidence": [
+    {
+      "path": ".agent/student-requests-isolation-c/evidence/post-fix/EventConsumerIT.xml",
+      "sha256": "6D9338EB32BAB2C546B74459AF96F5F7E207FE6E38725A427C103E82D27D38FB"
+    },
+    {
+      "path": ".agent/student-requests-isolation-c/evidence/post-fix/RabbitDecisionRetryIT.xml",
+      "sha256": "B91811DE49E07DB89BE137B48D20361C898BD238688109969A53DEE579CD5104"
+    }
+  ],
+  "foreignChanges": "present in imported checkout and preserved; excluded from this repair",
+  "review": {
+    "reviewer": "/root/requests_transport_review",
+    "status": "PASS",
+    "evidence": "5+2 test bodies unchanged; inherited dynamic properties preserved; vhosts set before context startup; production queue/exchange/listener/factory retained"
+  }
+}

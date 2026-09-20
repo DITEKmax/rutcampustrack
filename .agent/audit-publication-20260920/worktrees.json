@@ -1,0 +1,272 @@
+[
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack",
+    "head": "6a98366b7507e3ee76cc0e13690afffd403a5321",
+    "branch": "refs/heads/main"
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/1267/rutcampustrack",
+    "head": "a1af4071f6cd181dded58abf46497facc1dd7120",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack",
+    "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui",
+    "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack",
+    "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/b2-academic-scope",
+    "head": "bb1bd4e72bae1b1393cae712c9fefec9c788684c",
+    "branch": "refs/heads/codex/b2-academic-scope"
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/b2-projection-computation",
+    "head": "753ab61d2fc202d764c5e106b98176b48626bb3f",
+    "branch": "refs/heads/codex/b2-projection-computation"
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/student-academic-ui",
+    "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "branch": "refs/heads/codex/student-academic-ui"
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/5353/rutcampustrack",
+    "head": "cedce8c60aee04261ca87a18b898b148719bee89",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/6a61/rutcampustrack",
+    "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/d650/rutcampustrack",
+    "head": "8df4d3c5fba85ba4766f30133a4b60bd0398810e",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/.agent/worktrees/campus-map-read-backend",
+    "head": "86263384ae81353af087e61e9158af61f15e0999",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack",
+    "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-backend-union-e-r1",
+    "head": "1b58320296d39e29514c6c2102985b27e652cea1",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract",
+    "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-isolation",
+    "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-notification-authority",
+    "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-ui-c",
+    "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+    "branch": ""
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/be",
+    "head": "99f8848e70683c7458428819944c1c4332f71251",
+    "branch": "refs/heads/codex/js-student-01-be"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/contract",
+    "head": "3df5fbe6736cb2add826392ee30a4e786e96fbe1",
+    "branch": "refs/heads/codex/js-student-01-contract"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fe",
+    "head": "81c967554b3c393f58aa3bf13f65b5c660de1a7e",
+    "branch": "refs/heads/codex/js-student-01-fe"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-be",
+    "head": "12c6b885569bb59719b67945f6ec0e1a1f95199c",
+    "branch": "refs/heads/codex/js-student-01-fix-be"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-pwa",
+    "head": "a78d45e4166afa0fd47fbb1397b9e1a6fd248bc0",
+    "branch": "refs/heads/codex/js-student-01-fix-pwa"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-retry",
+    "head": "123af361cfb332544c95f3072b3745ad45430d5a",
+    "branch": "refs/heads/codex/js-student-01-fix-retry"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-review",
+    "head": "2219c105d105cf9df1ef5d16c1018247dc4de675",
+    "branch": "refs/heads/codex/js-student-01-fix-review"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-tma",
+    "head": "7e1d3ee4a45c45a629d4abc09d619e3b4224ba96",
+    "branch": "refs/heads/codex/js-student-01-fix-tma"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/integration",
+    "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "branch": "refs/heads/codex/js-student-01-integration"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/dependency-checks",
+    "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+    "branch": "refs/heads/codex/student-role-02-dependency-checks"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/dependency-security",
+    "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+    "branch": "refs/heads/codex/student-role-02-dependency-security"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-adapters",
+    "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+    "branch": "refs/heads/codex/student-role-02-homework-adapters"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-api",
+    "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "branch": "refs/heads/codex/student-role-02-homework-api"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-ui",
+    "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+    "branch": "refs/heads/codex/student-role-02-homework-ui"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/integration",
+    "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+    "branch": "refs/heads/codex/student-role-02-integration"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/requests-domain",
+    "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "branch": "refs/heads/codex/student-role-02-requests-domain"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/requests-transport",
+    "head": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+    "branch": "refs/heads/codex/student-role-02-requests-transport"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/shared-shell",
+    "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "branch": "refs/heads/codex/student-role-02-shared-shell"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-access-scope",
+    "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+    "branch": "refs/heads/codex/v2-access-scope"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-assignment-authority",
+    "head": "27860f24eb380c782311bbe0cbb65c3d2c75d85d",
+    "branch": "refs/heads/codex/v2-assignment-authority"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-binding-proto",
+    "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+    "branch": "refs/heads/codex/v2-binding-proto"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3",
+    "head": "d7ec16572db325d944f1a1fbd3b4960b827d09c3",
+    "branch": "refs/heads/codex/v2-integration-a2-l3"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-l5a",
+    "head": "ed9b63c9449b23fa3f5dbf2feb52cd8f9e9cfe83",
+    "branch": "refs/heads/codex/l5a-union-20260920"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-historical-attendance",
+    "head": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+    "branch": "refs/heads/codex/l5b-historical-attendance-20260920"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-recurring-writer",
+    "head": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+    "branch": "refs/heads/codex/l5b-recurring-writer-20260920"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-retrospective-union",
+    "head": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+    "branch": "refs/heads/codex/l5b-retrospective-union-20260920"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-service-identity",
+    "head": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+    "branch": "refs/heads/codex/l5b-service-identity-20260920"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-map-read",
+    "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+    "branch": "refs/heads/codex/v2-map-read"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-mass-cancel-removal",
+    "head": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837",
+    "branch": "refs/heads/codex/mass-cancel-removal-20260920"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-pwa-build-fix",
+    "head": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+    "branch": "refs/heads/codex/v2-pwa-build-fix"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-contract",
+    "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+    "branch": "refs/heads/codex/v2-requests-contract"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness",
+    "head": "71bcc27572ed72c18e49f63c512ae5e4e5790b8d",
+    "branch": "refs/heads/codex/v2-requests-harness"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-ui",
+    "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+    "branch": "refs/heads/codex/v2-requests-ui"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build",
+    "head": "d7ec16572db325d944f1a1fbd3b4960b827d09c3",
+    "branch": "refs/heads/codex/v2-runtime-build"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2",
+    "head": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+    "branch": "refs/heads/codex/v2-runtime-build-r2"
+  },
+  {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r3",
+    "head": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837",
+    "branch": "refs/heads/codex/v2-runtime-build-r3"
+  }
+]

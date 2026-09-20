@@ -1,0 +1,57 @@
+{
+  "schema": "rct-profile-ui-source-manifest",
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "contract": {
+    "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/student-auth-a/profile/resume4-security-verification-contract.md",
+    "sha256": "4EDFF91F229C9BD38B0D4DEDFA6F9CA060A0A5040D411E4BC2780DCBC548D177",
+    "bytes": 6229
+  },
+  "cwd": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui",
+  "ownership": {
+    "productWriter": "frontends/mobile-core/src/features/profile/SecurityScreen.vue",
+    "evidenceWriter": ".agent/profile-ui/evidence/resume4-repair/**",
+    "children": false
+  },
+  "preState": {
+    "bytes": 10943,
+    "sha256": "AB039523841BEE93E78ABCA535DEAB7400DFA36003E1102D83F782911E2B659E",
+    "evidence": ".agent/profile-ui/evidence/resume4-repair/pre-state.md"
+  },
+  "productFile": {
+    "path": "frontends/mobile-core/src/features/profile/SecurityScreen.vue",
+    "bytes": 11269,
+    "sha256": "5305389822B603A9727E6E9E8F391314F7B7900EF7AEF92B55C22B57BE91771E"
+  },
+  "nonOwnedProfileFiles": [
+    { "path": "frontends/mobile-core/src/features/profile/MoreScreen.vue", "bytes": 1604, "sha256": "B5C2F2D45778C7EE27EBED1C1D46A3D383A0678E43CE8E020908913C4CC2E395" },
+    { "path": "frontends/mobile-core/src/features/profile/ProfileScreen.vue", "bytes": 4165, "sha256": "969FFED80A643F451F8CD70BE1E647B70159B46F80195FA4C691B175BBA12C4B" },
+    { "path": "frontends/mobile-core/src/features/profile/RoleSwitchScreen.vue", "bytes": 4006, "sha256": "B01E9793EC652389B8ED62563D3F16CD7641214C30CBA030A7F408C5D2ACCA4E" },
+    { "path": "frontends/mobile-core/src/features/profile/AppearanceScreen.vue", "bytes": 2572, "sha256": "7BBBFEC9FDA8D24F8E01113E9D9BC42BEE78A051A25E0B1A384E66B5AECA8475" },
+    { "path": "frontends/mobile-core/src/features/profile/SessionsScreen.vue", "bytes": 5043, "sha256": "EEA017B57B4D2D324A4AE5245E87D63DCFDBB1F063F41082E8613FEC226A5726" },
+    { "path": "frontends/mobile-core/src/features/profile/AccountHistoryScreen.vue", "bytes": 3940, "sha256": "254CB927B14FAA6995D04EB14D56D51859CA150C5EB66B5126D8590B279E23A6" }
+  ],
+  "diff": {
+    "authorized": true,
+    "changes": [
+      "watch props.error?.code with immediate:true now clears when entering or leaving ACCOUNT_INVALIDATED",
+      "all three password inputs are disabled while accountInvalidated",
+      "all three password reveal buttons are disabled while accountInvalidated"
+    ],
+    "preserved": [
+      "external invalidation error remains visible",
+      "independent submit guard and disabled submit binding remain",
+      "optional callback absence guard remains",
+      "ordinary error retention/retry, success clearing and unmount clearing remain"
+    ]
+  },
+  "checks": ".agent/profile-ui/evidence/resume4-repair/checks.json",
+  "runtime": {
+    "leafStatus": "NOT_STARTED",
+    "rootOwned": true,
+    "url": "http://127.0.0.1:18110/"
+  },
+  "limitations": [
+    "Mounted post-repair browser QA and cleanup are root-owned and not claimed by this leaf.",
+    "No backend, PWA, TMA or production integration is claimed."
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "schema": "rutcampustrack.lesson-activity-row-collapse-cause.v1",
+  "capturedAt": "2026-08-28",
+  "stage": "causal analysis before any permanent repair",
+  "screen": {
+    "id": "3250:128191",
+    "name": "ПК-111 / 1024 / dark",
+    "height": 4113,
+    "expectedHeight": 4137
+  },
+  "master": {
+    "id": "702:5423",
+    "name": "attendance/LessonActivityLog",
+    "A": 79,
+    "directPhysicalConsumersAOnPage8": 5,
+    "expandedScreenOccurrences": {
+      "auth": 0,
+      "student": 0,
+      "headman": 7
+    }
+  },
+  "survivorDifference": {
+    "rowId": "703:37946",
+    "eventTextId": "703:37949",
+    "eventTextLayoutSizingVertical": "HUG",
+    "liveContentHeight": 20,
+    "liveRowHeight": 32,
+    "calculation": "max(time 18, content 20) + paddingBottom 12 = 32"
+  },
+  "collapsedRows": {
+    "count": 12,
+    "eventTextLayoutSizingVertical": "FILL",
+    "liveContentHeight": 1,
+    "liveEventGeometryHeight": 20,
+    "liveEventRenderHeight": 1,
+    "contentClipsContent": true,
+    "liveRowHeight": 30,
+    "calculation": "time 18 + paddingBottom 12 = 30",
+    "geometryOutsideImmediateParent": 12
+  },
+  "historicalSnapshots": [
+    {
+      "file": "2026-08-28-headman-1024-after.json",
+      "capturedAt": "2026-08-28T14:00:15.250Z",
+      "screenHeight": 4137
+    },
+    {
+      "file": "2026-08-28-headman-container-repairs-after.json",
+      "capturedAtLocal": "2026-08-28 18:25:09",
+      "screenHeight": 4137,
+      "excludesAsTrigger": [
+        "FormField Control radius repair",
+        "FormField required-mark repair",
+        "five earlier FIXED-to-FILL repairs",
+        "SemesterTotals and the four approved container repairs"
+      ]
+    },
+    {
+      "file": "2026-08-28-headman-1024-subjectstats-close-gate.json",
+      "capturedAtLocal": "2026-08-28 23:33:05",
+      "screenHeight": 4113
+    }
+  ],
+  "evidenceGap": {
+    "interval": "2026-08-28 18:25:09..23:33:05",
+    "missing": "no machine-readable ПК-111 snapshot after the TrendPanel-only viewport change and before each SubjectStats write",
+    "conclusion": "the exact invalidating write inside this interval cannot be attributed from saved snapshots"
+  },
+  "disposableProbes": {
+    "freshLessonActivityLogAtWidths": [760, 928, 1216],
+    "freshRowsAtEachWidth": "13x32",
+    "freshBlockAtWidths": [1216, 960],
+    "freshNestedRowsAtEachWidth": "13x32",
+    "cloneOfCorruptedLiveBlockAt960": "rehydrated to 13x32",
+    "temporaryNodesRemaining": 0,
+    "provedCondition": "the 30 px result is stale derived instance geometry; width or FILL alone does not reproduce it. When an existing nested instance is invalidated, a FILL event text inside a HUG/AUTO content frame can collapse that content to its minimum; the sole HUG text is immune."
+  },
+  "authorizedRepairAssessment": {
+    "containerLevel": "bind minHeight of all 13 rows to row-height/compact=32",
+    "status": "authorized but not yet applied",
+    "additionalUnapprovedTextLevelRepair": "change the 12 event text nodes from vertical FILL to HUG, matching 703:37949",
+    "reason": "minHeight restores row height but does not itself remove the invalid FILL-in-HUG condition or guarantee that clipped content remains 20 px after a future instance invalidation"
+  }
+}

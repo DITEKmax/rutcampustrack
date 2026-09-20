@@ -1,0 +1,57 @@
+{
+  "schema": "rct.integration-checks.v1",
+  "task": "JS-STUDENT-01-r1",
+  "risk": "S3",
+  "foundationBaseline": "3df5fbe6736cb2add826392ee30a4e786e96fbe1",
+  "frontendCommit": "81c96755",
+  "backendCommit": "99f8848e",
+  "integrationCommit": "f04542e10feb4ebe01e6acc465feea83b4783dc8",
+  "merge": "clean, no conflict resolution or product-code edits",
+  "status": "CHECKS_PASS_REVIEW_BLOCKED_CAPACITY",
+  "diff": {
+    "range": "3df5fbe6736cb2add826392ee30a4e786e96fbe1..f04542e10feb4ebe01e6acc465feea83b4783dc8",
+    "files": 96,
+    "insertions": 5175,
+    "deletions": 102,
+    "mergeConflicts": 0,
+    "integrationProductEdits": 0
+  },
+  "minimalCombinedChecks": [
+    {
+      "cwd": "frontends",
+      "commands": [
+        "npm run generate:types:check",
+        "npm run validate:fixtures",
+        "npm run test:contract",
+        "npm run typecheck",
+        "npm run lint",
+        "npm run build"
+      ],
+      "exitCodes": [0, 0, 0, 0, 0, 0],
+      "evidence": "Generated Mobile BFF types match SHA-256 c89b30f7fb9ee652e5c38e1bbffdab7e8c152aa994b4c4f9b273263ad5efd508; 9 fixtures and 3/3 contract tests pass; typecheck passes; lint passes with max warnings 0; escalated build passes with PWA 98 modules/943ms and TMA 98 modules/860ms."
+    },
+    {
+      "cwd": ".",
+      "command": "git -c core.whitespace=cr-at-eol diff --check <stable integration range>",
+      "exitCode": 0,
+      "evidence": "Stable 96-file diff passes whitespace validation."
+    }
+  ],
+  "diagnostics": [
+    {
+      "check": "combined npm build inside filesystem sandbox",
+      "exitCode": 1,
+      "cause": "esbuild received Access denied while loading the worktree Vite configuration.",
+      "action": "No product code changed. The identical root-owned escalated build passed with exit 0 for both shells."
+    }
+  ],
+  "priorEvidence": {
+    "frontend": ".agent/vertical-js-student-01/fe-evidence.json",
+    "backend": ".agent/vertical-js-student-01/be-checks.json",
+    "runtime": ".agent/vertical-js-student-01/runtime-evidence/20260906-184531/runtime-result.json"
+  },
+  "limitations": [
+    "Fresh independent Sol high review is blocked by the current agent thread limit and remains mandatory for S3 DONE.",
+    "Real Telegram injected-host execution remains a separate runtime gate."
+  ]
+}

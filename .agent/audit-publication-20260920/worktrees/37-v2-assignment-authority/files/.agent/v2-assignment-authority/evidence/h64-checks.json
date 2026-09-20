@@ -1,0 +1,43 @@
+{
+  "scope": "L5A frozen Academic coverage H64 runtime",
+  "revision": "codex/v2-assignment-authority",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "context": ".agent/v2-assignment-authority/evidence/h64-academic-context-2026-09-19.txt",
+  "stdout": ".agent/v2-assignment-authority/evidence/h64-academic-stdout-2026-09-19.log",
+  "stderr": ".agent/v2-assignment-authority/evidence/h64-academic-stderr-2026-09-19.log",
+  "start": "2026-09-19T19:10:49.8559638Z",
+  "end": "2026-09-19T19:12:05.6218229Z",
+  "exit_code": 0,
+  "identity": "ditek-pk\\maksd",
+  "java": "OpenJDK 21.0.10",
+  "testcontainers_reuse_enable": false,
+  "selectors": [
+    "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT",
+    "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+    "ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT",
+    "ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT",
+    "ru.rutcampustrack.academic.subject.SubjectServiceIT",
+    "ru.rutcampustrack.academic.integration.AcademicGrpcIT"
+  ],
+  "total": {"tests": 47, "failures": 0, "errors": 0, "skipped": 0},
+  "xml_dir": ".agent/v2-assignment-authority/evidence/h64-xml",
+  "xml_sha256": {
+    "SubjectAssignmentAuthorityIT": "CDD6582377AE0FBC699A38E0C95D81E2DC6C55C0BDF4662C9F50D0677985F888",
+    "AssignmentAuthorityIT": "1E058CBC025E3456E5D51B81DD4BACF2E462326458746621543E651A70009ABF",
+    "AcademicAssignmentGrpcIT": "C3C5FE05E76F542E4CFCD7A8842637A323F8B463FAE328DB334015741D747A53",
+    "SemesterAssignmentAuthorityIT": "5E31020B723C20D8DAF1294C002F4EEF2A03F8190CB73D8D397D11030CB23BFF",
+    "SubjectServiceIT": "D32311452D247446052D0CC4E4B33B4E5D56E650673EBB49BEF3A6B2940BD80E",
+    "AcademicGrpcIT": "1D0FE99857D339B92E93A6508C1D7E31A7B205CA5FB8F5C32CD356E7878592C0"
+  },
+  "docker": {
+    "before": ".agent/v2-assignment-authority/evidence/h64-docker-before-2026-09-19.txt",
+    "after": ".agent/v2-assignment-authority/evidence/h64-docker-after-2026-09-19.txt",
+    "owned_resources": ".agent/v2-assignment-authority/evidence/h64-owned-cleanup-2026-09-19.log",
+    "ryuk_id": "9b5f4ee0abb48538fd9350795ed62c02eab7c0a9146b6cf0a51af2d90be366ff",
+    "postgres_id": "2c25d3b6a37efabdca65e1cdeb6469fb8446b1386af8661aacf803271f27fa4f",
+    "post_run_absent": true,
+    "inventory_delta": {"added": 0, "removed": 0},
+    "foreign_cleanup": false
+  },
+  "source_status": "unchanged during H64"
+}

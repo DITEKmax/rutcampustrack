@@ -1,0 +1,8 @@
+{
+  "start": "2026-09-19T20:01:31.3651416Z",
+  "end": "2026-09-19T20:02:10.2234439Z",
+  "exit_code": 0,
+  "identity": "ditek-pk\\maksd",
+  "scope": "six L5A unit classes, no Docker",
+  "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.config.SubjectTypeUserTypeTest --tests ru.rutcampustrack.academic.assignment.AssignmentAuthorityContractTest --tests ru.rutcampustrack.academic.assignment.AssignmentClosureContractTest --tests ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcContractTest --tests ru.rutcampustrack.academic.semester.SemesterAssignmentLockContractTest --tests ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest --no-daemon --no-parallel --max-workers=1 --no-problems-report"
+}

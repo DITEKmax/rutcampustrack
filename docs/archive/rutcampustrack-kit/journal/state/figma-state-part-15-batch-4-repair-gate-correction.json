@@ -1,0 +1,17 @@
+{
+  "runId": "part-15-batch-4-repair-gate-correction-2026-08-20",
+  "supersedesForRepairUnit": "figma-state-part-15-batch-4-repair-gate.json",
+  "figmaMutated": false,
+  "measurementUnit": "One A is one source master node consumed by page 17; width variants are counted separately.",
+  "unboundRadiusMasterNodes": 12,
+  "breakdown": {
+    "block/DeviceLink": 3,
+    "shared/QrCodeDisplay": 1,
+    "block/AccountHistory": 3,
+    "block/Sessions": 3,
+    "domain/ActiveSessionsList": 1,
+    "TicketForm/internal Field cornerRadius=1": 1
+  },
+  "dark1920VisibleUniqueNodes": 2,
+  "note": "Both figures are valid in their own scope. The prior 11-node audit missed TicketForm/internal Field because it filtered only scalar cornerRadius values addressable through the instance-source traversal."
+}

@@ -1,0 +1,54 @@
+import java.nio.file.Files
+import java.util.zip.ZipFile
+import org.gradle.api.tasks.compile.JavaCompile
+
+allprojects { project ->
+    project.tasks.withType(JavaCompile).configureEach { compileTask ->
+        if (project.path == ':services:schedule-service:schedule-app' && compileTask.name == 'compileJava') {
+            compileTask.doFirst {
+                def requiredEntries = [
+                        'ru/rutcampustrack/schedule/contract/enums/LessonStatus.class',
+                        'ru/rutcampustrack/schedule/contract/enums/WeekType.class',
+                        'ru/rutcampustrack/shared/observability/BusinessMetrics.class',
+                        'ru/rutcampustrack/shared/events/DomainEvent.class',
+                        'ru/rutcampustrack/shared/outbox/OutboxStorage.class'
+                ]
+                println('H95_DIAG_COMPILE_CLASSPATH_BEGIN')
+                println('TASK|' + compileTask.path)
+                println('PROJECT|' + project.projectDir.absolutePath)
+                println('DESTINATION|' + compileTask.destinationDirectory.get().asFile.absolutePath)
+                println('SOURCE_COMPATIBILITY|' + compileTask.sourceCompatibility)
+                println('TARGET_COMPATIBILITY|' + compileTask.targetCompatibility)
+                println('INCREMENTAL|' + compileTask.options.incremental)
+                println('CLASSPATH_COUNT|' + compileTask.classpath.files.size())
+                compileTask.classpath.files.each { file ->
+                    def exists = file.exists()
+                    def readable = exists && Files.isReadable(file.toPath())
+                    println('CP|' + file.absolutePath + '|exists=' + exists + '|readable=' + readable + '|directory=' + file.isDirectory() + '|length=' + (exists ? file.length() : -1))
+                    requiredEntries.each { entryName ->
+                        boolean found = false
+                        if (file.isDirectory()) {
+                            found = new File(file, entryName).isFile()
+                        } else if (file.isFile() && file.name.toLowerCase().endsWith('.jar')) {
+                            ZipFile zip = null
+                            try {
+                                zip = new ZipFile(file)
+                                found = zip.getEntry(entryName) != null
+                            } catch (Throwable error) {
+                                println('JAR_READ_ERROR|' + file.absolutePath + '|' + error.class.name + '|' + error.message)
+                            } finally {
+                                if (zip != null) {
+                                    zip.close()
+                                }
+                            }
+                        }
+                        if (found) {
+                            println('ENTRY|' + entryName + '|' + file.absolutePath)
+                        }
+                    }
+                }
+                println('H95_DIAG_COMPILE_CLASSPATH_END')
+            }
+        }
+    }
+}

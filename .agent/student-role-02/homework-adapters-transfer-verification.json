@@ -1,0 +1,8 @@
+{
+  "recordedAt": "2026-09-07T21:20:30.8263212Z",
+  "checkpointSha256": "C8503AF7ED5B4DE2A1970FD264606148BD4598387B29339DE6AC866E5DBED74B",
+  "filesChecked": 35,
+  "mismatches": [],
+  "status": "CHECKPOINT_ONLY_NOT_ACCEPTED",
+  "writerStopped": true
+}

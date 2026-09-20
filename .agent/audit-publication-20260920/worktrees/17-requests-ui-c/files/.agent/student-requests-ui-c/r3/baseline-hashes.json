@@ -1,0 +1,26 @@
+{
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "capturedAt": "2026-09-08",
+  "environment": {
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "cwd": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-ui-c"
+  },
+  "files": {
+    "frontends/mobile-core/src/features/requests/ExcuseRequestScreen.vue": "566AF4BBEE6A056B4247B343527B7D29E12C7618CEA6C0C8B77AC564D216CEB7",
+    "frontends/mobile-core/src/features/requests/LateCheckinRequestScreen.vue": "D44020D947B65479AEFA215A4F0268DE38A41FD720A56B553F8D7CDE8B6190DE",
+    "frontends/mobile-core/src/features/requests/RequestAttachmentField.vue": "435415BF6C7BAE75E7C944E4E039FC26F81EDF56FEBBD3F16C9884948B74E3D5",
+    "frontends/mobile-core/src/features/requests/RequestCard.vue": "5C75A728A27B1262FEC30806FF6D49F8A7C6D3AD65861C39166BAAEF5C69A02A",
+    "frontends/mobile-core/src/features/requests/RequestLessonSelector.vue": "0625805CEA95BC5F622B8DF20A3BDFF4E9BB498219E97A8059546833B92BF046",
+    "frontends/mobile-core/src/features/requests/RequestsScreen.vue": "1DE1A0D8E2A7749B0F4F3F92740D7B779DB091568E57BC3B39CD272DFC9F154E",
+    "frontends/mobile-core/src/features/requests/RequestTypeScreen.vue": "A8E04F078A8A1B945D93EFA7810BCDA7AFF65D2313FA06731E12000D948D3A93",
+    "frontends/mobile-core/src/features/requests/RequestsScreen.test.ts": "324A1B4AF08CB495467349F9BB42C06D2BD89296B38972A0222492EEAEAEC964",
+    "frontends/mobile-core/src/features/requests/state.test.ts": "EBE3B04372DF6062152E2D014D384AA6D0909FD546A9C3B2A54A561FCF589999",
+    "frontends/mobile-core/src/features/requests/state.ts": "C8209A596531D17E6AE72F9345CA4DD482F26523E23208EE04BC8B4ABAF1ECDE",
+    "frontends/mobile-core/src/features/requests/types.ts": "74FC73127D066B952D7D22B0A7C278E718295A170F998A068478152986812071",
+    "frontends/mobile-core/src/features/requests/requests.pcss": "A039B01D4E721E3C845867FA50C4760883AAFADE306BC348C143F1B2B642B066",
+    "frontends/.requests-harness/main.ts": "3D91ED7E1361BC0779DF2C1D6DB69E96D89AD5B7D9740AF83766DFA5AB657BB5",
+    "frontends/.requests-harness/index.html": "CF6D831297750E0796548ACC00F86A1FC2BF114F2D0292A507AFF67A57C657D7",
+    "frontends/.requests-harness/harness.css": "2922EB784D906E93E05ECD37669B0740BED8599A8F9F75D1E5C42752142C81BE"
+  }
+}

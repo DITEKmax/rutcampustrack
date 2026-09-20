@@ -1,0 +1,20 @@
+[
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.academic.integration.CacheIT",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:17:03.2765566Z"
+  },
+  {
+    "directory": "services/academic-service/academic-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.academic.integration.EventIT",
+    "tests": 6,
+    "failures": 6,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:17:03.2676414Z"
+  }
+]

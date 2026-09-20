@@ -1,0 +1,66 @@
+{
+  "runId": "headman-117-airy-2026-08-22",
+  "phase": "complete",
+  "step": "P3.h",
+  "entities": {
+    "pages": {
+      "schedule_components": "403:11742",
+      "forms": "739:6",
+      "headman_blocks": "1073:2",
+      "headman_screens": "1902:253474"
+    },
+    "componentSets": {
+      "TimetableGrid": "468:5194",
+      "ScheduleBuilderGrid": "468:5238",
+      "ScheduleSlotCell": "437:4012",
+      "WeekParityPicker": "468:5278",
+      "ScheduleSlotForm": "780:7969"
+    },
+    "components": {
+      "ScheduleSlotCard": "434:4000"
+    },
+    "screens": {
+      "117": "1949:13393"
+    }
+  },
+  "createdNodeIds": [
+    "2162:894",
+    "2162:1036",
+    "2162:1178",
+    "2162:1227",
+    "2172:2"
+  ],
+  "mutatedNodeIds": [
+    "468:5194",
+    "468:5103",
+    "468:5136",
+    "468:5162",
+    "468:5178",
+    "2162:894",
+    "468:5198",
+    "437:4012",
+    "434:4000",
+    "468:5278",
+    "780:7969",
+    "1958:20177"
+  ],
+  "pendingValidations": [],
+  "completedSteps": [
+    "P0.a",
+    "P0.b",
+    "P0.c",
+    "P0.d",
+    "P0.e",
+    "P0.f",
+    "P1-existing",
+    "P2-existing",
+    "P3.a",
+    "P3.b",
+    "P3.c",
+    "P3.d",
+    "P3.e",
+    "P3.f",
+    "P3.g",
+    "P3.h"
+  ]
+}

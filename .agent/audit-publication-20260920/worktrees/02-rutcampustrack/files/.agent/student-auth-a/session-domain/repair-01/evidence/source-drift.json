@@ -1,0 +1,153 @@
+{
+  "check": "source-drift-against-pretest-manifest",
+  "pretestManifest": ".agent/student-auth-a/session-domain/repair-01/pretest-source-manifest.json",
+  "sourceEntries": 16,
+  "mismatches": 0,
+  "status": "PASS",
+  "files": [
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthRole.java",
+      "pretestSha256": "2232E8973B0804A43BBF84D51FBAF432F35C72A1C6A709A175B302DCE35857FD",
+      "actualSha256": "2232E8973B0804A43BBF84D51FBAF432F35C72A1C6A709A175B302DCE35857FD",
+      "pretestBytes": 182,
+      "actualBytes": 182,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleStatus.java",
+      "pretestSha256": "89CF00BAE0BC524F8783BB860352DB2F40A31C5BDFEBB4352ECF0A879B002B57",
+      "actualSha256": "89CF00BAE0BC524F8783BB860352DB2F40A31C5BDFEBB4352ECF0A879B002B57",
+      "pretestBytes": 702,
+      "actualBytes": 702,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleGrant.java",
+      "pretestSha256": "171B2644B245770368A865B7907942578EC12343B8A4282F7023F5824C940DCE",
+      "actualSha256": "171B2644B245770368A865B7907942578EC12343B8A4282F7023F5824C940DCE",
+      "pretestBytes": 1696,
+      "actualBytes": 1696,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionState.java",
+      "pretestSha256": "F89E60C86A9E3A5CAE9E3790ECDA3D258E024B38969030E246DB26AE0360D32F",
+      "actualSha256": "F89E60C86A9E3A5CAE9E3790ECDA3D258E024B38969030E246DB26AE0360D32F",
+      "pretestBytes": 5452,
+      "actualBytes": 5452,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionSnapshot.java",
+      "pretestSha256": "615ACD1676E9E74AD34A1E73A48A45255269E7EF410CBD3BBBF5A70DAA34D61E",
+      "actualSha256": "615ACD1676E9E74AD34A1E73A48A45255269E7EF410CBD3BBBF5A70DAA34D61E",
+      "pretestBytes": 3854,
+      "actualBytes": 3854,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionRevokeReason.java",
+      "pretestSha256": "0C076E9BF5CF002542EF35931E0BAC26FB5F1F5558BD39C7FDFAF6E1C0C5857F",
+      "actualSha256": "0C076E9BF5CF002542EF35931E0BAC26FB5F1F5558BD39C7FDFAF6E1C0C5857F",
+      "pretestBytes": 162,
+      "actualBytes": 162,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthMethod.java",
+      "pretestSha256": "60BEE3DC0D44DF2E3F3813E7FD67F0401678D6F4173AF32CAAD9F726DA5566A8",
+      "actualSha256": "60BEE3DC0D44DF2E3F3813E7FD67F0401678D6F4173AF32CAAD9F726DA5566A8",
+      "pretestBytes": 105,
+      "actualBytes": 105,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SecurityEvent.java",
+      "pretestSha256": "8FFDA7A8CC0019AA8D8D158219357D7AB550BD1B66881A58652DC873D5FB5963",
+      "actualSha256": "8FFDA7A8CC0019AA8D8D158219357D7AB550BD1B66881A58652DC873D5FB5963",
+      "pretestBytes": 1185,
+      "actualBytes": 1185,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/SessionStatePort.java",
+      "pretestSha256": "C88C575F7E4CA105C5E005993073F709E6BC6558FFCC65420EEAC3F4EEF27376",
+      "actualSha256": "C88C575F7E4CA105C5E005993073F709E6BC6558FFCC65420EEAC3F4EEF27376",
+      "pretestBytes": 14167,
+      "actualBytes": 14167,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/CredentialSessionTransactionPort.java",
+      "pretestSha256": "0CFB943D94A7FBD702C37F7255D62B03E4B0C733DFCA7272D94B4ACA5758E7C2",
+      "actualSha256": "0CFB943D94A7FBD702C37F7255D62B03E4B0C733DFCA7272D94B4ACA5758E7C2",
+      "pretestBytes": 3946,
+      "actualBytes": 3946,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+      "pretestSha256": "7F3F6D9B2F78BED99B22D89B8F943481CD4DB5FBD672EE977D39533418FABD13",
+      "actualSha256": "7F3F6D9B2F78BED99B22D89B8F943481CD4DB5FBD672EE977D39533418FABD13",
+      "pretestBytes": 4573,
+      "actualBytes": 4573,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java",
+      "pretestSha256": "F5F06EF05CC7D3F15C2941E407128DE63B4FF0A1C6D1300CB0E655B2D0FD8D1A",
+      "actualSha256": "F5F06EF05CC7D3F15C2941E407128DE63B4FF0A1C6D1300CB0E655B2D0FD8D1A",
+      "pretestBytes": 4056,
+      "actualBytes": 4056,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionLifecycleService.java",
+      "pretestSha256": "410FF98941CE148B0738AC55E5300C3B98FFE442D2F5BBAAF27FE0CC9E35A0CD",
+      "actualSha256": "410FF98941CE148B0738AC55E5300C3B98FFE442D2F5BBAAF27FE0CC9E35A0CD",
+      "pretestBytes": 15753,
+      "actualBytes": 15753,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+      "pretestSha256": "91FC1DDDCE3910AAE09F4FCF862B94EF6A62C6F13923A18721865BCA4221A2D5",
+      "actualSha256": "91FC1DDDCE3910AAE09F4FCF862B94EF6A62C6F13923A18721865BCA4221A2D5",
+      "pretestBytes": 3392,
+      "actualBytes": 3392,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "pretestSha256": "E1BFD70821025BC673A75ACD0A8D1A96643A216C5911AF9D94502221B4B8530D",
+      "actualSha256": "E1BFD70821025BC673A75ACD0A8D1A96643A216C5911AF9D94502221B4B8530D",
+      "pretestBytes": 3176,
+      "actualBytes": 3176,
+      "hashMatch": true,
+      "bytesMatch": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "pretestSha256": "0121159CBACFCA33A81B27D3B3F8D5BF34832894B65DE7AFA2B1FBBCECF2DA82",
+      "actualSha256": "0121159CBACFCA33A81B27D3B3F8D5BF34832894B65DE7AFA2B1FBBCECF2DA82",
+      "pretestBytes": 38791,
+      "actualBytes": 38791,
+      "hashMatch": true,
+      "bytesMatch": true
+    }
+  ]
+}

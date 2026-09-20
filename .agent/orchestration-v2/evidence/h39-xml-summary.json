@@ -1,0 +1,10 @@
+{
+  "failures": "0",
+  "tests": "3",
+  "errors": "0",
+  "sha256": "4B907F9957BC904010A89909F3E3F5796705E70CD8686EFAD6A1C9688A51973D",
+  "name": "ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT",
+  "fresh": true,
+  "skipped": "0",
+  "lastWriteUtc": "2026-09-15T17:44:34.0457669Z"
+}

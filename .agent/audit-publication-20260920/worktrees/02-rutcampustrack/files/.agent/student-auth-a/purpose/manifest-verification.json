@@ -1,0 +1,10 @@
+{
+  "manifestPath": ".agent/student-auth-a/purpose/manifest.json",
+  "manifestSha256": "393721C46A2302BA747B48FA367812B5A7FB7EEA59492627BFD9ABBF3FB75587",
+  "verificationCommand": "PowerShell read-only hash/byte comparison of productFiles, canonicalSources, and capturedArtifacts.evidencePath",
+  "mismatchCount": 0,
+  "productEntryCount": 4,
+  "canonicalSourceEntryCount": 2,
+  "capturedEvidenceEntryCount": 3,
+  "gradleRerun": false
+}

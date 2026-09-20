@@ -1,0 +1,60 @@
+{
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "environment": {
+    "shell": "PowerShell 7.6.5",
+    "os": "Windows 11 / build 10.0.26200",
+    "java": "Microsoft OpenJDK 21.0.10 LTS",
+    "gradle": "Gradle 8.12 wrapper"
+  },
+  "checks": [
+    {
+      "id": "focused-auth-purpose-unit",
+      "criterion": "strict signed access/refresh/internal purpose parsing and fail-closed Auth filter",
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:test --tests ru.rutcampustrack.auth.service.JwtTokenPurposeTest --tests ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest --no-daemon --max-workers=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": {
+        "parserTests": 8,
+        "filterTests": 5,
+        "failures": 0,
+        "errors": 0,
+        "testReports": [
+          {
+            "source": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+            "sha256": "E1A5DCEAAB7F8D07ABF065616CF8F1FFBD5405EAA2CA668B5191BC697361B55F",
+            "bytes": 1552,
+            "evidenceCopy": ".agent/student-auth-a/purpose/evidence/junit/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+            "evidenceSha256": "8444CB3C65BE74DF80E72B9D122B3D7DD6580E443124B0A01207AFEF1C0D62ED",
+            "evidenceBytes": 1538
+          },
+          {
+            "source": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml",
+            "sha256": "9903E9773A7C508BCA3886868A54DC6267620A2D2D17184BA6C3B414DF3BF217",
+            "bytes": 1971,
+            "evidenceCopy": ".agent/student-auth-a/purpose/evidence/junit/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml",
+            "evidenceSha256": "F6C2280E3034F8A76E74B36649824A56368624D2FF0CEE2AF3ADE0EEB5B884EA",
+            "evidenceBytes": 1836
+          }
+        ]
+      },
+      "runtime": "focused servlet/filter behavior is exercised; no external product runtime"
+    },
+    {
+      "id": "diff-check",
+      "criterion": "no whitespace errors in tracked source diff",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "No diff-check errors; environment emitted only existing profile/Git access warnings."
+    },
+    {
+      "id": "full-http-gateway-integration",
+      "criterion": "S3 full ingress/downstream/security validation",
+      "command": "Not run in bounded auth-app lease",
+      "exitCode": null,
+      "status": "OPEN",
+      "evidence": "Requires root/session integration packet and its runtime resources; outside this four-file purpose scope.",
+      "evidenceLog": ".agent/student-auth-a/purpose/evidence/executed.log"
+    }
+  ]
+}

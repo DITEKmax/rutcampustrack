@@ -1,0 +1,15 @@
+{
+  "capturedAt": "2026-09-08",
+  "baseRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "workingTree": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack",
+  "targets": [
+    {"path":"services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql","presence":"present","rawSha256":"7B35F18418DFE860A04BE469040F5DE277B5A6B517CC721048FE7DF80C0264AA","bytes":7242},
+    {"path":"services/academic-service/academic-app/src/main/resources/db/migration/V25__student_subject_homework_foundation.sql","presence":"present","rawSha256":"2C378F0ED6EF41A47421602421E8DDFCBB73289D281FEE4D6BDE3B194D1E3311","bytes":7463},
+    {"path":"services/academic-service/academic-app/src/main/resources/db/migration/V26__campus_map.sql","presence":"present","rawSha256":"4A846E63DF1A9E890DEF336BC97B71F17E37C503F745785D68DBDF4155F0F7AE","bytes":14315},
+    {"path":"services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql","presence":"present","rawSha256":"E7CC49423A57D7DE377F49157B573D2D2EE0D36379BBF5DE1B9E7D26D5B2DABB","bytes":14052},
+    {"path":"services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/StudentFoundationMigrationIT.java","presence":"absent"},
+    {"path":"services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java","presence":"absent"},
+    {"path":"services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java","presence":"present","rawSha256":"FD1F7138B0F98ACA1C2E7C1BB8D8972206109607BFE163D08DD368EF69DF1A33","bytes":6514}
+  ],
+  "foreignManifest":{"path":".agent/student-academic-b/union/resume-recovery/manifest.json","rawSha256":"67DFF5431BA38624675572092A464CF366E0AE8D40352E03C1201C36E5ADE912","bytes":151875}
+}

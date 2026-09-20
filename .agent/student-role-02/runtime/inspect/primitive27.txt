@@ -1,0 +1,1220 @@
+Compiled from "PrimitiveType.java"
+public abstract class io.swagger.v3.core.util.PrimitiveType extends java.lang.Enum<io.swagger.v3.core.util.PrimitiveType> {
+  public static final io.swagger.v3.core.util.PrimitiveType STRING;
+
+  public static final io.swagger.v3.core.util.PrimitiveType BOOLEAN;
+
+  public static final io.swagger.v3.core.util.PrimitiveType BYTE;
+
+  public static final io.swagger.v3.core.util.PrimitiveType BINARY;
+
+  public static final io.swagger.v3.core.util.PrimitiveType URI;
+
+  public static final io.swagger.v3.core.util.PrimitiveType URL;
+
+  public static final io.swagger.v3.core.util.PrimitiveType EMAIL;
+
+  public static final io.swagger.v3.core.util.PrimitiveType UUID;
+
+  public static final io.swagger.v3.core.util.PrimitiveType INT;
+
+  public static final io.swagger.v3.core.util.PrimitiveType LONG;
+
+  public static final io.swagger.v3.core.util.PrimitiveType FLOAT;
+
+  public static final io.swagger.v3.core.util.PrimitiveType DOUBLE;
+
+  public static final io.swagger.v3.core.util.PrimitiveType INTEGER;
+
+  public static final io.swagger.v3.core.util.PrimitiveType DECIMAL;
+
+  public static final io.swagger.v3.core.util.PrimitiveType NUMBER;
+
+  public static final io.swagger.v3.core.util.PrimitiveType DATE;
+
+  public static final io.swagger.v3.core.util.PrimitiveType DATE_TIME;
+
+  public static final io.swagger.v3.core.util.PrimitiveType PARTIAL_TIME;
+
+  public static final io.swagger.v3.core.util.PrimitiveType FILE;
+
+  public static final io.swagger.v3.core.util.PrimitiveType OBJECT;
+
+  private static final java.util.Map<java.lang.Class<?>, io.swagger.v3.core.util.PrimitiveType> KEY_CLASSES;
+
+  private static final java.util.Map<java.lang.Class<?>, java.util.Collection<io.swagger.v3.core.util.PrimitiveType>> MULTI_KEY_CLASSES;
+
+  private static final java.util.Map<java.lang.Class<?>, io.swagger.v3.core.util.PrimitiveType> BASE_CLASSES;
+
+  private static final java.util.Map<java.lang.String, io.swagger.v3.core.util.PrimitiveType> EXTERNAL_CLASSES;
+
+  private static java.util.Set<java.lang.String> customExcludedClasses;
+
+  private static java.util.Set<java.lang.String> customExcludedExternalClasses;
+
+  private static java.util.Map<java.lang.String, io.swagger.v3.core.util.PrimitiveType> customClasses;
+
+  private static java.util.Set<java.lang.String> systemPrefixes;
+
+  private static java.util.Set<java.lang.String> nonSystemTypes;
+
+  private static java.util.Set<java.lang.String> nonSystemTypePackages;
+
+  private static final java.util.Map<java.lang.String, io.swagger.v3.core.util.PrimitiveType> NAMES;
+
+  private final java.lang.Class<?> keyClass;
+
+  private final java.lang.String commonName;
+
+  public static final java.util.Map<java.lang.String, java.lang.String> datatypeMappings;
+
+  private static final io.swagger.v3.core.util.PrimitiveType[] $VALUES;
+
+  public static io.swagger.v3.core.util.PrimitiveType[] values();
+    Code:
+       0: getstatic     #3                  // Field $VALUES:[Lio/swagger/v3/core/util/PrimitiveType;
+       3: invokevirtual #4                  // Method "[Lio/swagger/v3/core/util/PrimitiveType;".clone:()Ljava/lang/Object;
+       6: checkcast     #5                  // class "[Lio/swagger/v3/core/util/PrimitiveType;"
+       9: areturn
+
+  public static io.swagger.v3.core.util.PrimitiveType valueOf(java.lang.String);
+    Code:
+       0: ldc           #6                  // class io/swagger/v3/core/util/PrimitiveType
+       2: aload_0
+       3: invokestatic  #7                  // Method java/lang/Enum.valueOf:(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;
+       6: checkcast     #6                  // class io/swagger/v3/core/util/PrimitiveType
+       9: areturn
+
+  private io.swagger.v3.core.util.PrimitiveType(java.lang.Class<?>);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iload_2
+       3: aload_3
+       4: aconst_null
+       5: invokespecial #2                  // Method "<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+       8: return
+
+  private io.swagger.v3.core.util.PrimitiveType(java.lang.Class<?>, java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iload_2
+       3: invokespecial #8                  // Method java/lang/Enum."<init>":(Ljava/lang/String;I)V
+       6: aload_0
+       7: aload_3
+       8: putfield      #9                  // Field keyClass:Ljava/lang/Class;
+      11: aload_0
+      12: aload         4
+      14: putfield      #10                 // Field commonName:Ljava/lang/String;
+      17: return
+
+  public static java.util.Set<java.lang.String> customExcludedClasses();
+    Code:
+       0: getstatic     #11                 // Field customExcludedClasses:Ljava/util/Set;
+       3: areturn
+
+  public static java.util.Set<java.lang.String> customExcludedExternalClasses();
+    Code:
+       0: getstatic     #12                 // Field customExcludedExternalClasses:Ljava/util/Set;
+       3: areturn
+
+  public static java.util.Map<java.lang.String, io.swagger.v3.core.util.PrimitiveType> customClasses();
+    Code:
+       0: getstatic     #13                 // Field customClasses:Ljava/util/Map;
+       3: areturn
+
+  public static java.util.Set<java.lang.String> systemPrefixes();
+    Code:
+       0: getstatic     #14                 // Field systemPrefixes:Ljava/util/Set;
+       3: areturn
+
+  public static java.util.Set<java.lang.String> nonSystemTypes();
+    Code:
+       0: getstatic     #15                 // Field nonSystemTypes:Ljava/util/Set;
+       3: areturn
+
+  public static java.util.Set<java.lang.String> nonSystemTypePackages();
+    Code:
+       0: getstatic     #16                 // Field nonSystemTypePackages:Ljava/util/Set;
+       3: areturn
+
+  public static io.swagger.v3.core.util.PrimitiveType fromTypeAndFormat(java.lang.reflect.Type, java.lang.String);
+    Code:
+       0: invokestatic  #17                 // Method com/fasterxml/jackson/databind/type/TypeFactory.defaultInstance:()Lcom/fasterxml/jackson/databind/type/TypeFactory;
+       3: aload_0
+       4: invokevirtual #18                 // Method com/fasterxml/jackson/databind/type/TypeFactory.constructType:(Ljava/lang/reflect/Type;)Lcom/fasterxml/jackson/databind/JavaType;
+       7: invokevirtual #19                 // Method com/fasterxml/jackson/databind/JavaType.getRawClass:()Ljava/lang/Class;
+      10: astore_2
+      11: getstatic     #20                 // Field MULTI_KEY_CLASSES:Ljava/util/Map;
+      14: aload_2
+      15: invokeinterface #21,  2           // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      20: checkcast     #22                 // class java/util/Collection
+      23: astore_3
+      24: aload_3
+      25: ifnull        44
+      28: aload_3
+      29: invokeinterface #23,  1           // InterfaceMethod java/util/Collection.isEmpty:()Z
+      34: ifne          44
+      37: aload_1
+      38: invokestatic  #24                 // Method org/apache/commons/lang3/StringUtils.isBlank:(Ljava/lang/CharSequence;)Z
+      41: ifeq          49
+      44: aload_0
+      45: invokestatic  #25                 // Method fromType:(Ljava/lang/reflect/Type;)Lio/swagger/v3/core/util/PrimitiveType;
+      48: areturn
+      49: aload_3
+      50: invokeinterface #26,  1           // InterfaceMethod java/util/Collection.stream:()Ljava/util/stream/Stream;
+      55: aload_1
+      56: invokedynamic #27,  0             // InvokeDynamic #0:test:(Ljava/lang/String;)Ljava/util/function/Predicate;
+      61: invokeinterface #28,  2           // InterfaceMethod java/util/stream/Stream.filter:(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;
+      66: invokeinterface #29,  1           // InterfaceMethod java/util/stream/Stream.findAny:()Ljava/util/Optional;
+      71: aconst_null
+      72: invokevirtual #30                 // Method java/util/Optional.orElse:(Ljava/lang/Object;)Ljava/lang/Object;
+      75: checkcast     #6                  // class io/swagger/v3/core/util/PrimitiveType
+      78: areturn
+
+  public static io.swagger.v3.core.util.PrimitiveType fromType(java.lang.reflect.Type);
+    Code:
+       0: invokestatic  #17                 // Method com/fasterxml/jackson/databind/type/TypeFactory.defaultInstance:()Lcom/fasterxml/jackson/databind/type/TypeFactory;
+       3: aload_0
+       4: invokevirtual #18                 // Method com/fasterxml/jackson/databind/type/TypeFactory.constructType:(Ljava/lang/reflect/Type;)Lcom/fasterxml/jackson/databind/JavaType;
+       7: invokevirtual #19                 // Method com/fasterxml/jackson/databind/JavaType.getRawClass:()Ljava/lang/Class;
+      10: astore_1
+      11: getstatic     #31                 // Field KEY_CLASSES:Ljava/util/Map;
+      14: aload_1
+      15: invokeinterface #21,  2           // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      20: checkcast     #6                  // class io/swagger/v3/core/util/PrimitiveType
+      23: astore_2
+      24: aload_2
+      25: ifnull        45
+      28: getstatic     #11                 // Field customExcludedClasses:Ljava/util/Set;
+      31: aload_1
+      32: invokevirtual #32                 // Method java/lang/Class.getName:()Ljava/lang/String;
+      35: invokeinterface #33,  2           // InterfaceMethod java/util/Set.contains:(Ljava/lang/Object;)Z
+      40: ifne          45
+      43: aload_2
+      44: areturn
+      45: getstatic     #20                 // Field MULTI_KEY_CLASSES:Ljava/util/Map;
+      48: aload_1
+      49: invokeinterface #21,  2           // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      54: checkcast     #22                 // class java/util/Collection
+      57: astore_3
+      58: aload_3
+      59: ifnull        105
+      62: aload_3
+      63: invokeinterface #23,  1           // InterfaceMethod java/util/Collection.isEmpty:()Z
+      68: ifne          105
+      71: aload_3
+      72: invokeinterface #34,  1           // InterfaceMethod java/util/Collection.iterator:()Ljava/util/Iterator;
+      77: invokeinterface #35,  1           // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      82: checkcast     #6                  // class io/swagger/v3/core/util/PrimitiveType
+      85: astore        4
+      87: getstatic     #11                 // Field customExcludedClasses:Ljava/util/Set;
+      90: aload_1
+      91: invokevirtual #32                 // Method java/lang/Class.getName:()Ljava/lang/String;
+      94: invokeinterface #33,  2           // InterfaceMethod java/util/Set.contains:(Ljava/lang/Object;)Z
+      99: ifne          105
+     102: aload         4
+     104: areturn
+     105: getstatic     #13                 // Field customClasses:Ljava/util/Map;
+     108: aload_1
+     109: invokevirtual #32                 // Method java/lang/Class.getName:()Ljava/lang/String;
+     112: invokeinterface #21,  2           // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+     117: checkcast     #6                  // class io/swagger/v3/core/util/PrimitiveType
+     120: astore        4
+     122: aload         4
+     124: ifnull        130
+     127: aload         4
+     129: areturn
+     130: getstatic     #36                 // Field EXTERNAL_CLASSES:Ljava/util/Map;
+     133: aload_1
+     134: invokevirtual #32                 // Method java/lang/Class.getName:()Ljava/lang/String;
+     137: invokeinterface #21,  2           // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+     142: checkcast     #6                  // class io/swagger/v3/core/util/PrimitiveType
+     145: astore        5
+     147: aload         5
+     149: ifnull        170
+     152: invokestatic  #37                 // Method customExcludedExternalClasses:()Ljava/util/Set;
+     155: aload_1
+     156: invokevirtual #32                 // Method java/lang/Class.getName:()Ljava/lang/String;
+     159: invokeinterface #33,  2           // InterfaceMethod java/util/Set.contains:(Ljava/lang/Object;)Z
+     164: ifne          170
+     167: aload         5
+     169: areturn
+     170: getstatic     #38                 // Field BASE_CLASSES:Ljava/util/Map;
+     173: invokeinterface #39,  1           // InterfaceMethod java/util/Map.entrySet:()Ljava/util/Set;
+     178: invokeinterface #40,  1           // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+     183: astore        6
+     185: aload         6
+     187: invokeinterface #41,  1           // InterfaceMethod java/util/Iterator.hasNext:()Z
+     192: ifeq          238
+     195: aload         6
+     197: invokeinterface #35,  1           // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     202: checkcast     #42                 // class java/util/Map$Entry
+     205: astore        7
+     207: aload         7
+     209: invokeinterface #43,  1           // InterfaceMethod java/util/Map$Entry.getKey:()Ljava/lang/Object;
+     214: checkcast     #44                 // class java/lang/Class
+     217: aload_1
+     218: invokevirtual #45                 // Method java/lang/Class.isAssignableFrom:(Ljava/lang/Class;)Z
+     221: ifeq          235
+     224: aload         7
+     226: invokeinterface #46,  1           // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+     231: checkcast     #6                  // class io/swagger/v3/core/util/PrimitiveType
+     234: areturn
+     235: goto          185
+     238: aconst_null
+     239: areturn
+
+  public static io.swagger.v3.core.util.PrimitiveType fromName(java.lang.String);
+    Code:
+       0: aload_0
+       1: ifnonnull     6
+       4: aconst_null
+       5: areturn
+       6: getstatic     #47                 // Field NAMES:Ljava/util/Map;
+       9: aload_0
+      10: invokeinterface #21,  2           // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      15: checkcast     #6                  // class io/swagger/v3/core/util/PrimitiveType
+      18: astore_1
+      19: aload_1
+      20: ifnonnull     48
+      23: invokestatic  #37                 // Method customExcludedExternalClasses:()Ljava/util/Set;
+      26: aload_0
+      27: invokeinterface #33,  2           // InterfaceMethod java/util/Set.contains:(Ljava/lang/Object;)Z
+      32: ifne          48
+      35: getstatic     #36                 // Field EXTERNAL_CLASSES:Ljava/util/Map;
+      38: aload_0
+      39: invokeinterface #21,  2           // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      44: checkcast     #6                  // class io/swagger/v3/core/util/PrimitiveType
+      47: astore_1
+      48: aload_1
+      49: areturn
+
+  public static io.swagger.v3.core.util.PrimitiveType fromTypeAndFormat(java.lang.String, java.lang.String);
+    Code:
+       0: aload_0
+       1: invokestatic  #48                 // Method org/apache/commons/lang3/StringUtils.isNotBlank:(Ljava/lang/CharSequence;)Z
+       4: ifeq          18
+       7: aload_0
+       8: ldc           #49                 // String object
+      10: invokevirtual #50                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      13: ifeq          18
+      16: aconst_null
+      17: areturn
+      18: getstatic     #51                 // Field datatypeMappings:Ljava/util/Map;
+      21: ldc           #52                 // String %s_%s
+      23: iconst_2
+      24: anewarray     #53                 // class java/lang/Object
+      27: dup
+      28: iconst_0
+      29: aload_0
+      30: invokestatic  #24                 // Method org/apache/commons/lang3/StringUtils.isBlank:(Ljava/lang/CharSequence;)Z
+      33: ifeq          41
+      36: ldc           #54                 // String
+      38: goto          42
+      41: aload_0
+      42: aastore
+      43: dup
+      44: iconst_1
+      45: aload_1
+      46: invokestatic  #24                 // Method org/apache/commons/lang3/StringUtils.isBlank:(Ljava/lang/CharSequence;)Z
+      49: ifeq          57
+      52: ldc           #54                 // String
+      54: goto          58
+      57: aload_1
+      58: aastore
+      59: invokestatic  #55                 // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      62: invokeinterface #21,  2           // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      67: checkcast     #56                 // class java/lang/String
+      70: invokestatic  #57                 // Method fromName:(Ljava/lang/String;)Lio/swagger/v3/core/util/PrimitiveType;
+      73: areturn
+
+  public static io.swagger.v3.oas.models.media.Schema createProperty(java.lang.reflect.Type);
+    Code:
+       0: aload_0
+       1: invokestatic  #25                 // Method fromType:(Ljava/lang/reflect/Type;)Lio/swagger/v3/core/util/PrimitiveType;
+       4: astore_1
+       5: aload_1
+       6: ifnonnull     13
+       9: aconst_null
+      10: goto          17
+      13: aload_1
+      14: invokevirtual #58                 // Method createProperty:()Lio/swagger/v3/oas/models/media/Schema;
+      17: areturn
+
+  public static io.swagger.v3.oas.models.media.Schema createProperty(java.lang.String);
+    Code:
+       0: aload_0
+       1: invokestatic  #57                 // Method fromName:(Ljava/lang/String;)Lio/swagger/v3/core/util/PrimitiveType;
+       4: astore_1
+       5: aload_1
+       6: ifnonnull     13
+       9: aconst_null
+      10: goto          17
+      13: aload_1
+      14: invokevirtual #58                 // Method createProperty:()Lio/swagger/v3/oas/models/media/Schema;
+      17: areturn
+
+  public static java.lang.String getCommonName(java.lang.reflect.Type);
+    Code:
+       0: aload_0
+       1: invokestatic  #25                 // Method fromType:(Ljava/lang/reflect/Type;)Lio/swagger/v3/core/util/PrimitiveType;
+       4: astore_1
+       5: aload_1
+       6: ifnonnull     13
+       9: aconst_null
+      10: goto          17
+      13: aload_1
+      14: invokevirtual #59                 // Method getCommonName:()Ljava/lang/String;
+      17: areturn
+
+  public java.lang.Class<?> getKeyClass();
+    Code:
+       0: aload_0
+       1: getfield      #9                  // Field keyClass:Ljava/lang/Class;
+       4: areturn
+
+  public java.lang.String getCommonName();
+    Code:
+       0: aload_0
+       1: getfield      #10                 // Field commonName:Ljava/lang/String;
+       4: areturn
+
+  public abstract io.swagger.v3.oas.models.media.Schema createProperty();
+
+  private static <K> void addKeys(java.util.Map<K, io.swagger.v3.core.util.PrimitiveType>, io.swagger.v3.core.util.PrimitiveType, K...);
+    Code:
+       0: aload_2
+       1: astore_3
+       2: aload_3
+       3: arraylength
+       4: istore        4
+       6: iconst_0
+       7: istore        5
+       9: iload         5
+      11: iload         4
+      13: if_icmpge     38
+      16: aload_3
+      17: iload         5
+      19: aaload
+      20: astore        6
+      22: aload_0
+      23: aload         6
+      25: aload_1
+      26: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      31: pop
+      32: iinc          5, 1
+      35: goto          9
+      38: return
+
+  private static <K> void addMultiKeys(java.util.Map<K, java.util.Collection<io.swagger.v3.core.util.PrimitiveType>>, io.swagger.v3.core.util.PrimitiveType, K...);
+    Code:
+       0: aload_2
+       1: astore_3
+       2: aload_3
+       3: arraylength
+       4: istore        4
+       6: iconst_0
+       7: istore        5
+       9: iload         5
+      11: iload         4
+      13: if_icmpge     73
+      16: aload_3
+      17: iload         5
+      19: aaload
+      20: astore        6
+      22: aload_0
+      23: aload         6
+      25: invokeinterface #61,  2           // InterfaceMethod java/util/Map.containsKey:(Ljava/lang/Object;)Z
+      30: ifne          49
+      33: aload_0
+      34: aload         6
+      36: new           #62                 // class java/util/ArrayList
+      39: dup
+      40: invokespecial #63                 // Method java/util/ArrayList."<init>":()V
+      43: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      48: pop
+      49: aload_0
+      50: aload         6
+      52: invokeinterface #21,  2           // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      57: checkcast     #22                 // class java/util/Collection
+      60: aload_1
+      61: invokeinterface #64,  2           // InterfaceMethod java/util/Collection.add:(Ljava/lang/Object;)Z
+      66: pop
+      67: iinc          5, 1
+      70: goto          9
+      73: return
+
+  public static void enablePartialTime();
+    Code:
+       0: invokestatic  #65                 // Method customClasses:()Ljava/util/Map;
+       3: ldc           #66                 // String org.joda.time.LocalTime
+       5: getstatic     #67                 // Field PARTIAL_TIME:Lio/swagger/v3/core/util/PrimitiveType;
+       8: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      13: pop
+      14: invokestatic  #65                 // Method customClasses:()Ljava/util/Map;
+      17: ldc           #68                 // String java.time.LocalTime
+      19: getstatic     #67                 // Field PARTIAL_TIME:Lio/swagger/v3/core/util/PrimitiveType;
+      22: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      27: pop
+      28: return
+
+  private static boolean lambda$fromTypeAndFormat$0(java.lang.String, io.swagger.v3.core.util.PrimitiveType);
+    Code:
+       0: aload_1
+       1: invokevirtual #59                 // Method getCommonName:()Ljava/lang/String;
+       4: aload_0
+       5: invokevirtual #69                 // Method java/lang/String.equalsIgnoreCase:(Ljava/lang/String;)Z
+       8: ireturn
+
+  io.swagger.v3.core.util.PrimitiveType(java.lang.String, int, java.lang.Class, java.lang.String, io.swagger.v3.core.util.PrimitiveType$1);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iload_2
+       3: aload_3
+       4: aload         4
+       6: invokespecial #2                  // Method "<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+       9: return
+
+  io.swagger.v3.core.util.PrimitiveType(java.lang.String, int, java.lang.Class, io.swagger.v3.core.util.PrimitiveType$1);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iload_2
+       3: aload_3
+       4: invokespecial #1                  // Method "<init>":(Ljava/lang/String;ILjava/lang/Class;)V
+       7: return
+
+  static {};
+    Code:
+       0: new           #70                 // class io/swagger/v3/core/util/PrimitiveType$1
+       3: dup
+       4: ldc           #71                 // String STRING
+       6: iconst_0
+       7: ldc           #56                 // class java/lang/String
+       9: ldc           #72                 // String string
+      11: invokespecial #73                 // Method io/swagger/v3/core/util/PrimitiveType$1."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+      14: putstatic     #74                 // Field STRING:Lio/swagger/v3/core/util/PrimitiveType;
+      17: new           #75                 // class io/swagger/v3/core/util/PrimitiveType$2
+      20: dup
+      21: ldc           #76                 // String BOOLEAN
+      23: iconst_1
+      24: ldc           #77                 // class java/lang/Boolean
+      26: ldc           #78                 // String boolean
+      28: invokespecial #79                 // Method io/swagger/v3/core/util/PrimitiveType$2."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+      31: putstatic     #80                 // Field BOOLEAN:Lio/swagger/v3/core/util/PrimitiveType;
+      34: new           #81                 // class io/swagger/v3/core/util/PrimitiveType$3
+      37: dup
+      38: ldc           #82                 // String BYTE
+      40: iconst_2
+      41: ldc           #83                 // class java/lang/Byte
+      43: ldc           #84                 // String byte
+      45: invokespecial #85                 // Method io/swagger/v3/core/util/PrimitiveType$3."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+      48: putstatic     #86                 // Field BYTE:Lio/swagger/v3/core/util/PrimitiveType;
+      51: new           #87                 // class io/swagger/v3/core/util/PrimitiveType$4
+      54: dup
+      55: ldc           #88                 // String BINARY
+      57: iconst_3
+      58: ldc           #83                 // class java/lang/Byte
+      60: ldc           #89                 // String binary
+      62: invokespecial #90                 // Method io/swagger/v3/core/util/PrimitiveType$4."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+      65: putstatic     #91                 // Field BINARY:Lio/swagger/v3/core/util/PrimitiveType;
+      68: new           #92                 // class io/swagger/v3/core/util/PrimitiveType$5
+      71: dup
+      72: ldc           #93                 // String URI
+      74: iconst_4
+      75: ldc           #94                 // class java/net/URI
+      77: ldc           #95                 // String uri
+      79: invokespecial #96                 // Method io/swagger/v3/core/util/PrimitiveType$5."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+      82: putstatic     #97                 // Field URI:Lio/swagger/v3/core/util/PrimitiveType;
+      85: new           #98                 // class io/swagger/v3/core/util/PrimitiveType$6
+      88: dup
+      89: ldc           #99                 // String URL
+      91: iconst_5
+      92: ldc           #100                // class java/net/URL
+      94: ldc           #101                // String url
+      96: invokespecial #102                // Method io/swagger/v3/core/util/PrimitiveType$6."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+      99: putstatic     #103                // Field URL:Lio/swagger/v3/core/util/PrimitiveType;
+     102: new           #104                // class io/swagger/v3/core/util/PrimitiveType$7
+     105: dup
+     106: ldc           #105                // String EMAIL
+     108: bipush        6
+     110: ldc           #56                 // class java/lang/String
+     112: ldc           #106                // String email
+     114: invokespecial #107                // Method io/swagger/v3/core/util/PrimitiveType$7."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     117: putstatic     #108                // Field EMAIL:Lio/swagger/v3/core/util/PrimitiveType;
+     120: new           #109                // class io/swagger/v3/core/util/PrimitiveType$8
+     123: dup
+     124: ldc           #110                // String UUID
+     126: bipush        7
+     128: ldc           #111                // class java/util/UUID
+     130: ldc           #112                // String uuid
+     132: invokespecial #113                // Method io/swagger/v3/core/util/PrimitiveType$8."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     135: putstatic     #114                // Field UUID:Lio/swagger/v3/core/util/PrimitiveType;
+     138: new           #115                // class io/swagger/v3/core/util/PrimitiveType$9
+     141: dup
+     142: ldc           #116                // String INT
+     144: bipush        8
+     146: ldc           #117                // class java/lang/Integer
+     148: ldc           #118                // String integer
+     150: invokespecial #119                // Method io/swagger/v3/core/util/PrimitiveType$9."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     153: putstatic     #120                // Field INT:Lio/swagger/v3/core/util/PrimitiveType;
+     156: new           #121                // class io/swagger/v3/core/util/PrimitiveType$10
+     159: dup
+     160: ldc           #122                // String LONG
+     162: bipush        9
+     164: ldc           #123                // class java/lang/Long
+     166: ldc           #124                // String long
+     168: invokespecial #125                // Method io/swagger/v3/core/util/PrimitiveType$10."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     171: putstatic     #126                // Field LONG:Lio/swagger/v3/core/util/PrimitiveType;
+     174: new           #127                // class io/swagger/v3/core/util/PrimitiveType$11
+     177: dup
+     178: ldc           #128                // String FLOAT
+     180: bipush        10
+     182: ldc           #129                // class java/lang/Float
+     184: ldc           #130                // String float
+     186: invokespecial #131                // Method io/swagger/v3/core/util/PrimitiveType$11."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     189: putstatic     #132                // Field FLOAT:Lio/swagger/v3/core/util/PrimitiveType;
+     192: new           #133                // class io/swagger/v3/core/util/PrimitiveType$12
+     195: dup
+     196: ldc           #134                // String DOUBLE
+     198: bipush        11
+     200: ldc           #135                // class java/lang/Double
+     202: ldc           #136                // String double
+     204: invokespecial #137                // Method io/swagger/v3/core/util/PrimitiveType$12."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     207: putstatic     #138                // Field DOUBLE:Lio/swagger/v3/core/util/PrimitiveType;
+     210: new           #139                // class io/swagger/v3/core/util/PrimitiveType$13
+     213: dup
+     214: ldc           #140                // String INTEGER
+     216: bipush        12
+     218: ldc           #141                // class java/math/BigInteger
+     220: invokespecial #142                // Method io/swagger/v3/core/util/PrimitiveType$13."<init>":(Ljava/lang/String;ILjava/lang/Class;)V
+     223: putstatic     #143                // Field INTEGER:Lio/swagger/v3/core/util/PrimitiveType;
+     226: new           #144                // class io/swagger/v3/core/util/PrimitiveType$14
+     229: dup
+     230: ldc           #145                // String DECIMAL
+     232: bipush        13
+     234: ldc           #146                // class java/math/BigDecimal
+     236: ldc           #147                // String number
+     238: invokespecial #148                // Method io/swagger/v3/core/util/PrimitiveType$14."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     241: putstatic     #149                // Field DECIMAL:Lio/swagger/v3/core/util/PrimitiveType;
+     244: new           #150                // class io/swagger/v3/core/util/PrimitiveType$15
+     247: dup
+     248: ldc           #151                // String NUMBER
+     250: bipush        14
+     252: ldc           #152                // class java/lang/Number
+     254: ldc           #147                // String number
+     256: invokespecial #153                // Method io/swagger/v3/core/util/PrimitiveType$15."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     259: putstatic     #154                // Field NUMBER:Lio/swagger/v3/core/util/PrimitiveType;
+     262: new           #155                // class io/swagger/v3/core/util/PrimitiveType$16
+     265: dup
+     266: ldc           #156                // String DATE
+     268: bipush        15
+     270: ldc           #157                // class io/swagger/v3/core/util/PrimitiveType$DateStub
+     272: ldc           #158                // String date
+     274: invokespecial #159                // Method io/swagger/v3/core/util/PrimitiveType$16."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     277: putstatic     #160                // Field DATE:Lio/swagger/v3/core/util/PrimitiveType;
+     280: new           #161                // class io/swagger/v3/core/util/PrimitiveType$17
+     283: dup
+     284: ldc           #162                // String DATE_TIME
+     286: bipush        16
+     288: ldc           #163                // class java/util/Date
+     290: ldc           #164                // String date-time
+     292: invokespecial #165                // Method io/swagger/v3/core/util/PrimitiveType$17."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     295: putstatic     #166                // Field DATE_TIME:Lio/swagger/v3/core/util/PrimitiveType;
+     298: new           #167                // class io/swagger/v3/core/util/PrimitiveType$18
+     301: dup
+     302: ldc           #168                // String PARTIAL_TIME
+     304: bipush        17
+     306: ldc           #169                // class java/time/LocalTime
+     308: ldc           #170                // String partial-time
+     310: invokespecial #171                // Method io/swagger/v3/core/util/PrimitiveType$18."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     313: putstatic     #67                 // Field PARTIAL_TIME:Lio/swagger/v3/core/util/PrimitiveType;
+     316: new           #172                // class io/swagger/v3/core/util/PrimitiveType$19
+     319: dup
+     320: ldc           #173                // String FILE
+     322: bipush        18
+     324: ldc           #174                // class java/io/File
+     326: ldc           #175                // String file
+     328: invokespecial #176                // Method io/swagger/v3/core/util/PrimitiveType$19."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;)V
+     331: putstatic     #177                // Field FILE:Lio/swagger/v3/core/util/PrimitiveType;
+     334: new           #178                // class io/swagger/v3/core/util/PrimitiveType$20
+     337: dup
+     338: ldc           #179                // String OBJECT
+     340: bipush        19
+     342: ldc           #53                 // class java/lang/Object
+     344: invokespecial #180                // Method io/swagger/v3/core/util/PrimitiveType$20."<init>":(Ljava/lang/String;ILjava/lang/Class;)V
+     347: putstatic     #181                // Field OBJECT:Lio/swagger/v3/core/util/PrimitiveType;
+     350: bipush        20
+     352: anewarray     #6                  // class io/swagger/v3/core/util/PrimitiveType
+     355: dup
+     356: iconst_0
+     357: getstatic     #74                 // Field STRING:Lio/swagger/v3/core/util/PrimitiveType;
+     360: aastore
+     361: dup
+     362: iconst_1
+     363: getstatic     #80                 // Field BOOLEAN:Lio/swagger/v3/core/util/PrimitiveType;
+     366: aastore
+     367: dup
+     368: iconst_2
+     369: getstatic     #86                 // Field BYTE:Lio/swagger/v3/core/util/PrimitiveType;
+     372: aastore
+     373: dup
+     374: iconst_3
+     375: getstatic     #91                 // Field BINARY:Lio/swagger/v3/core/util/PrimitiveType;
+     378: aastore
+     379: dup
+     380: iconst_4
+     381: getstatic     #97                 // Field URI:Lio/swagger/v3/core/util/PrimitiveType;
+     384: aastore
+     385: dup
+     386: iconst_5
+     387: getstatic     #103                // Field URL:Lio/swagger/v3/core/util/PrimitiveType;
+     390: aastore
+     391: dup
+     392: bipush        6
+     394: getstatic     #108                // Field EMAIL:Lio/swagger/v3/core/util/PrimitiveType;
+     397: aastore
+     398: dup
+     399: bipush        7
+     401: getstatic     #114                // Field UUID:Lio/swagger/v3/core/util/PrimitiveType;
+     404: aastore
+     405: dup
+     406: bipush        8
+     408: getstatic     #120                // Field INT:Lio/swagger/v3/core/util/PrimitiveType;
+     411: aastore
+     412: dup
+     413: bipush        9
+     415: getstatic     #126                // Field LONG:Lio/swagger/v3/core/util/PrimitiveType;
+     418: aastore
+     419: dup
+     420: bipush        10
+     422: getstatic     #132                // Field FLOAT:Lio/swagger/v3/core/util/PrimitiveType;
+     425: aastore
+     426: dup
+     427: bipush        11
+     429: getstatic     #138                // Field DOUBLE:Lio/swagger/v3/core/util/PrimitiveType;
+     432: aastore
+     433: dup
+     434: bipush        12
+     436: getstatic     #143                // Field INTEGER:Lio/swagger/v3/core/util/PrimitiveType;
+     439: aastore
+     440: dup
+     441: bipush        13
+     443: getstatic     #149                // Field DECIMAL:Lio/swagger/v3/core/util/PrimitiveType;
+     446: aastore
+     447: dup
+     448: bipush        14
+     450: getstatic     #154                // Field NUMBER:Lio/swagger/v3/core/util/PrimitiveType;
+     453: aastore
+     454: dup
+     455: bipush        15
+     457: getstatic     #160                // Field DATE:Lio/swagger/v3/core/util/PrimitiveType;
+     460: aastore
+     461: dup
+     462: bipush        16
+     464: getstatic     #166                // Field DATE_TIME:Lio/swagger/v3/core/util/PrimitiveType;
+     467: aastore
+     468: dup
+     469: bipush        17
+     471: getstatic     #67                 // Field PARTIAL_TIME:Lio/swagger/v3/core/util/PrimitiveType;
+     474: aastore
+     475: dup
+     476: bipush        18
+     478: getstatic     #177                // Field FILE:Lio/swagger/v3/core/util/PrimitiveType;
+     481: aastore
+     482: dup
+     483: bipush        19
+     485: getstatic     #181                // Field OBJECT:Lio/swagger/v3/core/util/PrimitiveType;
+     488: aastore
+     489: putstatic     #3                  // Field $VALUES:[Lio/swagger/v3/core/util/PrimitiveType;
+     492: invokestatic  #182                // Method java/util/concurrent/ConcurrentHashMap.newKeySet:()Ljava/util/concurrent/ConcurrentHashMap$KeySetView;
+     495: putstatic     #11                 // Field customExcludedClasses:Ljava/util/Set;
+     498: invokestatic  #182                // Method java/util/concurrent/ConcurrentHashMap.newKeySet:()Ljava/util/concurrent/ConcurrentHashMap$KeySetView;
+     501: putstatic     #12                 // Field customExcludedExternalClasses:Ljava/util/Set;
+     504: new           #183                // class java/util/concurrent/ConcurrentHashMap
+     507: dup
+     508: invokespecial #184                // Method java/util/concurrent/ConcurrentHashMap."<init>":()V
+     511: putstatic     #13                 // Field customClasses:Ljava/util/Map;
+     514: invokestatic  #182                // Method java/util/concurrent/ConcurrentHashMap.newKeySet:()Ljava/util/concurrent/ConcurrentHashMap$KeySetView;
+     517: putstatic     #14                 // Field systemPrefixes:Ljava/util/Set;
+     520: invokestatic  #182                // Method java/util/concurrent/ConcurrentHashMap.newKeySet:()Ljava/util/concurrent/ConcurrentHashMap$KeySetView;
+     523: putstatic     #15                 // Field nonSystemTypes:Ljava/util/Set;
+     526: invokestatic  #182                // Method java/util/concurrent/ConcurrentHashMap.newKeySet:()Ljava/util/concurrent/ConcurrentHashMap$KeySetView;
+     529: putstatic     #16                 // Field nonSystemTypePackages:Ljava/util/Set;
+     532: getstatic     #14                 // Field systemPrefixes:Ljava/util/Set;
+     535: ldc           #185                // String java.
+     537: invokeinterface #186,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+     542: pop
+     543: getstatic     #14                 // Field systemPrefixes:Ljava/util/Set;
+     546: ldc           #187                // String javax.
+     548: invokeinterface #186,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+     553: pop
+     554: getstatic     #15                 // Field nonSystemTypes:Ljava/util/Set;
+     557: ldc           #68                 // String java.time.LocalTime
+     559: invokeinterface #186,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+     564: pop
+     565: new           #188                // class java/util/HashMap
+     568: dup
+     569: invokespecial #189                // Method java/util/HashMap."<init>":()V
+     572: astore_0
+     573: aload_0
+     574: ldc           #190                // String integer_int32
+     576: ldc           #118                // String integer
+     578: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     583: pop
+     584: aload_0
+     585: ldc           #191                // String integer_
+     587: ldc           #118                // String integer
+     589: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     594: pop
+     595: aload_0
+     596: ldc           #192                // String integer_int64
+     598: ldc           #124                // String long
+     600: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     605: pop
+     606: aload_0
+     607: ldc           #193                // String number_
+     609: ldc           #147                // String number
+     611: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     616: pop
+     617: aload_0
+     618: ldc           #194                // String number_float
+     620: ldc           #130                // String float
+     622: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     627: pop
+     628: aload_0
+     629: ldc           #195                // String number_double
+     631: ldc           #136                // String double
+     633: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     638: pop
+     639: aload_0
+     640: ldc           #196                // String string_
+     642: ldc           #72                 // String string
+     644: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     649: pop
+     650: aload_0
+     651: ldc           #197                // String string_byte
+     653: ldc           #84                 // String byte
+     655: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     660: pop
+     661: aload_0
+     662: ldc           #198                // String string_email
+     664: ldc           #106                // String email
+     666: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     671: pop
+     672: aload_0
+     673: ldc           #199                // String string_binary
+     675: ldc           #89                 // String binary
+     677: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     682: pop
+     683: aload_0
+     684: ldc           #200                // String string_uri
+     686: ldc           #95                 // String uri
+     688: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     693: pop
+     694: aload_0
+     695: ldc           #201                // String string_url
+     697: ldc           #101                // String url
+     699: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     704: pop
+     705: aload_0
+     706: ldc           #202                // String string_uuid
+     708: ldc           #112                // String uuid
+     710: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     715: pop
+     716: aload_0
+     717: ldc           #203                // String string_date
+     719: ldc           #158                // String date
+     721: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     726: pop
+     727: aload_0
+     728: ldc           #204                // String string_date-time
+     730: ldc           #164                // String date-time
+     732: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     737: pop
+     738: aload_0
+     739: ldc           #205                // String string_partial-time
+     741: ldc           #170                // String partial-time
+     743: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     748: pop
+     749: aload_0
+     750: ldc           #206                // String string_password
+     752: ldc           #207                // String password
+     754: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     759: pop
+     760: aload_0
+     761: ldc           #208                // String boolean_
+     763: ldc           #78                 // String boolean
+     765: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     770: pop
+     771: aload_0
+     772: ldc           #209                // String object_
+     774: ldc           #49                 // String object
+     776: invokeinterface #60,  3           // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     781: pop
+     782: aload_0
+     783: invokestatic  #210                // Method java/util/Collections.unmodifiableMap:(Ljava/util/Map;)Ljava/util/Map;
+     786: putstatic     #51                 // Field datatypeMappings:Ljava/util/Map;
+     789: new           #188                // class java/util/HashMap
+     792: dup
+     793: invokespecial #189                // Method java/util/HashMap."<init>":()V
+     796: astore_1
+     797: aload_1
+     798: getstatic     #80                 // Field BOOLEAN:Lio/swagger/v3/core/util/PrimitiveType;
+     801: iconst_2
+     802: anewarray     #44                 // class java/lang/Class
+     805: dup
+     806: iconst_0
+     807: ldc           #77                 // class java/lang/Boolean
+     809: aastore
+     810: dup
+     811: iconst_1
+     812: getstatic     #211                // Field java/lang/Boolean.TYPE:Ljava/lang/Class;
+     815: aastore
+     816: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+     819: aload_1
+     820: getstatic     #74                 // Field STRING:Lio/swagger/v3/core/util/PrimitiveType;
+     823: iconst_3
+     824: anewarray     #44                 // class java/lang/Class
+     827: dup
+     828: iconst_0
+     829: ldc           #56                 // class java/lang/String
+     831: aastore
+     832: dup
+     833: iconst_1
+     834: ldc           #213                // class java/lang/Character
+     836: aastore
+     837: dup
+     838: iconst_2
+     839: getstatic     #214                // Field java/lang/Character.TYPE:Ljava/lang/Class;
+     842: aastore
+     843: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+     846: aload_1
+     847: getstatic     #86                 // Field BYTE:Lio/swagger/v3/core/util/PrimitiveType;
+     850: iconst_2
+     851: anewarray     #44                 // class java/lang/Class
+     854: dup
+     855: iconst_0
+     856: ldc           #83                 // class java/lang/Byte
+     858: aastore
+     859: dup
+     860: iconst_1
+     861: getstatic     #215                // Field java/lang/Byte.TYPE:Ljava/lang/Class;
+     864: aastore
+     865: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+     868: aload_1
+     869: getstatic     #103                // Field URL:Lio/swagger/v3/core/util/PrimitiveType;
+     872: iconst_1
+     873: anewarray     #44                 // class java/lang/Class
+     876: dup
+     877: iconst_0
+     878: ldc           #100                // class java/net/URL
+     880: aastore
+     881: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+     884: aload_1
+     885: getstatic     #97                 // Field URI:Lio/swagger/v3/core/util/PrimitiveType;
+     888: iconst_1
+     889: anewarray     #44                 // class java/lang/Class
+     892: dup
+     893: iconst_0
+     894: ldc           #94                 // class java/net/URI
+     896: aastore
+     897: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+     900: aload_1
+     901: getstatic     #114                // Field UUID:Lio/swagger/v3/core/util/PrimitiveType;
+     904: iconst_1
+     905: anewarray     #44                 // class java/lang/Class
+     908: dup
+     909: iconst_0
+     910: ldc           #111                // class java/util/UUID
+     912: aastore
+     913: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+     916: aload_1
+     917: getstatic     #120                // Field INT:Lio/swagger/v3/core/util/PrimitiveType;
+     920: iconst_4
+     921: anewarray     #44                 // class java/lang/Class
+     924: dup
+     925: iconst_0
+     926: ldc           #117                // class java/lang/Integer
+     928: aastore
+     929: dup
+     930: iconst_1
+     931: getstatic     #216                // Field java/lang/Integer.TYPE:Ljava/lang/Class;
+     934: aastore
+     935: dup
+     936: iconst_2
+     937: ldc           #217                // class java/lang/Short
+     939: aastore
+     940: dup
+     941: iconst_3
+     942: getstatic     #218                // Field java/lang/Short.TYPE:Ljava/lang/Class;
+     945: aastore
+     946: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+     949: aload_1
+     950: getstatic     #126                // Field LONG:Lio/swagger/v3/core/util/PrimitiveType;
+     953: iconst_2
+     954: anewarray     #44                 // class java/lang/Class
+     957: dup
+     958: iconst_0
+     959: ldc           #123                // class java/lang/Long
+     961: aastore
+     962: dup
+     963: iconst_1
+     964: getstatic     #219                // Field java/lang/Long.TYPE:Ljava/lang/Class;
+     967: aastore
+     968: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+     971: aload_1
+     972: getstatic     #132                // Field FLOAT:Lio/swagger/v3/core/util/PrimitiveType;
+     975: iconst_2
+     976: anewarray     #44                 // class java/lang/Class
+     979: dup
+     980: iconst_0
+     981: ldc           #129                // class java/lang/Float
+     983: aastore
+     984: dup
+     985: iconst_1
+     986: getstatic     #220                // Field java/lang/Float.TYPE:Ljava/lang/Class;
+     989: aastore
+     990: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+     993: aload_1
+     994: getstatic     #138                // Field DOUBLE:Lio/swagger/v3/core/util/PrimitiveType;
+     997: iconst_2
+     998: anewarray     #44                 // class java/lang/Class
+    1001: dup
+    1002: iconst_0
+    1003: ldc           #135                // class java/lang/Double
+    1005: aastore
+    1006: dup
+    1007: iconst_1
+    1008: getstatic     #221                // Field java/lang/Double.TYPE:Ljava/lang/Class;
+    1011: aastore
+    1012: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1015: aload_1
+    1016: getstatic     #143                // Field INTEGER:Lio/swagger/v3/core/util/PrimitiveType;
+    1019: iconst_1
+    1020: anewarray     #44                 // class java/lang/Class
+    1023: dup
+    1024: iconst_0
+    1025: ldc           #141                // class java/math/BigInteger
+    1027: aastore
+    1028: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1031: aload_1
+    1032: getstatic     #149                // Field DECIMAL:Lio/swagger/v3/core/util/PrimitiveType;
+    1035: iconst_1
+    1036: anewarray     #44                 // class java/lang/Class
+    1039: dup
+    1040: iconst_0
+    1041: ldc           #146                // class java/math/BigDecimal
+    1043: aastore
+    1044: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1047: aload_1
+    1048: getstatic     #154                // Field NUMBER:Lio/swagger/v3/core/util/PrimitiveType;
+    1051: iconst_1
+    1052: anewarray     #44                 // class java/lang/Class
+    1055: dup
+    1056: iconst_0
+    1057: ldc           #152                // class java/lang/Number
+    1059: aastore
+    1060: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1063: aload_1
+    1064: getstatic     #160                // Field DATE:Lio/swagger/v3/core/util/PrimitiveType;
+    1067: iconst_1
+    1068: anewarray     #44                 // class java/lang/Class
+    1071: dup
+    1072: iconst_0
+    1073: ldc           #157                // class io/swagger/v3/core/util/PrimitiveType$DateStub
+    1075: aastore
+    1076: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1079: aload_1
+    1080: getstatic     #166                // Field DATE_TIME:Lio/swagger/v3/core/util/PrimitiveType;
+    1083: iconst_1
+    1084: anewarray     #44                 // class java/lang/Class
+    1087: dup
+    1088: iconst_0
+    1089: ldc           #163                // class java/util/Date
+    1091: aastore
+    1092: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1095: aload_1
+    1096: getstatic     #177                // Field FILE:Lio/swagger/v3/core/util/PrimitiveType;
+    1099: iconst_1
+    1100: anewarray     #44                 // class java/lang/Class
+    1103: dup
+    1104: iconst_0
+    1105: ldc           #174                // class java/io/File
+    1107: aastore
+    1108: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1111: aload_1
+    1112: getstatic     #181                // Field OBJECT:Lio/swagger/v3/core/util/PrimitiveType;
+    1115: iconst_1
+    1116: anewarray     #44                 // class java/lang/Class
+    1119: dup
+    1120: iconst_0
+    1121: ldc           #53                 // class java/lang/Object
+    1123: aastore
+    1124: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1127: aload_1
+    1128: invokestatic  #210                // Method java/util/Collections.unmodifiableMap:(Ljava/util/Map;)Ljava/util/Map;
+    1131: putstatic     #31                 // Field KEY_CLASSES:Ljava/util/Map;
+    1134: new           #188                // class java/util/HashMap
+    1137: dup
+    1138: invokespecial #189                // Method java/util/HashMap."<init>":()V
+    1141: astore_2
+    1142: aload_2
+    1143: getstatic     #86                 // Field BYTE:Lio/swagger/v3/core/util/PrimitiveType;
+    1146: iconst_1
+    1147: anewarray     #44                 // class java/lang/Class
+    1150: dup
+    1151: iconst_0
+    1152: ldc           #222                // class "[B"
+    1154: aastore
+    1155: invokestatic  #223                // Method addMultiKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1158: aload_2
+    1159: getstatic     #91                 // Field BINARY:Lio/swagger/v3/core/util/PrimitiveType;
+    1162: iconst_1
+    1163: anewarray     #44                 // class java/lang/Class
+    1166: dup
+    1167: iconst_0
+    1168: ldc           #222                // class "[B"
+    1170: aastore
+    1171: invokestatic  #223                // Method addMultiKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1174: aload_2
+    1175: invokestatic  #210                // Method java/util/Collections.unmodifiableMap:(Ljava/util/Map;)Ljava/util/Map;
+    1178: putstatic     #20                 // Field MULTI_KEY_CLASSES:Ljava/util/Map;
+    1181: new           #188                // class java/util/HashMap
+    1184: dup
+    1185: invokespecial #189                // Method java/util/HashMap."<init>":()V
+    1188: astore_3
+    1189: aload_3
+    1190: getstatic     #166                // Field DATE_TIME:Lio/swagger/v3/core/util/PrimitiveType;
+    1193: iconst_2
+    1194: anewarray     #44                 // class java/lang/Class
+    1197: dup
+    1198: iconst_0
+    1199: ldc           #163                // class java/util/Date
+    1201: aastore
+    1202: dup
+    1203: iconst_1
+    1204: ldc           #224                // class java/util/Calendar
+    1206: aastore
+    1207: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1210: aload_3
+    1211: invokestatic  #210                // Method java/util/Collections.unmodifiableMap:(Ljava/util/Map;)Ljava/util/Map;
+    1214: putstatic     #38                 // Field BASE_CLASSES:Ljava/util/Map;
+    1217: new           #188                // class java/util/HashMap
+    1220: dup
+    1221: invokespecial #189                // Method java/util/HashMap."<init>":()V
+    1224: astore        4
+    1226: aload         4
+    1228: getstatic     #160                // Field DATE:Lio/swagger/v3/core/util/PrimitiveType;
+    1231: iconst_2
+    1232: anewarray     #56                 // class java/lang/String
+    1235: dup
+    1236: iconst_0
+    1237: ldc           #225                // String org.joda.time.LocalDate
+    1239: aastore
+    1240: dup
+    1241: iconst_1
+    1242: ldc           #226                // String java.time.LocalDate
+    1244: aastore
+    1245: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1248: aload         4
+    1250: getstatic     #166                // Field DATE_TIME:Lio/swagger/v3/core/util/PrimitiveType;
+    1253: bipush        8
+    1255: anewarray     #56                 // class java/lang/String
+    1258: dup
+    1259: iconst_0
+    1260: ldc           #227                // String java.time.LocalDateTime
+    1262: aastore
+    1263: dup
+    1264: iconst_1
+    1265: ldc           #228                // String java.time.ZonedDateTime
+    1267: aastore
+    1268: dup
+    1269: iconst_2
+    1270: ldc           #229                // String java.time.OffsetDateTime
+    1272: aastore
+    1273: dup
+    1274: iconst_3
+    1275: ldc           #230                // String javax.xml.datatype.XMLGregorianCalendar
+    1277: aastore
+    1278: dup
+    1279: iconst_4
+    1280: ldc           #231                // String org.joda.time.LocalDateTime
+    1282: aastore
+    1283: dup
+    1284: iconst_5
+    1285: ldc           #232                // String org.joda.time.ReadableDateTime
+    1287: aastore
+    1288: dup
+    1289: bipush        6
+    1291: ldc           #233                // String org.joda.time.DateTime
+    1293: aastore
+    1294: dup
+    1295: bipush        7
+    1297: ldc           #234                // String java.time.Instant
+    1299: aastore
+    1300: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1303: aload         4
+    1305: invokestatic  #210                // Method java/util/Collections.unmodifiableMap:(Ljava/util/Map;)Ljava/util/Map;
+    1308: putstatic     #36                 // Field EXTERNAL_CLASSES:Ljava/util/Map;
+    1311: new           #235                // class java/util/TreeMap
+    1314: dup
+    1315: getstatic     #236                // Field java/lang/String.CASE_INSENSITIVE_ORDER:Ljava/util/Comparator;
+    1318: invokespecial #237                // Method java/util/TreeMap."<init>":(Ljava/util/Comparator;)V
+    1321: astore        5
+    1323: invokestatic  #238                // Method values:()[Lio/swagger/v3/core/util/PrimitiveType;
+    1326: astore        6
+    1328: aload         6
+    1330: arraylength
+    1331: istore        7
+    1333: iconst_0
+    1334: istore        8
+    1336: iload         8
+    1338: iload         7
+    1340: if_icmpge     1384
+    1343: aload         6
+    1345: iload         8
+    1347: aaload
+    1348: astore        9
+    1350: aload         9
+    1352: invokevirtual #59                 // Method getCommonName:()Ljava/lang/String;
+    1355: astore        10
+    1357: aload         10
+    1359: ifnull        1378
+    1362: aload         5
+    1364: aload         9
+    1366: iconst_1
+    1367: anewarray     #56                 // class java/lang/String
+    1370: dup
+    1371: iconst_0
+    1372: aload         10
+    1374: aastore
+    1375: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1378: iinc          8, 1
+    1381: goto          1336
+    1384: aload         5
+    1386: getstatic     #120                // Field INT:Lio/swagger/v3/core/util/PrimitiveType;
+    1389: iconst_1
+    1390: anewarray     #56                 // class java/lang/String
+    1393: dup
+    1394: iconst_0
+    1395: ldc           #239                // String int
+    1397: aastore
+    1398: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1401: aload         5
+    1403: getstatic     #181                // Field OBJECT:Lio/swagger/v3/core/util/PrimitiveType;
+    1406: iconst_1
+    1407: anewarray     #56                 // class java/lang/String
+    1410: dup
+    1411: iconst_0
+    1412: ldc           #49                 // String object
+    1414: aastore
+    1415: invokestatic  #212                // Method addKeys:(Ljava/util/Map;Lio/swagger/v3/core/util/PrimitiveType;[Ljava/lang/Object;)V
+    1418: aload         5
+    1420: invokestatic  #210                // Method java/util/Collections.unmodifiableMap:(Ljava/util/Map;)Ljava/util/Map;
+    1423: putstatic     #47                 // Field NAMES:Ljava/util/Map;
+    1426: return
+}

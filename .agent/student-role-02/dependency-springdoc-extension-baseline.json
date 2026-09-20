@@ -1,0 +1,24 @@
+{
+  "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "capturedAt": "2026-09-07T15:17:03.0244076Z",
+  "purpose": "Main guard and observed two one-line Springdoc corrections after root all-seven-pins authorization; NOT a pre-edit worktree SHA",
+  "mainSemanticDiffEmpty": true,
+  "baselineGitBlobs": {
+    "services/auth-service/auth-app/build.gradle.kts": "3c7bab17697cc61d1ced5059df98e34d45bfdf3c",
+    "services/notification-service/notification-app/build.gradle.kts": "a64363d2eac273559d1d5bc09aab74a30b9bd8bc"
+  },
+  "files": [
+    {
+      "path": "services/auth-service/auth-app/build.gradle.kts",
+      "mainSha256": "C3E490BCC1E1BFF39F2286ECFC21883963EEC07E7AAEAF28121AFF1501ECE9F3",
+      "worktreeSha256": "EB21A7B6B99CE9926E3D5E4D8A6A53DC78EC4FB9A43AA53A2EAC0625F2DA83A7",
+      "pin": "implementation(\"org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9\")"
+    },
+    {
+      "path": "services/notification-service/notification-app/build.gradle.kts",
+      "mainSha256": "2708A54904E2EB86016D85300D4A9B956ED9E900A770857284DDA3CF43877F33",
+      "worktreeSha256": "54547BC783FBBBFADCF428025C7F1C75713EB9738787F80DD161CB45B505A1F0",
+      "pin": "implementation(\"org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9\")"
+    }
+  ]
+}

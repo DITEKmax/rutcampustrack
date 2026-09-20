@@ -1,0 +1,5 @@
+-classpath
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\student-role-02\dependency-security\services\shared\shared-events\build\libs\shared-events-0.1.0.jar
+-d
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\student-role-02\dependency-security\.agent\student-role-02\runtime\inspect
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\student-role-02\dependency-security\.agent\student-role-02\runtime\inspect\CheckClasspath.java

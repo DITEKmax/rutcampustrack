@@ -193,6 +193,10 @@ public class WebPushDeliveryService {
     private List<PushSubscriptionDocument> filterRecipients(List<PushSubscriptionDocument> subs,
                                                             String eventType,
                                                             Map<String, Object> payload) {
+        if ("late_checkin.decided".equals(eventType)
+                && "cancelled".equals(payload.get("status"))) {
+            return List.of();
+        }
         if (HEADMAN_ONLY_EVENT_TYPES.contains(eventType)) {
             return subs.stream()
                     .filter(PushSubscriptionDocument::isHeadman)

@@ -1,0 +1,53 @@
+{
+  "operation": "relocate-misplaced-ui-files",
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "environment": {
+    "host": "Windows PowerShell",
+    "sourceRoot": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack",
+    "destinationRoot": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/student-academic-ui"
+  },
+  "command": "PowerShell guarded per-file Move-Item -LiteralPath after containment, source-hash, untracked-source and destination-absent preflight; followed by source-absent and destination-hash verification",
+  "exitCode": 0,
+  "checks": [
+    {
+      "relativePath": "frontends/mobile-core/src/features/attendance/attendance-tokens.pcss",
+      "expectedSha256": "06496BD820FF76F948BB3B219FDA037F7FE06DDA5D18EAC826B837A4C0EF80C7",
+      "destinationSha256": "06496BD820FF76F948BB3B219FDA037F7FE06DDA5D18EAC826B837A4C0EF80C7",
+      "sourceWasUntracked": true,
+      "sourceAbsentAfterOperation": true,
+      "destinationPresentAfterOperation": true
+    },
+    {
+      "relativePath": "frontends/mobile-core/src/features/attendance/AttendanceLessonRow.vue",
+      "expectedSha256": "36163CE6CAB9AFB7767CF872E4B960589E15C364FEA617D6E6FBC73442836C0C",
+      "destinationSha256": "36163CE6CAB9AFB7767CF872E4B960589E15C364FEA617D6E6FBC73442836C0C",
+      "sourceWasUntracked": true,
+      "sourceAbsentAfterOperation": true,
+      "destinationPresentAfterOperation": true
+    },
+    {
+      "relativePath": "frontends/mobile-core/src/features/attendance/AttendanceSubjectList.vue",
+      "expectedSha256": "96DF4D4181C759CB8016481C98CCE282DBABF7410E4DF9582AF33539F14ACF80",
+      "destinationSha256": "96DF4D4181C759CB8016481C98CCE282DBABF7410E4DF9582AF33539F14ACF80",
+      "sourceWasUntracked": true,
+      "sourceAbsentAfterOperation": true,
+      "destinationPresentAfterOperation": true
+    },
+    {
+      "relativePath": "frontends/mobile-core/src/features/statistics/statistics-tokens.pcss",
+      "expectedSha256": "55B4DD7C29F174165E0C1408793B0DD4C0545EED974606A4322EF71DF8338489",
+      "destinationSha256": "55B4DD7C29F174165E0C1408793B0DD4C0545EED974606A4322EF71DF8338489",
+      "sourceWasUntracked": true,
+      "sourceAbsentAfterOperation": true,
+      "destinationPresentAfterOperation": true
+    },
+    {
+      "relativePath": "frontends/mobile-core/src/features/statistics/statistics-view-model.ts",
+      "expectedSha256": "977CA67488D056FEDEF001512E1997E894243D8A7541ECB2B227D6DC0702A3CB",
+      "destinationSha256": "977CA67488D056FEDEF001512E1997E894243D8A7541ECB2B227D6DC0702A3CB",
+      "sourceWasUntracked": true,
+      "sourceAbsentAfterOperation": true,
+      "destinationPresentAfterOperation": true
+    }
+  ]
+}

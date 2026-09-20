@@ -1,0 +1,45 @@
+{
+  "schema": "rct.student-requests-h68-probe-diagnosis.v1",
+  "packetPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\REQUESTS-H68-PROBE-DIAGNOSIS.md",
+  "packetSha256": "d6065c1f4f5166f50607f346c22bb8d296394e1efc58b80e684018b070c60864",
+  "rulesSha256": "b256a175274987da9710d804b3c050a5dbcb47d8448cc03644d74168b52a437a",
+  "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+  "runnerSha256": "9a2d703548110a142597b02196f5483f0f61d7329dfbfed313e38f1afc0b4b9d",
+  "syntheticProbePath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\synthetic-probe.mjs",
+  "syntheticProbeSha256": "3be210956ccc057ff412a1407aa20426c563fdc1ceb3f638f69b60ec44486c59",
+  "actualH68Cause": "UNPROVEN; root H68 raw probe output remains withheld",
+  "reproduction": {
+    "command": "actual AST-extracted Invoke-RequestsProbe -> actual Invoke-ExternalSafe timed branch -> node synthetic-probe.mjs",
+    "childExitCode": 0,
+    "helperOutputType": "System.String",
+    "helperOutputLineCount": 4,
+    "helperOutputFirstLine": "{\"schema\":\"rct.student-requests-probe.v1\",\"status\":\"PASS\",\"mode\":\"health-only\",\"statusCode\":200}",
+    "helperOutputWarningLine": "(node:1) [DEP0123] Setting the TLS ServerName to an IP address is deprecated.",
+    "helperOutputLastLine": "",
+    "helperReturnedTypedStdout": false,
+    "helperReturnedTypedStderr": false,
+    "combinedConvertFromJsonSucceeded": false,
+    "combinedParseError": "Conversion from JSON failed with error: Additional text encountered after finished reading JSON content: (. Path '', line 3, position 0.",
+    "invokeRequestsProbeParseFailure": true,
+    "invokeRequestsProbeError": "Requests probe did not return valid redacted JSON"
+  },
+  "redaction": {
+    "healthShapeParseable": true,
+    "healthShape": "{\"schema\":\"rct.student-requests-probe.v1\",\"status\":\"PASS\",\"mode\":\"health-only\",\"statusCode\":200}",
+    "sensitiveShapeSafeText": "{\"schema\":\"rct.student-requests-probe.v1\",\"token\":<redacted>,\"status\":\"PASS\"}",
+    "sensitiveShapeParseable": false,
+    "quotedRedactionRiskConfirmed": true,
+    "sensitiveParseError": "Conversion from JSON failed with error: Unexpected character encountered while parsing value: <. Path 'token', line 1, position 50."
+  },
+  "checks": {
+    "parser": "PASS",
+    "actualInvokeExternalSafeMerge": "PASS",
+    "actualInvokeRequestsProbeParseFailure": "PASS",
+    "healthNoSensitiveKeys": "PASS",
+    "quotedRedactionRisk": "PASS",
+    "docker": "NOT_RUN",
+    "gradle": "NOT_RUN",
+    "network": "NOT_RUN"
+  },
+  "minimalProposal": "Preserve Invoke-ExternalSafe stdout/stderr as separate typed fields; parse only redacted stdout as strict JSON and retain separately redacted stderr in command/evidence diagnostics. Keep exit-code checks and strict ConvertFrom-Json. If redacted JSON must remain parseable, replace sensitive values with quoted JSON-safe strings or redact structured objects before serialization; health-only shape has no sensitive keys and parses unchanged."
+}

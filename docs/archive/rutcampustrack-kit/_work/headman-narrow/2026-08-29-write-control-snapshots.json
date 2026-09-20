@@ -1,0 +1,104 @@
+{
+  "rule": "Capture ПК-111 or the active width control frame after every Figma write",
+  "entries": [
+    {
+      "operation": "LessonActivityLog combined minHeight and event sizing repair",
+      "controlFrameId": "3250:128191",
+      "controlFrameName": "ПК-111 · headman · 1024 · dark",
+      "height": 4137,
+      "activityLogHeight": 512,
+      "rows32": 13,
+      "content20": 13,
+      "status": "PASS"
+    },
+    {
+      "operation": "Create headman dark 768 ПК-111 and ПК-112",
+      "createdFrameIds": ["3393:142422", "3393:143952"],
+      "createdHeights": [4269, 2658],
+      "createdA": [12, 10],
+      "controlFrameId": "3250:128191",
+      "controlFrameName": "ПК-111 · headman · 1024 · dark",
+      "height": 4137,
+      "status": "PASS_AFTER_504_VERIFIED_BY_SEPARATE_READ"
+    },
+    {
+      "operation": "Create headman dark 768 ПК-113 diagnostic frame",
+      "createdFrameIds": ["3393:789487"],
+      "createdHeights": [7250],
+      "createdA": [10],
+      "controlFrameId": "3250:128191",
+      "height": 4137,
+      "status": "CONTROL_PASS_LAYOUT_GATE_SEMESTER_TOTALS_688_INSTEAD_OF_336"
+    },
+    {
+      "operation": "Create headman dark 768 ПК-114 list and composer",
+      "createdFrameIds": ["3394:151913", "3394:152314"],
+      "createdHeights": [1143, 1193],
+      "createdA": [5, 5],
+      "controlFrameId": "3250:128191",
+      "height": 4137,
+      "status": "PASS"
+    },
+    {
+      "operation": "Create headman dark 768 ПК-115 and ПК-116",
+      "createdFrameIds": ["3395:152665", "3395:152899"],
+      "createdHeights": [1137, 2124],
+      "createdA": [8, 4],
+      "controlFrameId": "3250:128191",
+      "height": 4137,
+      "status": "PASS"
+    },
+    {
+      "operation": "Create headman dark 768 ПК-116.1 and ПК-117",
+      "createdFrameIds": ["3396:743122", "3396:743891"],
+      "createdHeights": [1352, 1424],
+      "createdA": [5, 5],
+      "controlFrameId": "3250:128191",
+      "height": 4137,
+      "status": "PASS"
+    },
+    {
+      "operation": "Create headman dark 768 ПК-118 and ПК-119",
+      "createdFrameIds": ["3396:744900", "3396:745911"],
+      "createdHeights": [1328, 2556],
+      "createdA": [5, 7],
+      "controlFrameId": "3250:128191",
+      "height": 4137,
+      "pageFrames": 88,
+      "pageA": 608,
+      "status": "PASS"
+    },
+    {
+      "operation": "Disposable fluidity probes: LessonCounters simple FILL, SemesterTotals FILL and two-row",
+      "retainedDeltaA": 0,
+      "pageAAfterCleanup": 608,
+      "controlFrameId": "3250:128191",
+      "height": 4137,
+      "status": "PASS_CONTROL"
+    },
+    {
+      "operation": "Disposable LessonCounters current-row wrapper probe and AttendanceStatusMark containment read",
+      "retainedDeltaA": 0,
+      "pageAAfterCleanup": 608,
+      "controlFrameId": "3250:128191",
+      "height": 4137,
+      "status": "PASS_CONTROL"
+    },
+    {
+      "operation": "Disposable LessonCounters vertical composition gap16 probe",
+      "retainedDeltaA": 0,
+      "pageAAfterCleanup": 608,
+      "controlFrameId": "3250:128191",
+      "height": 4137,
+      "status": "PASS_CONTROL_SOURCE_HEIGHT_REGRESSION_240_TO_232_REJECTED"
+    },
+    {
+      "operation": "Disposable LessonCounters vertical composition gap24 probe",
+      "retainedDeltaA": 0,
+      "pageAAfterCleanup": 608,
+      "controlFrameId": "3250:128191",
+      "height": 4137,
+      "status": "PASS_CONTROL_PROPOSAL_SOURCE_240_AND_768_372"
+    }
+  ]
+}

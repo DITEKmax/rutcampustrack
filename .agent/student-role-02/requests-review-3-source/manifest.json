@@ -1,0 +1,139 @@
+{
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "capturedAt": "2026-09-07T14:47:01.5450270Z",
+  "purpose": "Frozen32source for fresh independent retry repair recheck, not acceptance",
+  "changedPaths": [
+    "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java"
+  ],
+  "files": [
+    {
+      "path": "event-schemas/excuse.decided.json",
+      "sha256": "E427D64C0C6CBC0950F41BF0431399A2951494EE0E5D5830080583EF0ADDCA4A"
+    },
+    {
+      "path": "event-schemas/excuse.requested.json",
+      "sha256": "2880EC5DBB29055E01EA2BD829278C9BCE54FEFBB44A9229E145E5D86EAE1BA4"
+    },
+    {
+      "path": "event-schemas/late_checkin.decided.json",
+      "sha256": "A6AC22666974E17472635712D75A334512F351C76936764BEE3D0B1DD8FA3021"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java",
+      "sha256": "A0D8ADC463E6CB7EA8C36A451193019D2C449802089265F66B66C064A0F54C2A"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java",
+      "sha256": "59C4E01CF39CF79FBACABA196C9BDFB102E59A98558ECE209AC7DC91D5842A1A"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java",
+      "sha256": "2106D010925C292E74659D10674F1B2C8217B0C9BBF7425C4AC686DF2CA98410"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java",
+      "sha256": "1EDAF447F5DC3DC24702EDD089AA48B4681C0B1E8760065A692D83953E7DB4F6"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java",
+      "sha256": "AA71AB2A1D63760AF98041FCBE62F776F19E7F8DCC496BE4894D68445BD449FE"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java",
+      "sha256": "71840E8D3F097C870B41B2B343DCCAB07CC55934491C3AD2AEC1D2A3054C2B8A"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java",
+      "sha256": "E18F5B7E1A4C485F1F2B23FD326E7F7D14A75F8FF3F40ACD405F659683657EDF"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java",
+      "sha256": "8B14EBE8DC16F34E6422BF7AA06325FC10CD8129943094D49D1F594E228ABFC3"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java",
+      "sha256": "F358683D0BCE41B28FA92BC366F2ECA044245BD691628B1095E6AF79AD1270EE"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java",
+      "sha256": "24B43A4F8EE6CB2FC79F51391250F8A36F1F74A01C183D984FADCAE55E6DE4E3"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java",
+      "sha256": "5B8777BCDF922E058E1331F04BB0A033917A8251650DF9E3DABCBBBE8A2A0CB7"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java",
+      "sha256": "94EFD22554A5FF3ACDEC684AC1B56C07F03259EF1E5CA914C5E84DFB17F0E50D"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/AttachmentState.java",
+      "sha256": "C1B9880413CDFBBE20CA3DEC8D577E9C424F9D658CD8739AD4D2D8C8B853724C"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDescriptorDocument.java",
+      "sha256": "15F372F6201CC7EA8F118D67CDA149FA22CB704B5DC944C9E0219A4ED09D7C0E"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDocument.java",
+      "sha256": "A4F991C7AD4DAC3F8C96CA1341F86D996D72DFFED699EBD13A0694EDCEFD4B95"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLateCheckinBudgetDocument.java",
+      "sha256": "4A05FE8AB665FEE1206B3633208258457DE9FE9EFD806CFE08B7976DE9F9186B"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLessonSnapshotDocument.java",
+      "sha256": "AC4748E5306FCD9EF5E56E45348225AF0930FC96BB7F2FCD1AC955ABE07F29EC"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentRequestReceiptDocument.java",
+      "sha256": "85C71600C938C7FA556799110EE7936B3A6E42D77F1670AAD22F8C0E9AE47CD0"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRepository.java",
+      "sha256": "5823836AD0B68FD591480E6FCAB148C1EB07FDCAB54C3A3F8DB139A7861E6931"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRetentionJob.java",
+      "sha256": "EA02BE8110064978D3DB12FAFD1C6E4C0D96F4433FA3FEA7D3E29532B79C6EB8"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestBucket.java",
+      "sha256": "3C1AAE15A5DD7D7C62D81D0B5EBE1FB0EEBDE34276A0592616B49803EA4F1E1C"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentLateCheckinBudgetRepository.java",
+      "sha256": "98C0E67DEC2E78E729928B0E44A373D5F0D20F5404D31DFEDFD5AFBF0E7747B2"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java",
+      "sha256": "DEFCA9A5DC3D03F96A8E184B7040638CD04418DC014AB1DA01528EE7F09B25C2"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestReceiptRepository.java",
+      "sha256": "7C6ADBF803AC9226CAF050498AD612992D9B3ACF1ACBC48022B4638309261B76"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "sha256": "5095C2A63EDF7E6561F6C08E2071C97270489A5C1CDA1B73EF64507B3132A662"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java",
+      "sha256": "4CA61BBB52BA3F5193F653B542BA59F54D97C5BCDD20FBA849F54EC77C376E8E"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java",
+      "sha256": "6E0AE3179A52EE9482B87EF3A5180B6B1B563475CD018615D1D590C5C91C6480"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "sha256": "968F4A4967D0AD2FDB0055C647D709F6A0A020B59DDB3396C64007E57A150DE6"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+      "sha256": "7F96615F5A43BC8BD020BC51A4F3951340C3F9088363A56ABE8EF95CC373C322"
+    }
+  ]
+}

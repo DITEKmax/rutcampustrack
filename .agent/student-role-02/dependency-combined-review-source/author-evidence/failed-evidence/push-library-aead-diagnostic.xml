@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-07T18:08:30" hostname="DITEK-PK" time="1.678">
+  <properties/>
+  <testcase name="sendEncryptsAndSignsRequestAndReturnsEndpointResponse()" classname="ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest" time="1.678">
+    <failure message="javax.crypto.AEADBadTagException: mac check in GCM failed" type="javax.crypto.AEADBadTagException">javax.crypto.AEADBadTagException: mac check in GCM failed
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at org.bouncycastle.jcajce.provider.symmetric.util.BaseBlockCipher$AEADGenericBlockCipher.doFinal(Unknown Source)
+	at org.bouncycastle.jcajce.provider.symmetric.util.BaseBlockCipher.engineDoFinal(Unknown Source)
+	at java.base/javax.crypto.Cipher.doFinal(Cipher.java:2244)
+	at ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest.decryptAesGcm(PushLibraryCompatibilityTest.java:189)
+	at ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest.sendEncryptsAndSignsRequestAndReturnsEndpointResponse(PushLibraryCompatibilityTest.java:123)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

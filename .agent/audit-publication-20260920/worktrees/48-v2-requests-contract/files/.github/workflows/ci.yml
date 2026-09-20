@@ -1,0 +1,355 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+    paths-ignore:
+      - 'docs/**'
+      - '.planning/**'
+      - '*.md'
+      - 'SECURITY.md'
+      - 'renovate.json'
+      - '.pre-commit-config.yaml'
+  pull_request:
+    branches: ['**']
+    paths-ignore:
+      - 'docs/**'
+      - '.planning/**'
+      - '*.md'
+      - 'SECURITY.md'
+      - 'renovate.json'
+      - '.pre-commit-config.yaml'
+
+jobs:
+  java-unit-test:
+    name: Java unit — ${{ matrix.service.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - name: api-gateway
+            path: ':services:api-gateway'
+          - name: auth-service
+            path: ':services:auth-service:auth-app'
+          - name: academic-service
+            path: ':services:academic-service:academic-app'
+          - name: schedule-service
+            path: ':services:schedule-service:schedule-app'
+          - name: attendance-service
+            path: ':services:attendance-service:attendance-app'
+          - name: notification-service
+            path: ':services:notification-service:notification-app'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # M08 Группа 1 (P2-8/1) — только unit (*Test), БЕЗ *IT.
+      # Быстрая jobs, блокирующая PR при базовых регрессиях.
+      - name: Warm Gradle wrapper
+        run: |
+          for attempt in 1 2 3; do
+            if ./gradlew --version --no-daemon; then
+              exit 0
+            fi
+            echo "Gradle wrapper download failed, retrying in $((attempt * 10))s ($attempt/3)"
+            sleep $((attempt * 10))
+          done
+          ./gradlew --version --no-daemon
+
+      - name: Unit tests ${{ matrix.service.name }}
+        run: ./gradlew ${{ matrix.service.path }}:test --no-daemon
+
+      - name: Upload unit test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports-${{ matrix.service.name }}
+          path: |
+            services/**/build/reports/tests/test/
+            services/**/build/test-results/test/
+          retention-days: 7
+
+  java-integration-test:
+    name: Java IT — ${{ matrix.service.name }}
+    runs-on: ubuntu-latest
+    # Integration tests независимы от unit job'ов (separate pipelines,
+    # fail-fast на уровне jobs). Параллельный запуск ускоряет wall-time.
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - name: api-gateway
+            path: ':services:api-gateway'
+          - name: auth-service
+            path: ':services:auth-service:auth-app'
+          - name: academic-service
+            path: ':services:academic-service:academic-app'
+          - name: schedule-service
+            path: ':services:schedule-service:schedule-app'
+          - name: attendance-service
+            path: ':services:attendance-service:attendance-app'
+          - name: notification-service
+            path: ':services:notification-service:notification-app'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # M08 Группа 1 (P2-8/1) — только *IT (Spring context + Testcontainers).
+      # Gradle filter в root build.gradle.kts.
+      - name: Warm Gradle wrapper
+        run: |
+          for attempt in 1 2 3; do
+            if ./gradlew --version --no-daemon; then
+              exit 0
+            fi
+            echo "Gradle wrapper download failed, retrying in $((attempt * 10))s ($attempt/3)"
+            sleep $((attempt * 10))
+          done
+          ./gradlew --version --no-daemon
+
+      - name: Integration tests ${{ matrix.service.name }}
+        run: ./gradlew ${{ matrix.service.path }}:integrationTest --no-daemon
+
+      - name: Upload integration test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-reports-${{ matrix.service.name }}
+          path: |
+            services/**/build/reports/integrationTest/
+            services/**/build/test-results/integrationTest/
+          retention-days: 7
+
+  java-verification:
+    name: Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # Lightweight verification tasks (не зависит от тестов).
+      - name: Warm Gradle wrapper
+        run: |
+          for attempt in 1 2 3; do
+            if ./gradlew --version --no-daemon; then
+              exit 0
+            fi
+            echo "Gradle wrapper download failed, retrying in $((attempt * 10))s ($attempt/3)"
+            sleep $((attempt * 10))
+          done
+          ./gradlew --version --no-daemon
+
+      - name: Run verification tasks
+        run: ./gradlew verifyNoDebugInProd verifyLogbackJsonInAllServices --no-daemon
+
+  python-lint-test:
+    name: Python Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/notification-bot
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: |
+            services/notification-bot/requirements.txt
+            services/notification-bot/requirements-test.txt
+
+      - name: Install dependencies
+        run: |
+          pip install ruff
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+
+      - name: Lint with ruff
+        run: ruff check .
+
+      - name: Check formatting with ruff
+        run: ruff format --check .
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+      # M09 G4.5 — selective coverage gate для bot/handlers/ (14 P0-2).
+      # Основной addopts из pytest.ini замеряет bot/ (50% floor). Этот
+      # второй прогон — stricter 70% pilot для interactive-handlers.
+      - name: Handlers coverage gate (70%)
+        run: pytest tests/ --override-ini="addopts=" --cov=bot/handlers --cov-report=term --cov-fail-under=70
+
+  frontend-build-test:
+    name: Frontend — ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [pwa, mini-app, web-panel]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontends/${{ matrix.app }}/package-lock.json
+
+      - name: Install, test, build
+        working-directory: frontends/${{ matrix.app }}
+        run: npm ci && npm test && npm run build
+
+  # M13 G15 — ShellCheck lint для всех bash-скриптов.
+  # Gate на ошибки уровня `error` и `warning`; `info`/`style` не блочат.
+  shellcheck:
+    name: ShellCheck scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Lint scripts/*.sh
+        run: shellcheck --severity=warning scripts/*.sh
+
+  # M13 G17 — структурная валидация Grafana dashboard JSON-файлов.
+  # Catch'ит broken JSON / missing uid|title / 0 panels до VPS deploy.
+  # Live smoke (non-zero данные) deferred в G23 VPS dry-run.
+  grafana-dashboards:
+    name: Grafana dashboards structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate dashboards
+        run: bash scripts/validate-grafana-dashboards.sh
+
+  # M13 G22 — Playwright E2E auth flow @smoke (login/role-guard/refresh/
+  # logout/WS-reconnect). Полный stack через docker-compose dev, ждём
+  # healthchecks, runs только @smoke-grouped specs (subset из 8 общих)
+  # чтобы CI не превышал ~5 мин. Полный suite остаётся локальной командой
+  # `npm test` в tests/e2e/.
+  e2e-auth:
+    name: Playwright E2E auth flow
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # M13 G25.3 — buildx нужен для BuildKit cache mount
+      # (`--mount=type=cache,target=/root/.gradle` в backend Dockerfile'ах).
+      # Default docker driver игнорирует cache mounts → каждый build
+      # повторно скачивает Gradle dependencies (+5-10 мин на CI).
+      # Frontend bundles — Docker multi-stage сам делает npm ci/build,
+      # ничего pre-build не нужно.
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # M13 G25.3 — self-signed TLS cert для reverse-proxy nginx.
+      # AuthCookies.java выставляет `Secure` flag → на чистом HTTP browser
+      # cookie отбрасывает → T1 spec падает. TLS termination на e2e nginx
+      # обходит проблему без изменения production code.
+      - name: Generate self-signed TLS cert
+        run: bash tests/e2e/infra/scripts/generate-test-certs.sh
+
+      - name: Boot e2e stack (docker-compose.e2e.yml)
+        run: |
+          cp tests/e2e/.env.ci .env
+          docker compose --env-file .env -f docker-compose.e2e.yml config --quiet
+          docker compose --env-file .env -f docker-compose.e2e.yml up -d --build
+          # Polling до 8 мин — full prod-like stack (5 backend Java
+          # сервисов с Gradle build, Bitnami Mongo RS init, gateway
+          # depends_on chain). Cold CI runner pulls images + builds
+          # ~3-5 мин до первого health check.
+          for i in $(seq 1 96); do
+            unhealthy=$(docker compose --env-file .env -f docker-compose.e2e.yml ps --format json | jq -r 'select(.Health=="unhealthy") | .Name' || echo "")
+            starting=$(docker compose --env-file .env -f docker-compose.e2e.yml ps --format json | jq -r 'select(.Health=="starting") | .Name' || echo "")
+            if [ -z "$unhealthy" ] && [ -z "$starting" ]; then
+              echo "All services healthy"
+              break
+            fi
+            echo "[$i/96] waiting — starting: $starting | unhealthy: $unhealthy"
+            sleep 5
+          done
+          docker compose --env-file .env -f docker-compose.e2e.yml ps
+
+      - name: Install Playwright + browsers
+        working-directory: tests/e2e
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Run auth-flow @smoke specs (chromium only)
+        working-directory: tests/e2e
+        env:
+          # M13 G25.3 — HTTPS через self-signed cert на reverse-proxy
+          # nginx. ignoreHTTPSErrors=true в playwright.config.ts.
+          E2E_BASE_URL: https://localhost
+          CI: 'true'
+        run: npx playwright test --project=chromium --grep @smoke
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: tests/e2e/playwright-report/
+          retention-days: 7
+
+      - name: Dump docker logs on failure
+        if: failure()
+        run: |
+          mkdir -p docker-logs
+          # `ps --services` без флагов выводит только running сервисы — exited
+          # контейнеры (Mongo crash на старте) пропадают. `config --services`
+          # возвращает все сервисы из compose-файла, гарантирует полный snapshot.
+          for c in $(docker compose --env-file .env -f docker-compose.e2e.yml config --services); do
+            docker compose --env-file .env -f docker-compose.e2e.yml logs --no-color "$c" > "docker-logs/$c.log" 2>&1 || true
+          done
+          # Дополнительно — `docker compose ps -a` для exit codes / health.
+          docker compose --env-file .env -f docker-compose.e2e.yml ps -a > docker-logs/_compose-ps.txt 2>&1 || true
+
+      - name: Upload docker logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-logs
+          path: docker-logs/
+          retention-days: 7

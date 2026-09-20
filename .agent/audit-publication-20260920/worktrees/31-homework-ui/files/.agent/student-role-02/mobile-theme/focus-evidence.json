@@ -1,0 +1,67 @@
+[
+  {
+    "delay": 0,
+    "activeTag": "BUTTON",
+    "activeLabel": "Снять отметку «Выполнено» с задания «Математика»",
+    "focusedCompletion": true,
+    "mathButtons": [
+      {
+        "connected": true,
+        "disabled": false,
+        "label": "Снять отметку «Выполнено» с задания «Математика»"
+      }
+    ]
+  },
+  {
+    "delay": 1,
+    "activeTag": "BUTTON",
+    "activeLabel": "Снять отметку «Выполнено» с задания «Математика»",
+    "focusedCompletion": true,
+    "mathButtons": [
+      {
+        "connected": true,
+        "disabled": false,
+        "label": "Снять отметку «Выполнено» с задания «Математика»"
+      }
+    ]
+  },
+  {
+    "delay": 20,
+    "activeTag": "BUTTON",
+    "activeLabel": "Снять отметку «Выполнено» с задания «Математика»",
+    "focusedCompletion": true,
+    "mathButtons": [
+      {
+        "connected": true,
+        "disabled": false,
+        "label": "Снять отметку «Выполнено» с задания «Математика»"
+      }
+    ]
+  },
+  {
+    "delay": 100,
+    "activeTag": "BUTTON",
+    "activeLabel": "Снять отметку «Выполнено» с задания «Математика»",
+    "focusedCompletion": true,
+    "mathButtons": [
+      {
+        "connected": true,
+        "disabled": false,
+        "label": "Снять отметку «Выполнено» с задания «Математика»"
+      }
+    ]
+  },
+  {
+    "delay": 500,
+    "activeTag": "BUTTON",
+    "activeLabel": "Снять отметку «Выполнено» с задания «Математика»",
+    "focusedCompletion": true,
+    "mathButtons": [
+      {
+        "connected": true,
+        "disabled": false,
+        "label": "Снять отметку «Выполнено» с задания «Математика»"
+      }
+    ]
+  }
+]

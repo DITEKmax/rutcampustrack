@@ -1,0 +1,76 @@
+{
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "branch": "codex/student-role-02-homework-api",
+  "scope": [
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java",
+    "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+    ".agent/student-role-02/homework-db-verification/*"
+  ],
+  "environment": {
+    "os": "Windows 11 10.0 amd64",
+    "java": "OpenJDK 21.0.10 Microsoft-13106404",
+    "gradle": "8.12",
+    "docker": "Docker Desktop 28.5.2, x86_64",
+    "testcontainers": "1.20.4",
+    "postgres_runtime": "PostgreSQL 16.13 from postgres:16-alpine",
+    "date": "2026-09-07"
+  },
+  "checks": [
+    {
+      "criterion": "Academic real PostgreSQL fixture and concurrency proof",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.homework.HomeworkStudentCompletionConcurrencyIT\" --no-daemon",
+      "exit_code": 1,
+      "status": "FAIL_REPRODUCED_AND_CORRECTED",
+      "evidence": "Fixture used removed groups.code; PostgreSQL reported column code does not exist before any concurrency assertion. Test-only correction changed the insert to current groups(name,is_active) schema."
+    },
+    {
+      "criterion": "Academic real PostgreSQL fixture and concurrency proof",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.homework.HomeworkStudentCompletionConcurrencyIT\" --no-daemon",
+      "exit_code": 1,
+      "status": "FAIL_REPRODUCED_AND_CORRECTED",
+      "evidence": "Fixture login included a full UUID and exceeded users.login varchar(32); PostgreSQL reported value too long before any assertion. Test-only correction limits the generated suffix to 20 characters."
+    },
+    {
+      "criterion": "Academic real PostgreSQL concurrency proof",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.homework.HomeworkStudentCompletionConcurrencyIT\" --no-daemon",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "3 tests passed: concurrent complete leaves one target row and preserves the other student; concurrent uncomplete leaves zero target rows and preserves the other student; foreign group claim is denied before write. Runtime used a fresh task-owned postgres:16-alpine container and all 23 migrations."
+    },
+    {
+      "criterion": "BFF HTTP to gRPC boundary proof",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:integrationTest --tests \"ru.rutcampustrack.mobilebff.runtime.StudentHomeworkHttpGrpcIT\" --rerun-tasks --no-daemon",
+      "exit_code": 1,
+      "status": "INFRASTRUCTURE_REPORT_FAILURE",
+      "evidence": "The test result XML had 5 tests, 0 failures and 0 errors; Gradle then failed while moving a shared problems-report.html with FileAlreadyExistsException."
+    },
+    {
+      "criterion": "BFF HTTP to gRPC boundary proof",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:integrationTest --tests \"ru.rutcampustrack.mobilebff.runtime.StudentHomeworkHttpGrpcIT\" --rerun-tasks --no-problems-report --no-daemon",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "5 tests passed: signed GET/PUT identity forwarding and spoofed-header rejection, missing/tampered token rejection, wrong-role rejection, invalid input ProblemDetails, and Academic status mappings. The servlet used a random port and the test used a bounded local gRPC fake with JWT validation."
+    },
+    {
+      "criterion": "Checked-in Java-first OpenAPI snapshot remains current",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:integrationTest --tests \"ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT\" --no-problems-report --no-daemon",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "4 tests passed; apiDocsMatchCanonicalSnapshot ran without openapi.snapshot.update and matched docs/openapi/mobile-bff.json."
+    },
+    {
+      "criterion": "Scoped whitespace/diff hygiene",
+      "command": "git diff --check -- <two assigned test files> <packet.md>; rg -n '[ \\t]+$' -- <two assigned test files> <packet.md>",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "git diff --check returned 0 and the scoped whitespace search returned no matches (rg exit 1 is normalized as no matches)."
+    },
+    {
+      "criterion": "Whole-worktree hygiene observation",
+      "command": "git diff --check",
+      "exit_code": 2,
+      "status": "FOREIGN_SCOPE_OBSERVATION",
+      "evidence": "Existing uncommitted docs/openapi/mobile-bff.json from the parent API worktree contains CRLF trailing-whitespace findings. It is outside this leaf scope and was preserved."
+    }
+  ]
+}

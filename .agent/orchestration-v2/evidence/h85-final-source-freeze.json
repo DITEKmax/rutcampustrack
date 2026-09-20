@@ -1,0 +1,27 @@
+{
+  "baselineRunner": "DB4BE98017B14840A30E4CEBEDF3992B58561B7827ABB6B7EAD95A4385BE4BFD",
+  "runtime": "H85",
+  "runtimeRevision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+  "files": [
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+      "sha256": "033236B56EBFB8193A86D67B033F8CF23F5CC18F4132A2FAC5F525B756FD540C"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\probe.mjs",
+      "sha256": "1093B32778D8A7AF7CBC3E8F691073597257EB3091AC6A51DF8B12DE8E8731D6"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\r8-mongo-projection-check.ps1",
+      "sha256": "46AB5ECC5BAC08B1293B0EDCF23BE627DAB486E9929C9B9B58B30A56E9D34C23"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\h68-probe-check.ps1",
+      "sha256": "D8550E3E42BCF5D60B85F941693E98599CBA0C0B3090D29D687A9CB3F9928EED"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h82-actuator-counter-diagnosis\\h82-counter-check.ps1",
+      "sha256": "2E4AC7B8154B6084A98FCB6964CBAD5F62A678389EACE09E3B0BC02E32784CD2"
+    }
+  ]
+}

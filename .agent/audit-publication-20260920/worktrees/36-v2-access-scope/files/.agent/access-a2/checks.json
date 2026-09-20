@@ -1,0 +1,273 @@
+{
+  "scope": "ACCESS-A2 Academic ResolveStudentProjectionScope",
+  "risk": "S3",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "branch": "codex/v2-access-scope",
+  "environment": "Windows PowerShell, Europe/Moscow, workspace-write sandbox",
+  "checks": [
+    {
+      "name": "assigned worktree/base inspection",
+      "command": "git rev-parse HEAD; git status --porcelain=v1 --untracked-files=all",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "HEAD was the exact frozen E base; only assigned worktree files are listed. Git emitted an existing global-ignore permission warning; no bypass was used."
+    },
+    {
+      "name": "source diff whitespace",
+      "command": "git diff --check",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "environment": "Windows PowerShell, Europe/Moscow, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "No whitespace errors were reported. Git emitted only existing LF-to-CRLF working-copy warnings for tracked files; no bypass or global configuration change was used."
+    },
+    {
+      "name": "A4 F3 source diff whitespace",
+      "command": "git diff --check",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "environment": "Windows PowerShell, Europe/Moscow, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "After removing the extra auth_sessions fixture argument, no whitespace errors were reported. Git emitted only its existing LF-to-CRLF working-copy warnings; no bypass or global configuration change was used."
+    },
+    {
+      "name": "A5 F4 source diff whitespace",
+      "command": "git diff --check",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "environment": "Windows PowerShell, Europe/Moscow, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "After the scoped F4 condition, unit/gRPC source, and local evidence edits, no whitespace errors were reported. Git emitted only its existing LF-to-CRLF working-copy warnings; no bypass or global configuration change was used."
+    },
+    {
+      "name": "unit tests",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests \"ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeServiceTest\" --tests \"ru.rutcampustrack.academic.grpc.StudentProjectionGrpcServiceTest\" --tests \"ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest\"",
+      "exit_code": null,
+      "status": "DEFERRED",
+      "reason": "Source-authoring lease forbids Gradle/test execution."
+    },
+    {
+      "name": "Academic Java/proto compilation",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:compileJava :services:academic-service:academic-app:compileTestJava",
+      "exit_code": null,
+      "status": "DEFERRED",
+      "reason": "Source-authoring lease forbids build execution and generated-code compilation."
+    },
+    {
+      "name": "PostgreSQL adapter integration test",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT\"",
+      "exit_code": null,
+      "status": "DEFERRED",
+      "reason": "Requires the later heavy/runtime lease and Docker/Testcontainers; includes the transaction-proxied repeatable-read concurrency case."
+    },
+    {
+      "name": "H12 focused unit selectors",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests \"ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeServiceTest\" --tests \"ru.rutcampustrack.academic.grpc.StudentProjectionGrpcServiceTest\" --tests \"ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest\" --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "E9C165EAC47D71B8EA07CDD379324F07A5C20166C14848BCF1B069B36C4234E0",
+      "environment": "Windows PowerShell, Europe/Moscow, Java 21.0.10, Gradle 8.12, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "test_counts": {
+        "tests": 32,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "suites": {
+          "StudentProjectionScopeServiceTest": 17,
+          "StudentProjectionGrpcServiceTest": 6,
+          "StudentHomeworkGrpcIdentityInterceptorTest": 9
+        }
+      },
+      "evidence": "Gradle BUILD SUCCESSFUL in 1m 23s (37 actionable tasks). JUnit XML reports under services/academic-service/academic-app/build/test-results/test record 17 + 6 + 9 tests with zero skipped/failures/errors."
+    },
+    {
+      "name": "H12 PostgreSQL adapter integration selector",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT\" --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "E9C165EAC47D71B8EA07CDD379324F07A5C20166C14848BCF1B069B36C4234E0",
+      "environment": "Windows PowerShell, Europe/Moscow, Java 21.0.10, Gradle 8.12, Docker Desktop 28.5.2, PostgreSQL image postgres:16 (server 16.13), workspace-write sandbox",
+      "exit_code": 1,
+      "status": "FAIL",
+      "test_counts": {
+        "tests": 3,
+        "skipped": 0,
+        "failures": 3,
+        "errors": 0
+      },
+      "evidence": "JUnit XML services/academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT.xml records all three failures at StudentProjectionQueryAdapterIT.java:261, INSERT INTO groups ... RETURNING id, with PostgreSQL ERROR: relation groups does not exist. The report shows Testcontainers PostgreSQL 16.13 started and Flyway applied 26 migrations to rct_projection_1, rct_projection_2, and rct_projection_3; the observed JDBC URL includes '?loggerLevel=OFF?currentSchema=...'. No source repair was attempted after this failure."
+    },
+    {
+      "name": "H14 schema JDBC URL source helper check",
+      "command": "PowerShell scalar URL separator check using public JDBC URL examples (no credentials); rg source inspection of dataSourceForSchema",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "E92FF0B071038B7E3EF5F7ED3ABE6A752130E9ED3C608DC2BFE7EEFDC6262F83",
+      "environment": "Windows PowerShell, Europe/Moscow, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Source uses literal ASCII '&' when the base URL contains '?' and '?' otherwise. Public examples resolved to jdbc:postgresql://localhost/db?currentSchema=rct_projection_1 and jdbc:postgresql://localhost/db?loggerLevel=OFF&currentSchema=rct_projection_1; no credentials or secrets were read."
+    },
+    {
+      "name": "H14 schema JDBC URL initial vector harness",
+      "command": "PowerShell initial vector URL separator assertion using public JDBC URL examples (no credentials)",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "E92FF0B071038B7E3EF5F7ED3ABE6A752130E9ED3C608DC2BFE7EEFDC6262F83",
+      "environment": "Windows PowerShell, Europe/Moscow, workspace-write sandbox",
+      "exit_code": 1,
+      "status": "FAIL_NON_PRODUCT_HARNESS",
+      "evidence": "The initial array equality assertion was malformed and returned false; it did not indicate a source failure or read credentials. The corrected scalar assertion is recorded above and exited 0."
+    },
+    {
+      "name": "H14 source diff whitespace",
+      "command": "git diff --check",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "E92FF0B071038B7E3EF5F7ED3ABE6A752130E9ED3C608DC2BFE7EEFDC6262F83",
+      "environment": "Windows PowerShell, Europe/Moscow, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "No whitespace errors. Git emitted only existing LF-to-CRLF working-copy warnings; no bypass or global configuration change was used."
+    },
+    {
+      "name": "H14 PostgreSQL adapter integration selector",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT\" --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "E92FF0B071038B7E3EF5F7ED3ABE6A752130E9ED3C608DC2BFE7EEFDC6262F83",
+      "environment": "Windows PowerShell, Europe/Moscow, Java 21.0.10, Gradle 8.12, Docker Desktop 28.5.2, PostgreSQL image postgres:16 (server 16.13), workspace-write sandbox",
+      "exit_code": 1,
+      "status": "FAIL",
+      "test_counts": {
+        "tests": 3,
+        "skipped": 0,
+        "failures": 3,
+        "errors": 0
+      },
+      "evidence": "JUnit XML services/academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT.xml records all three failures at fixture insert lines 80, 110, and 142 (the shared helper is line 264), INSERT INTO groups ... RETURNING id, with PostgreSQL ERROR: column code of relation groups does not exist. The report shows corrected URLs with '?loggerLevel=OFF&currentSchema=rct_projection_1/2/3', PostgreSQL 16.13 startup, and 26 migrations applied per schema. This is a newly exposed fixture-schema defect after the approved separator repair; no repair or retry was attempted."
+    },
+    {
+      "name": "H14 local evidence validation",
+      "command": "PowerShell ConvertFrom-Json checks.json and canonical manifest presence check",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "E92FF0B071038B7E3EF5F7ED3ABE6A752130E9ED3C608DC2BFE7EEFDC6262F83",
+      "environment": "Windows PowerShell, Europe/Moscow, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Local checks JSON parses and records H14 integration exit 1; manifest.sha256 contains the frozen canonical hash."
+    },
+    {
+      "name": "H15 V26 fixture schema reconciliation",
+      "command": "Read-only source/migration reconciliation: V1, V8, V9, V10, V12, V24, V25, V26 plus all StudentProjectionQueryAdapterIT fixture SQL",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "C74CC6601ED9B20E3367E894D0F6C5BC7FF2406F5EBEFE6170A9513116C738D4",
+      "environment": "Windows PowerShell, Europe/Moscow, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "V8 drops groups.code; insertGroup now uses only groups.name. Remaining users/roles_version, semesters, subjects/subject_lesson_types, assignments, student_group_history, user_role_grants, and auth_sessions fixture columns/types/foreign keys match the migrated V26 schema. No further concrete fixture discrepancy was found statically."
+    },
+    {
+      "name": "H15 PostgreSQL adapter integration selector",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT\" --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "C74CC6601ED9B20E3367E894D0F6C5BC7FF2406F5EBEFE6170A9513116C738D4",
+      "environment": "Windows PowerShell, Europe/Moscow, Java 21.0.10, Gradle 8.12, Docker Desktop 28.5.2, PostgreSQL image postgres:16 (server 16.13), workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "test_counts": {
+        "tests": 3,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "suites": {
+          "StudentProjectionQueryAdapterIT": 3
+        }
+      },
+      "evidence": "JUnit XML services/academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT.xml records all three cases passed: authorityAndRosterUseCurrentStudentGrantWithoutLegacyStatusFallback, resolverUsesOneRepeatableReadSnapshotAcrossCommittedAuthorityAndHistoryChange, and findAssignmentsBindsSemesterGroupsAndBoundsInDeclaredOrder. Gradle reported BUILD SUCCESSFUL in 1m 20s (37 actionable tasks; 2 executed, 35 up-to-date). Flyway applied 26 migrations to each schema, and its JDBC URLs retained loggerLevel=OFF with &currentSchema=."
+    },
+    {
+      "name": "H15 owned Testcontainers cleanup",
+      "command": "docker ps -a --no-trunc --filter id=7a735b69f17ddaaa3a4d8e61e85d3a323dcfcdf2e65326c35a16e2e934a64149; docker ps -a --no-trunc --filter id=7bf5d7bcb1e9b5fccdb8067fed07952c123ad27ab34b2bdbb1eb6cfeac32935f",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "C74CC6601ED9B20E3367E894D0F6C5BC7FF2406F5EBEFE6170A9513116C738D4",
+      "environment": "Windows PowerShell, Europe/Moscow, Docker Desktop 28.5.2, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Post-run ID-filtered docker ps returned no rows for H15 PostgreSQL container 7a735b69f17ddaaa3a4d8e61e85d3a323dcfcdf2e65326c35a16e2e934a64149 or Ryuk container 7bf5d7bcb1e9b5fccdb8067fed07952c123ad27ab34b2bdbb1eb6cfeac32935f."
+    },
+    {
+      "name": "H18 A7 regression fixture correction diff",
+      "command": "git diff --check",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "0A033E8E07EC57AD6219844512D0232C666BC71385F3A844D24F4C28C13A7923",
+      "environment": "Windows PowerShell, Europe/Moscow, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "The bounded test-only A7 fixture correction passed git diff --check. The selected semester is explicit 2026-09-01 through 2026-09-30 inclusive and the service clock is explicit 2026-10-02; no production source or shared clock helper changed."
+    },
+    {
+      "name": "H18 focused unit selectors",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests \"ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeServiceTest\" --tests \"ru.rutcampustrack.academic.grpc.StudentProjectionGrpcServiceTest\" --tests \"ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest\" --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "0A033E8E07EC57AD6219844512D0232C666BC71385F3A844D24F4C28C13A7923",
+      "environment": "Windows PowerShell, Europe/Moscow, Java 21.0.10, Gradle 8.12, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "test_counts": {
+        "tests": 34,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "suites": {
+          "StudentProjectionScopeServiceTest": 18,
+          "StudentProjectionGrpcServiceTest": 7,
+          "StudentHomeworkGrpcIdentityInterceptorTest": 9
+        }
+      },
+      "evidence": "Gradle reported BUILD SUCCESSFUL in 34s (37 tasks; 2 executed, 35 up-to-date). JUnit XML under services/academic-service/academic-app/build/test-results/test records 18 + 7 + 9 tests with zero skipped/failures/errors, including the closed-history A7 inconsistent-source and typed transport assertions."
+    },
+    {
+      "name": "H18 PostgreSQL adapter integration selector",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT\" --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "0A033E8E07EC57AD6219844512D0232C666BC71385F3A844D24F4C28C13A7923",
+      "environment": "Windows PowerShell, Europe/Moscow, Java 21.0.10, Gradle 8.12, Docker Desktop 28.5.2, PostgreSQL image postgres:16 (server 16.13), workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "test_counts": {
+        "tests": 3,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0,
+        "suites": {
+          "StudentProjectionQueryAdapterIT": 3
+        }
+      },
+      "evidence": "Gradle reported BUILD SUCCESSFUL in 47s (37 tasks; 1 executed, 36 up-to-date). JUnit XML services/academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT.xml records 3/3 passed at 2026-09-14T20:20:59, including current-grant authority, multi-group assignment binding, and the annotation-backed repeatable-read snapshot case. Flyway applied 26 migrations per generated schema and retained ?loggerLevel=OFF&currentSchema= URLs."
+    },
+    {
+      "name": "H18 owned Testcontainers cleanup",
+      "command": "docker ps -a --no-trunc --filter id=73ff363e3fe667ed57e716a9e16c10134e373321d257ce97aa61634cb58f3edb --format \"{{.ID}} {{.Status}}\"; docker ps -a --no-trunc --filter id=ebe8756a663f0d2b18882cbeac5be578b2c4edb008b2e48ad856c0d4c21904ad --format \"{{.ID}} {{.Status}}\"",
+      "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "source_manifest_sha256": "0A033E8E07EC57AD6219844512D0232C666BC71385F3A844D24F4C28C13A7923",
+      "environment": "Windows PowerShell, Europe/Moscow, Docker Desktop 28.5.2, workspace-write sandbox",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "ID-filtered docker ps returned no rows for owned PostgreSQL container 73ff363e3fe667ed57e716a9e16c10134e373321d257ce97aa61634cb58f3edb or Ryuk container ebe8756a663f0d2b18882cbeac5be578b2c4edb008b2e48ad856c0d4c21904ad."
+    },
+    {
+      "name": "fresh independent Sol review",
+      "command": "Reviewer command to be selected after integrated stable diff",
+      "exit_code": null,
+      "status": "PENDING",
+      "reason": "Must inspect the stable integrated diff and evidence after checks."
+    }
+  ],
+  "runtime_evidence": {
+    "status": "PASS_H18_FOCUSED_INTEGRATION",
+    "exit_code": 0,
+    "details": "H18 A7 regression correction and focused execution passed. The exact unit selector passed 34 tests (18 scope, 7 gRPC, 9 homework interceptor) with zero skipped/failures/errors; the exact PostgreSQL integration selector passed 3/3 adapter cases, including grant/status authority, assignment parameter ordering, and annotation-proxied repeatable-read snapshot behavior. The owned Testcontainers PostgreSQL 16.13 resource used Flyway 26 migrations per generated schema and URLs preserving loggerLevel=OFF with &currentSchema. ID-filtered docker ps returned no rows for the PostgreSQL and Ryuk container IDs after completion. No Academic server, gRPC application runtime, real transfer, or grant operation was run."
+  },
+  "limitations": [
+    "The focused unit selectors and their generated Java/proto compilation passed.",
+    "The isolated PostgreSQL adapter and repeatable-read checks passed; real transfer/grant synchronization remains outside this fixture scope.",
+    "Real transfer/grant synchronization runtime evidence is a downstream gate."
+  ]
+}

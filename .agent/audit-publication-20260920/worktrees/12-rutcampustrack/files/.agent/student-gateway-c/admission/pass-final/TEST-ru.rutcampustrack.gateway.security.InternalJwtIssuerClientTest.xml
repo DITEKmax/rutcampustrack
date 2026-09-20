@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-10T19:09:00" hostname="DITEK-PK" time="5.755">
+  <properties/>
+  <testcase name="authorityUnavailableCode_isDependencyUnavailable()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest" time="5.253"/>
+  <testcase name="eachCall_reachesAdmission_andBodyContainsOnlyAccessToken()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest" time="0.352"/>
+  <testcase name="statusOnlyOrUnknownError_isDependencyUnavailable()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest" time="0.048"/>
+  <testcase name="acceptedDenialCodes_areMappedWithoutUpstreamDetail()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest" time="0.051"/>
+  <testcase name="malformedOrAlternateTypedSuccess_isDependencyUnavailable()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest" time="0.047"/>
+  <system-out><![CDATA[22:09:05.739 [reactor-http-nio-2] WARN ru.rutcampustrack.gateway.security.InternalJwtIssuerClient -- Auth admission request failed (InternalIssuerUnavailableException)
+22:09:06.168 [reactor-http-nio-4] WARN ru.rutcampustrack.gateway.security.InternalJwtIssuerClient -- Auth admission request failed (InternalIssuerUnavailableException)
+22:09:06.220 [reactor-http-nio-5] WARN ru.rutcampustrack.gateway.security.InternalJwtIssuerClient -- Auth admission request failed (InternalAdmissionDeniedException)
+22:09:06.268 [reactor-http-nio-6] WARN ru.rutcampustrack.gateway.security.InternalJwtIssuerClient -- Auth admission request failed (InternalIssuerUnavailableException)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

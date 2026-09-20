@@ -1,0 +1,3220 @@
+diff --git a/docs/openapi/mobile-bff.json b/docs/openapi/mobile-bff.json
+index 45a974c2..d9552c5d 100644
+--- a/docs/openapi/mobile-bff.json
++++ b/docs/openapi/mobile-bff.json
+@@ -138,6 +138,243 @@
+         } ]
+       }
+     },
++    "/api/v1/student/requests/{id}/cancel" : {
++      "post" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Cancel a pending student request",
++        "operationId" : "cancelRequest",
++        "parameters" : [ {
++          "name" : "id",
++          "in" : "path",
++          "required" : true,
++          "schema" : {
++            "pattern" : "^[0-9a-fA-F]{24}$",
++            "type" : "string"
++          }
++        } ],
++        "responses" : {
++          "200" : {
++            "description" : "Cancelled or replayed request",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentRequestDetail"
++                }
++              }
++            }
++          },
++          "404" : {
++            "description" : "Request not found",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "409" : {
++            "description" : "Request is already decided",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/requests/late-checkin" : {
++      "post" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Submit a manual late-checkin request",
++        "operationId" : "submitLateCheckin",
++        "parameters" : [ {
++          "name" : "Idempotency-Key",
++          "in" : "header",
++          "required" : true,
++          "schema" : {
++            "maxLength" : 128,
++            "minLength" : 16,
++            "pattern" : "^[\\x21-\\x7E]+$",
++            "type" : "string"
++          }
++        } ],
++        "requestBody" : {
++          "content" : {
++            "application/json" : {
++              "schema" : {
++                "$ref" : "#/components/schemas/StudentLateCheckinRequest"
++              }
++            }
++          },
++          "required" : true
++        },
++        "responses" : {
++          "200" : {
++            "description" : "Created or replayed request",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentRequestDetail"
++                }
++              }
++            }
++          },
++          "400" : {
++            "description" : "Invalid request or key",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "409" : {
++            "description" : "Request conflict",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Dependency unavailable",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/requests/excuse" : {
++      "post" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Submit a student excuse request",
++        "operationId" : "submitExcuse",
++        "parameters" : [ {
++          "name" : "Idempotency-Key",
++          "in" : "header",
++          "required" : true,
++          "schema" : {
++            "maxLength" : 128,
++            "minLength" : 16,
++            "pattern" : "^[\\x21-\\x7E]+$",
++            "type" : "string"
++          }
++        } ],
++        "requestBody" : {
++          "content" : {
++            "multipart/form-data" : {
++              "schema" : {
++                "required" : [ "request" ],
++                "type" : "object",
++                "properties" : {
++                  "request" : {
++                    "$ref" : "#/components/schemas/StudentExcuseRequest"
++                  },
++                  "files" : {
++                    "type" : "array",
++                    "items" : {
++                      "type" : "string",
++                      "format" : "binary"
++                    }
++                  }
++                }
++              }
++            }
++          }
++        },
++        "responses" : {
++          "200" : {
++            "description" : "Created or replayed request",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentRequestDetail"
++                }
++              }
++            }
++          },
++          "400" : {
++            "description" : "Invalid request, file or key",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "409" : {
++            "description" : "Request conflict",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "413" : {
++            "description" : "Payload too large",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Dependency unavailable",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
+     "/api/v1/student/lessons/{lessonId}/checkin" : {
+       "post" : {
+         "tags" : [ "Student mobile" ],
+@@ -458,9 +695,253 @@
+           "503" : {
+             "description" : "Mandatory dependency unavailable",
+             "content" : {
+-              "application/problem+json" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/requests" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "List the authenticated student's requests",
++        "operationId" : "listRequests",
++        "parameters" : [ {
++          "name" : "bucket",
++          "in" : "query",
++          "required" : false,
++          "schema" : {
++            "type" : "string",
++            "default" : "OPEN",
++            "enum" : [ "OPEN", "ARCHIVE" ]
++          }
++        }, {
++          "name" : "page",
++          "in" : "query",
++          "required" : false,
++          "schema" : {
++            "type" : "integer",
++            "format" : "int32"
++          }
++        }, {
++          "name" : "size",
++          "in" : "query",
++          "required" : false,
++          "schema" : {
++            "type" : "integer",
++            "format" : "int32"
++          }
++        } ],
++        "responses" : {
++          "200" : {
++            "description" : "Request page",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentRequestPage"
++                }
++              }
++            }
++          },
++          "400" : {
++            "description" : "Invalid page parameters",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Wrong role or group scope",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Dependency unavailable",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/requests/{id}" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Get one of the authenticated student's requests",
++        "operationId" : "getRequest",
++        "parameters" : [ {
++          "name" : "id",
++          "in" : "path",
++          "required" : true,
++          "schema" : {
++            "pattern" : "^[0-9a-fA-F]{24}$",
++            "type" : "string"
++          }
++        } ],
++        "responses" : {
++          "200" : {
++            "description" : "Request detail",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentRequestDetail"
++                }
++              }
++            }
++          },
++          "400" : {
++            "description" : "Invalid request id",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "404" : {
++            "description" : "Request not found",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/requests/{id}/attachments/{attachmentId}" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Download a request attachment",
++        "operationId" : "downloadRequestAttachment",
++        "parameters" : [ {
++          "name" : "id",
++          "in" : "path",
++          "required" : true,
++          "schema" : {
++            "pattern" : "^[0-9a-fA-F]{24}$",
++            "type" : "string"
++          }
++        }, {
++          "name" : "attachmentId",
++          "in" : "path",
++          "required" : true,
++          "schema" : {
++            "pattern" : "^[0-9a-fA-F]{24}$",
++            "type" : "string"
++          }
++        } ],
++        "responses" : {
++          "200" : {
++            "description" : "Attachment bytes",
++            "content" : {
++              "application/octet-stream" : { }
++            }
++          },
++          "403" : {
++            "description" : "Attachment is outside the student's scope",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "404" : {
++            "description" : "Attachment not found",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "410" : {
++            "description" : "Attachment expired",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/requests/options" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Get request submission options",
++        "operationId" : "requestOptions",
++        "responses" : {
++          "200" : {
++            "description" : "Request options",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
+                 "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                  "$ref" : "#/components/schemas/StudentRequestOptions"
+                 }
+               }
+             }
+@@ -658,7 +1139,7 @@
+           },
+           "code" : {
+             "type" : "string",
+-            "enum" : [ "INVALID_REQUEST", "INVALID_IDEMPOTENCY_KEY", "INVALID_SESSION", "WRONG_ROLE", "OUT_OF_SCOPE", "HOMEWORK_NOT_FOUND", "LESSON_NOT_FOUND", "CHECKIN_COOLDOWN", "MANUAL_ABSENCE_REQUIRES_APPEAL", "IDEMPOTENCY_PAYLOAD_MISMATCH", "CHECKIN_NOT_ELIGIBLE", "DEPENDENCY_UNAVAILABLE" ]
++            "enum" : [ "INVALID_REQUEST", "INVALID_IDEMPOTENCY_KEY", "INVALID_SESSION", "WRONG_ROLE", "OUT_OF_SCOPE", "HOMEWORK_NOT_FOUND", "LESSON_NOT_FOUND", "REQUEST_NOT_FOUND", "ATTACHMENT_NOT_FOUND", "REQUEST_CONFLICT", "ATTACHMENT_EXPIRED", "PAYLOAD_TOO_LARGE", "CHECKIN_COOLDOWN", "MANUAL_ABSENCE_REQUIRES_APPEAL", "IDEMPOTENCY_PAYLOAD_MISMATCH", "CHECKIN_NOT_ELIGIBLE", "DEPENDENCY_UNAVAILABLE" ]
+           },
+           "retryAt" : {
+             "type" : "string",
+@@ -676,6 +1157,205 @@
+         },
+         "description" : "RFC 9457 Problem Details with a stable machine code"
+       },
++      "StudentRequestAttachment" : {
++        "required" : [ "contentType", "expiredAt", "expiresAt", "id", "name", "sha256", "sizeBytes", "state", "uploadedAt" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "name" : {
++            "type" : "string"
++          },
++          "contentType" : {
++            "type" : "string"
++          },
++          "sizeBytes" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
++          "sha256" : {
++            "type" : "string"
++          },
++          "state" : {
++            "type" : "string",
++            "enum" : [ "ACTIVE", "EXPIRED" ]
++          },
++          "uploadedAt" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "expiresAt" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "expiredAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          }
++        }
++      },
++      "StudentRequestDecision" : {
++        "required" : [ "comment", "decidedAt" ],
++        "type" : "object",
++        "properties" : {
++          "comment" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "decidedAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          }
++        },
++        "nullable" : true
++      },
++      "StudentRequestDetail" : {
++        "required" : [ "attachments", "comment", "decision", "reason", "summary" ],
++        "type" : "object",
++        "properties" : {
++          "summary" : {
++            "$ref" : "#/components/schemas/StudentRequestSummary"
++          },
++          "reason" : {
++            "type" : "string",
++            "nullable" : true,
++            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
++          },
++          "comment" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "decision" : {
++            "$ref" : "#/components/schemas/StudentRequestDecision"
++          },
++          "attachments" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/StudentRequestAttachment"
++            }
++          }
++        }
++      },
++      "StudentRequestLesson" : {
++        "required" : [ "blocked", "id", "lessonNumber", "status" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "lessonNumber" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "status" : {
++            "type" : "string"
++          },
++          "blocked" : {
++            "type" : "boolean"
++          },
++          "subjectId" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "subjectName" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "subjectType" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "semesterId" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "date" : {
++            "type" : "string",
++            "format" : "date",
++            "nullable" : true
++          },
++          "startsAt" : {
++            "type" : "string",
++            "example" : "14:30:00"
++          },
++          "endsAt" : {
++            "type" : "string",
++            "example" : "14:30:00"
++          }
++        }
++      },
++      "StudentRequestSummary" : {
++        "required" : [ "createdAt", "id", "kind", "lessons", "origin", "status", "updatedAt" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "kind" : {
++            "type" : "string",
++            "enum" : [ "EXCUSE", "LATE_CHECKIN" ]
++          },
++          "status" : {
++            "type" : "string",
++            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
++          },
++          "origin" : {
++            "type" : "string",
++            "enum" : [ "MANUAL", "AUTO_GEO_FAILURE" ]
++          },
++          "lessons" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/StudentRequestLesson"
++            }
++          },
++          "createdAt" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "updatedAt" : {
++            "type" : "string",
++            "format" : "date-time"
++          }
++        }
++      },
++      "StudentLateCheckinRequest" : {
++        "required" : [ "lessonId" ],
++        "type" : "object",
++        "properties" : {
++          "lessonId" : {
++            "pattern" : "^[1-9][0-9]*$",
++            "type" : "string"
++          }
++        }
++      },
++      "StudentExcuseRequest" : {
++        "required" : [ "lessonIds", "reason" ],
++        "type" : "object",
++        "properties" : {
++          "lessonIds" : {
++            "maxItems" : 2147483647,
++            "minItems" : 1,
++            "type" : "array",
++            "items" : {
++              "pattern" : "^[1-9][0-9]*$",
++              "type" : "string"
++            }
++          },
++          "reason" : {
++            "type" : "string",
++            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
++          },
++          "comment" : {
++            "maxLength" : 1000,
++            "minLength" : 0,
++            "type" : "string"
++          }
++        }
++      },
+       "CoordinatesGeo" : {
+         "required" : [ "kind", "latitude", "longitude" ],
+         "type" : "object",
+@@ -1093,6 +1773,160 @@
+           }
+         }
+       },
++      "StudentRequestPage" : {
++        "required" : [ "content", "page", "size", "totalElements", "totalPages" ],
++        "type" : "object",
++        "properties" : {
++          "content" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/StudentRequestSummary"
++            }
++          },
++          "page" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "size" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "totalElements" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
++          "totalPages" : {
++            "type" : "integer",
++            "format" : "int32"
++          }
++        }
++      },
++      "StudentRequestBudget" : {
++        "required" : [ "limit", "remaining", "semesterId", "used" ],
++        "type" : "object",
++        "properties" : {
++          "semesterId" : {
++            "type" : "string"
++          },
++          "limit" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "used" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "remaining" : {
++            "type" : "integer",
++            "format" : "int32"
++          }
++        }
++      },
++      "StudentRequestFileLimits" : {
++        "required" : [ "contentTypes", "extensions", "maxBytesPerFile", "maxBytesTotal", "maxFiles" ],
++        "type" : "object",
++        "properties" : {
++          "maxFiles" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "maxBytesPerFile" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
++          "maxBytesTotal" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
++          "contentTypes" : {
++            "type" : "array",
++            "items" : {
++              "type" : "string"
++            }
++          },
++          "extensions" : {
++            "type" : "array",
++            "items" : {
++              "type" : "string"
++            }
++          }
++        }
++      },
++      "StudentRequestLessonOption" : {
++        "required" : [ "excuseEligible", "lateCheckinEligible", "lesson", "pendingRequests" ],
++        "type" : "object",
++        "properties" : {
++          "lesson" : {
++            "$ref" : "#/components/schemas/StudentRequestLesson"
++          },
++          "excuseEligible" : {
++            "type" : "boolean"
++          },
++          "lateCheckinEligible" : {
++            "type" : "boolean"
++          },
++          "pendingRequests" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/StudentRequestPendingRef"
++            }
++          }
++        }
++      },
++      "StudentRequestOptions" : {
++        "required" : [ "budget", "files", "lessons", "reasons" ],
++        "type" : "object",
++        "properties" : {
++          "reasons" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/StudentRequestReasonOption"
++            }
++          },
++          "files" : {
++            "$ref" : "#/components/schemas/StudentRequestFileLimits"
++          },
++          "budget" : {
++            "$ref" : "#/components/schemas/StudentRequestBudget"
++          },
++          "lessons" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/StudentRequestLessonOption"
++            }
++          }
++        }
++      },
++      "StudentRequestPendingRef" : {
++        "required" : [ "id", "kind", "origin" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "kind" : {
++            "type" : "string",
++            "enum" : [ "EXCUSE", "LATE_CHECKIN" ]
++          },
++          "origin" : {
++            "type" : "string",
++            "enum" : [ "MANUAL", "AUTO_GEO_FAILURE" ]
++          }
++        }
++      },
++      "StudentRequestReasonOption" : {
++        "required" : [ "code", "label" ],
++        "type" : "object",
++        "properties" : {
++          "code" : {
++            "type" : "string",
++            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
++          },
++          "label" : {
++            "type" : "string"
++          }
++        }
++      },
+       "StudentHomework" : {
+         "required" : [ "from", "items", "semester", "serverNow", "to" ],
+         "type" : "object",
+diff --git a/event-schemas/excuse.decided.json b/event-schemas/excuse.decided.json
+index aef4d732..ff4027a3 100644
+--- a/event-schemas/excuse.decided.json
++++ b/event-schemas/excuse.decided.json
+@@ -45,7 +45,8 @@
+         "status": {
+           "enum": [
+             "approved",
+-            "rejected"
++            "rejected",
++            "cancelled"
+           ]
+         },
+         "decision_by": {
+@@ -56,7 +57,10 @@
+           "description": "user_id старосты, принявшего решение"
+         },
+         "decision_comment": {
+-          "type": "string",
++          "type": [
++            "string",
++            "null"
++          ],
+           "description": "Необязательный комментарий старосты, показывается студенту"
+         },
+         "decided_at": {
+diff --git a/event-schemas/excuse.requested.json b/event-schemas/excuse.requested.json
+index efab82ac..03db7cb1 100644
+--- a/event-schemas/excuse.requested.json
++++ b/event-schemas/excuse.requested.json
+@@ -40,6 +40,9 @@
+           "type": "string",
+           "enum": [
+             "illness",
++            "medical_examination",
++            "competition_participation",
++            "family_circumstances",
+             "summons",
+             "university_order",
+             "exemption",
+@@ -94,6 +97,38 @@
+         },
+         "has_attachments": {
+           "type": "boolean"
++        },
++        "attachments": {
++          "type": "array",
++          "description": "Metadata only. Binary attachment data is retained in attendance Mongo and is never placed in the outbox event.",
++          "items": {
++            "type": "object",
++            "required": [
++              "id",
++              "name",
++              "content_type",
++              "size",
++              "sha256",
++              "state",
++              "uploaded_at",
++              "expires_at"
++            ],
++            "properties": {
++              "id": { "type": "string" },
++              "name": { "type": "string" },
++              "content_type": { "type": "string" },
++              "size": { "type": "integer", "minimum": 0 },
++              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
++              "state": { "enum": ["active", "expired"] },
++              "uploaded_at": { "type": "string", "format": "date-time" },
++              "expires_at": { "type": "string", "format": "date-time" },
++              "expired_at": {
++                "type": ["string", "null"],
++                "format": "date-time"
++              }
++            },
++            "additionalProperties": false
++          }
+         }
+       }
+     },
+diff --git a/event-schemas/late_checkin.decided.json b/event-schemas/late_checkin.decided.json
+index e05eff5b..d33e3873 100644
+--- a/event-schemas/late_checkin.decided.json
++++ b/event-schemas/late_checkin.decided.json
+@@ -66,6 +66,8 @@
+             "headman_approved",
+             "headman_rejected",
+             "geo_confirmed",
++            "student_cancelled",
++            "present_priority",
+             null
+           ]
+         },
+diff --git a/frontends/mobile-core/scripts/generate-types.mjs b/frontends/mobile-core/scripts/generate-types.mjs
+index 90e793ad..9155140c 100644
+--- a/frontends/mobile-core/scripts/generate-types.mjs
++++ b/frontends/mobile-core/scripts/generate-types.mjs
+@@ -11,7 +11,6 @@ const specText = await readFile(specUrl, 'utf8')
+ const specHash = createHash('sha256').update(specText).digest('hex')
+ const ast = await openapiTS(JSON.parse(specText), {
+   alphabetize: true,
+-  pathParamsAsTypes: true,
+ })
+ const generated = [
+   '/* eslint-disable */',
+diff --git a/frontends/mobile-core/src/api/generated/mobile-bff.ts b/frontends/mobile-core/src/api/generated/mobile-bff.ts
+index 5467eb17..4aad800f 100644
+--- a/frontends/mobile-core/src/api/generated/mobile-bff.ts
++++ b/frontends/mobile-core/src/api/generated/mobile-bff.ts
+@@ -1,6 +1,6 @@
+ /* eslint-disable */
+ // Generated from docs/openapi/mobile-bff.json. Do not edit.
+-// Contract: JS-STUDENT-01-r1; SHA-256: cc22aaf4518392cb0aa792166d4bdd8d4071958bd82d0c2bcc990b6d6924d363
++// Contract: JS-STUDENT-01-r1; SHA-256: 400f18a71f5d371600f58fd26cbeefacd9edffa0701562d03afa9e51954c17dc
+ 
+ export interface paths {
+     "/api/v1/student/homework": {
+@@ -23,7 +23,7 @@ export interface paths {
+         patch?: never;
+         trace?: never;
+     };
+-    [path: `/api/v1/student/homework/${string}/completion`]: {
++    "/api/v1/student/homework/{id}/completion": {
+         parameters: {
+             query?: never;
+             header?: never;
+@@ -43,7 +43,7 @@ export interface paths {
+         patch?: never;
+         trace?: never;
+     };
+-    [path: `/api/v1/student/lessons/${string}/checkin`]: {
++    "/api/v1/student/lessons/{lessonId}/checkin": {
+         parameters: {
+             query?: never;
+             header?: never;
+@@ -63,6 +63,125 @@ export interface paths {
+         patch?: never;
+         trace?: never;
+     };
++    "/api/v1/student/requests": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /** List the authenticated student's requests */
++        get: operations["listRequests"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
++    "/api/v1/student/requests/{id}": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /** Get one of the authenticated student's requests */
++        get: operations["getRequest"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
++    "/api/v1/student/requests/{id}/attachments/{attachmentId}": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /** Download a request attachment */
++        get: operations["downloadRequestAttachment"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
++    "/api/v1/student/requests/{id}/cancel": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        get?: never;
++        put?: never;
++        /** Cancel a pending student request */
++        post: operations["cancelRequest"];
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
++    "/api/v1/student/requests/excuse": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        get?: never;
++        put?: never;
++        /** Submit a student excuse request */
++        post: operations["submitExcuse"];
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
++    "/api/v1/student/requests/late-checkin": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        get?: never;
++        put?: never;
++        /** Submit a manual late-checkin request */
++        post: operations["submitLateCheckin"];
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
++    "/api/v1/student/requests/options": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /** Get request submission options */
++        get: operations["requestOptions"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+     "/api/v1/student/schedule": {
+         parameters: {
+             query?: never;
+@@ -180,7 +299,7 @@ export interface components {
+         /** @description RFC 9457 Problem Details with a stable machine code */
+         MobileProblemDetails: {
+             /** @enum {string} */
+-            code: "INVALID_REQUEST" | "INVALID_IDEMPOTENCY_KEY" | "INVALID_SESSION" | "WRONG_ROLE" | "OUT_OF_SCOPE" | "HOMEWORK_NOT_FOUND" | "LESSON_NOT_FOUND" | "CHECKIN_COOLDOWN" | "MANUAL_ABSENCE_REQUIRES_APPEAL" | "IDEMPOTENCY_PAYLOAD_MISMATCH" | "CHECKIN_NOT_ELIGIBLE" | "DEPENDENCY_UNAVAILABLE";
++            code: "INVALID_REQUEST" | "INVALID_IDEMPOTENCY_KEY" | "INVALID_SESSION" | "WRONG_ROLE" | "OUT_OF_SCOPE" | "HOMEWORK_NOT_FOUND" | "LESSON_NOT_FOUND" | "REQUEST_NOT_FOUND" | "ATTACHMENT_NOT_FOUND" | "REQUEST_CONFLICT" | "ATTACHMENT_EXPIRED" | "PAYLOAD_TOO_LARGE" | "CHECKIN_COOLDOWN" | "MANUAL_ABSENCE_REQUIRES_APPEAL" | "IDEMPOTENCY_PAYLOAD_MISMATCH" | "CHECKIN_NOT_ELIGIBLE" | "DEPENDENCY_UNAVAILABLE";
+             detail: string;
+             extras?: {
+                 [key: string]: string | null;
+@@ -229,6 +348,12 @@ export interface components {
+         StudentCheckinCommand: {
+             geo: components["schemas"]["GeoInput"];
+         };
++        StudentExcuseRequest: {
++            comment?: string;
++            lessonIds: string[];
++            /** @enum {string} */
++            reason: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "OTHER";
++        };
+         StudentHomework: {
+             /** Format: date */
+             from: string;
+@@ -274,6 +399,123 @@ export interface components {
+             id: string;
+             name: string;
+         };
++        StudentLateCheckinRequest: {
++            lessonId: string;
++        };
++        StudentRequestAttachment: {
++            contentType: string;
++            /** Format: date-time */
++            expiredAt: string | null;
++            /** Format: date-time */
++            expiresAt: string;
++            id: string;
++            name: string;
++            sha256: string;
++            /** Format: int64 */
++            sizeBytes: number;
++            /** @enum {string} */
++            state: "ACTIVE" | "EXPIRED";
++            /** Format: date-time */
++            uploadedAt: string;
++        };
++        StudentRequestBudget: {
++            /** Format: int32 */
++            limit: number;
++            /** Format: int32 */
++            remaining: number;
++            semesterId: string;
++            /** Format: int32 */
++            used: number;
++        };
++        StudentRequestDecision: {
++            comment: string | null;
++            /** Format: date-time */
++            decidedAt: string | null;
++        } | null;
++        StudentRequestDetail: {
++            attachments: components["schemas"]["StudentRequestAttachment"][];
++            comment: string | null;
++            decision: components["schemas"]["StudentRequestDecision"];
++            /** @enum {string|null} */
++            reason: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "OTHER" | null;
++            summary: components["schemas"]["StudentRequestSummary"];
++        };
++        StudentRequestFileLimits: {
++            contentTypes: string[];
++            extensions: string[];
++            /** Format: int64 */
++            maxBytesPerFile: number;
++            /** Format: int64 */
++            maxBytesTotal: number;
++            /** Format: int32 */
++            maxFiles: number;
++        };
++        StudentRequestLesson: {
++            blocked: boolean;
++            /** Format: date */
++            date?: string | null;
++            /** @example 14:30:00 */
++            endsAt?: string;
++            id: string;
++            /** Format: int32 */
++            lessonNumber: number;
++            semesterId?: string | null;
++            /** @example 14:30:00 */
++            startsAt?: string;
++            status: string;
++            subjectId?: string | null;
++            subjectName?: string | null;
++            subjectType?: string | null;
++        };
++        StudentRequestLessonOption: {
++            excuseEligible: boolean;
++            lateCheckinEligible: boolean;
++            lesson: components["schemas"]["StudentRequestLesson"];
++            pendingRequests: components["schemas"]["StudentRequestPendingRef"][];
++        };
++        StudentRequestOptions: {
++            budget: components["schemas"]["StudentRequestBudget"];
++            files: components["schemas"]["StudentRequestFileLimits"];
++            lessons: components["schemas"]["StudentRequestLessonOption"][];
++            reasons: components["schemas"]["StudentRequestReasonOption"][];
++        };
++        StudentRequestPage: {
++            content: components["schemas"]["StudentRequestSummary"][];
++            /** Format: int32 */
++            page: number;
++            /** Format: int32 */
++            size: number;
++            /** Format: int64 */
++            totalElements: number;
++            /** Format: int32 */
++            totalPages: number;
++        };
++        StudentRequestPendingRef: {
++            id: string;
++            /** @enum {string} */
++            kind: "EXCUSE" | "LATE_CHECKIN";
++            /** @enum {string} */
++            origin: "MANUAL" | "AUTO_GEO_FAILURE";
++        };
++        StudentRequestReasonOption: {
++            /** @enum {string} */
++            code: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "OTHER";
++            label: string;
++        };
++        StudentRequestSummary: {
++            /** Format: date-time */
++            createdAt: string;
++            id: string;
++            /** @enum {string} */
++            kind: "EXCUSE" | "LATE_CHECKIN";
++            lessons: components["schemas"]["StudentRequestLesson"][];
++            /** @enum {string} */
++            origin: "MANUAL" | "AUTO_GEO_FAILURE";
++            /** @enum {string} */
++            status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
++            /** Format: date-time */
++            updatedAt: string;
++        };
+         StudentSemesterSchedule: {
+             _links: {
+                 [key: string]: components["schemas"]["Link"];
+@@ -602,6 +844,346 @@ export interface operations {
+             };
+         };
+     };
++    listRequests: {
++        parameters: {
++            query?: {
++                bucket?: "OPEN" | "ARCHIVE";
++                page?: number;
++                size?: number;
++            };
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Request page */
++            200: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["StudentRequestPage"];
++                };
++            };
++            /** @description Invalid page parameters */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Invalid or expired session */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Wrong role or group scope */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Dependency unavailable */
++            503: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++        };
++    };
++    getRequest: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path: {
++                id: string;
++            };
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Request detail */
++            200: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["StudentRequestDetail"];
++                };
++            };
++            /** @description Invalid request id */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Request not found */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++        };
++    };
++    downloadRequestAttachment: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path: {
++                attachmentId: string;
++                id: string;
++            };
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Attachment bytes */
++            200: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/octet-stream": unknown;
++                };
++            };
++            /** @description Attachment is outside the student's scope */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Attachment not found */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Attachment expired */
++            410: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++        };
++    };
++    cancelRequest: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path: {
++                id: string;
++            };
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Cancelled or replayed request */
++            200: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["StudentRequestDetail"];
++                };
++            };
++            /** @description Request not found */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Request is already decided */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++        };
++    };
++    submitExcuse: {
++        parameters: {
++            query?: never;
++            header: {
++                "Idempotency-Key": string;
++            };
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: {
++            content: {
++                "multipart/form-data": {
++                    files?: string[];
++                    request: components["schemas"]["StudentExcuseRequest"];
++                };
++            };
++        };
++        responses: {
++            /** @description Created or replayed request */
++            200: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["StudentRequestDetail"];
++                };
++            };
++            /** @description Invalid request, file or key */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Request conflict */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Payload too large */
++            413: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Dependency unavailable */
++            503: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++        };
++    };
++    submitLateCheckin: {
++        parameters: {
++            query?: never;
++            header: {
++                "Idempotency-Key": string;
++            };
++            path?: never;
++            cookie?: never;
++        };
++        requestBody: {
++            content: {
++                "application/json": components["schemas"]["StudentLateCheckinRequest"];
++            };
++        };
++        responses: {
++            /** @description Created or replayed request */
++            200: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["StudentRequestDetail"];
++                };
++            };
++            /** @description Invalid request or key */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Request conflict */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Dependency unavailable */
++            503: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++        };
++    };
++    requestOptions: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Request options */
++            200: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["StudentRequestOptions"];
++                };
++            };
++        };
++    };
+     getSchedule: {
+         parameters: {
+             query: {
+diff --git a/frontends/mobile-core/src/api/student-client.ts b/frontends/mobile-core/src/api/student-client.ts
+index 32e8b5c4..87acb1a6 100644
+--- a/frontends/mobile-core/src/api/student-client.ts
++++ b/frontends/mobile-core/src/api/student-client.ts
+@@ -8,6 +8,12 @@ import type {
+   StudentSemesterSchedule,
+   StudentSession,
+   StudentToday,
++  StudentRequestBucket,
++  StudentRequestDetail,
++  StudentRequestOptions,
++  StudentRequestPage,
++  StudentExcuseRequest,
++  StudentLateCheckinRequest,
+ } from './types'
+ 
+ export class StudentApiError extends Error {
+@@ -73,6 +79,119 @@ export class StudentApi {
+     })
+   }
+ 
++  listRequests(
++    bucket: StudentRequestBucket = 'OPEN',
++    page?: number,
++    size?: number,
++  ): Promise<StudentRequestPage> {
++    const params = new URLSearchParams({ bucket })
++    if (page !== undefined) params.set('page', String(page))
++    if (size !== undefined) params.set('size', String(size))
++    return this.request(`/api/v1/student/requests?${params.toString()}`)
++  }
++
++  /** Alias retained for callers that use the resource name as the method name. */
++  getRequests(
++    bucket: StudentRequestBucket = 'OPEN',
++    page?: number,
++    size?: number,
++  ): Promise<StudentRequestPage> {
++    return this.listRequests(bucket, page, size)
++  }
++
++  getRequestOptions(): Promise<StudentRequestOptions> {
++    return this.request('/api/v1/student/requests/options')
++  }
++
++  getOptions(): Promise<StudentRequestOptions> {
++    return this.getRequestOptions()
++  }
++
++  getRequest(id: string): Promise<StudentRequestDetail> {
++    return this.request(`/api/v1/student/requests/${encodeURIComponent(id)}`)
++  }
++
++  getStudentRequest(id: string): Promise<StudentRequestDetail> {
++    return this.getRequest(id)
++  }
++
++  submitExcuse(
++    request: StudentExcuseRequest,
++    files: Blob[],
++    idempotencyKey: string,
++  ): Promise<StudentRequestDetail>
++  submitExcuse(
++    request: StudentExcuseRequest,
++    idempotencyKey: string,
++    files?: Blob[],
++  ): Promise<StudentRequestDetail>
++  submitExcuse(
++    request: StudentExcuseRequest,
++    filesOrKey: Blob[] | string,
++    keyOrFiles?: string | Blob[],
++  ): Promise<StudentRequestDetail> {
++    const files = typeof filesOrKey === 'string' ? keyOrFiles as Blob[] ?? [] : filesOrKey
++    const idempotencyKey = typeof filesOrKey === 'string' ? filesOrKey : keyOrFiles as string
++    const form = new FormData()
++    form.append(
++      'request',
++      new Blob([JSON.stringify(request)], { type: 'application/json' }),
++      'request.json',
++    )
++    files.forEach((file, index) => {
++      const filename = typeof File !== 'undefined' && file instanceof File
++        ? file.name
++        : `attachment-${index + 1}`
++      form.append('files', file, filename)
++    })
++    return this.request('/api/v1/student/requests/excuse', {
++      method: 'POST',
++      headers: { 'Idempotency-Key': idempotencyKey },
++      body: form,
++    })
++  }
++
++  submitLateCheckin(
++    request: StudentLateCheckinRequest,
++    idempotencyKey: string,
++  ): Promise<StudentRequestDetail> {
++    return this.request('/api/v1/student/requests/late-checkin', {
++      method: 'POST',
++      headers: { 'Idempotency-Key': idempotencyKey },
++      body: JSON.stringify(request),
++    })
++  }
++
++  cancelRequest(id: string): Promise<StudentRequestDetail> {
++    return this.request(`/api/v1/student/requests/${encodeURIComponent(id)}/cancel`, {
++      method: 'POST',
++    })
++  }
++
++  cancelStudentRequest(id: string): Promise<StudentRequestDetail> {
++    return this.cancelRequest(id)
++  }
++
++  async downloadRequestAttachment(
++    id: string,
++    attachmentId: string,
++  ): Promise<{ blob: Blob; contentType: string; filename: string; headers: Headers }> {
++    const response = await this.requestResponse(
++      `/api/v1/student/requests/${encodeURIComponent(id)}/attachments/${encodeURIComponent(attachmentId)}`,
++      { headers: { Accept: 'application/octet-stream' } },
++    )
++    return {
++      blob: await response.blob(),
++      contentType: response.headers.get('Content-Type') ?? 'application/octet-stream',
++      filename: filenameFromContentDisposition(response.headers.get('Content-Disposition')),
++      headers: response.headers,
++    }
++  }
++
++  downloadAttachment(id: string, attachmentId: string) {
++    return this.downloadRequestAttachment(id, attachmentId)
++  }
++
+   private async request<T>(path: string, init?: RequestInit): Promise<T> {
+     const response = await this.requestResponse(path, init)
+     return this.json<T>(response)
+@@ -81,9 +200,16 @@ export class StudentApi {
+   private async requestResponse(path: string, init?: RequestInit, retried = false): Promise<Response> {
+     const token = this.options.accessToken()
+     const headers = new Headers(init?.headers)
+-    headers.set('Accept', 'application/json')
+-    if (init?.body) headers.set('Content-Type', 'application/json')
+-    if (token) headers.set('Authorization', `Bearer ${token}`)
++    if (!headers.has('Accept')) headers.set('Accept', 'application/json')
++    const body = init?.body
++    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
++    if (body !== undefined && body !== null && !isFormData && !headers.has('Content-Type')) {
++      headers.set('Content-Type', 'application/json')
++    }
++    if (token) {
++      headers.set('Authorization', `Bearer ${token}`)
++      headers.set('X-Internal-Token', token)
++    }
+     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
+     if (response.ok || response.status === 304) return response
+     if (response.status === 401 && !retried && this.options.onUnauthorized) {
+@@ -93,7 +219,7 @@ export class StudentApi {
+ 
+     let problem: MobileProblemDetails | null = null
+     try {
+-      problem = await response.json() as MobileProblemDetails
++      problem = await response.clone().json() as MobileProblemDetails
+     } catch {
+       // A gateway/network response without Problem Details keeps its HTTP context.
+     }
+@@ -104,3 +230,14 @@ export class StudentApi {
+     return response.json() as Promise<T>
+   }
+ }
++
++function filenameFromContentDisposition(value: string | null): string {
++  if (!value) return 'attachment'
++  const encoded = value.match(/filename\*=UTF-8''([^;]+)/i)?.[1]
++  if (encoded) {
++    try { return decodeURIComponent(encoded.replace(/^"|"$/g, '')) } catch { /* fallback below */ }
++  }
++  return value.match(/filename="([^"]+)"/i)?.[1]
++    ?? value.match(/filename=([^;]+)/i)?.[1]?.trim()
++    ?? 'attachment'
++}
+diff --git a/frontends/mobile-core/src/api/types.ts b/frontends/mobile-core/src/api/types.ts
+index 4e7e7244..7310b41b 100644
+--- a/frontends/mobile-core/src/api/types.ts
++++ b/frontends/mobile-core/src/api/types.ts
+@@ -1,4 +1,4 @@
+-import type { components } from './generated/mobile-bff'
++import type { components, operations } from './generated/mobile-bff'
+ 
+ export type StudentSession = components['schemas']['StudentSession']
+ export type StudentToday = components['schemas']['StudentToday']
+@@ -12,6 +12,28 @@ export type StudentHomeworkCompletion = components['schemas']['StudentHomeworkCo
+ export type StudentCheckinAck = components['schemas']['StudentCheckinAck']
+ export type StudentCheckinCommand = components['schemas']['StudentCheckinCommand']
+ export type MobileProblemDetails = components['schemas']['MobileProblemDetails']
++export type StudentRequestBucket = NonNullable<
++  NonNullable<operations['listRequests']['parameters']['query']>['bucket']
++>
++export type StudentRequestKind = components['schemas']['StudentRequestSummary']['kind']
++export type StudentRequestStatus = components['schemas']['StudentRequestSummary']['status']
++export type StudentRequestOrigin = components['schemas']['StudentRequestSummary']['origin']
++export type StudentExcuseReason = components['schemas']['StudentRequestReasonOption']['code']
++export type StudentRequestAttachmentState = components['schemas']['StudentRequestAttachment']['state']
++export type StudentRequestLesson = components['schemas']['StudentRequestLesson']
++export type StudentRequestSummary = components['schemas']['StudentRequestSummary']
++export type StudentRequestDecision = components['schemas']['StudentRequestDecision']
++export type StudentRequestAttachment = components['schemas']['StudentRequestAttachment']
++export type StudentRequestDetail = components['schemas']['StudentRequestDetail']
++export type StudentRequestPage = components['schemas']['StudentRequestPage']
++export type StudentRequestReasonOption = components['schemas']['StudentRequestReasonOption']
++export type StudentRequestFileLimits = components['schemas']['StudentRequestFileLimits']
++export type StudentRequestBudget = components['schemas']['StudentRequestBudget']
++export type StudentRequestPendingRef = components['schemas']['StudentRequestPendingRef']
++export type StudentRequestLessonOption = components['schemas']['StudentRequestLessonOption']
++export type StudentRequestOptions = components['schemas']['StudentRequestOptions']
++export type StudentExcuseRequest = components['schemas']['StudentExcuseRequest']
++export type StudentLateCheckinRequest = components['schemas']['StudentLateCheckinRequest']
+ export type UnavailableReason = Extract<
+   components['schemas']['GeoInput'],
+   { kind: 'UNAVAILABLE' }
+diff --git a/proto/attendance.proto b/proto/attendance.proto
+index cae0986d..4f783fa3 100644
+--- a/proto/attendance.proto
++++ b/proto/attendance.proto
+@@ -11,6 +11,21 @@ service AttendanceStudentGrpcService {
+   rpc GetStudentAttendanceSnapshot (StudentAttendanceSnapshotRequest)
+       returns (StudentAttendanceSnapshotResponse);
+   rpc Checkin (StudentCheckinCommand) returns (StudentCheckinResult);
++  rpc ListStudentRequests (StudentRequestListQuery) returns (StudentRequestPage);
++  rpc GetStudentRequest (StudentRequestId) returns (StudentRequestDetail);
++  rpc GetStudentRequestOptions (StudentRequestOptionsQuery) returns (StudentRequestOptions);
++  rpc SubmitStudentExcuse (SubmitStudentExcuseCommand) returns (StudentRequestDetail);
++  rpc SubmitStudentLateCheckin (SubmitStudentLateCheckinCommand) returns (StudentRequestDetail);
++  rpc CancelStudentRequest (StudentRequestId) returns (StudentRequestDetail);
++  rpc DownloadStudentRequestAttachment (StudentRequestAttachmentId)
++      returns (StudentRequestAttachmentDownload);
++}
++
++// Separate service for notification-bot attachment reads. It has its own
++// x-grpc-secret interceptor; public student JWT protection never applies here.
++service AttendanceRequestBotGrpcService {
++  rpc FetchExcuseAttachment (FetchExcuseAttachmentRequest)
++      returns (FetchExcuseAttachmentResponse);
+ }
+ 
+ message StudentAttendanceSnapshotRequest {
+@@ -139,6 +154,7 @@ enum AutomaticCheckinResolutionReason {
+   AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_APPROVED = 2;
+   AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_REJECTED = 3;
+   AUTOMATIC_CHECKIN_RESOLUTION_REASON_STUDENT_CANCELLED = 4;
++  AUTOMATIC_CHECKIN_RESOLUTION_REASON_PRESENT_PRIORITY = 5;
+ }
+ 
+ // Packed into gRPC status details. The BFF maps this stable code and retry_at
+@@ -162,3 +178,216 @@ enum StudentCheckinErrorCode {
+   STUDENT_CHECKIN_ERROR_CODE_CHECKIN_NOT_ELIGIBLE = 10;
+   STUDENT_CHECKIN_ERROR_CODE_DEPENDENCY_UNAVAILABLE = 11;
+ }
++
++enum StudentRequestBucket {
++  STUDENT_REQUEST_BUCKET_UNSPECIFIED = 0;
++  STUDENT_REQUEST_BUCKET_OPEN = 1;
++  STUDENT_REQUEST_BUCKET_ARCHIVE = 2;
++}
++
++enum StudentRequestKind {
++  STUDENT_REQUEST_KIND_UNSPECIFIED = 0;
++  STUDENT_REQUEST_KIND_EXCUSE = 1;
++  STUDENT_REQUEST_KIND_LATE_CHECKIN = 2;
++}
++
++enum StudentRequestStatus {
++  STUDENT_REQUEST_STATUS_UNSPECIFIED = 0;
++  STUDENT_REQUEST_STATUS_PENDING = 1;
++  STUDENT_REQUEST_STATUS_APPROVED = 2;
++  STUDENT_REQUEST_STATUS_REJECTED = 3;
++  STUDENT_REQUEST_STATUS_CANCELLED = 4;
++}
++
++enum StudentRequestOrigin {
++  STUDENT_REQUEST_ORIGIN_UNSPECIFIED = 0;
++  STUDENT_REQUEST_ORIGIN_MANUAL = 1;
++  STUDENT_REQUEST_ORIGIN_AUTO_GEO_FAILURE = 2;
++}
++
++enum StudentExcuseReason {
++  STUDENT_EXCUSE_REASON_UNSPECIFIED = 0;
++  STUDENT_EXCUSE_REASON_ILLNESS = 1;
++  STUDENT_EXCUSE_REASON_MEDICAL_EXAMINATION = 2;
++  STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION = 3;
++  STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES = 4;
++  STUDENT_EXCUSE_REASON_OTHER = 5;
++}
++
++enum StudentRequestAttachmentState {
++  STUDENT_REQUEST_ATTACHMENT_STATE_UNSPECIFIED = 0;
++  STUDENT_REQUEST_ATTACHMENT_STATE_ACTIVE = 1;
++  STUDENT_REQUEST_ATTACHMENT_STATE_EXPIRED = 2;
++}
++
++message StudentRequestListQuery {
++  StudentRequestBucket bucket = 1;
++  optional int32 page = 2;
++  optional int32 size = 3;
++}
++
++message StudentRequestOptionsQuery {}
++
++message StudentRequestId {
++  string request_id = 1;
++}
++
++message StudentRequestAttachmentId {
++  string request_id = 1;
++  string attachment_id = 2;
++}
++
++message StudentRequestAttachmentUpload {
++  string name = 1;
++  string declared_content_type = 2;
++  bytes data = 3;
++}
++
++message SubmitStudentExcuseCommand {
++  repeated int64 lesson_ids = 1;
++  StudentExcuseReason reason = 2;
++  optional string comment = 3;
++  repeated StudentRequestAttachmentUpload attachments = 4;
++  string idempotency_key = 5;
++}
++
++message SubmitStudentLateCheckinCommand {
++  int64 lesson_id = 1;
++  string idempotency_key = 2;
++}
++
++message StudentRequestLesson {
++  int64 id = 1;
++  int32 lesson_number = 2;
++  string status = 3;
++  bool blocked = 4;
++  optional int64 subject_id = 5;
++  optional string subject_name = 6;
++  optional string subject_type = 7;
++  optional int64 semester_id = 8;
++  optional string date = 9;
++  optional string starts_at = 10;
++  optional string ends_at = 11;
++}
++
++message StudentRequestSummary {
++  string id = 1;
++  StudentRequestKind kind = 2;
++  StudentRequestStatus status = 3;
++  StudentRequestOrigin origin = 4;
++  repeated StudentRequestLesson lessons = 5;
++  string created_at = 6;
++  string updated_at = 7;
++}
++
++message StudentRequestDecision {
++  optional string comment = 1;
++  optional string decided_at = 2;
++}
++
++message StudentRequestAttachment {
++  string id = 1;
++  string name = 2;
++  string content_type = 3;
++  int64 size_bytes = 4;
++  string sha256 = 5;
++  StudentRequestAttachmentState state = 6;
++  string uploaded_at = 7;
++  string expires_at = 8;
++  optional string expired_at = 9;
++}
++
++message StudentRequestDetail {
++  StudentRequestSummary summary = 1;
++  optional StudentExcuseReason reason = 2;
++  optional string comment = 3;
++  repeated StudentRequestAttachment attachments = 4;
++  optional StudentRequestDecision decision = 5;
++}
++
++message StudentRequestPage {
++  repeated StudentRequestSummary content = 1;
++  int32 page = 2;
++  int32 size = 3;
++  int64 total_elements = 4;
++  int32 total_pages = 5;
++}
++
++message StudentRequestReasonOption {
++  StudentExcuseReason code = 1;
++  string label = 2;
++}
++
++message StudentRequestFileLimits {
++  int32 max_files = 1;
++  int64 max_bytes_per_file = 2;
++  int64 max_bytes_total = 3;
++  repeated string content_types = 4;
++  repeated string extensions = 5;
++}
++
++message StudentRequestBudget {
++  int64 semester_id = 1;
++  int32 limit = 2;
++  int32 used = 3;
++  int32 remaining = 4;
++}
++
++message StudentRequestPendingRef {
++  string id = 1;
++  StudentRequestKind kind = 2;
++  StudentRequestOrigin origin = 3;
++}
++
++message StudentRequestLessonOption {
++  StudentRequestLesson lesson = 1;
++  bool excuse_eligible = 2;
++  bool late_checkin_eligible = 3;
++  repeated StudentRequestPendingRef pending_requests = 4;
++}
++
++message StudentRequestOptions {
++  repeated StudentRequestReasonOption reasons = 1;
++  StudentRequestFileLimits files = 2;
++  StudentRequestBudget budget = 3;
++  repeated StudentRequestLessonOption lessons = 4;
++}
++
++message StudentRequestAttachmentDownload {
++  bytes data = 1;
++  string content_type = 2;
++  string filename = 3;
++  int64 size = 4;
++}
++
++message StudentRequestErrorDetail {
++  StudentRequestErrorCode code = 1;
++}
++
++enum StudentRequestErrorCode {
++  STUDENT_REQUEST_ERROR_CODE_UNSPECIFIED = 0;
++  STUDENT_REQUEST_ERROR_CODE_INVALID_REQUEST = 1;
++  STUDENT_REQUEST_ERROR_CODE_INVALID_IDEMPOTENCY_KEY = 2;
++  STUDENT_REQUEST_ERROR_CODE_INVALID_SESSION = 3;
++  STUDENT_REQUEST_ERROR_CODE_WRONG_ROLE = 4;
++  STUDENT_REQUEST_ERROR_CODE_OUT_OF_SCOPE = 5;
++  STUDENT_REQUEST_ERROR_CODE_REQUEST_NOT_FOUND = 6;
++  STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_NOT_FOUND = 7;
++  STUDENT_REQUEST_ERROR_CODE_REQUEST_CONFLICT = 8;
++  STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_EXPIRED = 9;
++  STUDENT_REQUEST_ERROR_CODE_PAYLOAD_TOO_LARGE = 10;
++  STUDENT_REQUEST_ERROR_CODE_DEPENDENCY_UNAVAILABLE = 11;
++}
++
++message FetchExcuseAttachmentRequest {
++  int64 actor_user_id = 1;
++  string request_id = 2;
++  string attachment_id = 3;
++}
++
++message FetchExcuseAttachmentResponse {
++  bytes data = 1;
++  string content_type = 2;
++  string filename = 3;
++  int64 size = 4;
++}
+diff --git a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java
+index bd2ab3fc..6755f3e5 100644
+--- a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java
++++ b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java
+@@ -4,5 +4,6 @@ public enum ExcuseTicketStatus {
+     DRAFT,
+     SUBMITTED,
+     APPROVED,
+-    REJECTED;
++    REJECTED,
++    CANCELLED;
+ }
+diff --git a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java
+index d8b8251b..f49d4535 100644
+--- a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java
++++ b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java
+@@ -2,6 +2,9 @@ package ru.rutcampustrack.attendance.contract.enums;
+ 
+ public enum ExcuseType {
+     ILLNESS,
++    MEDICAL_EXAMINATION,
++    COMPETITION_PARTICIPATION,
++    FAMILY_CIRCUMSTANCES,
+     SUMMONS,
+     UNIVERSITY_ORDER,
+     EXEMPTION,
+diff --git a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java
+index 1e4ce804..9c15e670 100644
+--- a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java
++++ b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java
+@@ -3,5 +3,7 @@ package ru.rutcampustrack.attendance.contract.enums;
+ public enum LateCheckinResolutionReason {
+     GEO_CONFIRMED,
+     HEADMAN_APPROVED,
+-    HEADMAN_REJECTED
++    HEADMAN_REJECTED,
++    PRESENT_PRIORITY,
++    CANCELLED_BY_STUDENT
+ }
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
+index 36d022f9..73d6b816 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
+@@ -119,6 +119,39 @@ public class MongoConfig {
+                         org.springframework.data.mongodb.core.query.Criteria.where("status").is("PENDING")))
+                 .named("uniq_lcr_pending_student_lesson"));
+ 
++        // Student request union/list and owner-scoped attachment reads.
++        IndexOperations excuseOps = mongoTemplate.indexOps("excuse_tickets");
++        excuseOps.ensureIndex(new Index()
++                .on("student_id", Sort.Direction.ASC)
++                .on("updated_at", Sort.Direction.DESC)
++                .named("idx_excuse_student_updated"));
++
++        IndexOperations requestReceiptOps = mongoTemplate.indexOps("student_request_receipts");
++        requestReceiptOps.ensureIndex(new Index()
++                .on("student_id", Sort.Direction.ASC)
++                .on("command_kind", Sort.Direction.ASC)
++                .on("idempotency_key", Sort.Direction.ASC)
++                .unique()
++                .named("uniq_student_request_receipt"));
++
++        IndexOperations budgetOps = mongoTemplate.indexOps("student_late_checkin_budgets");
++        budgetOps.ensureIndex(new Index()
++                .on("student_id", Sort.Direction.ASC)
++                .on("semester_id", Sort.Direction.ASC)
++                .unique()
++                .named("uniq_student_late_budget"));
++
++        IndexOperations attachmentOps = mongoTemplate.indexOps("request_attachments");
++        attachmentOps.ensureIndex(new Index()
++                .on("request_id", Sort.Direction.ASC)
++                .on("owner_student_id", Sort.Direction.ASC)
++                .on("position", Sort.Direction.ASC)
++                .named("idx_request_attachment_owner_position"));
++        attachmentOps.ensureIndex(new Index()
++                .on("state", Sort.Direction.ASC)
++                .on("expires_at", Sort.Direction.ASC)
++                .named("idx_request_attachment_expiry"));
++
+         IndexOperations receiptOps = mongoTemplate.indexOps("student_checkin_receipts");
+         receiptOps.ensureIndex(new Index()
+                 .on("student_id", Sort.Direction.ASC)
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java
+index 9f8beb59..05e565d3 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java
+@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
+ import org.springframework.stereotype.Component;
+ import ru.rutcampustrack.attendance.event.EventEnvelope;
+ import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
++import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
+ import ru.rutcampustrack.shared.outbox.OutboxStorage;
+ 
+ import java.util.ArrayList;
+@@ -71,6 +72,35 @@ public class ExcuseEventPublisher {
+         saveToOutbox(EVENT_REQUESTED, buildRequestedPayload(ticket, lessonDetails));
+     }
+ 
++    /**
++     * Publishes the student-request representation with attachment metadata.
++     * Attachment bytes are retained in {@code request_attachments}; the outbox
++     * carries descriptors only so a retry cannot duplicate or expose binary data.
++     */
++    public void publishRequested(ExcuseTicket ticket,
++                                 List<Map<String, Object>> lessonDetails,
++                                 List<RequestAttachmentDescriptorDocument> descriptors) {
++        Map<String, Object> payload = buildRequestedPayload(ticket, lessonDetails);
++        List<Map<String, Object>> attachments = new ArrayList<>();
++        if (descriptors != null) {
++            for (RequestAttachmentDescriptorDocument descriptor : descriptors) {
++                Map<String, Object> item = new LinkedHashMap<>();
++                item.put("id", descriptor.getId());
++                item.put("name", descriptor.getName());
++                item.put("content_type", descriptor.getContentType());
++                item.put("size", descriptor.getSize());
++                item.put("sha256", descriptor.getSha256());
++                item.put("state", descriptor.getState() == null ? null : descriptor.getState().name().toLowerCase());
++                item.put("uploaded_at", descriptor.getUploadedAt() == null ? null : descriptor.getUploadedAt().toString());
++                item.put("expires_at", descriptor.getExpiresAt() == null ? null : descriptor.getExpiresAt().toString());
++                attachments.add(item);
++            }
++        }
++        payload.put("attachments", attachments);
++        payload.put("has_attachments", !attachments.isEmpty());
++        saveToOutbox(EVENT_REQUESTED, payload);
++    }
++
+     /**
+      * Variant of {@link #publishRequested(ExcuseTicket, List)} that carries a
+      * supporting document. The document is base64-encoded so it can travel
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java
+index 3cdcf541..b8b2f888 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java
+@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
+ import org.springframework.data.mongodb.core.mapping.Field;
+ import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+ import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
++import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
++import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
+ 
+ import java.time.Instant;
+ import java.util.List;
+@@ -40,12 +42,24 @@ public class ExcuseTicket {
+     @Field("lesson_ids")
+     private List<Long> lessonIds;
+ 
++    /** Active semester used for student request budget/options ownership. */
++    @Field("semester_id")
++    private Long semesterId;
++
++    /** Immutable schedule data used by archive/detail reads after schedule changes. */
++    @Field("lesson_snapshots")
++    private List<StudentLessonSnapshotDocument> lessonSnapshots;
++
+     @Field("excuse_type")
+     private ExcuseType excuseType;
+ 
+     @Field("comment")
+     private String comment;
+ 
++    /** Descriptors only; binary bytes live in request_attachments. */
++    @Field("attachment_descriptors")
++    private List<RequestAttachmentDescriptorDocument> attachmentDescriptors;
++
+     @Field("status")
+     @Builder.Default
+     private ExcuseTicketStatus status = ExcuseTicketStatus.SUBMITTED;
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java
+index d0f32f66..e3419c7d 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java
+@@ -2,6 +2,14 @@ package ru.rutcampustrack.attendance.grpc;
+ 
+ import io.grpc.stub.StreamObserver;
+ import net.devh.boot.grpc.server.service.GrpcService;
++import org.springframework.beans.factory.annotation.Autowired;
++import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
++import ru.rutcampustrack.attendance.contract.enums.UserRole;
++import ru.rutcampustrack.attendance.exception.AccessDeniedException;
++import ru.rutcampustrack.attendance.exception.BadRequestException;
++import ru.rutcampustrack.attendance.studentrequest.RequestBucket;
++import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels;
++import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
+ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
+ import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+ import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
+@@ -28,6 +36,7 @@ public class AttendanceStudentGrpcServiceImpl
+     private final ScheduleGrpcClient scheduleGrpcClient;
+     private final AcademicGrpcClient academicGrpcClient;
+     private final SemesterCacheService semesterCacheService;
++    private final StudentRequestService requestService;
+ 
+     public AttendanceStudentGrpcServiceImpl(
+             StudentCheckinService checkinService,
+@@ -35,12 +44,26 @@ public class AttendanceStudentGrpcServiceImpl
+             ScheduleGrpcClient scheduleGrpcClient,
+             AcademicGrpcClient academicGrpcClient,
+             SemesterCacheService semesterCacheService
++    ) {
++        this(checkinService, snapshotService, scheduleGrpcClient, academicGrpcClient,
++                semesterCacheService, null);
++    }
++
++    @Autowired
++    public AttendanceStudentGrpcServiceImpl(
++            StudentCheckinService checkinService,
++            StudentAttendanceSnapshotService snapshotService,
++            ScheduleGrpcClient scheduleGrpcClient,
++            AcademicGrpcClient academicGrpcClient,
++            SemesterCacheService semesterCacheService,
++            StudentRequestService requestService
+     ) {
+         this.checkinService = checkinService;
+         this.snapshotService = snapshotService;
+         this.scheduleGrpcClient = scheduleGrpcClient;
+         this.academicGrpcClient = academicGrpcClient;
+         this.semesterCacheService = semesterCacheService;
++        this.requestService = requestService;
+     }
+ 
+     @Override
+@@ -91,6 +114,160 @@ public class AttendanceStudentGrpcServiceImpl
+         }
+     }
+ 
++    @Override
++    public void listStudentRequests(StudentRequestListQuery query,
++                                    StreamObserver<StudentRequestPage> observer) {
++        try {
++            StudentRequestModels.Identity identity = requestIdentity(requireClaims());
++            RequestBucket bucket = query.getBucket() == StudentRequestBucket.STUDENT_REQUEST_BUCKET_ARCHIVE
++                    ? RequestBucket.ARCHIVE : RequestBucket.OPEN;
++            Integer page = query.hasPage() ? query.getPage() : null;
++            Integer size = query.hasSize() ? query.getSize() : null;
++            observer.onNext(StudentRequestGrpcMapper.page(requireRequestService().list(identity, bucket, page, size)));
++            observer.onCompleted();
++        } catch (RuntimeException error) {
++            observer.onError(StudentRequestGrpcErrors.toStatus(error));
++        }
++    }
++
++    @Override
++    public void getStudentRequest(StudentRequestId request,
++                                  StreamObserver<StudentRequestDetail> observer) {
++        try {
++            StudentRequestModels.Identity identity = requestIdentity(requireClaims());
++            validateObjectId(request.getRequestId(), "request_id");
++            observer.onNext(StudentRequestGrpcMapper.detail(
++                    requireRequestService().get(identity, request.getRequestId())));
++            observer.onCompleted();
++        } catch (RuntimeException error) {
++            observer.onError(StudentRequestGrpcErrors.toStatus(error));
++        }
++    }
++
++    @Override
++    public void getStudentRequestOptions(StudentRequestOptionsQuery query,
++                                         StreamObserver<StudentRequestOptions> observer) {
++        try {
++            StudentRequestModels.Identity identity = requestIdentity(requireClaims());
++            observer.onNext(StudentRequestGrpcMapper.options(requireRequestService().options(identity)));
++            observer.onCompleted();
++        } catch (RuntimeException error) {
++            observer.onError(StudentRequestGrpcErrors.toStatus(error));
++        }
++    }
++
++    @Override
++    public void submitStudentExcuse(SubmitStudentExcuseCommand command,
++                                    StreamObserver<StudentRequestDetail> observer) {
++        try {
++            StudentRequestModels.Identity identity = requestIdentity(requireClaims());
++            if (command.getIdempotencyKey().isBlank()) {
++                throw new ru.rutcampustrack.attendance.exception.InvalidIdempotencyKeyException();
++            }
++            List<StudentRequestModels.AttachmentInput> attachments = command.getAttachmentsList().stream()
++                    .map(file -> new StudentRequestModels.AttachmentInput(
++                            file.getName(), file.getDeclaredContentType(), file.getData().toByteArray()))
++                    .toList();
++            StudentRequestModels.ExcuseSubmission submission = new StudentRequestModels.ExcuseSubmission(
++                    command.getLessonIdsList(), parseReason(command.getReason()),
++                    command.hasComment() ? command.getComment() : null,
++                    attachments, command.getIdempotencyKey());
++            observer.onNext(StudentRequestGrpcMapper.detail(
++                    requireRequestService().submitExcuse(identity, submission)));
++            observer.onCompleted();
++        } catch (RuntimeException error) {
++            observer.onError(StudentRequestGrpcErrors.toStatus(error));
++        }
++    }
++
++    @Override
++    public void submitStudentLateCheckin(SubmitStudentLateCheckinCommand command,
++                                         StreamObserver<StudentRequestDetail> observer) {
++        try {
++            StudentRequestModels.Identity identity = requestIdentity(requireClaims());
++            if (command.getIdempotencyKey().isBlank()) {
++                throw new ru.rutcampustrack.attendance.exception.InvalidIdempotencyKeyException();
++            }
++            observer.onNext(StudentRequestGrpcMapper.detail(requireRequestService().submitLateCheckin(
++                    identity, new StudentRequestModels.LateCheckinSubmission(
++                            command.getLessonId(), command.getIdempotencyKey()))));
++            observer.onCompleted();
++        } catch (RuntimeException error) {
++            observer.onError(StudentRequestGrpcErrors.toStatus(error));
++        }
++    }
++
++    @Override
++    public void cancelStudentRequest(StudentRequestId request,
++                                     StreamObserver<StudentRequestDetail> observer) {
++        try {
++            StudentRequestModels.Identity identity = requestIdentity(requireClaims());
++            validateObjectId(request.getRequestId(), "request_id");
++            observer.onNext(StudentRequestGrpcMapper.detail(
++                    requireRequestService().cancel(identity, request.getRequestId())));
++            observer.onCompleted();
++        } catch (RuntimeException error) {
++            observer.onError(StudentRequestGrpcErrors.toStatus(error));
++        }
++    }
++
++    @Override
++    public void downloadStudentRequestAttachment(StudentRequestAttachmentId request,
++                                                  StreamObserver<StudentRequestAttachmentDownload> observer) {
++        try {
++            StudentRequestModels.Identity identity = requestIdentity(requireClaims());
++            validateObjectId(request.getRequestId(), "request_id");
++            validateObjectId(request.getAttachmentId(), "attachment_id");
++            observer.onNext(StudentRequestGrpcMapper.download(requireRequestService().download(
++                    identity, request.getRequestId(), request.getAttachmentId())));
++            observer.onCompleted();
++        } catch (RuntimeException error) {
++            observer.onError(StudentRequestGrpcErrors.toStatus(error));
++        }
++    }
++
++    private StudentRequestService requireRequestService() {
++        if (requestService == null) {
++            throw new ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException(
++                    "Student request transport is not configured");
++        }
++        return requestService;
++    }
++
++    private static StudentRequestModels.Identity requestIdentity(InternalJwtClaims claims) {
++        if (claims == null || claims.userId() == null || claims.userId() <= 0
++                || claims.groupId() == null || claims.groupId() <= 0) {
++            throw new StudentRequestTransportException(
++                    StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_OUT_OF_SCOPE,
++                    "Authenticated student scope is missing");
++        }
++        if (claims.role() == null || !"STUDENT".equalsIgnoreCase(claims.role())) {
++            throw new StudentRequestTransportException(
++                    StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_WRONG_ROLE,
++                    "Student request API requires STUDENT role");
++        }
++        return new StudentRequestModels.Identity(claims.userId(), UserRole.STUDENT,
++                claims.groupId(), claims.isHeadman());
++    }
++
++    private static ExcuseType parseReason(StudentExcuseReason reason) {
++        if (reason == null || reason == StudentExcuseReason.STUDENT_EXCUSE_REASON_UNSPECIFIED
++                || reason == StudentExcuseReason.UNRECOGNIZED) {
++            throw new BadRequestException("Excuse reason is required");
++        }
++        try {
++            return ExcuseType.valueOf(reason.name().replace("STUDENT_EXCUSE_REASON_", ""));
++        } catch (IllegalArgumentException error) {
++            throw new BadRequestException("Excuse reason is not supported");
++        }
++    }
++
++    private static void validateObjectId(String value, String field) {
++        if (value == null || !value.matches("[0-9a-fA-F]{24}")) {
++            throw new BadRequestException(field + " must be a 24-character hexadecimal id");
++        }
++    }
++
+     private static InternalJwtClaims requireClaims() {
+         InternalJwtClaims claims = StudentGrpcIdentity.CLAIMS.get();
+         if (claims == null) {
+@@ -184,6 +361,8 @@ public class AttendanceStudentGrpcServiceImpl
+                 case GEO_CONFIRMED -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_GEO_CONFIRMED;
+                 case HEADMAN_APPROVED -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_APPROVED;
+                 case HEADMAN_REJECTED -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_REJECTED;
++                case CANCELLED_BY_STUDENT -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_STUDENT_CANCELLED;
++                case PRESENT_PRIORITY -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_PRESENT_PRIORITY;
+             });
+         }
+         return result.build();
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java
+index f42fda49..f82a8232 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java
+@@ -3,6 +3,7 @@ package ru.rutcampustrack.attendance.latecheckin;
+ import com.fasterxml.jackson.core.JsonProcessingException;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import org.springframework.stereotype.Component;
++import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
+ import ru.rutcampustrack.attendance.event.EventEnvelope;
+ import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+ import ru.rutcampustrack.shared.outbox.OutboxStorage;
+@@ -77,7 +78,7 @@ public class LateCheckinEventPublisher {
+                 request.getStatus() != null ? request.getStatus().name().toLowerCase() : null);
+         payload.put("resolution_reason",
+                 request.getResolutionReason() != null
+-                        ? request.getResolutionReason().name().toLowerCase()
++                        ? wireResolutionReason(request.getResolutionReason())
+                         : null);
+         payload.put("decided_at",
+                 request.getDecisionAt() != null ? request.getDecisionAt().toString() : null);
+@@ -91,6 +92,11 @@ public class LateCheckinEventPublisher {
+         saveToOutbox(EVENT_DECIDED, payload);
+     }
+ 
++    private static String wireResolutionReason(LateCheckinResolutionReason reason) {
++        return reason == LateCheckinResolutionReason.CANCELLED_BY_STUDENT
++                ? "student_cancelled" : reason.name().toLowerCase();
++    }
++
+     private void saveToOutbox(String eventType, Map<String, Object> payload) {
+         Map<String, Object> envelope = EventEnvelope.build(eventType, payload);
+         String json;
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java
+index a3512d66..a3b9fde8 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java
+@@ -45,6 +45,12 @@ public class LateCheckinRequest {
+     @Field("subject_id")
+     private Long subjectId;
+ 
++    @Field("subject_name")
++    private String subjectName;
++
++    @Field("subject_type")
++    private String subjectType;
++
+     @Field("semester_id")
+     private Long semesterId;
+ 
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java
+index 73aa55f1..b36d0692 100644
+--- a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java
+@@ -9,6 +9,7 @@ import org.mockito.Mock;
+ import org.mockito.junit.jupiter.MockitoExtension;
+ import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+ import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
++import ru.rutcampustrack.attendance.events.EventSchemaValidator;
+ import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
+ import ru.rutcampustrack.shared.outbox.OutboxStorage;
+ 
+@@ -18,6 +19,7 @@ import java.util.List;
+ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.mockito.ArgumentMatchers.eq;
+ import static org.mockito.Mockito.verify;
++import static org.mockito.Mockito.times;
+ 
+ /**
+  * Unit tests for ExcuseEventPublisher (Phase 59-05 + M02 Группа 5).
+@@ -131,6 +133,38 @@ class ExcuseEventPublisherTest {
+         assertThat(payload.get("decided_at").asText()).isEqualTo(decidedAt.toString());
+     }
+ 
++    @Test
++    void publishDecided_allTerminalVariantsWithNullCommentMatchSchema() throws Exception {
++        Instant decidedAt = Instant.parse("2026-04-14T13:00:00Z");
++        for (ExcuseTicketStatus status : List.of(ExcuseTicketStatus.APPROVED,
++                ExcuseTicketStatus.REJECTED, ExcuseTicketStatus.CANCELLED)) {
++            publisher().publishDecided(ExcuseTicket.builder()
++                    .id("terminal-" + status.name().toLowerCase())
++                    .studentId(100L).groupId(10L).lessonIds(List.of(1L))
++                    .excuseType(ExcuseType.ILLNESS).status(status)
++                    .decisionBy(status == ExcuseTicketStatus.CANCELLED ? null : 777L)
++                    .decisionAt(decidedAt).createdAt(decidedAt).updatedAt(decidedAt)
++                    .build());
++        }
++
++        ArgumentCaptor<String> payloads = ArgumentCaptor.forClass(String.class);
++        verify(outboxStorage, times(3)).save(eq("excuse.decided"), payloads.capture());
++        assertThat(payloads.getAllValues()).allSatisfy(payload -> {
++            try {
++                assertThat(EventSchemaValidator.validate("excuse.decided.json", payload)).isEmpty();
++            } catch (Exception error) {
++                throw new AssertionError("excuse.decided must validate", error);
++            }
++        });
++        assertThat(payloads.getAllValues()).extracting(payload -> {
++            try {
++                return objectMapper.readTree(payload).get("payload").get("status").asText();
++            } catch (Exception error) {
++                throw new AssertionError("valid JSON expected", error);
++            }
++        }).containsExactlyInAnyOrder("approved", "rejected", "cancelled");
++    }
++
+     // D-27 regression
+     @Test
+     void publishRequested_userIdEqualsStudentId() throws Exception {
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java
+index 4c57a9a4..242d9da1 100644
+--- a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java
+@@ -169,6 +169,28 @@ class LateCheckinEventContractTest {
+         assertThat(payload.get("decision_by").isNull()).isTrue();
+     }
+ 
++    @Test
++    void publishDecided_studentCancelledUsesCanonicalWireReasonAndSchema() throws Exception {
++        LateCheckinRequest request = LateCheckinRequest.builder()
++                .id("req-student-cancelled")
++                .studentId(100L)
++                .groupId(10L)
++                .lessonId(42L)
++                .status(LateCheckinRequestStatus.CANCELLED)
++                .resolutionReason(LateCheckinResolutionReason.CANCELLED_BY_STUDENT)
++                .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
++                .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
++                .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
++                .build();
++
++        publisher.publishDecided(request, LocalDate.of(2026, 4, 23), 3, 7L, null);
++
++        OutboxRecord record = outbox.captured.getFirst();
++        assertThat(EventSchemaValidator.validate("late_checkin.decided.json", record.payload())).isEmpty();
++        assertThat(mapper.readTree(record.payload()).get("payload").get("resolution_reason").asText())
++                .isEqualTo("student_cancelled");
++    }
++
+     @Test
+     void decisionCommandRequiresPositiveInternalActor() throws Exception {
+         String valid = mapper.writeValueAsString(EventEnvelope.build("late_checkin.decision", Map.of(
+diff --git a/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java b/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java
+index ad684bac..35348866 100644
+--- a/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java
++++ b/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java
+@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestBody;
+ import org.springframework.web.bind.annotation.RequestHeader;
+ import org.springframework.web.bind.annotation.RequestMapping;
+ import org.springframework.web.bind.annotation.RequestParam;
++import org.springframework.web.bind.annotation.RequestPart;
++import org.springframework.web.multipart.MultipartFile;
+ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.CheckinAck;
+ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.CheckinRequest;
+ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.HomeworkCompletionRequest;
+@@ -32,6 +34,15 @@ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.MobileProblem
+ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ScheduleResponse;
+ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.SessionResponse;
+ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.TodayResponse;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Bucket;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Detail;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.ExcuseRequest;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.LateCheckinRequest;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Options;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Page;
++
++import java.util.List;
+ 
+ @Tag(name = "Student mobile", description = "PWA/TMA student read model and geo check-in")
+ @SecurityRequirement(name = "bearerAuth")
+@@ -225,4 +236,142 @@ public interface StudentApi {
+             String idempotencyKey,
+             @Valid @RequestBody CheckinRequest request
+     );
++
++    @Operation(summary = "List the authenticated student's requests")
++    @ApiResponses({
++            @ApiResponse(responseCode = "200", description = "Request page",
++                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
++                            schema = @Schema(implementation = Page.class)),
++                    headers = @Header(name = "Cache-Control", description = "Always no-store")),
++            @ApiResponse(responseCode = "400", description = "Invalid page parameters",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "401", description = "Invalid or expired session",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "403", description = "Wrong role or group scope",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "503", description = "Dependency unavailable",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class)))
++    })
++    @GetMapping("/requests")
++    ResponseEntity<Page> listRequests(
++            @RequestParam(name = "bucket", defaultValue = "OPEN") Bucket bucket,
++            @RequestParam(name = "page", required = false) Integer page,
++            @RequestParam(name = "size", required = false) Integer size
++    );
++
++    @Operation(summary = "Get request submission options")
++    @ApiResponse(responseCode = "200", description = "Request options",
++            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
++                    schema = @Schema(implementation = Options.class)),
++            headers = @Header(name = "Cache-Control", description = "Always no-store"))
++    @GetMapping("/requests/options")
++    ResponseEntity<Options> requestOptions();
++
++    @Operation(summary = "Get one of the authenticated student's requests")
++    @ApiResponses({
++            @ApiResponse(responseCode = "200", description = "Request detail",
++                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
++                            schema = @Schema(implementation = Detail.class)),
++                    headers = @Header(name = "Cache-Control", description = "Always no-store")),
++            @ApiResponse(responseCode = "400", description = "Invalid request id",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "404", description = "Request not found",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class)))
++    })
++    @GetMapping("/requests/{id}")
++    ResponseEntity<Detail> getRequest(@PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String id);
++
++    @Operation(summary = "Submit a student excuse request")
++    @ApiResponses({
++            @ApiResponse(responseCode = "200", description = "Created or replayed request",
++                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
++                            schema = @Schema(implementation = Detail.class)),
++                    headers = @Header(name = "Cache-Control", description = "Always no-store")),
++            @ApiResponse(responseCode = "400", description = "Invalid request, file or key",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "409", description = "Request conflict",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "413", description = "Payload too large",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "503", description = "Dependency unavailable",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class)))
++    })
++    @PostMapping(value = "/requests/excuse", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
++    ResponseEntity<Detail> submitExcuse(
++            @RequestHeader("Idempotency-Key")
++            @Size(min = 16, max = 128)
++            @Pattern(regexp = "^[\\x21-\\x7E]+$") String idempotencyKey,
++            @Valid @RequestPart("request") ExcuseRequest request,
++            @RequestPart(value = "files", required = false) List<MultipartFile> files
++    );
++
++    @Operation(summary = "Submit a manual late-checkin request")
++    @ApiResponses({
++            @ApiResponse(responseCode = "200", description = "Created or replayed request",
++                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
++                            schema = @Schema(implementation = Detail.class)),
++                    headers = @Header(name = "Cache-Control", description = "Always no-store")),
++            @ApiResponse(responseCode = "400", description = "Invalid request or key",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "409", description = "Request conflict",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "503", description = "Dependency unavailable",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class)))
++    })
++    @PostMapping("/requests/late-checkin")
++    ResponseEntity<Detail> submitLateCheckin(
++            @RequestHeader("Idempotency-Key")
++            @Size(min = 16, max = 128)
++            @Pattern(regexp = "^[\\x21-\\x7E]+$") String idempotencyKey,
++            @Valid @RequestBody LateCheckinRequest request
++    );
++
++    @Operation(summary = "Cancel a pending student request")
++    @ApiResponses({
++            @ApiResponse(responseCode = "200", description = "Cancelled or replayed request",
++                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
++                            schema = @Schema(implementation = Detail.class)),
++                    headers = @Header(name = "Cache-Control", description = "Always no-store")),
++            @ApiResponse(responseCode = "404", description = "Request not found",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "409", description = "Request is already decided",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class)))
++    })
++    @PostMapping("/requests/{id}/cancel")
++    ResponseEntity<Detail> cancelRequest(@PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String id);
++
++    @Operation(summary = "Download a request attachment")
++    @ApiResponses({
++            @ApiResponse(responseCode = "200", description = "Attachment bytes",
++                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE)),
++            @ApiResponse(responseCode = "403", description = "Attachment is outside the student's scope",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "404", description = "Attachment not found",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class))),
++            @ApiResponse(responseCode = "410", description = "Attachment expired",
++                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
++                            schema = @Schema(implementation = MobileProblemDetails.class)))
++    })
++    @GetMapping("/requests/{id}/attachments/{attachmentId}")
++    ResponseEntity<byte[]> downloadRequestAttachment(
++            @PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String id,
++            @PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String attachmentId
++    );
+ }
+diff --git a/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java b/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java
+index 58c37a9e..8ebdc857 100644
+--- a/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java
++++ b/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java
+@@ -48,7 +48,7 @@ public final class StudentApiModels {
+     }
+     public enum RequestStatus { PENDING, APPROVED, REJECTED, CANCELLED }
+     public enum RequestOrigin { AUTO_GEO_FAILURE }
+-    public enum ResolutionReason { GEO_CONFIRMED, HEADMAN_APPROVED, HEADMAN_REJECTED, STUDENT_CANCELLED }
++    public enum ResolutionReason { GEO_CONFIRMED, HEADMAN_APPROVED, HEADMAN_REJECTED, STUDENT_CANCELLED, PRESENT_PRIORITY }
+     public enum CheckinOutcome { PRESENT, PENDING_CONFIRMATION }
+     public enum GeoKind { COORDINATES, UNAVAILABLE }
+     public enum GeoUnavailableReason { PERMISSION_DENIED, POSITION_UNAVAILABLE, TIMEOUT }
+@@ -60,6 +60,11 @@ public final class StudentApiModels {
+         OUT_OF_SCOPE,
+         HOMEWORK_NOT_FOUND,
+         LESSON_NOT_FOUND,
++        REQUEST_NOT_FOUND,
++        ATTACHMENT_NOT_FOUND,
++        REQUEST_CONFLICT,
++        ATTACHMENT_EXPIRED,
++        PAYLOAD_TOO_LARGE,
+         CHECKIN_COOLDOWN,
+         MANUAL_ABSENCE_REQUIRES_APPEAL,
+         IDEMPOTENCY_PAYLOAD_MISMATCH,
+diff --git a/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java b/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java
+index 1679a159..12ba5564 100644
+--- a/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java
++++ b/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java
+@@ -5,14 +5,21 @@ import jakarta.validation.ConstraintViolationException;
+ import org.springframework.http.HttpHeaders;
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.MediaType;
++import org.springframework.http.CacheControl;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.http.converter.HttpMessageNotReadableException;
+ import org.springframework.web.bind.MissingRequestHeaderException;
++import org.springframework.web.bind.MissingPathVariableException;
++import org.springframework.web.multipart.support.MissingServletRequestPartException;
+ import org.springframework.web.bind.MethodArgumentNotValidException;
+ import org.springframework.web.bind.annotation.ExceptionHandler;
+ import org.springframework.web.bind.annotation.RequestHeader;
+ import org.springframework.web.bind.annotation.RestControllerAdvice;
+ import org.springframework.web.method.annotation.HandlerMethodValidationException;
++import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
++import org.springframework.web.multipart.MaxUploadSizeExceededException;
++import org.springframework.web.multipart.MultipartException;
++import org.springframework.web.HttpMediaTypeNotSupportedException;
+ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.MobileProblemDetails;
+ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
+ 
+@@ -33,6 +40,7 @@ public class MobileProblemHandler {
+     ResponseEntity<MobileProblemDetails> handle(MobileBffException error, HttpServletRequest request) {
+         HttpHeaders headers = new HttpHeaders();
+         headers.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
++        headers.setCacheControl(CacheControl.noStore());
+         if (error.status() == HttpStatus.TOO_MANY_REQUESTS && error.retryAt() != null) {
+             long seconds = Math.max(0, (long) Math.ceil(
+                     Duration.between(clock.instant(), error.retryAt()).toMillis() / 1000.0));
+@@ -42,11 +50,24 @@ public class MobileProblemHandler {
+                 error.retryAt(), request), headers, error.status());
+     }
+ 
+-    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
++    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class,
++            MissingServletRequestPartException.class, MultipartException.class,
++            HttpMediaTypeNotSupportedException.class, MissingPathVariableException.class,
++            MethodArgumentTypeMismatchException.class})
+     ResponseEntity<MobileProblemDetails> invalid(Exception error, HttpServletRequest request) {
+         return badRequest(ProblemCode.INVALID_REQUEST, request);
+     }
+ 
++    @ExceptionHandler(MaxUploadSizeExceededException.class)
++    ResponseEntity<MobileProblemDetails> tooLarge(MaxUploadSizeExceededException error,
++                                                   HttpServletRequest request) {
++        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
++                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
++                .cacheControl(CacheControl.noStore())
++                .body(problem(HttpStatus.PAYLOAD_TOO_LARGE, ProblemCode.PAYLOAD_TOO_LARGE,
++                        "Размер запроса превышает допустимый предел", null, request));
++    }
++
+     @ExceptionHandler(HandlerMethodValidationException.class)
+     ResponseEntity<MobileProblemDetails> invalidMethodArgument(HandlerMethodValidationException error,
+                                                                HttpServletRequest request) {
+@@ -76,6 +97,7 @@ public class MobileProblemHandler {
+     private ResponseEntity<MobileProblemDetails> badRequest(ProblemCode code, HttpServletRequest request) {
+         return ResponseEntity.badRequest()
+                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
++                .cacheControl(CacheControl.noStore())
+                 .body(problem(HttpStatus.BAD_REQUEST, code, "Запрос не прошёл проверку", null, request));
+     }
+ 
+diff --git a/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java b/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java
+index 8a428305..e119a967 100644
+--- a/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java
++++ b/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java
+@@ -14,6 +14,7 @@ import ru.rutcampustrack.mobilebff.error.MobileBffException;
+ import java.time.Instant;
+ import java.util.List;
+ import java.util.concurrent.TimeUnit;
++import java.util.concurrent.Callable;
+ 
+ @Component
+ public class MobileAttendanceClient {
+@@ -37,11 +38,74 @@ public class MobileAttendanceClient {
+         try {
+             return auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS).checkin(command);
+         } catch (StatusRuntimeException error) {
+-            throw translate(error);
++            throw translate(error, ProblemCode.DEPENDENCY_UNAVAILABLE);
++        }
++    }
++
++    public StudentRequestPage listRequests(StudentRequestBucket bucket, Integer page, Integer size) {
++        StudentRequestListQuery.Builder query = StudentRequestListQuery.newBuilder()
++                .setBucket(bucket == null ? StudentRequestBucket.STUDENT_REQUEST_BUCKET_OPEN : bucket);
++        if (page != null) query.setPage(page);
++        if (size != null) query.setSize(size);
++        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
++                .listStudentRequests(query.build()), ProblemCode.REQUEST_NOT_FOUND);
++    }
++
++    public StudentRequestOptions requestOptions() {
++        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
++                .getStudentRequestOptions(StudentRequestOptionsQuery.getDefaultInstance()),
++                ProblemCode.DEPENDENCY_UNAVAILABLE);
++    }
++
++    public StudentRequestDetail getRequest(String requestId) {
++        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
++                .getStudentRequest(StudentRequestId.newBuilder().setRequestId(requestId).build()),
++                ProblemCode.REQUEST_NOT_FOUND);
++    }
++
++    public StudentRequestDetail submitExcuse(SubmitStudentExcuseCommand command) {
++        return call(() -> auth.attach(stub).withDeadlineAfter(10, TimeUnit.SECONDS)
++                .submitStudentExcuse(command), ProblemCode.DEPENDENCY_UNAVAILABLE);
++    }
++
++    public StudentRequestDetail submitLateCheckin(long lessonId, String idempotencyKey) {
++        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
++                .submitStudentLateCheckin(SubmitStudentLateCheckinCommand.newBuilder()
++                        .setLessonId(lessonId).setIdempotencyKey(idempotencyKey == null ? "" : idempotencyKey)
++                        .build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
++    }
++
++    public StudentRequestDetail cancelRequest(String requestId) {
++        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
++                .cancelStudentRequest(StudentRequestId.newBuilder().setRequestId(requestId).build()),
++                ProblemCode.REQUEST_NOT_FOUND);
++    }
++
++    public StudentRequestAttachmentDownload downloadAttachment(String requestId, String attachmentId) {
++        return call(() -> auth.attach(stub).withDeadlineAfter(10, TimeUnit.SECONDS)
++                .downloadStudentRequestAttachment(StudentRequestAttachmentId.newBuilder()
++                        .setRequestId(requestId).setAttachmentId(attachmentId).build()),
++                ProblemCode.ATTACHMENT_NOT_FOUND);
++    }
++
++    private static <T> T call(Callable<T> action, ProblemCode notFoundCode) {
++        try {
++            return action.call();
++        } catch (StatusRuntimeException error) {
++            throw translate(error, notFoundCode);
++        } catch (MobileBffException error) {
++            throw error;
++        } catch (Exception error) {
++            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
++                    ProblemCode.DEPENDENCY_UNAVAILABLE, "Attendance Service временно недоступен");
+         }
+     }
+ 
+     static MobileBffException translate(StatusRuntimeException error) {
++        return translate(error, ProblemCode.DEPENDENCY_UNAVAILABLE);
++    }
++
++    static MobileBffException translate(StatusRuntimeException error, ProblemCode notFoundCode) {
+         Status status = StatusProto.fromThrowable(error);
+         if (status != null) {
+             for (Any detail : status.getDetailsList()) {
+@@ -56,22 +120,61 @@ public class MobileAttendanceClient {
+                         break;
+                     }
+                 }
++                if (detail.is(StudentRequestErrorDetail.class)) {
++                    try {
++                        StudentRequestErrorDetail typed = detail.unpack(StudentRequestErrorDetail.class);
++                        ProblemCode code = ProblemCode.valueOf(typed.getCode().name()
++                                .replace("STUDENT_REQUEST_ERROR_CODE_", ""));
++                        return new MobileBffException(httpStatus(code), code,
++                                requestMessage(code));
++                    } catch (Exception malformed) {
++                        break;
++                    }
++                }
+             }
+         }
+-        ProblemCode code = error.getStatus().getCode() == io.grpc.Status.Code.UNAUTHENTICATED
+-                ? ProblemCode.INVALID_SESSION : ProblemCode.DEPENDENCY_UNAVAILABLE;
++        ProblemCode code = switch (error.getStatus().getCode()) {
++            case UNAUTHENTICATED -> ProblemCode.INVALID_SESSION;
++            case PERMISSION_DENIED -> ProblemCode.OUT_OF_SCOPE;
++            case INVALID_ARGUMENT -> ProblemCode.INVALID_REQUEST;
++            case NOT_FOUND -> notFoundCode;
++            case ABORTED -> ProblemCode.REQUEST_CONFLICT;
++            case FAILED_PRECONDITION -> ProblemCode.ATTACHMENT_EXPIRED;
++            case RESOURCE_EXHAUSTED -> ProblemCode.PAYLOAD_TOO_LARGE;
++            default -> ProblemCode.DEPENDENCY_UNAVAILABLE;
++        };
+         return new MobileBffException(httpStatus(code), code,
+                 code == ProblemCode.INVALID_SESSION ? "Сессия недействительна" : "Attendance Service временно недоступен");
+     }
+ 
++    private static String requestMessage(ProblemCode code) {
++        return switch (code) {
++            case INVALID_REQUEST -> "Запрос не прошёл проверку";
++            case INVALID_IDEMPOTENCY_KEY -> "Idempotency-Key не прошёл проверку";
++            case INVALID_SESSION -> "Сессия недействительна";
++            case WRONG_ROLE -> "Операция доступна только студенту";
++            case OUT_OF_SCOPE -> "Запрошенные данные недоступны в текущем scope";
++            case REQUEST_NOT_FOUND -> "Заявка не найдена";
++            case ATTACHMENT_NOT_FOUND -> "Вложение не найдено";
++            case REQUEST_CONFLICT -> "Операция конфликтует с текущим состоянием заявки";
++            case ATTACHMENT_EXPIRED -> "Срок хранения вложения истёк";
++            case PAYLOAD_TOO_LARGE -> "Размер запроса превышает допустимый предел";
++            case DEPENDENCY_UNAVAILABLE -> "Attendance Service временно недоступен";
++            default -> "Операция запроса отклонена";
++        };
++    }
++
+     private static HttpStatus httpStatus(ProblemCode code) {
+         return switch (code) {
+             case INVALID_REQUEST, INVALID_IDEMPOTENCY_KEY -> HttpStatus.BAD_REQUEST;
+             case INVALID_SESSION -> HttpStatus.UNAUTHORIZED;
+             case WRONG_ROLE, OUT_OF_SCOPE -> HttpStatus.FORBIDDEN;
+-            case LESSON_NOT_FOUND, HOMEWORK_NOT_FOUND -> HttpStatus.NOT_FOUND;
++            case LESSON_NOT_FOUND, HOMEWORK_NOT_FOUND, REQUEST_NOT_FOUND, ATTACHMENT_NOT_FOUND -> HttpStatus.NOT_FOUND;
++            case ATTACHMENT_EXPIRED -> HttpStatus.GONE;
++            case PAYLOAD_TOO_LARGE -> HttpStatus.PAYLOAD_TOO_LARGE;
+             case CHECKIN_COOLDOWN -> HttpStatus.TOO_MANY_REQUESTS;
+-            case MANUAL_ABSENCE_REQUIRES_APPEAL, IDEMPOTENCY_PAYLOAD_MISMATCH, CHECKIN_NOT_ELIGIBLE -> HttpStatus.CONFLICT;
++            case MANUAL_ABSENCE_REQUIRES_APPEAL, IDEMPOTENCY_PAYLOAD_MISMATCH, CHECKIN_NOT_ELIGIBLE,
++                 REQUEST_CONFLICT -> HttpStatus.CONFLICT;
+             case DEPENDENCY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+         };
+     }
+diff --git a/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/security/MobileIdentityFilter.java b/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/security/MobileIdentityFilter.java
+index 9dac432a..405be4a9 100644
+--- a/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/security/MobileIdentityFilter.java
++++ b/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/security/MobileIdentityFilter.java
+@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
+ import jakarta.servlet.http.HttpServletRequest;
+ import jakarta.servlet.http.HttpServletResponse;
+ import org.springframework.http.MediaType;
++import org.springframework.http.CacheControl;
++import org.springframework.http.HttpHeaders;
+ import org.springframework.stereotype.Component;
+ import org.springframework.web.filter.OncePerRequestFilter;
+ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.MobileProblemDetails;
+@@ -45,6 +47,7 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
+     @Override
+     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+             throws ServletException, IOException {
++        response.setHeader(HttpHeaders.CACHE_CONTROL, CacheControl.noStore().getHeaderValue());
+         try {
+             String token = request.getHeader(properties.headerName());
+             context.authenticate(validator.validate(token), token);
+@@ -52,6 +55,7 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
+         } catch (InternalJwtException error) {
+             response.setStatus(401);
+             response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
++            response.setHeader(HttpHeaders.CACHE_CONTROL, CacheControl.noStore().getHeaderValue());
+             MobileProblemDetails problem = new MobileProblemDetails(
+                     401, URI.create("urn:rct:problem:invalid-session"), "Сессия недействительна",
+                     "Требуется повторная аутентификация", URI.create(request.getRequestURI()),
+diff --git a/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java b/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java
+index 9d85bca8..04e6eb6d 100644
+--- a/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java
++++ b/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java
+@@ -3,11 +3,21 @@ package ru.rutcampustrack.mobilebff.student;
+ import com.fasterxml.jackson.core.JsonProcessingException;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import org.springframework.http.CacheControl;
++import org.springframework.http.ContentDisposition;
+ import org.springframework.http.HttpHeaders;
++import org.springframework.http.MediaType;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.web.bind.annotation.RestController;
++import org.springframework.web.multipart.MultipartFile;
+ import ru.rutcampustrack.mobilebff.contract.api.StudentApi;
+ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.*;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Bucket;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Detail;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.ExcuseRequest;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.LateCheckinRequest;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Options;
++import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Page;
+ 
+ import java.nio.charset.StandardCharsets;
+ import java.security.MessageDigest;
+@@ -18,11 +28,14 @@ import java.util.HexFormat;
+ public class StudentApiController implements StudentApi {
+     private final StudentQueryService queries;
+     private final StudentCheckinFacade checkins;
++    private final StudentRequestFacade requests;
+     private final ObjectMapper objectMapper;
+ 
+-    public StudentApiController(StudentQueryService queries, StudentCheckinFacade checkins, ObjectMapper objectMapper) {
++    public StudentApiController(StudentQueryService queries, StudentCheckinFacade checkins,
++                                StudentRequestFacade requests, ObjectMapper objectMapper) {
+         this.queries = queries;
+         this.checkins = checkins;
++        this.requests = requests;
+         this.objectMapper = objectMapper;
+     }
+ 
+@@ -41,10 +54,10 @@ public class StudentApiController implements StudentApi {
+         ScheduleResponse result = queries.schedule(Long.parseLong(semesterId));
+         String etag = etag(result);
+         if (etag.equals(ifNoneMatch)) {
+-            return ResponseEntity.status(304).cacheControl(CacheControl.noCache().cachePrivate())
++            return ResponseEntity.status(304).cacheControl(CacheControl.noStore())
+                     .eTag(etag).build();
+         }
+-        return ResponseEntity.ok().cacheControl(CacheControl.noCache().cachePrivate()).eTag(etag).body(result);
++        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).eTag(etag).body(result);
+     }
+ 
+     @Override
+@@ -61,7 +74,60 @@ public class StudentApiController implements StudentApi {
+ 
+     @Override
+     public ResponseEntity<CheckinAck> checkin(String lessonId, String idempotencyKey, CheckinRequest request) {
+-        return ResponseEntity.ok(checkins.checkin(Long.parseLong(lessonId), idempotencyKey, request));
++        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
++                .body(checkins.checkin(Long.parseLong(lessonId), idempotencyKey, request));
++    }
++
++    @Override
++    public ResponseEntity<Page> listRequests(Bucket bucket, Integer page, Integer size) {
++        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(requests.list(bucket, page, size));
++    }
++
++    @Override
++    public ResponseEntity<Options> requestOptions() {
++        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(requests.options());
++    }
++
++    @Override
++    public ResponseEntity<Detail> getRequest(String id) {
++        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(requests.get(id));
++    }
++
++    @Override
++    public ResponseEntity<Detail> submitExcuse(String idempotencyKey, ExcuseRequest request,
++                                               java.util.List<MultipartFile> files) {
++        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
++                .body(requests.submitExcuse(idempotencyKey, request, files));
++    }
++
++    @Override
++    public ResponseEntity<Detail> submitLateCheckin(String idempotencyKey, LateCheckinRequest request) {
++        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
++                .body(requests.submitLateCheckin(idempotencyKey, request));
++    }
++
++    @Override
++    public ResponseEntity<Detail> cancelRequest(String id) {
++        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(requests.cancel(id));
++    }
++
++    @Override
++    public ResponseEntity<byte[]> downloadRequestAttachment(String id, String attachmentId) {
++        StudentRequestFacade.Download download = requests.download(id, attachmentId);
++        MediaType contentType;
++        try {
++            contentType = MediaType.parseMediaType(download.contentType());
++        } catch (IllegalArgumentException invalidType) {
++            contentType = MediaType.APPLICATION_OCTET_STREAM;
++        }
++        HttpHeaders headers = new HttpHeaders();
++        headers.setCacheControl(CacheControl.noStore());
++        headers.setContentType(contentType);
++        headers.setContentLength(download.bytes().length);
++        headers.setContentDisposition(ContentDisposition.attachment()
++                .filename(download.filename(), StandardCharsets.UTF_8).build());
++        headers.set("X-Content-Type-Options", "nosniff");
++        return new ResponseEntity<>(download.bytes(), headers, org.springframework.http.HttpStatus.OK);
+     }
+ 
+     private String etag(ScheduleResponse response) {
+diff --git a/services/mobile-bff/mobile-bff-app/src/main/resources/application.yml b/services/mobile-bff/mobile-bff-app/src/main/resources/application.yml
+index 09b0fcfd..5c1614cf 100644
+--- a/services/mobile-bff/mobile-bff-app/src/main/resources/application.yml
++++ b/services/mobile-bff/mobile-bff-app/src/main/resources/application.yml
+@@ -4,6 +4,11 @@ server:
+ spring:
+   application:
+     name: mobile-bff
++  servlet:
++    multipart:
++      enabled: true
++      max-file-size: 10MB
++      max-request-size: 24MB
+ 
+ grpc:
+   auth:

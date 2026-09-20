@@ -1,0 +1,72 @@
+{
+  "base_revision": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837",
+  "code_sources": [
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\gradle\\libs.versions.toml",
+      "sha256": "E9C2D284531D074FF03F6866E0EEBAE5276F7865CE828D258ABA87AC5B20CF7C"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\shared\\shared-security\\build.gradle.kts",
+      "sha256": "4483B9A414317A208E5010347840D58C05DE4081788A7FFD42B17CAF2D775562"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\shared\\shared-security\\src\\main\\java\\ru\\rutcampustrack\\shared\\security\\InternalJwtValidator.java",
+      "sha256": "3FBA4D27AFE501F6C78F70E21A3C85888E301B0C8A7851166FC75FAAFBEF6F3D"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\academic-service\\academic-app\\build.gradle.kts",
+      "sha256": "0FB726C69F2B07F0F49EC855782CB561368355A6E9A4A2A6F81ADD30B6EBA0DA"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\schedule-service\\schedule-app\\build.gradle.kts",
+      "sha256": "C32B1323BE622136901C1C58FFCE137D26DE456B88B20ACC8AD46C5B47245941"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\academic-service\\academic-app\\src\\main\\java\\ru\\rutcampustrack\\academic\\grpc\\StudentHomeworkGrpcIdentityInterceptor.java",
+      "sha256": "2717B2C9FDF57F5B52D59E8489F4E4B7F93D4C6A71FE9F0AA5B23A4A88C33DAB"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\academic-service\\academic-app\\src\\test\\java\\ru\\rutcampustrack\\academic\\grpc\\StudentHomeworkGrpcIdentityInterceptorTest.java",
+      "sha256": "6E1C57DFDE58E52D90453EA36662A4A26CA0A3448060BD20CFABCAB2E99D349C"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\academic-service\\academic-app\\src\\main\\java\\ru\\rutcampustrack\\academic\\grpc\\ScheduleGrpcClient.java",
+      "sha256": "69708FACEED7670E956BD5ACF2303DE43A7E2D482EE6D6622F6343F4DD1E6CAC"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\schedule-service\\schedule-app\\src\\main\\java\\ru\\rutcampustrack\\schedule\\grpc\\GrpcAuthInterceptor.java",
+      "sha256": "349D4EA7EB8AE82E729DE6382619089274222B9F64000D554F21EF7938DC70B5"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\schedule-service\\schedule-app\\src\\main\\java\\ru\\rutcampustrack\\schedule\\grpc\\ScheduleGrpcServiceImpl.java",
+      "sha256": "D02202F29B05D0039C7F222C9F016F74D3919A3C1BE93CCC1E40528CB7A76DF6"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\proto\\academic.proto",
+      "sha256": "5F85A6691F8C27769059B0A68D5173604B81756D20BDC19EF6BE3584BBC7A2BC"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\proto\\schedule.proto",
+      "sha256": "9A244EAE37560B2A9B547F12A225B53730E428A277E7CFBE24130F7023D1DA47"
+    }
+  ],
+  "decision_sources": [
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\docs\\architecture\\reference-rutcampustrack-design\\TRANSPORT.md",
+      "sha256": "37F2C5F6FD1CE6A4D676870887AD0DFCC49E4F947F9054F608190192D4382985"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\docs\\security\\SECURITY-AUDIT.md",
+      "sha256": "778FDD31A81C344B27A282576AA719CDA0A912744DAC15A7A16491FCA5D2B291"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\NEXT-L5B-START.md",
+      "sha256": "926EDA8B82E8545470A82ABEBB2C29682463953979C973D55E1546310B523146"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\l5b-first-slice\\CONTRACT.md",
+      "sha256": "D9A6A4E33DEAFEB1131553F5A2963546A397E1363F7E2F953461911DC62C7949"
+    }
+  ],
+  "verification": "Targeted reads and hashes only; no build/runtime. Public config values and secrets not inspected."
+}

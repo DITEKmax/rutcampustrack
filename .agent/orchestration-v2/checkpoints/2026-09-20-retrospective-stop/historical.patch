@@ -1,0 +1,2333 @@
+diff --git a/proto/academic.proto b/proto/academic.proto
+index f4183f44..d6b73f94 100644
+--- a/proto/academic.proto
++++ b/proto/academic.proto
+@@ -77,10 +77,14 @@ message GroupResponse {
+ 
+ message GroupMembersRequest {
+   int64 group_id = 1;
++  optional string as_of_date = 2;  // ISO-8601 date for historical membership
++  optional int64 semester_id = 3;  // semester containing as_of_date
+ }
+ 
+ message GroupMembersResponse {
+   repeated StudentInfo students = 1;
++  optional string as_of_date = 2;  // exact request echo for dated calls
++  optional int64 semester_id = 3;  // exact request echo for dated calls
+ }
+ 
+ message StudentInfo {
+diff --git a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java
+index 37ff1122..a2b13f09 100644
+--- a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java
++++ b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java
+@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
+ import org.springframework.web.bind.annotation.ExceptionHandler;
+ import org.springframework.web.bind.annotation.RestControllerAdvice;
+ import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
++import ru.rutcampustrack.academic.history.HistoricalMembershipException;
+ import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
+ 
+ import java.time.Instant;
+@@ -122,6 +123,20 @@ public class GlobalExceptionHandler {
+                 "Конфликт данных", ex.getMessage(), request, ex.getField(), ex.getExtras());
+     }
+ 
++    @ExceptionHandler(HistoricalMembershipException.class)
++    public ResponseEntity<ErrorResponse> handleHistoricalMembership(
++            HistoricalMembershipException ex,
++            HttpServletRequest request) {
++        HttpStatus status = switch (ex.code()) {
++            case INVALID_ARGUMENT -> HttpStatus.BAD_REQUEST;
++            case NOT_FOUND -> HttpStatus.NOT_FOUND;
++            case FAILED_PRECONDITION, UNSUPPORTED_MUTATION -> HttpStatus.CONFLICT;
++        };
++        return problem(status, "historical-membership-" + ex.code().name().toLowerCase(),
++                "Операция с историей посещаемости недоступна", ex.getMessage(),
++                request, null, null);
++    }
++
+     @ExceptionHandler(AssignmentClosureNotReadyException.class)
+     public ResponseEntity<ErrorResponse> handleAssignmentClosureNotReady(
+             AssignmentClosureNotReadyException ex,
+diff --git a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupService.java b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupService.java
+index 1ba0cc2c..9b2aba6a 100644
+--- a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupService.java
++++ b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupService.java
+@@ -2,6 +2,7 @@ package ru.rutcampustrack.academic.group;
+ 
+ import org.springframework.cache.annotation.CacheEvict;
+ import org.springframework.cache.annotation.Caching;
++import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.context.ApplicationEventPublisher;
+ import org.springframework.data.domain.Page;
+ import org.springframework.data.domain.Pageable;
+@@ -12,16 +13,23 @@ import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
+ import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
+ import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
+ import ru.rutcampustrack.academic.entity.Group;
++import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
++import ru.rutcampustrack.academic.entity.Semester;
+ import ru.rutcampustrack.academic.entity.User;
+ import ru.rutcampustrack.academic.event.GroupRenamedEvent;
+ import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
+ import ru.rutcampustrack.academic.exception.BadRequestException;
+ import ru.rutcampustrack.academic.exception.ConflictException;
++import ru.rutcampustrack.academic.history.HistoricalMembershipException;
++import ru.rutcampustrack.academic.history.HistoricalMembershipService;
+ import ru.rutcampustrack.academic.repository.GroupRepository;
++import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
++import ru.rutcampustrack.academic.repository.SemesterRepository;
+ import ru.rutcampustrack.academic.repository.UserRepository;
+ import ru.rutcampustrack.academic.security.RequestContext;
+ 
+ import java.time.OffsetDateTime;
++import java.util.List;
+ 
+ /**
+  * Business logic for Group domain: CRUD and member listing.
+@@ -34,21 +42,38 @@ public class GroupService {
+     private final RequestContext requestContext;
+     private final ApplicationEventPublisher eventPublisher;
+     private final GroupNameParser nameParser;
++    private final SemesterRepository semesterRepository;
++    private final GroupHistoryCoverageRepository coverageRepository;
+ 
++    @Autowired
+     public GroupService(GroupRepository groupRepository,
+                         UserRepository userRepository,
+                         RequestContext requestContext,
+                         ApplicationEventPublisher eventPublisher,
+-                        GroupNameParser nameParser) {
++                        GroupNameParser nameParser,
++                        SemesterRepository semesterRepository,
++                        GroupHistoryCoverageRepository coverageRepository) {
+         this.groupRepository = groupRepository;
+         this.userRepository = userRepository;
+         this.requestContext = requestContext;
+         this.eventPublisher = eventPublisher;
+         this.nameParser = nameParser;
++        this.semesterRepository = semesterRepository;
++        this.coverageRepository = coverageRepository;
++    }
++
++    /** Compatibility constructor for source-era unit tests. */
++    public GroupService(GroupRepository groupRepository,
++                        UserRepository userRepository,
++                        RequestContext requestContext,
++                        ApplicationEventPublisher eventPublisher,
++                        GroupNameParser nameParser) {
++        this(groupRepository, userRepository, requestContext, eventPublisher, nameParser, null, null);
+     }
+ 
+     @Transactional
+     public Group createGroup(CreateGroupRequest request) {
++        Semester activeSemester = requireSingleActiveSemester();
+         // BUG-006-2 / 58-04: explicit pre-check per Plan 02 pattern — ConflictException несёт field=name,
+         // frontend отрисует сообщение FIELD_MESSAGES.name. DB-level fallback — в GlobalExceptionHandler
+         // через constraint groups_name_key.
+@@ -75,7 +100,13 @@ public class GroupService {
+         group.setName(request.name());
+         group.setActive(true);
+         group.setCreatedAt(OffsetDateTime.now());
+-        return groupRepository.save(group);
++        Group saved = groupRepository.save(group);
++        // The marker is written in the same transaction as the genuinely new
++        // group.  Existing/legacy groups are never certified by this path.
++        coverageRepository.save(new GroupHistoryCoverage(
++                saved.getId(), activeSemester.getDateFrom(),
++                HistoricalMembershipService.WRITER_VERSION, OffsetDateTime.now()));
++        return saved;
+     }
+ 
+     public Group findGroupById(Long id) {
+@@ -145,6 +176,10 @@ public class GroupService {
+     @Transactional
+     public void deleteGroup(Long id) {
+         Group group = findGroupById(id);
++        if (coverageRepository != null && coverageRepository.existsById(id)) {
++            throw HistoricalMembershipException.unsupported(
++                    "Нельзя удалить группу с управляемой историей посещаемости");
++        }
+         groupRepository.delete(group);
+         eventPublisher.publishEvent(new GroupUpdatedEvent(this, id));
+     }
+@@ -153,4 +188,28 @@ public class GroupService {
+         Long groupId = requestContext.getGroupId();
+         return userRepository.findByGroupId(groupId, pageable);
+     }
++
++    private Semester requireSingleActiveSemester() {
++        if (semesterRepository == null || coverageRepository == null) {
++            throw HistoricalMembershipException.precondition(
++                    "Historical membership writer is unavailable");
++        }
++        final List<Semester> active;
++        try {
++            active = semesterRepository.findAllByIsActiveTrueOrderByIdAsc();
++        } catch (RuntimeException error) {
++            throw HistoricalMembershipException.precondition(
++                    "Active semester could not be resolved");
++        }
++        if (active == null || active.size() != 1) {
++            throw HistoricalMembershipException.precondition(
++                    "Exactly one active semester is required");
++        }
++        Semester semester = active.get(0);
++        if (semester.getDateFrom() == null || semester.getDateTo() == null
++                || semester.getDateFrom().isAfter(semester.getDateTo())) {
++            throw HistoricalMembershipException.precondition("Active semester has invalid dates");
++        }
++        return semester;
++    }
+ }
+diff --git a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java
+index 23b2819c..e98e5e60 100644
+--- a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java
++++ b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java
+@@ -17,6 +17,8 @@ import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+ import ru.rutcampustrack.academic.contract.enums.UserRole;
+ import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
+ import ru.rutcampustrack.academic.exception.AccessDeniedException;
++import ru.rutcampustrack.academic.history.HistoricalMembershipException;
++import ru.rutcampustrack.academic.history.HistoricalMembershipService;
+ import ru.rutcampustrack.academic.homework.HomeworkStudentService;
+ import ru.rutcampustrack.academic.map.CampusMapReadException;
+ import ru.rutcampustrack.academic.map.CampusMapReadModels;
+@@ -222,25 +224,60 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
+      */
+     @Override
+     public void getGroupMembers(GroupMembersRequest request, StreamObserver<GroupMembersResponse> responseObserver) {
+-        List<User> users = academicReadService.fetchGroupMembers(request.getGroupId());
+-
+-        List<StudentInfo> studentInfos = users.stream()
+-                .map(user -> StudentInfo.newBuilder()
+-                        .setUserId(user.getId())
+-                        .setDisplayName(user.getDisplayName())
+-                        .setIsHeadman(user.isHeadman())
+-                        .setTelegramId(user.getTelegramId() != null ? user.getTelegramId() : 0L)
+-                        .build())
++        boolean hasDate = request.hasAsOfDate();
++        boolean hasSemester = request.hasSemesterId();
++        if (hasDate != hasSemester) {
++            throw HistoricalMembershipException.invalid(
++                    "as_of_date and semester_id must be supplied together");
++        }
++        if (!hasDate) {
++            List<User> users = academicReadService.fetchGroupMembers(request.getGroupId());
++            List<StudentInfo> studentInfos = users.stream()
++                    .map(AcademicGrpcServiceImpl::toStudentInfo)
++                    .toList();
++            responseObserver.onNext(GroupMembersResponse.newBuilder()
++                    .addAllStudents(studentInfos)
++                    .build());
++            responseObserver.onCompleted();
++            return;
++        }
++
++        if (request.getGroupId() <= 0 || request.getSemesterId() <= 0
++                || request.getAsOfDate().isBlank()) {
++            throw HistoricalMembershipException.invalid(
++                    "group_id, as_of_date and semester_id must be valid");
++        }
++        final LocalDate asOfDate;
++        try {
++            asOfDate = LocalDate.parse(request.getAsOfDate());
++        } catch (RuntimeException error) {
++            throw HistoricalMembershipException.invalid("as_of_date must be an ISO date");
++        }
++
++        HistoricalMembershipService.RosterSnapshot snapshot = academicReadService
++                .fetchHistoricalGroupMembers(request.getGroupId(), asOfDate, request.getSemesterId());
++        List<StudentInfo> studentInfos = snapshot.students().stream()
++                .map(AcademicGrpcServiceImpl::toStudentInfo)
+                 .toList();
+ 
+         GroupMembersResponse response = GroupMembersResponse.newBuilder()
+                 .addAllStudents(studentInfos)
++                .setAsOfDate(snapshot.asOfDate().toString())
++                .setSemesterId(snapshot.semesterId())
+                 .build();
+-
+         responseObserver.onNext(response);
+         responseObserver.onCompleted();
+     }
+ 
++    private static StudentInfo toStudentInfo(User user) {
++        return StudentInfo.newBuilder()
++                .setUserId(user.getId())
++                .setDisplayName(user.getDisplayName())
++                .setIsHeadman(user.isHeadman())
++                .setTelegramId(user.getTelegramId() != null ? user.getTelegramId() : 0L)
++                .build();
++    }
++
+     /**
+      * GRPC-03: Get subjects taught by a teacher in a given semester.
+      * Not cached (per D-02).
+diff --git a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicReadService.java b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicReadService.java
+index 94a08e5c..32755834 100644
+--- a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicReadService.java
++++ b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicReadService.java
+@@ -1,12 +1,14 @@
+ package ru.rutcampustrack.academic.grpc;
+ 
+ import org.springframework.cache.annotation.Cacheable;
++import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
+ import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
+ import ru.rutcampustrack.academic.entity.CampusSetting;
+ import ru.rutcampustrack.academic.entity.Group;
+ import ru.rutcampustrack.academic.entity.Semester;
+ import ru.rutcampustrack.academic.entity.User;
++import ru.rutcampustrack.academic.history.HistoricalMembershipService;
+ import ru.rutcampustrack.academic.repository.CampusSettingRepository;
+ import ru.rutcampustrack.academic.repository.GroupRepository;
+ import ru.rutcampustrack.academic.repository.SemesterRepository;
+@@ -14,6 +16,7 @@ import ru.rutcampustrack.academic.repository.UserRepository;
+ 
+ import java.util.List;
+ import java.util.Optional;
++import java.time.LocalDate;
+ 
+ /**
+  * Separate Spring bean for cached gRPC read operations.
+@@ -27,15 +30,27 @@ public class AcademicReadService {
+     private final UserRepository userRepository;
+     private final SemesterRepository semesterRepository;
+     private final CampusSettingRepository campusSettingRepository;
++    private final HistoricalMembershipService historicalMembershipService;
+ 
++    @Autowired
+     public AcademicReadService(GroupRepository groupRepository,
+                                UserRepository userRepository,
+                                SemesterRepository semesterRepository,
+-                               CampusSettingRepository campusSettingRepository) {
++                               CampusSettingRepository campusSettingRepository,
++                               HistoricalMembershipService historicalMembershipService) {
+         this.groupRepository = groupRepository;
+         this.userRepository = userRepository;
+         this.semesterRepository = semesterRepository;
+         this.campusSettingRepository = campusSettingRepository;
++        this.historicalMembershipService = historicalMembershipService;
++    }
++
++    /** Compatibility constructor for source-era unit tests and undated reads. */
++    public AcademicReadService(GroupRepository groupRepository,
++                               UserRepository userRepository,
++                               SemesterRepository semesterRepository,
++                               CampusSettingRepository campusSettingRepository) {
++        this(groupRepository, userRepository, semesterRepository, campusSettingRepository, null);
+     }
+ 
+     @Cacheable(value = "groups", key = "#groupId")
+@@ -49,6 +64,14 @@ public class AcademicReadService {
+         return userRepository.findByGroupId(groupId);
+     }
+ 
++    public HistoricalMembershipService.RosterSnapshot fetchHistoricalGroupMembers(
++            Long groupId, LocalDate asOfDate, Long semesterId) {
++        if (historicalMembershipService == null) {
++            throw new IllegalStateException("Historical membership service is unavailable");
++        }
++        return historicalMembershipService.readRoster(groupId, asOfDate, semesterId);
++    }
++
+     @Cacheable(value = "active_semester", key = "'current'")
+     public Semester fetchActiveSemester() {
+         return semesterRepository.findByIsActiveTrue()
+diff --git a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcExceptionAdvice.java b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcExceptionAdvice.java
+index 0c9ffe64..1ae24898 100644
+--- a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcExceptionAdvice.java
++++ b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcExceptionAdvice.java
+@@ -6,6 +6,7 @@ import net.devh.boot.grpc.server.advice.GrpcExceptionHandler;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
++import ru.rutcampustrack.academic.history.HistoricalMembershipException;
+ 
+ @GrpcAdvice
+ public class GrpcExceptionAdvice {
+@@ -17,6 +18,16 @@ public class GrpcExceptionAdvice {
+         return Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e);
+     }
+ 
++    @GrpcExceptionHandler(HistoricalMembershipException.class)
++    public Status handleHistoricalMembership(HistoricalMembershipException e) {
++        Status status = switch (e.code()) {
++            case INVALID_ARGUMENT -> Status.INVALID_ARGUMENT;
++            case NOT_FOUND -> Status.NOT_FOUND;
++            case FAILED_PRECONDITION, UNSUPPORTED_MUTATION -> Status.FAILED_PRECONDITION;
++        };
++        return status.withDescription(e.getMessage()).withCause(e);
++    }
++
+     @GrpcExceptionHandler(IllegalArgumentException.class)
+     public Status handleBadRequest(IllegalArgumentException e) {
+         return Status.INVALID_ARGUMENT.withDescription(e.getMessage()).withCause(e);
+diff --git a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupRepository.java b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupRepository.java
+index f5e5ed14..88d9407a 100644
+--- a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupRepository.java
++++ b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupRepository.java
+@@ -4,7 +4,11 @@ import org.springframework.data.domain.Page;
+ import org.springframework.data.domain.Pageable;
+ import org.springframework.data.jpa.repository.JpaRepository;
+ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
++import org.springframework.data.jpa.repository.Lock;
++import org.springframework.data.jpa.repository.Query;
++import org.springframework.data.repository.query.Param;
+ import ru.rutcampustrack.academic.entity.Group;
++import jakarta.persistence.LockModeType;
+ import java.util.List;
+ import java.util.Optional;
+ 
+@@ -21,6 +25,10 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
+     Optional<Group> findByName(String name);
+     boolean existsByName(String name);
+ 
++    @Lock(LockModeType.PESSIMISTIC_WRITE)
++    @Query("select g from Group g where g.id = :id")
++    Optional<Group> findByIdForUpdate(@Param("id") Long id);
++
+     /** Все активные группы — используется {@code GroupPromotionService} для planning. */
+     List<Group> findAllByIsActiveTrue();
+ }
+diff --git a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java
+index 6eb3ecdd..7e941d81 100644
+--- a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java
++++ b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java
+@@ -10,10 +10,13 @@ import jakarta.persistence.LockModeType;
+ 
+ import java.time.LocalDate;
+ import java.util.Optional;
++import java.util.List;
+ 
+ public interface SemesterRepository extends JpaRepository<Semester, Long> {
+     Optional<Semester> findByIsActiveTrue();
+ 
++    List<Semester> findAllByIsActiveTrueOrderByIdAsc();
++
+     @Lock(LockModeType.PESSIMISTIC_WRITE)
+     @Query("select s from Semester s where s.id = :id")
+     Optional<Semester> findByIdForUpdate(@Param("id") Long id);
+diff --git a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/StudentGroupHistoryRepository.java b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/StudentGroupHistoryRepository.java
+index a4c21be2..bd50412b 100644
+--- a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/StudentGroupHistoryRepository.java
++++ b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/StudentGroupHistoryRepository.java
+@@ -1,11 +1,25 @@
+ package ru.rutcampustrack.academic.repository;
+ 
+ import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.data.jpa.repository.Lock;
++import org.springframework.data.jpa.repository.Query;
++import org.springframework.data.repository.query.Param;
+ import ru.rutcampustrack.academic.entity.StudentGroupHistory;
++import jakarta.persistence.LockModeType;
+ import java.util.List;
+ import java.util.Optional;
+ 
+ public interface StudentGroupHistoryRepository extends JpaRepository<StudentGroupHistory, Long> {
+     List<StudentGroupHistory> findByUserIdOrderByJoinedAtDesc(Long userId);
++    List<StudentGroupHistory> findByUserIdOrderByJoinedAtAscIdAsc(Long userId);
+     Optional<StudentGroupHistory> findByUserIdAndLeftAtIsNull(Long userId);
++
++    @Lock(LockModeType.PESSIMISTIC_WRITE)
++    @Query("select h from StudentGroupHistory h where h.userId = :userId and h.leftAt is null "
++            + "order by h.joinedAt, h.id")
++    List<StudentGroupHistory> findOpenByUserIdForUpdate(@Param("userId") Long userId);
++
++    @Query("select h from StudentGroupHistory h where h.groupId = :groupId "
++            + "order by h.userId, h.joinedAt, h.id")
++    List<StudentGroupHistory> findByGroupIdOrderByUserIdAscJoinedAtAscIdAsc(@Param("groupId") Long groupId);
+ }
+diff --git a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java
+index 3b04fdcf..e4c26873 100644
+--- a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java
++++ b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java
+@@ -4,8 +4,10 @@ import org.springframework.data.domain.Page;
+ import org.springframework.data.domain.Pageable;
+ import org.springframework.data.jpa.repository.JpaRepository;
+ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
++import org.springframework.data.jpa.repository.Lock;
+ import org.springframework.data.jpa.repository.Query;
+ import org.springframework.data.repository.query.Param;
++import jakarta.persistence.LockModeType;
+ import ru.rutcampustrack.academic.contract.enums.UserRole;
+ import ru.rutcampustrack.academic.entity.User;
+ import java.util.List;
+@@ -81,6 +83,17 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
+     @Query(value = "SELECT * FROM users WHERE id = :id", nativeQuery = true)
+     Optional<User> findByIdIncludingArchived(@Param("id") Long id);
+ 
++    @Lock(LockModeType.PESSIMISTIC_WRITE)
++    @Query("select u from User u where u.id = :id")
++    Optional<User> findByIdForUpdate(@Param("id") Long id);
++
++    @Query(value = "SELECT * FROM users WHERE id IN (:ids)", nativeQuery = true)
++    List<User> findAllIncludingArchivedByIds(@Param("ids") List<Long> ids);
++
++    @Query(value = "SELECT * FROM users WHERE group_id = :groupId AND role = 'student'",
++            nativeQuery = true)
++    List<User> findAllStudentAssignmentsIncludingArchived(@Param("groupId") Long groupId);
++
+     /** Returns all archived users. Bypasses @SQLRestriction (per D-02). */
+     @Query(value = "SELECT * FROM users WHERE status = 'archived'", nativeQuery = true)
+     List<User> findAllArchived();
+diff --git a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java
+index be25230a..99d31be4 100644
+--- a/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java
++++ b/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java
+@@ -3,6 +3,7 @@ package ru.rutcampustrack.academic.user;
+ import org.springframework.cache.Cache;
+ import org.springframework.cache.CacheManager;
+ import org.springframework.cache.annotation.CacheEvict;
++import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.context.ApplicationEventPublisher;
+ import org.springframework.lang.Nullable;
+ import org.springframework.data.domain.Page;
+@@ -25,11 +26,19 @@ import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+ import ru.rutcampustrack.academic.contract.enums.UserRole;
+ import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
+ import ru.rutcampustrack.academic.entity.StudentGroupHistory;
++import ru.rutcampustrack.academic.entity.Group;
++import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
++import ru.rutcampustrack.academic.entity.Semester;
+ import ru.rutcampustrack.academic.entity.User;
+ import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
+ import ru.rutcampustrack.academic.exception.BadRequestException;
+ import ru.rutcampustrack.academic.exception.ConflictException;
++import ru.rutcampustrack.academic.history.HistoricalMembershipException;
++import ru.rutcampustrack.academic.history.HistoricalMembershipService;
++import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
++import ru.rutcampustrack.academic.repository.GroupRepository;
+ import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
++import ru.rutcampustrack.academic.repository.SemesterRepository;
+ import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
+ import ru.rutcampustrack.academic.repository.UserRepository;
+ import ru.rutcampustrack.academic.security.RequestContext;
+@@ -37,6 +46,9 @@ import ru.rutcampustrack.academic.security.RequestContext;
+ import java.security.SecureRandom;
+ import java.time.LocalDate;
+ import java.time.OffsetDateTime;
++import java.time.ZoneId;
++import java.util.ArrayList;
++import java.util.Comparator;
+ import java.util.List;
+ 
+ /**
+@@ -49,6 +61,7 @@ public class UserService {
+     private static final String CHARSET =
+             "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+     private static final int PASSWORD_LENGTH = 12;
++    private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
+ 
+     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+     private final SecureRandom secureRandom = new SecureRandom();
+@@ -60,14 +73,21 @@ public class UserService {
+     private final UserAssembler userAssembler;
+     private final CacheManager cacheManager;
+     private final ApplicationEventPublisher eventPublisher;
++    private final GroupRepository groupRepository;
++    private final SemesterRepository semesterRepository;
++    private final GroupHistoryCoverageRepository coverageRepository;
+ 
++    @Autowired
+     public UserService(UserRepository userRepository,
+                        HeadmanAssistantRepository headmanAssistantRepository,
+                        StudentGroupHistoryRepository studentGroupHistoryRepository,
+                        RequestContext requestContext,
+                        UserAssembler userAssembler,
+                        @Nullable CacheManager cacheManager,
+-                       ApplicationEventPublisher eventPublisher) {
++                       ApplicationEventPublisher eventPublisher,
++                       GroupRepository groupRepository,
++                       SemesterRepository semesterRepository,
++                       GroupHistoryCoverageRepository coverageRepository) {
+         this.userRepository = userRepository;
+         this.headmanAssistantRepository = headmanAssistantRepository;
+         this.studentGroupHistoryRepository = studentGroupHistoryRepository;
+@@ -75,6 +95,22 @@ public class UserService {
+         this.userAssembler = userAssembler;
+         this.cacheManager = cacheManager;
+         this.eventPublisher = eventPublisher;
++        this.groupRepository = groupRepository;
++        this.semesterRepository = semesterRepository;
++        this.coverageRepository = coverageRepository;
++    }
++
++    /** Compatibility constructor for source-era unit tests that do not mutate membership. */
++    public UserService(UserRepository userRepository,
++                       HeadmanAssistantRepository headmanAssistantRepository,
++                       StudentGroupHistoryRepository studentGroupHistoryRepository,
++                       RequestContext requestContext,
++                       UserAssembler userAssembler,
++                       @Nullable CacheManager cacheManager,
++                       ApplicationEventPublisher eventPublisher) {
++        this(userRepository, headmanAssistantRepository, studentGroupHistoryRepository,
++                requestContext, userAssembler, cacheManager, eventPublisher,
++                null, null, null);
+     }
+ 
+     @Transactional
+@@ -84,6 +120,13 @@ public class UserService {
+         // Guard runs before any repo access so it's cheap and deterministic.
+         validateTelegramForRole(request);
+ 
++        // Lock and validate the group/semester before creating a STUDENT.  The
++        // returned semester is captured once and becomes the authoritative
++        // joined_at value for this transaction.
++        EnrollmentContext enrollment = request.role() == UserRole.STUDENT && request.groupId() != null
++                ? prepareInitialEnrollment(request.groupId())
++                : null;
++
+         // Generate login based on role
+         String login = generateLogin(request.role());
+ 
+@@ -134,6 +177,15 @@ public class UserService {
+         user.setUpdatedAt(now);
+ 
+         user = userRepository.save(user);
++        if (enrollment != null) {
++            StudentGroupHistory history = new StudentGroupHistory();
++            history.setUserId(user.getId());
++            history.setGroupId(enrollment.group().getId());
++            history.setJoinedAt(enrollment.semester().getDateFrom());
++            history.setCreatedAt(now);
++            history.setReason("initial-enrollment");
++            studentGroupHistoryRepository.save(history);
++        }
+         return userAssembler.toCreatedModel(user, plainPassword);
+     }
+ 
+@@ -199,6 +251,11 @@ public class UserService {
+     @Transactional
+     public User updateUser(Long id, UpdateUserRequest request) {
+         User user = findUserById(id);
++        ensureMembershipMutationSupported(
++                user,
++                request.role(),
++                request.groupId(),
++                null);
+         user.setLastName(request.lastName());
+         user.setFirstName(request.firstName());
+         user.setMiddleName(request.middleName());
+@@ -215,6 +272,11 @@ public class UserService {
+     public User patchUser(Long id, PatchUserRequest request) {
+         User user = findUserById(id);
+         Long oldGroupId = user.getGroupId();
++        ensureMembershipMutationSupported(
++                user,
++                null,
++                request.groupId(),
++                request.status());
+ 
+         if (request.lastName() != null) {
+             user.setLastName(request.lastName());
+@@ -282,45 +344,80 @@ public class UserService {
+     @CacheEvict(value = "users", key = "#id")
+     @Transactional
+     public void archiveUser(Long id) {
+-        User user = findUserById(id);
+-        user.setStatus(AccountStatus.ARCHIVED);
+-        user.setUpdatedAt(OffsetDateTime.now());
+-        userRepository.save(user);
+-        // M05 audit fix (bug-hunter 1.2): archive tоже должен evict rbac —
+-        // иначе ex-headman держит privileges до истечения TTL (60s).
+-        if (user.isHeadman() && user.getGroupId() != null) {
+-            evictRbacAfterCommit(id, user.getGroupId(), null);
+-        }
++        findUserById(id);
++        throw HistoricalMembershipException.unsupported(
++                "Архивация пользователя с историей членства пока недоступна");
+     }
+ 
+     @CacheEvict(value = "group_members", key = "#request.newGroupId()")
+     @Transactional
+     public User transferStudent(Long id, TransferStudentRequest request) {
+-        User user = findUserById(id);
++        User user = userRepository.findByIdForUpdate(id)
++                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+         if (user.getRole() != UserRole.STUDENT) {
+             throw new BadRequestException("Перевод возможен только для студентов");
+         }
+ 
+         Long oldGroupId = user.getGroupId();
++        Long newGroupId = request.newGroupId();
++        if (newGroupId == null || newGroupId <= 0 || oldGroupId == null) {
++            throw HistoricalMembershipException.precondition(
++                    "Перевод требует текущую и новую управляемые группы");
++        }
++        if (oldGroupId.equals(newGroupId)) {
++            throw HistoricalMembershipException.invalid("Новая группа должна отличаться от текущей");
++        }
++        if (groupRepository == null || coverageRepository == null
++                || studentGroupHistoryRepository == null) {
++            throw HistoricalMembershipException.precondition(
++                    "Historical membership writer is unavailable");
++        }
++
++        // All transfers lock the affected group rows in ascending order after
++        // the user row is locked.  Re-reading the user under the lock makes the
++        // source group authoritative even if the initial request raced.
++        List<Long> groupIds = new ArrayList<>(List.of(oldGroupId, newGroupId));
++        groupIds.sort(Comparator.naturalOrder());
++        for (Long groupId : groupIds) {
++            groupRepository.findByIdForUpdate(groupId)
++                    .orElseThrow(() -> HistoricalMembershipException.notFound(
++                            "Group " + groupId + " not found"));
++        }
++        Group oldGroup = groupRepository.findById(oldGroupId)
++                .orElseThrow(() -> HistoricalMembershipException.notFound("Source group not found"));
++        Group newGroup = groupRepository.findById(newGroupId)
++                .orElseThrow(() -> HistoricalMembershipException.notFound("Destination group not found"));
++        LocalDate transferDate = LocalDate.now(MOSCOW);
++        requireCoveredGroup(oldGroup, transferDate);
++        requireCoveredGroup(newGroup, transferDate);
++
++        List<StudentGroupHistory> openHistories = studentGroupHistoryRepository
++                .findOpenByUserIdForUpdate(id);
++        if (openHistories.size() != 1 || !oldGroupId.equals(openHistories.get(0).getGroupId())) {
++            throw HistoricalMembershipException.precondition(
++                    "Student must have exactly one open source membership history");
++        }
++        StudentGroupHistory oldHistory = openHistories.get(0);
++        if (oldHistory.getJoinedAt() == null || oldHistory.getJoinedAt().isAfter(transferDate)) {
++            throw HistoricalMembershipException.precondition("Source membership history is invalid");
++        }
+ 
+         // Close current group history entry
+-        studentGroupHistoryRepository.findByUserIdAndLeftAtIsNull(id)
+-                .ifPresent(history -> {
+-                    history.setLeftAt(LocalDate.now());
+-                    history.setReason(request.reason());
+-                    studentGroupHistoryRepository.save(history);
+-                });
++        oldHistory.setLeftAt(transferDate);
++        oldHistory.setReason(request.reason());
++        studentGroupHistoryRepository.save(oldHistory);
+ 
+         // Create new group history entry
+         StudentGroupHistory newHistory = new StudentGroupHistory();
+         newHistory.setUserId(id);
+-        newHistory.setGroupId(request.newGroupId());
+-        newHistory.setJoinedAt(LocalDate.now());
++        newHistory.setGroupId(newGroupId);
++        newHistory.setJoinedAt(transferDate);
++        newHistory.setReason(request.reason());
+         newHistory.setCreatedAt(OffsetDateTime.now());
+         studentGroupHistoryRepository.save(newHistory);
+ 
+         // Update user's current group
+-        user.setGroupId(request.newGroupId());
++        user.setGroupId(newGroupId);
+ 
+         // If user was headman in old group — cascade revoke (same as D-13)
+         if (user.isHeadman() && oldGroupId != null) {
+@@ -344,11 +441,11 @@ public class UserService {
+         // M05 audit fix (bug-hunter 1.1): rbac evict переносится в afterCommit —
+         // concurrent isHeadmanOf иначе закеширует стейл-значение из pre-commit
+         // snapshot'а и дальнейшие RBAC-проверки пройдут по старой группе.
+-        evictRbacAfterCommit(id, oldGroupId, request.newGroupId());
++        evictRbacAfterCommit(id, oldGroupId, newGroupId);
+ 
+         User saved = userRepository.save(user);
+         eventPublisher.publishEvent(new GroupUpdatedEvent(this, oldGroupId));
+-        eventPublisher.publishEvent(new GroupUpdatedEvent(this, request.newGroupId()));
++        eventPublisher.publishEvent(new GroupUpdatedEvent(this, newGroupId));
+         return saved;
+     }
+ 
+@@ -378,6 +475,91 @@ public class UserService {
+ 
+     // --- Private helpers ---
+ 
++    private EnrollmentContext prepareInitialEnrollment(Long groupId) {
++        if (groupRepository == null || semesterRepository == null || coverageRepository == null) {
++            throw HistoricalMembershipException.precondition(
++                    "Historical membership writer is unavailable");
++        }
++        if (groupId == null || groupId <= 0) {
++            throw HistoricalMembershipException.invalid("group_id must be positive");
++        }
++        Group group = groupRepository.findByIdForUpdate(groupId)
++                .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId));
++        Semester semester = resolveActiveSemester();
++        GroupHistoryCoverage coverage = coverageRepository.findById(groupId)
++                .orElseThrow(() -> HistoricalMembershipException.precondition(
++                        "Student enrollment requires managed group history coverage"));
++        requireCoveredGroup(group, semester.getDateFrom());
++        if (coverage.getCoverageFrom().isAfter(semester.getDateFrom())) {
++            throw HistoricalMembershipException.precondition(
++                    "Group history coverage does not support the active semester");
++        }
++        return new EnrollmentContext(group, semester, coverage);
++    }
++
++    private Semester resolveActiveSemester() {
++        final List<Semester> active;
++        try {
++            active = semesterRepository.findAllByIsActiveTrueOrderByIdAsc();
++        } catch (RuntimeException error) {
++            throw HistoricalMembershipException.precondition("Active semester could not be resolved");
++        }
++        if (active == null || active.size() != 1) {
++            throw HistoricalMembershipException.precondition(
++                    "Exactly one active semester is required");
++        }
++        Semester semester = active.get(0);
++        if (semester.getDateFrom() == null || semester.getDateTo() == null
++                || semester.getDateFrom().isAfter(semester.getDateTo())) {
++            throw HistoricalMembershipException.precondition("Active semester has invalid dates");
++        }
++        return semester;
++    }
++
++    private void requireCoveredGroup(Group group, LocalDate effectiveDate) {
++        if (group == null || group.getId() == null || effectiveDate == null || !group.isActive()) {
++            throw HistoricalMembershipException.precondition("Membership requires an active group");
++        }
++        if (coverageRepository == null) {
++            throw HistoricalMembershipException.precondition(
++                    "Historical membership writer is unavailable");
++        }
++        GroupHistoryCoverage coverage = coverageRepository.findById(group.getId())
++                .orElseThrow(() -> HistoricalMembershipException.precondition(
++                        "Group history coverage is not established"));
++        if (!HistoricalMembershipService.WRITER_VERSION.equals(coverage.getWriterVersion())
++                || coverage.getCoverageFrom() == null
++                || coverage.getCoverageFrom().isAfter(effectiveDate)) {
++            throw HistoricalMembershipException.precondition(
++                    "Group history coverage does not support this date");
++        }
++    }
++
++    private void ensureMembershipMutationSupported(User user,
++                                                   UserRole requestedRole,
++                                                   Long requestedGroupId,
++                                                   AccountStatus requestedStatus) {
++        if (requestedRole != null && requestedRole != user.getRole()) {
++            throw HistoricalMembershipException.unsupported(
++                    "Изменение роли пользователя требует управляемой истории членства");
++        }
++        if (requestedGroupId != null
++                ? !java.util.Objects.equals(requestedGroupId, user.getGroupId())
++                : requestedRole != null && user.getGroupId() != null) {
++            if (requestedGroupId != null || requestedRole != null) {
++                throw HistoricalMembershipException.unsupported(
++                        "Изменение группы пользователя выполняется только через перевод");
++            }
++        }
++        if (requestedStatus != null && requestedStatus != user.getStatus()) {
++            throw HistoricalMembershipException.unsupported(
++                    "Изменение статуса пользователя требует управляемой истории членства");
++        }
++    }
++
++    private record EnrollmentContext(Group group, Semester semester, GroupHistoryCoverage coverage) {
++    }
++
+     /**
+      * BUG-006-3 / D-08..D-11: enforces that {@code telegramId} is present for
+      * {@link UserRole#STUDENT} accounts. Teacher/admin accounts keep the field
+diff --git a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupServiceTest.java b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupServiceTest.java
+index 8760d0c4..d8dab2ad 100644
+--- a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupServiceTest.java
++++ b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupServiceTest.java
+@@ -18,21 +18,27 @@ import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
+ import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
+ import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
+ import ru.rutcampustrack.academic.entity.Group;
++import ru.rutcampustrack.academic.entity.Semester;
+ import ru.rutcampustrack.academic.event.GroupRenamedEvent;
+ import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
+ import ru.rutcampustrack.academic.exception.BadRequestException;
+ import ru.rutcampustrack.academic.exception.ConflictException;
++import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
+ import ru.rutcampustrack.academic.repository.GroupRepository;
++import ru.rutcampustrack.academic.repository.SemesterRepository;
+ import ru.rutcampustrack.academic.repository.UserRepository;
+ import ru.rutcampustrack.academic.security.RequestContext;
+ 
+ import java.lang.reflect.Field;
++import java.time.LocalDate;
+ import java.time.OffsetDateTime;
++import java.util.List;
+ import java.util.Set;
+ 
+ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.Mockito.lenient;
+ import static org.mockito.Mockito.never;
+ import static org.mockito.Mockito.verify;
+ import static org.mockito.Mockito.when;
+@@ -53,6 +59,8 @@ class GroupServiceTest {
+     @Mock private UserRepository userRepository;
+     @Mock private RequestContext requestContext;
+     @Mock private ApplicationEventPublisher eventPublisher;
++    @Mock private SemesterRepository semesterRepository;
++    @Mock private GroupHistoryCoverageRepository coverageRepository;
+     // 58-06: real parser, чтобы GroupService.createGroup мог извлечь тип программы
+     // без мокирования чистой логики.
+     @Spy private GroupNameParser nameParser = new GroupNameParser();
+@@ -61,6 +69,12 @@ class GroupServiceTest {
+ 
+     @BeforeEach
+     void setUpValidator() {
++        Semester activeSemester = new Semester();
++        activeSemester.setDateFrom(LocalDate.of(2026, 9, 1));
++        activeSemester.setDateTo(LocalDate.of(2027, 1, 31));
++        activeSemester.setActive(true);
++        lenient().when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
++                .thenReturn(List.of(activeSemester));
+         if (validator == null) {
+             try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+                 validator = factory.getValidator();
+diff --git a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java
+index e6990448..20996bf2 100644
+--- a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java
++++ b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java
+@@ -9,13 +9,19 @@ import org.springframework.cache.CacheManager;
+ import org.springframework.data.redis.core.StringRedisTemplate;
+ import org.springframework.jdbc.core.JdbcTemplate;
+ import org.springframework.test.annotation.DirtiesContext;
++import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
++import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+ import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
+ import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
++import ru.rutcampustrack.academic.contract.enums.UserRole;
+ import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
+ import ru.rutcampustrack.academic.grpc.Empty;
+ import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
+ import ru.rutcampustrack.academic.grpc.GroupRequest;
+ import ru.rutcampustrack.academic.grpc.UserRequest;
++import ru.rutcampustrack.academic.group.GroupService;
++import ru.rutcampustrack.academic.history.HistoricalMembershipException;
++import ru.rutcampustrack.academic.repository.GroupRepository;
+ import ru.rutcampustrack.academic.semester.SemesterService;
+ import ru.rutcampustrack.academic.user.UserService;
+ 
+@@ -23,6 +29,7 @@ import java.util.Set;
+ import java.util.concurrent.TimeUnit;
+ 
+ import static org.assertj.core.api.Assertions.assertThat;
++import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ 
+ /**
+  * Integration tests verifying Redis caching behavior for Academic Service gRPC reads.
+@@ -77,12 +84,18 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
+     @Autowired
+     private UserService userService;
+ 
++    @Autowired
++    private GroupService groupService;
++
+     @Autowired
+     private SemesterService semesterService;
+ 
+     @Autowired
+     private JdbcTemplate jdbcTemplate;
+ 
++    @Autowired
++    private GroupRepository groupRepository;
++
+     @BeforeEach
+     void clearCaches() {
+         // Clear all caches (flushes Redis) so every test starts with empty cache
+@@ -247,11 +260,14 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
+         String userCacheKey = "users::" + testUserId;
+         assertThat(redisTemplate.hasKey(userCacheKey)).isTrue();
+ 
+-        // Mutation: archiveUser triggers @CacheEvict(users, key=#id)
+-        userService.archiveUser(testUserId);
++        // Managed history policy rejects archive before cache eviction.
++        assertThatThrownBy(() -> userService.archiveUser(testUserId))
++                .isInstanceOfSatisfying(HistoricalMembershipException.class, error ->
++                        assertThat(error.code())
++                                .isEqualTo(HistoricalMembershipException.Code.UNSUPPORTED_MUTATION));
+ 
+-        // Cache must be evicted
+-        assertThat(redisTemplate.hasKey(userCacheKey)).isFalse();
++        // The failed mutation must leave the cache untouched.
++        assertThat(redisTemplate.hasKey(userCacheKey)).isTrue();
+ 
+         // Next gRPC call repopulates cache
+         stub.getUserById(request);
+@@ -264,27 +280,25 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
+      */
+     @Test
+     void transferStudent_invalidatesBothGroupCaches() {
+-        // Create a second group for the transfer target
+-        Long group2Id = jdbcTemplate.queryForObject(
+-                "INSERT INTO groups (name, is_active, created_at) " +
+-                "VALUES ('ИВТ-212', true, NOW()) RETURNING id",
+-                Long.class);
+-
+-        // Create a dedicated student in group 1 for transfer (not the seed headman student)
+-        Long transferStudentId = jdbcTemplate.queryForObject(
+-                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id, password_changed, created_at, updated_at) " +
+-                "VALUES ('cache_transfer_test', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', " +
+-                "'Cache', 'TransferTest', 'student', 'active', false, " + GROUP_ID + ", false, NOW(), NOW()) RETURNING id",
+-                Long.class);
+-
+-        GroupMembersRequest req1 = GroupMembersRequest.newBuilder().setGroupId(GROUP_ID).build();
++        // Use the managed writers so both groups have coverage markers and the
++        // student has exactly one open source membership history row.
++        Long sourceGroupId = groupService.createGroup(
++                new CreateGroupRequest(firstAvailableManagedGroupName("УИТ"))).getId();
++        Long group2Id = groupService.createGroup(
++                new CreateGroupRequest(firstAvailableManagedGroupName("УВП"))).getId();
++        Long transferStudentId = userService.createUser(new CreateUserRequest(
++                "Cache", "TransferTest", null, UserRole.STUDENT, sourceGroupId, null,
++                Math.floorMod(System.nanoTime(), 9_000_000_000L) + 100_000L))
++                .getContent().getId();
++
++        GroupMembersRequest req1 = GroupMembersRequest.newBuilder().setGroupId(sourceGroupId).build();
+         GroupMembersRequest req2 = GroupMembersRequest.newBuilder().setGroupId(group2Id).build();
+ 
+         // Prime caches for both groups
+         stub.getGroupMembers(req1);
+         stub.getGroupMembers(req2);
+ 
+-        String key1 = "group_members::" + GROUP_ID;
++        String key1 = "group_members::" + sourceGroupId;
+         String key2 = "group_members::" + group2Id;
+         assertThat(redisTemplate.hasKey(key1)).isTrue();
+         assertThat(redisTemplate.hasKey(key2)).isTrue();
+@@ -304,6 +318,16 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
+         assertThat(redisTemplate.hasKey(key2)).isTrue();
+     }
+ 
++    private String firstAvailableManagedGroupName(String prefix) {
++        for (int number = 1; number <= 9; number++) {
++            String candidate = prefix + "-11" + number;
++            if (!groupRepository.existsByName(candidate)) {
++                return candidate;
++            }
++        }
++        throw new IllegalStateException("No free managed test group name for " + prefix);
++    }
++
+     /**
+      * CACHE-02 / D-10: patchUser with headman change evicts BOTH groups and group_members
+      * caches for the user's group. After eviction, both GetGroup and GetGroupMembers must
+diff --git a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java
+index 36aaef7a..1c86a9d3 100644
+--- a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java
++++ b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java
+@@ -12,12 +12,15 @@ import org.springframework.amqp.core.FanoutExchange;
+ import org.springframework.amqp.rabbit.core.RabbitAdmin;
+ import org.springframework.amqp.rabbit.core.RabbitTemplate;
+ import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.hateoas.EntityModel;
+ import org.springframework.test.context.bean.override.mockito.MockitoBean;
+ import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
+ import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
+ import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
++import ru.rutcampustrack.academic.contract.dto.subject.CreateSubjectRequest;
++import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+ import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
+-import ru.rutcampustrack.academic.contract.enums.AccountStatus;
++import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
+ import ru.rutcampustrack.academic.contract.enums.SubjectType;
+ import ru.rutcampustrack.academic.contract.enums.UserRole;
+ import ru.rutcampustrack.academic.entity.Group;
+@@ -25,10 +28,12 @@ import ru.rutcampustrack.academic.entity.Homework;
+ import ru.rutcampustrack.academic.entity.Semester;
+ import ru.rutcampustrack.academic.entity.Subject;
+ import ru.rutcampustrack.academic.entity.User;
++import ru.rutcampustrack.academic.history.HistoricalMembershipException;
+ import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
+ import ru.rutcampustrack.academic.group.GroupService;
+ import ru.rutcampustrack.academic.homework.HomeworkService;
+ import ru.rutcampustrack.academic.repository.GroupRepository;
++import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
+ import ru.rutcampustrack.academic.repository.HomeworkRepository;
+ import ru.rutcampustrack.academic.repository.SemesterRepository;
+ import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
+@@ -36,13 +41,16 @@ import ru.rutcampustrack.academic.repository.SubjectRepository;
+ import ru.rutcampustrack.academic.repository.UserRepository;
+ import ru.rutcampustrack.academic.security.RequestContext;
+ import ru.rutcampustrack.academic.semester.SemesterService;
++import ru.rutcampustrack.academic.subject.SubjectService;
+ import ru.rutcampustrack.academic.user.UserService;
+ 
+ import java.time.LocalDate;
+ import java.time.OffsetDateTime;
++import java.util.List;
+ import java.util.Optional;
+ 
+ import static org.assertj.core.api.Assertions.assertThat;
++import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ import static org.mockito.ArgumentMatchers.any;
+ import static org.mockito.ArgumentMatchers.anyInt;
+ import static org.mockito.ArgumentMatchers.anyLong;
+@@ -95,9 +103,15 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
+     @Autowired
+     private HomeworkService homeworkService;
+ 
++    @Autowired
++    private SubjectService subjectService;
++
+     @Autowired
+     private GroupRepository groupRepository;
+ 
++    @Autowired
++    private GroupHistoryCoverageRepository coverageRepository;
++
+     @Autowired
+     private UserRepository userRepository;
+ 
+@@ -122,26 +136,24 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
+ 
+     @BeforeEach
+     void setUpTestEntities() {
+-        // Create two groups for use across tests
+-        // 58-04: Entity Group.name @Pattern ^[А-ЯЁ][А-ЯЁа-яё]{1,3}-\d{3}$ + UNIQUE → собираем уникальное активное имя.
+-        groupA = new Group();
+-        groupA.setName("Тга-" + String.format("%03d", (int) (System.nanoTime() % 1000)));
+-        groupA.setActive(true);
+-        groupA.setCreatedAt(OffsetDateTime.now());
+-        groupA = groupRepository.save(groupA);
+-
+-        groupB = new Group();
+-        groupB.setName("Тгб-" + String.format("%03d", (int) ((System.nanoTime() + 1) % 1000)));
+-        groupB.setActive(true);
+-        groupB.setCreatedAt(OffsetDateTime.now());
+-        groupB = groupRepository.save(groupB);
+-
+-        // Create a subject for homework tests
+-        testSubject = new Subject();
+-        testSubject.setName("Test Subject " + System.nanoTime());
+-        testSubject.setType(SubjectType.LECTURE);
+-        testSubject.setGroupId(groupA.getId()); // Phase 60-01 V12: subjects.group_id NOT NULL
+-        testSubject = subjectRepository.save(testSubject);
++        // Create managed groups through the production writer so coverage
++        // provenance exists for the transfer test as well.
++        groupA = groupService.createGroup(new ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest(
++                firstAvailableManagedGroupName("УИТ")));
++        groupB = groupService.createGroup(new ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest(
++                firstAvailableManagedGroupName("УВП")));
++
++        // Create the subject and its canonical lesson type atomically through
++        // the managed writer; the database requires every subject to retain a
++        // corresponding subject_lesson_types row.
++        when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
++        when(requestContext.isHeadman()).thenReturn(true);
++        when(requestContext.getGroupId()).thenReturn(groupA.getId());
++        testSubject = subjectService.createSubject(new CreateSubjectRequest(
++                "Test Subject " + System.nanoTime(),
++                SubjectType.LECTURE,
++                List.of(SubjectType.LECTURE),
++                List.of()));
+ 
+         // Create a semester for homework tests (inactive, so it doesn't conflict with exclusion constraint)
+         testSemester = new Semester();
+@@ -152,21 +164,12 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
+         testSemester.setCreatedAt(OffsetDateTime.now());
+         testSemester = semesterRepository.save(testSemester);
+ 
+-        // Create a student user in groupA for transfer tests
+-        long seq = userRepository.nextStudentLoginSeq();
+-        testUser = new User();
+-        testUser.setLogin("student" + String.format("%05d", seq));
+-        testUser.setLastName("Студентов");
+-        testUser.setFirstName("Тест" + seq);
+-        testUser.setPasswordHash("$2a$10$dummy");
+-        testUser.setRole(UserRole.STUDENT);
+-        testUser.setStatus(AccountStatus.ACTIVE);
+-        testUser.setGroupId(groupA.getId());
+-        testUser.setHeadman(false);
+-        testUser.setPasswordChanged(false);
+-        testUser.setCreatedAt(OffsetDateTime.now());
+-        testUser.setUpdatedAt(OffsetDateTime.now());
+-        testUser = userRepository.save(testUser);
++        // Create the student through UserService so enrollment history is
++        // written atomically with the user row.
++        EntityModel<UserCreatedResponse> created = userService.createUser(new CreateUserRequest(
++                "Студентов", "Тест", null, UserRole.STUDENT, groupA.getId(), null,
++                Math.floorMod(System.nanoTime(), 9_000_000_000L) + 100_000L));
++        testUser = userRepository.findByIdIncludingArchived(created.getContent().getId()).orElseThrow();
+ 
+         // Stub RequestContext mock for homework permission checks
+         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
+@@ -183,15 +186,30 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
+                                 .setLessonNumber(1)
+                                 .setStatus("planned")
+                                 .build()));
++        when(scheduleGrpcClient.countSubjectReferences(anyLong()))
++                .thenReturn(ru.rutcampustrack.schedule.grpc.CountSubjectReferencesResponse
++                        .getDefaultInstance());
++    }
++
++    private String firstAvailableManagedGroupName(String prefix) {
++        for (int number = 1; number <= 9; number++) {
++            String candidate = prefix + "-11" + number;
++            if (!groupRepository.existsByName(candidate)) {
++                return candidate;
++            }
++        }
++        throw new IllegalStateException("No free managed test group name for " + prefix);
+     }
+ 
+     @AfterEach
+     void cleanUpTestEntities() {
+         // Clean up homework data first (FK dependencies)
+-        if (groupA != null && groupA.getId() != null) {
++        if (testSemester != null && testSemester.getId() != null
++                && groupA != null && groupA.getId() != null) {
+             homeworkRepository.deleteAll(homeworkRepository.findByGroupIdAndSemesterId(groupA.getId(), testSemester.getId()));
+         }
+-        if (groupB != null && groupB.getId() != null) {
++        if (testSemester != null && testSemester.getId() != null
++                && groupB != null && groupB.getId() != null) {
+             homeworkRepository.deleteAll(homeworkRepository.findByGroupIdAndSemesterId(groupB.getId(), testSemester.getId()));
+         }
+ 
+@@ -208,14 +226,16 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
+ 
+         // Remove test subject FIRST (Phase 60-01 V12: subjects.group_id FK to groups)
+         if (testSubject != null && testSubject.getId() != null) {
+-            subjectRepository.deleteById(testSubject.getId());
++            subjectService.deleteSubject(testSubject.getId(), false);
+         }
+ 
+         // Remove test groups after subjects (FK dependency via subjects.group_id)
+         if (groupA != null && groupA.getId() != null) {
++            coverageRepository.deleteById(groupA.getId());
+             groupRepository.deleteById(groupA.getId());
+         }
+         if (groupB != null && groupB.getId() != null) {
++            coverageRepository.deleteById(groupB.getId());
+             groupRepository.deleteById(groupB.getId());
+         }
+ 
+@@ -271,31 +291,12 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
+     }
+ 
+     @Test
+-    void deleteGroup_publishesGroupUpdatedEvent() throws Exception {
+-        String queueName = bindTempQueue();
+-        Long deletedGroupId = groupA.getId();
+-
+-        // Phase 60-01 V12: subjects.group_id FK — нужно удалить testSubject перед группой.
+-        if (testSubject != null && testSubject.getId() != null) {
+-            subjectRepository.deleteById(testSubject.getId());
+-            testSubject = null; // чтобы AfterEach не пытался удалить повторно
+-        }
+-
+-        groupService.deleteGroup(groupA.getId());
+-        groupA = null; // prevent @AfterEach from trying to delete again
+-        flushOutbox();
+-
+-        Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
+-        assertThat(message).isNotNull();
+-
+-        JsonNode root = objectMapper.readTree(message.getBody());
+-        assertThat(root.get("event_type").asText()).isEqualTo("group.updated");
+-        assertThat(root.get("event_id").asText()).matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
+-        assertThat(root.get("occurred_at")).isNotNull();
+-
+-        JsonNode payload = root.get("payload");
+-        assertThat(payload).isNotNull();
+-        assertThat(payload.get("group_id").asLong()).isEqualTo(deletedGroupId);
++    void deleteGroup_withManagedCoverageIsRejected() {
++        assertThatThrownBy(() -> groupService.deleteGroup(groupA.getId()))
++                .isInstanceOfSatisfying(HistoricalMembershipException.class, error ->
++                        assertThat(error.code())
++                                .isEqualTo(HistoricalMembershipException.Code.UNSUPPORTED_MUTATION));
++        assertThat(groupRepository.findById(groupA.getId())).isPresent();
+     }
+ 
+     @Test
+diff --git a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java
+index 3f0fad7d..7bddd1aa 100644
+--- a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java
++++ b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java
+@@ -9,8 +9,14 @@ import org.springframework.cache.CacheManager;
+ import org.springframework.context.ApplicationEventPublisher;
+ import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+ import ru.rutcampustrack.academic.contract.enums.UserRole;
++import ru.rutcampustrack.academic.entity.Group;
++import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
++import ru.rutcampustrack.academic.entity.Semester;
+ import ru.rutcampustrack.academic.exception.ConflictException;
++import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
++import ru.rutcampustrack.academic.repository.GroupRepository;
+ import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
++import ru.rutcampustrack.academic.repository.SemesterRepository;
+ import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
+ import ru.rutcampustrack.academic.repository.UserRepository;
+ import ru.rutcampustrack.academic.security.RequestContext;
+@@ -19,9 +25,14 @@ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ import static org.mockito.ArgumentMatchers.any;
+ import static org.mockito.Mockito.never;
++import static org.mockito.Mockito.lenient;
+ import static org.mockito.Mockito.verify;
+ import static org.mockito.Mockito.when;
+ 
++import java.time.LocalDate;
++import java.util.List;
++import java.util.Optional;
++
+ /**
+  * Unit test for UserService.createUser pre-check behavior (BUG-006 / D-07).
+  *
+@@ -38,10 +49,30 @@ class UserServiceConflictTest {
+     @Mock private UserAssembler userAssembler;
+     @Mock private CacheManager cacheManager;
+     @Mock private ApplicationEventPublisher eventPublisher;
++    @Mock private GroupRepository groupRepository;
++    @Mock private SemesterRepository semesterRepository;
++    @Mock private GroupHistoryCoverageRepository coverageRepository;
+ 
+     @InjectMocks
+     private UserService service;
+ 
++    @org.junit.jupiter.api.BeforeEach
++    void managedEnrollmentFixture() {
++        Group group = org.mockito.Mockito.mock(Group.class);
++        lenient().when(group.getId()).thenReturn(1L);
++        lenient().when(group.isActive()).thenReturn(true);
++        Semester semester = org.mockito.Mockito.mock(Semester.class);
++        lenient().when(semester.getDateFrom()).thenReturn(LocalDate.of(2026, 9, 1));
++        lenient().when(semester.getDateTo()).thenReturn(LocalDate.of(2027, 1, 31));
++        GroupHistoryCoverage coverage = org.mockito.Mockito.mock(GroupHistoryCoverage.class);
++        lenient().when(coverage.getCoverageFrom()).thenReturn(LocalDate.of(2026, 9, 1));
++        lenient().when(coverage.getWriterVersion()).thenReturn("managed_v1");
++        lenient().when(groupRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(group));
++        lenient().when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
++                .thenReturn(List.of(semester));
++        lenient().when(coverageRepository.findById(1L)).thenReturn(Optional.of(coverage));
++    }
++
+     private CreateUserRequest studentRequest() {
+         // telegramId is mandatory for STUDENT since BUG-006-3; use a placeholder
+         // value so this fixture exercises the happy path.
+diff --git a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java
+index 0f3a12c3..930b0656 100644
+--- a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java
++++ b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java
+@@ -9,8 +9,14 @@ import org.springframework.cache.CacheManager;
+ import org.springframework.context.ApplicationEventPublisher;
+ import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+ import ru.rutcampustrack.academic.contract.enums.UserRole;
++import ru.rutcampustrack.academic.entity.Group;
++import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
++import ru.rutcampustrack.academic.entity.Semester;
+ import ru.rutcampustrack.academic.exception.BadRequestException;
++import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
++import ru.rutcampustrack.academic.repository.GroupRepository;
+ import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
++import ru.rutcampustrack.academic.repository.SemesterRepository;
+ import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
+ import ru.rutcampustrack.academic.repository.UserRepository;
+ import ru.rutcampustrack.academic.security.RequestContext;
+@@ -24,6 +30,10 @@ import static org.mockito.Mockito.never;
+ import static org.mockito.Mockito.verify;
+ import static org.mockito.Mockito.when;
+ 
++import java.time.LocalDate;
++import java.util.List;
++import java.util.Optional;
++
+ /**
+  * BUG-006-3 / D-08..D-11: telegramId is required for STUDENT, optional for
+  * TEACHER and ADMIN. Validation lives inside {@link UserService#createUser}
+@@ -41,10 +51,30 @@ class UserServiceTelegramRequiredTest {
+     @Mock private UserAssembler userAssembler;
+     @Mock private CacheManager cacheManager;
+     @Mock private ApplicationEventPublisher eventPublisher;
++    @Mock private GroupRepository groupRepository;
++    @Mock private SemesterRepository semesterRepository;
++    @Mock private GroupHistoryCoverageRepository coverageRepository;
+ 
+     @InjectMocks
+     private UserService service;
+ 
++    @org.junit.jupiter.api.BeforeEach
++    void managedEnrollmentFixture() {
++        Group group = org.mockito.Mockito.mock(Group.class);
++        lenient().when(group.getId()).thenReturn(1L);
++        lenient().when(group.isActive()).thenReturn(true);
++        Semester semester = org.mockito.Mockito.mock(Semester.class);
++        lenient().when(semester.getDateFrom()).thenReturn(LocalDate.of(2026, 9, 1));
++        lenient().when(semester.getDateTo()).thenReturn(LocalDate.of(2027, 1, 31));
++        GroupHistoryCoverage coverage = org.mockito.Mockito.mock(GroupHistoryCoverage.class);
++        lenient().when(coverage.getCoverageFrom()).thenReturn(LocalDate.of(2026, 9, 1));
++        lenient().when(coverage.getWriterVersion()).thenReturn("managed_v1");
++        lenient().when(groupRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(group));
++        lenient().when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
++                .thenReturn(List.of(semester));
++        lenient().when(coverageRepository.findById(1L)).thenReturn(Optional.of(coverage));
++    }
++
+     private CreateUserRequest req(UserRole role, Long telegramId, String employeeNumber) {
+         return new CreateUserRequest(
+                 "Иванов", "Иван", "Иванович",
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
+index 73d6b816..3ceb0bb9 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
+@@ -92,6 +92,15 @@ public class MongoConfig {
+                 .on("lesson_id", Sort.Direction.ASC)
+                 .named("idx_lesson_id"));
+ 
++        // Historical close/cancel convergence: one durable terminal marker per
++        // physical lesson id.  The unique index makes concurrent upserts
++        // converge on the same cancellation authority.
++        IndexOperations cancellationOps = mongoTemplate.indexOps("lesson_cancellation_markers");
++        cancellationOps.ensureIndex(new Index()
++                .on("lesson_id", Sort.Direction.ASC)
++                .unique()
++                .named("uniq_lesson_cancellation_marker"));
++
+         // M05 Группа 1 — closes 04 P2-9.
+         // Query: LateCheckinRepository.findByGroupIdAndStatusOrderByCreatedAtAsc
+         // (headman dashboard late-checkins). До индекса — COLLSCAN +
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonEventService.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonEventService.java
+index 503bf265..e2aed4be 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonEventService.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonEventService.java
+@@ -2,8 +2,10 @@ package ru.rutcampustrack.attendance.event;
+ 
+ import lombok.extern.slf4j.Slf4j;
+ import com.mongodb.client.result.DeleteResult;
++import com.mongodb.client.result.UpdateResult;
+ import org.springframework.beans.factory.annotation.Qualifier;
+ import org.springframework.core.task.TaskExecutor;
++import org.springframework.dao.DuplicateKeyException;
+ import org.springframework.data.mongodb.core.BulkOperations;
+ import org.springframework.data.mongodb.core.MongoTemplate;
+ import org.springframework.data.mongodb.core.query.Criteria;
+@@ -15,15 +17,18 @@ import ru.rutcampustrack.academic.grpc.StudentInfo;
+ import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
+ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
+ import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
++import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
++import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
+ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+ import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+ import ru.rutcampustrack.schedule.grpc.LessonResponse;
+-import ru.rutcampustrack.shared.observability.AsyncGrpcUtils;
+ 
+ import java.time.Instant;
+ import java.time.LocalDate;
+-import java.util.concurrent.CompletableFuture;
++import java.util.HashSet;
++import java.util.Locale;
++import java.util.Set;
+ 
+ /**
+  * Business logic for lesson lifecycle event processing.
+@@ -59,25 +64,33 @@ public class LessonEventService {
+     }
+ 
+     public void processLessonClosed(Long lessonId, Long groupId) {
+-        // M05 G8: два независимых gRPC-call'а параллельно через bounded
+-        // executor. Deadline (3s) уже enforced на stub-level; .join()
+-        // пропагирует StatusRuntimeException как CompletionException →
+-        // распаковываем для сохранения existing error handling.
+-        CompletableFuture<LessonResponse> lessonFut = CompletableFuture.supplyAsync(
+-                () -> scheduleGrpcClient.getLessonById(lessonId), grpcTaskExecutor);
+-        CompletableFuture<GroupMembersResponse> membersFut = CompletableFuture.supplyAsync(
+-                () -> academicGrpcClient.getGroupMembers(groupId), grpcTaskExecutor);
+-        LessonResponse lesson = AsyncGrpcUtils.joinOrUnwrap(lessonFut);
+-        GroupMembersResponse members = AsyncGrpcUtils.joinOrUnwrap(membersFut);
++        // The Schedule snapshot is the canonical source for date, semester,
++        // identity and lifecycle.  Only after this validation may Academic be
++        // asked for a dated historical roster.
++        LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
++        LocalDate lessonDate = validateLessonSnapshot(lesson, lessonId, groupId);
++        if ("cancelled".equalsIgnoreCase(lesson.getStatus())
++                || "transferred".equalsIgnoreCase(lesson.getStatus())) {
++            ensureCancellationMarker(lessonId);
++            applyCancellation(lessonId);
++            return;
++        }
+ 
+-        if (members.getStudentsList().isEmpty()) {
+-            log.info("lesson.closed: no students in group {} for lesson {}, skipping", groupId, lessonId);
++        GroupMembersResponse members = academicGrpcClient.getGroupMembers(
++                lesson.getGroupId(), lessonDate, lesson.getSemesterId());
++        validateRosterEcho(members, lessonDate, lesson.getSemesterId());
++
++        // A cancellation may have won the race while the historical roster was
++        // being resolved.  Do not start materialization after its marker.
++        if (isCancellationMarked(lessonId)) {
++            applyCancellation(lessonId);
+             return;
+         }
+ 
+-        Long semesterId = semesterCacheService.getActiveSemesterId();
+-        if (semesterId == null) {
+-            log.warn("lesson.closed: semesterId is null (cache miss) for lesson {}", lessonId);
++        if (members.getStudentsList().isEmpty()) {
++            log.info("lesson.closed: no historical students in group {} for lesson {}, skipping",
++                    lesson.getGroupId(), lessonId);
++            return;
+         }
+ 
+         Instant now = Instant.now();
+@@ -92,11 +105,11 @@ public class LessonEventService {
+             Update insert = new Update()
+                     .setOnInsert("lesson_id", lessonId)
+                     .setOnInsert("user_id", student.getUserId())
+-                    .setOnInsert("group_id", groupId)
++                    .setOnInsert("group_id", lesson.getGroupId())
+                     .setOnInsert("subject_id", lesson.getSubjectId())
+-                    .setOnInsert("semester_id", semesterId)
++                    .setOnInsert("semester_id", lesson.getSemesterId())
+                     .setOnInsert("lesson_number", lesson.getLessonNumber())
+-                    .setOnInsert("lesson_date", LocalDate.parse(lesson.getDate()))
++                    .setOnInsert("lesson_date", lessonDate)
+                     .setOnInsert("status", AttendanceStatus.ABSENT)
+                     .setOnInsert("source", AttendanceSource.AUTO_SCHEDULER)
+                     .setOnInsert("marked_by", null)
+@@ -107,6 +120,12 @@ public class LessonEventService {
+         }
+ 
+         bulkOps.execute();
++        // Cancellation is terminal for this physical id.  Reapply it after
++        // materialization if the marker won the race between the pre-check and
++        // the bulk upsert.
++        if (isCancellationMarked(lessonId)) {
++            applyCancellation(lessonId);
++        }
+         log.info("lesson.closed: lessonId={}, processed {} students for auto-absent",
+                 lessonId, members.getStudentsCount());
+     }
+@@ -133,13 +152,93 @@ public class LessonEventService {
+     }
+ 
+     public void processLessonCancelled(Long lessonId) {
+-        Query filter = Query.query(Criteria.where("lesson_id").is(lessonId));
++        // The marker must be durable before any attendance update.  Retries
++        // are idempotent because both operations are keyed by lesson_id.
++        ensureCancellationMarker(lessonId);
++        applyCancellation(lessonId);
++        log.info("lesson.cancelled: lessonId={}, cancellation marker durable", lessonId);
++    }
++
++    private LocalDate validateLessonSnapshot(LessonResponse lesson, Long lessonId, Long eventGroupId) {
++        if (lessonId == null || eventGroupId == null
++                || lesson == null || lesson.getId() != lessonId
++                || lesson.getGroupId() <= 0 || lesson.getGroupId() != eventGroupId
++                || lesson.getSubjectId() <= 0 || lesson.getSemesterId() <= 0
++                || lesson.getLessonNumber() <= 0 || lesson.getDate().isBlank()
++                || lesson.getStatus().isBlank()) {
++            throw new ScheduleServiceUnavailableException("Schedule returned a malformed lesson snapshot");
++        }
++        final LocalDate date;
++        try {
++            date = LocalDate.parse(lesson.getDate());
++        } catch (RuntimeException error) {
++            throw new ScheduleServiceUnavailableException("Schedule returned a malformed lesson date");
++        }
++        String status = lesson.getStatus().toLowerCase(Locale.ROOT);
++        if (!Set.of("closed", "cancelled", "transferred").contains(status)) {
++            throw new ScheduleServiceUnavailableException("Schedule returned an invalid lesson status");
++        }
++        return date;
++    }
++
++    private void validateRosterEcho(GroupMembersResponse members, LocalDate lessonDate, long semesterId) {
++        if (members == null || !members.hasAsOfDate() || !members.hasSemesterId()
++                || !lessonDate.toString().equals(members.getAsOfDate())
++                || members.getSemesterId() != semesterId) {
++            throw new AcademicServiceUnavailableException(
++                    "Academic returned a missing or mismatched historical roster echo");
++        }
++        Set<Long> ids = new HashSet<>();
++        for (StudentInfo student : members.getStudentsList()) {
++            if (student.getUserId() <= 0 || !ids.add(student.getUserId())) {
++                throw new AcademicServiceUnavailableException(
++                        "Academic returned duplicate or invalid historical student identity");
++            }
++        }
++    }
++
++    private void ensureCancellationMarker(Long lessonId) {
++        if (lessonId == null || lessonId <= 0) {
++            throw new IllegalArgumentException("lessonId must be positive");
++        }
++        Query markerQuery = Query.query(Criteria.where("lesson_id").is(lessonId));
++        Update markerUpdate = new Update()
++                .setOnInsert("lesson_id", lessonId)
++                .setOnInsert("marked_at", Instant.now());
++        try {
++            mongoTemplate.upsert(markerQuery, markerUpdate, LessonCancellationMarker.class);
++        } catch (DuplicateKeyException race) {
++            // Two cancellation/close consumers may race on the unique marker.
++            // The winner's durable row is sufficient; only propagate if the
++            // failed upsert was not followed by a visible marker.
++            if (!isCancellationMarked(lessonId)) {
++                throw race;
++            }
++        }
++    }
++
++    private boolean isCancellationMarked(Long lessonId) {
++        return mongoTemplate.exists(
++                Query.query(Criteria.where("lesson_id").is(lessonId)),
++                LessonCancellationMarker.class);
++    }
++
++    private void applyCancellation(Long lessonId) {
++        Query all = Query.query(Criteria.where("lesson_id").is(lessonId));
+         Update update = new Update()
+                 .set("status", AttendanceStatus.CANCELLED)
+                 .set("updated_at", Instant.now());
+-
+-        var result = mongoTemplate.updateMulti(filter, update, AttendanceDocument.class);
+-        log.info("lesson.cancelled: lessonId={}, updatedCount={}", lessonId, result.getModifiedCount());
++        UpdateResult first = mongoTemplate.updateMulti(all, update, AttendanceDocument.class);
++        Query notCancelled = Query.query(Criteria.where("lesson_id").is(lessonId)
++                .and("status").ne(AttendanceStatus.CANCELLED));
++        if (mongoTemplate.count(notCancelled, AttendanceDocument.class) > 0) {
++            mongoTemplate.updateMulti(notCancelled, update, AttendanceDocument.class);
++            if (mongoTemplate.count(notCancelled, AttendanceDocument.class) > 0) {
++                throw new IllegalStateException(
++                        "Cancellation postcondition failed for lesson " + lessonId);
++            }
++        }
++        log.debug("lesson.cancelled: lessonId={}, updatedCount={}", lessonId, first.getModifiedCount());
+     }
+ 
+     /**
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java
+index 99fd4011..e74978a3 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java
+@@ -25,6 +25,7 @@ import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableExceptio
+ 
+ import java.util.List;
+ import java.util.Map;
++import java.time.LocalDate;
+ import java.util.concurrent.TimeUnit;
+ import java.util.stream.Collectors;
+ 
+@@ -68,6 +69,30 @@ public class AcademicGrpcClient {
+         }
+     }
+ 
++    /**
++     * Reads a complete historical roster.  The paired fields are mandatory
++     * here; callers must validate the response echoes before materializing any
++     * attendance document.
++     */
++    public GroupMembersResponse getGroupMembers(Long groupId, LocalDate asOfDate, Long semesterId) {
++        if (groupId == null || groupId <= 0 || asOfDate == null || semesterId == null || semesterId <= 0) {
++            throw new IllegalArgumentException("groupId, asOfDate and semesterId are required");
++        }
++        try {
++            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
++                    .getGroupMembers(GroupMembersRequest.newBuilder()
++                            .setGroupId(groupId)
++                            .setAsOfDate(asOfDate.toString())
++                            .setSemesterId(semesterId)
++                            .build());
++        } catch (StatusRuntimeException e) {
++            if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
++                throw new ResourceNotFoundException("Group", "id", groupId);
++            }
++            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
++        }
++    }
++
+     public GeofenceResponse getCampusGeofence() {
+         try {
+             return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java
+index 6509cb63..2f77cdaf 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java
+@@ -28,6 +28,8 @@ import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+ import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
+ import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
+ import ru.rutcampustrack.schedule.grpc.LessonResponse;
++import ru.rutcampustrack.schedule.grpc.LessonInfo;
++import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
+ 
+ import java.time.LocalDate;
+ import java.time.temporal.ChronoUnit;
+@@ -442,12 +444,45 @@ public class ReportService {
+      */
+     private List<AttendanceRecord> filterExistingLessons(List<AttendanceRecord> records) {
+         if (records == null || records.isEmpty()) return List.of();
+-        List<Long> ids = records.stream().map(AttendanceRecord::lessonId).distinct().toList();
+-        java.util.Set<Long> alive = scheduleGrpcClient.getLessonsByIds(ids).stream()
+-                .map(ru.rutcampustrack.schedule.grpc.LessonInfo::getLessonId)
+-                .collect(Collectors.toSet());
++        List<Long> ids = records.stream()
++                .map(AttendanceRecord::lessonId)
++                .peek(id -> {
++                    if (id == null || id <= 0) {
++                        throw new ScheduleServiceUnavailableException(
++                                "Attendance returned a malformed lesson identity");
++                    }
++                })
++                .distinct()
++                .toList();
++        List<LessonInfo> lessons = scheduleGrpcClient.getLessonsByIds(ids);
++        if (lessons == null) {
++            throw new ScheduleServiceUnavailableException(
++                    "Schedule returned no lesson authority response");
++        }
++        Map<Long, LessonInfo> authoritative = new java.util.HashMap<>();
++        for (LessonInfo lesson : lessons) {
++            if (lesson == null || lesson.getLessonId() <= 0 || lesson.getStatus().isBlank()
++                    || authoritative.put(lesson.getLessonId(), lesson) != null) {
++                throw new ScheduleServiceUnavailableException(
++                        "Schedule returned a malformed or duplicate lesson authority");
++            }
++            String status = lesson.getStatus().toLowerCase(java.util.Locale.ROOT);
++            if (!java.util.Set.of("planned", "active", "closed", "cancelled", "transferred")
++                    .contains(status)) {
++                throw new ScheduleServiceUnavailableException(
++                        "Schedule returned an unknown lesson status");
++            }
++        }
++        if (authoritative.size() != ids.size()) {
++            throw new ScheduleServiceUnavailableException(
++                    "Schedule returned an incomplete lesson authority response");
++        }
+         return records.stream()
+-                .filter(r -> alive.contains(r.lessonId()))
++                .filter(r -> {
++                    String status = authoritative.get(r.lessonId()).getStatus()
++                            .toLowerCase(java.util.Locale.ROOT);
++                    return !status.equals("cancelled") && !status.equals("transferred");
++                })
+                 .toList();
+     }
+ 
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceParallelTest.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceParallelTest.java
+index e7b2159f..0a2718ac 100644
+--- a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceParallelTest.java
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceParallelTest.java
+@@ -6,9 +6,9 @@ import org.mockito.Mock;
+ import org.mockito.junit.jupiter.MockitoExtension;
+ import org.mockito.junit.jupiter.MockitoSettings;
+ import org.mockito.quality.Strictness;
++import org.springframework.core.task.SyncTaskExecutor;
+ import org.springframework.data.mongodb.core.BulkOperations;
+ import org.springframework.data.mongodb.core.MongoTemplate;
+-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+ import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+ import ru.rutcampustrack.academic.grpc.StudentInfo;
+ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+@@ -16,28 +16,16 @@ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+ import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+ import ru.rutcampustrack.schedule.grpc.LessonResponse;
+ 
+-import java.util.concurrent.CountDownLatch;
+-import java.util.concurrent.TimeUnit;
++import java.time.LocalDate;
+ 
+-import static org.assertj.core.api.Assertions.assertThat;
+ import static org.mockito.ArgumentMatchers.any;
+-import static org.mockito.Mockito.doAnswer;
++import static org.mockito.Mockito.verify;
+ import static org.mockito.Mockito.when;
+ 
+ /**
+- * M05 G8 (NEW-149): проверяет что {@link LessonEventService#processLessonClosed}
+- * параллелит два gRPC-вызова через {@code grpcTaskExecutor}.
+- *
+- * <p>M08 G12 (2026-04-23) — переписано с wall-time на CountDownLatch-pattern.
+- * Причина: wall-time зависит от CPU dev-машины/CI runner'а, flaky (350ms→750ms
+- * не хватало — actual 767ms наблюдался на Windows dev). CountDownLatch даёт
+- * прямое доказательство concurrent-вызова без timing-noise:
+- * <ul>
+- *   <li>Оба gRPC-mock'а await на {@code bothStarted} latch.</li>
+- *   <li>Если оба ждут одновременно → latch опускается до 0 → mock'ы идут дальше.</li>
+- *   <li>Sequential execution → первый mock зависнет, тест упадёт по timeout.</li>
+- * </ul>
+- * Timeout 5s — далеко за любые разумные overhead'ы, но меньше CI-watchdog.
++ * Regression coverage for the historical close boundary. The previous test
++ * asserted parallel current-roster calls; the contract now requires the
++ * canonical Schedule snapshot first and an echoed dated Academic roster.
+  */
+ @ExtendWith(MockitoExtension.class)
+ @MockitoSettings(strictness = Strictness.LENIENT)
+@@ -59,62 +47,32 @@ class LessonEventServiceParallelTest {
+     private BulkOperations bulkOps;
+ 
+     @Test
+-    void processLessonClosed_runsGrpcCallsInParallel() throws Exception {
+-        // Latch countdown'ится каждым mock'ом при entry. Оба await'ят
+-        // до total == 0 — т.е. пока ОБА gRPC-вызова не стартовали.
+-        // Sequential execution → первый зависнет навсегда (вторая задача
+-        // не запущена) → await timeout → test fails.
+-        CountDownLatch bothStarted = new CountDownLatch(2);
+-
+-        when(scheduleGrpcClient.getLessonById(any())).thenAnswer(inv -> {
+-            bothStarted.countDown();
+-            // Await до 3s. Если parallel — вторая задача тоже дойдёт сюда,
+-            // latch опустится, оба продолжат. Если sequential — timeout.
+-            if (!bothStarted.await(3, TimeUnit.SECONDS)) {
+-                throw new AssertionError(
+-                        "Sequential execution detected: second gRPC call did not start"
+-                                + " while first was blocked");
+-            }
+-            return LessonResponse.newBuilder()
+-                    .setId(1L)
+-                    .setGroupId(10L)
+-                    .setSubjectId(5L)
+-                    .setLessonNumber(1)
+-                    .setDate("2026-04-20")
+-                    .build();
+-        });
+-        when(academicGrpcClient.getGroupMembers(any())).thenAnswer(inv -> {
+-            bothStarted.countDown();
+-            if (!bothStarted.await(3, TimeUnit.SECONDS)) {
+-                throw new AssertionError(
+-                        "Sequential execution detected: second gRPC call did not start"
+-                                + " while first was blocked");
+-            }
+-            return GroupMembersResponse.newBuilder()
+-                    .addStudents(StudentInfo.newBuilder().setUserId(100L).build())
+-                    .build();
+-        });
+-        when(semesterCacheService.getActiveSemesterId()).thenReturn(2L);
++    void processLessonClosed_usesCanonicalDatedRoster() {
++        when(scheduleGrpcClient.getLessonById(1L)).thenReturn(LessonResponse.newBuilder()
++                .setId(1L)
++                .setGroupId(10L)
++                .setSubjectId(5L)
++                .setLessonNumber(1)
++                .setDate("2026-04-20")
++                .setStatus("closed")
++                .setSemesterId(2L)
++                .build());
++        when(academicGrpcClient.getGroupMembers(10L, LocalDate.of(2026, 4, 20), 2L))
++                .thenReturn(GroupMembersResponse.newBuilder()
++                        .addStudents(StudentInfo.newBuilder().setUserId(100L).build())
++                        .setAsOfDate("2026-04-20")
++                        .setSemesterId(2L)
++                        .build());
+         when(mongoTemplate.bulkOps(any(), any(Class.class))).thenReturn(bulkOps);
+-        doAnswer(inv -> bulkOps).when(bulkOps).upsert(any(), any());
+         when(bulkOps.execute()).thenReturn(null);
+ 
+-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+-        executor.setCorePoolSize(2);
+-        executor.setMaxPoolSize(8);
+-        executor.setQueueCapacity(100);
+-        executor.initialize();
+-
+         LessonEventService svc = new LessonEventService(
+                 mongoTemplate, scheduleGrpcClient, academicGrpcClient,
+-                semesterCacheService, executor);
++                semesterCacheService, new SyncTaskExecutor());
+ 
+         svc.processLessonClosed(1L, 10L);
+ 
+-        // Если мы сюда дошли — оба mock'а отработали, значит оба были
+-        // запущены concurrently (иначе первый бы timeout-ом упал).
+-        assertThat(bothStarted.getCount()).isZero();
+-
+-        executor.shutdown();
++        verify(academicGrpcClient).getGroupMembers(
++                10L, LocalDate.of(2026, 4, 20), 2L);
+     }
+ }
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceTest.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceTest.java
+index 98e3bc28..699802b7 100644
+--- a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceTest.java
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceTest.java
+@@ -21,6 +21,8 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
+ 
+ import com.mongodb.client.result.UpdateResult;
+ 
++import java.time.LocalDate;
++
+ import static org.junit.jupiter.api.Assertions.assertThrows;
+ import static org.mockito.ArgumentMatchers.any;
+ import static org.mockito.ArgumentMatchers.eq;
+@@ -58,9 +60,8 @@ class LessonEventServiceTest {
+ 
+     @BeforeEach
+     void setUp() {
+-        // M05 G8: SyncTaskExecutor запускает Runnable в текущем потоке —
+-        // сохраняет детерминизм Mockito verify'ов, не вводя параллелизма
+-        // в unit-тесте (он проверяет correctness, не latency).
++        // Keep the legacy constructor fixture; close processing now uses the
++        // canonical Schedule snapshot followed by a dated Academic read.
+         lessonEventService = new LessonEventService(
+                 mongoTemplate, scheduleGrpcClient, academicGrpcClient,
+                 semesterCacheService, new SyncTaskExecutor());
+@@ -81,6 +82,7 @@ class LessonEventServiceTest {
+         LessonResponse lesson = LessonResponse.newBuilder()
+                 .setId(1L).setGroupId(10L).setSubjectId(5L)
+                 .setDate("2026-04-01").setLessonNumber(1).setStatus("closed")
++                .setSemesterId(1L)
+                 .build();
+         when(scheduleGrpcClient.getLessonById(1L)).thenReturn(lesson);
+ 
+@@ -89,8 +91,12 @@ class LessonEventServiceTest {
+                 .addStudents(StudentInfo.newBuilder().setUserId(101L).setDisplayName("Student 101").build())
+                 .addStudents(StudentInfo.newBuilder().setUserId(102L).setDisplayName("Student 102").build())
+                 .build();
+-        when(academicGrpcClient.getGroupMembers(10L)).thenReturn(members);
+-        when(semesterCacheService.getActiveSemesterId()).thenReturn(1L);
++        when(academicGrpcClient.getGroupMembers(10L, LocalDate.of(2026, 4, 1), 1L))
++                .thenReturn(GroupMembersResponse.newBuilder()
++                        .addAllStudents(members.getStudentsList())
++                        .setAsOfDate("2026-04-01")
++                        .setSemesterId(1L)
++                        .build());
+ 
+         lessonEventService.processLessonClosed(1L, 10L);
+ 
+@@ -107,9 +113,14 @@ class LessonEventServiceTest {
+         LessonResponse lesson = LessonResponse.newBuilder()
+                 .setId(1L).setGroupId(10L).setSubjectId(5L)
+                 .setDate("2026-04-01").setLessonNumber(1).setStatus("closed")
++                .setSemesterId(1L)
+                 .build();
+         when(scheduleGrpcClient.getLessonById(1L)).thenReturn(lesson);
+-        when(academicGrpcClient.getGroupMembers(10L)).thenReturn(GroupMembersResponse.newBuilder().build());
++        when(academicGrpcClient.getGroupMembers(10L, LocalDate.of(2026, 4, 1), 1L))
++                .thenReturn(GroupMembersResponse.newBuilder()
++                        .setAsOfDate("2026-04-01")
++                        .setSemesterId(1L)
++                        .build());
+ 
+         lessonEventService.processLessonClosed(1L, 10L);
+ 
+@@ -118,28 +129,20 @@ class LessonEventServiceTest {
+     }
+ 
+     // -------------------------------------------------------------------------
+-    // Test 3: null semesterId (cache miss) still executes bulk ops
++    // Test 3: a missing canonical semester fails closed before Academic
+     // -------------------------------------------------------------------------
+ 
+     @Test
+-    void processLessonClosed_nullSemesterId_stillExecutes() {
++    void processLessonClosed_missingSemesterId_failsClosed() {
+         LessonResponse lesson = LessonResponse.newBuilder()
+                 .setId(1L).setGroupId(10L).setSubjectId(5L)
+                 .setDate("2026-04-01").setLessonNumber(1).setStatus("closed")
+                 .build();
+         when(scheduleGrpcClient.getLessonById(1L)).thenReturn(lesson);
+ 
+-        GroupMembersResponse members = GroupMembersResponse.newBuilder()
+-                .addStudents(StudentInfo.newBuilder().setUserId(100L).setDisplayName("Student 100").build())
+-                .addStudents(StudentInfo.newBuilder().setUserId(101L).setDisplayName("Student 101").build())
+-                .build();
+-        when(academicGrpcClient.getGroupMembers(10L)).thenReturn(members);
+-        when(semesterCacheService.getActiveSemesterId()).thenReturn(null);
+-
+-        lessonEventService.processLessonClosed(1L, 10L);
+-
+-        verify(bulkOps, times(2)).upsert(any(Query.class), any(Update.class));
+-        verify(bulkOps, times(1)).execute();
++        assertThrows(ScheduleServiceUnavailableException.class,
++                () -> lessonEventService.processLessonClosed(1L, 10L));
++        verifyNoInteractions(academicGrpcClient);
+     }
+ 
+     // -------------------------------------------------------------------------
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java
+index c88119ad..3d977cc6 100644
+--- a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java
+@@ -23,6 +23,7 @@ import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
+ import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
+ import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
+ 
++import java.time.LocalDate;
+ import java.lang.reflect.Field;
+ import java.util.List;
+ 
+@@ -104,6 +105,19 @@ class AcademicGrpcClientTest {
+         assertThrows(AcademicServiceUnavailableException.class, () -> client.getGroupMembers(7L));
+     }
+ 
++    @Test
++    void getHistoricalGroupMembers_buildsPairedDatedRequest() {
++        when(mockStub.getGroupMembers(any())).thenReturn(GroupMembersResponse.getDefaultInstance());
++
++        client.getGroupMembers(7L, LocalDate.of(2026, 4, 20), 3L);
++
++        verify(mockStub).getGroupMembers(GroupMembersRequest.newBuilder()
++                .setGroupId(7L)
++                .setAsOfDate("2026-04-20")
++                .setSemesterId(3L)
++                .build());
++    }
++
+     @Test
+     void getCampusGeofence_buildsCorrectRequest() {
+         when(mockStub.getCampusGeofence(any())).thenReturn(GeofenceResponse.getDefaultInstance());
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java
+index 685325ed..52801017 100644
+--- a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java
+@@ -6,6 +6,8 @@ import org.mockito.Mockito;
+ import org.springframework.amqp.core.AmqpAdmin;
+ import org.springframework.amqp.rabbit.core.RabbitTemplate;
+ import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.core.task.SyncTaskExecutor;
++import org.springframework.data.mongodb.core.MongoTemplate;
+ import org.springframework.data.mongodb.core.query.Criteria;
+ import org.springframework.data.mongodb.core.query.Query;
+ import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+@@ -13,6 +15,8 @@ import ru.rutcampustrack.academic.grpc.StudentInfo;
+ import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
+ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
+ import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
++import ru.rutcampustrack.attendance.event.LessonCancellationMarker;
++import ru.rutcampustrack.attendance.event.LessonEventService;
+ import ru.rutcampustrack.schedule.grpc.LessonResponse;
+ 
+ import java.time.Instant;
+@@ -20,7 +24,12 @@ import java.time.LocalDate;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.UUID;
++import java.util.concurrent.CountDownLatch;
++import java.util.concurrent.ExecutorService;
++import java.util.concurrent.Executors;
++import java.util.concurrent.Future;
+ import java.util.concurrent.TimeUnit;
++import java.util.concurrent.atomic.AtomicBoolean;
+ 
+ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.awaitility.Awaitility.await;
+@@ -60,6 +69,7 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
+         amqpAdmin.purgeQueue("attendance-service.events", false);
+         amqpAdmin.purgeQueue("attendance-service.events.dlq", false);
+         mongoTemplate.remove(new Query(), AttendanceDocument.class);
++        mongoTemplate.remove(new Query(), LessonCancellationMarker.class);
+         Mockito.reset(scheduleGrpcClient, academicGrpcClient, semesterCacheService);
+     }
+ 
+@@ -108,6 +118,7 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
+         LessonResponse lesson = LessonResponse.newBuilder()
+                 .setId(lessonId).setGroupId(groupId).setSubjectId(subjectId)
+                 .setDate(date).setLessonNumber(lessonNumber).setStatus("closed")
++                .setSemesterId(1L)
+                 .build();
+         when(scheduleGrpcClient.getLessonById(lessonId)).thenReturn(lesson);
+ 
+@@ -118,8 +129,8 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
+                     .setDisplayName("Student " + sid)
+                     .build());
+         }
+-        when(academicGrpcClient.getGroupMembers(groupId)).thenReturn(members.build());
+-        when(semesterCacheService.getActiveSemesterId()).thenReturn(1L);
++        when(academicGrpcClient.getGroupMembers(groupId, LocalDate.parse(date), 1L))
++                .thenReturn(members.setAsOfDate(date).setSemesterId(1L).build());
+     }
+ 
+     // -------------------------------------------------------------------------
+@@ -304,6 +315,159 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
+         });
+     }
+ 
++    @Test
++    void lessonCancelled_beforeClose_preventsRetrospectiveMaterialization() {
++        publishEvent(buildEnvelope("lesson.cancelled", Map.of(
++                "lesson_id", 1001,
++                "group_id", 10
++        )));
++
++        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
++                assertThat(mongoTemplate.exists(
++                        Query.query(Criteria.where("lesson_id").is(1001L)),
++                        LessonCancellationMarker.class)).isTrue());
++
++        mockGrpcForLesson(1001L, 10L, 5L, "2026-04-01", 1, 100L, 101L);
++        publishEvent(buildEnvelope("lesson.closed", Map.of(
++                "lesson_id", 1001,
++                "group_id", 10
++        )));
++
++        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
++            assertThat(mongoTemplate.find(
++                    Query.query(Criteria.where("lesson_id").is(1001L)),
++                    AttendanceDocument.class)).isEmpty();
++            assertThat(mongoTemplate.exists(
++                    Query.query(Criteria.where("lesson_id").is(1001L)),
++                    LessonCancellationMarker.class)).isTrue();
++        });
++    }
++
++    @Test
++    void lessonClosed_thenCancelled_convergesEveryMaterializedRecord() {
++        mockGrpcForLesson(1002L, 10L, 5L, "2026-04-01", 1, 100L, 101L);
++        publishEvent(buildEnvelope("lesson.closed", Map.of(
++                "lesson_id", 1002,
++                "group_id", 10
++        )));
++        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
++                assertThat(mongoTemplate.find(
++                        Query.query(Criteria.where("lesson_id").is(1002L)),
++                        AttendanceDocument.class)).hasSize(2));
++
++        publishEvent(buildEnvelope("lesson.cancelled", Map.of(
++                "lesson_id", 1002,
++                "group_id", 10
++        )));
++        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
++            List<AttendanceDocument> docs = mongoTemplate.find(
++                    Query.query(Criteria.where("lesson_id").is(1002L)),
++                    AttendanceDocument.class);
++            assertThat(docs).hasSize(2);
++            assertThat(docs).allMatch(doc -> doc.getStatus() == AttendanceStatus.CANCELLED);
++            assertThat(mongoTemplate.exists(
++                    Query.query(Criteria.where("lesson_id").is(1002L)),
++                    LessonCancellationMarker.class)).isTrue();
++        });
++    }
++
++    @Test
++    void concurrentCloseAndCancel_persistedBoundaryConvergesAndRetriesRemainIdempotent()
++            throws Exception {
++        Long duplicateLessonId = 1003L;
++        mockGrpcForLesson(duplicateLessonId, 10L, 5L, "2026-04-01", 1, 100L, 101L);
++        Instant explicitCreated = Instant.now();
++        mongoTemplate.save(AttendanceDocument.builder()
++                .lessonId(duplicateLessonId).userId(100L).groupId(10L).subjectId(5L)
++                .semesterId(1L).lessonNumber(1).lessonDate(LocalDate.of(2026, 4, 1))
++                .status(AttendanceStatus.PRESENT).source(AttendanceSource.STUDENT_GEO)
++                .markedBy(100L).createdAt(explicitCreated).updatedAt(explicitCreated)
++                .build());
++
++        LessonEventService persistedService = new LessonEventService(
++                mongoTemplate, scheduleGrpcClient, academicGrpcClient,
++                semesterCacheService, new SyncTaskExecutor());
++        persistedService.processLessonClosed(duplicateLessonId, 10L);
++        persistedService.processLessonClosed(duplicateLessonId, 10L);
++
++        List<AttendanceDocument> duplicateCloseDocs = mongoTemplate.find(
++                Query.query(Criteria.where("lesson_id").is(duplicateLessonId)),
++                AttendanceDocument.class);
++        assertThat(duplicateCloseDocs).hasSize(2);
++        assertThat(duplicateCloseDocs).anyMatch(doc -> doc.getUserId().equals(100L)
++                && doc.getStatus() == AttendanceStatus.PRESENT
++                && doc.getSource() == AttendanceSource.STUDENT_GEO);
++        assertThat(duplicateCloseDocs).anyMatch(doc -> doc.getUserId().equals(101L)
++                && doc.getStatus() == AttendanceStatus.ABSENT
++                && doc.getSource() == AttendanceSource.AUTO_SCHEDULER);
++
++        Long raceLessonId = 1004L;
++        mockGrpcForLesson(raceLessonId, 10L, 5L, "2026-04-01", 1, 100L, 101L);
++        CountDownLatch closePrecheckReached = new CountDownLatch(1);
++        CountDownLatch allowCloseInsert = new CountDownLatch(1);
++        AtomicBoolean pauseFirstMarkerCheck = new AtomicBoolean();
++        MongoTemplate barrierTemplate = Mockito.spy(mongoTemplate);
++        Mockito.doAnswer(invocation -> {
++            Query markerQuery = invocation.getArgument(0);
++            boolean markerExists = mongoTemplate.exists(markerQuery, LessonCancellationMarker.class);
++            if (pauseFirstMarkerCheck.compareAndSet(false, true)) {
++                closePrecheckReached.countDown();
++                if (!allowCloseInsert.await(10, TimeUnit.SECONDS)) {
++                    throw new AssertionError("close insert barrier was not released");
++                }
++            }
++            return markerExists;
++        }).when(barrierTemplate).exists(Mockito.any(Query.class),
++                Mockito.eq(LessonCancellationMarker.class));
++
++        LessonEventService raceService = new LessonEventService(
++                barrierTemplate, scheduleGrpcClient, academicGrpcClient,
++                semesterCacheService, new SyncTaskExecutor());
++        ExecutorService executor = Executors.newFixedThreadPool(2);
++        try {
++            Future<?> closeFuture = executor.submit(() ->
++                    raceService.processLessonClosed(raceLessonId, 10L));
++            assertThat(closePrecheckReached.await(10, TimeUnit.SECONDS)).isTrue();
++
++            Future<?> cancelFuture = executor.submit(() ->
++                    raceService.processLessonCancelled(raceLessonId));
++            await().atMost(10, TimeUnit.SECONDS).until(() -> mongoTemplate.exists(
++                    Query.query(Criteria.where("lesson_id").is(raceLessonId)),
++                    LessonCancellationMarker.class));
++            assertThat(mongoTemplate.find(
++                    Query.query(Criteria.where("lesson_id").is(raceLessonId)),
++                    AttendanceDocument.class)).isEmpty();
++
++            cancelFuture.get(10, TimeUnit.SECONDS);
++            allowCloseInsert.countDown();
++            closeFuture.get(10, TimeUnit.SECONDS);
++        } finally {
++            allowCloseInsert.countDown();
++            executor.shutdownNow();
++            assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
++        }
++
++        List<AttendanceDocument> racedDocs = mongoTemplate.find(
++                Query.query(Criteria.where("lesson_id").is(raceLessonId)),
++                AttendanceDocument.class);
++        assertThat(racedDocs).hasSize(2)
++                .allMatch(doc -> doc.getStatus() == AttendanceStatus.CANCELLED);
++        assertThat(mongoTemplate.exists(
++                Query.query(Criteria.where("lesson_id").is(raceLessonId)),
++                LessonCancellationMarker.class)).isTrue();
++
++        // A retried close/cancel pair must converge on the terminal marker and
++        // never resurrect an AUTO_SCHEDULER ABSENT row.
++        raceService.processLessonClosed(raceLessonId, 10L);
++        raceService.processLessonCancelled(raceLessonId);
++        List<AttendanceDocument> retriedDocs = mongoTemplate.find(
++                Query.query(Criteria.where("lesson_id").is(raceLessonId)),
++                AttendanceDocument.class);
++        assertThat(retriedDocs).hasSize(2)
++                .allMatch(doc -> doc.getStatus() == AttendanceStatus.CANCELLED)
++                .noneMatch(doc -> doc.getStatus() == AttendanceStatus.ABSENT);
++    }
++
+     // D-09 (semester.archived → SemesterCacheService.refresh()) is covered by
+     // EventConsumerTest unit test. The equivalent IT was removed because cached
+     // Spring context reuse across test classes left EventConsumer holding a stale
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java
+index e9f0c4e0..fd44ece7 100644
+--- a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java
+@@ -17,6 +17,7 @@ import java.time.LocalDate;
+ import java.util.Map;
+ 
+ import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.Mockito.doReturn;
+ import static org.mockito.Mockito.lenient;
+ import static org.mockito.Mockito.when;
+ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+@@ -71,14 +72,14 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
+                         SUBJECT_ID, subjectDetails("Mathematics", "lecture"),
+                         SUBJECT_ID_2, subjectDetails("Physics", "lab")));
+ 
+-        // Every lesson id passed to scheduleGrpcClient.getLessonsByIds is considered alive —
+-        // ReportService uses this to filter orphan attendance docs, and these tests don't
+-        // exercise that path.
++        // Every lesson id passed to scheduleGrpcClient.getLessonsByIds is a valid
++        // non-terminal lesson for the happy-path report tests.
+         lenient().when(scheduleGrpcClient.getLessonsByIds(any())).thenAnswer(inv -> {
+             java.util.List<Long> ids = inv.getArgument(0);
+             return ids.stream()
+                     .map(id -> ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
+                             .setLessonId(id)
++                            .setStatus("closed")
+                             .build())
+                     .toList();
+         });
+@@ -202,6 +203,29 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
+                 .andExpect(jsonPath("$.overall.total").value(2));
+     }
+ 
++    @Test
++    void getStudentStats_excludesAuthoritativeCancelledAndTransferredStoredRecords() throws Exception {
++        insertAttendance(11L, STUDENT_USER_ID, SUBJECT_ID, AttendanceStatus.PRESENT,
++                LocalDate.of(2026, 4, 1));
++        insertAttendance(12L, STUDENT_USER_ID, SUBJECT_ID, AttendanceStatus.ABSENT,
++                LocalDate.of(2026, 4, 2));
++        doReturn(java.util.List.of(
++                ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
++                        .setLessonId(11L).setStatus("cancelled").build(),
++                ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
++                        .setLessonId(12L).setStatus("transferred").build()))
++                .when(scheduleGrpcClient).getLessonsByIds(any());
++
++        mockMvc.perform(get("/attendance/reports/student/stats")
++                        .header("X-User-Id", STUDENT_USER_ID.toString())
++                        .header("X-User-Role", "STUDENT")
++                        .header("X-Group-Id", GROUP_ID.toString())
++                        .header("X-Is-Headman", "false"))
++                .andExpect(status().isOk())
++                .andExpect(jsonPath("$.subjects").isEmpty())
++                .andExpect(jsonPath("$.overall.total").value(0));
++    }
++
+     // -------------------------------------------------------------------------
+     // Test 5 — RPRT-04: Student records filtered by subjectId
+     // -------------------------------------------------------------------------
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java
+index 8c1b441b..f8aab03a 100644
+--- a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java
+@@ -17,6 +17,7 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
+ import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+ import ru.rutcampustrack.attendance.contract.enums.UserRole;
+ import ru.rutcampustrack.attendance.exception.AccessDeniedException;
++import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
+ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+ import ru.rutcampustrack.attendance.security.RequestContext;
+@@ -24,6 +25,7 @@ import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+ import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
+ import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
+ import ru.rutcampustrack.schedule.grpc.LessonResponse;
++import ru.rutcampustrack.schedule.grpc.LessonInfo;
+ 
+ import java.time.LocalDate;
+ import java.util.List;
+@@ -34,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ import static org.mockito.ArgumentMatchers.any;
+ import static org.mockito.ArgumentMatchers.anyLong;
+ import static org.mockito.Mockito.lenient;
++import static org.mockito.Mockito.doReturn;
+ import static org.mockito.Mockito.verify;
+ import static org.mockito.Mockito.when;
+ 
+@@ -89,6 +92,7 @@ class ReportServiceTest {
+             return ids.stream()
+                     .map(id -> ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
+                             .setLessonId(id)
++                            .setStatus("closed")
+                             .build())
+                     .toList();
+         });
+@@ -99,7 +103,11 @@ class ReportServiceTest {
+     // -------------------------------------------------------------------------
+ 
+     private AttendanceRecord record(Long subjectId, AttendanceStatus status) {
+-        return new AttendanceRecord(LESSON_ID, USER_ID, GROUP_ID, subjectId,
++        return recordAtLesson(LESSON_ID, subjectId, status);
++    }
++
++    private AttendanceRecord recordAtLesson(Long lessonId, Long subjectId, AttendanceStatus status) {
++        return new AttendanceRecord(lessonId, USER_ID, GROUP_ID, subjectId,
+                 LocalDate.of(2026, 4, 1), 1, status, AttendanceSource.STUDENT_GEO, null);
+     }
+ 
+@@ -257,6 +265,34 @@ class ReportServiceTest {
+         assertThat(response.getOverall().getPercentage()).isEqualTo(0.0);
+     }
+ 
++    @Test
++    void stats_excludesAuthoritativeCancelledAndTransferredLessons() {
++        when(attendanceReadPort.findByUserId(USER_ID, SEMESTER_ID))
++                .thenReturn(List.of(
++                        recordAtLesson(11L, SUBJECT_ID_1, AttendanceStatus.ABSENT),
++                        recordAtLesson(12L, SUBJECT_ID_1, AttendanceStatus.PRESENT)));
++        doReturn(List.of(
++                LessonInfo.newBuilder().setLessonId(11L).setStatus("cancelled").build(),
++                LessonInfo.newBuilder().setLessonId(12L).setStatus("transferred").build()))
++                .when(scheduleGrpcClient).getLessonsByIds(any());
++
++        StudentStatsResponse response = reportService.getStudentStats();
++
++        assertThat(response.getSubjects()).isEmpty();
++        assertThat(response.getOverall().getTotal()).isZero();
++    }
++
++    @Test
++    void stats_failsClosedWhenScheduleAuthorityIsMalformed() {
++        when(attendanceReadPort.findByUserId(USER_ID, SEMESTER_ID))
++                .thenReturn(List.of(record(SUBJECT_ID_1, AttendanceStatus.PRESENT)));
++        doReturn(List.of(LessonInfo.newBuilder().setLessonId(LESSON_ID).build()))
++                .when(scheduleGrpcClient).getLessonsByIds(any());
++
++        assertThatThrownBy(() -> reportService.getStudentStats())
++                .isInstanceOf(ScheduleServiceUnavailableException.class);
++    }
++
+     // -------------------------------------------------------------------------
+     // Test 7: Missing student shows ABSENT in left-join (RPRT-01 D-04)
+     // -------------------------------------------------------------------------

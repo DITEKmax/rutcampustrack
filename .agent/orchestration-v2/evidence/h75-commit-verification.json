@@ -1,0 +1,15 @@
+{
+  "commit": "27860f24eb380c782311bbe0cbb65c3d2c75d85d",
+  "parent": "f59b3b9951c971bde42265ae67df8754dc594a58",
+  "paths": [
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java"
+  ],
+  "testHash": "50E533093C36D1B0409D6F27CEE01859310CBE115B02CD7C3BE1C99BBD88F621",
+  "status": [
+    "?? .agent/v2-assignment-authority/"
+  ],
+  "expectedCommitMatches": true,
+  "expectedParentMatches": true,
+  "exactOneTestPath": true,
+  "expectedHashMatches": true
+}

@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-20T15:10:37.9369702Z",
+  "owner": "root docs only",
+  "scope": [
+    "docs/product/decisions/2026-09-20-retrospective-attendance.md",
+    "docs/sources/manifest.yaml"
+  ],
+  "manifestPreexistingState": "untracked, corrupt original inventory preserved",
+  "manifestPreimageSha256": "CAF84E16A2DA14D5C6B93DE56B25F7C5022BCF2C2A974720E014962CB8D0DC5E",
+  "validation": "New decision property parses as standalone JSON and canonical file exists; whole registry validation BLOCKED by pre-existing malformed/lost inventory fragments",
+  "repairDisposition": "Root reverted trial removal of malformed decision]cate token. Scout found further lost object boundaries/truncated SHA, so no semantic reconstruction guessed.",
+  "productRuntime": "N/A documentation only",
+  "historicalCorruptionLocations": [
+    "entries1074 standalone decision]cate token",
+    "entries1092 merged object boundary",
+    "entries1108 truncated SHA/merged record",
+    "entries1187 missing array/metadata fragment",
+    "entries1190 truncated fragment"
+  ]
+}

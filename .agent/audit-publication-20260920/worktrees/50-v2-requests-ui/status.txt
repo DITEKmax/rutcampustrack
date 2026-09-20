@@ -1,0 +1,15 @@
+ M frontends/mobile-core/src/features/requests/RequestAttachmentField.vue
+ M frontends/mobile-core/src/features/requests/RequestCard.vue
+ M frontends/mobile-core/src/features/requests/RequestsScreen.test.ts
+ M frontends/mobile-core/src/features/requests/RequestsScreen.vue
+ M frontends/mobile-core/src/features/requests/requests-controller.test.ts
+ M frontends/mobile-core/src/features/requests/requests-controller.ts
+ M frontends/mobile-core/src/features/requests/requests.pcss
+ M frontends/mobile-core/src/features/requests/types.ts
+ M frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts
+ M frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue
+?? .agent/v2-requests-ui/
+?? frontends/mobile-core/src/features/requests/attachment-validation.test.ts
+?? frontends/mobile-core/src/features/requests/attachment-validation.ts
+?? frontends/mobile-core/src/features/requests/request-attachment-action.test.ts
+?? frontends/mobile-core/src/features/requests/request-attachment-action.ts

@@ -1,0 +1,46 @@
+[
+  {
+    "path": "frontends/mobile-core/src/features/today/today-screen.pcss",
+    "sha256": "73F70DB145AFF155D8459430A48B561A6A1C182C0849A313E20663402E19084E"
+  },
+  {
+    "path": "frontends/mobile-core/src/features/today/TodayScreen.vue",
+    "sha256": "E06F4F774086AB1A56F648D1B629BBEED97326A3E078B05540AEE21D3C9434B9"
+  },
+  {
+    "path": "frontends/mobile-core/src/index.ts",
+    "sha256": "50266856FC2F98D43C4B0972D82D2AA98C15D89F184C17628EB29F4A476E15A5"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+    "sha256": "1B716DD5ABCD418B756C98253F24B87778EED26FEADD0FB8A6434008F718AA1A"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/mobile-shell.pcss",
+    "sha256": "4CA8BAB08D8D8835BD9E10E3FC95A8B4F189A1E5A9221B63BBB645AE08232143"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+    "sha256": "F3A83D7A272F0525571B16016216A990ED4CBCB1987B3BDA3823F649BE59B1D9"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/components/MobileShell.vue",
+    "sha256": "96AFD8C41962E0C4281704407105C4A662CA88145AFF9CB5869FEA783B38F807"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/host.ts",
+    "sha256": "B48FC3B170B44DFCC7EB4B2534153C3BF62D792A639F75F973A19D80F810501D"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/navigation.ts",
+    "sha256": "BC3C416881C1C7679B11FC33C2BC7A74BB783692C04A758BEB4E86BC7AA42489"
+  },
+  {
+    "path": "frontends/mobile-core/src/shared/shell-contract.ts",
+    "sha256": "815A67E3F1688749F0F977550773D32E8FB57CB46A65D2228BDDAA3802A2000B"
+  },
+  {
+    "path": "frontends/mobile-core/tests/navigation.test.mjs",
+    "sha256": "01505E24035CBFA8885F6896E90E6B04931AE837D300A9807375B63C4ACD1F58"
+  }
+]

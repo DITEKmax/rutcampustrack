@@ -1,0 +1,19 @@
+# STUDENT-ROLE-02 — IN_PROGRESS
+
+Владелец возобновил работу после четвёртой паузы. Полный scope роли студента PWA+TMA, S3, остаётся активным. PAUSED.md — историческая точка, а не текущая команда остановки.
+
+Root сверил74product/test SHA из pause-2026-09-07-1232 и47 исходных файлов владельца:0расхождений, HEAD8002b9ea4356b10779c5bb9a6d99746d32d78ae2. Taskcommit/mainintegration отсутствуют.
+
+Свежий Sol high homework_contract_recheck_3 проверяет completedAt generated-contract repair. Свежий Terra high requests_domain_repair_resume_2 продолжает ограниченный repair по ранее записанному evidence gate: compile/tests/races ещё не приняты. Root пишет только main contracts/evidence. BackenddependencyFAIL51uniqueHIGH/CRITICAL остаётся отдельной задачей; полная роль ещё не принята.
+
+07.09.2026 later update: Homework contract independent recheck PASS (`homework-contract-review-3.md`); root accepted generated completedAt repair with prior domain/API review. Canonical 31-file Homework and 12-file shell hashes match; integration selection is 42 files after excluding raw-only Academic OpenAPI residue. Fresh integration spawn rejected by agent thread limit even after reviewer completed; no integration changes/commit. Owner clarification pending for reusing existing Luna instead of required fresh leaf. Same unfinished dependency_security_decision_final consultation resumed via followup; requests_domain_repair_resume_2 continues with compileJava PASS and real Mongo/event race gates pending. Global config remains unchanged.
+
+Requests writer interim runtime update: real Mongo StudentRequestDomainIT exit0; cancel-vs-decision terminal state/one schema-valid actual late event, approval-vs-real PRESENT coordinator preserves PRESENT/one actual excuse event, and FREE_ATTENDANCE-to-EXCUSED transition passed. Exact XML counts, final focused checks, stable manifest and independent review still pending. This interim result is not root domain acceptance.
+
+CORRECTION superseding preceding Mongo interim PASS: writer used Gradle test rather than integrationTest source set. Root independently opened XML and confirmed old timestamp 2026-09-07T08:03:48/tests10; new scenarios were NOT EXECUTED. Earlier interim PASS is withdrawn. Writer now runs actual integrationTest task; fresh XML/counts required before runtime acceptance. User was explicitly informed of this correction.
+
+Root verified fresh StudentRequestDomainIT XML at 11:21:09:14 tests,0 failures/errors/skipped. Writer confirms this result is still the in-memory outbox variant, so it does not close durable outbox criterion. Test-only wiring now uses production MongoOutboxStorage with task-owned student_request_test_outbox, and a failure-after-insert rollback probe is running; shared product module remains outside writer scope pending concrete evidence.
+
+Dependency consultation completed: immutable dependency-security-decision-result.md, root accepted bounded Boot3.5.16/Cloud2025.0.3 candidate contract and exact test/rescan gates; implementation not started. Separate root-verified HIGH client-controlled XFF rate-limit finding recorded in gateway-client-ip-finding.md. Latest fresh integration spawn after consultant completion again rejected thread limit; no source transfer/commit. Owner route clarification remains pending.
+
+07.09.2026 11:42Z: after request writer final completion, fresh requests_domain_recheck_2 Sol high spawn succeeded; it independently reviews frozen32sourcefiles. Simultaneous fresh integration spawn still hit thread limit. Root withdrew the optional owner exception question: continue canonical fresh-agent route sequentially as runtime slots become available. No permission exception accepted/used; no model substitution. Requests Gitleaks scan exit0/noLeaks; root verified49focused+15Mongo XML. Whole role remains IN_PROGRESS, integration not yet started.

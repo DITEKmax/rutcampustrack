@@ -1,0 +1,68 @@
+{
+  "schema": "rct.student-requests-h82-actuator-counter-check.v1",
+  "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+  "runnerSha256": "557782c04789d3e7f42bef672594a01883bb61c3a5e138f37e04491e7bdea700",
+  "failureMessage": "actuator request counter unavailable on port 18515",
+  "diagnostic": {
+    "schema": "rct.actuator-counter-diagnostic.v1",
+    "failedPort": 18515,
+    "records": [
+      {
+        "schema": "rct.actuator-counter-diagnostic.v1",
+        "port": 18515,
+        "metric": "http.server.requests",
+        "tagQuery": "uri:/api/v1/student/requests/excuse",
+        "statusCode": null,
+        "metricName": null,
+        "measurements": [],
+        "availableTags": [],
+        "parseStatus": "UNAVAILABLE"
+      },
+      {
+        "schema": "rct.actuator-counter-diagnostic.v1",
+        "port": 18515,
+        "metric": "http.server.requests",
+        "tagQuery": "",
+        "statusCode": null,
+        "metricName": null,
+        "measurements": [],
+        "availableTags": [],
+        "parseStatus": "UNAVAILABLE"
+      },
+      {
+        "schema": "rct.actuator-counter-diagnostic.v1",
+        "port": 18516,
+        "metric": "http.server.requests",
+        "tagQuery": "",
+        "statusCode": null,
+        "metricName": null,
+        "measurements": [],
+        "availableTags": [],
+        "parseStatus": "UNAVAILABLE"
+      },
+      {
+        "schema": "rct.actuator-counter-diagnostic.v1",
+        "port": 18515,
+        "metric": "spring.cloud.gateway.requests",
+        "tagQuery": "",
+        "statusCode": null,
+        "metricName": null,
+        "measurements": [],
+        "availableTags": [],
+        "parseStatus": "UNAVAILABLE"
+      }
+    ]
+  },
+  "checks": {
+    "parser": "PASS",
+    "exactWhitelistedShape": "FAIL",
+    "failedFilteredStatus": "FAIL",
+    "bothUnfilteredHttpServerRequests": "FAIL",
+    "gatewayMetricAndSpecificRoute": "FAIL",
+    "redaction": "PASS",
+    "genericThrowPreserved": "PASS",
+    "docker": "NOT_RUN",
+    "network": "NOT_RUN",
+    "productRuntime": "NOT_RUN"
+  }
+}

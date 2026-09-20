@@ -1,0 +1,14 @@
+{
+  "stage": "H86",
+  "supersedes": "h86-owned-cleanup.json beforeInventory field was an incorrect root assumption and is withdrawn",
+  "beforeInventoryCount": 31,
+  "afterImmediateInventoryCount": 33,
+  "ownedIdsFromFreshXml": [
+    "decf9fbfab5314af41d56a05049396c591ded280b0edb1394900f61b0e39f27e",
+    "ddabc6aecdc0ed9c9e0419b5c0f3f3b5ca4e46e529260236d352eb9775ba6248"
+  ],
+  "ownedStillPresent": [],
+  "verifiedOwnedAbsent": true,
+  "preexistingContainersWereNotModified": true,
+  "note": "Immediate post-test census retained the two new containers; later exact-id read verifies asynchronous Ryuk cleanup. Other preexisting containers were not touched."
+}

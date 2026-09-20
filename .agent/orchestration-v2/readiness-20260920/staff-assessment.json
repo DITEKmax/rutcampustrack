@@ -1,0 +1,410 @@
+[
+  {
+    "id": "JS-HEADMAN-01",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-02",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-03",
+    "status": "partial",
+    "evidence": "RESULT-20260920-GO.md; retrospective-stop/REPORT.md; readiness-20260920/REPORT.md",
+    "remaining": "accepted component evidence does not close all own story criteria and role UI"
+  },
+  {
+    "id": "JS-HEADMAN-04",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-05",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-06",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-07",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-08",
+    "status": "partial",
+    "evidence": "RESULT-20260920-GO.md; retrospective-stop/REPORT.md; readiness-20260920/REPORT.md",
+    "remaining": "recurring code WIP; own UI/input rules and integrated generation scenario not accepted; transfer/restore are separate stories"
+  },
+  {
+    "id": "JS-HEADMAN-09",
+    "status": "partial",
+    "evidence": "RESULT-20260920-GO.md; retrospective-stop/REPORT.md; readiness-20260920/REPORT.md",
+    "remaining": "accepted component evidence does not close all own story criteria and role UI"
+  },
+  {
+    "id": "JS-HEADMAN-10",
+    "status": "excluded",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-11",
+    "status": "partial",
+    "evidence": "RESULT-20260920-GO.md; retrospective-stop/REPORT.md; readiness-20260920/REPORT.md",
+    "remaining": "accepted component evidence does not close all own story criteria and role UI"
+  },
+  {
+    "id": "JS-HEADMAN-12",
+    "status": "partial",
+    "evidence": "RESULT-20260920-GO.md; retrospective-stop/REPORT.md; readiness-20260920/REPORT.md",
+    "remaining": "accepted component evidence does not close all own story criteria and role UI"
+  },
+  {
+    "id": "JS-HEADMAN-13",
+    "status": "partial",
+    "evidence": "RESULT-20260920-GO.md; retrospective-stop/REPORT.md; readiness-20260920/REPORT.md",
+    "remaining": "accepted component evidence does not close all own story criteria and role UI"
+  },
+  {
+    "id": "JS-HEADMAN-14",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-15",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-16",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-17",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-18",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-19",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-20",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-21",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-22",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-23",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-24",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-25",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-26",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-27",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-28",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-29",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-30",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-31",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-32",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-33",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-34",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-35",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-36",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-37",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-38",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-39",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-40",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-41",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-42",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-43",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-44",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-WEB-01",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-WEB-02",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-WEB-03",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-WEB-04",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-WEB-05",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-WEB-06",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-WEB-07",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-WEB-08",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-HEADMAN-WEB-09",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-01",
+    "status": "partial",
+    "evidence": "RESULT-20260920-GO.md; retrospective-stop/REPORT.md; readiness-20260920/REPORT.md",
+    "remaining": "accepted component evidence does not close all own story criteria and role UI"
+  },
+  {
+    "id": "JS-TEACHER-02",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-03",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-04",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-05",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-06",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-07",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-08",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-09",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-10",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-11",
+    "status": "partial",
+    "evidence": "RESULT-20260920-GO.md; retrospective-stop/REPORT.md; readiness-20260920/REPORT.md",
+    "remaining": "accepted component evidence does not close all own story criteria and role UI"
+  },
+  {
+    "id": "JS-TEACHER-12",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-13",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-14",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  },
+  {
+    "id": "JS-TEACHER-15",
+    "status": "unknown",
+    "evidence": "bounded scout: no complete acceptance established",
+    "remaining": "unassessed implementation; absence of evidence is not absence of code"
+  }
+]

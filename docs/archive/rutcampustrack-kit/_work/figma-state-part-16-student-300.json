@@ -1,0 +1,29 @@
+{
+  "runId": "part-16-student-300-2026-08-28",
+  "phase": "phase4",
+  "sourceFrames425": [
+    "2965:52862",
+    "2968:86687",
+    "2969:54058",
+    "2969:55142",
+    "2969:55806",
+    "2969:56072",
+    "2969:56250",
+    "2969:58746"
+  ],
+  "components": {
+    "ticketList425": "2986:709962",
+    "appHeader300Student": "2827:693738"
+  },
+  "pendingValidations": [
+    "300:recursive-audit",
+    "300:screenshots",
+    "R7:all-pages"
+  ],
+  "completedSteps": [
+    "425:header-repair",
+    "425:ranking-repair",
+    "425:ticket-list-repair",
+    "425:account-lists-fluid-repair"
+  ]
+}

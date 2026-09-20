@@ -1,0 +1,35 @@
+ M proto/academic.proto
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupService.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicReadService.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcExceptionAdvice.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupRepository.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/StudentGroupHistoryRepository.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java
+ M services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupServiceTest.java
+ M services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java
+ M services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java
+ M services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java
+ M services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java
+ M services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
+ M services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonEventService.java
+ M services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java
+ M services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java
+ M services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceParallelTest.java
+ M services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceTest.java
+ M services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java
+ M services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java
+ M services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java
+ M services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java
+?? .agent/l5b-historical-attendance/
+?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/GroupHistoryCoverage.java
+?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/history/
+?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupHistoryCoverageRepository.java
+?? services/academic-service/academic-app/src/main/resources/db/migration/V27__historical_membership_coverage.sql
+?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HistoricalMembershipGrpcTest.java
+?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/history/
+?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java
+?? services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonCancellationMarker.java

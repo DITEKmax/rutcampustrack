@@ -1,0 +1,48 @@
+{
+  "schema": "rutcampustrack.headman-container-repairs.v1",
+  "capturedAt": "2026-08-28",
+  "stage": "before",
+  "documentA": 46584,
+  "semesterTotals": {
+    "set": {"id": "1112:15201", "A": 91},
+    "variants": [
+      {"id": "1112:14474", "width": 1920, "geometry": "1824x160", "A": 30, "cards": "4x444x160", "gap": 16},
+      {"id": "1112:14751", "width": 1440, "geometry": "1376x336", "A": 30, "cards": "2x2, 680x160", "gap": 16},
+      {"id": "1112:14975", "width": 1280, "geometry": "1216x336", "A": 30, "cards": "2x2, 600x160", "gap": 16}
+    ],
+    "declaredNewVariant": {"width": 1024, "geometry": "960x336", "A": 30, "cards": "2x2, 472x160", "gap": 16},
+    "threshold": {"availableBlockWidth": 904, "calculation": "444 + 16 + 444", "screenWidthWith32pxMargins": 968}
+  },
+  "containerRepairs": [
+    {
+      "master": "block/SubjectStats",
+      "setId": "1112:114391",
+      "desktopRoots": ["1824x2350", "1376x2350", "1216x2350"],
+      "filters": ["2012:64152", "2241:314516", "2241:315344"],
+      "tables": ["2012:64193", "2241:314526", "2241:315354"],
+      "expected": "filters WRAP/HUG with cross-axis row gap 16; right padding 24->0 only at 1280; tables overflow NONE->HORIZONTAL; desktop geometry 0; 1024 filters 110->188 and root 2350->2428"
+    },
+    {
+      "master": "block/TrendPanel · 113",
+      "setId": "1112:115466",
+      "desktopRoots": ["1824x1160", "1376x1160", "1216x1160"],
+      "viewports": ["2312:579", "2312:580"],
+      "expected": "viewport horizontal sizing FIXED->FILL; desktop geometry 0; 1024 viewport 1216->960; root height 1160"
+    },
+    {
+      "master": "block/SubjectsList",
+      "setId": "1148:25318",
+      "desktopRoots": ["1824x424", "1376x424", "1216x424"],
+      "tables": ["1148:24897", "2241:322161", "2241:322336"],
+      "expected": "overflow NONE->HORIZONTAL; desktop geometry 0"
+    },
+    {
+      "master": "block/LessonManagement",
+      "setId": "1165:32086",
+      "desktopRoots": ["1824x1012", "1376x1012", "1216x1012"],
+      "viewports": ["1165:30448", "2307:341527", "2239:313792"],
+      "expected": "clips false->true and overflow NONE->HORIZONTAL; desktop geometry 0; 1024 viewport 960 with content 1216"
+    }
+  ],
+  "declaredDelta": {"A": 30, "documentA": "46584->46614", "existingDesktopGeometry": 0}
+}

@@ -1,0 +1,15 @@
+{
+  "hash": "6c5bd6dc",
+  "configHash": "42b1723e",
+  "lockfileHash": "e3b0c442",
+  "browserHash": "f75c2efa",
+  "optimized": {
+    "vue": {
+      "src": "../../../../../../../../../../../../d650/rutcampustrack/frontends/node_modules/vue/dist/vue.runtime.esm-bundler.js",
+      "file": "vue.js",
+      "fileHash": "5d78eb98",
+      "needsInterop": false
+    }
+  },
+  "chunks": {}
+}

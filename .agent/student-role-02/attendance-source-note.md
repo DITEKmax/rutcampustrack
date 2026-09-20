@@ -1,0 +1,13 @@
+# Attendance — root source evidence
+
+07.09.2026. Eight final frames:4593:142,4593:848365,4593:848496,4595:293,4595:848430,4596:365,4710:232,4768:228. Captured originals in design-context, all previously read; root reopened4710 PNG and critical text now.
+
+Root reopened ReportApi.java:79 and ReportService.java:403. Current student records projection reads only stored own-user active-semester AttendanceReadPort records, filters out missing schedule lessons, then maps IDs/date/number/status/source/reason. It lacks scheduled lessons without records, enriched subject/type/room/time, period bounds and request eligibility. Reusing it without enriching against authoritative schedule cannot prove final empty/day/history/action states. ReportService uses servlet RequestContext, so future non-servlet gRPC must receive explicit trusted identity (same resolved boundary principle as requests), not fake servlet context.
+
+AttendanceReadPort has own-user/semester, group/date and lesson/user reads. Preserve domain boundary rather than import checkin repositories into reporting. Statistics consultation is active: reuse its eventual accepted denominator/type-grouping/period computation rather than creating another formula. Statistics and attendance domain ownership may share one later writer or sequential integration; do not parallel-write shared helpers/contracts.
+
+COMPONENT_REGISTRY.md:1352–1358 and figma-spec-mobile.md:366–370 explicitly say inline-request is an attendance screen state, not separate route; MobileAbsenceRequest remains sole form owner, embedded under selected lesson. Actual4710 PNG shows Back/header «Уважительная причина», selected lesson, reason/comment/files/submit and no dock. This is contextual attendance state with reusable form anatomy; do not duplicate upload/submit owner or invent a second public form route merely from full-screen composition. Future UI packet must address dock/back presentation without changing this product rule.
+
+Root reopened final graph-days: semester chart, Дни/Недели toggle, planned future region and month axis. Final source readback says room/type/date/time instance10px (master16px), stroke1px/gap4px, superseding older8px note. Metrics visible+/н/у; full four counts/metrics remain server contract. Detailed graph aggregation awaits statistics decision. Canonical assets already preserved all-svg; no Figma writes.
+
+This note is staged evidence only, not implementation or runtime PASS. Request options/eligibility/forms depend on accepted requests domain+transport; attendance page must not infer eligibility from status alone or bypass limits/blockage/own-group/date authority.

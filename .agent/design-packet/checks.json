@@ -1,0 +1,85 @@
+{
+  "schema": "rutcampustrack.design-packet-checks.v1",
+  "baseRevision": "87784165874e2da6fc261abc1c01584e24624289",
+  "scopeStatus": "READY-captured-ui; implementation-contract-pending",
+  "environment": {
+    "os": "Windows",
+    "workdir": "C:/Users/maksd/IntelliJIDEA/rutcampustrack",
+    "writerModel": "gpt-5.6-terra",
+    "reasoningEffort": "high"
+  },
+  "checks": [
+    {
+      "id": "packet-integrity",
+      "criterion": "Manifest-referenced context/screenshot hashes, per-call asset hashes, canonical URL index, call sequence/timing evidence and owner state boundary are internally consistent.",
+      "status": "PASS",
+      "command": "python .agent\\design-packet\\verify_packet.py",
+      "exitCode": 0,
+      "evidence": "jsonFilesParsed=21; contexts=10; screenshots=6; assetSourceUrls=58; canonicalAssets=16; timingProxies=9"
+    },
+    {
+      "id": "packet-images-open",
+      "criterion": "Each recorded Figma screenshot opens locally.",
+      "status": "PASS",
+      "command": "local view_image during capture",
+      "exitCode": 0,
+      "evidence": "R002,R003,R004,R008,R009,R010 PNG screenshots opened; byte hashes rechecked by packet-integrity"
+    },
+    {
+      "id": "packet-svg-validation",
+      "criterion": "Every actual generated-code SVG source is local and structurally validated.",
+      "status": "PASS",
+      "command": "python .agent\\design-packet\\download_figma_assets.py (during capture)",
+      "exitCode": 0,
+      "evidence": "58 source URL records deduplicated to 16 canonical SVG bytes; downloader validated UTF-8 XML and SVG root. No bytes changed after validation."
+    },
+    {
+      "id": "packet-response-completeness",
+      "criterion": "Every Figma response is complete or has a named limitation.",
+      "status": "PASS",
+      "command": "python .agent\\design-packet\\verify_packet.py",
+      "exitCode": 0,
+      "evidence": "R001 partial transport truncation; R006 partial variables superseded by R011; R007 capped export; remaining retained responses complete."
+    },
+    {
+      "id": "runtime",
+      "criterion": "Product runtime evidence.",
+      "status": "SKIPPED",
+      "reason": "Packet documentation/evidence only; no product application or service changed, so there is no changed runtime behavior to execute."
+    },
+    {
+      "id": "token-mapping-rebuild",
+      "criterion": "Every actual var(--…) reference in the six captured code responses maps to a live R011 definition and an existing canonical token/CSS variable; rem equivalence and named discrepancies are explicit.",
+      "status": "PASS",
+      "command": "python .agent\\design-packet\\build_token_mapping.py",
+      "exitCode": 0,
+      "evidence": "actualReferenceCount=34; exact=20; exact-under-rem-base-16=12; all remaining references are exact px/contextual classifications. Escaped radius/2xl is actual evidence mapped to existing --radius-2xl; no alias and no phantom --radius."
+    },
+    {
+      "id": "token-mapping-focused-integrity",
+      "criterion": "Mapping references, canonical source hash and manifest document hashes stay valid after the S1 correction.",
+      "status": "PASS",
+      "command": "python .agent\\design-packet\\verify_packet.py",
+      "exitCode": 0,
+      "evidence": "tokenReferences=34; literal radius/2xl captured; phantom radius absent; mapping and canonical token hashes match manifest. This check did not repeat image opening, SVG XML validation or runtime."
+    }
+  ],
+  "limitations": [
+    "Figma-native capturedAt and revision unavailable; the snapshot is unpinned/non-atomic.",
+    "Only dark 390x844 captured Figma states are visual evidence.",
+    "Contract/backend/authz policy and real PWA/TMA runtime checks remain implementation gates."
+  ],
+  "independentReview": {
+    "reviewer": "Sol",
+    "initialStatus": "FAIL",
+    "findings": [
+      {
+        "severity": "S1",
+        "file": "docs/design/packets/JS-STUDENT-01/token-mapping.json",
+        "resolvedBy": "build_token_mapping.py full var() parser with escaped-slash normalization; mapping and manifest hash update"
+      }
+    ],
+    "focusedRereview": "PASS; S2 bounded review; findings=0",
+    "focusedEvidence": "34 refs / 436 var() occurrences across six code responses; radius/2xl both escape forms; R011=24 → --radius-2xl=1.5rem at 16px; no phantom --radius; 4 document hashes plus external canonical hash valid."
+  }
+}

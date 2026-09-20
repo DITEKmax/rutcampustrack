@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-10T19:09:00" hostname="DITEK-PK" time="0.011">
+  <properties/>
+  <testcase name="nonPositiveTimeout_failsFast()" classname="ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest" time="0.002"/>
+  <testcase name="emptySecret_failsFast()" classname="ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest" time="0.001"/>
+  <testcase name="validSecretAndTimeout_passes()" classname="ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest" time="0.001"/>
+  <testcase name="shortSecret_failsFast()" classname="ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest" time="0.001"/>
+  <testcase name="defaults_haveNoCacheOrLegacyToggle()" classname="ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

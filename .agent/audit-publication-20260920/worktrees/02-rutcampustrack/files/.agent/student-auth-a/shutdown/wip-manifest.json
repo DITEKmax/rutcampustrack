@@ -1,0 +1,508 @@
+{
+  "capturedAt": "2026-09-08T00:32:45.5365294Z",
+  "cwd": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack",
+  "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "gitStatusExit": 0,
+  "ownerCommand": "STOP all development until new direct owner instruction",
+  "excludedSelf": ".agent/student-auth-a/shutdown/**",
+  "files": [
+    {
+      "status": " M",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java",
+      "bytes": 2513,
+      "sha256": "A321630875C98B40DE20D30D8D220885C80AB35B871EE9207C2F10DA2EB864FA"
+    },
+    {
+      "status": " M",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+      "bytes": 16164,
+      "sha256": "81429C4219EC00FD2207E11460C8AB03314787C7CDFB45EA28B3A18A72E1BD5D"
+    },
+    {
+      "status": "??",
+      "path": ".agent/profile-ui/progress.md",
+      "bytes": 569,
+      "sha256": "E7E8DEE5A550F089E32BF884E9A49929A7675093689889E00419386719657CB1"
+    },
+    {
+      "status": "??",
+      "path": ".agent/profile-ui/status.md",
+      "bytes": 702,
+      "sha256": "CE1811E6B949BDA5E07823B897AF9C91876A366F0AA5D19214B9FDB146F462EA"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/profile/source-map.json",
+      "bytes": 128833,
+      "sha256": "801C262E711A14EFF12FBC9E1CAE6586C1E24FACC35EBA5425FF3589B96AA2C6"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/checks.json",
+      "bytes": 2806,
+      "sha256": "2C5850015E1173155495914A304A233F479532E922098E487B051E2B2812C340"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/correction-01/correction-manifest.json",
+      "bytes": 3168,
+      "sha256": "3D631EF3FABEC60E42A98C0D7015EBF83183EA03508BCBF7DEC7FF91B19DB71B"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/correction-01/junit/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml",
+      "bytes": 1971,
+      "sha256": "9903E9773A7C508BCA3886868A54DC6267620A2D2D17184BA6C3B414DF3BF217"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/correction-01/junit/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+      "bytes": 1552,
+      "sha256": "E1A5DCEAAB7F8D07ABF065616CF8F1FFBD5405EAA2CA668B5191BC697361B55F"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/correction-01/review-result.md",
+      "bytes": 2147,
+      "sha256": "3CFB9664E221A7E6DFA80FF86870DB9C3CDD1CB2F05035FA96DB48CB9C3B1664"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/diff.md",
+      "bytes": 1780,
+      "sha256": "9FC8774CAAABA55A7E9EAFD3467FDAAFBA802A1AA1B52FDC90F230AC71CCC5A5"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/evidence.md",
+      "bytes": 3706,
+      "sha256": "435172A35F4C5034C31D6099F2E6CC3DDB226F79411FF5E8B84FFB7E24E4A766"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/evidence/junit/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml",
+      "bytes": 1836,
+      "sha256": "F6C2280E3034F8A76E74B36649824A56368624D2FF0CEE2AF3ADE0EEB5B884EA"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/evidence/junit/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+      "bytes": 1538,
+      "sha256": "8444CB3C65BE74DF80E72B9D122B3D7DD6580E443124B0A01207AFEF1C0D62ED"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/manifest-verification.json",
+      "bytes": 437,
+      "sha256": "39A27FC26FEA9BAE546B87238A07A6D9AEE57074EDD736C85B22E6AAA03DCEBA"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/manifest.json",
+      "bytes": 4779,
+      "sha256": "393721C46A2302BA747B48FA367812B5A7FB7EEA59492627BFD9ABBF3FB75587"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/packet.md",
+      "bytes": 4825,
+      "sha256": "B5984BEB5E60504316D94404A850616F5CEDA03AEFFB261A7CCCD7C0065E8CEB"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/review-addendum.md",
+      "bytes": 774,
+      "sha256": "DD1B93D95F3A283DA3E593BBF65144848A037D6F28FAF661B921EF6D924493BF"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/review-result.md",
+      "bytes": 2003,
+      "sha256": "5E60485488AF1CAF78F85940203A9143C93E51EB2F8B030537721152D5872E6D"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/root-acceptance.md",
+      "bytes": 1696,
+      "sha256": "8D0A4CDC9A4AA2101F6C295FA76B61D4D8FEB3E80AC9AA355303225905B97213"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/runtime-evidence.md",
+      "bytes": 900,
+      "sha256": "33881E38E6492AC4F0ACAB53804446F54EC71A4E175A3E5C054527871AB3C29D"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/purpose/summary.md",
+      "bytes": 1151,
+      "sha256": "E8A83E9EBEFD60B1A3615C96648896D19BFF7165AAEAF3DC313301DDAB71E6A6"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/checks.json",
+      "bytes": 2376,
+      "sha256": "E956AE7389B71642390ADC7CFEB7DABAEC9CF34C5FF0ED0341C07C1FD37D6A10"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/diff.md",
+      "bytes": 950,
+      "sha256": "2C8F040EE3E91297E1175B8AD11AAC58D68E47613817A1560A4137F50766171F"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/evidence.md",
+      "bytes": 2321,
+      "sha256": "16857A037D89BF41F3F0B9A41B43F4795A8966F8B440B2FEA18AC25A195B23B5"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/evidence/junit/TEST-ru.rutcampustrack.auth.session.ActiveRolePolicyTest.xml",
+      "bytes": 920,
+      "sha256": "0371F06571125119D38384DFC7ACBE503FFA0AD0843FE0B1369DE7EAFA8918D4"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/evidence/junit/TEST-ru.rutcampustrack.auth.session.PasswordPolicyTest.xml",
+      "bytes": 1104,
+      "sha256": "CD44597B55D8A0D84100630F1115F16ACD8FAD4D39CD0642BE5818FB20C37901"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/evidence/junit/TEST-ru.rutcampustrack.auth.session.SessionLifecycleServiceTest.xml",
+      "bytes": 1685,
+      "sha256": "AC9BE989F360F131AFC4866DD749994EA387C65A83D237E5CF93C728493FAF63"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/manifest.json",
+      "bytes": 7004,
+      "sha256": "DD21586B84D7C8AB07CABDEC53483183F183EDAFFD1F585B0620FD21F28B9DF4"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/packet.md",
+      "bytes": 6110,
+      "sha256": "6352E0D3A870C88CD9FE9796F860E9C98B5D9A32D0239FA48130D2286C29658F"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/checks.json",
+      "bytes": 1770,
+      "sha256": "8DF6B1E309835773C83DC0CDF20E74E1F946588DD4AA37F50ADBE86C3995C80E"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/diff.md",
+      "bytes": 1698,
+      "sha256": "6A0813CD3AF1B7732D006601DCADD2FEAF0970C0DDDD718421B1CD8352B7CC2A"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/evidence.md",
+      "bytes": 1470,
+      "sha256": "D78F9BBA6EC9D9B2B3B0458F81134E44AC39C23C25E7071562832732F8ADE865"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/evidence/junit/TEST-ru.rutcampustrack.auth.session.ActiveRolePolicyTest.xml",
+      "bytes": 920,
+      "sha256": "BAE97CBC9E461E2F9E543D0000528032E2C44C7687C35D3C6EEC9B85FF0B3887"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/evidence/junit/TEST-ru.rutcampustrack.auth.session.PasswordPolicyTest.xml",
+      "bytes": 1258,
+      "sha256": "8D9A52344BFAD60BF50F6C9252B670871149AEE0449FE95328A3CCC7B139B4E1"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/evidence/junit/TEST-ru.rutcampustrack.auth.session.SessionLifecycleServiceTest.xml",
+      "bytes": 2154,
+      "sha256": "F62F41270CC5EBDDCF690D25F2B1F80B3BF143CD5EABBAC2386350723EE94E76"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/evidence/source-drift.json",
+      "bytes": 7073,
+      "sha256": "9DBA4C230E4C35FA578CD8DDBDD80C55B26AAEEBDE7AA4140381C2350D2733E3"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/manifest.json",
+      "bytes": 8707,
+      "sha256": "2200AED1C86FA3D54BC2AF1C3E6BD642A2923B36858406B349255935BEA8BA64"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/packet.md",
+      "bytes": 3901,
+      "sha256": "B305EA899CBE42BF110587FC1404B4202AC2B15A1AC103A9622E86985F0E62EF"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/pretest-source-manifest.json",
+      "bytes": 4375,
+      "sha256": "78DDE3675989DBA9B4FBC0E51D22CC8854163528FFEEB555FDD405E239848ECF"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/review-addendum.md",
+      "bytes": 990,
+      "sha256": "65F55E9623FFFDBB99F6E5FA0042CC4F0524B958670E3F5F0CEEC31F9B7B182E"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/review-result.md",
+      "bytes": 5619,
+      "sha256": "8DEEF183CB78106BEC45A9AA8D9435E77145E16F9899DC24BA5CE7C4C4662FAF"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/root-checks.md",
+      "bytes": 1912,
+      "sha256": "8DE404EA2F89041045B73A4B2F0557BB33E366639C844F74918917494871FE86"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/root-verification.md",
+      "bytes": 387,
+      "sha256": "852425F9F3F2B4377A4AB46B68D854CA66502211BBE6CB0CB9B9C957062A9D3B"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/runtime-evidence.md",
+      "bytes": 425,
+      "sha256": "55F370AD9899BFC43C730FFCFF54B8E07CBFD620C55A6D6470D8560AA2503C29"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/status.md",
+      "bytes": 2527,
+      "sha256": "6F3F2933A4ECC6D724C4887E894F755D9911407C4828350C9B13F3F7651FF2E8"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/repair-01/summary.md",
+      "bytes": 527,
+      "sha256": "5B18DD6D4418E95D62B035679488FEFDF701AF02B80ED5C3147FE0864C383B79"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/root-verification.md",
+      "bytes": 2746,
+      "sha256": "189B85A4337020605A43B5389D77D249DBC4AB69D92703348E0D9AFA5BE66971"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/runtime-evidence.md",
+      "bytes": 471,
+      "sha256": "FBD2B2351534C6FB7E3CE1294E993621F5EA58881407440AB013F62FD1515199"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/status.md",
+      "bytes": 1077,
+      "sha256": "65C01DC462ADA74A44F33091920B245387D34B9BB22D311EB5FA616C2836AE81"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-domain/summary.md",
+      "bytes": 1067,
+      "sha256": "554E7A36035593E5907972D792B0123356E83A625C55B1E5C8A05A2690658FAC"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session-jdbc/preflight.md",
+      "bytes": 4841,
+      "sha256": "D4C7AFD506265206EEF39A0BB939296FDD33269CCE36B560DFD23887704CD276"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session/consultation-result.md",
+      "bytes": 14402,
+      "sha256": "B1DBEC333D2E0F43C68B1B17622C7ED9C6BF0E0265BB040E60D5D060751AC086"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session/root-decision.md",
+      "bytes": 3831,
+      "sha256": "FBA341F7A490D26F08878CCD6C7B1F47B01508E3B889BE7E4F1B6B8334613A1F"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session/shared-integration-addendum-01.md",
+      "bytes": 2966,
+      "sha256": "F42578CD925CCC8A9C488B903D75DE086C6BEB511FC31C490778A3C6C62FA6CA"
+    },
+    {
+      "status": "??",
+      "path": ".agent/student-auth-a/session/shared-integration-contract.md",
+      "bytes": 20188,
+      "sha256": "47FC36F57AFCEEC489B5C95C6C169C2CBA9F53FEED2287CF6946B1CB150D807E"
+    },
+    {
+      "status": "??",
+      "path": ".agent/worktrees/profile-ui/",
+      "kind": "directory-or-unresolved",
+      "note": "Nested UI worktree has its own checkpoint; no recursion or deletion performed"
+    },
+    {
+      "status": "??",
+      "path": "frontends/mobile-core/src/features/profile/AccountHistoryScreen.vue",
+      "bytes": 3758,
+      "sha256": "07CA7733927FB3FC3F7B93101327F70B5345CDB9BAC57EC555932A59415A588E"
+    },
+    {
+      "status": "??",
+      "path": "frontends/mobile-core/src/features/profile/AppearanceScreen.vue",
+      "bytes": 2455,
+      "sha256": "AE4E5C1FCCB6E4E5EFAC02BFE5419BD81E37143ED2ACA51F668A7E799CB3361A"
+    },
+    {
+      "status": "??",
+      "path": "frontends/mobile-core/src/features/profile/MoreScreen.vue",
+      "bytes": 1565,
+      "sha256": "5675115D7535BC73A523C9A785F108EE2597831D7A368E0A4CFDBED464E8599E"
+    },
+    {
+      "status": "??",
+      "path": "frontends/mobile-core/src/features/profile/ProfileScreen.vue",
+      "bytes": 3747,
+      "sha256": "D3F9D75878863BB127B50F80B4CB4821CBB9D4D8EC023DD0870C368730C54611"
+    },
+    {
+      "status": "??",
+      "path": "frontends/mobile-core/src/features/profile/RoleSwitchScreen.vue",
+      "bytes": 3635,
+      "sha256": "C06D1F0CB04EA6841FBD6FFD91EA7C31689704C790DD4187CF8EB9039B8A5ACA"
+    },
+    {
+      "status": "??",
+      "path": "frontends/mobile-core/src/features/profile/SecurityScreen.vue",
+      "bytes": 10251,
+      "sha256": "9C2D27BECFDD9B0387C5C7A2A55440E9CEA2CAD55B999764355D31AAAA6E976F"
+    },
+    {
+      "status": "??",
+      "path": "frontends/mobile-core/src/features/profile/SessionsScreen.vue",
+      "bytes": 4871,
+      "sha256": "C8511A278D9081CCEB889523BAEFB75D7CD7E4A140C0221E9A2B5DFC5FA041F0"
+    },
+    {
+      "status": "??",
+      "path": "frontends/mobile-core/src/features/profile/profile-state.test.ts",
+      "bytes": 7389,
+      "sha256": "3F75616348DC542E982000881C54D08932F89A5ABC7BB786C3C69AE2B1FDA5EA"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+      "bytes": 4573,
+      "sha256": "7F3F6D9B2F78BED99B22D89B8F943481CD4DB5FBD672EE977D39533418FABD13"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java",
+      "bytes": 4056,
+      "sha256": "F5F06EF05CC7D3F15C2941E407128DE63B4FF0A1C6D1300CB0E655B2D0FD8D1A"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionLifecycleService.java",
+      "bytes": 15753,
+      "sha256": "410FF98941CE148B0738AC55E5300C3B98FFE442D2F5BBAAF27FE0CC9E35A0CD"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthMethod.java",
+      "bytes": 105,
+      "sha256": "60BEE3DC0D44DF2E3F3813E7FD67F0401678D6F4173AF32CAAD9F726DA5566A8"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthRole.java",
+      "bytes": 182,
+      "sha256": "2232E8973B0804A43BBF84D51FBAF432F35C72A1C6A709A175B302DCE35857FD"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleGrant.java",
+      "bytes": 1696,
+      "sha256": "171B2644B245770368A865B7907942578EC12343B8A4282F7023F5824C940DCE"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleStatus.java",
+      "bytes": 702,
+      "sha256": "89CF00BAE0BC524F8783BB860352DB2F40A31C5BDFEBB4352ECF0A879B002B57"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SecurityEvent.java",
+      "bytes": 1185,
+      "sha256": "8FFDA7A8CC0019AA8D8D158219357D7AB550BD1B66881A58652DC873D5FB5963"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionRevokeReason.java",
+      "bytes": 162,
+      "sha256": "0C076E9BF5CF002542EF35931E0BAC26FB5F1F5558BD39C7FDFAF6E1C0C5857F"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionSnapshot.java",
+      "bytes": 3854,
+      "sha256": "615ACD1676E9E74AD34A1E73A48A45255269E7EF410CBD3BBBF5A70DAA34D61E"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionState.java",
+      "bytes": 5452,
+      "sha256": "F89E60C86A9E3A5CAE9E3790ECDA3D258E024B38969030E246DB26AE0360D32F"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/CredentialSessionTransactionPort.java",
+      "bytes": 3946,
+      "sha256": "0CFB943D94A7FBD702C37F7255D62B03E4B0C733DFCA7272D94B4ACA5758E7C2"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/SessionStatePort.java",
+      "bytes": 14167,
+      "sha256": "C88C575F7E4CA105C5E005993073F709E6BC6558FFCC65420EEAC3F4EEF27376"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "bytes": 6224,
+      "sha256": "F313EAF985473AC7205D21EB850014F4E4D6C762B9994F0285B361E25DB2F574"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "bytes": 9229,
+      "sha256": "61E4DB92A8376452787C8467AE61FC8CEE75DE539C226C04BD5D558646867855"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+      "bytes": 3392,
+      "sha256": "91FC1DDDCE3910AAE09F4FCF862B94EF6A62C6F13923A18721865BCA4221A2D5"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "bytes": 3176,
+      "sha256": "E1BFD70821025BC673A75ACD0A8D1A96643A216C5911AF9D94502221B4B8530D"
+    },
+    {
+      "status": "??",
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "bytes": 38791,
+      "sha256": "0121159CBACFCA33A81B27D3B3F8D5BF34832894B65DE7AFA2B1FBBCECF2DA82"
+    }
+  ]
+}

@@ -1,0 +1,490 @@
+{
+  "baseline": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "createdUtc": "2026-09-08T07:33:21.4875271Z",
+  "nestedProductCount": 38,
+  "outerDuplicateCount": 8,
+  "outerEvidenceCount": 2,
+  "totalCount": 48,
+  "files": [
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\AccountHistoryScreen.vue",
+      "preserved": "nested-product\\AccountHistoryScreen.vue",
+      "sourceBytes": 3898,
+      "preservedBytes": 3898,
+      "sourceSha256": "A0DDF9B18BCAEE3706B432C01B7961C2FD9BFB9DFAB7833352193BD349A9FB4F",
+      "preservedSha256": "A0DDF9B18BCAEE3706B432C01B7961C2FD9BFB9DFAB7833352193BD349A9FB4F",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\AppearanceScreen.vue",
+      "preserved": "nested-product\\AppearanceScreen.vue",
+      "sourceBytes": 2544,
+      "preservedBytes": 2544,
+      "sourceSha256": "9790750C07E9B55E28F8B3107DE04BD4FDFD65DAAF2D30D6E8B855C8FED6A2F0",
+      "preservedSha256": "9790750C07E9B55E28F8B3107DE04BD4FDFD65DAAF2D30D6E8B855C8FED6A2F0",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\appearance-checked.svg",
+      "preserved": "nested-product\\assets\\appearance-checked.svg",
+      "sourceBytes": 394,
+      "preservedBytes": 394,
+      "sourceSha256": "11957E7E2DB1ABDAAEC56227597F51CA2228109C7F777FCD6DC683089F3628AD",
+      "preservedSha256": "11957E7E2DB1ABDAAEC56227597F51CA2228109C7F777FCD6DC683089F3628AD",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\appearance-previous.svg",
+      "preserved": "nested-product\\assets\\appearance-previous.svg",
+      "sourceBytes": 281,
+      "preservedBytes": 281,
+      "sourceSha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "preservedSha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\history-previous.svg",
+      "preserved": "nested-product\\assets\\history-previous.svg",
+      "sourceBytes": 281,
+      "preservedBytes": 281,
+      "sourceSha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "preservedSha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\more-map.svg",
+      "preserved": "nested-product\\assets\\more-map.svg",
+      "sourceBytes": 375,
+      "preservedBytes": 375,
+      "sourceSha256": "399823D22752807BB58D6BA7FA98DFD9C98761DF5F8E8C8C14451C17C73276F3",
+      "preservedSha256": "399823D22752807BB58D6BA7FA98DFD9C98761DF5F8E8C8C14451C17C73276F3",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\more-nav-attendance.svg",
+      "preserved": "nested-product\\assets\\more-nav-attendance.svg",
+      "sourceBytes": 482,
+      "preservedBytes": 482,
+      "sourceSha256": "560C88D0F74C2FABD63EBECC0E14AE03322744E7DEB65AB346A025902AA2A5FA",
+      "preservedSha256": "560C88D0F74C2FABD63EBECC0E14AE03322744E7DEB65AB346A025902AA2A5FA",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\more-nav-homework.svg",
+      "preserved": "nested-product\\assets\\more-nav-homework.svg",
+      "sourceBytes": 515,
+      "preservedBytes": 515,
+      "sourceSha256": "3F8CAD39FB38B3AFAF33E6CB2869F69EBD54D51EDF9735A27203F6C32D179241",
+      "preservedSha256": "3F8CAD39FB38B3AFAF33E6CB2869F69EBD54D51EDF9735A27203F6C32D179241",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\more-nav-more.svg",
+      "preserved": "nested-product\\assets\\more-nav-more.svg",
+      "sourceBytes": 326,
+      "preservedBytes": 326,
+      "sourceSha256": "C963AD64842A84D6F0A9759B7771D223A5F34484354BC0A493B9A52BFDA34CA7",
+      "preservedSha256": "C963AD64842A84D6F0A9759B7771D223A5F34484354BC0A493B9A52BFDA34CA7",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\more-nav-profile.svg",
+      "preserved": "nested-product\\assets\\more-nav-profile.svg",
+      "sourceBytes": 494,
+      "preservedBytes": 494,
+      "sourceSha256": "6D989522355CFF05E1E36A4BEF18168CBB6CCCB1534724E6457C07A9704ED00F",
+      "preservedSha256": "6D989522355CFF05E1E36A4BEF18168CBB6CCCB1534724E6457C07A9704ED00F",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\more-nav-today.svg",
+      "preserved": "nested-product\\assets\\more-nav-today.svg",
+      "sourceBytes": 545,
+      "preservedBytes": 545,
+      "sourceSha256": "8B5AC005B1B2E8118373EFB5CAA86E02F40DC766C260F94118C3776E36E37404",
+      "preservedSha256": "8B5AC005B1B2E8118373EFB5CAA86E02F40DC766C260F94118C3776E36E37404",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\more-requests.svg",
+      "preserved": "nested-product\\assets\\more-requests.svg",
+      "sourceBytes": 366,
+      "preservedBytes": 366,
+      "sourceSha256": "0815FC485B10771EA2FB10BD85AE0FE6BA0D598E2697F3B9F0AD1DAD0274986C",
+      "preservedSha256": "0815FC485B10771EA2FB10BD85AE0FE6BA0D598E2697F3B9F0AD1DAD0274986C",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\more-statistics.svg",
+      "preserved": "nested-product\\assets\\more-statistics.svg",
+      "sourceBytes": 375,
+      "preservedBytes": 375,
+      "sourceSha256": "ECC2FEAC12E5904F7345F9EEA6B1D548544E1350E75214BBBC0844790F5E74F1",
+      "preservedSha256": "ECC2FEAC12E5904F7345F9EEA6B1D548544E1350E75214BBBC0844790F5E74F1",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\profile-appearance.svg",
+      "preserved": "nested-product\\assets\\profile-appearance.svg",
+      "sourceBytes": 966,
+      "preservedBytes": 966,
+      "sourceSha256": "49CA140DC63FF22AB72F94EE98CED31950D5279EA68553CD4BD105ED46FE6198",
+      "preservedSha256": "49CA140DC63FF22AB72F94EE98CED31950D5279EA68553CD4BD105ED46FE6198",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\profile-history.svg",
+      "preserved": "nested-product\\assets\\profile-history.svg",
+      "sourceBytes": 790,
+      "preservedBytes": 790,
+      "sourceSha256": "CB0EBF1A344FCA97721EBDAF479E2A778E6CF22A57C9A5D5D0CB65F874EFDF3B",
+      "preservedSha256": "CB0EBF1A344FCA97721EBDAF479E2A778E6CF22A57C9A5D5D0CB65F874EFDF3B",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\profile-nav-attendance.svg",
+      "preserved": "nested-product\\assets\\profile-nav-attendance.svg",
+      "sourceBytes": 482,
+      "preservedBytes": 482,
+      "sourceSha256": "560C88D0F74C2FABD63EBECC0E14AE03322744E7DEB65AB346A025902AA2A5FA",
+      "preservedSha256": "560C88D0F74C2FABD63EBECC0E14AE03322744E7DEB65AB346A025902AA2A5FA",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\profile-nav-homework.svg",
+      "preserved": "nested-product\\assets\\profile-nav-homework.svg",
+      "sourceBytes": 515,
+      "preservedBytes": 515,
+      "sourceSha256": "3F8CAD39FB38B3AFAF33E6CB2869F69EBD54D51EDF9735A27203F6C32D179241",
+      "preservedSha256": "3F8CAD39FB38B3AFAF33E6CB2869F69EBD54D51EDF9735A27203F6C32D179241",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\profile-nav-more.svg",
+      "preserved": "nested-product\\assets\\profile-nav-more.svg",
+      "sourceBytes": 326,
+      "preservedBytes": 326,
+      "sourceSha256": "72887CA171FD0E68EAA2CD3C636F0E6FF8B990D02E023277891BD92568E6E7C4",
+      "preservedSha256": "72887CA171FD0E68EAA2CD3C636F0E6FF8B990D02E023277891BD92568E6E7C4",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\profile-nav-profile.svg",
+      "preserved": "nested-product\\assets\\profile-nav-profile.svg",
+      "sourceBytes": 494,
+      "preservedBytes": 494,
+      "sourceSha256": "1E73734F1A6D25516615F5F05F34C3C5B486F970F61C73492D1AA6F2BE3E3A5D",
+      "preservedSha256": "1E73734F1A6D25516615F5F05F34C3C5B486F970F61C73492D1AA6F2BE3E3A5D",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\profile-nav-today.svg",
+      "preserved": "nested-product\\assets\\profile-nav-today.svg",
+      "sourceBytes": 545,
+      "preservedBytes": 545,
+      "sourceSha256": "8B5AC005B1B2E8118373EFB5CAA86E02F40DC766C260F94118C3776E36E37404",
+      "preservedSha256": "8B5AC005B1B2E8118373EFB5CAA86E02F40DC766C260F94118C3776E36E37404",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\profile-role-switch.svg",
+      "preserved": "nested-product\\assets\\profile-role-switch.svg",
+      "sourceBytes": 693,
+      "preservedBytes": 693,
+      "sourceSha256": "8A170F9313064CDA1F44675C9AB34B968A0CC282888A99A0E7D8B8453AEEE964",
+      "preservedSha256": "8A170F9313064CDA1F44675C9AB34B968A0CC282888A99A0E7D8B8453AEEE964",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\profile-security.svg",
+      "preserved": "nested-product\\assets\\profile-security.svg",
+      "sourceBytes": 474,
+      "preservedBytes": 474,
+      "sourceSha256": "9538642F0E5E1F161C76DA88C83A6742D15B8D31F593867FA42BFF9DF19433BA",
+      "preservedSha256": "9538642F0E5E1F161C76DA88C83A6742D15B8D31F593867FA42BFF9DF19433BA",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\profile-sessions.svg",
+      "preserved": "nested-product\\assets\\profile-sessions.svg",
+      "sourceBytes": 913,
+      "preservedBytes": 913,
+      "sourceSha256": "BDEA8A8DAD7AFE85FD9F464227076D9375847C4923E5A56D4B858594CAE7F94A",
+      "preservedSha256": "BDEA8A8DAD7AFE85FD9F464227076D9375847C4923E5A56D4B858594CAE7F94A",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\role-previous.svg",
+      "preserved": "nested-product\\assets\\role-previous.svg",
+      "sourceBytes": 281,
+      "preservedBytes": 281,
+      "sourceSha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "preservedSha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\security-hide.svg",
+      "preserved": "nested-product\\assets\\security-hide.svg",
+      "sourceBytes": 667,
+      "preservedBytes": 667,
+      "sourceSha256": "2E8AEFD0373DB1920314BB2C6C4ED9A663268E01551D8CA54DDBEE0B806C11D5",
+      "preservedSha256": "2E8AEFD0373DB1920314BB2C6C4ED9A663268E01551D8CA54DDBEE0B806C11D5",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\security-previous.svg",
+      "preserved": "nested-product\\assets\\security-previous.svg",
+      "sourceBytes": 281,
+      "preservedBytes": 281,
+      "sourceSha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "preservedSha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\security-show.svg",
+      "preserved": "nested-product\\assets\\security-show.svg",
+      "sourceBytes": 609,
+      "preservedBytes": 609,
+      "sourceSha256": "6C0C7871DF7B0C0145771C55BD0CE0D11052DBB4F74A8385FF842D2447972035",
+      "preservedSha256": "6C0C7871DF7B0C0145771C55BD0CE0D11052DBB4F74A8385FF842D2447972035",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\security-status.svg",
+      "preserved": "nested-product\\assets\\security-status.svg",
+      "sourceBytes": 259,
+      "preservedBytes": 259,
+      "sourceSha256": "1E6A8FEE0287E7275E7FF77EAEC190D8690F34E479E2AA32551196E1941FD4CE",
+      "preservedSha256": "1E6A8FEE0287E7275E7FF77EAEC190D8690F34E479E2AA32551196E1941FD4CE",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\assets\\sessions-previous.svg",
+      "preserved": "nested-product\\assets\\sessions-previous.svg",
+      "sourceBytes": 281,
+      "preservedBytes": 281,
+      "sourceSha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "preservedSha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\MoreScreen.vue",
+      "preserved": "nested-product\\MoreScreen.vue",
+      "sourceBytes": 1590,
+      "preservedBytes": 1590,
+      "sourceSha256": "5DABA617D246FCEC4E071EFA3D86ADAC44B985344C5FB3FBC598D5FFE4596735",
+      "preservedSha256": "5DABA617D246FCEC4E071EFA3D86ADAC44B985344C5FB3FBC598D5FFE4596735",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\profile-screen.pcss",
+      "preserved": "nested-product\\profile-screen.pcss",
+      "sourceBytes": 15180,
+      "preservedBytes": 15180,
+      "sourceSha256": "D9AED24FE43CDB3CF0DBE44775B34CE28C1819D31E17494FAB7B1FB30447A142",
+      "preservedSha256": "D9AED24FE43CDB3CF0DBE44775B34CE28C1819D31E17494FAB7B1FB30447A142",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\profile-state.test.ts",
+      "preserved": "nested-product\\profile-state.test.ts",
+      "sourceBytes": 14129,
+      "preservedBytes": 14129,
+      "sourceSha256": "4D684562554F6D579A5A0A53F987CF985ED13047EF7CC7FF07771A8DDCEA5A01",
+      "preservedSha256": "4D684562554F6D579A5A0A53F987CF985ED13047EF7CC7FF07771A8DDCEA5A01",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\profile-state.ts",
+      "preserved": "nested-product\\profile-state.ts",
+      "sourceBytes": 13877,
+      "preservedBytes": 13877,
+      "sourceSha256": "FAF75DCAAC81BF152F3BE38BFB59A11D5B5BF44B9F8E3A526AAF849FA36745CB",
+      "preservedSha256": "FAF75DCAAC81BF152F3BE38BFB59A11D5B5BF44B9F8E3A526AAF849FA36745CB",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\profile-types.ts",
+      "preserved": "nested-product\\profile-types.ts",
+      "sourceBytes": 7314,
+      "preservedBytes": 7314,
+      "sourceSha256": "C3939AA0025FA80526CA2659C9892089F8B25E8C6D1972278ED856154905B98A",
+      "preservedSha256": "C3939AA0025FA80526CA2659C9892089F8B25E8C6D1972278ED856154905B98A",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\ProfileScreen.vue",
+      "preserved": "nested-product\\ProfileScreen.vue",
+      "sourceBytes": 4137,
+      "preservedBytes": 4137,
+      "sourceSha256": "9464FCB1AE6EB82B870730AD68E7C83DD3139848AC17117DCC52B4BC43B1B6B8",
+      "preservedSha256": "9464FCB1AE6EB82B870730AD68E7C83DD3139848AC17117DCC52B4BC43B1B6B8",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\RoleSwitchScreen.vue",
+      "preserved": "nested-product\\RoleSwitchScreen.vue",
+      "sourceBytes": 3978,
+      "preservedBytes": 3978,
+      "sourceSha256": "B589A18D2901A9F1E43BDC6C47091B639E6E0191E8B46EEED66B886778BA5841",
+      "preservedSha256": "B589A18D2901A9F1E43BDC6C47091B639E6E0191E8B46EEED66B886778BA5841",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\SecurityScreen.vue",
+      "preserved": "nested-product\\SecurityScreen.vue",
+      "sourceBytes": 10513,
+      "preservedBytes": 10513,
+      "sourceSha256": "C98905CD60E49378A15C77390CFA2E95B7AAFF0F2D888467FC60EA3EACA63C07",
+      "preservedSha256": "C98905CD60E49378A15C77390CFA2E95B7AAFF0F2D888467FC60EA3EACA63C07",
+      "verified": true
+    },
+    {
+      "kind": "nested-product",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\SessionsScreen.vue",
+      "preserved": "nested-product\\SessionsScreen.vue",
+      "sourceBytes": 4987,
+      "preservedBytes": 4987,
+      "sourceSha256": "1BF702A728E0BE2A7A73DC68491546A58CE3282ADE731677A4889BC2E30E2CFC",
+      "preservedSha256": "1BF702A728E0BE2A7A73DC68491546A58CE3282ADE731677A4889BC2E30E2CFC",
+      "verified": true
+    },
+    {
+      "kind": "outer-duplicate",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\AccountHistoryScreen.vue",
+      "preserved": "outer-duplicates\\AccountHistoryScreen.vue",
+      "sourceBytes": 3758,
+      "preservedBytes": 3758,
+      "sourceSha256": "07CA7733927FB3FC3F7B93101327F70B5345CDB9BAC57EC555932A59415A588E",
+      "preservedSha256": "07CA7733927FB3FC3F7B93101327F70B5345CDB9BAC57EC555932A59415A588E",
+      "verified": true
+    },
+    {
+      "kind": "outer-duplicate",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\AppearanceScreen.vue",
+      "preserved": "outer-duplicates\\AppearanceScreen.vue",
+      "sourceBytes": 2455,
+      "preservedBytes": 2455,
+      "sourceSha256": "AE4E5C1FCCB6E4E5EFAC02BFE5419BD81E37143ED2ACA51F668A7E799CB3361A",
+      "preservedSha256": "AE4E5C1FCCB6E4E5EFAC02BFE5419BD81E37143ED2ACA51F668A7E799CB3361A",
+      "verified": true
+    },
+    {
+      "kind": "outer-duplicate",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\MoreScreen.vue",
+      "preserved": "outer-duplicates\\MoreScreen.vue",
+      "sourceBytes": 1565,
+      "preservedBytes": 1565,
+      "sourceSha256": "5675115D7535BC73A523C9A785F108EE2597831D7A368E0A4CFDBED464E8599E",
+      "preservedSha256": "5675115D7535BC73A523C9A785F108EE2597831D7A368E0A4CFDBED464E8599E",
+      "verified": true
+    },
+    {
+      "kind": "outer-duplicate",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\ProfileScreen.vue",
+      "preserved": "outer-duplicates\\ProfileScreen.vue",
+      "sourceBytes": 3747,
+      "preservedBytes": 3747,
+      "sourceSha256": "D3F9D75878863BB127B50F80B4CB4821CBB9D4D8EC023DD0870C368730C54611",
+      "preservedSha256": "D3F9D75878863BB127B50F80B4CB4821CBB9D4D8EC023DD0870C368730C54611",
+      "verified": true
+    },
+    {
+      "kind": "outer-duplicate",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\RoleSwitchScreen.vue",
+      "preserved": "outer-duplicates\\RoleSwitchScreen.vue",
+      "sourceBytes": 3635,
+      "preservedBytes": 3635,
+      "sourceSha256": "C06D1F0CB04EA6841FBD6FFD91EA7C31689704C790DD4187CF8EB9039B8A5ACA",
+      "preservedSha256": "C06D1F0CB04EA6841FBD6FFD91EA7C31689704C790DD4187CF8EB9039B8A5ACA",
+      "verified": true
+    },
+    {
+      "kind": "outer-duplicate",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\SecurityScreen.vue",
+      "preserved": "outer-duplicates\\SecurityScreen.vue",
+      "sourceBytes": 10251,
+      "preservedBytes": 10251,
+      "sourceSha256": "9C2D27BECFDD9B0387C5C7A2A55440E9CEA2CAD55B999764355D31AAAA6E976F",
+      "preservedSha256": "9C2D27BECFDD9B0387C5C7A2A55440E9CEA2CAD55B999764355D31AAAA6E976F",
+      "verified": true
+    },
+    {
+      "kind": "outer-duplicate",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\SessionsScreen.vue",
+      "preserved": "outer-duplicates\\SessionsScreen.vue",
+      "sourceBytes": 4871,
+      "preservedBytes": 4871,
+      "sourceSha256": "C8511A278D9081CCEB889523BAEFB75D7CD7E4A140C0221E9A2B5DFC5FA041F0",
+      "preservedSha256": "C8511A278D9081CCEB889523BAEFB75D7CD7E4A140C0221E9A2B5DFC5FA041F0",
+      "verified": true
+    },
+    {
+      "kind": "outer-duplicate",
+      "source": "frontends\\mobile-core\\src\\features\\profile\\profile-state.test.ts",
+      "preserved": "outer-duplicates\\profile-state.test.ts",
+      "sourceBytes": 7389,
+      "preservedBytes": 7389,
+      "sourceSha256": "3F75616348DC542E982000881C54D08932F89A5ABC7BB786C3C69AE2B1FDA5EA",
+      "preservedSha256": "3F75616348DC542E982000881C54D08932F89A5ABC7BB786C3C69AE2B1FDA5EA",
+      "verified": true
+    },
+    {
+      "kind": "outer-evidence",
+      "source": ".agent\\profile-ui\\progress.md",
+      "preserved": "outer-evidence\\progress.md",
+      "sourceBytes": 569,
+      "preservedBytes": 569,
+      "sourceSha256": "E7E8DEE5A550F089E32BF884E9A49929A7675093689889E00419386719657CB1",
+      "preservedSha256": "E7E8DEE5A550F089E32BF884E9A49929A7675093689889E00419386719657CB1",
+      "verified": true
+    },
+    {
+      "kind": "outer-evidence",
+      "source": ".agent\\profile-ui\\status.md",
+      "preserved": "outer-evidence\\status.md",
+      "sourceBytes": 702,
+      "preservedBytes": 702,
+      "sourceSha256": "CE1811E6B949BDA5E07823B897AF9C91876A366F0AA5D19214B9FDB146F462EA",
+      "preservedSha256": "CE1811E6B949BDA5E07823B897AF9C91876A366F0AA5D19214B9FDB146F462EA",
+      "verified": true
+    }
+  ]
+}

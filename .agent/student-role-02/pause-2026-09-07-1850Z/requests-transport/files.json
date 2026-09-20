@@ -1,0 +1,373 @@
+[
+  {
+    "path": "docs/openapi/mobile-bff.json",
+    "kind": "tracked",
+    "added": 837,
+    "removed": 3,
+    "sha256": "400F18A71F5D371600F58FD26CBEEFACD9EDFFA0701562D03AFA9E51954C17DC"
+  },
+  {
+    "path": "event-schemas/excuse.decided.json",
+    "kind": "tracked",
+    "added": 6,
+    "removed": 2,
+    "sha256": "E427D64C0C6CBC0950F41BF0431399A2951494EE0E5D5830080583EF0ADDCA4A"
+  },
+  {
+    "path": "event-schemas/excuse.requested.json",
+    "kind": "tracked",
+    "added": 35,
+    "removed": 0,
+    "sha256": "2880EC5DBB29055E01EA2BD829278C9BCE54FEFBB44A9229E145E5D86EAE1BA4"
+  },
+  {
+    "path": "event-schemas/late_checkin.decided.json",
+    "kind": "tracked",
+    "added": 2,
+    "removed": 0,
+    "sha256": "A6AC22666974E17472635712D75A334512F351C76936764BEE3D0B1DD8FA3021"
+  },
+  {
+    "path": "frontends/mobile-core/scripts/generate-types.mjs",
+    "kind": "tracked",
+    "added": 0,
+    "removed": 1,
+    "sha256": "58B3EBEA0EB3FBEDE61DBB800F23658BCBBB238AF0446854B22F1CA7EAEAFCFE"
+  },
+  {
+    "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+    "kind": "tracked",
+    "added": 586,
+    "removed": 4,
+    "sha256": "A3D7F77A25AFE50E3D376C8DC4938C4A99574733BDF0A71CB5A29CECE1010CE0"
+  },
+  {
+    "path": "frontends/mobile-core/src/api/student-client.ts",
+    "kind": "tracked",
+    "added": 141,
+    "removed": 4,
+    "sha256": "B42390C6F3578AF1ED6219EE6153787FF1C89D116208C0806F907CC34844E7EA"
+  },
+  {
+    "path": "frontends/mobile-core/src/api/types.ts",
+    "kind": "tracked",
+    "added": 23,
+    "removed": 1,
+    "sha256": "FA9C45D48F2E899CC63A25256351B28F3D15F883D1D291BCEEF6295DFFC5E273"
+  },
+  {
+    "path": "proto/attendance.proto",
+    "kind": "tracked",
+    "added": 229,
+    "removed": 0,
+    "sha256": "4108E3F9AFF3025E131158C0D7FC0D766D2CC4F6F61F955C95AD196B175B08F8"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java",
+    "kind": "tracked",
+    "added": 2,
+    "removed": 1,
+    "sha256": "A0D8ADC463E6CB7EA8C36A451193019D2C449802089265F66B66C064A0F54C2A"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java",
+    "kind": "tracked",
+    "added": 3,
+    "removed": 0,
+    "sha256": "59C4E01CF39CF79FBACABA196C9BDFB102E59A98558ECE209AC7DC91D5842A1A"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java",
+    "kind": "tracked",
+    "added": 3,
+    "removed": 1,
+    "sha256": "2106D010925C292E74659D10674F1B2C8217B0C9BBF7425C4AC686DF2CA98410"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java",
+    "kind": "tracked",
+    "added": 33,
+    "removed": 0,
+    "sha256": "E18F5B7E1A4C485F1F2B23FD326E7F7D14A75F8FF3F40ACD405F659683657EDF"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java",
+    "kind": "tracked",
+    "added": 30,
+    "removed": 0,
+    "sha256": "F358683D0BCE41B28FA92BC366F2ECA044245BD691628B1095E6AF79AD1270EE"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java",
+    "kind": "tracked",
+    "added": 14,
+    "removed": 0,
+    "sha256": "8B14EBE8DC16F34E6422BF7AA06325FC10CD8129943094D49D1F594E228ABFC3"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java",
+    "kind": "tracked",
+    "added": 179,
+    "removed": 0,
+    "sha256": "796B4206655E608396A02EC443B7AFF9E6D347CC997E9BEAE87D3436988B2366"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java",
+    "kind": "tracked",
+    "added": 7,
+    "removed": 1,
+    "sha256": "94EFD22554A5FF3ACDEC684AC1B56C07F03259EF1E5CA914C5E84DFB17F0E50D"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java",
+    "kind": "tracked",
+    "added": 6,
+    "removed": 0,
+    "sha256": "5B8777BCDF922E058E1331F04BB0A033917A8251650DF9E3DABCBBBE8A2A0CB7"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java",
+    "kind": "tracked",
+    "added": 34,
+    "removed": 0,
+    "sha256": "4CA61BBB52BA3F5193F653B542BA59F54D97C5BCDD20FBA849F54EC77C376E8E"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java",
+    "kind": "tracked",
+    "added": 22,
+    "removed": 0,
+    "sha256": "6E0AE3179A52EE9482B87EF3A5180B6B1B563475CD018615D1D590C5C91C6480"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+    "kind": "tracked",
+    "added": 149,
+    "removed": 0,
+    "sha256": "B6AD7CA3758E08352FA322B01342225B6207B95A6BB1CDD694E7FE2D5684438D"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+    "kind": "tracked",
+    "added": 6,
+    "removed": 1,
+    "sha256": "D520DA228D8A57C39615558DB5E9520F299743D4650CA79D13D13603067BE9B3"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java",
+    "kind": "tracked",
+    "added": 23,
+    "removed": 1,
+    "sha256": "8CD597961B4DB4F26BAE28E01BD27C9FED7452E7CD1E74CA1CC5ABBC445796D3"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+    "kind": "tracked",
+    "added": 108,
+    "removed": 5,
+    "sha256": "FB77435745FAEFD5B93164D776D17D8EA3916E8AA7A46C8CC9658A536C36C760"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/security/MobileIdentityFilter.java",
+    "kind": "tracked",
+    "added": 4,
+    "removed": 0,
+    "sha256": "D077004048A4562499A984C118A221422ADC69BA8B655C9189778CE5003D00D0"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java",
+    "kind": "tracked",
+    "added": 70,
+    "removed": 4,
+    "sha256": "550028795F8170D00F632B491DDDA142D14C9603F60C45804CCAE33DD136D4AA"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/resources/application.yml",
+    "kind": "tracked",
+    "added": 5,
+    "removed": 0,
+    "sha256": "20E97BF92A6EA543EF4523410E974EDD955BEBF5BC89D41A5AF2AB00881A1C09"
+  },
+  {
+    "path": "frontends/mobile-core/src/api/student-client.test.ts",
+    "kind": "untracked",
+    "added": 128,
+    "removed": 0,
+    "sha256": "011EEABC0D2520E96795D4D71DA65E8B4C668955BED80BA07D96AFCF5B4D84BC"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java",
+    "kind": "untracked",
+    "added": 7,
+    "removed": 0,
+    "sha256": "1EDAF447F5DC3DC24702EDD089AA48B4681C0B1E8760065A692D83953E7DB4F6"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java",
+    "kind": "untracked",
+    "added": 7,
+    "removed": 0,
+    "sha256": "AA71AB2A1D63760AF98041FCBE62F776F19E7F8DCC496BE4894D68445BD449FE"
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java",
+    "kind": "untracked",
+    "added": 9,
+    "removed": 0,
+    "sha256": "71840E8D3F097C870B41B2B343DCCAB07CC55934491C3AD2AEC1D2A3054C2B8A"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/InvalidIdempotencyKeyException.java",
+    "kind": "untracked",
+    "added": 8,
+    "removed": 0,
+    "sha256": "77C59E8438FF31B96A357A16856BD7D0242A51ED9144629CB40B306A2109DE75"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/PayloadTooLargeException.java",
+    "kind": "untracked",
+    "added": 8,
+    "removed": 0,
+    "sha256": "EE39175D7C140B6C7EB018781647CF26ADC012FD39640BDC45BE8CF7A5290917"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcErrors.java",
+    "kind": "untracked",
+    "added": 95,
+    "removed": 0,
+    "sha256": "E48949451B47E2284E7C8D4B85518302DD0DE9AF4DAF1A9D9ED3406DA994C11D"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapper.java",
+    "kind": "untracked",
+    "added": 148,
+    "removed": 0,
+    "sha256": "E7737B9C492B18E1E6C7889BE89247F15D884269536A8ABC2FDCE4ABE3C0244F"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestTransportException.java",
+    "kind": "untracked",
+    "added": 15,
+    "removed": 0,
+    "sha256": "504A3355A45E9151D396F1F283EA61E954AD89AD42EFB0C2ECBB678BF77A3914"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/AttachmentState.java",
+    "kind": "untracked",
+    "added": 7,
+    "removed": 0,
+    "sha256": "C1B9880413CDFBBE20CA3DEC8D577E9C424F9D658CD8739AD4D2D8C8B853724C"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRepository.java",
+    "kind": "untracked",
+    "added": 12,
+    "removed": 0,
+    "sha256": "5823836AD0B68FD591480E6FCAB148C1EB07FDCAB54C3A3F8DB139A7861E6931"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRetentionJob.java",
+    "kind": "untracked",
+    "added": 25,
+    "removed": 0,
+    "sha256": "EA02BE8110064978D3DB12FAFD1C6E4C0D96F4433FA3FEA7D3E29532B79C6EB8"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestBucket.java",
+    "kind": "untracked",
+    "added": 7,
+    "removed": 0,
+    "sha256": "3C1AAE15A5DD7D7C62D81D0B5EBE1FB0EEBDE34276A0592616B49803EA4F1E1C"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentLateCheckinBudgetRepository.java",
+    "kind": "untracked",
+    "added": 12,
+    "removed": 0,
+    "sha256": "98C0E67DEC2E78E729928B0E44A373D5F0D20F5404D31DFEDFD5AFBF0E7747B2"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java",
+    "kind": "untracked",
+    "added": 225,
+    "removed": 0,
+    "sha256": "DEFCA9A5DC3D03F96A8E184B7040638CD04418DC014AB1DA01528EE7F09B25C2"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestReceiptRepository.java",
+    "kind": "untracked",
+    "added": 13,
+    "removed": 0,
+    "sha256": "7C6ADBF803AC9226CAF050498AD612992D9B3ACF1ACBC48022B4638309261B76"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+    "kind": "untracked",
+    "added": 1792,
+    "removed": 0,
+    "sha256": "41CB7E7E179EC975A96850D02F117BD959696AB07AEFDC569B38CD01188F325E"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDescriptorDocument.java",
+    "kind": "untracked",
+    "added": 37,
+    "removed": 0,
+    "sha256": "15F372F6201CC7EA8F118D67CDA149FA22CB704B5DC944C9E0219A4ED09D7C0E"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDocument.java",
+    "kind": "untracked",
+    "added": 54,
+    "removed": 0,
+    "sha256": "A4F991C7AD4DAC3F8C96CA1341F86D996D72DFFED699EBD13A0694EDCEFD4B95"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLateCheckinBudgetDocument.java",
+    "kind": "untracked",
+    "added": 33,
+    "removed": 0,
+    "sha256": "4A05FE8AB665FEE1206B3633208258457DE9FE9EFD806CFE08B7976DE9F9186B"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLessonSnapshotDocument.java",
+    "kind": "untracked",
+    "added": 43,
+    "removed": 0,
+    "sha256": "AC4748E5306FCD9EF5E56E45348225AF0930FC96BB7F2FCD1AC955ABE07F29EC"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentRequestReceiptDocument.java",
+    "kind": "untracked",
+    "added": 35,
+    "removed": 0,
+    "sha256": "85C71600C938C7FA556799110EE7936B3A6E42D77F1670AAD22F8C0E9AE47CD0"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+    "kind": "untracked",
+    "added": 994,
+    "removed": 0,
+    "sha256": "968F4A4967D0AD2FDB0055C647D709F6A0A020B59DDB3396C64007E57A150DE6"
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+    "kind": "untracked",
+    "added": 188,
+    "removed": 0,
+    "sha256": "7F96615F5A43BC8BD020BC51A4F3951340C3F9088363A56ABE8EF95CC373C322"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java",
+    "kind": "untracked",
+    "added": 194,
+    "removed": 0,
+    "sha256": "93A4297FB838C77FC136B9B6947DE0C3033AF8E93022C5BD6AF6B82E44E53752"
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacade.java",
+    "kind": "untracked",
+    "added": 268,
+    "removed": 0,
+    "sha256": "D15D5EC9A92C91FBBB4716C917F93AEB9C0B4D6B1B76687EE406E38A16F4B968"
+  }
+]

@@ -1,0 +1,84 @@
+{
+  "schema": "rct.checks.v1",
+  "task": "Fresh root box sizing repair",
+  "contract": ".agent/student-academic-ui/resume-ui-repair/packet.md",
+  "baseline": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "revision": "working tree at 8002b9ea4356b10779c5bb9a6d99746d32d78ae2; post-repair scoped checks",
+  "recordedAt": "2026-09-08T11:10:17+03:00",
+  "environment": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "vite": "7.3.6",
+    "worktree": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/student-academic-ui",
+    "branch": "codex/student-academic-ui",
+    "cwdForScopedChecks": "frontends"
+  },
+  "checks": [
+    {
+      "name": "Harness Vue SFC typecheck",
+      "command": "npx --no-install vue-tsc -p mobile-core/harness/attendance-statistics/tsconfig.json --noEmit",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "rawOutput": "",
+      "evidence": "No output; harness and owned Attendance/Statistics Vue/TS entrypoints typecheck."
+    },
+    {
+      "name": "Scoped ESLint",
+      "command": "npx --no-install eslint mobile-core/src/features/attendance mobile-core/src/features/statistics mobile-core/harness/attendance-statistics --max-warnings=0",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "rawOutput": "",
+      "evidence": "No output; scoped owned paths pass with zero warnings."
+    },
+    {
+      "name": "Harness production build",
+      "command": "npx --no-install vite build --config mobile-core/harness/attendance-statistics/vite.config.ts --configLoader runner",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "rawOutput": "vite v7.3.6 building client environment for production...\ntransforming...\n✓ 40 modules transformed.\nrendering chunks...\ncomputing gzip size...\n../../../../.agent/student-academic-ui/runtime/harness-dist/index.html 0.43 kB │ gzip: 0.29 kB\n../../../../.agent/student-academic-ui/runtime/harness-dist/assets/onest-cyrillic-wght-normal-DXI_y_WF.woff2 14.23 kB\n../../../../.agent/student-academic-ui/runtime/harness-dist/assets/onest-latin-ext-wght-normal-CnNj8hVb.woff2 15.99 kB\n../../../../.agent/student-academic-ui/runtime/harness-dist/assets/onest-latin-wght-normal-CUIqqgP9.woff2 32.24 kB\n../../../../.agent/student-academic-ui/runtime/harness-dist/assets/index-CW0K5akX.css 44.27 kB │ gzip: 9.06 kB\n../../../../.agent/student-academic-ui/runtime/harness-dist/assets/index-DUuL21Hg.js 116.65 kB │ gzip: 37.43 kB\n✓ built in 1.45s",
+      "evidence": "Vite transformed 40 modules and emitted the scoped harness build."
+    },
+    {
+      "name": "Root selector presence",
+      "command": "rg -n \"box-sizing: border-box\" frontends/mobile-core/src/features/attendance/attendance-screen.pcss frontends/mobile-core/src/features/statistics/statistics-screen.pcss",
+      "cwd": "worktree root",
+      "exitCode": 0,
+      "rawOutput": "frontends/mobile-core/src/features/statistics/statistics-screen.pcss:9:  box-sizing: border-box;\nfrontends/mobile-core/src/features/statistics/statistics-screen.pcss:28:  box-sizing: border-box;\nfrontends/mobile-core/src/features/attendance/attendance-screen.pcss:8:  box-sizing: border-box;\nfrontends/mobile-core/src/features/attendance/attendance-screen.pcss:24:  box-sizing: border-box;",
+      "evidence": "The first occurrence in each file is the root declaration; later occurrences are the pre-existing descendant rules."
+    },
+    {
+      "name": "Product SHA guard",
+      "command": "Get-FileHash -Algorithm SHA256 on frozen 23 application paths and compare with pre-edit manifest",
+      "cwd": "worktree root",
+      "exitCode": 0,
+      "rawOutput": "product_paths=23 changed_from_pre_edit=2\nfrontends/mobile-core/src/features/attendance/attendance-screen.pcss: C0CE846FB39BA74AEC88A3B08196C5458E7A387C03153161D4881D98AA6C1283 -> 6F7ACB866A5D2B3F2FC2B9DE733EB3641BDF50804E00E44843C3912DC63DE4A2\nfrontends/mobile-core/src/features/statistics/statistics-screen.pcss: 45B5CE2DBD4360E9EEAA32CEBF68D321AF0224628EFBAD7301B2F84489D5A2A3 -> 474C49CD16A4883E90639C94DD295FB1A99674569788F7492E9FE726DB767115",
+      "evidence": "21 application paths retain their pre-edit SHA; only the two allowed PCSS roots differ."
+    },
+    {
+      "name": "Diff whitespace check",
+      "command": "git diff --check",
+      "cwd": "worktree root",
+      "exitCode": 0,
+      "rawOutput": "",
+      "evidence": "No whitespace errors reported for tracked diff; untracked WIP is covered by explicit SHA/scope checks."
+    }
+  ],
+  "diagnostics": [
+    {
+      "name": "Historical generated-font hash truncation",
+      "severity": "evidence-only",
+      "reproduction": "Get-FileHash -Algorithm SHA256 on onest-latin-ext-wght-normal-CnNj8hVb.woff2",
+      "evidence": "The direct result is the 64-hex SHA recorded in evidence-correction.md.",
+      "correction": "Added a dated correction only under resume-ui-repair; no product code change.",
+      "decision": "Do not infer product drift from the malformed historical checkpoint."
+    }
+  ],
+  "runtime": {
+    "status": "PENDING_ROOT_BROWSER_QA",
+    "leafStartedServers": false,
+    "leafBrowserEvidence": false,
+    "requiredOwnerEvidence": "Root confirms 390x844, narrow viewport, increased root font, light/dark, no horizontal overflow, visible metrics/history and keyboard Back return after code freeze.",
+    "backendOrRealApi": "N/A for this CSS-only repair"
+  }
+}

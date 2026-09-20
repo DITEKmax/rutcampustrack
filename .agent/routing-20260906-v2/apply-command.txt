@@ -1,0 +1,5 @@
+# Run only after root review and the actual filesystem permission path is ready.
+pwsh.exe -NoProfile -File .agent/routing-20260906-v2/apply-protected-routing.ps1 -Scope All -Apply
+
+# Optional fixture-only scopes used by checks:
+# pwsh.exe -NoProfile -File .agent/routing-20260906-v2/apply-protected-routing.ps1 -Scope Project -Apply -GlobalRoot <fixture-global> -ProjectRoot <fixture-project> -BackupRoot <unique-backup>

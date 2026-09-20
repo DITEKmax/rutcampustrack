@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-09-08T00:14:26" hostname="DITEK-PK" time="0.166">
+  <properties/>
+  <testcase name="snapshotBoundaryRejectsSameIdInconsistentRoleAndDuplicateGrants()" classname="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" time="0.037"/>
+  <testcase name="logoutAllIncludesCurrentAndPasswordFailureDoesNotPartiallyRevoke()" classname="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" time="0.04"/>
+  <testcase name="expiredAndRevokedSessionsRejectSnapshotSelectionAndRefresh()" classname="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" time="0.033"/>
+  <testcase name="currentLogoutIsDurableAndIdempotent()" classname="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" time="0.002"/>
+  <testcase name="refreshClearsUnavailableActiveGrantWithoutFallback()" classname="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" time="0.01"/>
+  <testcase name="createUsesStudentThenTeacherAndLeavesAdminHeadmanNeutral()" classname="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" time="0.002"/>
+  <testcase name="createRejectsCallerSnapshotWhenAuthoritativeVersionOrGrantsChanged()" classname="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" time="0.014"/>
+  <testcase name="sessionAuthorityFailureDoesNotMutateStateOrEvents()" classname="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" time="0.004"/>
+  <testcase name="passwordChangeSuccessRevokesEverySessionAndAuthorityFailureIsTyped()" classname="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" time="0.003"/>
+  <testcase name="roleSwitchIsAtomicIdempotentAndVersionBound()" classname="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" time="0.002"/>
+  <testcase name="refreshHasOneWinnerPreviousIs409UnknownIs401AndExpiryStaysFixed()" classname="ru.rutcampustrack.auth.session.SessionLifecycleServiceTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

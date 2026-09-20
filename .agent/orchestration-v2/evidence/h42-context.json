@@ -1,0 +1,6 @@
+{
+  "command": "npm ci --offline --no-audit --no-fund",
+  "startUtc": "2026-09-19T16:32:23.5225946Z",
+  "revision": "d7ec16572db325d944f1a1fbd3b4960b827d09c3",
+  "purpose": "H42 locked offline dependency setup only"
+}

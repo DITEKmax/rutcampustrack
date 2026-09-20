@@ -1,0 +1,2279 @@
+[
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+    "name": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "33EF474522E0D011A75DDC4E8989F0D6A66E5C80221B6BC52758755831711157"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+    "name": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "F69725E37BC2E3F507A15B5C88BB9D79A80FE2A57EF950A919E6F6B9F1B90508"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+    "name": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "33E56E3D5DCA734DC765D734E6DB3E80B5FB2592AFE57075F07A99B52AE71D9D"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+    "name": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "12947348954D3D02F2E156713D5D0BB3CF029865619E18284740228D0CFEA29D"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.events.GroupUpdatedContractIT.xml",
+    "name": "ru.rutcampustrack.academic.events.GroupUpdatedContractIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "CED0D9B9519E7A5396369EFFAB215C03D865433B328B78044D9E37523BEB9A24"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.events.HomeworkNotificationContractIT.xml",
+    "name": "ru.rutcampustrack.academic.events.HomeworkNotificationContractIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "DFE740FB65665D29A7B80A5A6EC741A629F1040B3FD09364CFFA96936DB94817"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.homework.HomeworkControllerIT.xml",
+    "name": "ru.rutcampustrack.academic.homework.HomeworkControllerIT",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "8D784029962B1C2DE19140D041BC5E6D4DC22ACDEBE0BA1A5429C0B4B66800EE"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.homework.HomeworkMigrationIT.xml",
+    "name": "ru.rutcampustrack.academic.homework.HomeworkMigrationIT",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "709874F28421EFE143CC54F0FB67545B1FE60E06CF270A1A7CAB89D47565A65F"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.homework.HomeworkStudentCompletionConcurrencyIT.xml",
+    "name": "ru.rutcampustrack.academic.homework.HomeworkStudentCompletionConcurrencyIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "9DE5C54D2E000309EFBBA914FEB8AF50C53247CFDFB62C6FE37D59D5FF61BF1A"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+    "tests": 19,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4F03C6E422D1CFEB1B2FAA71BC6196DE78C84E1502F172D0CC98129AB1601296"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.AcademicPerformanceIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.AcademicPerformanceIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "816C0CF212C2C410B5333B40D082AB4FD293BFE962E64EA1BA79DF0189A666BA"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.ActuatorIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.ActuatorIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "C7EB41B5EF10F36C9A4CF7BE8F01DBCA3085672B02E8BD54196E738C02B967B6"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.CacheIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.CacheIT",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "D2003ABDC108F2526462251115B8146B523088F02641E1193A52EEA2A570F7D5"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.EntityMappingIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.EntityMappingIT",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "692D1904F0B6713296188EEDB9B0E4273494E04880A4546EF5433F2DEC5B1D4D"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.EventIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.EventIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "D839D2E3DF585CF35358D2D0F192F021EB0732DE232A2BCD18FA80BD245B17BC"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.GroupRenameEventIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.GroupRenameEventIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B90F46EB993C81D692F31A4743821744DAA2B7A23A3F30D7D26BEF5F72FAF11C"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.HealthDegradationIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.HealthDegradationIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6AC8D3CE1B388822261E81904A2B9CC87D9B2C85E7073BE4BFE822D9F9A6CBB3"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.OpenApiErrorResponsesIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.OpenApiErrorResponsesIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "06295D444ECC9B6882B09A72C904A4A3176F7DE668627C634AB80FCB7FB0C53A"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.OpenApiSnapshotIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.OpenApiSnapshotIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "F1EA41C9BA214AD91C581B1434B682DD456312354F4E43617452E6DAB796F997"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.OutboxCleanupIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.OutboxCleanupIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "0D1A2665F71408A080886EA479CB63E19E37EAA2672A5ECA0064CDE844BCDE1C"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.PaginationCapIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.PaginationCapIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "36CEB486656B3CAB98FBA3489FC7689D17A9E8F1159240CC778C4DD0FD9A2C58"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.RbacCacheIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.RbacCacheIT",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "640BF44D408619A5E4286B9DFA4FA0C432AD8BE452B7F46596FA6EBD6F2C1746"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.RestApiIT.xml",
+    "name": "ru.rutcampustrack.academic.integration.RestApiIT",
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "47490DFDC68CDF1666BE082B60A003BFF756A0A0F4B35B889F041FD959A3D9B1"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.migration.FlywayMigrationIT.xml",
+    "name": "ru.rutcampustrack.academic.migration.FlywayMigrationIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "D8E1BF82084989172B74CB8689FD77C3AB5F4788D242A6E53955461B7798EA11"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.security.AcademicUserContextFilterIT.xml",
+    "name": "ru.rutcampustrack.academic.security.AcademicUserContextFilterIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "900AA7F66A829E269FC8A9FAA64302F81AC9AFE0C9DBC38547A84F88083CB528"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.security.AcademicUserContextFilterStrictModeIT.xml",
+    "name": "ru.rutcampustrack.academic.security.AcademicUserContextFilterStrictModeIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "3519415E40A2A54EECB3572E0A517137E5362E819C9B5D1F836B58579E5950D0"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.security.SecurityIdorIT.xml",
+    "name": "ru.rutcampustrack.academic.security.SecurityIdorIT",
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6385C0011DFD814398A9F1CA51597E7A247315E4EDB18DBCB2697562D7D50756"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.subject.SubjectSchemaIT.xml",
+    "name": "ru.rutcampustrack.academic.subject.SubjectSchemaIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "5BEFD8BB8F84DF5CBBA9A6527B27EAA48F4A2A25F03D8FD52A934BFD49E3CC42"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.subject.SubjectServiceIT.xml",
+    "name": "ru.rutcampustrack.academic.subject.SubjectServiceIT",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "F4AA18DF0AD88BF2A66B81C7EBA935BB14B4DF0C8DAAF176C50424A6CBDC42DA"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.user.UserByIdsApiIT.xml",
+    "name": "ru.rutcampustrack.academic.user.UserByIdsApiIT",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "46DD2F4AD545D9F9308BE22DBD19E99F5155D74CB6B9FD40C188E66BBC9A6B92"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.user.UserRepositorySearchIT.xml",
+    "name": "ru.rutcampustrack.academic.user.UserRepositorySearchIT",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "258B176DC8A84195774106FFF8E5E3835B7186B15F5B1CAD68860B5DF6AA75BA"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.user.UserRepositorySortIT.xml",
+    "name": "ru.rutcampustrack.academic.user.UserRepositorySortIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "ACF46043DE0B408B72835A81DE5D708C53680B4D0C0ED78B993A936101380FA8"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.user.UserSearchIT.xml",
+    "name": "ru.rutcampustrack.academic.user.UserSearchIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "CA82031127057FB0A882FD61DD0AA2A11DE61AAF9347E874FB0C8303320953E2"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+    "name": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "1D51103E806675D5F248C3E7BA04015CCBE7BE7AE6D34ECEC9287A65D5B19E03"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+    "name": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B1AD2EFF644E9A6CD9ADCAF98047CF4EB345AD2D5C0C3356314445DDE471F387"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+    "name": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "575E6DDE4FE791284C269FA79CAD7912F4F8F442B884B0818B3D1744A9A879C4"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.exception.GlobalExceptionHandlerTest.xml",
+    "name": "ru.rutcampustrack.academic.exception.GlobalExceptionHandlerTest",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "3D37EE1630BFDD09C6F16C481C45859BC2A80C03F7440E7C8CDAA2A4A56DF76E"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.golden.DisplayNameGoldenTest.xml",
+    "name": "ru.rutcampustrack.academic.golden.DisplayNameGoldenTest",
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6A9AD7FA6B35276AF77A94DEF7835BFEB11386B0BE6A8FA55F78B704A1F45542"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.golden.DisplayNamePropertyTest.xml",
+    "name": "ru.rutcampustrack.academic.golden.DisplayNamePropertyTest",
+    "tests": 101,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "A90B3342B40518B24109925BCF9874B1D4F524A36D58DFB3F53C49E85563DDF5"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.group.GroupArchivalServiceTest.xml",
+    "name": "ru.rutcampustrack.academic.group.GroupArchivalServiceTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "0DE7656C4AEB13C46983CAE4EB283944AD2C2CF9B3A05BEC98396267F5303F00"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.group.GroupNameParserTest.xml",
+    "name": "ru.rutcampustrack.academic.group.GroupNameParserTest",
+    "tests": 14,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "99C8672FCDA1003930CFBE0A665D87D9051541922CF8ED63CAFA85DBC3FDAFF3"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.group.GroupPromotionServiceTest.xml",
+    "name": "ru.rutcampustrack.academic.group.GroupPromotionServiceTest",
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "3475EC547994DC6B1BF816F621F71C8D7E002F3B28603A3C9917D692901472A8"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.group.GroupServiceTest.xml",
+    "name": "ru.rutcampustrack.academic.group.GroupServiceTest",
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "C1965F594D5329093975B6A6786D42281EE7A5FFC5B08251C5994DFC7D1A7680"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.grpc.InMemoryHeadmanRateLimiterTest.xml",
+    "name": "ru.rutcampustrack.academic.grpc.InMemoryHeadmanRateLimiterTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "A162365EBDFC4347362F44FDAE3AA90C3FF5478F984C07274D9C9A1D4EFB39E8"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.grpc.RedisHeadmanRateLimiterTest.xml",
+    "name": "ru.rutcampustrack.academic.grpc.RedisHeadmanRateLimiterTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "86D76D0F952808FD8C3A0C8FCC0A276347FFC381240FD66480FB0239DEE11CF0"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest.xml",
+    "name": "ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "76F0F204F7D609D9DA205B5651FDE5ECBB5B590C44917B3091A48F6639DA2269"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.homework.HomeworkNotificationJobTest.xml",
+    "name": "ru.rutcampustrack.academic.homework.HomeworkNotificationJobTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "2E379BB117B64631260E2ADC1402C9BD77111F248F1E03D61DF5F3FEC4379FCA"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.homework.HomeworkServiceTest.xml",
+    "name": "ru.rutcampustrack.academic.homework.HomeworkServiceTest",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "A49BCBA184586AAD92461AD4C14E3D7F6FDE30DCDE6EBD091FCC2EABE98E1CB1"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.homework.HomeworkStudentServiceTest.xml",
+    "name": "ru.rutcampustrack.academic.homework.HomeworkStudentServiceTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "93D16391C08FD1D8D2AF0B6990ECE953A74C1E68E819D8DE651309A04198D29A"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.migration.MigrationConcurrentlyTest.xml",
+    "name": "ru.rutcampustrack.academic.migration.MigrationConcurrentlyTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "42676485539F62B7BC22844F7B7137D158EEFF615CE45D7C699BAB4F2F1FA923"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.security.RoleCheckAspectTest.xml",
+    "name": "ru.rutcampustrack.academic.security.RoleCheckAspectTest",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "FAFC8B7941C582ED85A9108C241810AE26C666BB9B3E94C226A4F5191CB7908C"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.semester.SemesterServiceTest.xml",
+    "name": "ru.rutcampustrack.academic.semester.SemesterServiceTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "46AD353A72B77F56961F4F96C5A009A3A7A5AA87EAA154752896A0A27F3CED81"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.user.UserServiceConflictTest.xml",
+    "name": "ru.rutcampustrack.academic.user.UserServiceConflictTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "83461D680F2F088F33E4855000E4E67F01A418D12CFDCCECFA3F5F4820286713"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.user.UserServiceListTest.xml",
+    "name": "ru.rutcampustrack.academic.user.UserServiceListTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "8068985B66F862318123D18AD36B3B9B58A3B1BB13F66B88B0FA98EA9DDB0636"
+  },
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.academic.user.UserServiceTelegramRequiredTest.xml",
+    "name": "ru.rutcampustrack.academic.user.UserServiceTelegramRequiredTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "44339A8727E2E2963710E33C14FC0AAC352D39D8F0C779026171FCB468028222"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT.xml",
+    "name": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 3,
+    "sha256": "013BF4D28A3BAAD15F7890D9DB4F25C8C652B0E4B49766CD2B1B140342616130"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.gateway.ratelimit.FailOpenIT.xml",
+    "name": "ru.rutcampustrack.gateway.ratelimit.FailOpenIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "36183B13A2CDA90C086B46607213DCA02E5C64167D643C75295B3DF030602511"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.gateway.ratelimit.RateLimitIT.xml",
+    "name": "ru.rutcampustrack.gateway.ratelimit.RateLimitIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "22830D6BA911FA4EEA74D9EE7DBC44A5DFF0338AC770A000FF81245A34885445"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.gateway.security.InternalJwtIssuerIT.xml",
+    "name": "ru.rutcampustrack.gateway.security.InternalJwtIssuerIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "BD1905C96146F64E6D4A031F692125F1AC175A2EFB32057AB9BCA51791176178"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\test\\TEST-ru.rutcampustrack.gateway.config.PublicKeyConfigTest.xml",
+    "name": "ru.rutcampustrack.gateway.config.PublicKeyConfigTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4E9E95DE907FDA5409BFB44F0180C8FF631DA24BBE845554EB38ADFB0AD0EC56"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\test\\TEST-ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.xml",
+    "name": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "9A3F92F3E3C1399E4EF4A88D2E567BA962B73F95CE7959A6007656A6202B0BB5"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\test\\TEST-ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest.xml",
+    "name": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "BC00F48536AFEDBDED21FBE029E960333A559795093B04B186F8A1DA59CC1F6C"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\test\\TEST-ru.rutcampustrack.gateway.ratelimit.FailOpenRateLimiterTest.xml",
+    "name": "ru.rutcampustrack.gateway.ratelimit.FailOpenRateLimiterTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "0944020382987F2FC7CD5921E4EA02B5E2D5BFB48015E9143866AFF5CDD4F985"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\test\\TEST-ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilterTest.xml",
+    "name": "ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilterTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "02B452523B9F5BC0B4BC87E3761229ADE1C9186AD277EADEAA5EB983810D7AD5"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\test\\TEST-ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest.xml",
+    "name": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "81289C05100BFF8CBAA015B452D8179E3B83AF22ADD33C61C63DC407B531C33A"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\test\\TEST-ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest.xml",
+    "name": "ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "76AD30F602925E8A9E7208053C1215ED4C4052526175DD6E3E60B1114606C074"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\test\\TEST-ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest.xml",
+    "name": "ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "9182FBB4EFF0B7612EA43706F2EAD9DEA510CE884E7D329E6A7E8AB5D756CEEF"
+  },
+  {
+    "path": "services\\api-gateway\\build\\test-results\\test\\TEST-ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest.xml",
+    "name": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "ED850041A0585AD37FBC0C7438C2CB07A178EE669DD15636902194FEEFAEBD3E"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+    "name": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "CC7202600FFE1196F34B38D86221AA61DD714216082FEEF1791385D31C00DF47"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT.xml",
+    "name": "ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "D6DE5CC4489CD89A4582A96FA54419770362105EDCBB8C168BF6BB497AF4CDB3"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+    "name": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "EAB86BA7688A7482ACE2AD9A716F26A0973B1E2BE3D9277BF38A2A46688865DB"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.event.EventIdempotentIT.xml",
+    "name": "ru.rutcampustrack.attendance.event.EventIdempotentIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4371EF424CC7EE518A40FFD8BC643AED128E5E47593C9EDFBD345703B7A0A00E"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.event.OneOffLessonCancelledConsumerIT.xml",
+    "name": "ru.rutcampustrack.attendance.event.OneOffLessonCancelledConsumerIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "765CD37872EA644CE3F2DF11C9DB56CDA3296BD2D940532AB6BB0F4B68E3B8CA"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.events.AttendanceMarkedContractIT.xml",
+    "name": "ru.rutcampustrack.attendance.events.AttendanceMarkedContractIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "D44652105886B34D17489D0CF9D40D5C57C2DE9631029696654408DA155455EF"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.excuse.ExcuseControllerIT.xml",
+    "name": "ru.rutcampustrack.attendance.excuse.ExcuseControllerIT",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "37E19399278C162C209F71C2213D10CA91452F21BF456F49F51B50507E0125F2"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.excuse.ExcuseEventContractIT.xml",
+    "name": "ru.rutcampustrack.attendance.excuse.ExcuseEventContractIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "277D6B0864658CAB8D3E3C0546C5998968539C0406C010B7DDEDB15F07333C99"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.excuse.ExcuseRepositoryIT.xml",
+    "name": "ru.rutcampustrack.attendance.excuse.ExcuseRepositoryIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "BAFD5A0163FBAE9AD89FD22F9334DBA1D2F9A912D952D1CC28C462126A7BF345"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.excuse.ExcuseServiceApproveIT.xml",
+    "name": "ru.rutcampustrack.attendance.excuse.ExcuseServiceApproveIT",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "ED2C69957C41855D14D31457CE4A16CA2DD9CCD0C76D30117C5BE53CC72E4181"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.ActuatorIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.ActuatorIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "0E32CF524A7BD4AB2AA11CB6C92865731670262AAE912BAAF93BB9FBDC345647"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.CheckinIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.CheckinIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "7EF57DA582218C7BF1A963F7B1C944BA7929BF1EA34BF0171454D2918D3ED184"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.EnumSerializationIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "8FD9217DC9B0904501EB0D6A291351CAAE9B54543FE170A396281869C80F7A8F"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.EventConsumerIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "DC9443323A1FBC6B29FF6B3CFC14F4C3E3B9EE1245DB74C3780357D8CAADAB13"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.LateCheckinPerformanceIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.LateCheckinPerformanceIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "28301911E0A792714ACAAB7E63DA8027D5A941CA0BA216360D72F6ED78BD35E8"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.MarkingIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.MarkingIT",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "2B1B6517DB4EEC0ECC1F2FF7990D8F38D5B1A94B8DDA3E386EDB12BAC62B0EE2"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.MongoIndexIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.MongoIndexIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "E4E4E1AFFF5887A71D1A36BA967EBD30CF3DA0266A17295C7D9AC5EAD895F1EA"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "EF4D2A68B9F848CB883DD8372FFAEE507FC3293269A5B0ACAEB1EDBF5AE1E1B6"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.OutboxAtomicityIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.OutboxAtomicityIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "0E4225B51924A23E5B1FF8BE2C0EE79244BE2D1243C1113DC511F544F9C132E1"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.PaginationCapIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.PaginationCapIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "F0D791570940514E057BEC13403F4B6B7C676358E8C20B0D4D75123E665A6CC6"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.RabbitConsumerIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.RabbitConsumerIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "9E9E9DF0DA0C2A751568834E471423CE90FC32670760604030D235F46FCA831F"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.ReportIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.ReportIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "3D62D8074476E00799548761593EEA003540144FAA689964EFE933AA0B6B81B7"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.SecuritySmokeIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.SecuritySmokeIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "5AA71270BD2E83A05B2F8D2E650BA2B4BD87D7CEB6DE4A880F8FFDF0CFD2EB8D"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.StartupOrphanCleanupRemovedIT.xml",
+    "name": "ru.rutcampustrack.attendance.integration.StartupOrphanCleanupRemovedIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6E7E2E27E30E11A930731AE034919F5A470097E868E5C286E01BA66C79FF4615"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT.xml",
+    "name": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "DAE4DAF1EDF6B0B1ACBFC52974F3C39F08F684BDD7B2250A3BED91710BBA589B"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.report.HeadmanWeeklyReportControllerIT.xml",
+    "name": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportControllerIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "72CE63B7ECC5EB636399B9670EB6DE39B66D7DFE3ACA01075A3E7DD4AECA9885"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+    "name": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4173BF4325F36C28E0C202C9C9EFAA1DC44A9DEE9441C49E1D4934CE85E134CC"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.security.AttendanceUserContextFilterIT.xml",
+    "name": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4BB1714734028CA43423D2E787CCD65CEBEA5880F71D79805F76F3461F731308"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.security.AttendanceUserContextFilterStrictModeIT.xml",
+    "name": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterStrictModeIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "8F7BB163A7A76C7840C3E23EAF57060AADB262223E5A1BD777F1EB64CFD8194B"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.security.SecurityIdorIT.xml",
+    "name": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "68C68D72D1076F022B045A6DD8371792199BE7307A68EA5DC2F55CB2E31B2443"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT.xml",
+    "name": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+    "tests": 20,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "23E4D59054D201243FDC6468274BA1ABEC2DA2258935BD061C6C877D1BB46D55"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest.xml",
+    "name": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "D54F8F3782B13702E694E91CE8ADC90F2DB7D1347DC54E9E8F472B6BDE00F953"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest.xml",
+    "name": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "72996A200C6A7066E793296BE85FA1044FF80576780416D08DAAC02FA1DF0E58"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.checkin.CheckinServiceTest.xml",
+    "name": "ru.rutcampustrack.attendance.checkin.CheckinServiceTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B1ECCF933C0714A8F70452F2176B5D169FADBBF3B0EC5B425B3D40D6B7C3F69A"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.event.EventConsumerTest.xml",
+    "name": "ru.rutcampustrack.attendance.event.EventConsumerTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "D8A182C7EB04E65F5B6469A4D038E24ECFC820EC064542DE7CB29EE45E5EFA54"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.event.LessonEventServiceParallelTest.xml",
+    "name": "ru.rutcampustrack.attendance.event.LessonEventServiceParallelTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4DFBE61AA1E0DE08B45980F6394B301A3BC69ADCDCA8B7739121D09E5FB06BCB"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.event.LessonEventServiceTest.xml",
+    "name": "ru.rutcampustrack.attendance.event.LessonEventServiceTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "C306D12D86DF1FE880B49C904D5B262D29A1E897944D80AA8457B8B56CD1D8DA"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.event.LessonGenerationMergeTest.xml",
+    "name": "ru.rutcampustrack.attendance.event.LessonGenerationMergeTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "DB83DCE00A5E8D5B7ECAC3D3B85F3AFB849070F21048C1926099D45575926CB4"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.excuse.ExcuseEventPublisherTest.xml",
+    "name": "ru.rutcampustrack.attendance.excuse.ExcuseEventPublisherTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "E8E72106C5945E0C685CD6345A24BD429582862E0C017158BCC5C71D803B381E"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.excuse.ExcuseServiceTest.xml",
+    "name": "ru.rutcampustrack.attendance.excuse.ExcuseServiceTest",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "7BBC74F9452E9D2A40C8362EFDFEE5329BC3E2A3BFC2097807584F8B941708DA"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.geofence.GeofenceServiceTest.xml",
+    "name": "ru.rutcampustrack.attendance.geofence.GeofenceServiceTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "7189D2445689991C1258808AC682B6B31A48EB9B849A4CBC93C9F1BF953AAD47"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.geofence.GeoUtilsTest.xml",
+    "name": "ru.rutcampustrack.attendance.geofence.GeoUtilsTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "CC5C452CC323798A396C925F23F74EEF11BB1587120C5FE994F7EFF5B5F949D3"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.grpc.AcademicGrpcClientTest.xml",
+    "name": "ru.rutcampustrack.attendance.grpc.AcademicGrpcClientTest",
+    "tests": 14,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "F451C64D0D485994CB15C98DA65E7D7115D26D9A010B21A037B932505485730D"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceTest.xml",
+    "name": "ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "2BAC47BFDF7928DB9DE5712FDDEF8D3F304FCE746160B4F5ABB413AD615A292A"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.grpc.ScheduleGrpcClientTest.xml",
+    "name": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcClientTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "8D987E117A1BC7181C5CE07ABD565B6868C991EF45376C3FE8BEE801EC0BF744"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.grpc.StudentGrpcBoundaryTest.xml",
+    "name": "ru.rutcampustrack.attendance.grpc.StudentGrpcBoundaryTest",
+    "tests": 15,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "FAFC650963DF112F78BD86AD28F422BED761B532029D03CE94AF161EA6E067A2"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.latecheckin.LateCheckinEventContractTest.xml",
+    "name": "ru.rutcampustrack.attendance.latecheckin.LateCheckinEventContractTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "02D304A036A69069FD4E771C447FECE50E84A831FF5DD40CEFA751E29241407B"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.latecheckin.LateCheckinServiceTest.xml",
+    "name": "ru.rutcampustrack.attendance.latecheckin.LateCheckinServiceTest",
+    "tests": 21,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6E5C84EE0C2A494BC04846CC8A704556C2AC52DE2E25C095BBE80B7D70165789"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.marking.MarkingServiceTest.xml",
+    "name": "ru.rutcampustrack.attendance.marking.MarkingServiceTest",
+    "tests": 14,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "C26CD0E34C9831E49B06F8B5CDCF37DC39A03B3FC17473BF75DE6C34B757143E"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.ratelimit.CheckinRateLimiterTest.xml",
+    "name": "ru.rutcampustrack.attendance.ratelimit.CheckinRateLimiterTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "0CD246A5DA3141D8A4D7AAF93968CF9BD73643ACD943E097408EA11D15D1FBB7"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.report.DocxRendererTest.xml",
+    "name": "ru.rutcampustrack.attendance.report.DocxRendererTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B779F042D787551689383C430552A11C03E1CBDD099EDD25823373747A77DAE8"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest.xml",
+    "name": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest",
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6272F55D29E496408B889688BA7260C6A1DA2F3FC9B49A9FF08F031CD8CB9C65"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.report.HeadmanWeeklyTemplateSmokeTest.xml",
+    "name": "ru.rutcampustrack.attendance.report.HeadmanWeeklyTemplateSmokeTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "79E92764656EF7570B6C5E9FF214D4424DC0B3960167148BB7D76848986237AD"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.report.ReportControllerMvcTest.xml",
+    "name": "ru.rutcampustrack.attendance.report.ReportControllerMvcTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "3BAF8872715C064AD3DCE98843A8B7BF5F47365079216A9C770CBF588A25BD8A"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.report.ReportDomainIsolationTest.xml",
+    "name": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4F5A0B170ABBD483A7F2EBDC1EBAF2CE6239938A258E376B4A1A9D2C8EC5E44D"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.report.ReportServiceTest.xml",
+    "name": "ru.rutcampustrack.attendance.report.ReportServiceTest",
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "5CD924459B6CDA21BB75EFF2BB7906650A7DC81D0A6E5EB59373E54919E37529"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.attendance.student.StudentAttendanceSnapshotServiceTest.xml",
+    "name": "ru.rutcampustrack.attendance.student.StudentAttendanceSnapshotServiceTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "BE426E10A7D5C5050D322A2AE6C7F36A4F899BCD77B1FF39059161E248077DD8"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.arch.AuthApiContractTest.xml",
+    "name": "ru.rutcampustrack.auth.arch.AuthApiContractTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B83C75FAC576C2EBBD0C58A728B68B39C214CEA65B3FDABDE3F867FDCB19196F"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.arch.IntegrationTestNamingConventionIT.xml",
+    "name": "ru.rutcampustrack.auth.arch.IntegrationTestNamingConventionIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "53EB1502B133804AC33AA366A98E0D46CBF47A2C7C208E302F3DF748E02494EC"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.ActuatorIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.ActuatorIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "47E4C7A39D55DE5D523AF587AA36AE0C23947E9F4B0CA15E9D7E0090B394D9D2"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.ActuatorSpanFilterIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.ActuatorSpanFilterIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "360E33DFFC1C478E79F21858FA277B956DD38BCF7ECAE2546071C9301C9DDF83"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.AuthIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.AuthIT",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B9B9365E7D2091134D56D18A1719D0920E0C746D3D790D2CEA24731185F3DF75"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.AuthOtpFlowIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "C8BAD0614175641751759484AF7A1EDB2695E041A2D56F79E94431B05DC3823B"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.BcryptDoSMitigationIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.BcryptDoSMitigationIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "8F3661EF3A7F8A1EB4D9772DB18AD634F70F087DC23BB51958045FD11C8A3431"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.InternalIssuerIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.InternalIssuerIT",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "86308EF8DFFDC5EA9534863B6B9A4309D74E9BEFE655D0D956A6493A7631F82A"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.LoginRateLimiterIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.LoginRateLimiterIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "16F166813557E3C160B301FE8CF3C625B96E0FDEEAFD35153AA69F93AB223482"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.LogoutLifecycleIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.LogoutLifecycleIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6C65A14C754CF5FE928FC771CBAE54B088DB32AD2A2F0963CAB6400B9D4BD104"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.OpenApiSnapshotIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.OpenApiSnapshotIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "40652D9318F8118CEB3DCB78FE40708E6D9CF37C51F15DE0096AC392A5F5C5E7"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.OtpIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.OtpIT",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "39F6FFFC38E78B1B8092C8C2CC78AB492AAC52DD13A44529677E36C365B05054"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.SameSiteCookieContractIT.xml",
+    "name": "Security contract — SameSite cookie (M08 G8)",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "8095888762C477BB2A608E9F97CDE3319FC5A2F0918FC568AB73FE7D02804FB0"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.TmaIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.TmaIT",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4E1878F88D399D61982EF73ABE7FC9C03DF97CB8343702841D7841A24D58549B"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.WsTicketIT.xml",
+    "name": "ru.rutcampustrack.auth.integration.WsTicketIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "540B17DCE5C108F8052D68079905B7CA04A6F6E97349D50DFBD5302633BCC9D7"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.auth.arch.AuthApiContractTest.xml",
+    "name": "ru.rutcampustrack.auth.arch.AuthApiContractTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "FC19CD7539DBC2431E8346327D58ED005A5FC897DDC289BC9BC94C88102CE400"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.auth.config.InternalIssuerPropertiesTest.xml",
+    "name": "ru.rutcampustrack.auth.config.InternalIssuerPropertiesTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "DADFAFB120A19C904AD5465EA873F835568D57A0503C352B8328DDE2ACB7F083"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.auth.events.OtpRequestedContractTest.xml",
+    "name": "ru.rutcampustrack.auth.events.OtpRequestedContractTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "A52F9C096A531B9ABA7F67ABFAF8E1E9496819B724BA2BFEF17FCBF3DF72637A"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.auth.service.LoginRateLimiterTest.xml",
+    "name": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B61BE0F46EE3BD29B2DA6348D29693500361782C74C61A5B13D67803CA729EE8"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.auth.service.OtpServiceTest.xml",
+    "name": "ru.rutcampustrack.auth.service.OtpServiceTest",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "FFDA68E7CA9A5028DCEEAA87F2A81AFC3DF5B7A726EBF19A48095AE35CBFAE7A"
+  },
+  {
+    "path": "services\\document-renderer-service\\document-renderer-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml",
+    "name": "ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "49714562FAB183CB9A75541DDDBB85E90CEDD2D2D5A7AA2EF8CD87363027A690"
+  },
+  {
+    "path": "services\\document-renderer-service\\document-renderer-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterTest.xml",
+    "name": "ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterTest",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "0EDE9AED64ACA54BD0DADBF7C0CD31B4C91461FCE7854910CBA84B4DD24FC34F"
+  },
+  {
+    "path": "services\\document-renderer-service\\document-renderer-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest.xml",
+    "name": "ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "5495FFBC7F752F68675BF6B0C463E3F4E62AF0FD65407CD4B935151DA58036D7"
+  },
+  {
+    "path": "services\\mobile-bff\\mobile-bff-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT.xml",
+    "name": "ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "E8718D87507EBA3E03C99F9A97006BDB79F73BF45BE87D834FBAD9A6EF3B48AD"
+  },
+  {
+    "path": "services\\mobile-bff\\mobile-bff-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.mobilebff.runtime.StudentHomeworkHttpGrpcIT.xml",
+    "name": "ru.rutcampustrack.mobilebff.runtime.StudentHomeworkHttpGrpcIT",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B224991735350A0940B51BF4AB3622BE579109FBA4D00A13C8B9CB95AAB74521"
+  },
+  {
+    "path": "services\\mobile-bff\\mobile-bff-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.mobilebff.runtime.StudentHttpGrpcAuthIT.xml",
+    "name": "ru.rutcampustrack.mobilebff.runtime.StudentHttpGrpcAuthIT",
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "98FEC9213BD5284530E5C904617D9F01BBC648E2E034D35DFD4D93F428ED5922"
+  },
+  {
+    "path": "services\\mobile-bff\\mobile-bff-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.mobilebff.student.StudentQueryHomeworkTest.xml",
+    "name": "ru.rutcampustrack.mobilebff.student.StudentQueryHomeworkTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "98C73860C3CFC1312940799BF0AEEA0A0D11361B977C6F00BF21A6D9D6B0D4E8"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.notification.csp.CspReportIT.xml",
+    "name": "ru.rutcampustrack.notification.csp.CspReportIT",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "544CDB932840CC689A334E631891E318AEB4BEC6557A001B00CA9417961A0235"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.notification.event.EventIdempotentIT.xml",
+    "name": "ru.rutcampustrack.notification.event.EventIdempotentIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "99732CA4FB6125BA2C955404245F71F2D4F2985B08067AC27F0C6A9A7D0EF7AA"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.notification.exception.NotificationErrorHandlingIT.xml",
+    "name": "ru.rutcampustrack.notification.exception.NotificationErrorHandlingIT",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "14040534DA820665E182777A2930641955EEF1C1B0587F936B09DAF2A2C1AD39"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.notification.history.NotificationHistoryConsumerIT.xml",
+    "name": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "38DCEBC46DE41277683D9482A1D517E47EE72452EB7A686D18C294B105775B58"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.notification.history.NotificationMongoIndexesIT.xml",
+    "name": "ru.rutcampustrack.notification.history.NotificationMongoIndexesIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "438A0C9047ECC63E295E9C1DFFBAD02407063C40B55E46FD0712B5D9DD76444F"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.notification.NotificationLoggingIT.xml",
+    "name": "ru.rutcampustrack.notification.NotificationLoggingIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "C6DA813CEA156222A998CC26DD19E98FE5E1B543710C9FF6B8C699E5D496855F"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.notification.OpenApiSnapshotIT.xml",
+    "name": "ru.rutcampustrack.notification.OpenApiSnapshotIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "9B10C273D1E61CDB9650D3371C3E44334B1477B9B7FC8742B4BF0D82B5232AAA"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.notification.push.PushSubscriptionCleanupJobIT.xml",
+    "name": "ru.rutcampustrack.notification.push.PushSubscriptionCleanupJobIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "0E8C2888ECDD7CCE5A1E2FCD9B7CAEE5AA3D99A2BE7E8A423414E33BA52AAC7D"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.notification.security.SecurityIdorIT.xml",
+    "name": "ru.rutcampustrack.notification.security.SecurityIdorIT",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B7874DBF933E0F9A6B0854EA69E17B5E2BC2E389B4D4F934F377906A6D68674F"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.notification.ws.StompIntegrationIT.xml",
+    "name": "STOMP WebSocket lifecycle (M08 G9)",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B655049578A22E49359665FC5B428C13E7F18C769AE2DACE8D6FDD0A3CE4F877"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.alert.AlertControllerTest.xml",
+    "name": "ru.rutcampustrack.notification.alert.AlertControllerTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "96D1ADE21C06F1328DC29874116BEBC11BE0A2E6ECCC92C1F5F2DBC7FE54813E"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.config.RabbitConfigTest.xml",
+    "name": "ru.rutcampustrack.notification.config.RabbitConfigTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "D46830C1300C8F36BC48F6894C77216AA1C141D355BBE451794F27E9D58B3784"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest.xml",
+    "name": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B2510A7874E3EDE0EDC12C9F798B9DA713ED1A8F8B3304845F6A8B0E847D17F2"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.config.WebSocketConfigTest.xml",
+    "name": "ru.rutcampustrack.notification.config.WebSocketConfigTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "EC35A72CA3CC1914E1CDB4AB50B96091B39FC0C84025A3F664C411A932131572"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.csp.CspReportControllerTest.xml",
+    "name": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+    "tests": 15,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "1CBA172B206FE88A1C154E3EF5CCFAD5D631926F4E69AC9C03D88F80494C0008"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.event.EventConsumerTest.xml",
+    "name": "ru.rutcampustrack.notification.event.EventConsumerTest",
+    "tests": 16,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "AD8D3609B848F233858EA7C7D24FF93A0260B1B73EFB4748C3BAF6B58649374E"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.event.GroupEventTest.xml",
+    "name": "ru.rutcampustrack.notification.event.GroupEventTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B7747E859DAD46E5F10D0F4076220EF261B447A5952146A3662F2E81137DB0E7"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.history.NotificationControllerTest.xml",
+    "name": "ru.rutcampustrack.notification.history.NotificationControllerTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "F9A659A72E341974990B5B58CC96777704F08BB9E5DF29A1F54DA56ACEB19E27"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest.xml",
+    "name": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "33AA4CBEF157D9C77BAF0C5124BC66CF13987659190D72847CBD105473A0430D"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.history.NotificationHistoryConsumerTest.xml",
+    "name": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "963DA162A4F7EB7BCD170C628A49AE90423FEEF33200D6EDDCD369DBD4973DB8"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.history.NotificationHistoryServiceTest.xml",
+    "name": "ru.rutcampustrack.notification.history.NotificationHistoryServiceTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6B508826DBC05B4B6681CE3FA6F4DBE36CB36651A3DF4F84F606428A16AE3FFA"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.push.PushControllerTest.xml",
+    "name": "ru.rutcampustrack.notification.push.PushControllerTest",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "2246C5D5EB3DB8382B161D064354926B3A70F1ABCDB36A8D69863D2B98562123"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest.xml",
+    "name": "ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "13F8D0202786F59EB523EFA1A82E833457664928E34462C8825DF4D7A14789F9"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.push.PushSubscriptionRepositoryTest.xml",
+    "name": "ru.rutcampustrack.notification.push.PushSubscriptionRepositoryTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "181A4EF2B1BFEF78585AF20BD73B55FE93AF6F5770620913F616415C1ABD1D9E"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest.xml",
+    "name": "ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest",
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "371AEA16D17BF34A4902B4515227BA8294DE0B7929F58E8091EF3DF8D2A9BD03"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.security.SecurityInfrastructureTest.xml",
+    "name": "ru.rutcampustrack.notification.security.SecurityInfrastructureTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "7D3C78954DBB7B6F6BE439389D845C685910B65A609197C004E0CE2C05D28BC7"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.arch.GrpcClientDeadlineTest.xml",
+    "name": "ru.rutcampustrack.schedule.arch.GrpcClientDeadlineTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "C1E076574351B16F8259DE6E65FA33C20CCBFE866C8F4A753C12B571D53C7F48"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.arch.IntegrationTestNamingConventionIT.xml",
+    "name": "ru.rutcampustrack.schedule.arch.IntegrationTestNamingConventionIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "50AA29B2C00677E875CE99DBDF72405D35281DE997D98E2F67E4AB4304F01077"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.arch.RepositoryNPlusOneGuardTest.xml",
+    "name": "ru.rutcampustrack.schedule.arch.RepositoryNPlusOneGuardTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "9E271BEB98D522712E8565A9F5D3B6C5BEAB28C9B855F6A475C5791E589E5C97"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.arch.ScheduledMustHaveSchedulerLockTest.xml",
+    "name": "ru.rutcampustrack.schedule.arch.ScheduledMustHaveSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "975064A4B6EAF483D3E7716266A9DBE165CD74C0F009CC113449B6C58BD41BFC"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.event.EventIdempotentIT.xml",
+    "name": "ru.rutcampustrack.schedule.event.EventIdempotentIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "0417DA4397FBE264B44942D039F35C84734980A8755580C4F6982546C2AC3745"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.events.LessonBlockedContractIT.xml",
+    "name": "ru.rutcampustrack.schedule.events.LessonBlockedContractIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "E962FEC31411E151706072CF16A17D68F96E797A7B0A69BB863F19171C151C70"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.events.LessonCancelledContractIT.xml",
+    "name": "ru.rutcampustrack.schedule.events.LessonCancelledContractIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B376E4A7E462FD12774C97620658C6D021021126B9FD1731F0DD6FD830F0EECE"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.events.LessonReminderContractIT.xml",
+    "name": "ru.rutcampustrack.schedule.events.LessonReminderContractIT",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B9F52B233398D77D64BC79E9A0167B43C61604BEE0BB8112FC52F3A8A53AFCFB"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.events.LessonStartedContractIT.xml",
+    "name": "ru.rutcampustrack.schedule.events.LessonStartedContractIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "83E5EB24BD78CB8754DC52150083B20728C0F6F9B90EC739AC595B0652F5CA55"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.grpc.LessonsByIdsGrpcIT.xml",
+    "name": "ru.rutcampustrack.schedule.grpc.LessonsByIdsGrpcIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "5E48372D271D209D6A32488668DB5294411680B417AE467AE0FA0972D13C91C9"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.grpc.ScheduleGrpcResolveLessonIT.xml",
+    "name": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcResolveLessonIT",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "3B84ACC02ED47A8027008ECD51CDB134537F1A06ABBE11D8F9648FED6FCA1B05"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT.xml",
+    "name": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "DE70FD70AF9D605C5788BDBA942D1C0CEA70CEC46F97F11F75C7D25B3551FCB5"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.ActuatorIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.ActuatorIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "759B5D46370CDEDA4A0A0345D61ECBCFB4B74F21723E59CBA67640D6C99FD144"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.EntityMappingIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.EntityMappingIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "DC3B00A333359609D7D3A8DEA03C7BB7B8D715C479455971CD71EC185C21442D"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.LessonApiIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+    "tests": 16,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "F0DB7691CC35E2AC2273D1E78CE94865B277E7C9A9C8270089418763E5A1E8B6"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.LessonCancelEventIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.LessonCancelEventIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "52405D1A6F082B9FB906D6DBAF616FD32FA5B27F9FF5A618E8778B01D2B0A348"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.LessonGenerationIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "350CAEB09472FA7C83B5202E908431DFD82F66EB81152DD8F91B64E5116B276D"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.LessonPerformanceIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.LessonPerformanceIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6F81DC82731E119176845222F2C4C9C01F38AC0FEDC4343F4544B3C3774CEF67"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.OpenApiSnapshotIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.OpenApiSnapshotIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "760435BE7EA15A7955299FAB7130873B0C8B522981F2F884427DBBBDBEBD053E"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.PaginationCapIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.PaginationCapIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "6C31EA224F1D0AA3A4858673D0B6830B9659AF36662A45AFFB64E6709CFBE377"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.ScheduleItemApiIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "EA4ECCA4805941D6D77882A3C46BA5BD979F7F009B37C040C76C9E54D7BBBD3C"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.ScheduleViewIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.ScheduleViewIT",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4E54423CD8E4A2468DD55766E272D13AD9E5C36801AECA088013150946574E59"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.SecuritySmokeIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.SecuritySmokeIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "D23E31275C8D5E6B4845224D64AFD479AFA3D61005551484C6D492D02C5E43E1"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.ShedLockSmokeIT.xml",
+    "name": "ru.rutcampustrack.schedule.integration.ShedLockSmokeIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "C857FE1DFF325DB4377887B5EC4F0289004787B1723A6068E83A48ED9920D834"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT.xml",
+    "name": "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "EF47D521C3314C623B1E9EE7BC16AA5D74835DEC00B4DC5E0B74DD97CDA1A9E6"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.migration.FlywayMigrationIT.xml",
+    "name": "ru.rutcampustrack.schedule.migration.FlywayMigrationIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "FE436968B9BA5EC5DC8E6789E8E0AD3BA4CE6E6D41874084D2B6A78BB0844EFA"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT.xml",
+    "name": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "AD4BE7B6AB6410EEAC0FEEEC289B6C1754733ACA42982130D843F7632E432EDD"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.oneoff.OneOffLessonEventPublisherIT.xml",
+    "name": "ru.rutcampustrack.schedule.oneoff.OneOffLessonEventPublisherIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "A2D8C87C8F30F64920A96DF3F9592D0A932D7DBA15F87FD9FB43E5CE4CD724DE"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.oneoff.OneOffLessonSchemaIT.xml",
+    "name": "ru.rutcampustrack.schedule.oneoff.OneOffLessonSchemaIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "E89B29FA840E44D5ABC58D2125E446905DDD40BF8FDAE65B2A8FA854C7172F51"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.security.ScheduleUserContextFilterIT.xml",
+    "name": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "37DD7D19B277A41C90B8AB5078970922716C8662325C26683CC189F0C0C417A6"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.security.ScheduleUserContextFilterStrictModeIT.xml",
+    "name": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterStrictModeIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "EE6871F70D898184E6066DE992367020981C417DAC9E6C9FEB078DE3EA57E9AA"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.security.SecurityIdorIT.xml",
+    "name": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "FAAC8E97723807CFFE1E10308A32B8E8D593D128583AF29C52D2873AA3737B17"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.schedule.arch.GrpcClientDeadlineTest.xml",
+    "name": "ru.rutcampustrack.schedule.arch.GrpcClientDeadlineTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "FF92E3D10B0E08BF2A0DBBF84B4B27F16AE3678DB8AD2C99035103F762DBAB0F"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.schedule.arch.RepositoryNPlusOneGuardTest.xml",
+    "name": "ru.rutcampustrack.schedule.arch.RepositoryNPlusOneGuardTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "73EEE3D3220EA2C06A9320759BB83B839D0636DB408B6C44E959EC4AD7FFE9F0"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.schedule.arch.ScheduledLockRuleNegativeTest.xml",
+    "name": "ru.rutcampustrack.schedule.arch.ScheduledLockRuleNegativeTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "46D6404FD90F00DF456DFDF5544628544089EE188AA40CEA3893CB800BEA7A5E"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.schedule.arch.ScheduledMustHaveSchedulerLockTest.xml",
+    "name": "ru.rutcampustrack.schedule.arch.ScheduledMustHaveSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "838D76BB7F0470B8FEB27FC5B0942CA52B5F1599E1E68F2CD8B4E53A7A37827C"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.schedule.config.SchedulingConfigStructureTest.xml",
+    "name": "ru.rutcampustrack.schedule.config.SchedulingConfigStructureTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "19666DEF68875CB9FC7873C1222871F60DAF31EBBFE3470902CFA7E0A5A1823D"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.schedule.golden.WeekParityGoldenTest.xml",
+    "name": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+    "tests": 22,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "8A1E29A76D700819A43739A15F17C25FEABAA6A987427F89E7E8C03E77977C65"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.schedule.golden.WeekParityPropertyTest.xml",
+    "name": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+    "tests": 201,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "1A8BFEC00E8AFF65275E787658E710B69D01467F1C78EF4D883C0AB4731E3571"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.schedule.item.ScheduleItemEntityTest.xml",
+    "name": "ru.rutcampustrack.schedule.item.ScheduleItemEntityTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "82761951B53C888FAA5E5B8891E7B9907C5C51CAABAD6B72A87B8D55446CDF72"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.schedule.item.ScheduleItemSecurityTest.xml",
+    "name": "ru.rutcampustrack.schedule.item.ScheduleItemSecurityTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "5C29470AB547F359A8667CD0BCFBDC13C637A2781A5AA4CFA286C58DFE0DD836"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest.xml",
+    "name": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "723D97E5E274194A26B23A8F891126471A62EDB67B0235DC4853553CF2A45691"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.schedule.migration.MigrationConcurrentlyTest.xml",
+    "name": "ru.rutcampustrack.schedule.migration.MigrationConcurrentlyTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "5A3E105AB7F8A69F9D9A70644C798D011AABD6D8C4C4DD013EFABDB6AA8AC710"
+  },
+  {
+    "path": "services\\shared\\shared-events\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.events.AbstractEventConsumerTest.xml",
+    "name": "ru.rutcampustrack.shared.events.AbstractEventConsumerTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "F6F4585E84CA8A18ADC705153B90AC87FE5F9977FD8D610E508CE52B6B78C2A6"
+  },
+  {
+    "path": "services\\shared\\shared-events\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.events.AbstractEventPublisherTest.xml",
+    "name": "ru.rutcampustrack.shared.events.AbstractEventPublisherTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4BCE08DBE0F46E6CA6A4BA23D655B2911CE1DF6081078E38E006C274F36858DB"
+  },
+  {
+    "path": "services\\shared\\shared-events\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.events.DomainEventJsonTest.xml",
+    "name": "ru.rutcampustrack.shared.events.DomainEventJsonTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "B226FDD193389AA7544FC28FCD530673D48844288FD374DB807A674644AEAE43"
+  },
+  {
+    "path": "services\\shared\\shared-events\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.events.EventSchemaCoverageTest.xml",
+    "name": "ru.rutcampustrack.shared.events.EventSchemaCoverageTest",
+    "tests": 50,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "53CCBBF32129FBFCE1C67ABA06B757E242D7D719A1AEA4CAB78151311584F2AB"
+  },
+  {
+    "path": "services\\shared\\shared-events\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.events.IdempotencyGuardTest.xml",
+    "name": "ru.rutcampustrack.shared.events.IdempotencyGuardTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "8C5D76B8A5BED4BAD5C9425175114C61FA326154D8CAAC247C026CA0E6753DCA"
+  },
+  {
+    "path": "services\\shared\\shared-logback\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.logback.LogbackBaseIntegrationTest.xml",
+    "name": "ru.rutcampustrack.shared.logback.LogbackBaseIntegrationTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "DCF15C7A56BB3E82AD702A78CFDB54AA857F15A4995240365BD881948AECD04C"
+  },
+  {
+    "path": "services\\shared\\shared-logback\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.logback.MaskingJsonProviderTest.xml",
+    "name": "ru.rutcampustrack.shared.logback.MaskingJsonProviderTest",
+    "tests": 14,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "A283CB7F98D8E311C882E3F4BE25BC76679BFE309DDA19FCBF4652B3A0C01987"
+  },
+  {
+    "path": "services\\shared\\shared-observability\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.observability.ActuatorTracingExcludeFilterTest.xml",
+    "name": "ru.rutcampustrack.shared.observability.ActuatorTracingExcludeFilterTest",
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "BC7966860CA77BC33BCCFECC9F3FDAFE5B84D8F629EE923096519B1EBB829979"
+  },
+  {
+    "path": "services\\shared\\shared-observability\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.observability.BusinessMetricsTest.xml",
+    "name": "ru.rutcampustrack.shared.observability.BusinessMetricsTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "1489FE45944EE6171C5F8D5AFCBD2CE066825335BCB828F96420CEF158B01378"
+  },
+  {
+    "path": "services\\shared\\shared-observability\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.observability.GrpcClientHealthIndicatorTest.xml",
+    "name": "ru.rutcampustrack.shared.observability.GrpcClientHealthIndicatorTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "EB6A597BB4C12F4DD5446832C51836E5E95E5E2CFFAECD0A83ABE8D823E2D91C"
+  },
+  {
+    "path": "services\\shared\\shared-observability\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.observability.PublicKeyHealthIndicatorTest.xml",
+    "name": "ru.rutcampustrack.shared.observability.PublicKeyHealthIndicatorTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "429AF21147645EE995B4B70E59D132E9A574948FD7F0431EEC7E52EAAF39DB5D"
+  },
+  {
+    "path": "services\\shared\\shared-outbox\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.shared.outbox.SharedOutboxSchedulerLockTest.xml",
+    "name": "ru.rutcampustrack.shared.outbox.SharedOutboxSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "58B76447E3FA8E4B961522461D169C97E602308362874BE0B501EF3E88669C5E"
+  },
+  {
+    "path": "services\\shared\\shared-outbox\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.outbox.EventSchemaRefTest.xml",
+    "name": "ru.rutcampustrack.shared.outbox.EventSchemaRefTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "29F4DAD29703757071B50B7B4CF6839443F021A0C1512BA5EE9749E0119CD094"
+  },
+  {
+    "path": "services\\shared\\shared-outbox\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.outbox.IdempotencyCleanupJobTest.xml",
+    "name": "ru.rutcampustrack.shared.outbox.IdempotencyCleanupJobTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "CC273B75737BC674892C6B2E03190192F8095E49B8C4BAACD98F0561A7FAA080"
+  },
+  {
+    "path": "services\\shared\\shared-outbox\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStoreTest.xml",
+    "name": "ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStoreTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "9307EC52421EF3E42FBE937B91C9492E1423BF53E213D2C7651C3F98512D0913"
+  },
+  {
+    "path": "services\\shared\\shared-outbox\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.outbox.OutboxCleanupJobTest.xml",
+    "name": "ru.rutcampustrack.shared.outbox.OutboxCleanupJobTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "4B41A01DAB9CD943B73E0CA561BFD5CF4E52334410851973363A0FDEF3CB829D"
+  },
+  {
+    "path": "services\\shared\\shared-outbox\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.outbox.OutboxPublisherJobTest.xml",
+    "name": "ru.rutcampustrack.shared.outbox.OutboxPublisherJobTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "DAEEA371E7D3A66828DCC7E0A4233FF1CD1D0642FC658ED4C79D6A1AFFDC9BF3"
+  },
+  {
+    "path": "services\\shared\\shared-outbox\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.outbox.SharedOutboxSchedulerLockTest.xml",
+    "name": "ru.rutcampustrack.shared.outbox.SharedOutboxSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "73EBB287393F58BE6A8128D8639DC0FC964AA7935F19CEB4E94D7C0F3AB4F793"
+  },
+  {
+    "path": "services\\shared\\shared-security\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.security.DualModeUserContextFilterTest.xml",
+    "name": "ru.rutcampustrack.shared.security.DualModeUserContextFilterTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "D6F0D6268140BF5832631C896EB4A6E1A9AE92A53225E27F0BE02B3E86F747FA"
+  },
+  {
+    "path": "services\\shared\\shared-security\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.security.InternalJwtPropertiesTest.xml",
+    "name": "ru.rutcampustrack.shared.security.InternalJwtPropertiesTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "7D0FFA01AD2E76CC9CBA363E127A29EB5335E4D9A60F9BA1A49E931E612FF565"
+  },
+  {
+    "path": "services\\shared\\shared-security\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.security.InternalJwtValidatorTest.xml",
+    "name": "ru.rutcampustrack.shared.security.InternalJwtValidatorTest",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "D8B24114A05C6E28C6D60C19B196A075100D595901FE0BB24DFFAB30BF2F5ED6"
+  },
+  {
+    "path": "services\\shared\\shared-test-containers\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.testcontainers.FixtureSmokeTest.xml",
+    "name": "ru.rutcampustrack.shared.testcontainers.FixtureSmokeTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "sha256": "2B6428CC0A92F18BFF9C6D1F6EBD56D8B262D7093E0DF115F9DD56E2AA1FC1F5"
+  },
+  {
+    "path": "services\\shared\\shared-web\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.web.audit.AdminActionAspectTest.xml",
+    "name": "ru.rutcampustrack.shared.web.audit.AdminActionAspectTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "3EBAABD3AF6815A6CAB79660075F549BA93243363E48E85CD91FDD7D946151C9"
+  },
+  {
+    "path": "services\\shared\\shared-web\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.web.autoconfigure.RequiredSecretsValidatorTest.xml",
+    "name": "ru.rutcampustrack.shared.web.autoconfigure.RequiredSecretsValidatorTest",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "339AAFD6569257374CCC1EA3ED00873182D37688AB692AB6942D8BFD36B3AACE"
+  },
+  {
+    "path": "services\\shared\\shared-web\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.web.config.GlobalErrorResponsesCustomizerTest.xml",
+    "name": "ru.rutcampustrack.shared.web.config.GlobalErrorResponsesCustomizerTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "C6CB721C031724CB5F9F7A214B732BF6F5B7292EE4F50B848DDD0E93219CD6A1"
+  },
+  {
+    "path": "services\\shared\\shared-web\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.web.config.JacksonConfigTest.xml",
+    "name": "ru.rutcampustrack.shared.web.config.JacksonConfigTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "1ECF6EEF9869561B399F72E2A204C4DE8F17E937E54CD8E8549028A10EDF0068"
+  },
+  {
+    "path": "services\\shared\\shared-web\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.web.config.SharedOpenApiCustomizerTest.xml",
+    "name": "ru.rutcampustrack.shared.web.config.SharedOpenApiCustomizerTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "906A41A36E58FEF3C70B2EEAAE05BFA8285F1BF45167A6C3303757EB7B03AF17"
+  },
+  {
+    "path": "services\\shared\\shared-web\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.web.exception.GlobalExceptionHandlerTest.xml",
+    "name": "ru.rutcampustrack.shared.web.exception.GlobalExceptionHandlerTest",
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "AB27F3C3A3FD26F227B61D42DBE9427BADCA787555251EE5762FF902ACB13469"
+  },
+  {
+    "path": "services\\shared\\shared-web\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.web.validation.DateRangeValidatorTest.xml",
+    "name": "ru.rutcampustrack.shared.web.validation.DateRangeValidatorTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "DF8C8D2BE513653FDBBCA3FD4DF669D34E73C97A74378B6C6CD6B7DAE0882D67"
+  },
+  {
+    "path": "services\\shared\\shared-web\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.web.validation.StartBeforeEndValidatorTest.xml",
+    "name": "ru.rutcampustrack.shared.web.validation.StartBeforeEndValidatorTest",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "8B130DC74C6004D1AA61604E0324B97AC400DB85F3811FC1ECD3BB5BBAC3A3E2"
+  },
+  {
+    "path": "services\\shared\\shared-web\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.web.validation.ValidFileValidatorTest.xml",
+    "name": "ru.rutcampustrack.shared.web.validation.ValidFileValidatorTest",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "22E0E86DBF7390E5DF7695DB2CFB6582DC448801E7AF330F24C0D27E26572963"
+  },
+  {
+    "path": "services\\shared\\shared-web-api\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.web.api.exception.ErrorResponseTest.xml",
+    "name": "ru.rutcampustrack.shared.web.api.exception.ErrorResponseTest",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sha256": "72855F195E565841CB22F0DB2E35717E6DA17E855D494894C49291404A8E91BD"
+  }
+]

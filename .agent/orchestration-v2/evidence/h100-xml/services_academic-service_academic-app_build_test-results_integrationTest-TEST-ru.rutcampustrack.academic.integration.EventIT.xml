@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.integration.EventIT" tests="6" skipped="0" failures="6" errors="0" timestamp="2026-09-20T15:17:01" hostname="DITEK-PK" time="0.469">
+  <properties/>
+  <testcase name="deleteGroup_withManagedCoverageIsRejected()" classname="ru.rutcampustrack.academic.integration.EventIT" time="0.1">
+    <failure message="org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection" type="org.springframework.orm.jpa.JpaSystemException">org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:348)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:256)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:567)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:795)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:758)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:698)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:416)
+	at app//org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223)
+	at app/jdk.proxy3/jdk.proxy3.$Proxy251.save(Unknown Source)
+	at app//ru.rutcampustrack.academic.integration.EventIT.setUpTestEntities(EventIT.java:145)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	Suppressed: java.lang.NullPointerException: Cannot invoke &quot;ru.rutcampustrack.academic.entity.Semester.getId()&quot; because &quot;this.testSemester&quot; is null
+		at ru.rutcampustrack.academic.integration.EventIT.cleanUpTestEntities(EventIT.java:194)
+		... 3 more
+Caused by: org.hibernate.TransactionException: Unable to commit against JDBC Connection
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:97)
+	at app//org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:268)
+	at app//org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:101)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:563)
+	... 16 more
+Caused by: org.postgresql.util.PSQLException: ERROR: subject 1 must retain at least one lesson type
+  Где: PL/pgSQL function enforce_subject_lesson_type_parent() line 20 at RAISE
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:389)
+	at app//org.postgresql.jdbc.PgConnection.executeTransactionCommand(PgConnection.java:998)
+	at app//org.postgresql.jdbc.PgConnection.commit(PgConnection.java:1020)
+	at app//com.zaxxer.hikari.pool.ProxyConnection.commit(ProxyConnection.java:378)
+	at app//com.zaxxer.hikari.pool.HikariProxyConnection.commit(HikariProxyConnection.java)
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:87)
+	... 19 more
+</failure>
+  </testcase>
+  <testcase name="updateHomework_publishesHomeworkUpdatedEvent()" classname="ru.rutcampustrack.academic.integration.EventIT" time="0.069">
+    <failure message="org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection" type="org.springframework.orm.jpa.JpaSystemException">org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:348)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:256)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:567)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:795)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:758)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:698)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:416)
+	at app//org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223)
+	at app/jdk.proxy3/jdk.proxy3.$Proxy251.save(Unknown Source)
+	at app//ru.rutcampustrack.academic.integration.EventIT.setUpTestEntities(EventIT.java:145)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	Suppressed: java.lang.NullPointerException: Cannot invoke &quot;ru.rutcampustrack.academic.entity.Semester.getId()&quot; because &quot;this.testSemester&quot; is null
+		at ru.rutcampustrack.academic.integration.EventIT.cleanUpTestEntities(EventIT.java:194)
+		... 3 more
+Caused by: org.hibernate.TransactionException: Unable to commit against JDBC Connection
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:97)
+	at app//org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:268)
+	at app//org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:101)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:563)
+	... 16 more
+Caused by: org.postgresql.util.PSQLException: ERROR: subject 2 must retain at least one lesson type
+  Где: PL/pgSQL function enforce_subject_lesson_type_parent() line 20 at RAISE
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:389)
+	at app//org.postgresql.jdbc.PgConnection.executeTransactionCommand(PgConnection.java:998)
+	at app//org.postgresql.jdbc.PgConnection.commit(PgConnection.java:1020)
+	at app//com.zaxxer.hikari.pool.ProxyConnection.commit(ProxyConnection.java:378)
+	at app//com.zaxxer.hikari.pool.HikariProxyConnection.commit(HikariProxyConnection.java)
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:87)
+	... 19 more
+</failure>
+  </testcase>
+  <testcase name="createHomework_publishesHomeworkPublishedEvent()" classname="ru.rutcampustrack.academic.integration.EventIT" time="0.069">
+    <failure message="org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection" type="org.springframework.orm.jpa.JpaSystemException">org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:348)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:256)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:567)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:795)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:758)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:698)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:416)
+	at app//org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223)
+	at app/jdk.proxy3/jdk.proxy3.$Proxy251.save(Unknown Source)
+	at app//ru.rutcampustrack.academic.integration.EventIT.setUpTestEntities(EventIT.java:145)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	Suppressed: java.lang.NullPointerException: Cannot invoke &quot;ru.rutcampustrack.academic.entity.Semester.getId()&quot; because &quot;this.testSemester&quot; is null
+		at ru.rutcampustrack.academic.integration.EventIT.cleanUpTestEntities(EventIT.java:194)
+		... 3 more
+Caused by: org.hibernate.TransactionException: Unable to commit against JDBC Connection
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:97)
+	at app//org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:268)
+	at app//org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:101)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:563)
+	... 16 more
+Caused by: org.postgresql.util.PSQLException: ERROR: subject 3 must retain at least one lesson type
+  Где: PL/pgSQL function enforce_subject_lesson_type_parent() line 20 at RAISE
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:389)
+	at app//org.postgresql.jdbc.PgConnection.executeTransactionCommand(PgConnection.java:998)
+	at app//org.postgresql.jdbc.PgConnection.commit(PgConnection.java:1020)
+	at app//com.zaxxer.hikari.pool.ProxyConnection.commit(ProxyConnection.java:378)
+	at app//com.zaxxer.hikari.pool.HikariProxyConnection.commit(HikariProxyConnection.java)
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:87)
+	... 19 more
+</failure>
+  </testcase>
+  <testcase name="transferStudent_publishesGroupUpdatedEventForBothGroups()" classname="ru.rutcampustrack.academic.integration.EventIT" time="0.059">
+    <failure message="org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection" type="org.springframework.orm.jpa.JpaSystemException">org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:348)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:256)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:567)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:795)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:758)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:698)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:416)
+	at app//org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223)
+	at app/jdk.proxy3/jdk.proxy3.$Proxy251.save(Unknown Source)
+	at app//ru.rutcampustrack.academic.integration.EventIT.setUpTestEntities(EventIT.java:145)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	Suppressed: java.lang.NullPointerException: Cannot invoke &quot;ru.rutcampustrack.academic.entity.Semester.getId()&quot; because &quot;this.testSemester&quot; is null
+		at ru.rutcampustrack.academic.integration.EventIT.cleanUpTestEntities(EventIT.java:194)
+		... 3 more
+Caused by: org.hibernate.TransactionException: Unable to commit against JDBC Connection
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:97)
+	at app//org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:268)
+	at app//org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:101)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:563)
+	... 16 more
+Caused by: org.postgresql.util.PSQLException: ERROR: subject 4 must retain at least one lesson type
+  Где: PL/pgSQL function enforce_subject_lesson_type_parent() line 20 at RAISE
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:389)
+	at app//org.postgresql.jdbc.PgConnection.executeTransactionCommand(PgConnection.java:998)
+	at app//org.postgresql.jdbc.PgConnection.commit(PgConnection.java:1020)
+	at app//com.zaxxer.hikari.pool.ProxyConnection.commit(ProxyConnection.java:378)
+	at app//com.zaxxer.hikari.pool.HikariProxyConnection.commit(HikariProxyConnection.java)
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:87)
+	... 19 more
+</failure>
+  </testcase>
+  <testcase name="updateGroup_publishesGroupUpdatedEvent()" classname="ru.rutcampustrack.academic.integration.EventIT" time="0.081">
+    <failure message="org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection" type="org.springframework.orm.jpa.JpaSystemException">org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:348)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:256)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:567)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:795)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:758)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:698)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:416)
+	at app//org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223)
+	at app/jdk.proxy3/jdk.proxy3.$Proxy251.save(Unknown Source)
+	at app//ru.rutcampustrack.academic.integration.EventIT.setUpTestEntities(EventIT.java:145)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	Suppressed: java.lang.NullPointerException: Cannot invoke &quot;ru.rutcampustrack.academic.entity.Semester.getId()&quot; because &quot;this.testSemester&quot; is null
+		at ru.rutcampustrack.academic.integration.EventIT.cleanUpTestEntities(EventIT.java:194)
+		... 3 more
+Caused by: org.hibernate.TransactionException: Unable to commit against JDBC Connection
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:97)
+	at app//org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:268)
+	at app//org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:101)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:563)
+	... 16 more
+Caused by: org.postgresql.util.PSQLException: ERROR: subject 5 must retain at least one lesson type
+  Где: PL/pgSQL function enforce_subject_lesson_type_parent() line 20 at RAISE
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:389)
+	at app//org.postgresql.jdbc.PgConnection.executeTransactionCommand(PgConnection.java:998)
+	at app//org.postgresql.jdbc.PgConnection.commit(PgConnection.java:1020)
+	at app//com.zaxxer.hikari.pool.ProxyConnection.commit(ProxyConnection.java:378)
+	at app//com.zaxxer.hikari.pool.HikariProxyConnection.commit(HikariProxyConnection.java)
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:87)
+	... 19 more
+</failure>
+  </testcase>
+  <testcase name="activateSemester_publishesSemesterArchivedEvent()" classname="ru.rutcampustrack.academic.integration.EventIT" time="0.083">
+    <failure message="org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection" type="org.springframework.orm.jpa.JpaSystemException">org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:348)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:256)
+	at app//org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:567)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:795)
+	at app//org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:758)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:698)
+	at app//org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:416)
+	at app//org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:165)
+	at app//org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at app//org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223)
+	at app/jdk.proxy3/jdk.proxy3.$Proxy251.save(Unknown Source)
+	at app//ru.rutcampustrack.academic.integration.EventIT.setUpTestEntities(EventIT.java:145)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	Suppressed: java.lang.NullPointerException: Cannot invoke &quot;ru.rutcampustrack.academic.entity.Semester.getId()&quot; because &quot;this.testSemester&quot; is null
+		at ru.rutcampustrack.academic.integration.EventIT.cleanUpTestEntities(EventIT.java:194)
+		... 3 more
+Caused by: org.hibernate.TransactionException: Unable to commit against JDBC Connection
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:97)
+	at app//org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:268)
+	at app//org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:101)
+	at app//org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:563)
+	... 16 more
+Caused by: org.postgresql.util.PSQLException: ERROR: subject 6 must retain at least one lesson type
+  Где: PL/pgSQL function enforce_subject_lesson_type_parent() line 20 at RAISE
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:389)
+	at app//org.postgresql.jdbc.PgConnection.executeTransactionCommand(PgConnection.java:998)
+	at app//org.postgresql.jdbc.PgConnection.commit(PgConnection.java:1020)
+	at app//com.zaxxer.hikari.pool.ProxyConnection.commit(ProxyConnection.java:378)
+	at app//com.zaxxer.hikari.pool.HikariProxyConnection.commit(HikariProxyConnection.java)
+	at app//org.hibernate.resource.jdbc.internal.AbstractLogicalConnectionImplementor.commit(AbstractLogicalConnectionImplementor.java:87)
+	... 19 more
+</failure>
+  </testcase>
+  <system-out><![CDATA[{"ts":"2026-09-20T18:16:45.581+03:00","v":"1","level":"INFO","logger":"org.springframework.test.context.support.AnnotationConfigContextLoaderUtils","thread":"Test worker","msg":"Could not detect default configuration classes for test class [ru.rutcampustrack.academic.integration.EventIT]: EventIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.","service":"academic-service"}
+{"ts":"2026-09-20T18:16:45.588+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.test.context.SpringBootTestContextBootstrapper","thread":"Test worker","msg":"Found @SpringBootConfiguration ru.rutcampustrack.academic.AcademicApplication for test class ru.rutcampustrack.academic.integration.EventIT","service":"academic-service"}
+{"ts":"2026-09-20T18:16:45.592+03:00","v":"1","level":"INFO","logger":"tc.postgres:16","thread":"Test worker","msg":"Creating container for image: postgres:16","service":"academic-service"}
+{"ts":"2026-09-20T18:16:45.592+03:00","v":"1","level":"WARN","logger":"tc.postgres:16","thread":"Test worker","msg":"Reuse was requested but the environment does not support the reuse of containers\nTo enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at C:\\Users\\maksd\\.testcontainers.properties","service":"academic-service"}
+{"ts":"2026-09-20T18:16:45.689+03:00","v":"1","level":"INFO","logger":"tc.postgres:16","thread":"Test worker","msg":"Container postgres:16 is starting: 034a44e37a165e1f7b979443c7fb0bf50ac14ac4d90afa9b4bafbeacb42123ac","service":"academic-service"}
+{"ts":"2026-09-20T18:16:47.251+03:00","v":"1","level":"INFO","logger":"tc.postgres:16","thread":"Test worker","msg":"Container postgres:16 started in PT1.6585081S","service":"academic-service"}
+{"ts":"2026-09-20T18:16:47.251+03:00","v":"1","level":"INFO","logger":"tc.postgres:16","thread":"Test worker","msg":"Container is started (JDBC URL: jdbc:postgresql://localhost:59479/academic_db?loggerLevel=OFF)","service":"academic-service"}
+{"ts":"2026-09-20T18:16:47.252+03:00","v":"1","level":"INFO","logger":"tc.rabbitmq:3.13-management-alpine","thread":"Test worker","msg":"Creating container for image: rabbitmq:3.13-management-alpine","service":"academic-service"}
+{"ts":"2026-09-20T18:16:47.254+03:00","v":"1","level":"WARN","logger":"tc.rabbitmq:3.13-management-alpine","thread":"Test worker","msg":"Reuse was requested but the environment does not support the reuse of containers\nTo enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at C:\\Users\\maksd\\.testcontainers.properties","service":"academic-service"}
+{"ts":"2026-09-20T18:16:47.362+03:00","v":"1","level":"INFO","logger":"tc.rabbitmq:3.13-management-alpine","thread":"Test worker","msg":"Container rabbitmq:3.13-management-alpine is starting: 53e9972f5080b5a5a9b9bb8b5faddd7f52b83a50fb6f9618f53568061f55f945","service":"academic-service"}
+{"ts":"2026-09-20T18:16:57.676+03:00","v":"1","level":"INFO","logger":"tc.rabbitmq:3.13-management-alpine","thread":"Test worker","msg":"Container rabbitmq:3.13-management-alpine started in PT10.4237772S","service":"academic-service"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+{"ts":"2026-09-20T18:16:57.764+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.integration.EventIT","thread":"Test worker","msg":"Starting EventIT using Java 21.0.10 with PID 7624 (started by maksd in C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-historical-attendance\\services\\academic-service\\academic-app)","service":"academic-service"}
+{"ts":"2026-09-20T18:16:57.765+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.integration.EventIT","thread":"Test worker","msg":"Running with Spring Boot v3.5.16, Spring v6.2.19","service":"academic-service"}
+{"ts":"2026-09-20T18:16:57.765+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.integration.EventIT","thread":"Test worker","msg":"The following 1 profile is active: \"test\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:58.647+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Multiple Spring Data modules found, entering strict repository configuration mode","service":"academic-service"}
+{"ts":"2026-09-20T18:16:58.649+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Bootstrapping Spring Data JPA repositories in DEFAULT mode.","service":"academic-service"}
+{"ts":"2026-09-20T18:16:58.762+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Finished Spring Data repository scanning in 111 ms. Found 16 JPA repository interfaces.","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.167+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat initialized with port 0 (http)","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.168+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Initializing ProtocolHandler [\"http-nio-auto-2\"]","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.168+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardService","thread":"Test worker","msg":"Starting service [Tomcat]","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.169+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardEngine","thread":"Test worker","msg":"Starting Servlet engine: [Apache Tomcat/10.1.59]","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.244+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","thread":"Test worker","msg":"Initializing Spring embedded WebApplicationContext","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.245+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","thread":"Test worker","msg":"Root WebApplicationContext: initialization completed in 1474 ms","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.341+03:00","v":"1","level":"ERROR","logger":"ru.rutcampustrack.shared.security.PublicKeyProvider","thread":"Test worker","msg":"Auth Service unreachable: I/O error on GET request for \"http://localhost:9999/auth/public-key\": null","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.353+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.security.AcademicUserContextFilter","thread":"Test worker","msg":"Filter 'academicUserContextFilter' configured for use","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.408+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-2 - Starting...","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.425+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.pool.HikariPool","thread":"Test worker","msg":"HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@3df2669e","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.426+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-2 - Start completed.","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.428+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.FlywayExecutor","thread":"Test worker","msg":"Database: jdbc:postgresql://localhost:59479/academic_db?loggerLevel=OFF (PostgreSQL 16.13)","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.460+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Schema history table \"public\".\"flyway_schema_history\" does not exist yet","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.461+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbValidate","thread":"Test worker","msg":"Successfully validated 27 migrations (execution time 00:00.021s)","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.477+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Creating Schema History table \"public\".\"flyway_schema_history\" ...","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.507+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Current version of schema \"public\": << Empty Schema >>","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.516+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"1 - baseline\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.581+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"2 - seed test data\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.607+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"3 - login sequences\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.628+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"4 - campus settings bigserial\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.652+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"5 - add enum casts\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.668+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"6 - add semester first week type\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.687+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"7 - add user avatar\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.704+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"8 - group unify name\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.722+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"9 - groups archived at\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.741+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"10 - semesters no overlap\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.788+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"11 - enum equality operators\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.816+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"12 - subjects group id\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.818+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.836+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"13 - homework lesson binding\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.858+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"14 - update campus coordinates\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.872+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"15 - shedlock table\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.889+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"16 - academic outbox\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.912+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"17 - add performance indexes\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.927+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"18 - event consumer processed\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.945+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"19 - audit log\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.964+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"20 - audit log indexes\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.982+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"21 - user name icu collation\"","service":"academic-service"}
+{"ts":"2026-09-20T18:16:59.997+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"22 - user name sort index\"","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.013+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"23 - homework notifications\"","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.037+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"24 - auth session authority\"","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.079+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"25 - student subject homework foundation\"","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.082+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: extension \"btree_gist\" already exists, skipping (SQL State: 42710 - Error Code: 0)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.123+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"26 - campus map\"","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.186+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"27 - historical membership coverage\"","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.204+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Successfully applied 27 migrations to schema \"public\", now at version v27 (execution time 00:00.363s)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.255+03:00","v":"1","level":"INFO","logger":"org.hibernate.jpa.internal.util.LogHelper","thread":"Test worker","msg":"HHH000204: Processing PersistenceUnitInfo [name: default]","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.264+03:00","v":"1","level":"INFO","logger":"org.hibernate.cache.internal.RegionFactoryInitiator","thread":"Test worker","msg":"HHH000026: Second-level cache disabled","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.284+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo","thread":"Test worker","msg":"No LoadTimeWeaver setup: ignoring JPA class transformer","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.289+03:00","v":"1","level":"WARN","logger":"org.hibernate.orm.deprecation","thread":"Test worker","msg":"HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.293+03:00","v":"1","level":"INFO","logger":"org.hibernate.orm.connections.pooling","thread":"Test worker","msg":"HHH10001005: Database info:\n\tDatabase JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-2)']\n\tDatabase driver: undefined/unknown\n\tDatabase version: 16.13\n\tAutocommit mode: undefined/unknown\n\tIsolation level: undefined/unknown\n\tMinimum pool size: undefined/unknown\n\tMaximum pool size: undefined/unknown","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.560+03:00","v":"1","level":"INFO","logger":"org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator","thread":"Test worker","msg":"HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:00.593+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"Test worker","msg":"Initialized JPA EntityManagerFactory for persistence unit 'default'","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.387+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.client.autoconfigure.GrpcClientAutoConfiguration","thread":"Test worker","msg":"Detected grpc-netty: Creating NettyChannelFactory + InProcessChannelFactory","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.656+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.actuate.endpoint.web.EndpointLinksResolver","thread":"Test worker","msg":"Exposing 2 endpoints beneath base path '/actuator'","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.690+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Starting ProtocolHandler [\"http-nio-auto-2\"]","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.694+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat started on port 59494 (http) with context path '/'","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.704+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.integration.EventIT","thread":"Test worker","msg":"Started EventIT in 4.024 seconds (process running for 55.858)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.723+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select aoe1_0.id,aoe1_0.created_at,aoe1_0.event_type,aoe1_0.last_error,aoe1_0.payload,aoe1_0.retry_count,aoe1_0.sent_at,aoe1_0.status from public.academic_outbox aoe1_0 where aoe1_0.status=? order by aoe1_0.created_at fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.731+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.740+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.745+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.749+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.751+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.754+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.757+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.762+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.767+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.769+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.771+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.772+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.777+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subjects (created_at,group_id,name,type) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.817+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select aoe1_0.id,aoe1_0.created_at,aoe1_0.event_type,aoe1_0.last_error,aoe1_0.payload,aoe1_0.retry_count,aoe1_0.sent_at,aoe1_0.status from public.academic_outbox aoe1_0 where aoe1_0.status=? order by aoe1_0.created_at fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.823+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.829+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.832+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.836+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.838+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.841+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.843+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.847+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.850+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.857+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.863+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.865+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.868+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.870+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.872+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subjects (created_at,group_id,name,type) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.887+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select aoe1_0.id,aoe1_0.created_at,aoe1_0.event_type,aoe1_0.last_error,aoe1_0.payload,aoe1_0.retry_count,aoe1_0.sent_at,aoe1_0.status from public.academic_outbox aoe1_0 where aoe1_0.status=? order by aoe1_0.created_at fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.891+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.895+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.898+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.903+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.908+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.911+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.914+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.916+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.919+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.921+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.923+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.928+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.934+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.936+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.939+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.941+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.945+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subjects (created_at,group_id,name,type) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.956+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select aoe1_0.id,aoe1_0.created_at,aoe1_0.event_type,aoe1_0.last_error,aoe1_0.payload,aoe1_0.retry_count,aoe1_0.sent_at,aoe1_0.status from public.academic_outbox aoe1_0 where aoe1_0.status=? order by aoe1_0.created_at fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.960+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.963+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.965+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.966+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.968+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.970+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.972+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.977+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.981+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.985+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.988+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.990+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.994+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.996+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:01.998+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.000+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.002+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.003+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.006+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subjects (created_at,group_id,name,type) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.015+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select aoe1_0.id,aoe1_0.created_at,aoe1_0.event_type,aoe1_0.last_error,aoe1_0.payload,aoe1_0.retry_count,aoe1_0.sent_at,aoe1_0.status from public.academic_outbox aoe1_0 where aoe1_0.status=? order by aoe1_0.created_at fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.020+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.027+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.031+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.034+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.037+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.039+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.043+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.045+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.047+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.050+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.053+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.055+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.059+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.061+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.064+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.069+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.074+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.077+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.080+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.082+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.086+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subjects (created_at,group_id,name,type) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.102+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select aoe1_0.id,aoe1_0.created_at,aoe1_0.event_type,aoe1_0.last_error,aoe1_0.payload,aoe1_0.retry_count,aoe1_0.sent_at,aoe1_0.status from public.academic_outbox aoe1_0 where aoe1_0.status=? order by aoe1_0.created_at fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.109+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.113+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.116+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.118+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.121+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.123+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.127+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.131+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.133+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.135+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.137+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.141+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.146+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.150+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.153+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.154+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.156+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.160+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.is_active order by s1_0.id","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.163+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select g1_0.id from public.groups g1_0 where g1_0.name=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.165+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.groups (archived_at,created_at,is_active,name) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.167+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select ghc1_0.group_id,ghc1_0.coverage_from,ghc1_0.created_at,ghc1_0.writer_version from public.group_history_coverage ghc1_0 where ghc1_0.group_id=?","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.169+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.group_history_coverage (coverage_from,created_at,writer_version,group_id) values (?,?,?,?)","service":"academic-service"}
+{"ts":"2026-09-20T18:17:02.171+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subjects (created_at,group_id,name,type) values (?,?,?,?)","service":"academic-service"}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,15 @@
+{
+  "baseRevision": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837",
+  "freezeHash": "9CCA55FDDF21C752BB7D269D994683F468E373376140F4C4835226E72564D964",
+  "sourcePaths": 16,
+  "sourceHashMismatches": 0,
+  "h91Overall": "FAIL shared test compilation; app tests individually PASS",
+  "h91AppTests": 42.0,
+  "h92SharedTests": 22.0,
+  "testFailures": 0,
+  "testErrors": 0,
+  "skipped": 0,
+  "retainedEvidenceReason": "H91 to H92 changed only TLS test unnecessary throws declaration; all other15 hashes unchanged",
+  "runtimeScope": "Local real Netty TLS/test-only RPC handlers; no deployed domain RPC",
+  "review": "PENDING"
+}

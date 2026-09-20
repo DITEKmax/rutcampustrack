@@ -1,0 +1,254 @@
+[
+  {
+    "id": "JS-ADMIN-01",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "UserService create exists, role-prefixed login contradicts current rule; Telegram creation chain not accepted"
+  },
+  {
+    "id": "JS-ADMIN-02",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Auth role grants exist; admin status UI/commands and per-role lifecycle not accepted"
+  },
+  {
+    "id": "JS-ADMIN-03",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Historical transfer implementation WIP, H103 compile failure; full flow not accepted"
+  },
+  {
+    "id": "JS-ADMIN-04",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "archive method exists; impact preview/password/reversible history flow not accepted"
+  },
+  {
+    "id": "JS-ADMIN-05",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Group CRUD exists; latest group naming decision must reconcile old story, full draft/study-duration flow not accepted"
+  },
+  {
+    "id": "JS-ADMIN-06",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "isHeadman patch exists; grant authority mismatch unresolved"
+  },
+  {
+    "id": "JS-ADMIN-07",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "assistant revoke call exists; full reassignment preview/rights flow not accepted"
+  },
+  {
+    "id": "JS-ADMIN-08",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "SemesterService create and UI dialog implemented; full target UI acceptance not located"
+  },
+  {
+    "id": "JS-ADMIN-09",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "activateSemester transaction exists; complete zero-active UI/atomic flow not accepted"
+  },
+  {
+    "id": "JS-ADMIN-10",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "UI delete currently blocks active semester; target any-semester preview/password/archive flow incomplete"
+  },
+  {
+    "id": "JS-ADMIN-11",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "dashboard exists; role counts/daily delta/shared aggregate requirements not accepted"
+  },
+  {
+    "id": "JS-ADMIN-12",
+    "status": "unknown",
+    "evidence": "no full acceptance located in bounded assessment",
+    "remaining": "implementation and full criterion evidence not established; not classified as absent"
+  },
+  {
+    "id": "JS-ADMIN-13",
+    "status": "unknown",
+    "evidence": "no full acceptance located in bounded assessment",
+    "remaining": "implementation and full criterion evidence not established; not classified as absent"
+  },
+  {
+    "id": "JS-ADMIN-14",
+    "status": "unknown",
+    "evidence": "no full acceptance located in bounded assessment",
+    "remaining": "implementation and full criterion evidence not established; not classified as absent"
+  },
+  {
+    "id": "JS-ADMIN-15",
+    "status": "unknown",
+    "evidence": "no full acceptance located in bounded assessment",
+    "remaining": "implementation and full criterion evidence not established; not classified as absent"
+  },
+  {
+    "id": "JS-ADMIN-16",
+    "status": "unknown",
+    "evidence": "no full acceptance located in bounded assessment",
+    "remaining": "implementation and full criterion evidence not established; not classified as absent"
+  },
+  {
+    "id": "JS-ADMIN-17",
+    "status": "unknown",
+    "evidence": "no full acceptance located in bounded assessment",
+    "remaining": "implementation and full criterion evidence not established; not classified as absent"
+  },
+  {
+    "id": "JS-ADMIN-18",
+    "status": "unknown",
+    "evidence": "no full acceptance located in bounded assessment",
+    "remaining": "implementation and full criterion evidence not established; not classified as absent"
+  },
+  {
+    "id": "JS-ADMIN-19",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "user_role_grants model exists; admin add-role managed chain not accepted"
+  },
+  {
+    "id": "JS-ADMIN-20",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "auth/security baseline exists; admin generated reset link/password full flow not accepted"
+  },
+  {
+    "id": "JS-ADMIN-21",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "UserService Telegram patch exists; linked teacher bot flow not accepted"
+  },
+  {
+    "id": "JS-ADMIN-22",
+    "status": "unknown",
+    "evidence": "no full acceptance located in bounded assessment",
+    "remaining": "implementation and full criterion evidence not established; not classified as absent"
+  },
+  {
+    "id": "JS-ADMIN-23",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Map read model exists; admin publish SVG+PNG not accepted"
+  },
+  {
+    "id": "JS-ADMIN-24",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Map reader supports assets; admin missing-files screen not accepted"
+  },
+  {
+    "id": "JS-ADMIN-25",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Immutable map read asset groundwork; replacement/publication flow not accepted"
+  },
+  {
+    "id": "JS-ADMIN-26",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Auth active role switch accepted in PWA; full admin desktop route/authority behavior not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-01",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "UserService uses role-prefixed login; superseded by ADMIN01; Telegram delivery/removal not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-02",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Auth/Telegram components exist; real Telegram host/default-role chain not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-03",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Auth reset components exist; OTP purpose/TTL/attempts/desktop+bot flow not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-04",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "live14 password/global revoke accepted in PWA; desktop/Telegram notification fullstory not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-05",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Canonical recurring generation WIP; not integrated, server parity consumer complete flow not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-06",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Lesson status transitions/event publisher exist; real Telegram delivery not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-07",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "AutoABSENT historical WIP; close notification not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-08",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Cancel/statistics WIP; full cancellation/Telegram chain not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-09",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Notification channel components exist; independent end-to-end channel delivery not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-10",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Event producers/consumers exist; required event delivery and retry set not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-11",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "WebSocket/WebPush components exist; full independent channel behavior not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-12",
+    "status": "unknown",
+    "evidence": "no full acceptance located in bounded assessment",
+    "remaining": "implementation and full criterion evidence not established; not classified as absent"
+  },
+  {
+    "id": "JS-SYSTEM-13",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Login/session core accepted; all3 web login methods not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-14",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Login/profile/roles core accepted; full combined semester payload and all consumers not accepted"
+  },
+  {
+    "id": "JS-SYSTEM-15",
+    "status": "unknown",
+    "evidence": "no full acceptance located in bounded assessment",
+    "remaining": "implementation and full criterion evidence not established; not classified as absent"
+  },
+  {
+    "id": "JS-SYSTEM-16",
+    "status": "partial",
+    "evidence": "target3d source; live14; retrospective-stop REPORT; RESULT-20260920-GO.md",
+    "remaining": "Reports and B2 candidate exist; complete dual stored metrics/current lifecycle integration open"
+  }
+]

@@ -1,0 +1,231 @@
+{
+  "schema": "rct.runtime-evidence.v1",
+  "task": "JS-STUDENT-01-r1",
+  "runId": "20260906-183823",
+  "startedAt": "2026-09-06T18:38:23.1156823+03:00",
+  "status": "PASS",
+  "stage": "complete",
+  "resources": {
+    "network": "rct-js-student-01",
+    "containers": [
+      "rct-js-student-01-pg-academic",
+      "rct-js-student-01-pg-schedule",
+      "rct-js-student-01-mongo",
+      "rct-js-student-01-redis",
+      "rct-js-student-01-rabbit"
+    ],
+    "ports": [
+      25431,
+      25432,
+      27027,
+      26379,
+      25672,
+      35672,
+      29090,
+      29091,
+      29191,
+      29092,
+      29192,
+      29093,
+      29193,
+      29080,
+      28080
+    ]
+  },
+  "services": {
+    "academic": {
+      "pid": 17504,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\academic.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\academic.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29091/actuator/health"
+    },
+    "auth": {
+      "pid": 50724,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\auth.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\auth.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29090/actuator/health"
+    },
+    "schedule": {
+      "pid": 45020,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\schedule.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\schedule.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29092/actuator/health"
+    },
+    "attendance": {
+      "pid": 14956,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\attendance.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\attendance.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29093/actuator/health"
+    },
+    "mobile-bff": {
+      "pid": 35048,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\mobile-bff.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\mobile-bff.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29080/actuator/health"
+    },
+    "gateway": {
+      "pid": 42360,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\gateway.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\gateway.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:28080/actuator/health"
+    }
+  },
+  "assertions": [
+    {
+      "name": "isolated infrastructure ready",
+      "passed": true,
+      "evidence": {
+        "containers": 5,
+        "anonymousStorage": true
+      }
+    },
+    {
+      "name": "six real service processes ready",
+      "passed": true,
+      "evidence": {
+        "serviceCount": 6,
+        "hiddenProcesses": true
+      }
+    },
+    {
+      "name": "real auth login through gateway",
+      "passed": true,
+      "evidence": {
+        "tokenRecorded": false,
+        "httpStatus": 200
+      }
+    },
+    {
+      "name": "Rabbit outage commits domain state and idempotent PENDING outbox",
+      "passed": true,
+      "evidence": {
+        "eventTraceId": "2b8a985b95d4c85e90b5cb1ce8a99a01",
+        "lessonId": 1,
+        "pairCount": 1,
+        "receiptCount": 1,
+        "receiptKey": "runtime-pending-20260906-183823",
+        "signedStudentId": 3,
+        "requestCount": 1,
+        "outboxStatus": "pending"
+      }
+    },
+    {
+      "name": "real scheduled outbox publisher recovered after Rabbit restart",
+      "passed": true,
+      "evidence": {
+        "sentAtPresent": true,
+        "status": "sent",
+        "eventType": "late_checkin.requested"
+      }
+    },
+    {
+      "name": "real coordinate mutation through gateway/BFF/attendance",
+      "passed": true,
+      "evidence": {
+        "outboxStatus": "sent",
+        "attendanceStatus": "PRESENT",
+        "eventTraceId": "349e56b179b7e926a91c1c5c2be87851",
+        "receiptKey": "runtime-present-20260906-183823",
+        "lessonId": 2,
+        "source": "STUDENT_GEO",
+        "markedBy": null
+      }
+    },
+    {
+      "name": "invalid-signature external JWT rejected",
+      "passed": true,
+      "evidence": {
+        "downstreamMutation": false,
+        "httpStatus": 401
+      }
+    },
+    {
+      "name": "expired external JWT rejected",
+      "passed": true,
+      "evidence": {
+        "downstreamMutation": false,
+        "httpStatus": 401
+      }
+    },
+    {
+      "name": "wrong-issuer external JWT rejected",
+      "passed": true,
+      "evidence": {
+        "downstreamMutation": false,
+        "httpStatus": 401
+      }
+    },
+    {
+      "name": "wrong-audience external JWT rejected",
+      "passed": true,
+      "evidence": {
+        "downstreamMutation": false,
+        "httpStatus": 401
+      }
+    },
+    {
+      "name": "network path is linked by observable state",
+      "passed": true,
+      "evidence": {
+        "gatewayHttpStatus": 200,
+        "scheduleLessonId": 1,
+        "liveServiceProcesses": 6,
+        "signedStudentId": 3,
+        "academicSubjectId": 1,
+        "bffAckOutcome": "PENDING_CONFIRMATION",
+        "attendanceReceiptKey": "runtime-pending-20260906-183823",
+        "eventTraceId": "2b8a985b95d4c85e90b5cb1ce8a99a01"
+      }
+    }
+  ],
+  "replayComparison": {
+    "rawEqual": true,
+    "first": {
+      "outcome": "PENDING_CONFIRMATION",
+      "lessonId": "1",
+      "requestId": "6a9d89564e837062f1c9969b",
+      "requestStatus": "PENDING",
+      "retryAt": "2026-09-06T15:45:06.646Z",
+      "serverNow": "2026-09-06T15:40:06.646Z"
+    },
+    "replay": {
+      "outcome": "PENDING_CONFIRMATION",
+      "lessonId": "1",
+      "requestId": "6a9d89564e837062f1c9969b",
+      "requestStatus": "PENDING",
+      "retryAt": "2026-09-06T15:45:06.646Z",
+      "serverNow": "2026-09-06T15:40:06.646Z"
+    }
+  },
+  "trace": {
+    "requestCorrelationId": "js-student-01-20260906-183823",
+    "pendingIdempotencyKey": "runtime-pending-20260906-183823",
+    "presentIdempotencyKey": "runtime-present-20260906-183823",
+    "eventTraceIds": [
+      "2b8a985b95d4c85e90b5cb1ce8a99a01",
+      "349e56b179b7e926a91c1c5c2be87851"
+    ],
+    "logFiles": [
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\academic.out.log",
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\academic.err.log",
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\auth.out.log",
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\auth.err.log",
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\schedule.out.log",
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\schedule.err.log",
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\attendance.out.log",
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\attendance.err.log",
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\mobile-bff.out.log",
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\mobile-bff.err.log",
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\gateway.out.log",
+      "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-183823\\gateway.err.log"
+    ],
+    "evidence": "Gateway HTTP responses, byte-equivalent BFF ACK replay, attendance receipts carrying the HTTP keys, signed identity, schedule lesson ids, academic subject metadata and outbox trace ids form the asserted network/state chain; service logs are retained as supporting evidence."
+  },
+  "completedAt": "2026-09-06T18:40:30.3881070+03:00"
+}

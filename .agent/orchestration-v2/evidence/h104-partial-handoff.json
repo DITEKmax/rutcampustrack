@@ -1,0 +1,27 @@
+{
+  "base": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+  "sourceDrift": [],
+  "outputs": [
+    {
+      "path": "docs/openapi/schedule.json",
+      "sha256": "52EE384A311BFCE1CEBEEAA6148916E834A26E56793D6BA469DE6C4056E26C50",
+      "modifiedUtc": "2026-09-20T15:38:15.7319584Z"
+    },
+    {
+      "path": "frontends/pwa/src/api/generated/schedule.types.ts",
+      "sha256": "5D51AC1B9CF971C4F223463EE005F62EEC00A859FD345345F4EEDF0FADC9781A",
+      "modifiedUtc": "2026-09-20T15:53:48.4754911Z"
+    },
+    {
+      "path": "frontends/web-panel/src/app/api/generated/schedule.types.ts",
+      "sha256": "5D51AC1B9CF971C4F223463EE005F62EEC00A859FD345345F4EEDF0FADC9781A",
+      "modifiedUtc": "2026-09-20T15:54:03.4824951Z"
+    },
+    {
+      "path": "frontends/mini-app/src/api/generated/schedule.types.ts",
+      "sha256": "ED461C99BD7E331C923B123D512D9E1638EDF0A700721C05E931E9DE9F458B77",
+      "modifiedUtc": "2026-09-20T13:19:00.2720602Z"
+    }
+  ],
+  "status": "H104 partial released, miniapp/siblings/finalTS pending"
+}

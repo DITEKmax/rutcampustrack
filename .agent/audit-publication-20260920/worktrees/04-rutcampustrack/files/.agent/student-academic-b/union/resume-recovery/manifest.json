@@ -1,0 +1,3319 @@
+{
+  "kind": "fresh-d3-source-recovery-manifest",
+  "status": "FROZEN_PASS",
+  "generatedAt": "2026-09-08T07:49:04.996Z",
+  "cwd": "C:\\Users\\maksd\\.codex\\worktrees\\34a5\\rutcampustrack",
+  "baseRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "sourceRevision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "lateImportOrderingDeviation": "This is a late guarded source recovery after the 81 snapshot imports; original sequence ordering is not claimed.",
+  "pathCount": 39,
+  "statusCounts": {
+    "M": 18,
+    "A": 21
+  },
+  "exact39Pass": true,
+  "sourceRows": [
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/fixtures/homework-completion-completed.json",
+      "sourceGitBlobObjectId": "0136691116f086e7e0cee8105417ceed8301e978",
+      "sourceGitBlobBytes": 80,
+      "sourceRawSha256": "AABBDFD60FD6E1598BB367A245483E7175BFBEEDA09BF3B0D3BA1D9C88DFDCC3",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "AABBDFD60FD6E1598BB367A245483E7175BFBEEDA09BF3B0D3BA1D9C88DFDCC3",
+      "destinationBytesAfter": 80,
+      "destinationGitBlobObjectIdAfter": "0136691116f086e7e0cee8105417ceed8301e978",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/fixtures/homework-completion-completed.json"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/fixtures/homework-completion-undone.json",
+      "sourceGitBlobObjectId": "96d5d176fb7a326fec0800e8468147121e66dc5e",
+      "sourceGitBlobBytes": 66,
+      "sourceRawSha256": "33AFD3AEF747A7D83F48A786D1127102E392A6423D3908F17DF9E14DC1AA6BAE",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "33AFD3AEF747A7D83F48A786D1127102E392A6423D3908F17DF9E14DC1AA6BAE",
+      "destinationBytesAfter": 66,
+      "destinationGitBlobObjectIdAfter": "96d5d176fb7a326fec0800e8468147121e66dc5e",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/fixtures/homework-completion-undone.json"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/fixtures/homework-feed.json",
+      "sourceGitBlobObjectId": "d67280ed4efd0f479b9ecd878284062488d348d7",
+      "sourceGitBlobBytes": 1107,
+      "sourceRawSha256": "966B29D6DDC21759CA0E0262FD39A1558B40B26E7CBD9FC0FA967ABF4B7FB514",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "966B29D6DDC21759CA0E0262FD39A1558B40B26E7CBD9FC0FA967ABF4B7FB514",
+      "destinationBytesAfter": 1107,
+      "destinationGitBlobObjectIdAfter": "d67280ed4efd0f479b9ecd878284062488d348d7",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/fixtures/homework-feed.json"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/fixtures/manifest.json",
+      "sourceGitBlobObjectId": "f1caee72bfc2031616c5f4a8a39b5c0430782215",
+      "sourceGitBlobBytes": 1149,
+      "sourceRawSha256": "AB57D82151AE89AAF8B6EDFD299307C49D075EAC18BF02979BD1923D8EB06EB1",
+      "destinationRawSha256Before": "E8B582245098E8C0373B56C1AC28CAC0AA93F3D0A5C7B6DDB0AF12C84D30BCB9",
+      "destinationBytesBefore": 892,
+      "destinationRawSha256After": "AB57D82151AE89AAF8B6EDFD299307C49D075EAC18BF02979BD1923D8EB06EB1",
+      "destinationBytesAfter": 1149,
+      "destinationGitBlobObjectIdAfter": "f1caee72bfc2031616c5f4a8a39b5c0430782215",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "rontends/mobile-core/fixtures/manifest.json"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/student-client.ts",
+      "sourceGitBlobObjectId": "32e8b5c4409993c7f9e9396641e6b847a2534a98",
+      "sourceGitBlobBytes": 3814,
+      "sourceRawSha256": "052F55329A72A6269CF4612A4D5906CEBD6C08F70C106043FE263290F7810813",
+      "destinationRawSha256Before": "6D1ED13E9DAFEDB54B77C569A6A1F8E33FAEF96CF162FD74BA4A0C0564737362",
+      "destinationBytesBefore": 3237,
+      "destinationRawSha256After": "052F55329A72A6269CF4612A4D5906CEBD6C08F70C106043FE263290F7810813",
+      "destinationBytesAfter": 3814,
+      "destinationGitBlobObjectIdAfter": "32e8b5c4409993c7f9e9396641e6b847a2534a98",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "rontends/mobile-core/src/api/student-client.ts"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/types.ts",
+      "sourceGitBlobObjectId": "4e7e7244101d4bd5a8794edc347c312dfdde70eb",
+      "sourceGitBlobBytes": 1112,
+      "sourceRawSha256": "F7928ACAF0151393D056B54F26127EA722969953516B11792D1F6C3823A63873",
+      "destinationRawSha256Before": "EC0AB03B60E71BFF0C5C928ABFF275C2CE8727B9BEA85D006EBD625573D14135",
+      "destinationBytesBefore": 780,
+      "destinationRawSha256After": "F7928ACAF0151393D056B54F26127EA722969953516B11792D1F6C3823A63873",
+      "destinationBytesAfter": 1112,
+      "destinationGitBlobObjectIdAfter": "4e7e7244101d4bd5a8794edc347c312dfdde70eb",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "rontends/mobile-core/src/api/types.ts"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/today/TodayScreen.vue",
+      "sourceGitBlobObjectId": "909f4b4f466c53b460a9739f2a5178cece7294c1",
+      "sourceGitBlobBytes": 12228,
+      "sourceRawSha256": "D2757AAB5FF69AE4DCF099FEC20F830E0747730AEEB573A0914F9DA02C878EA0",
+      "destinationRawSha256Before": "315D6C52CAD2970310D57622E64D78061D1BC6BEDE8717E07DE4C64BE9FECAFB",
+      "destinationBytesBefore": 12585,
+      "destinationRawSha256After": "D2757AAB5FF69AE4DCF099FEC20F830E0747730AEEB573A0914F9DA02C878EA0",
+      "destinationBytesAfter": 12228,
+      "destinationGitBlobObjectIdAfter": "909f4b4f466c53b460a9739f2a5178cece7294c1",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "rontends/mobile-core/src/features/today/TodayScreen.vue"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/today/today-screen.pcss",
+      "sourceGitBlobObjectId": "4e2a36f27e8f37068bf611ac8319ed35456f0b9e",
+      "sourceGitBlobBytes": 10057,
+      "sourceRawSha256": "A5FD754B451F93489CBF1652BE90AB50A520EC5E8AB1BD89F773C9E8BA84B860",
+      "destinationRawSha256Before": "1995A82BC6C6C86D18551E0EE549A99AA6664C425A7AE8D09DC66208D4422EFC",
+      "destinationBytesBefore": 12320,
+      "destinationRawSha256After": "A5FD754B451F93489CBF1652BE90AB50A520EC5E8AB1BD89F773C9E8BA84B860",
+      "destinationBytesAfter": 10057,
+      "destinationGitBlobObjectIdAfter": "4e2a36f27e8f37068bf611ac8319ed35456f0b9e",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "rontends/mobile-core/src/features/today/today-screen.pcss"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/index.ts",
+      "sourceGitBlobObjectId": "eb8940942aa995d51cc463a62678ba0fd669b59e",
+      "sourceGitBlobBytes": 1256,
+      "sourceRawSha256": "C41AF226F41A436F9323A10A4CF0096E84714D2C1823C49A96F8CAD47D2CCB69",
+      "destinationRawSha256Before": "CD93B15685772C62288A6A951B4D3BF0B4D764DA90551EBB9220DA971DA22346",
+      "destinationBytesBefore": 1005,
+      "destinationRawSha256After": "C41AF226F41A436F9323A10A4CF0096E84714D2C1823C49A96F8CAD47D2CCB69",
+      "destinationBytesAfter": 1256,
+      "destinationGitBlobObjectIdAfter": "eb8940942aa995d51cc463a62678ba0fd669b59e",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "rontends/mobile-core/src/index.ts"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+      "sourceGitBlobObjectId": "7014ba13520ca18e658bbe1e481370d80358d4d5",
+      "sourceGitBlobBytes": 1883,
+      "sourceRawSha256": "48B5BA2E8398628377A545309D5BDBD0708CE4C33E138FCCFC00B9F81EC28562",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "48B5BA2E8398628377A545309D5BDBD0708CE4C33E138FCCFC00B9F81EC28562",
+      "destinationBytesAfter": 1883,
+      "destinationGitBlobObjectIdAfter": "7014ba13520ca18e658bbe1e481370d80358d4d5",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/MobileShell.vue",
+      "sourceGitBlobObjectId": "5cc76b13dfbc2c57346de3c193dcc8d392b64885",
+      "sourceGitBlobBytes": 4308,
+      "sourceRawSha256": "5F1DAE4030128D146ABD10672A73FE94983A091EF186AB0FD338E125D079CFAE",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "5F1DAE4030128D146ABD10672A73FE94983A091EF186AB0FD338E125D079CFAE",
+      "destinationBytesAfter": 4308,
+      "destinationGitBlobObjectIdAfter": "5cc76b13dfbc2c57346de3c193dcc8d392b64885",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/src/shared/components/MobileShell.vue"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+      "sourceGitBlobObjectId": "3ec935cdb3cde312c0f3c55acd66cea11c60876d",
+      "sourceGitBlobBytes": 2572,
+      "sourceRawSha256": "1B716DD5ABCD418B756C98253F24B87778EED26FEADD0FB8A6434008F718AA1A",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "1B716DD5ABCD418B756C98253F24B87778EED26FEADD0FB8A6434008F718AA1A",
+      "destinationBytesAfter": 2572,
+      "destinationGitBlobObjectIdAfter": "3ec935cdb3cde312c0f3c55acd66cea11c60876d",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/mobile-shell.pcss",
+      "sourceGitBlobObjectId": "3c90437597b2442e226b22d00ef09f7b850a3aa6",
+      "sourceGitBlobBytes": 588,
+      "sourceRawSha256": "9DF1A2079BB1356CD87253A2702BE1C7ED1BF284212CCA97C851FD17EB6E3B18",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "9DF1A2079BB1356CD87253A2702BE1C7ED1BF284212CCA97C851FD17EB6E3B18",
+      "destinationBytesAfter": 588,
+      "destinationGitBlobObjectIdAfter": "3c90437597b2442e226b22d00ef09f7b850a3aa6",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/src/shared/components/mobile-shell.pcss"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/host.ts",
+      "sourceGitBlobObjectId": "d986baebe0a2a8f30c0a24e57d33c05876cd9608",
+      "sourceGitBlobBytes": 785,
+      "sourceRawSha256": "B48FC3B170B44DFCC7EB4B2534153C3BF62D792A639F75F973A19D80F810501D",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "B48FC3B170B44DFCC7EB4B2534153C3BF62D792A639F75F973A19D80F810501D",
+      "destinationBytesAfter": 785,
+      "destinationGitBlobObjectIdAfter": "d986baebe0a2a8f30c0a24e57d33c05876cd9608",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/src/shared/host.ts"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/navigation.ts",
+      "sourceGitBlobObjectId": "e57e7d3f944f5cbdc4ae0fca84b388de0a2ebd15",
+      "sourceGitBlobBytes": 4682,
+      "sourceRawSha256": "F101000CFC8968F6B31A7A720E0577E91E49FB3BC9EAF2AEDC1416DF32D75F9B",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "F101000CFC8968F6B31A7A720E0577E91E49FB3BC9EAF2AEDC1416DF32D75F9B",
+      "destinationBytesAfter": 4682,
+      "destinationGitBlobObjectIdAfter": "e57e7d3f944f5cbdc4ae0fca84b388de0a2ebd15",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/src/shared/navigation.ts"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/shell-contract.ts",
+      "sourceGitBlobObjectId": "c8decb3ccf70157c6133805cbd1055d159063a8e",
+      "sourceGitBlobBytes": 1075,
+      "sourceRawSha256": "815A67E3F1688749F0F977550773D32E8FB57CB46A65D2228BDDAA3802A2000B",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "815A67E3F1688749F0F977550773D32E8FB57CB46A65D2228BDDAA3802A2000B",
+      "destinationBytesAfter": 1075,
+      "destinationGitBlobObjectIdAfter": "c8decb3ccf70157c6133805cbd1055d159063a8e",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/src/shared/shell-contract.ts"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/styles/tokens.pcss",
+      "sourceGitBlobObjectId": "eba300575e231ca1bc962200e1a61c96d6a1fef9",
+      "sourceGitBlobBytes": 3650,
+      "sourceRawSha256": "7577E08BBF9E846B9C1C751D54F6027754A83C94392907F3F3E5C2F9616C9B0B",
+      "destinationRawSha256Before": "24D0D9FD1B13CF1BAB62D412DE0FA0422941989FB56D8F114BCB4A5EC31A0D03",
+      "destinationBytesBefore": 3678,
+      "destinationRawSha256After": "7577E08BBF9E846B9C1C751D54F6027754A83C94392907F3F3E5C2F9616C9B0B",
+      "destinationBytesAfter": 3650,
+      "destinationGitBlobObjectIdAfter": "eba300575e231ca1bc962200e1a61c96d6a1fef9",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "rontends/mobile-core/src/styles/tokens.pcss"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/test-adapter/fixture-transport.test.ts",
+      "sourceGitBlobObjectId": "e9627da501b91ba81e599ad8eb9e7f17468736e4",
+      "sourceGitBlobBytes": 5735,
+      "sourceRawSha256": "7C48E2B4398EEE3D0B5F7E75FAB113794EB4A76FBB2FC5A8DB046E604247FF9B",
+      "destinationRawSha256Before": "7BEFECC2972C627B93E06510250E8CB0D8FDCEAFF6E96653AA61F0840F6E38FA",
+      "destinationBytesBefore": 5906,
+      "destinationRawSha256After": "7C48E2B4398EEE3D0B5F7E75FAB113794EB4A76FBB2FC5A8DB046E604247FF9B",
+      "destinationBytesAfter": 5735,
+      "destinationGitBlobObjectIdAfter": "e9627da501b91ba81e599ad8eb9e7f17468736e4",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "rontends/mobile-core/src/test-adapter/fixture-transport.test.ts"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/test-adapter/homework-fixtures.ts",
+      "sourceGitBlobObjectId": "68e84fedde1091282408ddd2601503cd4cc5ffe8",
+      "sourceGitBlobBytes": 555,
+      "sourceRawSha256": "F6980DE0CF8666DBC085862E317DB2EA0540D3D7A0C71C15F62A29EBED2603A3",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "F6980DE0CF8666DBC085862E317DB2EA0540D3D7A0C71C15F62A29EBED2603A3",
+      "destinationBytesAfter": 555,
+      "destinationGitBlobObjectIdAfter": "68e84fedde1091282408ddd2601503cd4cc5ffe8",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/src/test-adapter/homework-fixtures.ts"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/tests/contract.test.mjs",
+      "sourceGitBlobObjectId": "afca0960f571607ad0006b3099a016b48052094d",
+      "sourceGitBlobBytes": 2623,
+      "sourceRawSha256": "274F0059993D43BE298EACC4BA00659C543523021FC33D83124C733CA15FD571",
+      "destinationRawSha256Before": "66A5A5F9668CD0B72CD8196EE4B32009B63D75480F34AE83177EFCA25E5B0640",
+      "destinationBytesBefore": 1289,
+      "destinationRawSha256After": "274F0059993D43BE298EACC4BA00659C543523021FC33D83124C733CA15FD571",
+      "destinationBytesAfter": 2623,
+      "destinationGitBlobObjectIdAfter": "afca0960f571607ad0006b3099a016b48052094d",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "rontends/mobile-core/tests/contract.test.mjs"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/tests/navigation.test.mjs",
+      "sourceGitBlobObjectId": "2352063d1a5eb25fb9c8bd2fb93ebacc6d564ed0",
+      "sourceGitBlobBytes": 3277,
+      "sourceRawSha256": "31BB8726437133DC485A5EB3C1DC58072BAAC4A24FBD343F59C597B73B19DAEB",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "31BB8726437133DC485A5EB3C1DC58072BAAC4A24FBD343F59C597B73B19DAEB",
+      "destinationBytesAfter": 3277,
+      "destinationGitBlobObjectIdAfter": "2352063d1a5eb25fb9c8bd2fb93ebacc6d564ed0",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "frontends/mobile-core/tests/navigation.test.mjs"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "proto/academic.proto",
+      "sourceGitBlobObjectId": "1edbb56f194cf8d726eb463fa0c178687c00c93e",
+      "sourceGitBlobBytes": 5305,
+      "sourceRawSha256": "04FF22416CB97BD79075F481E8DB5169197F88E18EE88D2EE232800315486525",
+      "destinationRawSha256Before": "F17A98782CDC3A26FEA139B842739BCB380A5F5BA19409A13C20B580B8D10E0A",
+      "destinationBytesBefore": 4701,
+      "destinationRawSha256After": "04FF22416CB97BD79075F481E8DB5169197F88E18EE88D2EE232800315486525",
+      "destinationBytesAfter": 5305,
+      "destinationGitBlobObjectIdAfter": "1edbb56f194cf8d726eb463fa0c178687c00c93e",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "roto/academic.proto"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "sourceGitBlobObjectId": "2f62acc7a8222724b07cf78af4f6318bd2c82b6d",
+      "sourceGitBlobBytes": 25426,
+      "sourceRawSha256": "2B6AE50091315A1473D16FA52DC8749E7602975A934B7D2980B5DAD0A21AEF48",
+      "destinationRawSha256Before": "A8613618A5A0974382644173562E6B1C41EC4D99ADA53E94FF89D66CD9371C02",
+      "destinationBytesBefore": 18798,
+      "destinationRawSha256After": "2B6AE50091315A1473D16FA52DC8749E7602975A934B7D2980B5DAD0A21AEF48",
+      "destinationBytesAfter": 25426,
+      "destinationGitBlobObjectIdAfter": "2f62acc7a8222724b07cf78af4f6318bd2c82b6d",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "ervices/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java",
+      "sourceGitBlobObjectId": "ce7d21e4a2ffca957f900a1ce584cf4f834425cf",
+      "sourceGitBlobBytes": 644,
+      "sourceRawSha256": "4DA9E957B5C54175808F4DEEDF9363333272A5309B019318ED636B14018C0667",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "4DA9E957B5C54175808F4DEEDF9363333272A5309B019318ED636B14018C0667",
+      "destinationBytesAfter": 644,
+      "destinationGitBlobObjectIdAfter": "ce7d21e4a2ffca957f900a1ce584cf4f834425cf",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+      "sourceGitBlobObjectId": "3fa1010911426140c8752712bfbad0ec505e28bb",
+      "sourceGitBlobBytes": 2112,
+      "sourceRawSha256": "6B88450D1A7CAF7F54C2C1CDCD41F8A89D956F4D342FC5902C112E47D55AEB3B",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "6B88450D1A7CAF7F54C2C1CDCD41F8A89D956F4D342FC5902C112E47D55AEB3B",
+      "destinationBytesAfter": 2112,
+      "destinationGitBlobObjectIdAfter": "3fa1010911426140c8752712bfbad0ec505e28bb",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java",
+      "sourceGitBlobObjectId": "ac5ba1f5d1356a00969f031925e7bbfd75abf5b8",
+      "sourceGitBlobBytes": 5380,
+      "sourceRawSha256": "32897B42552FC0B0E226C78E6EA24E559CB8BC9DAF1C30BB7DDCBAC4122C996B",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "32897B42552FC0B0E226C78E6EA24E559CB8BC9DAF1C30BB7DDCBAC4122C996B",
+      "destinationBytesAfter": 5380,
+      "destinationGitBlobObjectIdAfter": "ac5ba1f5d1356a00969f031925e7bbfd75abf5b8",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java",
+      "sourceGitBlobObjectId": "f07d7afefa0fea20962da36dbfcee8f46af2a11c",
+      "sourceGitBlobBytes": 1945,
+      "sourceRawSha256": "ABFDE13D154246C3E9D9080AE012D4D18C071B8B0D1E33EDEED476F03C822D82",
+      "destinationRawSha256Before": "C3D3E80F55D3C19CB0B92A0CCCFB98FE0ACF9BDA53F0454FF54811D75103941C",
+      "destinationBytesBefore": 734,
+      "destinationRawSha256After": "ABFDE13D154246C3E9D9080AE012D4D18C071B8B0D1E33EDEED476F03C822D82",
+      "destinationBytesAfter": 1945,
+      "destinationGitBlobObjectIdAfter": "f07d7afefa0fea20962da36dbfcee8f46af2a11c",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "ervices/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+      "sourceGitBlobObjectId": "ac55cdd643607ef3f762b0260491efc0196a39b6",
+      "sourceGitBlobBytes": 2915,
+      "sourceRawSha256": "9A3D25908EBCEBAB53D729686F535D911BA5EDA8DDEC252F5818FAC48DAD1DA6",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "9A3D25908EBCEBAB53D729686F535D911BA5EDA8DDEC252F5818FAC48DAD1DA6",
+      "destinationBytesAfter": 2915,
+      "destinationGitBlobObjectIdAfter": "ac55cdd643607ef3f762b0260491efc0196a39b6",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java",
+      "sourceGitBlobObjectId": "651ccee33bf8e19ed114b175b22352bd553171b7",
+      "sourceGitBlobBytes": 14957,
+      "sourceRawSha256": "FE9E0FCB350A0C0D195950620030E997DCC41320A6A8410A519D1FEEFE6B88FD",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "FE9E0FCB350A0C0D195950620030E997DCC41320A6A8410A519D1FEEFE6B88FD",
+      "destinationBytesAfter": 14957,
+      "destinationGitBlobObjectIdAfter": "651ccee33bf8e19ed114b175b22352bd553171b7",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java",
+      "sourceGitBlobObjectId": "8286d789b7efd0a8ecbd2190fa4366290bca5399",
+      "sourceGitBlobBytes": 5809,
+      "sourceRawSha256": "22529D2964743FD7495E5A7925AC2C20C5C7B55C62C4BE44DE2EC6ABBCA2683C",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "22529D2964743FD7495E5A7925AC2C20C5C7B55C62C4BE44DE2EC6ABBCA2683C",
+      "destinationBytesAfter": 5809,
+      "destinationGitBlobObjectIdAfter": "8286d789b7efd0a8ecbd2190fa4366290bca5399",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+      "sourceGitBlobObjectId": "ad684bac21da10f9facc3ac2d8269f408965cde6",
+      "sourceGitBlobBytes": 15642,
+      "sourceRawSha256": "BBD4095D093440E9122878FD8F35D9C9C9C86E2896D8CBFB338DED39D1CB3171",
+      "destinationRawSha256Before": "E9D985079752E11EFB1A85817D4A07BC4D40A4171F6F18B910CC0D010248C3EA",
+      "destinationBytesBefore": 9918,
+      "destinationRawSha256After": "BBD4095D093440E9122878FD8F35D9C9C9C86E2896D8CBFB338DED39D1CB3171",
+      "destinationBytesAfter": 15642,
+      "destinationGitBlobObjectIdAfter": "ad684bac21da10f9facc3ac2d8269f408965cde6",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "ervices/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+      "sourceGitBlobObjectId": "58c37a9eb041a859c275c79bc0950e82a7da347b",
+      "sourceGitBlobBytes": 11321,
+      "sourceRawSha256": "A563B2D9497A284B671580F151B0A95AC485BCA0716FA5E85ADE9960F865AFB4",
+      "destinationRawSha256Before": "98A41117C3585FD4A2DE64B651950E656B464E2618FDE2209DF7CEB0663CE665",
+      "destinationBytesBefore": 9782,
+      "destinationRawSha256After": "A563B2D9497A284B671580F151B0A95AC485BCA0716FA5E85ADE9960F865AFB4",
+      "destinationBytesAfter": 11321,
+      "destinationGitBlobObjectIdAfter": "58c37a9eb041a859c275c79bc0950e82a7da347b",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "ervices/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java",
+      "sourceGitBlobObjectId": "2ce689da41875a41fd515df5864b20c2c18c7132",
+      "sourceGitBlobBytes": 5996,
+      "sourceRawSha256": "C30EC30A09B5EBBCB7389340BBBBD6A94D2D58C67206D264D9FD1AE14613CDE1",
+      "destinationRawSha256Before": "3C4417339C085DA1E501B916586C52B4BE0477F6B722B4AFBA45BCC1E638BFC8",
+      "destinationBytesBefore": 2938,
+      "destinationRawSha256After": "C30EC30A09B5EBBCB7389340BBBBD6A94D2D58C67206D264D9FD1AE14613CDE1",
+      "destinationBytesAfter": 5996,
+      "destinationGitBlobObjectIdAfter": "2ce689da41875a41fd515df5864b20c2c18c7132",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "ervices/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+      "sourceGitBlobObjectId": "8a428305cd7483b7c7bc952ec83078dfa2a0fb5c",
+      "sourceGitBlobBytes": 3631,
+      "sourceRawSha256": "43949E2725D15029335BF528E0D482420FA27AECEA2C6502EEA75639E2DA6258",
+      "destinationRawSha256Before": "D5812606273F0B15221CB65D4C248D567AA5C010E1AA8465A719E298DD469DE1",
+      "destinationBytesBefore": 3689,
+      "destinationRawSha256After": "43949E2725D15029335BF528E0D482420FA27AECEA2C6502EEA75639E2DA6258",
+      "destinationBytesAfter": 3631,
+      "destinationGitBlobObjectIdAfter": "8a428305cd7483b7c7bc952ec83078dfa2a0fb5c",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "ervices/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkJsonConfiguration.java",
+      "sourceGitBlobObjectId": "4c0d2d9a1665261f5543269e3e0737c9740f1d86",
+      "sourceGitBlobBytes": 1863,
+      "sourceRawSha256": "4C6C3919B814EEAD59A78AF9D91E2D744CAF8E70B3FF8B7C79184E1766D646A6",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "4C6C3919B814EEAD59A78AF9D91E2D744CAF8E70B3FF8B7C79184E1766D646A6",
+      "destinationBytesAfter": 1863,
+      "destinationGitBlobObjectIdAfter": "4c0d2d9a1665261f5543269e3e0737c9740f1d86",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkJsonConfiguration.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkNoStoreFilter.java",
+      "sourceGitBlobObjectId": "97eb763f9ebe8af03e7893cb5fee3b7573c983e3",
+      "sourceGitBlobBytes": 2123,
+      "sourceRawSha256": "382D30397C038442EBAD2F69D00F013C1CEC159B75379D149D94C3B8A5143833",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "382D30397C038442EBAD2F69D00F013C1CEC159B75379D149D94C3B8A5143833",
+      "destinationBytesAfter": 2123,
+      "destinationGitBlobObjectIdAfter": "97eb763f9ebe8af03e7893cb5fee3b7573c983e3",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkNoStoreFilter.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java",
+      "sourceGitBlobObjectId": "9d85bca89c563b2716fb0018922d791b777052d0",
+      "sourceGitBlobBytes": 3179,
+      "sourceRawSha256": "B702BEB407BC73CF2B1E4B9C29DA407319D68AD90F5DC5BF579033C6356C0202",
+      "destinationRawSha256Before": "4BB102E63B91F0EE837F6AD2B9593B004B5E3AD17D13D3EDCA22670C56F87894",
+      "destinationBytesBefore": 2737,
+      "destinationRawSha256After": "B702BEB407BC73CF2B1E4B9C29DA407319D68AD90F5DC5BF579033C6356C0202",
+      "destinationBytesAfter": 3179,
+      "destinationGitBlobObjectIdAfter": "9d85bca89c563b2716fb0018922d791b777052d0",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "ervices/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+      "sourceGitBlobObjectId": "c362b0eb6f63c560ca2db605ff5f220c781280ef",
+      "sourceGitBlobBytes": 17239,
+      "sourceRawSha256": "8427C9F876B586D87BE675D079282D6A3B377202844ACF68113D775A75A5BB26",
+      "destinationRawSha256Before": "8B63A1B0F47C6F1F107E98B8A26588988E1027DA92444FF15506569A86525133",
+      "destinationBytesBefore": 11265,
+      "destinationRawSha256After": "8427C9F876B586D87BE675D079282D6A3B377202844ACF68113D775A75A5BB26",
+      "destinationBytesAfter": 17239,
+      "destinationGitBlobObjectIdAfter": "c362b0eb6f63c560ca2db605ff5f220c781280ef",
+      "destinationStatusAfter": [
+        {
+          "xy": "M ",
+          "path": "ervices/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    },
+    {
+      "status": "A",
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentQueryHomeworkTest.java",
+      "sourceGitBlobObjectId": "a530b2ce257d45ce4f559a4382daecc41926f57a",
+      "sourceGitBlobBytes": 8126,
+      "sourceRawSha256": "E1BF434887EA979AAAEE030955657432A9BAF6FDB0DA5EE780016D8C92BE3B42",
+      "destinationRawSha256Before": null,
+      "destinationBytesBefore": null,
+      "destinationRawSha256After": "E1BF434887EA979AAAEE030955657432A9BAF6FDB0DA5EE780016D8C92BE3B42",
+      "destinationBytesAfter": 8126,
+      "destinationGitBlobObjectIdAfter": "a530b2ce257d45ce4f559a4382daecc41926f57a",
+      "destinationStatusAfter": [
+        {
+          "xy": "??",
+          "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentQueryHomeworkTest.java"
+        }
+      ],
+      "exactBytes": true,
+      "error": null
+    }
+  ],
+  "overlapWinnerRows": [
+    {
+      "status": "M",
+      "path": "docs/openapi/mobile-bff.json",
+      "layer": "dependency-winner",
+      "expectedSourceSha256": "E991067B2F7B5FECDA5BB1542F34586537E12771A83444733FB5D8F841B62B43",
+      "destinationRawSha256Before": "E991067B2F7B5FECDA5BB1542F34586537E12771A83444733FB5D8F841B62B43",
+      "destinationRawSha256After": "E991067B2F7B5FECDA5BB1542F34586537E12771A83444733FB5D8F841B62B43",
+      "destinationBytesAfter": 34865,
+      "unchanged": true
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+      "layer": "dependency-winner",
+      "expectedSourceSha256": "3219B05A681F84191D8C882BC30C2076354EC7B7693512C844AD70BE0726B86D",
+      "destinationRawSha256Before": "3219B05A681F84191D8C882BC30C2076354EC7B7693512C844AD70BE0726B86D",
+      "destinationRawSha256After": "3219B05A681F84191D8C882BC30C2076354EC7B7693512C844AD70BE0726B86D",
+      "destinationBytesAfter": 26096,
+      "unchanged": true
+    },
+    {
+      "status": "A",
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+      "layer": "dependency-winner",
+      "expectedSourceSha256": "01BF3A9CFA02BD050ECE2E66F250E56333F1B626F1E6B7B6E647D38E78A8B1AA",
+      "destinationRawSha256Before": "01BF3A9CFA02BD050ECE2E66F250E56333F1B626F1E6B7B6E647D38E78A8B1AA",
+      "destinationRawSha256After": "01BF3A9CFA02BD050ECE2E66F250E56333F1B626F1E6B7B6E647D38E78A8B1AA",
+      "destinationBytesAfter": 24422,
+      "unchanged": true
+    }
+  ],
+  "effective42Pass": true,
+  "effective42Rows": [
+    {
+      "status": "M",
+      "path": "docs/openapi/mobile-bff.json",
+      "layer": "dependency-winner",
+      "destinationRawSha256After": "E991067B2F7B5FECDA5BB1542F34586537E12771A83444733FB5D8F841B62B43"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/fixtures/homework-completion-completed.json",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "0136691116f086e7e0cee8105417ceed8301e978",
+      "sourceGitBlobBytes": 80,
+      "sourceRawSha256": "AABBDFD60FD6E1598BB367A245483E7175BFBEEDA09BF3B0D3BA1D9C88DFDCC3",
+      "destinationRawSha256After": "AABBDFD60FD6E1598BB367A245483E7175BFBEEDA09BF3B0D3BA1D9C88DFDCC3"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/fixtures/homework-completion-undone.json",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "96d5d176fb7a326fec0800e8468147121e66dc5e",
+      "sourceGitBlobBytes": 66,
+      "sourceRawSha256": "33AFD3AEF747A7D83F48A786D1127102E392A6423D3908F17DF9E14DC1AA6BAE",
+      "destinationRawSha256After": "33AFD3AEF747A7D83F48A786D1127102E392A6423D3908F17DF9E14DC1AA6BAE"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/fixtures/homework-feed.json",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "d67280ed4efd0f479b9ecd878284062488d348d7",
+      "sourceGitBlobBytes": 1107,
+      "sourceRawSha256": "966B29D6DDC21759CA0E0262FD39A1558B40B26E7CBD9FC0FA967ABF4B7FB514",
+      "destinationRawSha256After": "966B29D6DDC21759CA0E0262FD39A1558B40B26E7CBD9FC0FA967ABF4B7FB514"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/fixtures/manifest.json",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "f1caee72bfc2031616c5f4a8a39b5c0430782215",
+      "sourceGitBlobBytes": 1149,
+      "sourceRawSha256": "AB57D82151AE89AAF8B6EDFD299307C49D075EAC18BF02979BD1923D8EB06EB1",
+      "destinationRawSha256After": "AB57D82151AE89AAF8B6EDFD299307C49D075EAC18BF02979BD1923D8EB06EB1"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+      "layer": "dependency-winner",
+      "destinationRawSha256After": "3219B05A681F84191D8C882BC30C2076354EC7B7693512C844AD70BE0726B86D"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/student-client.ts",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "32e8b5c4409993c7f9e9396641e6b847a2534a98",
+      "sourceGitBlobBytes": 3814,
+      "sourceRawSha256": "052F55329A72A6269CF4612A4D5906CEBD6C08F70C106043FE263290F7810813",
+      "destinationRawSha256After": "052F55329A72A6269CF4612A4D5906CEBD6C08F70C106043FE263290F7810813"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/api/types.ts",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "4e7e7244101d4bd5a8794edc347c312dfdde70eb",
+      "sourceGitBlobBytes": 1112,
+      "sourceRawSha256": "F7928ACAF0151393D056B54F26127EA722969953516B11792D1F6C3823A63873",
+      "destinationRawSha256After": "F7928ACAF0151393D056B54F26127EA722969953516B11792D1F6C3823A63873"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/today/TodayScreen.vue",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "909f4b4f466c53b460a9739f2a5178cece7294c1",
+      "sourceGitBlobBytes": 12228,
+      "sourceRawSha256": "D2757AAB5FF69AE4DCF099FEC20F830E0747730AEEB573A0914F9DA02C878EA0",
+      "destinationRawSha256After": "D2757AAB5FF69AE4DCF099FEC20F830E0747730AEEB573A0914F9DA02C878EA0"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/features/today/today-screen.pcss",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "4e2a36f27e8f37068bf611ac8319ed35456f0b9e",
+      "sourceGitBlobBytes": 10057,
+      "sourceRawSha256": "A5FD754B451F93489CBF1652BE90AB50A520EC5E8AB1BD89F773C9E8BA84B860",
+      "destinationRawSha256After": "A5FD754B451F93489CBF1652BE90AB50A520EC5E8AB1BD89F773C9E8BA84B860"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/index.ts",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "eb8940942aa995d51cc463a62678ba0fd669b59e",
+      "sourceGitBlobBytes": 1256,
+      "sourceRawSha256": "C41AF226F41A436F9323A10A4CF0096E84714D2C1823C49A96F8CAD47D2CCB69",
+      "destinationRawSha256After": "C41AF226F41A436F9323A10A4CF0096E84714D2C1823C49A96F8CAD47D2CCB69"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "7014ba13520ca18e658bbe1e481370d80358d4d5",
+      "sourceGitBlobBytes": 1883,
+      "sourceRawSha256": "48B5BA2E8398628377A545309D5BDBD0708CE4C33E138FCCFC00B9F81EC28562",
+      "destinationRawSha256After": "48B5BA2E8398628377A545309D5BDBD0708CE4C33E138FCCFC00B9F81EC28562"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/MobileShell.vue",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "5cc76b13dfbc2c57346de3c193dcc8d392b64885",
+      "sourceGitBlobBytes": 4308,
+      "sourceRawSha256": "5F1DAE4030128D146ABD10672A73FE94983A091EF186AB0FD338E125D079CFAE",
+      "destinationRawSha256After": "5F1DAE4030128D146ABD10672A73FE94983A091EF186AB0FD338E125D079CFAE"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "3ec935cdb3cde312c0f3c55acd66cea11c60876d",
+      "sourceGitBlobBytes": 2572,
+      "sourceRawSha256": "1B716DD5ABCD418B756C98253F24B87778EED26FEADD0FB8A6434008F718AA1A",
+      "destinationRawSha256After": "1B716DD5ABCD418B756C98253F24B87778EED26FEADD0FB8A6434008F718AA1A"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/components/mobile-shell.pcss",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "3c90437597b2442e226b22d00ef09f7b850a3aa6",
+      "sourceGitBlobBytes": 588,
+      "sourceRawSha256": "9DF1A2079BB1356CD87253A2702BE1C7ED1BF284212CCA97C851FD17EB6E3B18",
+      "destinationRawSha256After": "9DF1A2079BB1356CD87253A2702BE1C7ED1BF284212CCA97C851FD17EB6E3B18"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/host.ts",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "d986baebe0a2a8f30c0a24e57d33c05876cd9608",
+      "sourceGitBlobBytes": 785,
+      "sourceRawSha256": "B48FC3B170B44DFCC7EB4B2534153C3BF62D792A639F75F973A19D80F810501D",
+      "destinationRawSha256After": "B48FC3B170B44DFCC7EB4B2534153C3BF62D792A639F75F973A19D80F810501D"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/navigation.ts",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "e57e7d3f944f5cbdc4ae0fca84b388de0a2ebd15",
+      "sourceGitBlobBytes": 4682,
+      "sourceRawSha256": "F101000CFC8968F6B31A7A720E0577E91E49FB3BC9EAF2AEDC1416DF32D75F9B",
+      "destinationRawSha256After": "F101000CFC8968F6B31A7A720E0577E91E49FB3BC9EAF2AEDC1416DF32D75F9B"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/shared/shell-contract.ts",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "c8decb3ccf70157c6133805cbd1055d159063a8e",
+      "sourceGitBlobBytes": 1075,
+      "sourceRawSha256": "815A67E3F1688749F0F977550773D32E8FB57CB46A65D2228BDDAA3802A2000B",
+      "destinationRawSha256After": "815A67E3F1688749F0F977550773D32E8FB57CB46A65D2228BDDAA3802A2000B"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/styles/tokens.pcss",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "eba300575e231ca1bc962200e1a61c96d6a1fef9",
+      "sourceGitBlobBytes": 3650,
+      "sourceRawSha256": "7577E08BBF9E846B9C1C751D54F6027754A83C94392907F3F3E5C2F9616C9B0B",
+      "destinationRawSha256After": "7577E08BBF9E846B9C1C751D54F6027754A83C94392907F3F3E5C2F9616C9B0B"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/src/test-adapter/fixture-transport.test.ts",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "e9627da501b91ba81e599ad8eb9e7f17468736e4",
+      "sourceGitBlobBytes": 5735,
+      "sourceRawSha256": "7C48E2B4398EEE3D0B5F7E75FAB113794EB4A76FBB2FC5A8DB046E604247FF9B",
+      "destinationRawSha256After": "7C48E2B4398EEE3D0B5F7E75FAB113794EB4A76FBB2FC5A8DB046E604247FF9B"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/src/test-adapter/homework-fixtures.ts",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "68e84fedde1091282408ddd2601503cd4cc5ffe8",
+      "sourceGitBlobBytes": 555,
+      "sourceRawSha256": "F6980DE0CF8666DBC085862E317DB2EA0540D3D7A0C71C15F62A29EBED2603A3",
+      "destinationRawSha256After": "F6980DE0CF8666DBC085862E317DB2EA0540D3D7A0C71C15F62A29EBED2603A3"
+    },
+    {
+      "status": "M",
+      "path": "frontends/mobile-core/tests/contract.test.mjs",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "afca0960f571607ad0006b3099a016b48052094d",
+      "sourceGitBlobBytes": 2623,
+      "sourceRawSha256": "274F0059993D43BE298EACC4BA00659C543523021FC33D83124C733CA15FD571",
+      "destinationRawSha256After": "274F0059993D43BE298EACC4BA00659C543523021FC33D83124C733CA15FD571"
+    },
+    {
+      "status": "A",
+      "path": "frontends/mobile-core/tests/navigation.test.mjs",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "2352063d1a5eb25fb9c8bd2fb93ebacc6d564ed0",
+      "sourceGitBlobBytes": 3277,
+      "sourceRawSha256": "31BB8726437133DC485A5EB3C1DC58072BAAC4A24FBD343F59C597B73B19DAEB",
+      "destinationRawSha256After": "31BB8726437133DC485A5EB3C1DC58072BAAC4A24FBD343F59C597B73B19DAEB"
+    },
+    {
+      "status": "M",
+      "path": "proto/academic.proto",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "1edbb56f194cf8d726eb463fa0c178687c00c93e",
+      "sourceGitBlobBytes": 5305,
+      "sourceRawSha256": "04FF22416CB97BD79075F481E8DB5169197F88E18EE88D2EE232800315486525",
+      "destinationRawSha256After": "04FF22416CB97BD79075F481E8DB5169197F88E18EE88D2EE232800315486525"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "2f62acc7a8222724b07cf78af4f6318bd2c82b6d",
+      "sourceGitBlobBytes": 25426,
+      "sourceRawSha256": "2B6AE50091315A1473D16FA52DC8749E7602975A934B7D2980B5DAD0A21AEF48",
+      "destinationRawSha256After": "2B6AE50091315A1473D16FA52DC8749E7602975A934B7D2980B5DAD0A21AEF48"
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "ce7d21e4a2ffca957f900a1ce584cf4f834425cf",
+      "sourceGitBlobBytes": 644,
+      "sourceRawSha256": "4DA9E957B5C54175808F4DEEDF9363333272A5309B019318ED636B14018C0667",
+      "destinationRawSha256After": "4DA9E957B5C54175808F4DEEDF9363333272A5309B019318ED636B14018C0667"
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "3fa1010911426140c8752712bfbad0ec505e28bb",
+      "sourceGitBlobBytes": 2112,
+      "sourceRawSha256": "6B88450D1A7CAF7F54C2C1CDCD41F8A89D956F4D342FC5902C112E47D55AEB3B",
+      "destinationRawSha256After": "6B88450D1A7CAF7F54C2C1CDCD41F8A89D956F4D342FC5902C112E47D55AEB3B"
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "ac5ba1f5d1356a00969f031925e7bbfd75abf5b8",
+      "sourceGitBlobBytes": 5380,
+      "sourceRawSha256": "32897B42552FC0B0E226C78E6EA24E559CB8BC9DAF1C30BB7DDCBAC4122C996B",
+      "destinationRawSha256After": "32897B42552FC0B0E226C78E6EA24E559CB8BC9DAF1C30BB7DDCBAC4122C996B"
+    },
+    {
+      "status": "M",
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "f07d7afefa0fea20962da36dbfcee8f46af2a11c",
+      "sourceGitBlobBytes": 1945,
+      "sourceRawSha256": "ABFDE13D154246C3E9D9080AE012D4D18C071B8B0D1E33EDEED476F03C822D82",
+      "destinationRawSha256After": "ABFDE13D154246C3E9D9080AE012D4D18C071B8B0D1E33EDEED476F03C822D82"
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "ac55cdd643607ef3f762b0260491efc0196a39b6",
+      "sourceGitBlobBytes": 2915,
+      "sourceRawSha256": "9A3D25908EBCEBAB53D729686F535D911BA5EDA8DDEC252F5818FAC48DAD1DA6",
+      "destinationRawSha256After": "9A3D25908EBCEBAB53D729686F535D911BA5EDA8DDEC252F5818FAC48DAD1DA6"
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "651ccee33bf8e19ed114b175b22352bd553171b7",
+      "sourceGitBlobBytes": 14957,
+      "sourceRawSha256": "FE9E0FCB350A0C0D195950620030E997DCC41320A6A8410A519D1FEEFE6B88FD",
+      "destinationRawSha256After": "FE9E0FCB350A0C0D195950620030E997DCC41320A6A8410A519D1FEEFE6B88FD"
+    },
+    {
+      "status": "A",
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "8286d789b7efd0a8ecbd2190fa4366290bca5399",
+      "sourceGitBlobBytes": 5809,
+      "sourceRawSha256": "22529D2964743FD7495E5A7925AC2C20C5C7B55C62C4BE44DE2EC6ABBCA2683C",
+      "destinationRawSha256After": "22529D2964743FD7495E5A7925AC2C20C5C7B55C62C4BE44DE2EC6ABBCA2683C"
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "ad684bac21da10f9facc3ac2d8269f408965cde6",
+      "sourceGitBlobBytes": 15642,
+      "sourceRawSha256": "BBD4095D093440E9122878FD8F35D9C9C9C86E2896D8CBFB338DED39D1CB3171",
+      "destinationRawSha256After": "BBD4095D093440E9122878FD8F35D9C9C9C86E2896D8CBFB338DED39D1CB3171"
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "58c37a9eb041a859c275c79bc0950e82a7da347b",
+      "sourceGitBlobBytes": 11321,
+      "sourceRawSha256": "A563B2D9497A284B671580F151B0A95AC485BCA0716FA5E85ADE9960F865AFB4",
+      "destinationRawSha256After": "A563B2D9497A284B671580F151B0A95AC485BCA0716FA5E85ADE9960F865AFB4"
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "2ce689da41875a41fd515df5864b20c2c18c7132",
+      "sourceGitBlobBytes": 5996,
+      "sourceRawSha256": "C30EC30A09B5EBBCB7389340BBBBD6A94D2D58C67206D264D9FD1AE14613CDE1",
+      "destinationRawSha256After": "C30EC30A09B5EBBCB7389340BBBBD6A94D2D58C67206D264D9FD1AE14613CDE1"
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "8a428305cd7483b7c7bc952ec83078dfa2a0fb5c",
+      "sourceGitBlobBytes": 3631,
+      "sourceRawSha256": "43949E2725D15029335BF528E0D482420FA27AECEA2C6502EEA75639E2DA6258",
+      "destinationRawSha256After": "43949E2725D15029335BF528E0D482420FA27AECEA2C6502EEA75639E2DA6258"
+    },
+    {
+      "status": "A",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkJsonConfiguration.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "4c0d2d9a1665261f5543269e3e0737c9740f1d86",
+      "sourceGitBlobBytes": 1863,
+      "sourceRawSha256": "4C6C3919B814EEAD59A78AF9D91E2D744CAF8E70B3FF8B7C79184E1766D646A6",
+      "destinationRawSha256After": "4C6C3919B814EEAD59A78AF9D91E2D744CAF8E70B3FF8B7C79184E1766D646A6"
+    },
+    {
+      "status": "A",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkNoStoreFilter.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "97eb763f9ebe8af03e7893cb5fee3b7573c983e3",
+      "sourceGitBlobBytes": 2123,
+      "sourceRawSha256": "382D30397C038442EBAD2F69D00F013C1CEC159B75379D149D94C3B8A5143833",
+      "destinationRawSha256After": "382D30397C038442EBAD2F69D00F013C1CEC159B75379D149D94C3B8A5143833"
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "9d85bca89c563b2716fb0018922d791b777052d0",
+      "sourceGitBlobBytes": 3179,
+      "sourceRawSha256": "B702BEB407BC73CF2B1E4B9C29DA407319D68AD90F5DC5BF579033C6356C0202",
+      "destinationRawSha256After": "B702BEB407BC73CF2B1E4B9C29DA407319D68AD90F5DC5BF579033C6356C0202"
+    },
+    {
+      "status": "M",
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "c362b0eb6f63c560ca2db605ff5f220c781280ef",
+      "sourceGitBlobBytes": 17239,
+      "sourceRawSha256": "8427C9F876B586D87BE675D079282D6A3B377202844ACF68113D775A75A5BB26",
+      "destinationRawSha256After": "8427C9F876B586D87BE675D079282D6A3B377202844ACF68113D775A75A5BB26"
+    },
+    {
+      "status": "A",
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+      "layer": "dependency-winner",
+      "destinationRawSha256After": "01BF3A9CFA02BD050ECE2E66F250E56333F1B626F1E6B7B6E647D38E78A8B1AA"
+    },
+    {
+      "status": "A",
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentQueryHomeworkTest.java",
+      "layer": "d3-recovered",
+      "sourceGitBlobObjectId": "a530b2ce257d45ce4f559a4382daecc41926f57a",
+      "sourceGitBlobBytes": 8126,
+      "sourceRawSha256": "E1BF434887EA979AAAEE030955657432A9BAF6FDB0DA5EE780016D8C92BE3B42",
+      "destinationRawSha256After": "E1BF434887EA979AAAEE030955657432A9BAF6FDB0DA5EE780016D8C92BE3B42"
+    }
+  ],
+  "snapshots81Pass": true,
+  "snapshots81": [
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "build.gradle.kts",
+      "expectedSourceSha256": "C3A3E9BA5DDD96069877F5D4EF70FCC73F012D1E53D30D0B84D731EBA09BEE72",
+      "destinationRawSha256Before": "C3A3E9BA5DDD96069877F5D4EF70FCC73F012D1E53D30D0B84D731EBA09BEE72",
+      "destinationRawSha256After": "C3A3E9BA5DDD96069877F5D4EF70FCC73F012D1E53D30D0B84D731EBA09BEE72",
+      "destinationBytesAfter": 17498,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "docs/openapi/academic.json",
+      "expectedSourceSha256": "44BAFCCAEB77EE671605285B470739F5046205C86447F48B8FA85062FD990D0C",
+      "destinationRawSha256Before": "44BAFCCAEB77EE671605285B470739F5046205C86447F48B8FA85062FD990D0C",
+      "destinationRawSha256After": "44BAFCCAEB77EE671605285B470739F5046205C86447F48B8FA85062FD990D0C",
+      "destinationBytesAfter": 216691,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "docs/openapi/attendance.json",
+      "expectedSourceSha256": "DF11209CC3234AC0310CD082F86A0E5F10953D77AC4726B96D81FFCD4C12AA3C",
+      "destinationRawSha256Before": "DF11209CC3234AC0310CD082F86A0E5F10953D77AC4726B96D81FFCD4C12AA3C",
+      "destinationRawSha256After": "DF11209CC3234AC0310CD082F86A0E5F10953D77AC4726B96D81FFCD4C12AA3C",
+      "destinationBytesAfter": 104545,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "docs/openapi/auth.json",
+      "expectedSourceSha256": "AD8EEB87B1AEA632E232A0687812D5489CA7AC8057A5A591E77515B8B7826532",
+      "destinationRawSha256Before": "AD8EEB87B1AEA632E232A0687812D5489CA7AC8057A5A591E77515B8B7826532",
+      "destinationRawSha256After": "AD8EEB87B1AEA632E232A0687812D5489CA7AC8057A5A591E77515B8B7826532",
+      "destinationBytesAfter": 36691,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "docs/openapi/mobile-bff.json",
+      "expectedSourceSha256": "E991067B2F7B5FECDA5BB1542F34586537E12771A83444733FB5D8F841B62B43",
+      "destinationRawSha256Before": "E991067B2F7B5FECDA5BB1542F34586537E12771A83444733FB5D8F841B62B43",
+      "destinationRawSha256After": "E991067B2F7B5FECDA5BB1542F34586537E12771A83444733FB5D8F841B62B43",
+      "destinationBytesAfter": 34865,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "docs/openapi/notification.json",
+      "expectedSourceSha256": "6BF02EC71AE915206467982FD0A44F3354F3FA3CA61BF44346E0014A43879152",
+      "destinationRawSha256Before": "6BF02EC71AE915206467982FD0A44F3354F3FA3CA61BF44346E0014A43879152",
+      "destinationRawSha256After": "6BF02EC71AE915206467982FD0A44F3354F3FA3CA61BF44346E0014A43879152",
+      "destinationBytesAfter": 40359,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "docs/openapi/schedule.json",
+      "expectedSourceSha256": "B6ED18E882FB6AC82A62D4C3F693BB288F36DFD15CD7328E8462276D545E6D61",
+      "destinationRawSha256Before": "B6ED18E882FB6AC82A62D4C3F693BB288F36DFD15CD7328E8462276D545E6D61",
+      "destinationRawSha256After": "B6ED18E882FB6AC82A62D4C3F693BB288F36DFD15CD7328E8462276D545E6D61",
+      "destinationBytesAfter": 73495,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+      "expectedSourceSha256": "3219B05A681F84191D8C882BC30C2076354EC7B7693512C844AD70BE0726B86D",
+      "destinationRawSha256Before": "3219B05A681F84191D8C882BC30C2076354EC7B7693512C844AD70BE0726B86D",
+      "destinationRawSha256After": "3219B05A681F84191D8C882BC30C2076354EC7B7693512C844AD70BE0726B86D",
+      "destinationBytesAfter": 26096,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "gradle/libs.versions.toml",
+      "expectedSourceSha256": "D8900AD47ED968F0A831D7227B10067A0065ABEBC604255A09E6281DE88BA83A",
+      "destinationRawSha256Before": "D8900AD47ED968F0A831D7227B10067A0065ABEBC604255A09E6281DE88BA83A",
+      "destinationRawSha256After": "D8900AD47ED968F0A831D7227B10067A0065ABEBC604255A09E6281DE88BA83A",
+      "destinationBytesAfter": 2219,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/academic-service/academic-api-contract/build.gradle.kts",
+      "expectedSourceSha256": "45D1DC9C8531DB1C2AE539629DC8919E2950F3067BAD1CFBD20BEED04F68471F",
+      "destinationRawSha256Before": "45D1DC9C8531DB1C2AE539629DC8919E2950F3067BAD1CFBD20BEED04F68471F",
+      "destinationRawSha256After": "45D1DC9C8531DB1C2AE539629DC8919E2950F3067BAD1CFBD20BEED04F68471F",
+      "destinationBytesAfter": 1027,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/academic-service/academic-app/build.gradle.kts",
+      "expectedSourceSha256": "20F4D9564CA08556481DDC2B6D411647DA7077C85887469D80B3E1F42AAF32CF",
+      "destinationRawSha256Before": "20F4D9564CA08556481DDC2B6D411647DA7077C85887469D80B3E1F42AAF32CF",
+      "destinationRawSha256After": "20F4D9564CA08556481DDC2B6D411647DA7077C85887469D80B3E1F42AAF32CF",
+      "destinationBytesAfter": 5588,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java",
+      "expectedSourceSha256": "E034CE3333BC3DE17AFD6149B7581C2A9DC7BA6921EF178458C2BE84BF7E6AFB",
+      "destinationRawSha256Before": "E034CE3333BC3DE17AFD6149B7581C2A9DC7BA6921EF178458C2BE84BF7E6AFB",
+      "destinationRawSha256After": "E034CE3333BC3DE17AFD6149B7581C2A9DC7BA6921EF178458C2BE84BF7E6AFB",
+      "destinationBytesAfter": 10993,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java",
+      "expectedSourceSha256": "3AEA5E66BD3981A39708AF93916303CE9BB7906D4008EC7487589C252CC2BAFE",
+      "destinationRawSha256Before": "3AEA5E66BD3981A39708AF93916303CE9BB7906D4008EC7487589C252CC2BAFE",
+      "destinationRawSha256After": "3AEA5E66BD3981A39708AF93916303CE9BB7906D4008EC7487589C252CC2BAFE",
+      "destinationBytesAfter": 4186,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/api-gateway/build.gradle.kts",
+      "expectedSourceSha256": "F22D83CEA3A18D420BE810541064AEA26FE42F6DB5B807CE6804C6AD3C268A18",
+      "destinationRawSha256Before": "F22D83CEA3A18D420BE810541064AEA26FE42F6DB5B807CE6804C6AD3C268A18",
+      "destinationRawSha256After": "F22D83CEA3A18D420BE810541064AEA26FE42F6DB5B807CE6804C6AD3C268A18",
+      "destinationBytesAfter": 3042,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/api-gateway/src/main/resources/application-prod.yml",
+      "expectedSourceSha256": "FF0142AB2339C02265C09D98AB2645601B4169D648DE2F418C737DD3AA987449",
+      "destinationRawSha256Before": "FF0142AB2339C02265C09D98AB2645601B4169D648DE2F418C737DD3AA987449",
+      "destinationRawSha256After": "FF0142AB2339C02265C09D98AB2645601B4169D648DE2F418C737DD3AA987449",
+      "destinationBytesAfter": 1142,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/api-gateway/src/main/resources/application.yml",
+      "expectedSourceSha256": "6815A39ECF1F63B2094138B7171262744654B16CC13E1C8F7D77B044AB5CCB74",
+      "destinationRawSha256Before": "6815A39ECF1F63B2094138B7171262744654B16CC13E1C8F7D77B044AB5CCB74",
+      "destinationRawSha256After": "6815A39ECF1F63B2094138B7171262744654B16CC13E1C8F7D77B044AB5CCB74",
+      "destinationBytesAfter": 19018,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/attendance-service/attendance-api-contract/build.gradle.kts",
+      "expectedSourceSha256": "21C4DE9115E93AAFB93D75A8AC7B4C081BF1E308430264A28DDF8FC394C1F37B",
+      "destinationRawSha256Before": "21C4DE9115E93AAFB93D75A8AC7B4C081BF1E308430264A28DDF8FC394C1F37B",
+      "destinationRawSha256After": "21C4DE9115E93AAFB93D75A8AC7B4C081BF1E308430264A28DDF8FC394C1F37B",
+      "destinationBytesAfter": 631,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/attendance-service/attendance-app/build.gradle.kts",
+      "expectedSourceSha256": "6C040BB7FDE9936287EE91609809E1281C04016C6C58C05E6595E553E293376C",
+      "destinationRawSha256Before": "6C040BB7FDE9936287EE91609809E1281C04016C6C58C05E6595E553E293376C",
+      "destinationRawSha256After": "6C040BB7FDE9936287EE91609809E1281C04016C6C58C05E6595E553E293376C",
+      "destinationBytesAfter": 5880,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+      "expectedSourceSha256": "4DB3F4FDF66CAA14CBF48D2C6FE539A566076B043CE724EE80C2DDE96536808D",
+      "destinationRawSha256Before": "4DB3F4FDF66CAA14CBF48D2C6FE539A566076B043CE724EE80C2DDE96536808D",
+      "destinationRawSha256After": "4DB3F4FDF66CAA14CBF48D2C6FE539A566076B043CE724EE80C2DDE96536808D",
+      "destinationBytesAfter": 3304,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/auth-service/auth-api-contract/build.gradle.kts",
+      "expectedSourceSha256": "D4EFDEF2383741841191E23AC01D0C8FCED32C7DA354D38C12D09C6FFE65AA62",
+      "destinationRawSha256Before": "D4EFDEF2383741841191E23AC01D0C8FCED32C7DA354D38C12D09C6FFE65AA62",
+      "destinationRawSha256After": "D4EFDEF2383741841191E23AC01D0C8FCED32C7DA354D38C12D09C6FFE65AA62",
+      "destinationBytesAfter": 1211,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/auth-service/auth-app/build.gradle.kts",
+      "expectedSourceSha256": "EB21A7B6B99CE9926E3D5E4D8A6A53DC78EC4FB9A43AA53A2EAC0625F2DA83A7",
+      "destinationRawSha256Before": "EB21A7B6B99CE9926E3D5E4D8A6A53DC78EC4FB9A43AA53A2EAC0625F2DA83A7",
+      "destinationRawSha256After": "EB21A7B6B99CE9926E3D5E4D8A6A53DC78EC4FB9A43AA53A2EAC0625F2DA83A7",
+      "destinationBytesAfter": 3569,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+      "expectedSourceSha256": "968232F3AC9B1AE3CED60E58120B6BF60B1A05F9D1DA5C0F4293AF63960B59C9",
+      "destinationRawSha256Before": "968232F3AC9B1AE3CED60E58120B6BF60B1A05F9D1DA5C0F4293AF63960B59C9",
+      "destinationRawSha256After": "968232F3AC9B1AE3CED60E58120B6BF60B1A05F9D1DA5C0F4293AF63960B59C9",
+      "destinationBytesAfter": 4083,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/document-renderer-service/document-renderer-app/build.gradle.kts",
+      "expectedSourceSha256": "A0F107EAD238D5B2D9C2E7D1ED7089C96E342B16F0AF585A368F77782CD92306",
+      "destinationRawSha256Before": "A0F107EAD238D5B2D9C2E7D1ED7089C96E342B16F0AF585A368F77782CD92306",
+      "destinationRawSha256After": "A0F107EAD238D5B2D9C2E7D1ED7089C96E342B16F0AF585A368F77782CD92306",
+      "destinationBytesAfter": 1814,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterTest.java",
+      "expectedSourceSha256": "1AE1DF61678AD4E588DEEB33BC7663DE1B1A04BE643E2CDA3E5644D48AC25165",
+      "destinationRawSha256Before": "1AE1DF61678AD4E588DEEB33BC7663DE1B1A04BE643E2CDA3E5644D48AC25165",
+      "destinationRawSha256After": "1AE1DF61678AD4E588DEEB33BC7663DE1B1A04BE643E2CDA3E5644D48AC25165",
+      "destinationBytesAfter": 7123,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/mobile-bff/mobile-bff-api-contract/build.gradle.kts",
+      "expectedSourceSha256": "7FAA27265B65A0DF257B912FF76A5B0D49C648F5577911556491980F60F902C4",
+      "destinationRawSha256Before": "7FAA27265B65A0DF257B912FF76A5B0D49C648F5577911556491980F60F902C4",
+      "destinationRawSha256After": "7FAA27265B65A0DF257B912FF76A5B0D49C648F5577911556491980F60F902C4",
+      "destinationBytesAfter": 343,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/mobile-bff/mobile-bff-app/build.gradle.kts",
+      "expectedSourceSha256": "694EF2C3664F68F7FC1130250E01E250DCB30B1ADFBB9F25CB4DD85197CFD9EA",
+      "destinationRawSha256Before": "694EF2C3664F68F7FC1130250E01E250DCB30B1ADFBB9F25CB4DD85197CFD9EA",
+      "destinationRawSha256After": "694EF2C3664F68F7FC1130250E01E250DCB30B1ADFBB9F25CB4DD85197CFD9EA",
+      "destinationBytesAfter": 2177,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+      "expectedSourceSha256": "1BEC56EA17CC141A7815B8AA2A455BFDB009D5D17EB85793198B58F28FA0B518",
+      "destinationRawSha256Before": "1BEC56EA17CC141A7815B8AA2A455BFDB009D5D17EB85793198B58F28FA0B518",
+      "destinationRawSha256After": "1BEC56EA17CC141A7815B8AA2A455BFDB009D5D17EB85793198B58F28FA0B518",
+      "destinationBytesAfter": 11811,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+      "expectedSourceSha256": "01BF3A9CFA02BD050ECE2E66F250E56333F1B626F1E6B7B6E647D38E78A8B1AA",
+      "destinationRawSha256Before": "01BF3A9CFA02BD050ECE2E66F250E56333F1B626F1E6B7B6E647D38E78A8B1AA",
+      "destinationRawSha256After": "01BF3A9CFA02BD050ECE2E66F250E56333F1B626F1E6B7B6E647D38E78A8B1AA",
+      "destinationBytesAfter": 24422,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java",
+      "expectedSourceSha256": "8F631E24C0E68603FC65383479FF431D79E169B0563644880E205F0FD242C56A",
+      "destinationRawSha256Before": "8F631E24C0E68603FC65383479FF431D79E169B0563644880E205F0FD242C56A",
+      "destinationRawSha256After": "8F631E24C0E68603FC65383479FF431D79E169B0563644880E205F0FD242C56A",
+      "destinationBytesAfter": 14894,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/notification-service/notification-api-contract/build.gradle.kts",
+      "expectedSourceSha256": "9FC584E7EDBBE1DEAEB0A8BCB8F2217004DD3F09EF3187674D28C3FA7D795A12",
+      "destinationRawSha256Before": "9FC584E7EDBBE1DEAEB0A8BCB8F2217004DD3F09EF3187674D28C3FA7D795A12",
+      "destinationRawSha256After": "9FC584E7EDBBE1DEAEB0A8BCB8F2217004DD3F09EF3187674D28C3FA7D795A12",
+      "destinationBytesAfter": 538,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/notification-service/notification-app/build.gradle.kts",
+      "expectedSourceSha256": "76140B801EAE7679D45EDAF1D2E1797BB0CB6C25C9A43AFB4C1A9EFD472D3734",
+      "destinationRawSha256Before": "76140B801EAE7679D45EDAF1D2E1797BB0CB6C25C9A43AFB4C1A9EFD472D3734",
+      "destinationRawSha256After": "76140B801EAE7679D45EDAF1D2E1797BB0CB6C25C9A43AFB4C1A9EFD472D3734",
+      "destinationBytesAfter": 5213,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java",
+      "expectedSourceSha256": "479FCD2D8DDB547BD3F12F1877886A80188BFABF0645DDEA8E7332CF5541A2FC",
+      "destinationRawSha256Before": "479FCD2D8DDB547BD3F12F1877886A80188BFABF0645DDEA8E7332CF5541A2FC",
+      "destinationRawSha256After": "479FCD2D8DDB547BD3F12F1877886A80188BFABF0645DDEA8E7332CF5541A2FC",
+      "destinationBytesAfter": 4829,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java",
+      "expectedSourceSha256": "4A5FAD1B8887A1709FDDE9484C4BFBBC5E927AFBCF9EEE7AB0039DF2A91FEF49",
+      "destinationRawSha256Before": "4A5FAD1B8887A1709FDDE9484C4BFBBC5E927AFBCF9EEE7AB0039DF2A91FEF49",
+      "destinationRawSha256After": "4A5FAD1B8887A1709FDDE9484C4BFBBC5E927AFBCF9EEE7AB0039DF2A91FEF49",
+      "destinationBytesAfter": 7539,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/schedule-service/schedule-api-contract/build.gradle.kts",
+      "expectedSourceSha256": "7AEDB5B3803EF2B6E9E969046EA57AE5C131600DE79C61F669977CE84C7E86EF",
+      "destinationRawSha256Before": "7AEDB5B3803EF2B6E9E969046EA57AE5C131600DE79C61F669977CE84C7E86EF",
+      "destinationRawSha256After": "7AEDB5B3803EF2B6E9E969046EA57AE5C131600DE79C61F669977CE84C7E86EF",
+      "destinationBytesAfter": 699,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/schedule-service/schedule-app/build.gradle.kts",
+      "expectedSourceSha256": "5E0736DF4D0EB6AD5A0D2C6B95C1F0E0FF4360CB7DB7D2691C08E0A9BDC55368",
+      "destinationRawSha256Before": "5E0736DF4D0EB6AD5A0D2C6B95C1F0E0FF4360CB7DB7D2691C08E0A9BDC55368",
+      "destinationRawSha256After": "5E0736DF4D0EB6AD5A0D2C6B95C1F0E0FF4360CB7DB7D2691C08E0A9BDC55368",
+      "destinationBytesAfter": 4631,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java",
+      "expectedSourceSha256": "CCE161A34896C03BF1BD1D560EDE10030DC27645205CB45AD4AD40135BC720A6",
+      "destinationRawSha256Before": "CCE161A34896C03BF1BD1D560EDE10030DC27645205CB45AD4AD40135BC720A6",
+      "destinationRawSha256After": "CCE161A34896C03BF1BD1D560EDE10030DC27645205CB45AD4AD40135BC720A6",
+      "destinationBytesAfter": 3138,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/shared/shared-events/build.gradle.kts",
+      "expectedSourceSha256": "2735DEF6AED78E8F229EECCB7D850FF4BC761FE3DB0F74641F392652BEFB3CF9",
+      "destinationRawSha256Before": "2735DEF6AED78E8F229EECCB7D850FF4BC761FE3DB0F74641F392652BEFB3CF9",
+      "destinationRawSha256After": "2735DEF6AED78E8F229EECCB7D850FF4BC761FE3DB0F74641F392652BEFB3CF9",
+      "destinationBytesAfter": 1456,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java",
+      "expectedSourceSha256": "5B95A560C28FB81FFDF8ED16C59114988C7DCCAA7FA669612F78ABE294BEAFF2",
+      "destinationRawSha256Before": "5B95A560C28FB81FFDF8ED16C59114988C7DCCAA7FA669612F78ABE294BEAFF2",
+      "destinationRawSha256After": "5B95A560C28FB81FFDF8ED16C59114988C7DCCAA7FA669612F78ABE294BEAFF2",
+      "destinationBytesAfter": 12364,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/shared/shared-logback/build.gradle.kts",
+      "expectedSourceSha256": "775B239EC1764085EC2802A023BDBC88E82A81E466733DF5DD08B7165E42B7CB",
+      "destinationRawSha256Before": "775B239EC1764085EC2802A023BDBC88E82A81E466733DF5DD08B7165E42B7CB",
+      "destinationRawSha256After": "775B239EC1764085EC2802A023BDBC88E82A81E466733DF5DD08B7165E42B7CB",
+      "destinationBytesAfter": 991,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/shared/shared-observability/build.gradle.kts",
+      "expectedSourceSha256": "A41CAF0CE9D18F139EEA1950F2C3D22D1136B6EF3DC42AAF05B47EE13CA6D33E",
+      "destinationRawSha256Before": "A41CAF0CE9D18F139EEA1950F2C3D22D1136B6EF3DC42AAF05B47EE13CA6D33E",
+      "destinationRawSha256After": "A41CAF0CE9D18F139EEA1950F2C3D22D1136B6EF3DC42AAF05B47EE13CA6D33E",
+      "destinationBytesAfter": 3165,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/shared/shared-outbox/build.gradle.kts",
+      "expectedSourceSha256": "1EA28921B809D4FD4BA93FF388E2B1559EE8DECE9E85B71AB334A0EFD7F143BA",
+      "destinationRawSha256Before": "1EA28921B809D4FD4BA93FF388E2B1559EE8DECE9E85B71AB334A0EFD7F143BA",
+      "destinationRawSha256After": "1EA28921B809D4FD4BA93FF388E2B1559EE8DECE9E85B71AB334A0EFD7F143BA",
+      "destinationBytesAfter": 2986,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/shared/shared-security/build.gradle.kts",
+      "expectedSourceSha256": "974805D75C9ADAF181E0F0C6731EDA5C5A5E11DEE570BB74CC6D2275A76EA1E8",
+      "destinationRawSha256Before": "974805D75C9ADAF181E0F0C6731EDA5C5A5E11DEE570BB74CC6D2275A76EA1E8",
+      "destinationRawSha256After": "974805D75C9ADAF181E0F0C6731EDA5C5A5E11DEE570BB74CC6D2275A76EA1E8",
+      "destinationBytesAfter": 2588,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/shared/shared-test-containers/build.gradle.kts",
+      "expectedSourceSha256": "9BDEBAE64F6BF9FCC9F4E3FDE997F9C7C9D3DFFBCBF01F6E08F56A141D931D5A",
+      "destinationRawSha256Before": "9BDEBAE64F6BF9FCC9F4E3FDE997F9C7C9D3DFFBCBF01F6E08F56A141D931D5A",
+      "destinationRawSha256After": "9BDEBAE64F6BF9FCC9F4E3FDE997F9C7C9D3DFFBCBF01F6E08F56A141D931D5A",
+      "destinationBytesAfter": 2323,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/shared/shared-web-api/build.gradle.kts",
+      "expectedSourceSha256": "6CE0CFE6393939A9B744767C0B734E61AEA288C1E11B35594884BCD0DD932DA9",
+      "destinationRawSha256Before": "6CE0CFE6393939A9B744767C0B734E61AEA288C1E11B35594884BCD0DD932DA9",
+      "destinationRawSha256After": "6CE0CFE6393939A9B744767C0B734E61AEA288C1E11B35594884BCD0DD932DA9",
+      "destinationBytesAfter": 1132,
+      "unchanged": true
+    },
+    {
+      "manifest": "dependency-combined-review",
+      "destinationPath": "services/shared/shared-web/build.gradle.kts",
+      "expectedSourceSha256": "044E1EBF395F0259910FCFED61796359D4C3B308D0034B1500260A602A496995",
+      "destinationRawSha256Before": "044E1EBF395F0259910FCFED61796359D4C3B308D0034B1500260A602A496995",
+      "destinationRawSha256After": "044E1EBF395F0259910FCFED61796359D4C3B308D0034B1500260A602A496995",
+      "destinationBytesAfter": 3707,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "event-schemas/excuse.decided.json",
+      "expectedSourceSha256": "E427D64C0C6CBC0950F41BF0431399A2951494EE0E5D5830080583EF0ADDCA4A",
+      "destinationRawSha256Before": "E427D64C0C6CBC0950F41BF0431399A2951494EE0E5D5830080583EF0ADDCA4A",
+      "destinationRawSha256After": "E427D64C0C6CBC0950F41BF0431399A2951494EE0E5D5830080583EF0ADDCA4A",
+      "destinationBytesAfter": 2483,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "event-schemas/excuse.requested.json",
+      "expectedSourceSha256": "2880EC5DBB29055E01EA2BD829278C9BCE54FEFBB44A9229E145E5D86EAE1BA4",
+      "destinationRawSha256Before": "2880EC5DBB29055E01EA2BD829278C9BCE54FEFBB44A9229E145E5D86EAE1BA4",
+      "destinationRawSha256After": "2880EC5DBB29055E01EA2BD829278C9BCE54FEFBB44A9229E145E5D86EAE1BA4",
+      "destinationBytesAfter": 4260,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "event-schemas/late_checkin.decided.json",
+      "expectedSourceSha256": "A6AC22666974E17472635712D75A334512F351C76936764BEE3D0B1DD8FA3021",
+      "destinationRawSha256Before": "A6AC22666974E17472635712D75A334512F351C76936764BEE3D0B1DD8FA3021",
+      "destinationRawSha256After": "A6AC22666974E17472635712D75A334512F351C76936764BEE3D0B1DD8FA3021",
+      "destinationBytesAfter": 2732,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java",
+      "expectedSourceSha256": "A0D8ADC463E6CB7EA8C36A451193019D2C449802089265F66B66C064A0F54C2A",
+      "destinationRawSha256Before": "A0D8ADC463E6CB7EA8C36A451193019D2C449802089265F66B66C064A0F54C2A",
+      "destinationRawSha256After": "A0D8ADC463E6CB7EA8C36A451193019D2C449802089265F66B66C064A0F54C2A",
+      "destinationBytesAfter": 161,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java",
+      "expectedSourceSha256": "59C4E01CF39CF79FBACABA196C9BDFB102E59A98558ECE209AC7DC91D5842A1A",
+      "destinationRawSha256Before": "59C4E01CF39CF79FBACABA196C9BDFB102E59A98558ECE209AC7DC91D5842A1A",
+      "destinationRawSha256After": "59C4E01CF39CF79FBACABA196C9BDFB102E59A98558ECE209AC7DC91D5842A1A",
+      "destinationBytesAfter": 263,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java",
+      "expectedSourceSha256": "2106D010925C292E74659D10674F1B2C8217B0C9BBF7425C4AC686DF2CA98410",
+      "destinationRawSha256Before": "2106D010925C292E74659D10674F1B2C8217B0C9BBF7425C4AC686DF2CA98410",
+      "destinationRawSha256After": "2106D010925C292E74659D10674F1B2C8217B0C9BBF7425C4AC686DF2CA98410",
+      "destinationBytesAfter": 211,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java",
+      "expectedSourceSha256": "1EDAF447F5DC3DC24702EDD089AA48B4681C0B1E8760065A692D83953E7DB4F6",
+      "destinationRawSha256Before": "1EDAF447F5DC3DC24702EDD089AA48B4681C0B1E8760065A692D83953E7DB4F6",
+      "destinationRawSha256After": "1EDAF447F5DC3DC24702EDD089AA48B4681C0B1E8760065A692D83953E7DB4F6",
+      "destinationBytesAfter": 191,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java",
+      "expectedSourceSha256": "AA71AB2A1D63760AF98041FCBE62F776F19E7F8DCC496BE4894D68445BD449FE",
+      "destinationRawSha256Before": "AA71AB2A1D63760AF98041FCBE62F776F19E7F8DCC496BE4894D68445BD449FE",
+      "destinationRawSha256After": "AA71AB2A1D63760AF98041FCBE62F776F19E7F8DCC496BE4894D68445BD449FE",
+      "destinationBytesAfter": 210,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java",
+      "expectedSourceSha256": "71840E8D3F097C870B41B2B343DCCAB07CC55934491C3AD2AEC1D2A3054C2B8A",
+      "destinationRawSha256Before": "71840E8D3F097C870B41B2B343DCCAB07CC55934491C3AD2AEC1D2A3054C2B8A",
+      "destinationRawSha256After": "71840E8D3F097C870B41B2B343DCCAB07CC55934491C3AD2AEC1D2A3054C2B8A",
+      "destinationBytesAfter": 214,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java",
+      "expectedSourceSha256": "E18F5B7E1A4C485F1F2B23FD326E7F7D14A75F8FF3F40ACD405F659683657EDF",
+      "destinationRawSha256Before": "E18F5B7E1A4C485F1F2B23FD326E7F7D14A75F8FF3F40ACD405F659683657EDF",
+      "destinationRawSha256After": "E18F5B7E1A4C485F1F2B23FD326E7F7D14A75F8FF3F40ACD405F659683657EDF",
+      "destinationBytesAfter": 7849,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java",
+      "expectedSourceSha256": "8B14EBE8DC16F34E6422BF7AA06325FC10CD8129943094D49D1F594E228ABFC3",
+      "destinationRawSha256Before": "8B14EBE8DC16F34E6422BF7AA06325FC10CD8129943094D49D1F594E228ABFC3",
+      "destinationRawSha256After": "8B14EBE8DC16F34E6422BF7AA06325FC10CD8129943094D49D1F594E228ABFC3",
+      "destinationBytesAfter": 2316,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java",
+      "expectedSourceSha256": "F358683D0BCE41B28FA92BC366F2ECA044245BD691628B1095E6AF79AD1270EE",
+      "destinationRawSha256Before": "F358683D0BCE41B28FA92BC366F2ECA044245BD691628B1095E6AF79AD1270EE",
+      "destinationRawSha256After": "F358683D0BCE41B28FA92BC366F2ECA044245BD691628B1095E6AF79AD1270EE",
+      "destinationBytesAfter": 9201,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java",
+      "expectedSourceSha256": "24B43A4F8EE6CB2FC79F51391250F8A36F1F74A01C183D984FADCAE55E6DE4E3",
+      "destinationRawSha256Before": "24B43A4F8EE6CB2FC79F51391250F8A36F1F74A01C183D984FADCAE55E6DE4E3",
+      "destinationRawSha256After": "24B43A4F8EE6CB2FC79F51391250F8A36F1F74A01C183D984FADCAE55E6DE4E3",
+      "destinationBytesAfter": 14256,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java",
+      "expectedSourceSha256": "5B8777BCDF922E058E1331F04BB0A033917A8251650DF9E3DABCBBBE8A2A0CB7",
+      "destinationRawSha256Before": "5B8777BCDF922E058E1331F04BB0A033917A8251650DF9E3DABCBBBE8A2A0CB7",
+      "destinationRawSha256After": "5B8777BCDF922E058E1331F04BB0A033917A8251650DF9E3DABCBBBE8A2A0CB7",
+      "destinationBytesAfter": 2321,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java",
+      "expectedSourceSha256": "94EFD22554A5FF3ACDEC684AC1B56C07F03259EF1E5CA914C5E84DFB17F0E50D",
+      "destinationRawSha256Before": "94EFD22554A5FF3ACDEC684AC1B56C07F03259EF1E5CA914C5E84DFB17F0E50D",
+      "destinationRawSha256After": "94EFD22554A5FF3ACDEC684AC1B56C07F03259EF1E5CA914C5E84DFB17F0E50D",
+      "destinationBytesAfter": 4528,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/AttachmentState.java",
+      "expectedSourceSha256": "C1B9880413CDFBBE20CA3DEC8D577E9C424F9D658CD8739AD4D2D8C8B853724C",
+      "destinationRawSha256Before": "C1B9880413CDFBBE20CA3DEC8D577E9C424F9D658CD8739AD4D2D8C8B853724C",
+      "destinationRawSha256After": "C1B9880413CDFBBE20CA3DEC8D577E9C424F9D658CD8739AD4D2D8C8B853724C",
+      "destinationBytesAfter": 189,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDescriptorDocument.java",
+      "expectedSourceSha256": "15F372F6201CC7EA8F118D67CDA149FA22CB704B5DC944C9E0219A4ED09D7C0E",
+      "destinationRawSha256Before": "15F372F6201CC7EA8F118D67CDA149FA22CB704B5DC944C9E0219A4ED09D7C0E",
+      "destinationRawSha256After": "15F372F6201CC7EA8F118D67CDA149FA22CB704B5DC944C9E0219A4ED09D7C0E",
+      "destinationBytesAfter": 956,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDocument.java",
+      "expectedSourceSha256": "A4F991C7AD4DAC3F8C96CA1341F86D996D72DFFED699EBD13A0694EDCEFD4B95",
+      "destinationRawSha256Before": "A4F991C7AD4DAC3F8C96CA1341F86D996D72DFFED699EBD13A0694EDCEFD4B95",
+      "destinationRawSha256After": "A4F991C7AD4DAC3F8C96CA1341F86D996D72DFFED699EBD13A0694EDCEFD4B95",
+      "destinationBytesAfter": 1467,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLateCheckinBudgetDocument.java",
+      "expectedSourceSha256": "4A05FE8AB665FEE1206B3633208258457DE9FE9EFD806CFE08B7976DE9F9186B",
+      "destinationRawSha256Before": "4A05FE8AB665FEE1206B3633208258457DE9FE9EFD806CFE08B7976DE9F9186B",
+      "destinationRawSha256After": "4A05FE8AB665FEE1206B3633208258457DE9FE9EFD806CFE08B7976DE9F9186B",
+      "destinationBytesAfter": 883,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLessonSnapshotDocument.java",
+      "expectedSourceSha256": "AC4748E5306FCD9EF5E56E45348225AF0930FC96BB7F2FCD1AC955ABE07F29EC",
+      "destinationRawSha256Before": "AC4748E5306FCD9EF5E56E45348225AF0930FC96BB7F2FCD1AC955ABE07F29EC",
+      "destinationRawSha256After": "AC4748E5306FCD9EF5E56E45348225AF0930FC96BB7F2FCD1AC955ABE07F29EC",
+      "destinationBytesAfter": 1112,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentRequestReceiptDocument.java",
+      "expectedSourceSha256": "85C71600C938C7FA556799110EE7936B3A6E42D77F1670AAD22F8C0E9AE47CD0",
+      "destinationRawSha256Before": "85C71600C938C7FA556799110EE7936B3A6E42D77F1670AAD22F8C0E9AE47CD0",
+      "destinationRawSha256After": "85C71600C938C7FA556799110EE7936B3A6E42D77F1670AAD22F8C0E9AE47CD0",
+      "destinationBytesAfter": 966,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRepository.java",
+      "expectedSourceSha256": "5823836AD0B68FD591480E6FCAB148C1EB07FDCAB54C3A3F8DB139A7861E6931",
+      "destinationRawSha256Before": "5823836AD0B68FD591480E6FCAB148C1EB07FDCAB54C3A3F8DB139A7861E6931",
+      "destinationRawSha256After": "5823836AD0B68FD591480E6FCAB148C1EB07FDCAB54C3A3F8DB139A7861E6931",
+      "destinationBytesAfter": 481,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRetentionJob.java",
+      "expectedSourceSha256": "EA02BE8110064978D3DB12FAFD1C6E4C0D96F4433FA3FEA7D3E29532B79C6EB8",
+      "destinationRawSha256Before": "EA02BE8110064978D3DB12FAFD1C6E4C0D96F4433FA3FEA7D3E29532B79C6EB8",
+      "destinationRawSha256After": "EA02BE8110064978D3DB12FAFD1C6E4C0D96F4433FA3FEA7D3E29532B79C6EB8",
+      "destinationBytesAfter": 897,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestBucket.java",
+      "expectedSourceSha256": "3C1AAE15A5DD7D7C62D81D0B5EBE1FB0EEBDE34276A0592616B49803EA4F1E1C",
+      "destinationRawSha256Before": "3C1AAE15A5DD7D7C62D81D0B5EBE1FB0EEBDE34276A0592616B49803EA4F1E1C",
+      "destinationRawSha256After": "3C1AAE15A5DD7D7C62D81D0B5EBE1FB0EEBDE34276A0592616B49803EA4F1E1C",
+      "destinationBytesAfter": 163,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentLateCheckinBudgetRepository.java",
+      "expectedSourceSha256": "98C0E67DEC2E78E729928B0E44A373D5F0D20F5404D31DFEDFD5AFBF0E7747B2",
+      "destinationRawSha256Before": "98C0E67DEC2E78E729928B0E44A373D5F0D20F5404D31DFEDFD5AFBF0E7747B2",
+      "destinationRawSha256After": "98C0E67DEC2E78E729928B0E44A373D5F0D20F5404D31DFEDFD5AFBF0E7747B2",
+      "destinationBytesAfter": 484,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java",
+      "expectedSourceSha256": "DEFCA9A5DC3D03F96A8E184B7040638CD04418DC014AB1DA01528EE7F09B25C2",
+      "destinationRawSha256Before": "DEFCA9A5DC3D03F96A8E184B7040638CD04418DC014AB1DA01528EE7F09B25C2",
+      "destinationRawSha256After": "DEFCA9A5DC3D03F96A8E184B7040638CD04418DC014AB1DA01528EE7F09B25C2",
+      "destinationBytesAfter": 6615,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestReceiptRepository.java",
+      "expectedSourceSha256": "7C6ADBF803AC9226CAF050498AD612992D9B3ACF1ACBC48022B4638309261B76",
+      "destinationRawSha256Before": "7C6ADBF803AC9226CAF050498AD612992D9B3ACF1ACBC48022B4638309261B76",
+      "destinationRawSha256After": "7C6ADBF803AC9226CAF050498AD612992D9B3ACF1ACBC48022B4638309261B76",
+      "destinationBytesAfter": 529,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "expectedSourceSha256": "5095C2A63EDF7E6561F6C08E2071C97270489A5C1CDA1B73EF64507B3132A662",
+      "destinationRawSha256Before": "5095C2A63EDF7E6561F6C08E2071C97270489A5C1CDA1B73EF64507B3132A662",
+      "destinationRawSha256After": "5095C2A63EDF7E6561F6C08E2071C97270489A5C1CDA1B73EF64507B3132A662",
+      "destinationBytesAfter": 91310,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java",
+      "expectedSourceSha256": "4CA61BBB52BA3F5193F653B542BA59F54D97C5BCDD20FBA849F54EC77C376E8E",
+      "destinationRawSha256Before": "4CA61BBB52BA3F5193F653B542BA59F54D97C5BCDD20FBA849F54EC77C376E8E",
+      "destinationRawSha256After": "4CA61BBB52BA3F5193F653B542BA59F54D97C5BCDD20FBA849F54EC77C376E8E",
+      "destinationBytesAfter": 8682,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java",
+      "expectedSourceSha256": "6E0AE3179A52EE9482B87EF3A5180B6B1B563475CD018615D1D590C5C91C6480",
+      "destinationRawSha256Before": "6E0AE3179A52EE9482B87EF3A5180B6B1B563475CD018615D1D590C5C91C6480",
+      "destinationRawSha256After": "6E0AE3179A52EE9482B87EF3A5180B6B1B563475CD018615D1D590C5C91C6480",
+      "destinationBytesAfter": 11274,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "expectedSourceSha256": "968F4A4967D0AD2FDB0055C647D709F6A0A020B59DDB3396C64007E57A150DE6",
+      "destinationRawSha256Before": "968F4A4967D0AD2FDB0055C647D709F6A0A020B59DDB3396C64007E57A150DE6",
+      "destinationRawSha256After": "968F4A4967D0AD2FDB0055C647D709F6A0A020B59DDB3396C64007E57A150DE6",
+      "destinationBytesAfter": 46822,
+      "unchanged": true
+    },
+    {
+      "manifest": "requests-review-3",
+      "destinationPath": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+      "expectedSourceSha256": "7F96615F5A43BC8BD020BC51A4F3951340C3F9088363A56ABE8EF95CC373C322",
+      "destinationRawSha256Before": "7F96615F5A43BC8BD020BC51A4F3951340C3F9088363A56ABE8EF95CC373C322",
+      "destinationRawSha256After": "7F96615F5A43BC8BD020BC51A4F3951340C3F9088363A56ABE8EF95CC373C322",
+      "destinationBytesAfter": 9379,
+      "unchanged": true
+    },
+    {
+      "manifest": "auth-purpose",
+      "destinationPath": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+      "expectedSourceSha256": "81429C4219EC00FD2207E11460C8AB03314787C7CDFB45EA28B3A18A72E1BD5D",
+      "destinationRawSha256Before": "81429C4219EC00FD2207E11460C8AB03314787C7CDFB45EA28B3A18A72E1BD5D",
+      "destinationRawSha256After": "81429C4219EC00FD2207E11460C8AB03314787C7CDFB45EA28B3A18A72E1BD5D",
+      "destinationBytesAfter": 16164,
+      "unchanged": true
+    },
+    {
+      "manifest": "auth-purpose",
+      "destinationPath": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java",
+      "expectedSourceSha256": "A321630875C98B40DE20D30D8D220885C80AB35B871EE9207C2F10DA2EB864FA",
+      "destinationRawSha256Before": "A321630875C98B40DE20D30D8D220885C80AB35B871EE9207C2F10DA2EB864FA",
+      "destinationRawSha256After": "A321630875C98B40DE20D30D8D220885C80AB35B871EE9207C2F10DA2EB864FA",
+      "destinationBytesAfter": 2513,
+      "unchanged": true
+    },
+    {
+      "manifest": "auth-purpose",
+      "destinationPath": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "expectedSourceSha256": "61E4DB92A8376452787C8467AE61FC8CEE75DE539C226C04BD5D558646867855",
+      "destinationRawSha256Before": "61E4DB92A8376452787C8467AE61FC8CEE75DE539C226C04BD5D558646867855",
+      "destinationRawSha256After": "61E4DB92A8376452787C8467AE61FC8CEE75DE539C226C04BD5D558646867855",
+      "destinationBytesAfter": 9229,
+      "unchanged": true
+    },
+    {
+      "manifest": "auth-purpose",
+      "destinationPath": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "expectedSourceSha256": "F313EAF985473AC7205D21EB850014F4E4D6C762B9994F0285B361E25DB2F574",
+      "destinationRawSha256Before": "F313EAF985473AC7205D21EB850014F4E4D6C762B9994F0285B361E25DB2F574",
+      "destinationRawSha256After": "F313EAF985473AC7205D21EB850014F4E4D6C762B9994F0285B361E25DB2F574",
+      "destinationBytesAfter": 6224,
+      "unchanged": true
+    }
+  ],
+  "preservationSentinelsPass": true,
+  "preservationSentinels": [
+    {
+      "group": "sql-wip",
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+      "expectedSha256": "7B35F18418DFE860A04BE469040F5DE277B5A6B517CC721048FE7DF80C0264AA",
+      "source": "shutdown-checkpoint",
+      "currentSha256": "7B35F18418DFE860A04BE469040F5DE277B5A6B517CC721048FE7DF80C0264AA",
+      "unchanged": true
+    },
+    {
+      "group": "sql-wip",
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V25__student_subject_homework_foundation.sql",
+      "expectedSha256": "2C378F0ED6EF41A47421602421E8DDFCBB73289D281FEE4D6BDE3B194D1E3311",
+      "source": "shutdown-checkpoint",
+      "currentSha256": "2C378F0ED6EF41A47421602421E8DDFCBB73289D281FEE4D6BDE3B194D1E3311",
+      "unchanged": true
+    },
+    {
+      "group": "sql-wip",
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V26__campus_map.sql",
+      "expectedSha256": "4A846E63DF1A9E890DEF336BC97B71F17E37C503F745785D68DBDF4155F0F7AE",
+      "source": "shutdown-checkpoint",
+      "currentSha256": "4A846E63DF1A9E890DEF336BC97B71F17E37C503F745785D68DBDF4155F0F7AE",
+      "unchanged": true
+    },
+    {
+      "group": "sql-wip",
+      "path": "services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql",
+      "expectedSha256": "E7CC49423A57D7DE377F49157B573D2D2EE0D36379BBF5DE1B9E7D26D5B2DABB",
+      "source": "shutdown-checkpoint",
+      "currentSha256": "E7CC49423A57D7DE377F49157B573D2D2EE0D36379BBF5DE1B9E7D26D5B2DABB",
+      "unchanged": true
+    },
+    {
+      "group": "numeric-accepted",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculator.java",
+      "expectedSha256": "555393833A0BF598BEEDECD165EA5778BF06CF5D6AD6D65CEE9E39C67EC57268",
+      "source": "student-academic-b/manifest.sha256",
+      "currentSha256": "555393833A0BF598BEEDECD165EA5778BF06CF5D6AD6D65CEE9E39C67EC57268",
+      "unchanged": true
+    },
+    {
+      "group": "numeric-accepted",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/OwnRankCalculator.java",
+      "expectedSha256": "78CE5A5949C673E303ADFA13FBDE6BBF3C4D0BAFA4263E5B6CF73499A3EAAB15",
+      "source": "student-academic-b/manifest.sha256",
+      "currentSha256": "78CE5A5949C673E303ADFA13FBDE6BBF3C4D0BAFA4263E5B6CF73499A3EAAB15",
+      "unchanged": true
+    },
+    {
+      "group": "numeric-accepted",
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentProjectionException.java",
+      "expectedSha256": "2A7929E7A48234B7BCCA956822FB6E59F61D1676AC6C26F377BF4405BACA1261",
+      "source": "student-academic-b/manifest.sha256",
+      "currentSha256": "2A7929E7A48234B7BCCA956822FB6E59F61D1676AC6C26F377BF4405BACA1261",
+      "unchanged": true
+    },
+    {
+      "group": "numeric-accepted",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculatorTest.java",
+      "expectedSha256": "D41927321BA948A28C0E9C40574E80D0A75D8B2F0A5D52EEA7799199B5EC346C",
+      "source": "student-academic-b/manifest.sha256",
+      "currentSha256": "D41927321BA948A28C0E9C40574E80D0A75D8B2F0A5D52EEA7799199B5EC346C",
+      "unchanged": true
+    },
+    {
+      "group": "numeric-accepted",
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/OwnRankCalculatorTest.java",
+      "expectedSha256": "1C00579EFB4DDA0E183B6F1BBC3C6E8CA066AF2E2CEC197C5BD0035686D9ACE5",
+      "source": "student-academic-b/manifest.sha256",
+      "currentSha256": "1C00579EFB4DDA0E183B6F1BBC3C6E8CA066AF2E2CEC197C5BD0035686D9ACE5",
+      "unchanged": true
+    }
+  ],
+  "frozenSourcesPass": true,
+  "frozenSources": [
+    {
+      "path": ".agent/student-academic-b/union/contract.md",
+      "expectedSha256": "C9C4DC2C4BE2229AFF3CEDB27E0E43634329EBA5AC83CE42A889E34C33DAFC74",
+      "currentSha256": "C9C4DC2C4BE2229AFF3CEDB27E0E43634329EBA5AC83CE42A889E34C33DAFC74",
+      "unchanged": true
+    },
+    {
+      "path": ".agent/student-academic-b/union/paths.json",
+      "expectedSha256": "14219D88304A419E4FBDBB4FC62BBCCC190D34A3E78ED79EB6E331B6987E40EC",
+      "currentSha256": "14219D88304A419E4FBDBB4FC62BBCCC190D34A3E78ED79EB6E331B6987E40EC",
+      "unchanged": true
+    },
+    {
+      "path": ".agent/student-academic-b/union/source-layer-gate.md",
+      "expectedSha256": "EAF987DAC8675AD3CE685C58D071C60A0FAEBC7CD389CB7EC78D558BF354E121",
+      "currentSha256": "EAF987DAC8675AD3CE685C58D071C60A0FAEBC7CD389CB7EC78D558BF354E121",
+      "unchanged": true
+    },
+    {
+      "path": ".agent/student-academic-b/union/shutdown-checkpoint.md",
+      "expectedSha256": "F7B1FB66761A9877AA9FBCD8C1894A74E5320D6D80ECEE98A0A581FC1E4CB0EA",
+      "currentSha256": "F7B1FB66761A9877AA9FBCD8C1894A74E5320D6D80ECEE98A0A581FC1E4CB0EA",
+      "unchanged": true
+    }
+  ],
+  "scope": {
+    "statusBeforeEvidenceCount": 118,
+    "statusAfterPreFinalEvidenceCount": 159,
+    "foreignBefore": [
+      {
+        "xy": " M",
+        "path": "build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/academic.json"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/attendance.json"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/auth.json"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/mobile-bff.json"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/notification.json"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/schedule.json"
+      },
+      {
+        "xy": " M",
+        "path": "event-schemas/excuse.decided.json"
+      },
+      {
+        "xy": " M",
+        "path": "event-schemas/excuse.requested.json"
+      },
+      {
+        "xy": " M",
+        "path": "event-schemas/late_checkin.decided.json"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts"
+      },
+      {
+        "xy": " M",
+        "path": "gradle/libs.versions.toml"
+      },
+      {
+        "xy": " M",
+        "path": "services/academic-service/academic-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/academic-service/academic-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/api-gateway/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/api-gateway/src/main/resources/application-prod.yml"
+      },
+      {
+        "xy": " M",
+        "path": "services/api-gateway/src/main/resources/application.yml"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/auth-service/auth-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/auth-service/auth-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/document-renderer-service/document-renderer-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/notification-service/notification-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/notification-service/notification-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/schedule-service/schedule-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/schedule-service/schedule-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-events/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-logback/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-observability/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-outbox/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-security/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-test-containers/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-web-api/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-web/build.gradle.kts"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/checks.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/contract.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/AttendanceMetricCalculatorTest.xml"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/gradle-leased-rerun.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/GrpcClientDeadlineTest.xml"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/OwnRankCalculatorTest.xml"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/ReportDomainIsolationTest.xml"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/ScheduledMustHaveSchedulerLockTest.xml"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/ui-relocation.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/foundation-decision-result.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/manifest.sha256"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/repair-packet.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/review-1-result.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/review-2-recheck-result.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/review-2-result.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/summary.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/contract.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/implementation-addendum.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/implementation-packet.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/manifest.sha256"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/optionalchecks.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/paths.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/shutdown-checkpoint.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/source-layer-gate.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/source-preflight.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/sql-correction-gate.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/worktrees/student-academic-ui/"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/resources/db/migration/V25__student_subject_homework_foundation.sql"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/resources/db/migration/V26__campus_map.sql"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculator.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/OwnRankCalculator.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentProjectionException.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/AttachmentState.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDescriptorDocument.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDocument.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLateCheckinBudgetDocument.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLessonSnapshotDocument.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentRequestReceiptDocument.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRepository.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRetentionJob.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestBucket.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentLateCheckinBudgetRepository.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestReceiptRepository.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculatorTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/OwnRankCalculatorTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql"
+      }
+    ],
+    "foreignAfter": [
+      {
+        "xy": " M",
+        "path": "build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/academic.json"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/attendance.json"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/auth.json"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/mobile-bff.json"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/notification.json"
+      },
+      {
+        "xy": " M",
+        "path": "docs/openapi/schedule.json"
+      },
+      {
+        "xy": " M",
+        "path": "event-schemas/excuse.decided.json"
+      },
+      {
+        "xy": " M",
+        "path": "event-schemas/excuse.requested.json"
+      },
+      {
+        "xy": " M",
+        "path": "event-schemas/late_checkin.decided.json"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts"
+      },
+      {
+        "xy": " M",
+        "path": "gradle/libs.versions.toml"
+      },
+      {
+        "xy": " M",
+        "path": "services/academic-service/academic-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/academic-service/academic-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/api-gateway/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/api-gateway/src/main/resources/application-prod.yml"
+      },
+      {
+        "xy": " M",
+        "path": "services/api-gateway/src/main/resources/application.yml"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/auth-service/auth-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/auth-service/auth-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/document-renderer-service/document-renderer-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/notification-service/notification-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/notification-service/notification-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/schedule-service/schedule-api-contract/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/schedule-service/schedule-app/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-events/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-logback/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-observability/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-outbox/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-security/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-test-containers/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-web-api/build.gradle.kts"
+      },
+      {
+        "xy": " M",
+        "path": "services/shared/shared-web/build.gradle.kts"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/checks.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/contract.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/AttendanceMetricCalculatorTest.xml"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/gradle-leased-rerun.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/GrpcClientDeadlineTest.xml"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/OwnRankCalculatorTest.xml"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/ReportDomainIsolationTest.xml"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/ScheduledMustHaveSchedulerLockTest.xml"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/evidence/ui-relocation.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/foundation-decision-result.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/manifest.sha256"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/repair-packet.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/review-1-result.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/review-2-recheck-result.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/review-2-result.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/summary.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/contract.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/implementation-addendum.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/implementation-packet.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/manifest.sha256"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/optionalchecks.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/paths.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/shutdown-checkpoint.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/source-layer-gate.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/source-preflight.json"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/student-academic-b/union/sql-correction-gate.md"
+      },
+      {
+        "xy": "??",
+        "path": ".agent/worktrees/student-academic-ui/"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/resources/db/migration/V25__student_subject_homework_foundation.sql"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/resources/db/migration/V26__campus_map.sql"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculator.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/OwnRankCalculator.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentProjectionException.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/AttachmentState.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDescriptorDocument.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDocument.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLateCheckinBudgetDocument.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLessonSnapshotDocument.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentRequestReceiptDocument.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRepository.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRetentionJob.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestBucket.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentLateCheckinBudgetRepository.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestReceiptRepository.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculatorTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/OwnRankCalculatorTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql"
+      }
+    ],
+    "productAfter": [
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/fixtures/manifest.json"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/api/student-client.ts"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/api/types.ts"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/features/today/today-screen.pcss"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/features/today/TodayScreen.vue"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/index.ts"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/styles/tokens.pcss"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/test-adapter/fixture-transport.test.ts"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/tests/contract.test.mjs"
+      },
+      {
+        "xy": " M",
+        "path": "proto/academic.proto"
+      },
+      {
+        "xy": " M",
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/fixtures/homework-completion-completed.json"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/fixtures/homework-completion-undone.json"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/fixtures/homework-feed.json"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/components/mobile-shell.pcss"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/components/MobileShell.vue"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/host.ts"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/navigation.ts"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/shell-contract.ts"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/test-adapter/homework-fixtures.ts"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/tests/navigation.test.mjs"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkJsonConfiguration.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkNoStoreFilter.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentQueryHomeworkTest.java"
+      }
+    ],
+    "expectedProduct": [
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/fixtures/manifest.json"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/api/student-client.ts"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/api/types.ts"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/features/today/today-screen.pcss"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/features/today/TodayScreen.vue"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/index.ts"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/styles/tokens.pcss"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/src/test-adapter/fixture-transport.test.ts"
+      },
+      {
+        "xy": " M",
+        "path": "frontends/mobile-core/tests/contract.test.mjs"
+      },
+      {
+        "xy": " M",
+        "path": "proto/academic.proto"
+      },
+      {
+        "xy": " M",
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java"
+      },
+      {
+        "xy": " M",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/fixtures/homework-completion-completed.json"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/fixtures/homework-completion-undone.json"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/fixtures/homework-feed.json"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/components/mobile-shell.pcss"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/components/MobileShell.vue"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/host.ts"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/navigation.ts"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/shared/shell-contract.ts"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/src/test-adapter/homework-fixtures.ts"
+      },
+      {
+        "xy": "??",
+        "path": "frontends/mobile-core/tests/navigation.test.mjs"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkJsonConfiguration.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkNoStoreFilter.java"
+      },
+      {
+        "xy": "??",
+        "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentQueryHomeworkTest.java"
+      }
+    ],
+    "unexpectedStatus": [],
+    "foreignScopePass": true,
+    "productScopePass": true,
+    "scopePass": true,
+    "trackedDiffCommand": "git diff --name-status -- <39 accepted d3 paths>",
+    "trackedDiffExitCode": 0,
+    "trackedDiff": "M\tfrontends/mobile-core/fixtures/manifest.json\nM\tfrontends/mobile-core/src/api/student-client.ts\nM\tfrontends/mobile-core/src/api/types.ts\nM\tfrontends/mobile-core/src/features/today/TodayScreen.vue\nM\tfrontends/mobile-core/src/features/today/today-screen.pcss\nM\tfrontends/mobile-core/src/index.ts\nM\tfrontends/mobile-core/src/styles/tokens.pcss\nM\tfrontends/mobile-core/src/test-adapter/fixture-transport.test.ts\nM\tfrontends/mobile-core/tests/contract.test.mjs\nM\tproto/academic.proto\nM\tservices/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java\nM\tservices/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java\nM\tservices/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java\nM\tservices/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java\nM\tservices/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java\nM\tservices/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java\nM\tservices/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java\nM\tservices/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java\n",
+    "trackedDiffPass": true
+  },
+  "runtime": {
+    "status": "N/A",
+    "reason": "Source recovery only; contract forbids product runtime/Gradle/npm/containers."
+  },
+  "limitations": [
+    "No product runtime, Gradle, npm, container, SQL, DTO, or feature checks were run by this source-recovery leaf.",
+    "This manifest proves the effective 42-file source layer and preservation guards; it does not claim B0/full-role PASS or resolve later contract work."
+  ],
+  "verificationCorrection": {
+    "defect": "First final evidence pass used a shutdown-checkpoint expected SHA literal with one extra trailing zero.",
+    "reproduction": "Initial final freeze command exited 1 with only frozen evidence mismatch; exact39, snapshots81, overlapWinners, effective42, scope, trackedDiff and preservation sentinels were PASS.",
+    "newEvidence": "Get-FileHash -Algorithm SHA256 shutdown-checkpoint.md returned the verified 64-character SHA recorded above.",
+    "correction": "Regenerated only resume-recovery/manifest.json, summary.md and checks.json with the exact frozen SHA; no product file was rewritten.",
+    "scope": "resume-recovery evidence only",
+    "rootDecision": "No Terra escalation; source recovery scope and bytes remain unchanged."
+  }
+}

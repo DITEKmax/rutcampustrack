@@ -1,0 +1,8 @@
+{
+  "purpose": "checkpoint integrity only, not product tests",
+  "verifiedFiles": 60,
+  "mismatches": [],
+  "newProductChecks": "NOT_RUN",
+  "allDirections": "STOP_ACK",
+  "activeLeaves": 0
+}

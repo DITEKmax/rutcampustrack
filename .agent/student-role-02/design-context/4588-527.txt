@@ -1,0 +1,174 @@
+const imgIconPrevious = "https://www.figma.com/api/mcp/asset/ba7edbd5-5e2c-4f63-ac76-db9f44933ab9.svg";
+const imgIcon = "https://www.figma.com/api/mcp/asset/3ff897f7-3ba7-4040-a006-eb1a93bf69fe.svg";
+const imgIcon1 = "https://www.figma.com/api/mcp/asset/f8d82057-7c3c-4885-94be-547c17e2cfd2.svg";
+const imgChevronColor = "https://www.figma.com/api/mcp/asset/e5e48aa0-fa66-4ae4-a911-c720698ade7f.svg";
+
+type SharedMobileTextareaProps = {
+  className?: string;
+  state?: "placeholder";
+};
+
+function SharedMobileTextarea({ className, state = "placeholder" }: SharedMobileTextareaProps) {
+  return (
+    <div className={className || "bg-[var(--color-surface-raised,#1c1922)] content-stretch flex h-[96px] items-start overflow-clip p-[12px] relative rounded-[var(--radius-xl,16px)] w-[358px]"} data-node-id="4737:942">
+      <p className="[word-break:break-word] flex-[1_0_0] font-[family-name:var(--font-family-sans,'Onest:Regular')] h-[24px] leading-[normal] min-w-px not-italic relative text-[color:var(--color-text-secondary,#c8c2d6)] text-[length:var(--font-size-body,16px)]" data-node-id="4737:943">
+        Коротко опиши ситуацию
+      </p>
+    </div>
+  );
+}
+
+function IconPrevious({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[16px]"} data-node-id="4597:3579" data-name="icon/previous">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconPrevious} />
+    </div>
+  );
+}
+
+export default function Component10() {
+  return (
+    <div className="bg-[var(--color-surface-base,#0b0b0c)] overflow-clip relative rounded-[24px] size-full" data-node-id="4588:527" data-name="10 · Сегодня / форма уважительной причины">
+      <div className="absolute content-stretch flex flex-col gap-[12px] h-[844px] items-start left-[16px] overflow-clip pb-[16px] pt-[20px] top-0 w-[358px]" data-node-id="4588:528" data-name="content">
+        <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-[358px]" data-node-id="4588:529" data-name="header">
+          <div className="bg-[var(--color-surface-float,#292531)] relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4749:462" data-name="back">
+            <IconPrevious className="absolute left-[14px] size-[16px] top-[14px]" />
+          </div>
+          <div className="[word-break:break-word] flex flex-[1_0_0] flex-col font-['Onest:SemiBold'] h-[32px] justify-center leading-[0] min-w-px not-italic relative text-[22px] text-[color:var(--color-text-primary,#edeaf3)]" data-node-id="4588:530">
+            <p className="leading-[normal]">Уважительная причина</p>
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[8px] items-start relative shrink-0 w-[358px]" data-node-id="4588:546" data-name="lesson-row">
+          <div className="[word-break:break-word] content-stretch flex flex-col gap-[2px] items-start leading-[normal] not-italic relative shrink-0 w-[54px] whitespace-nowrap" data-node-id="4588:547" data-name="time-slot">
+            <p className="font-['Onest:SemiBold'] relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)]" data-node-id="4588:548">
+              09:00
+            </p>
+            <p className="font-['Onest:Regular'] relative shrink-0 text-[12px] text-[color:var(--color-text-secondary,#c8c2d6)]" data-node-id="4588:549">
+              10:30
+            </p>
+          </div>
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[6px] items-start p-[12px] relative rounded-[16px] shrink-0 w-[296px]" data-node-id="4588:550" data-name="lesson">
+            <div className="content-stretch flex items-center justify-between relative shrink-0 w-[272px]" data-node-id="4588:551" data-name="lesson-head">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[14px] text-[color:var(--color-text-primary,#edeaf3)] w-[272px]" data-node-id="4588:552">
+                Математический анализ
+              </p>
+            </div>
+            <div className="content-stretch flex gap-[var(--space-1,4px)] items-center relative shrink-0 w-[260px]" data-node-id="4588:555" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4588:556" data-name="icon">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] font-normal h-[20px] leading-[normal] relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] w-[236px]" data-node-id="4588:557" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
+                А‑312
+              </p>
+            </div>
+            <div className="content-stretch flex gap-[var(--space-1,4px)] items-center relative shrink-0 w-[260px]" data-node-id="4588:558" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4588:559" data-name="icon">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon1} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] h-[20px] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] w-[236px]" data-node-id="4588:560">
+                Практика
+              </p>
+            </div>
+            <div className="absolute bg-[var(--color-status-absent-fill,#f27f7f)] content-stretch flex items-center justify-center left-[252px] rounded-[16px] size-[32px] top-[43px]" data-node-id="4588:553" data-name="status-н">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--color-status-absent-on-fill,#0b0b0c)] whitespace-nowrap" data-node-id="4588:554">
+                н
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="h-[410px] relative shrink-0 w-full" data-node-id="4651:230" data-name="inline-absence-form">
+          <p className="[word-break:break-word] absolute font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.45] left-0 not-italic text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-dense,14px)] top-0 whitespace-nowrap" data-node-id="4651:238">
+            Причина
+          </p>
+          <div className="absolute content-stretch flex flex-col gap-[var(--space-1,4px)] h-[44px] items-start left-0 p-[var(--space-0,0px)] top-[36px] w-[358px]" data-node-id="4651:239" data-name="shared/SelectField">
+            <div className="h-[40px] overflow-clip relative shrink-0 w-full" data-node-id="I4651:239;80:155" data-name="Field">
+              <div className="absolute bg-[var(--color-surface-raised,#1c1922)] border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex gap-[var(--space-2,8px)] h-[40px] items-center left-0 px-[var(--space-3,12px)] py-[var(--space-2,8px)] right-0 rounded-[var(--radius-xl,16px)] top-0" data-node-id="I4651:239;80:156" data-name="TextInput">
+                <div className="content-stretch flex flex-[1_0_0] gap-[var(--space-0,0px)] h-[24px] items-center min-w-px overflow-clip p-[var(--space-0,0px)] relative" data-node-id="I4651:239;80:156;77:109" data-name="Value area">
+                  <p className="[word-break:break-word] flex-[1_0_0] font-[family-name:var(--font-family-sans,'Onest:Regular')] h-[24px] leading-[1.5] max-w-[280px] min-w-px not-italic overflow-hidden relative text-[16px] text-[color:var(--color-text-primary,#edeaf3)] text-ellipsis whitespace-nowrap" data-node-id="I4651:239;80:156;77:110" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                    Болезнь
+                  </p>
+                </div>
+              </div>
+              <div className="absolute overflow-clip right-[12px] size-[16px] top-[12px]" data-node-id="I4651:239;80:179" data-name="Chevron">
+                <div className="absolute bg-[var(--color-text-secondary,#c8c2d6)] left-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-size-[16px_16px] size-[16px] top-0" data-node-id="I4651:239;80:182" style={{ maskImage: `url("${imgChevronColor}")` }} data-name="Chevron color" />
+              </div>
+            </div>
+          </div>
+          <p className="[word-break:break-word] absolute font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.45] left-0 not-italic text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-dense,14px)] top-[96px] whitespace-nowrap" data-node-id="4651:240">
+            Комментарий
+          </p>
+          <SharedMobileTextarea className="absolute bg-[var(--color-surface-raised,#1c1922)] content-stretch flex h-[96px] items-start left-0 overflow-clip p-[12px] rounded-[var(--radius-xl,16px)] top-[132px] w-[358px]" />
+          <p className="[word-break:break-word] absolute font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.45] left-0 not-italic text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-dense,14px)] top-[244px] whitespace-nowrap" data-node-id="4651:242">
+            Подтверждение
+          </p>
+          <div className="absolute content-stretch flex flex-col h-[66px] items-start left-0 p-[var(--space-0,0px)] top-[280px] w-[358px]" data-node-id="4651:273" data-name="shared/FileUploadField/local">
+            <div className="[word-break:break-word] border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-dashed content-stretch flex flex-col font-[family-name:var(--font-family-sans,'Onest:Regular')] gap-[4px] h-[66px] items-center not-italic overflow-clip px-[var(--space-4,16px)] py-[10px] relative rounded-[var(--radius\/2xl,24px)] shrink-0 text-center w-full" data-node-id="4651:274" data-name="Dropzone">
+              <p className="leading-[1.5] relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-body,16px)] w-full" data-node-id="4651:275" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                Выбери фото или файл
+              </p>
+              <p className="leading-[1.4] relative shrink-0 text-[color:var(--color-text-muted,#8a8299)] text-[length:var(--font-size-caption,13px)] w-full" data-node-id="4651:276" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                До 10 МБ · не более 2 файлов
+              </p>
+            </div>
+          </div>
+          <div className="absolute bg-gradient-to-r content-stretch flex from-[#171229] h-[48px] items-center justify-center left-0 overflow-clip rounded-[24px] to-[#3b146b] top-[362px] via-[#29174d] via-[55%] w-[358px]" data-node-id="4651:287" data-name="submit">
+            <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[15px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4651:288">
+              Отправить заявку
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+These styles are contained in the design: body: Font(family: "var(--font-family-sans)", style: Regular, size: var(--font-size-body), weight: var(--font-weight-regular), lineHeight: 1.5, letterSpacing: 0), caption: Font(family: "var(--font-family-sans)", style: Regular, size: var(--font-size-caption), weight: var(--font-weight-regular), lineHeight: 1.399999976158142, letterSpacing: 0).
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## icon/previous
+**Node ID:** 4597:3579
+
+Временная локальная векторная заглушка смысла «предыдущий». Один stroke-вектор и метрика совпадают с icon/chevron-down; заменить финальной иконкой через instance swap.
+
+## Property 1=room
+**Node ID:** 4565:3068
+
+Навигация: текущий день и экран «Сегодня».
+
+## Property 1=lesson-type
+**Node ID:** 4570:143
+
+Навигация: текущий день и экран «Сегодня».
+
+## shared/SelectField
+**Node ID:** 80:329
+
+SelectField: состояния TextInput плюс open и busy. Открытый список собран каркасом с заглушкой Popover; показаны default, hover, selected и disabled с причиной. state=busy — загрузка вариантов: наследует TextInput busy по брендбуку §6.3; подпись, размер и раскладка не меняются.
+
+## shared/TextInput
+**Node ID:** 77:152
+
+Однострочное поле ввода. При state=busy подпись, слоты и габариты сохраняются; Busy wave / middle использует color/surface/raised, обрезается внутренним radius/md и лежит ниже текста и иконок.
+
+## icon/chevron-down
+**Node ID:** 260:1687
+
+Временная векторная заглушка. Заменить на финальную иконку через instance swap без изменения геометрии контрола.
+
+## state=placeholder
+**Node ID:** 4737:942
+
+Мобильное многострочное поле: текст начинается в первой строке сверху. state=placeholder.
+
+## shared/MobileTextarea
+**Node ID:** 4737:953
+
+state=placeholder|filled|disabled|error. Mobile-only многострочное поле; 358×96, top-aligned first line, radius/xl.
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

@@ -1,0 +1,44 @@
+{
+  "date": "2026-09-06",
+  "timeZone": "Europe/Moscow",
+  "serverNow": "2026-09-06T08:30:00Z",
+  "lessons": [
+    {
+      "schedule": {
+        "id": "77",
+        "date": "2026-09-06",
+        "lessonNumber": 2,
+        "startsAt": "11:20:00",
+        "endsAt": "12:50:00",
+        "status": "ACTIVE",
+        "subject": {
+          "id": "31",
+          "name": "Распределённые системы",
+          "type": "LECTURE"
+        },
+        "room": {
+          "current": "А-401",
+          "previous": "А-307",
+          "changeState": "CHANGED"
+        }
+      },
+      "attendance": null,
+      "checkinEligibility": {
+        "allowed": false,
+        "reason": "PENDING_CONFIRMATION",
+        "retryAt": "2026-09-06T08:35:00Z"
+      },
+      "request": {
+        "id": "request-501",
+        "status": "PENDING",
+        "origin": "AUTO_GEO_FAILURE",
+        "resolutionReason": null
+      }
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "https://ruttrack.example/api/v1/student/today"
+    }
+  }
+}

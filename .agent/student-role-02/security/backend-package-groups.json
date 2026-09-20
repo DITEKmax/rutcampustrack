@@ -1,0 +1,116 @@
+[
+  {
+    "package": "com.fasterxml.jackson.core:jackson-core",
+    "installed": "2.18.2",
+    "findings": 1,
+    "fixedCandidates": "2.18.8, 2.21.4"
+  },
+  {
+    "package": "com.fasterxml.jackson.core:jackson-databind",
+    "installed": "2.18.2",
+    "findings": 2,
+    "fixedCandidates": "2.18.8, 2.21.4, 3.1.4 | 2.18.8, 3.1.4, 2.21.4"
+  },
+  {
+    "package": "com.google.protobuf:protobuf-java",
+    "installed": "3.25.1",
+    "findings": 1,
+    "fixedCandidates": "3.25.5, 4.27.5, 4.28.2"
+  },
+  {
+    "package": "com.rabbitmq:amqp-client",
+    "installed": "5.22.0",
+    "findings": 3,
+    "fixedCandidates": "5.33.0 | 5.33.1"
+  },
+  {
+    "package": "io.grpc:grpc-netty-shaded",
+    "installed": "1.63.0",
+    "findings": 1,
+    "fixedCandidates": "1.75.0"
+  },
+  {
+    "package": "io.micrometer:micrometer-core",
+    "installed": "1.14.2",
+    "findings": 1,
+    "fixedCandidates": "1.16.6, 1.15.12"
+  },
+  {
+    "package": "io.netty:netty-codec",
+    "installed": "4.1.116.Final",
+    "findings": 2,
+    "fixedCandidates": "4.1.133.Final | 4.1.136.Final"
+  },
+  {
+    "package": "io.netty:netty-handler",
+    "installed": "4.1.116.Final",
+    "findings": 4,
+    "fixedCandidates": "4.1.118.Final | 4.2.15.Final, 4.1.135.Final"
+  },
+  {
+    "package": "net.minidev:json-smart",
+    "installed": "2.5.1",
+    "findings": 1,
+    "fixedCandidates": "2.5.2"
+  },
+  {
+    "package": "org.apache.tomcat.embed:tomcat-embed-core",
+    "installed": "10.1.34",
+    "findings": 19,
+    "fixedCandidates": "11.0.10, 10.1.44, 9.0.108 | 11.0.11, 10.1.45, 9.0.109 | 11.0.18, 10.1.52, 9.0.115 | 11.0.25, 10.1.58, 9.0.121 | 11.0.3, 10.1.35, 9.0.99 | 11.0.8, 10.1.42, 9.0.106 | 11.0.9, 10.1.43, 9.0.107 | 9.0.107, 10.1.43, 11.0.9 | 9.0.116, 10.1.52, 11.0.20 | 9.0.116, 10.1.54, 11.0.21 | 9.0.117, 10.1.54, 11.0.21 | 9.0.118, 10.1.55, 11.0.22"
+  },
+  {
+    "package": "org.postgresql:postgresql",
+    "installed": "42.7.4",
+    "findings": 3,
+    "fixedCandidates": "42.7.11 | 42.7.12 | 42.7.7"
+  },
+  {
+    "package": "org.springframework:spring-core",
+    "installed": "6.2.1",
+    "findings": 1,
+    "fixedCandidates": "6.2.11"
+  },
+  {
+    "package": "org.springframework:spring-expression",
+    "installed": "6.2.1",
+    "findings": 1,
+    "fixedCandidates": "7.0.8, 6.2.19"
+  },
+  {
+    "package": "org.springframework:spring-webmvc",
+    "installed": "6.2.1",
+    "findings": 2,
+    "fixedCandidates": "7.0.8, 6.2.19"
+  },
+  {
+    "package": "org.springframework.boot:spring-boot",
+    "installed": "3.4.1",
+    "findings": 2,
+    "fixedCandidates": "3.3.11, 3.4.5 | 4.0.6, 3.5.14"
+  },
+  {
+    "package": "org.springframework.data:spring-data-commons",
+    "installed": "3.4.1",
+    "findings": 2,
+    "fixedCandidates": "4.0.6, 3.5.12"
+  },
+  {
+    "package": "org.springframework.hateoas:spring-hateoas",
+    "installed": "2.4.1",
+    "findings": 2,
+    "fixedCandidates": "3.0.4, 2.5.3"
+  },
+  {
+    "package": "org.springframework.security:spring-security-core",
+    "installed": "6.4.2",
+    "findings": 2,
+    "fixedCandidates": "6.4.10, 6.5.4 | 6.4.6"
+  },
+  {
+    "package": "org.springframework.security:spring-security-crypto",
+    "installed": "6.4.2",
+    "findings": 1,
+    "fixedCandidates": "6.3.8, 6.4.4, 6.2.10, 6.1.14, 6.0.16, 5.8.18, 5.7.16"
+  }
+]

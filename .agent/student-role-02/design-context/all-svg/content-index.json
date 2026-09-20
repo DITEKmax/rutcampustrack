@@ -1,0 +1,1880 @@
+[
+  {
+    "sha256": "064BF682C6D4A398FA792A41D9EF2DCB175E5B83E95BD2B5B08871FD0FC527FE",
+    "representative": "81c47504-9cf9-4ba1-9c44-a01ab0af8de6.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgIconToday",
+        "file": "81c47504-9cf9-4ba1-9c44-a01ab0af8de6.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIconToday",
+        "file": "f36466d5-cff5-4b9d-a415-c01127129d0c.svg"
+      },
+      {
+        "frame": "4585-848020",
+        "binding": "imgIconToday",
+        "file": "b73d7063-f6a7-41f3-8d13-efef0a4a18a6.svg"
+      },
+      {
+        "frame": "4585-848126",
+        "binding": "imgIconToday",
+        "file": "419e8f19-64da-4dfb-8104-4b6293f0cb98.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "06EB0DF67910AECE70E56DAE6AFDF90E10E727DA5BE6498BD3B05DEC0C31BADD",
+    "representative": "47027dae-6e40-4332-b960-21a827931ce6.svg",
+    "bindings": [
+      {
+        "frame": "4798-200",
+        "binding": "imgPresentBoundary",
+        "file": "47027dae-6e40-4332-b960-21a827931ce6.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "080F62678853575D8E666DE6485DEBADC448110067FCEE8AB4B0DC4B219D50C2",
+    "representative": "8896104e-36e8-4167-8c8d-c8be46d7efce.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgDiagonalStrike",
+        "file": "8896104e-36e8-4167-8c8d-c8be46d7efce.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "0815FC485B10771EA2FB10BD85AE0FE6BA0D598E2697F3B9F0AD1DAD0274986C",
+    "representative": "3d263901-ee56-462a-a97b-e2d8769d14f7.svg",
+    "bindings": [
+      {
+        "frame": "4611-142",
+        "binding": "imgIconRequests",
+        "file": "3d263901-ee56-462a-a97b-e2d8769d14f7.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "09C91333424E483276DDAAC939B182735ADC08F006A4F7ADB5EA4EFBC01CE258",
+    "representative": "364fe371-d70e-4e91-b45a-ca158c9fa3c7.svg",
+    "bindings": [
+      {
+        "frame": "4595-848430",
+        "binding": "imgPresentArea",
+        "file": "364fe371-d70e-4e91-b45a-ca158c9fa3c7.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "11957E7E2DB1ABDAAEC56227597F51CA2228109C7F777FCD6DC683089F3628AD",
+    "representative": "deff7d76-98a6-445d-a127-f838bdc7fc2f.svg",
+    "bindings": [
+      {
+        "frame": "4614-276",
+        "binding": "imgChecked",
+        "file": "deff7d76-98a6-445d-a127-f838bdc7fc2f.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "1E6A8FEE0287E7275E7FF77EAEC190D8690F34E479E2AA32551196E1941FD4CE",
+    "representative": "5b5d9ba7-4860-4a59-aa5d-e3ddc07ad279.svg",
+    "bindings": [
+      {
+        "frame": "4615-326",
+        "binding": "imgStatusIcon",
+        "file": "5b5d9ba7-4860-4a59-aa5d-e3ddc07ad279.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "1E73734F1A6D25516615F5F05F34C3C5B486F970F61C73492D1AA6F2BE3E3A5D",
+    "representative": "8869c6d8-2a5b-444e-a9d7-683e4470ceea.svg",
+    "bindings": [
+      {
+        "frame": "4611-848928",
+        "binding": "imgIcon4",
+        "file": "8869c6d8-2a5b-444e-a9d7-683e4470ceea.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "25F971730A12DC2C6793836C909391B43BDCE14AA641ACFED775DEA76C9D168F",
+    "representative": "253dac97-1b5d-4f0f-ac09-74ea2cfa969f.svg",
+    "bindings": [
+      {
+        "frame": "4603-142",
+        "binding": "imgAbsentArea",
+        "file": "253dac97-1b5d-4f0f-ac09-74ea2cfa969f.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "2B503DAC91E6722D2A43A26FA74A7A1A6C8D0B84741DFC1012501FF533BE55A7",
+    "representative": "e9abf08a-141c-4cd3-9170-4cfca7ed0604.svg",
+    "bindings": [
+      {
+        "frame": "4798-200",
+        "binding": "imgPresentArea",
+        "file": "e9abf08a-141c-4cd3-9170-4cfca7ed0604.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "2D330BB8F51133E77C86DE4AF8D95BB30908CD145B5CB56F2E0883F7531C051D",
+    "representative": "e52cc958-6910-4c46-a19e-816dcecee1d0.svg",
+    "bindings": [
+      {
+        "frame": "4596-365",
+        "binding": "imgIconChevronDown",
+        "file": "e52cc958-6910-4c46-a19e-816dcecee1d0.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "2E2CB5C8583F8D93C8C9D582CD09A09F67434B500A8D7C7B7FCBD30FDD69BA6D",
+    "representative": "5534f687-a04d-4ac5-be99-de4146e95e25.svg",
+    "bindings": [
+      {
+        "frame": "4596-365",
+        "binding": "imgIconAttendanceGraph",
+        "file": "5534f687-a04d-4ac5-be99-de4146e95e25.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "2E8AEFD0373DB1920314BB2C6C4ED9A663268E01551D8CA54DDBEE0B806C11D5",
+    "representative": "88cc4d37-084a-4270-a7a9-4a3b023de3ca.svg",
+    "bindings": [
+      {
+        "frame": "4615-326",
+        "binding": "imgStateClosed",
+        "file": "88cc4d37-084a-4270-a7a9-4a3b023de3ca.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "2EB0E811AE5E3175454608A8EB4EAA03F5D46DA8F78B0F512EADF6EA4A670A54",
+    "representative": "3dbcfc75-6eb0-4309-b83e-6d6ca6e66e0b.svg",
+    "bindings": [
+      {
+        "frame": "4603-142",
+        "binding": "imgPresentArea",
+        "file": "3dbcfc75-6eb0-4309-b83e-6d6ca6e66e0b.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "30653A4F48C2D3EEB8751B5EDCDDB001D2A14874A06E2B8625C644428B637E38",
+    "representative": "1ec834e8-2dd6-49ba-946b-035e3f71b4d0.svg",
+    "bindings": [
+      {
+        "frame": "4595-293",
+        "binding": "imgAbsentArea",
+        "file": "1ec834e8-2dd6-49ba-946b-035e3f71b4d0.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "3196548642EA3EE3C910CF379D1240564628568E56A01185485EDB85233B5AD5",
+    "representative": "a880f373-2b1b-45d5-8ea9-2c773195ed92.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgIcon8",
+        "file": "a880f373-2b1b-45d5-8ea9-2c773195ed92.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon5",
+        "file": "cba36f0e-4577-462a-ae26-1f2618825baa.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon9",
+        "file": "c88b7158-5bbb-47f6-8c50-899a6e778bcd.svg"
+      },
+      {
+        "frame": "4585-848126",
+        "binding": "imgIcon1",
+        "file": "61af8e29-9ff4-45ce-b6de-14c05b1332d5.svg"
+      },
+      {
+        "frame": "4588-848409",
+        "binding": "imgIcon1",
+        "file": "a804a3be-e087-4a04-be8e-d8a91bb2bc47.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "364E36AD0E90ADB0EF9516583DE709D92CAA0D3554C30EB3AB64C9DE8AA5157C",
+    "representative": "30f8d28a-fd3b-48c2-9bbc-22a228e16934.svg",
+    "bindings": [
+      {
+        "frame": "4603-848696",
+        "binding": "imgPresentBoundary",
+        "file": "30f8d28a-fd3b-48c2-9bbc-22a228e16934.svg"
+      },
+      {
+        "frame": "4798-142",
+        "binding": "imgPresentBoundary",
+        "file": "3bc5e437-5151-455b-b537-59607ce5d2e6.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "399823D22752807BB58D6BA7FA98DFD9C98761DF5F8E8C8C14451C17C73276F3",
+    "representative": "3117684b-5603-4688-8804-405824961a7e.svg",
+    "bindings": [
+      {
+        "frame": "4611-142",
+        "binding": "imgIconMap",
+        "file": "3117684b-5603-4688-8804-405824961a7e.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "3F8CAD39FB38B3AFAF33E6CB2869F69EBD54D51EDF9735A27203F6C32D179241",
+    "representative": "d6c891f2-5d8e-4c4c-8849-631e8b4d0ae7.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgIcon",
+        "file": "d6c891f2-5d8e-4c4c-8849-631e8b4d0ae7.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon",
+        "file": "922851cd-292b-4dc1-9162-2aabd05f57e8.svg"
+      },
+      {
+        "frame": "4585-848020",
+        "binding": "imgIcon",
+        "file": "e25c4e68-4c6c-40f0-bb29-e703c6491db3.svg"
+      },
+      {
+        "frame": "4585-848126",
+        "binding": "imgIcon4",
+        "file": "8434c447-c38c-4488-bab5-5e900a8b0031.svg"
+      },
+      {
+        "frame": "4593-142",
+        "binding": "imgIcon3",
+        "file": "46c62c32-7e84-4cb4-a805-1417529adf7a.svg"
+      },
+      {
+        "frame": "4593-848365",
+        "binding": "imgIcon1",
+        "file": "41713034-73c8-4f2b-8322-3a26f804aa51.svg"
+      },
+      {
+        "frame": "4593-848496",
+        "binding": "imgIcon3",
+        "file": "ca1926ed-7785-48ea-ad66-8b7d1b0ede93.svg"
+      },
+      {
+        "frame": "4595-293",
+        "binding": "imgIcon1",
+        "file": "c9c3f5a5-2ebe-4892-b88c-7235edcf042f.svg"
+      },
+      {
+        "frame": "4595-848430",
+        "binding": "imgIcon1",
+        "file": "dcef0f80-46b4-4a04-a13e-d70a2c582031.svg"
+      },
+      {
+        "frame": "4596-365",
+        "binding": "imgIcon1",
+        "file": "0db86f28-c2f7-4233-9aee-09d73a6f93ad.svg"
+      },
+      {
+        "frame": "4603-142",
+        "binding": "imgIcon1",
+        "file": "09cf3c55-5b69-4a2d-b6d5-8d9999f6174e.svg"
+      },
+      {
+        "frame": "4610-142",
+        "binding": "imgIcon2",
+        "file": "df25aa84-c812-4012-abc5-b598ffaec0c7.svg"
+      },
+      {
+        "frame": "4610-848846",
+        "binding": "imgIcon2",
+        "file": "f77fc226-5039-4fe6-90a2-27d2c291981b.svg"
+      },
+      {
+        "frame": "4611-142",
+        "binding": "imgIcon1",
+        "file": "cb5c9d1e-5d54-4460-b4a4-3f608411c1ee.svg"
+      },
+      {
+        "frame": "4611-848928",
+        "binding": "imgIcon1",
+        "file": "e3ffd3a1-0035-4e9e-ae50-144902bc7517.svg"
+      },
+      {
+        "frame": "4768-228",
+        "binding": "imgIcon",
+        "file": "0cbd03f3-b28d-41a1-a271-fa409d5fd962.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "3FEFE2B0549C487653F0192BC99DDFAA1C2BCE820DCCD8390FFF232AE9D256DE",
+    "representative": "e5e48aa0-fa66-4ae4-a911-c720698ade7f.svg",
+    "bindings": [
+      {
+        "frame": "4588-527",
+        "binding": "imgChevronColor",
+        "file": "e5e48aa0-fa66-4ae4-a911-c720698ade7f.svg"
+      },
+      {
+        "frame": "4597-3574",
+        "binding": "imgChevronColor",
+        "file": "ebfee5ad-f4b2-4c3c-aec7-70af5b1573eb.svg"
+      },
+      {
+        "frame": "4603-848832",
+        "binding": "imgChevronColor",
+        "file": "9a067581-8e6d-433b-a2da-3fdf76c3b502.svg"
+      },
+      {
+        "frame": "4610-849007",
+        "binding": "imgChevronColor",
+        "file": "5225fec6-31f9-46b6-91ae-e05716c7c257.svg"
+      },
+      {
+        "frame": "4710-232",
+        "binding": "imgChevronColor",
+        "file": "003dc9ad-3990-4292-813e-5fbc494bcdad.svg"
+      },
+      {
+        "frame": "4781-164",
+        "binding": "imgChevronColor",
+        "file": "a7130ee5-3016-4404-b8d2-0b0fd300f750.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "40E6AA0E1F0FDD340C51284F51E047B075C07C664CF7E8A620B3995BD1E53239",
+    "representative": "7458cfca-c22a-4381-92af-4ecad809b07e.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgIcon6",
+        "file": "7458cfca-c22a-4381-92af-4ecad809b07e.svg"
+      },
+      {
+        "frame": "4581-3062",
+        "binding": "imgIcon10",
+        "file": "9fb49867-d3a5-4d56-9bc4-726959168701.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon7",
+        "file": "9cb6a31a-1d0a-427c-841f-f9e8e4b3a9b4.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon11",
+        "file": "75a38fcc-67b5-4e8d-be7a-657a31e425b8.svg"
+      },
+      {
+        "frame": "4585-848020",
+        "binding": "imgIcon5",
+        "file": "faf78b1e-a9e3-4a12-ab03-bc68b2718dac.svg"
+      },
+      {
+        "frame": "4585-848126",
+        "binding": "imgIcon3",
+        "file": "fde5d8b6-2fe6-4ebf-9371-39dff4665aa2.svg"
+      },
+      {
+        "frame": "4588-527",
+        "binding": "imgIcon1",
+        "file": "f8d82057-7c3c-4885-94be-547c17e2cfd2.svg"
+      },
+      {
+        "frame": "4588-848409",
+        "binding": "imgIcon3",
+        "file": "afe100cb-4d7f-4b46-9cc3-2cc8457b8f96.svg"
+      },
+      {
+        "frame": "4593-142",
+        "binding": "imgIcon1",
+        "file": "a95245d1-ebb6-4aef-80f8-5ddef671bd22.svg"
+      },
+      {
+        "frame": "4593-848496",
+        "binding": "imgIcon1",
+        "file": "39bf2a7c-4f07-43d1-95fb-030769de038a.svg"
+      },
+      {
+        "frame": "4597-3574",
+        "binding": "imgIcon",
+        "file": "cc299891-1c0d-4283-9f9b-b7880c9fdbd4.svg"
+      },
+      {
+        "frame": "4610-142",
+        "binding": "imgIcon",
+        "file": "93de4c9e-7ae0-441a-b265-935d1f5f4689.svg"
+      },
+      {
+        "frame": "4610-848846",
+        "binding": "imgIcon",
+        "file": "e9b1865b-a2d7-4e9a-b7a3-0de9f2a7c5b5.svg"
+      },
+      {
+        "frame": "4610-849007",
+        "binding": "imgIcon",
+        "file": "b87b2940-7307-46e4-b46f-3e3ff0326076.svg"
+      },
+      {
+        "frame": "4610-849072",
+        "binding": "imgIcon",
+        "file": "164effeb-306f-47f9-9b4e-53f4e78ae336.svg"
+      },
+      {
+        "frame": "4710-232",
+        "binding": "imgIcon1",
+        "file": "a9204a5a-3963-4709-ae20-fcb0014b2b99.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "46C2A4C1221EE48D754FAB1B1D5D32769CC04327BC6F41657A38F602217C159E",
+    "representative": "7e022036-08a9-4e3b-aa8b-c6d53b44974b.svg",
+    "bindings": [
+      {
+        "frame": "4588-848409",
+        "binding": "imgProgress",
+        "file": "7e022036-08a9-4e3b-aa8b-c6d53b44974b.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "49CA140DC63FF22AB72F94EE98CED31950D5279EA68553CD4BD105ED46FE6198",
+    "representative": "13e66f2e-2b19-4bc9-a6b1-661e582e264e.svg",
+    "bindings": [
+      {
+        "frame": "4611-848928",
+        "binding": "imgIconAppearance",
+        "file": "13e66f2e-2b19-4bc9-a6b1-661e582e264e.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "4D07219CF9D1257201BBE71F2099C1E7BFF39BCDAD45A5EB040995FCF19E8574",
+    "representative": "92bd456a-33df-43a8-9a10-d92cc70c3db0.svg",
+    "bindings": [
+      {
+        "frame": "4601-848636-refreshed-2026-09-07",
+        "binding": "imgCheck",
+        "file": "92bd456a-33df-43a8-9a10-d92cc70c3db0.svg"
+      },
+      {
+        "frame": "4601-848636",
+        "binding": "imgCheck",
+        "file": "63c8f225-e3c5-4e86-86d4-edb7838dd5be.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "51BE1C2AE321BC86433B7CEBB0CC9745F83E7692D85813B8A828F89566C53CD0",
+    "representative": "a746676c-9cca-4d65-8e39-f28511fca9dd.svg",
+    "bindings": [
+      {
+        "frame": "4603-848696",
+        "binding": "imgAbsentArea",
+        "file": "a746676c-9cca-4d65-8e39-f28511fca9dd.svg"
+      },
+      {
+        "frame": "4798-142",
+        "binding": "imgAbsentArea",
+        "file": "15d38882-7212-47b1-ab8c-ccdc2cc2a821.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "560C88D0F74C2FABD63EBECC0E14AE03322744E7DEB65AB346A025902AA2A5FA",
+    "representative": "f98deaea-d297-4918-95c3-079879151d87.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgIcon1",
+        "file": "f98deaea-d297-4918-95c3-079879151d87.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon1",
+        "file": "c9286ff4-a6ed-47c7-9cf0-b231a2fd21c1.svg"
+      },
+      {
+        "frame": "4585-848020",
+        "binding": "imgIcon1",
+        "file": "9c28410d-0562-4462-bcb8-4195ff2c53de.svg"
+      },
+      {
+        "frame": "4585-848126",
+        "binding": "imgIcon5",
+        "file": "5300cd0a-7a93-4df1-b3b7-1b39fa23cc5c.svg"
+      },
+      {
+        "frame": "4601-142",
+        "binding": "imgIcon2",
+        "file": "2262b2fd-42c1-4b5a-8ab2-b22c6ac12f76.svg"
+      },
+      {
+        "frame": "4601-848562",
+        "binding": "imgIcon2",
+        "file": "34a49928-bd60-4229-98da-bc4554956114.svg"
+      },
+      {
+        "frame": "4601-848636-refreshed-2026-09-07",
+        "binding": "imgIcon2",
+        "file": "ce91a824-e9c9-459d-ae95-b6e13c6f33cd.svg"
+      },
+      {
+        "frame": "4601-848636",
+        "binding": "imgIcon2",
+        "file": "fd97cd47-11fb-4367-b777-70f69874cc92.svg"
+      },
+      {
+        "frame": "4603-142",
+        "binding": "imgIcon2",
+        "file": "2c37663f-ee20-4fc7-b674-5bcc3c153a9d.svg"
+      },
+      {
+        "frame": "4610-142",
+        "binding": "imgIcon3",
+        "file": "b08f9138-4ff7-4207-a286-22ae7238ab0f.svg"
+      },
+      {
+        "frame": "4610-848846",
+        "binding": "imgIcon3",
+        "file": "a39a154a-e3f8-46c5-9757-4c1823c0e8d3.svg"
+      },
+      {
+        "frame": "4611-142",
+        "binding": "imgIcon2",
+        "file": "d1405979-7fc0-49d5-905e-e2c8307380d3.svg"
+      },
+      {
+        "frame": "4611-848928",
+        "binding": "imgIcon2",
+        "file": "4ae762f0-970b-4b24-a5c0-f952dc144bc9.svg"
+      },
+      {
+        "frame": "4788-146",
+        "binding": "imgIcon1",
+        "file": "6b12e4f3-1fb2-4e53-a649-d77d210853d6.svg"
+      },
+      {
+        "frame": "4922-343",
+        "binding": "imgIcon2",
+        "file": "64b96468-d57b-44c6-926a-ebf9c495afe9.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "5A3B118F77F1AAB8E280AE8DE36B8C711F649DC4F5EB504561E08BCBF29B42B2",
+    "representative": "09cb3c28-9747-4068-a664-1b70acefa5bc.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgIconChevronDown",
+        "file": "09cb3c28-9747-4068-a664-1b70acefa5bc.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIconChevronDown",
+        "file": "18c9b992-b842-4bc0-8b2d-26c6a3bef17b.svg"
+      },
+      {
+        "frame": "4585-848020",
+        "binding": "imgIconChevronDown",
+        "file": "317d6f98-18ed-4fc1-a48a-a25d92c9e8ba.svg"
+      },
+      {
+        "frame": "4585-848126",
+        "binding": "imgIconChevronDown",
+        "file": "bbf2f391-0dd6-40fe-85e6-527a473a8aa3.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "5A55705703FE031A9D232B6ED5D7C642578084AFCD7D7EC0D3A19FC1013DBC88",
+    "representative": "edc849fe-6dfc-41bc-8701-66b8a5b8695e.svg",
+    "bindings": [
+      {
+        "frame": "4610-142",
+        "binding": "imgIconTime",
+        "file": "edc849fe-6dfc-41bc-8701-66b8a5b8695e.svg"
+      },
+      {
+        "frame": "4610-848846",
+        "binding": "imgIconTime",
+        "file": "59f334ff-cc27-4988-be1d-519b0902c591.svg"
+      },
+      {
+        "frame": "4781-164",
+        "binding": "imgIconTime",
+        "file": "8b06b702-a0d8-4819-98bc-17e92fdc7b74.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "5C6E532F3899E4BC08D9C81EEB923A43F7D7276EEA52CFF1F889489602D8662D",
+    "representative": "b370ef19-dd77-454c-bdf8-0cc1bb40d1a7.svg",
+    "bindings": [
+      {
+        "frame": "4601-142",
+        "binding": "imgIcon1",
+        "file": "b370ef19-dd77-454c-bdf8-0cc1bb40d1a7.svg"
+      },
+      {
+        "frame": "4601-848562",
+        "binding": "imgIcon1",
+        "file": "63ffaa3e-12cd-4d0d-b97c-7186c7bacd96.svg"
+      },
+      {
+        "frame": "4601-848636-refreshed-2026-09-07",
+        "binding": "imgIcon1",
+        "file": "97d679c0-7081-475f-8f41-ff0f0bee543e.svg"
+      },
+      {
+        "frame": "4601-848636",
+        "binding": "imgIcon1",
+        "file": "674545f2-61e4-4cc5-a16b-8c1270354f20.svg"
+      },
+      {
+        "frame": "4788-146",
+        "binding": "imgIcon",
+        "file": "92d039ee-322c-43a6-8212-4ded965ed18e.svg"
+      },
+      {
+        "frame": "4922-343",
+        "binding": "imgIcon1",
+        "file": "e576ee74-814e-4ab7-97c3-9d2500513b4c.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "5CB7C9C00BF1CED773D094DCD4CC78BC79ABC10C6DCE08E1C44B3971310ED40F",
+    "representative": "d51e9206-e1fa-41a4-854f-a9c024ce2a91.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgSourceIconLessonType",
+        "file": "d51e9206-e1fa-41a4-854f-a9c024ce2a91.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "5CF7E28E79BDB3A5A878CC1300E64B85485B44CBC7B03FF6023C90CCC0644C56",
+    "representative": "2eef2e23-3061-4480-92ff-f6528c9ea8c8.svg",
+    "bindings": [
+      {
+        "frame": "4595-293",
+        "binding": "imgPresentBoundary",
+        "file": "2eef2e23-3061-4480-92ff-f6528c9ea8c8.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "5FE054606397E33574AD8FAFF8CB3EC1F0DC1A7E4AF3E97BD54877A248C4F229",
+    "representative": "6e2938a7-ad26-4da5-a4eb-8ee8e08a444e.svg",
+    "bindings": [
+      {
+        "frame": "4588-848409",
+        "binding": "imgPendingMark",
+        "file": "6e2938a7-ad26-4da5-a4eb-8ee8e08a444e.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "6132ED847E2B7E7314A11782DB132D758BF98BF18BFB9174A8650C7C2A19D026",
+    "representative": "df84ffbd-cc0e-4a16-83aa-139b69ce106c.svg",
+    "bindings": [
+      {
+        "frame": "4593-848496",
+        "binding": "imgIconAttendanceGraph",
+        "file": "df84ffbd-cc0e-4a16-83aa-139b69ce106c.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "6225F3C8F69B786F8BFB643DDE6D5ED0B8D15713CF51AEC9E0F6BF3FDA407399",
+    "representative": "12c3e7dd-6999-400d-a5b1-7db5f34ff1b3.svg",
+    "bindings": [
+      {
+        "frame": "4601-848562",
+        "binding": "imgExpand",
+        "file": "12c3e7dd-6999-400d-a5b1-7db5f34ff1b3.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "6447F80447370F8526C68271EBB1FE13B9F946E88FA99D05E5654FDB66751008",
+    "representative": "4fec6e9c-d3bb-424b-8a91-f76499be85a8.svg",
+    "bindings": [
+      {
+        "frame": "4798-200",
+        "binding": "imgAbsentArea",
+        "file": "4fec6e9c-d3bb-424b-8a91-f76499be85a8.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "6A28E3FB679E5D8C720E0FD0BD2FD9FD658670095ECC48B6C64F00F09F32280A",
+    "representative": "a2d6a1f2-c902-4c44-b208-4a96150cff43.svg",
+    "bindings": [
+      {
+        "frame": "4798-200",
+        "binding": "imgExcusedArea",
+        "file": "a2d6a1f2-c902-4c44-b208-4a96150cff43.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "6BEDC61327EADE0DCB64591C8E2887403028DC4CA451F3F084249DD9650653A4",
+    "representative": "0d468eba-651c-4a9a-9bb3-051d080bbccd.svg",
+    "bindings": [
+      {
+        "frame": "4601-142",
+        "binding": "imgExpand",
+        "file": "0d468eba-651c-4a9a-9bb3-051d080bbccd.svg"
+      },
+      {
+        "frame": "4601-848636-refreshed-2026-09-07",
+        "binding": "imgExpand",
+        "file": "7586d9a5-9295-41e5-9eb1-836c01d1f28e.svg"
+      },
+      {
+        "frame": "4601-848636",
+        "binding": "imgExpand",
+        "file": "1e0ec119-3d99-4171-be03-d3cea054c5a4.svg"
+      },
+      {
+        "frame": "4922-343",
+        "binding": "imgExpand",
+        "file": "5fd15063-381e-4a2a-86fa-70b7e62081da.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "6C0C7871DF7B0C0145771C55BD0CE0D11052DBB4F74A8385FF842D2447972035",
+    "representative": "15a1e16f-6ba9-4543-8068-27940af04072.svg",
+    "bindings": [
+      {
+        "frame": "4615-326",
+        "binding": "imgStateOpen",
+        "file": "15a1e16f-6ba9-4543-8068-27940af04072.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "6D989522355CFF05E1E36A4BEF18168CBB6CCCB1534724E6457C07A9704ED00F",
+    "representative": "fbedab98-5104-4ba0-bfde-e1f6ad2674b2.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgIcon3",
+        "file": "fbedab98-5104-4ba0-bfde-e1f6ad2674b2.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon3",
+        "file": "79d82a9c-51d3-4295-84a6-7fd1198c02b2.svg"
+      },
+      {
+        "frame": "4585-848020",
+        "binding": "imgIcon3",
+        "file": "89bab1dc-bb46-4242-9bcb-0b4c0967d017.svg"
+      },
+      {
+        "frame": "4585-848126",
+        "binding": "imgIcon7",
+        "file": "ecda23a6-f394-423f-b8fe-c7d5649de180.svg"
+      },
+      {
+        "frame": "4593-142",
+        "binding": "imgIcon6",
+        "file": "e705e0df-2056-4c71-9509-9373091e31f5.svg"
+      },
+      {
+        "frame": "4593-848365",
+        "binding": "imgIcon4",
+        "file": "0fd7c339-9c08-489b-b1d8-aadc7f7251aa.svg"
+      },
+      {
+        "frame": "4593-848496",
+        "binding": "imgIcon6",
+        "file": "cbfe2482-2ad8-4cfd-b102-1045d3dbedd7.svg"
+      },
+      {
+        "frame": "4595-293",
+        "binding": "imgIcon4",
+        "file": "4cb87db5-97cf-427f-99f4-dd17d41b9e79.svg"
+      },
+      {
+        "frame": "4595-848430",
+        "binding": "imgIcon4",
+        "file": "9b751abe-1c8c-4d02-b2a2-554cda76edd9.svg"
+      },
+      {
+        "frame": "4596-365",
+        "binding": "imgIcon4",
+        "file": "2e05c66c-af58-47a4-8b3a-9f2853504993.svg"
+      },
+      {
+        "frame": "4601-142",
+        "binding": "imgIcon4",
+        "file": "c45d0366-467b-4a53-966d-597a8874dbe3.svg"
+      },
+      {
+        "frame": "4601-848562",
+        "binding": "imgIcon4",
+        "file": "7670e1da-e2d8-48c8-8f4b-0e70a068433f.svg"
+      },
+      {
+        "frame": "4601-848636-refreshed-2026-09-07",
+        "binding": "imgIcon4",
+        "file": "f03851f8-1d47-494f-be02-ebfdbb65718e.svg"
+      },
+      {
+        "frame": "4601-848636",
+        "binding": "imgIcon4",
+        "file": "b0d25de4-b428-4dcb-998b-99c4a52bacd8.svg"
+      },
+      {
+        "frame": "4603-142",
+        "binding": "imgIcon4",
+        "file": "c46b7206-bf09-4a37-8952-ab5f5f106b89.svg"
+      },
+      {
+        "frame": "4610-142",
+        "binding": "imgIcon5",
+        "file": "7fdc68c1-b9a3-421d-9d6f-bfafb6dac458.svg"
+      },
+      {
+        "frame": "4610-848846",
+        "binding": "imgIcon5",
+        "file": "2be6ead3-0b72-4072-89e3-1a29ee2d91b0.svg"
+      },
+      {
+        "frame": "4611-142",
+        "binding": "imgIcon4",
+        "file": "c016b249-299e-4f7a-9afe-2bdccb021b80.svg"
+      },
+      {
+        "frame": "4768-228",
+        "binding": "imgIcon3",
+        "file": "f53c950d-5eda-4dc6-b418-00bfbdaf4872.svg"
+      },
+      {
+        "frame": "4788-146",
+        "binding": "imgIcon3",
+        "file": "c0ff61be-3c98-494b-ac70-b1eda4e60c1c.svg"
+      },
+      {
+        "frame": "4922-343",
+        "binding": "imgIcon4",
+        "file": "5441ca9a-d8fd-4bf9-870a-136fc4d7cfef.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "6DC517AD12797EE54C49F6AF5FB7E3B3779142B0F311D987130FFD31C1A95659",
+    "representative": "0171f09f-c577-49cf-b3ae-d985c533da42.svg",
+    "bindings": [
+      {
+        "frame": "4601-142",
+        "binding": "imgDirection",
+        "file": "0171f09f-c577-49cf-b3ae-d985c533da42.svg"
+      },
+      {
+        "frame": "4601-848562",
+        "binding": "imgDirection",
+        "file": "2d1376b3-e383-4355-ba19-a46d6a1d70c3.svg"
+      },
+      {
+        "frame": "4788-146",
+        "binding": "imgDirection",
+        "file": "dc1844cc-b698-4aea-b4dc-49e77fa15e21.svg"
+      },
+      {
+        "frame": "4922-343",
+        "binding": "imgDirection",
+        "file": "84c976a9-31d5-47d8-9a78-fba47c1d437b.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "72887CA171FD0E68EAA2CD3C636F0E6FF8B990D02E023277891BD92568E6E7C4",
+    "representative": "892de78c-e170-4fa0-9408-6b8fd6c7a4e0.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgIcon2",
+        "file": "892de78c-e170-4fa0-9408-6b8fd6c7a4e0.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon2",
+        "file": "e2d8f6ee-0df3-40ad-be23-9b6d7b941e79.svg"
+      },
+      {
+        "frame": "4585-848020",
+        "binding": "imgIcon2",
+        "file": "3711aedf-6a6d-48b7-8745-db5e284e7ce8.svg"
+      },
+      {
+        "frame": "4585-848126",
+        "binding": "imgIcon6",
+        "file": "e7c9cc70-e1b6-455b-805b-4203f9048eb4.svg"
+      },
+      {
+        "frame": "4593-142",
+        "binding": "imgIcon5",
+        "file": "0a3e1060-e312-4936-a379-63bade397b9d.svg"
+      },
+      {
+        "frame": "4593-848365",
+        "binding": "imgIcon3",
+        "file": "0ce3a26f-8fd7-49f5-8bd4-6713c2a1ce4f.svg"
+      },
+      {
+        "frame": "4593-848496",
+        "binding": "imgIcon5",
+        "file": "bc486eb6-2e0a-4e01-aae4-015bb8c99a69.svg"
+      },
+      {
+        "frame": "4595-293",
+        "binding": "imgIcon3",
+        "file": "d0c3cf5b-5b5c-49f1-a384-f14fcf2ef0c6.svg"
+      },
+      {
+        "frame": "4595-848430",
+        "binding": "imgIcon3",
+        "file": "c3058e35-ab4f-4f27-a13f-3185803b1105.svg"
+      },
+      {
+        "frame": "4596-365",
+        "binding": "imgIcon3",
+        "file": "e0b7fa9e-68a2-4963-8400-bfd921033d2d.svg"
+      },
+      {
+        "frame": "4601-142",
+        "binding": "imgIcon3",
+        "file": "ce76369f-96f5-45f5-9f27-5b6a4a0c9494.svg"
+      },
+      {
+        "frame": "4601-848562",
+        "binding": "imgIcon3",
+        "file": "168254ed-2f5e-4a18-9c52-5aac579ea142.svg"
+      },
+      {
+        "frame": "4601-848636-refreshed-2026-09-07",
+        "binding": "imgIcon3",
+        "file": "6b408e15-a84b-4161-b2f2-85a11c4521a1.svg"
+      },
+      {
+        "frame": "4601-848636",
+        "binding": "imgIcon3",
+        "file": "a4c156c3-78d8-4db0-81a6-f47b11d18b3b.svg"
+      },
+      {
+        "frame": "4611-848928",
+        "binding": "imgIcon3",
+        "file": "9f122745-0f50-48c6-805f-2ea70fce1e43.svg"
+      },
+      {
+        "frame": "4768-228",
+        "binding": "imgIcon2",
+        "file": "c29a6aec-0178-4553-a752-77bbe6deaf2b.svg"
+      },
+      {
+        "frame": "4788-146",
+        "binding": "imgIcon2",
+        "file": "5900b8c3-4776-4c11-95bf-e849307fef75.svg"
+      },
+      {
+        "frame": "4922-343",
+        "binding": "imgIcon3",
+        "file": "df01ac73-24af-4ff2-b6f5-cc58ca761fd7.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "7433756F87811793EF4F2FBF5D3279BF91994AD99A180BC78C412CEBAAB6708D",
+    "representative": "8fb8dc2b-4e33-4cf4-802b-6ec087d61f5f.svg",
+    "bindings": [
+      {
+        "frame": "4798-285",
+        "binding": "imgPresentBoundary",
+        "file": "8fb8dc2b-4e33-4cf4-802b-6ec087d61f5f.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "75BB5A0520FAA708A9D28ADAF05BC6CA53F2C89FDCF611CF590104E29FA24FC1",
+    "representative": "07b0a005-3996-42d0-ac79-b76542e58d6e.svg",
+    "bindings": [
+      {
+        "frame": "4593-142",
+        "binding": "imgIcon4",
+        "file": "07b0a005-3996-42d0-ac79-b76542e58d6e.svg"
+      },
+      {
+        "frame": "4593-848365",
+        "binding": "imgIcon2",
+        "file": "3da1f2a5-7da7-4998-b253-22b3db76e9a6.svg"
+      },
+      {
+        "frame": "4593-848496",
+        "binding": "imgIcon4",
+        "file": "4b6dfae6-fe91-4d90-9738-85330b7fec04.svg"
+      },
+      {
+        "frame": "4595-293",
+        "binding": "imgIcon2",
+        "file": "269cae44-793b-4afd-8e57-2b568bc10d08.svg"
+      },
+      {
+        "frame": "4595-848430",
+        "binding": "imgIcon2",
+        "file": "6a238452-22d8-4d0e-9ce6-927c37d6468f.svg"
+      },
+      {
+        "frame": "4596-365",
+        "binding": "imgIcon2",
+        "file": "d84f069d-271f-4649-b03c-07c7d58cb58d.svg"
+      },
+      {
+        "frame": "4768-228",
+        "binding": "imgIcon1",
+        "file": "8ae814ee-3d30-4622-b296-7af6d7a8c196.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "782BCAD965A98DF711051B280E0986C44E4DA23708ADAE9E13C15B04979762C4",
+    "representative": "5abe9dfe-decd-435b-9949-16b9735eaaf9.svg",
+    "bindings": [
+      {
+        "frame": "4603-142",
+        "binding": "imgVisual",
+        "file": "5abe9dfe-decd-435b-9949-16b9735eaaf9.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "80E988A39999E83EA1E849333CF5EAF22EEFC720E11501A8471CB8972B60676C",
+    "representative": "2a8263c1-d36f-476e-97df-b999c6ff5221.svg",
+    "bindings": [
+      {
+        "frame": "4798-285",
+        "binding": "imgPresentArea",
+        "file": "2a8263c1-d36f-476e-97df-b999c6ff5221.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "8165D1BC6206778A49477A249023867E88CF39F64CD8CD88F0646C35A5BEE543",
+    "representative": "429e5f3c-35bc-4885-bd2a-b2b85d049c7d.svg",
+    "bindings": [
+      {
+        "frame": "4603-848696",
+        "binding": "imgExcusedArea",
+        "file": "429e5f3c-35bc-4885-bd2a-b2b85d049c7d.svg"
+      },
+      {
+        "frame": "4798-142",
+        "binding": "imgExcusedArea",
+        "file": "94eae261-9cbe-4284-9285-5bede181d270.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "83BEEABE1CEEFC01D7FA47F91CF135EEA69F802BC65064EF2EDADB9562EC4EE9",
+    "representative": "2d54ddd7-0a25-442e-8531-fa96f7fb283b.svg",
+    "bindings": [
+      {
+        "frame": "4603-848696",
+        "binding": "imgPresentArea",
+        "file": "2d54ddd7-0a25-442e-8531-fa96f7fb283b.svg"
+      },
+      {
+        "frame": "4798-142",
+        "binding": "imgPresentArea",
+        "file": "afa631f1-490e-4baa-bf5d-2ea5e1bd568c.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "8974050323DB933DAF8D27898359F13B2CF300DD705486FE87C47B5E32EC489F",
+    "representative": "c5c87c11-0d59-4b9c-b90a-dbd1874cf093.svg",
+    "bindings": [
+      {
+        "frame": "4597-3574",
+        "binding": "imgIconTime",
+        "file": "c5c87c11-0d59-4b9c-b90a-dbd1874cf093.svg"
+      },
+      {
+        "frame": "4610-142",
+        "binding": "imgIconTime1",
+        "file": "1edec53b-cdc8-44c3-9a58-39dd0cf9a308.svg"
+      },
+      {
+        "frame": "4610-848846",
+        "binding": "imgIconTime1",
+        "file": "cb09c71e-c75e-4a95-ae55-dd54966bf803.svg"
+      },
+      {
+        "frame": "4610-849007",
+        "binding": "imgIconTime",
+        "file": "128f1820-32cd-4538-b176-0214b95dda84.svg"
+      },
+      {
+        "frame": "4610-849072",
+        "binding": "imgIconTime",
+        "file": "05436f68-942e-442d-a509-76582eaac98d.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "897E2C20C9F290ADBE37668011FE6F38B3BC94C101324CC084C57BD429A91BFF",
+    "representative": "2744d4db-f8fc-4c53-8986-6ec163144bc5.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgIcon5",
+        "file": "2744d4db-f8fc-4c53-8986-6ec163144bc5.svg"
+      },
+      {
+        "frame": "4581-3062",
+        "binding": "imgIcon9",
+        "file": "a2f26af2-41c6-4f92-b4f7-4864af79a825.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon6",
+        "file": "8b1ecf53-16cd-4776-a37a-4c0e2148020d.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon10",
+        "file": "7da2a200-7ad9-4ba0-9d74-bbae16086887.svg"
+      },
+      {
+        "frame": "4585-848020",
+        "binding": "imgIcon4",
+        "file": "60e671c9-f44c-459b-8fdd-45b05818925c.svg"
+      },
+      {
+        "frame": "4585-848126",
+        "binding": "imgIcon2",
+        "file": "a7164f03-0af0-4c5b-904b-02c4c0c6030e.svg"
+      },
+      {
+        "frame": "4588-527",
+        "binding": "imgIcon",
+        "file": "3ff897f7-3ba7-4040-a006-eb1a93bf69fe.svg"
+      },
+      {
+        "frame": "4588-848409",
+        "binding": "imgIcon2",
+        "file": "650fd30e-69ac-46a2-aec2-c0413812fcc2.svg"
+      },
+      {
+        "frame": "4593-142",
+        "binding": "imgIcon",
+        "file": "f8667940-454d-40f0-88a8-43181c28b11e.svg"
+      },
+      {
+        "frame": "4593-848496",
+        "binding": "imgIcon",
+        "file": "761ff653-c740-4cb5-9c43-f6f2d315c2df.svg"
+      },
+      {
+        "frame": "4710-232",
+        "binding": "imgIcon",
+        "file": "2178c2f4-9a3f-494b-97f0-f8af429f9527.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "8A170F9313064CDA1F44675C9AB34B968A0CC282888A99A0E7D8B8453AEEE964",
+    "representative": "4ae2955d-d306-4c38-9fa2-a45a85047969.svg",
+    "bindings": [
+      {
+        "frame": "4611-848928",
+        "binding": "imgIconRoleSwitch",
+        "file": "4ae2955d-d306-4c38-9fa2-a45a85047969.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "8B5AC005B1B2E8118373EFB5CAA86E02F40DC766C260F94118C3776E36E37404",
+    "representative": "e0c46728-a926-4638-bebd-ec5971ff6f87.svg",
+    "bindings": [
+      {
+        "frame": "4593-142",
+        "binding": "imgIcon2",
+        "file": "e0c46728-a926-4638-bebd-ec5971ff6f87.svg"
+      },
+      {
+        "frame": "4593-848365",
+        "binding": "imgIcon",
+        "file": "2fd5cd7f-09d3-489d-8eb3-60061e9b99a1.svg"
+      },
+      {
+        "frame": "4593-848496",
+        "binding": "imgIcon2",
+        "file": "a93aa972-1dc8-449b-85aa-78d9d41f8c71.svg"
+      },
+      {
+        "frame": "4595-293",
+        "binding": "imgIcon",
+        "file": "949ba176-df9e-4b74-9d8a-369cc12e5ecd.svg"
+      },
+      {
+        "frame": "4595-848430",
+        "binding": "imgIcon",
+        "file": "6a24906f-4666-44bf-9e0a-b6758bcb2d31.svg"
+      },
+      {
+        "frame": "4596-365",
+        "binding": "imgIcon",
+        "file": "c5942936-ca87-4648-ab4a-9cc0a2b52430.svg"
+      },
+      {
+        "frame": "4601-142",
+        "binding": "imgIcon",
+        "file": "8f1887ce-5014-4284-9b2f-c1c5d63e2ded.svg"
+      },
+      {
+        "frame": "4601-848562",
+        "binding": "imgIcon",
+        "file": "eed68dbe-9491-4a60-bfc6-4fb9725b82d9.svg"
+      },
+      {
+        "frame": "4601-848636-refreshed-2026-09-07",
+        "binding": "imgIcon",
+        "file": "2a74df71-7f1e-4f31-b4da-895c1fee37a6.svg"
+      },
+      {
+        "frame": "4601-848636",
+        "binding": "imgIcon",
+        "file": "a6d9b554-eae0-49c3-bf5c-1dfac65adbbd.svg"
+      },
+      {
+        "frame": "4603-142",
+        "binding": "imgIcon",
+        "file": "3abf4c95-73d6-40c5-817b-173c4142f412.svg"
+      },
+      {
+        "frame": "4610-142",
+        "binding": "imgIcon1",
+        "file": "7d7e4d03-fe30-4e7e-8a5d-456375500648.svg"
+      },
+      {
+        "frame": "4610-848846",
+        "binding": "imgIcon1",
+        "file": "325d0cd3-8bdd-4ec6-a60e-7701b8163f98.svg"
+      },
+      {
+        "frame": "4611-142",
+        "binding": "imgIcon",
+        "file": "331bd36c-842f-49c8-b600-a6d62adeaf5d.svg"
+      },
+      {
+        "frame": "4611-848928",
+        "binding": "imgIcon",
+        "file": "b9bb8d9b-caac-45f9-8050-fe499427b54b.svg"
+      },
+      {
+        "frame": "4922-343",
+        "binding": "imgIcon",
+        "file": "f02714e4-f2d4-4b1b-95df-937196becc95.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "9538642F0E5E1F161C76DA88C83A6742D15B8D31F593867FA42BFF9DF19433BA",
+    "representative": "324a8888-f09c-47df-8544-7d92c10b96de.svg",
+    "bindings": [
+      {
+        "frame": "4611-848928",
+        "binding": "imgIconSecurity",
+        "file": "324a8888-f09c-47df-8544-7d92c10b96de.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+    "representative": "ba7edbd5-5e2c-4f63-ac76-db9f44933ab9.svg",
+    "bindings": [
+      {
+        "frame": "4588-527",
+        "binding": "imgIconPrevious",
+        "file": "ba7edbd5-5e2c-4f63-ac76-db9f44933ab9.svg"
+      },
+      {
+        "frame": "4588-848409",
+        "binding": "imgIconPrevious",
+        "file": "e40ce109-4ac8-4a93-a22b-ace99f788f3d.svg"
+      },
+      {
+        "frame": "4596-365",
+        "binding": "imgIconPrevious",
+        "file": "e64fc354-1252-4b7c-b47f-4d8bcda11faa.svg"
+      },
+      {
+        "frame": "4597-3574",
+        "binding": "imgIconPrevious",
+        "file": "70a89574-f280-4e03-806e-288624cb1aeb.svg"
+      },
+      {
+        "frame": "4603-848696",
+        "binding": "imgIconPrevious",
+        "file": "f3f652f6-39d0-4f33-973e-fc1e5efbea55.svg"
+      },
+      {
+        "frame": "4603-848832",
+        "binding": "imgIconPrevious",
+        "file": "54fb2bac-9a94-4622-b890-7d4e93d642e3.svg"
+      },
+      {
+        "frame": "4610-848937",
+        "binding": "imgIconPrevious",
+        "file": "343c8a77-7b3d-4862-8982-e7f27cdc1ac7.svg"
+      },
+      {
+        "frame": "4610-849007",
+        "binding": "imgIconPrevious",
+        "file": "bc5acc95-1a3a-49d0-bc72-a6c6e3c4e9ba.svg"
+      },
+      {
+        "frame": "4610-849072",
+        "binding": "imgIconPrevious",
+        "file": "0688d9aa-1ca1-4976-afe4-f8eccec4ba21.svg"
+      },
+      {
+        "frame": "4611-849055",
+        "binding": "imgIconPrevious",
+        "file": "da81cb07-99c9-4875-9862-e26c3399f3c5.svg"
+      },
+      {
+        "frame": "4614-276",
+        "binding": "imgIconPrevious",
+        "file": "3c889a14-b191-4363-8684-bcbdc2e12e48.svg"
+      },
+      {
+        "frame": "4615-326",
+        "binding": "imgIconPrevious",
+        "file": "e563b044-a150-455e-9aa9-fcd265f57a3f.svg"
+      },
+      {
+        "frame": "4618-535",
+        "binding": "imgIconPrevious",
+        "file": "0e8ebfa1-bd23-4a2e-913a-8234def0c0bb.svg"
+      },
+      {
+        "frame": "4618-849228",
+        "binding": "imgIconPrevious",
+        "file": "21833a72-121a-408f-bf34-b3074108fa32.svg"
+      },
+      {
+        "frame": "4710-232",
+        "binding": "imgIconPrevious",
+        "file": "3ef6733a-1faf-450f-b629-9a0d5d15ef9c.svg"
+      },
+      {
+        "frame": "4768-228",
+        "binding": "imgIconPrevious",
+        "file": "f65d53fe-47c7-403f-a0c4-250a7cd7cd5f.svg"
+      },
+      {
+        "frame": "4781-164",
+        "binding": "imgIconPrevious",
+        "file": "daff391c-d910-4b9b-a78d-469082e610df.svg"
+      },
+      {
+        "frame": "4798-142",
+        "binding": "imgIconPrevious",
+        "file": "7e70fadd-a527-4f1a-b6fe-e67e1247cf3e.svg"
+      },
+      {
+        "frame": "4798-200",
+        "binding": "imgIconPrevious",
+        "file": "49b2b0d0-5931-4e1c-942a-a54158e1e23f.svg"
+      },
+      {
+        "frame": "4798-285",
+        "binding": "imgIconPrevious",
+        "file": "f5371a41-21b7-48e1-bf19-01d097b9fad2.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "9AAEBE81842869F51C78B79809B050E21D4C900B7FD3F0B372EE9433B6D30596",
+    "representative": "de761a13-dd52-42da-ad33-97e6762c92bd.svg",
+    "bindings": [
+      {
+        "frame": "4601-848636-refreshed-2026-09-07",
+        "binding": "imgHandle",
+        "file": "de761a13-dd52-42da-ad33-97e6762c92bd.svg"
+      },
+      {
+        "frame": "4601-848636",
+        "binding": "imgHandle",
+        "file": "e2b5d3dc-817f-4bc6-b83b-816711b9a357.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "9E3F7D6557C8A93D24F95C9133B8DD84A2CF870B94F610FE1D5E62A9E7034B88",
+    "representative": "27a563b5-02ba-489c-ba3a-5069bdcaaa24.svg",
+    "bindings": [
+      {
+        "frame": "4595-293",
+        "binding": "imgExcusedBoundary",
+        "file": "27a563b5-02ba-489c-ba3a-5069bdcaaa24.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "9E70B96CFDBF3E748773A6E69DF405A581587A5EC6546C6704C3FC97434963FF",
+    "representative": "32dfa622-f6ed-44bd-9c1f-5f5f3ff62a5d.svg",
+    "bindings": [
+      {
+        "frame": "4798-285",
+        "binding": "imgAbsentArea",
+        "file": "32dfa622-f6ed-44bd-9c1f-5f5f3ff62a5d.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "A26DF2C4CDCF0FC7AB101A4F053181ABF3EC0B8943FB6A2858BCB20A057AF1BF",
+    "representative": "2b09c2a5-5b3d-4504-b8f1-3b7ba9f515f4.svg",
+    "bindings": [
+      {
+        "frame": "4595-848430",
+        "binding": "imgAbsentArea",
+        "file": "2b09c2a5-5b3d-4504-b8f1-3b7ba9f515f4.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "A98D722E5844ACD591468241D92F5ED80D1298F8E011168B327D8F6264AADEC8",
+    "representative": "0fdb3948-792f-4a05-845a-9affbc087829.svg",
+    "bindings": [
+      {
+        "frame": "4768-228",
+        "binding": "imgIconAttendanceGraph",
+        "file": "0fdb3948-792f-4a05-845a-9affbc087829.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "A9B029DBBC84B764C3B9BDCD0B4FDCE2B3C0C734DB8437CF42AB0A67F5AF1FC6",
+    "representative": "1eb623b8-ce50-4a7d-b772-95b37cfb6b12.svg",
+    "bindings": [
+      {
+        "frame": "4595-293",
+        "binding": "imgPresentArea",
+        "file": "1eb623b8-ce50-4a7d-b772-95b37cfb6b12.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "AC1E3C518E2DD1A93EC92F8568E64482F2063BF0B20DD3EB504B41C8E7B98FE4",
+    "representative": "28714733-7c78-4d26-8676-e5e05028bd51.svg",
+    "bindings": [
+      {
+        "frame": "4595-848430",
+        "binding": "imgPresentBoundary",
+        "file": "28714733-7c78-4d26-8676-e5e05028bd51.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "B63BCCB9B3A30CD426E1CB5C9D55A58A040F01B75EE2C845B95F56B0361062F6",
+    "representative": "089694b3-f51a-4bc4-8dfa-79662244ee44.svg",
+    "bindings": [
+      {
+        "frame": "4788-146",
+        "binding": "imgReturnToToday",
+        "file": "089694b3-f51a-4bc4-8dfa-79662244ee44.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "B73F0561B2EFE1F47B29B79899E88A886C33DFC62FC12E00435F39662A45962C",
+    "representative": "2e3c161d-24be-466d-a20b-deeb92920eed.svg",
+    "bindings": [
+      {
+        "frame": "4593-848365",
+        "binding": "imgIconAttendanceGraph",
+        "file": "2e3c161d-24be-466d-a20b-deeb92920eed.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "B8D4402A78F6383F9B1367A21A7AD393AD0047E16D8A137DFDC57E85956857D2",
+    "representative": "3638c891-8d31-479d-bd97-31b506fa9585.svg",
+    "bindings": [
+      {
+        "frame": "4595-848430",
+        "binding": "imgIconAttendanceGraph",
+        "file": "3638c891-8d31-479d-bd97-31b506fa9585.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "BD032445FA7F4A80B0D37E5A6555ED0B67A3637404ACDBDA88A2F0B9F1E363DF",
+    "representative": "64969f33-0fa6-4414-bb99-bf0ceda998fd.svg",
+    "bindings": [
+      {
+        "frame": "4595-293",
+        "binding": "imgIconAttendanceGraph",
+        "file": "64969f33-0fa6-4414-bb99-bf0ceda998fd.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "BDEA8A8DAD7AFE85FD9F464227076D9375847C4923E5A56D4B858594CAE7F94A",
+    "representative": "76656b25-b736-4724-af19-b24077f48d8d.svg",
+    "bindings": [
+      {
+        "frame": "4611-848928",
+        "binding": "imgIconSessions",
+        "file": "76656b25-b736-4724-af19-b24077f48d8d.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "C18B932914ADC73D2ACDBBFAD83C589B2917DE805A76C62AC299844034B32349",
+    "representative": "9ab2c732-8fcd-40df-95ce-7157741d453f.svg",
+    "bindings": [
+      {
+        "frame": "4595-848430",
+        "binding": "imgExcusedBoundary",
+        "file": "9ab2c732-8fcd-40df-95ce-7157741d453f.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "C208CAE90F0F900802B10BD444BBCEDB21C09335BFE1304E000521DC44445EB2",
+    "representative": "53e0583c-86f4-49c0-ac95-695e17487344.svg",
+    "bindings": [
+      {
+        "frame": "4798-285",
+        "binding": "imgExcusedArea",
+        "file": "53e0583c-86f4-49c0-ac95-695e17487344.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "C4F9B50FCE8EBA99114CF1BF03825A70CFDAE10AAAE20EDC714E8710AF103063",
+    "representative": "74168d3f-eb8e-4749-b00c-6403ca4aadfd.svg",
+    "bindings": [
+      {
+        "frame": "4788-146",
+        "binding": "imgExpand",
+        "file": "74168d3f-eb8e-4749-b00c-6403ca4aadfd.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "C8E9D17F20410868C73B2397800CDB185446BFDCDB3BBF1A186407DD018C0326",
+    "representative": "0c725504-d8ac-4e71-8f6c-f898a9c2bafa.svg",
+    "bindings": [
+      {
+        "frame": "4593-142",
+        "binding": "imgIconAttendanceGraph",
+        "file": "0c725504-d8ac-4e71-8f6c-f898a9c2bafa.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "C963AD64842A84D6F0A9759B7771D223A5F34484354BC0A493B9A52BFDA34CA7",
+    "representative": "85effcd6-1716-435b-99d2-3f42000432e3.svg",
+    "bindings": [
+      {
+        "frame": "4603-142",
+        "binding": "imgIcon3",
+        "file": "85effcd6-1716-435b-99d2-3f42000432e3.svg"
+      },
+      {
+        "frame": "4610-142",
+        "binding": "imgIcon4",
+        "file": "041d3837-e920-49bc-bb6b-915c362f7c0e.svg"
+      },
+      {
+        "frame": "4610-848846",
+        "binding": "imgIcon4",
+        "file": "d122d9e1-efde-4336-ad78-8b58dd01e8eb.svg"
+      },
+      {
+        "frame": "4611-142",
+        "binding": "imgIcon3",
+        "file": "bd2060f1-bebc-4b2a-9d39-d0dbfae537e3.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "CB0EBF1A344FCA97721EBDAF479E2A778E6CF22A57C9A5D5D0CB65F874EFDF3B",
+    "representative": "5c882442-ea32-472f-9b1a-0da84c11ad01.svg",
+    "bindings": [
+      {
+        "frame": "4611-848928",
+        "binding": "imgIconAccountHistory",
+        "file": "5c882442-ea32-472f-9b1a-0da84c11ad01.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "CFEBA30CC55ACE69EA552156270C0087525A8AE272DEF436DAC4523CB5FBDD5E",
+    "representative": "a9525385-d164-48e4-bd8e-42019e19a20c.svg",
+    "bindings": [
+      {
+        "frame": "4603-142",
+        "binding": "imgPresentBoundary",
+        "file": "a9525385-d164-48e4-bd8e-42019e19a20c.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "D59987A0CF893F9F0188E1686D84EC45629CEBFCF825A94FA44C92E4608B88B5",
+    "representative": "ecad31b2-26a8-409d-b92c-d9341bad13f6.svg",
+    "bindings": [
+      {
+        "frame": "4595-293",
+        "binding": "imgMonthBoundary",
+        "file": "ecad31b2-26a8-409d-b92c-d9341bad13f6.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "D7A3627B7555DB1FD771033871D8C2EF6BDD1066356E434B6947B357184108B9",
+    "representative": "2382a65e-7a12-4598-96c8-cbfa08c0ae70.svg",
+    "bindings": [
+      {
+        "frame": "4603-142",
+        "binding": "imgExcusedArea",
+        "file": "2382a65e-7a12-4598-96c8-cbfa08c0ae70.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "DAA1651602EB98B25B02E8C4336659432184AA7F232450359C0F13C018ECD4F8",
+    "representative": "5fcc4afb-2705-421e-960e-0457af0b664c.svg",
+    "bindings": [
+      {
+        "frame": "4768-228",
+        "binding": "imgIconToday",
+        "file": "5fcc4afb-2705-421e-960e-0457af0b664c.svg"
+      },
+      {
+        "frame": "4788-146",
+        "binding": "imgIconToday",
+        "file": "b77686a6-f7db-4ba9-b7a5-2584ee794809.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "E33DFAF678187326E75896DDE5BE25C8525C2F6FBD294219555AD5F4049FBE63",
+    "representative": "2b9044c6-ef35-40e2-947a-e0d410c13c11.svg",
+    "bindings": [
+      {
+        "frame": "4781-164",
+        "binding": "imgIcon",
+        "file": "2b9044c6-ef35-40e2-947a-e0d410c13c11.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "E5AA676AC9B9E3F3F4B09FDFA9F59165E82DE77D5AE48165A0E98EAF32D1562C",
+    "representative": "e71bc158-4046-46cf-932d-edce2044273a.svg",
+    "bindings": [
+      {
+        "frame": "4601-142",
+        "binding": "imgIconExternalLink",
+        "file": "e71bc158-4046-46cf-932d-edce2044273a.svg"
+      },
+      {
+        "frame": "4601-848562",
+        "binding": "imgIconExternalLink",
+        "file": "20d3115b-a5e0-44b2-9430-7a2b6ce75b13.svg"
+      },
+      {
+        "frame": "4601-848636-refreshed-2026-09-07",
+        "binding": "imgIconExternalLink",
+        "file": "0239b1a5-5a9e-4bf5-8901-be7cab1ffa79.svg"
+      },
+      {
+        "frame": "4601-848636",
+        "binding": "imgIconExternalLink",
+        "file": "80cda1f8-8490-43db-b579-1b38af3cafd3.svg"
+      },
+      {
+        "frame": "4788-146",
+        "binding": "imgIconExternalLink",
+        "file": "e8587a5c-12fd-4896-92d3-75bcd41d1561.svg"
+      },
+      {
+        "frame": "4922-343",
+        "binding": "imgIconExternalLink",
+        "file": "0a86e2a5-d00e-47cc-83e4-4de9dc497afd.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "EC08140C681AD18B816D7B59556E21EA0707B8279985A1BDE1F8670FD0773B21",
+    "representative": "251cc42c-2baa-4e01-bcf0-4e97ed7251f0.svg",
+    "bindings": [
+      {
+        "frame": "4595-848430",
+        "binding": "imgExcusedArea",
+        "file": "251cc42c-2baa-4e01-bcf0-4e97ed7251f0.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "ECC2FEAC12E5904F7345F9EEA6B1D548544E1350E75214BBBC0844790F5E74F1",
+    "representative": "45d0f77e-ffbb-47a2-aff0-4b237a74d0a3.svg",
+    "bindings": [
+      {
+        "frame": "4611-142",
+        "binding": "imgIconStatistics",
+        "file": "45d0f77e-ffbb-47a2-aff0-4b237a74d0a3.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "ED4461D521924A71EB3CC6953188A4CA86BCDC767F4025E6ADCA18652C148063",
+    "representative": "d22802a7-6f1c-43f3-b924-b2c832d1bf5d.svg",
+    "bindings": [
+      {
+        "frame": "4581-3062",
+        "binding": "imgIcon4",
+        "file": "d22802a7-6f1c-43f3-b924-b2c832d1bf5d.svg"
+      },
+      {
+        "frame": "4581-3062",
+        "binding": "imgIcon7",
+        "file": "dfd0cfe6-568a-41d3-96a2-140f99539091.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon4",
+        "file": "8d91d524-368c-4975-b26f-ef824822aa70.svg"
+      },
+      {
+        "frame": "4585-218",
+        "binding": "imgIcon8",
+        "file": "a4dc9376-df62-419e-a0d5-eb01e9333266.svg"
+      },
+      {
+        "frame": "4585-848126",
+        "binding": "imgIcon",
+        "file": "09b2e9a2-37af-4be6-862d-afc0071f3779.svg"
+      },
+      {
+        "frame": "4588-848409",
+        "binding": "imgIcon",
+        "file": "d2616e48-9956-4b99-854d-0fb4e0476ade.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "F608B1DF37C17DBF232A62F0F5187EFCC6CE91A97821164BAD6BD6CF8C653069",
+    "representative": "dcac0251-1a21-419a-b7aa-ce3d0c71ff86.svg",
+    "bindings": [
+      {
+        "frame": "4601-142",
+        "binding": "imgHandle",
+        "file": "dcac0251-1a21-419a-b7aa-ce3d0c71ff86.svg"
+      },
+      {
+        "frame": "4601-848562",
+        "binding": "imgHandle",
+        "file": "195b058b-e67f-45bb-b9ed-41694d3368af.svg"
+      },
+      {
+        "frame": "4788-146",
+        "binding": "imgHandle",
+        "file": "b700d2e1-606a-4db4-8043-24494277d4bf.svg"
+      },
+      {
+        "frame": "4922-343",
+        "binding": "imgHandle",
+        "file": "f0ae3ceb-2b3e-40d7-8eba-ac733171a13f.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "F932F4764CF80759147717524B4A97930518F47A7A9868D5A6306712DC35D71B",
+    "representative": "84deb943-64de-4c3a-8456-1fa340df0604.svg",
+    "bindings": [
+      {
+        "frame": "4595-293",
+        "binding": "imgExcusedArea",
+        "file": "84deb943-64de-4c3a-8456-1fa340df0604.svg"
+      }
+    ]
+  },
+  {
+    "sha256": "FE7F635DEF99E8066C1195B02AA68704B5709EC6B364F05015D88341851D99BF",
+    "representative": "61293027-1fa3-45b1-969c-2de9be096355.svg",
+    "bindings": [
+      {
+        "frame": "4597-3574",
+        "binding": "imgSourceIconDate",
+        "file": "61293027-1fa3-45b1-969c-2de9be096355.svg"
+      },
+      {
+        "frame": "4610-142",
+        "binding": "imgSourceIconDate",
+        "file": "628c2ff1-678d-4272-b8b0-18c9908c5189.svg"
+      },
+      {
+        "frame": "4610-142",
+        "binding": "imgSourceIconDate1",
+        "file": "3d5bed86-fe0d-40a2-aaf8-3081b288fc8b.svg"
+      },
+      {
+        "frame": "4610-848846",
+        "binding": "imgSourceIconDate",
+        "file": "d1d88d05-8876-44bc-b6ec-2355647d8925.svg"
+      },
+      {
+        "frame": "4610-848846",
+        "binding": "imgSourceIconDate1",
+        "file": "a9e62a70-9c5c-4a4c-92b6-0fad9ba897de.svg"
+      },
+      {
+        "frame": "4610-849007",
+        "binding": "imgSourceIconDate",
+        "file": "0204a34b-5369-4cf6-9b58-c33d6614435e.svg"
+      },
+      {
+        "frame": "4610-849072",
+        "binding": "imgSourceIconDate",
+        "file": "9994c485-86ca-4a00-8f90-e46eedb35504.svg"
+      },
+      {
+        "frame": "4781-164",
+        "binding": "imgSourceIconDate",
+        "file": "2707cbab-d88f-49aa-b0ef-d20736b6cd8b.svg"
+      }
+    ]
+  }
+]

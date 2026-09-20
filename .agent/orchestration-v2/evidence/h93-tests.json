@@ -1,0 +1,29 @@
+[
+  {
+    "module": "services/shared/shared-security",
+    "name": "ru.rutcampustrack.shared.security.grpc.ServiceIdentityServerInterceptorTest",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T13:00:31.4356205Z"
+  },
+  {
+    "module": "services/shared/shared-security",
+    "name": "ru.rutcampustrack.shared.security.grpc.ServiceIdentityTlsTransportTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T13:00:31.4336205Z"
+  },
+  {
+    "module": "services/shared/shared-security",
+    "name": "ru.rutcampustrack.shared.security.grpc.ServiceTokenCallCredentialsTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T13:00:31.4326207Z"
+  }
+]

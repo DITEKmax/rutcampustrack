@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-10T19:04:08" hostname="DITEK-PK" time="1.106">
+  <properties/>
+  <testcase name="staleVersionsAndChangedGrantIdentityAreConflicts()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.971"/>
+  <testcase name="authoritativeSuspendedGrantIsRoleNotSelectable()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.05"/>
+  <testcase name="authorityFailuresRemainTyped()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.013"/>
+  <testcase name="malformedAccessIsInvalidAndDoesNotReadAuthority()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.023"/>
+  <testcase name="noAdmissionCacheCallsAuthorityAndSignsOnEveryRequest()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.02"/>
+  <testcase name="terminalGrantIsAdmittedReadOnly()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.01"/>
+  <testcase name="admitsLiveSnapshotAndBuildsResponseFromTheSameGrant()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

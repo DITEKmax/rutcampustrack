@@ -1,0 +1,144 @@
+{
+  "schema": "rct.runtime-evidence.v1",
+  "task": "JS-STUDENT-01-r1",
+  "runId": "20260906-221103",
+  "startedAt": "2026-09-06T22:11:03.7107667+03:00",
+  "status": "FAIL",
+  "stage": "pwa-browser-runtime",
+  "resources": {
+    "network": "rct-js-student-01",
+    "containers": [
+      "rct-js-student-01-pg-academic",
+      "rct-js-student-01-pg-schedule",
+      "rct-js-student-01-mongo",
+      "rct-js-student-01-redis",
+      "rct-js-student-01-rabbit"
+    ],
+    "ports": [
+      25431,
+      25432,
+      27027,
+      26379,
+      25672,
+      35672,
+      29090,
+      29091,
+      29191,
+      29092,
+      29192,
+      29093,
+      29193,
+      29080,
+      28080,
+      28443
+    ]
+  },
+  "services": {
+    "academic": {
+      "pid": 34012,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\academic.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\academic.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29091/actuator/health"
+    },
+    "auth": {
+      "pid": 54000,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\auth.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\auth.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29090/actuator/health"
+    },
+    "schedule": {
+      "pid": 39596,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\schedule.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\schedule.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29092/actuator/health"
+    },
+    "attendance": {
+      "pid": 33804,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\attendance.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\attendance.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29093/actuator/health"
+    },
+    "mobile-bff": {
+      "pid": 14556,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\mobile-bff.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\mobile-bff.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29080/actuator/health"
+    },
+    "gateway": {
+      "pid": 7208,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\gateway.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\gateway.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:28080/actuator/health"
+    }
+  },
+  "assertions": [
+    {
+      "name": "isolated infrastructure ready",
+      "passed": true,
+      "evidence": {
+        "anonymousStorage": true,
+        "containers": 5
+      }
+    },
+    {
+      "name": "six real service processes ready",
+      "passed": true,
+      "evidence": {
+        "hiddenProcesses": true,
+        "serviceCount": 6
+      }
+    }
+  ],
+  "directGatewayLogin": {
+    "statusCode": 200,
+    "contentType": "application/json",
+    "server": "",
+    "via": "",
+    "bodyLength": 1553,
+    "origin": "https://127.0.0.1:28443"
+  },
+  "pwaBrowser": {
+    "status": "FAIL",
+    "phase": "gateway login seed",
+    "origin": "https://127.0.0.1:28443",
+    "seedStatus": 200,
+    "error": "Gateway login did not set the required refresh cookie attributes",
+    "online": null,
+    "offline": null,
+    "apiRequests": [
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "status": 200
+      }
+    ],
+    "apiResponses": [
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "status": 200,
+        "contentType": "application/json",
+        "server": null,
+        "via": null,
+        "bodyLength": 1553,
+        "problem": {}
+      }
+    ],
+    "offlineApiRequests": [],
+    "offlineApiResponses": [],
+    "bodyText": "",
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "failedRequests": [],
+    "screenshot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-221103\\pwa-offline-reload.png"
+  },
+  "error": "PWA browser runtime failed at 'gateway login seed': Gateway login did not set the required refresh cookie attributes",
+  "completedAt": "2026-09-06T22:12:44.0287022+03:00"
+}

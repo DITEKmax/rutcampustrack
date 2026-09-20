@@ -1,0 +1,137 @@
+{
+  "schema": "rct.runtime-evidence.v1",
+  "task": "JS-STUDENT-01 F3 PWA FIX-r2",
+  "revision": "02cabfdfd2c0b81580833b88cef36d71c7706f4e",
+  "baseRevision": "cedce8c60aee04261ca87a18b898b148719bee89",
+  "runId": "20260906-pwa-fix-r2",
+  "status": "PASS",
+  "stage": "fixture offline shell",
+  "environment": {
+    "os": "Windows",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "browser": "system Chrome launched by Playwright in a task-owned context",
+    "origin": "HTTPS 127.0.0.1 loopback with temporary task-owned SAN certificate",
+    "liveBackend": false
+  },
+  "preview": {
+    "url": "http://127.0.0.1:5185/?fixtureToday=default&fixtureDiagnostics=true",
+    "server": "Vite preview serving fixture dist on task-owned terminal session 29848",
+    "diagnostics": [
+      "SW build flag: true",
+      "Registration: activated",
+      "Controller: activated",
+      "Precache assets: 7/7"
+    ],
+    "limitation": "The preview is fixture-only and does not prove live auth/BFF/backend behavior."
+  },
+  "runs": [
+    {
+      "name": "Secure non-localhost HTTPS shell",
+      "command": "$env:RCT_PLAYWRIGHT_MODULE=(Resolve-Path '..\\tests\\e2e\\node_modules\\playwright\\index.mjs').Path; $env:RCT_PWA_VERIFY_PROTOCOL='https'; $env:RCT_PWA_VERIFY_HOST='127.0.0.1'; $env:RCT_PWA_VERIFY_CERT=(Resolve-Path '..\\.agent\\js-student-01-fix-pwa\\runtime\\certs\\server.crt').Path; $env:RCT_PWA_VERIFY_KEY=(Resolve-Path '..\\.agent\\js-student-01-fix-pwa\\runtime\\certs\\server.key').Path; $env:RCT_PWA_VERIFY_SCREENSHOT=(Resolve-Path '..\\.agent\\js-student-01-fix-pwa\\runtime').Path + '\\offline-shell-check-https.png'; $env:RCT_PWA_VERIFY_VERBOSE='true'; node pwa-vue\\scripts\\verify-offline-shell.mjs pwa-vue\\dist",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "origin": "https://127.0.0.1:53190",
+      "observations": {
+        "isSecureContext": true,
+        "baseScope": "https://127.0.0.1:53190/",
+        "registrationState": "activated",
+        "controllerState": "activated",
+        "cacheNames": ["rct-student-pwa-v3"],
+        "precacheAssets": 7,
+        "precacheCoverage": "7/7",
+        "offlineAppChildren": 2,
+        "offlineBadge": true,
+        "offlineTodayRows": true,
+        "taskOriginFailedRequests": []
+      },
+      "screenshot": ".agent/js-student-01-fix-pwa/runtime/offline-shell-check-https.png",
+      "consoleErrors": ["Failed to load resource: the server responded with a status of 404 (Not Found)"],
+      "notes": "The 404 is the existing fixture/static-resource noise captured by the harness; no task-origin request failed and the required shell assertions passed. Chrome certificate bypass was scoped to this task-owned launch/context only. Temporary certificate and key were removed after the run."
+    },
+    {
+      "name": "Secure loopback HTTP fallback",
+      "command": "$env:RCT_PLAYWRIGHT_MODULE=(Resolve-Path '..\\tests\\e2e\\node_modules\\playwright\\index.mjs').Path; node pwa-vue\\scripts\\verify-offline-shell.mjs pwa-vue\\dist",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "origin": "http://127.0.0.1:58017",
+      "observations": {
+        "isSecureContext": true,
+        "baseScope": "http://127.0.0.1:58017/",
+        "registrationState": "activated",
+        "controllerState": "activated",
+        "cacheNames": ["rct-student-pwa-v3"],
+        "precacheAssets": 7,
+        "precacheCoverage": "7/7",
+        "offlineAppChildren": 2,
+        "offlineBadge": true,
+        "offlineTodayRows": true,
+        "taskOriginFailedRequests": []
+      },
+      "screenshot": ".agent/js-student-01-fix-pwa/runtime/offline-shell-check.png",
+      "consoleErrors": ["Failed to load resource: the server responded with a status of 404 (Not Found)"],
+      "notes": "Chromium treats loopback HTTP as a trustworthy secure context; this fallback supplements the HTTPS run and is not a claim about arbitrary insecure HTTP origins."
+    },
+    {
+      "name": "Frozen implementation regression",
+      "command": "Fixture build with frozen hostname-gated src/main.ts followed by verify-offline-shell.mjs on non-localhost 127.0.0.1",
+      "exitCode": 1,
+      "expected": true,
+      "observations": {
+        "phase": "online bootstrap",
+        "error": "page.waitForFunction: Timeout 15000ms exceeded",
+        "registrationState": null,
+        "controllerState": null
+      },
+      "notes": "This reproduces the requested defect: the frozen localhost-only gate prevents registration on the non-localhost origin."
+    }
+  ],
+  "criteria": [
+    {
+      "id": "C1",
+      "criterion": "Default production build enables the worker without local opt-in.",
+      "passed": true,
+      "evidence": "Default and clean fixture production builds exit 0; compiled fixture diagnostics report SW build flag true."
+    },
+    {
+      "id": "C2",
+      "criterion": "Non-localhost secure origin installs an active controller and caches all generated shell assets with BASE_URL scope.",
+      "passed": true,
+      "evidence": "HTTPS 127.0.0.1 runtime reports secure context, activated registration/controller and precache 7/7; observed root BASE_URL scope is the origin root. Registration code derives URL and scope from import.meta.env.BASE_URL."
+    },
+    {
+      "id": "C3",
+      "criterion": "Stopping the task-owned server and reloading offline renders the Today shell and offline state from the saved fixture snapshot.",
+      "passed": true,
+      "evidence": "Both runtime runs stop their own static server, reload offline and observe appChildren 2, offline badge true and Today rows true; TodayScreen keeps the check-in action disabled while offline."
+    },
+    {
+      "id": "C4",
+      "criterion": "API/token traffic and non-GET mutations remain outside the app-shell worker cache.",
+      "passed": true,
+      "evidence": "public/sw.js was unchanged and node --check exits 0; existing same-origin GET-only, /api/ bypass and non-GET bypass paths remain intact."
+    },
+    {
+      "id": "C5",
+      "criterion": "Development has no production-worker install path and removes only this app's stale root registration.",
+      "passed": true,
+      "evidence": "main.ts gates registration on compiled production flag plus isSecureContext and scopes DEV cleanup by exact BASE_URL scope and sw.js scriptURL; PWA lint/typecheck pass."
+    },
+    {
+      "id": "C6",
+      "criterion": "The changed verifier fails the frozen implementation and passes after FIX-r2.",
+      "passed": true,
+      "evidence": "Frozen source run exits 1 at controller wait; corrected HTTPS and loopback runs exit 0."
+    }
+  ],
+  "artifacts": [
+    ".agent/js-student-01-fix-pwa/runtime/offline-shell-check-https.png",
+    ".agent/js-student-01-fix-pwa/runtime/offline-shell-check.png"
+  ],
+  "limitations": [
+    "The runtime uses fixture transport and a task-owned static server; live auth/BFF/backend integration remains outside this frontend lane.",
+    "HTTPS trust was limited to the task-owned browser launch/context; no CA, hosts, firewall, public tunnel or deployment changes were made.",
+    "The standalone preview uses BASE_URL '/'; non-root deployment remains covered by the BASE_URL-derived registration code and verifier mapping but was not a separate runtime run.",
+    "The captured 404 console line was not linked to this request and did not fail a task-origin request, so no unrelated static-resource change was made."
+  ]
+}

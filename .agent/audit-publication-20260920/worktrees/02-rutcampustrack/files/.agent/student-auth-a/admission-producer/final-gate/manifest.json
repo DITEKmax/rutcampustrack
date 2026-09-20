@@ -1,0 +1,54 @@
+{
+  "schema": "student-auth-stage1-final-gate-v1",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "risk": "S3",
+  "sourceGuard": {
+    "present": 15,
+    "deleted": 2,
+    "bad": 0,
+    "auth13Manifest": {
+      "path": ".agent/student-auth-a/admission-producer/manifest.json",
+      "bytes": 2958,
+      "sha256": "5DDABFE8EB55046DF5BB9F6D0EC0245B7D47E6CE2909D789415DC2D823A5D18B"
+    },
+    "overlaySources": [
+      {"path":"services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java","bytes":36543,"sha256":"BB6782EF19448995CB9D3F06538EFBD90F58605AB0E14B28868A0FDC0B7B2E28"},
+      {"path":"services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionService.java","bytes":12672,"sha256":"89AE726537B778AB769935A858AE542415870F8C3972330B17456AE09923490A"},
+      {"path":"services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionException.java","bytes":928,"sha256":"0C50ED738589F8EE064ADCE4AA81001F4A212362621F8DADA46BF713A55BFDA2"},
+      {"path":"services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalSessionAdmissionController.java","bytes":1265,"sha256":"516A07387DAD8F172A1D002D24B21D2BEF6B59E9BED321B2C9C10748C0C5E991"},
+      {"path":"services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java","bytes":6010,"sha256":"96B9C7852165DA2EDED662F0B1F3EDA990964D836C1A9A636076112C453CED79"},
+      {"path":"services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtClaims.java","bytes":559,"sha256":"91F3605EB1FC14075F81D285F11BB0F678ED650B228F17DD63D2710EF042E961"},
+      {"path":"services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java","bytes":23230,"sha256":"E8633DE82330BCCB8A9805E37351F5E9F439A27FD1C95524B760592B614E3FF5"},
+      {"path":"services/shared/shared-security/src/testFixtures/java/ru/rutcampustrack/shared/security/InternalJwtTestFactory.java","bytes":3355,"sha256":"DA186908CBC27F752195EBBBF8A874004E183F507EF928C78B32D24910CBCF52"},
+      {"path":"services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java","bytes":20025,"sha256":"B58AA5F0B213A79C2265FDDE09AFDDEDC18A065CAA61ED330F31A2F6EF390936"},
+      {"path":"services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java","bytes":28120,"sha256":"FB13C6300FB7EDB776135BCE4C3FE7276E8FCB220411C75B277A9EAEB6621389"},
+      {"path":"services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java","bytes":19078,"sha256":"9CB433E2D0F0ACF3BDC8215527E841F2B9E60A52FFF65F0392955ECB7A73BFF6"},
+      {"path":"services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java","bytes":7055,"sha256":"BE7E984D5A10C16A32A10181234DA68B8A28F43AE5AAA17994AD5D4037E3D903"},
+      {"path":"services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java","bytes":3650,"sha256":"3CBE3BA2C8E5F3514F0705CD86C89D0303970E420725834EA0F0073643DFD373"},
+      {"path":"services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtValidatorTest.java","bytes":14470,"sha256":"4D3C3DD677B902F875F655584F530BA43FBDAE0DE687426EF122EAA42E190B26"},
+      {"path":"services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/DualModeUserContextFilterTest.java","bytes":7934,"sha256":"2CCB149F9FD57627BE6C18CF4B30A6DD49A234F146595A03663428C5B8EB87CB"}
+    ],
+    "deletedPaths": [
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalIssuerController.java",
+      "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalIssuerIT.java"
+    ]
+  },
+  "runtime": {
+    "totalTests": 64,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "groups": [
+      {"name":"shared-security focused","exitCode":0,"build":"SUCCESSFUL in 43s","tests":22,"evidence":"junit/shared"},
+      {"name":"auth focused unit","exitCode":0,"build":"SUCCESSFUL in 51s","tests":36,"evidence":"junit/auth"},
+      {"name":"PostgreSQL admission integration","exitCode":0,"build":"SUCCESSFUL in 1m 13s","tests":6,"evidence":"junit/integration","postgres":"16.13","flyway":"V1..V24"}
+    ]
+  },
+  "independentSharedReview": {
+    "verdict": "PASS",
+    "path": ".agent/student-auth-a/admission-producer/shared-alg-repair/final-independent-recheck.md",
+    "bytes": 3920,
+    "sha256": "5C79187BCA743D025E83D8C6023B33B3FBDAA13FD8E1B9F0A735E73FF01342E3"
+  },
+  "status": "READY_FOR_FULL_STAGE1_REVIEW"
+}

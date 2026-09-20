@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "excuse.requested",
+  "description": "Студент запросил уважительную причину или подал excuse-тикет. Генерируется Attendance Service.",
+  "type": "object",
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
+  "properties": {
+    "event_type": {
+      "const": "excuse.requested"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "user_id",
+        "group_id",
+        "excuse_type"
+      ],
+      "properties": {
+        "user_id": {
+          "type": "integer"
+        },
+        "group_id": {
+          "type": "integer"
+        },
+        "excuse_type": {
+          "type": "string",
+          "enum": [
+            "illness",
+            "medical_examination",
+            "competition_participation",
+            "family_circumstances",
+            "summons",
+            "university_order",
+            "exemption",
+            "free_attendance",
+            "other"
+          ]
+        },
+        "ticket_id": {
+          "type": "string"
+        },
+        "lesson_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "lessons": {
+          "type": "array",
+          "description": "Обогащённые детали пар для Telegram/веб уведомления старосты. Поля могут быть null, если не удалось резолвить через schedule/academic.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lesson_id": {
+                "type": "integer"
+              },
+              "lesson_number": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "subject_id": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "subject_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "has_attachments": {
+          "type": "boolean"
+        },
+        "attachments": {
+          "type": "array",
+          "description": "Metadata only. Binary attachment data is retained in attendance Mongo and is never placed in the outbox event.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "content_type",
+              "size",
+              "sha256",
+              "state",
+              "uploaded_at",
+              "expires_at"
+            ],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "content_type": { "type": "string" },
+              "size": { "type": "integer", "minimum": 0 },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "state": { "enum": ["active", "expired"] },
+              "uploaded_at": { "type": "string", "format": "date-time" },
+              "expires_at": { "type": "string", "format": "date-time" },
+              "expired_at": {
+                "type": ["string", "null"],
+                "format": "date-time"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion"
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "description": "Имя сервиса-источника (academic-service / schedule-service / attendance-service / auth-service)."
+    }
+  }
+}

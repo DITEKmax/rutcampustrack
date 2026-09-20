@@ -1,0 +1,19 @@
+{
+  "schema": "integration-i5-runtime-evidence-v1",
+  "status": "N/A",
+  "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "environment": "Windows PowerShell; isolated target frontend worktree",
+  "reason": "The I5 leaf is limited to source transfer and scoped frontend checks. Browser, fullservice, backend and deployment runtime require a later parent-controlled gate.",
+  "frontend_check_evidence": "The existing Vue-configured Vitest union ran in one worker and passed 5 files / 52 tests; this is test evidence, not browser/product runtime evidence.",
+  "required_later_matrix": [
+    "Requests OPEN/ARCHIVE/options concurrent settlement",
+    "attachment success, HTTP 410, HTTP 5xx/network failure",
+    "blocked popup and owner/session change while fetch is pending",
+    "teardown ObjectURL cleanup",
+    "matching and mismatching MIME/extension selection in the integrated app"
+  ],
+  "limitations": [
+    "No browser, full backend service, Docker, Gradle, production or E/main operation was run by this leaf.",
+    "The supplemental client environment supports the component test harness and does not prove product runtime."
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "baseline": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "environment": {
+    "os": "Windows PowerShell",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/shared-shell"
+  },
+  "checks": [
+    {
+      "command": "npm run typecheck",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "result": "mobile-core, pwa-vue, and tma-vue typechecks passed"
+    },
+    {
+      "command": "npm run build",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "result": "PWA and TMA Vite production builds passed"
+    },
+    {
+      "command": "node --experimental-strip-types --test mobile-core/tests/*.test.mjs",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "result": "6 tests passed"
+    },
+    {
+      "command": "eslint mobile-core/src/shared mobile-core/src/features/today/TodayScreen.vue mobile-core/src/index.ts mobile-core/tests/navigation.test.mjs --max-warnings=0",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "result": "scoped changed TypeScript/Vue/contract files passed"
+    },
+    {
+      "command": "node --experimental-strip-types .agent/student-role-02/shared-shell/mobile-shell-runtime-probe.mjs",
+      "cwd": "worktree root",
+      "exitCode": 0,
+      "result": "compiled MobileShell host keyboard probe: before=true, after=false, propType=Boolean, propDefault=undefined"
+    },
+    {
+      "command": "git diff --check",
+      "cwd": "worktree root",
+      "exitCode": 0,
+      "result": "no whitespace errors in tracked diff"
+    },
+    {
+      "command": "npm run lint",
+      "cwd": "frontends",
+      "exitCode": 1,
+      "result": "pre-existing unrelated @typescript-eslint/no-this-alias at mobile-core/src/test-adapter/fixture-transport.test.ts:94; PWA and TMA lint still completed without findings"
+    }
+  ]
+}

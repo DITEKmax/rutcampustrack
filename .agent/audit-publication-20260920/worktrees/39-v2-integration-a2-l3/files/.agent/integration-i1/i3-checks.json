@@ -1,0 +1,164 @@
+{
+  "schema": "integration-i3-checks-v1",
+  "date": "2026-09-15",
+  "risk": "S3",
+  "target": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3",
+  "branch": "codex/v2-integration-a2-l3",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "rules_sha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "source_manifest_sha256": "ED35EDC347D30D610F7530DA767C90674A6F1853E4C76331535D8098FE3992F6",
+  "i2_union_sha256": "32031090D593BBC8B53869590F14D90386A97B1AD4786CDC7B6C16586C8CC266",
+  "expanded_union_manifest": ".agent/integration-i1/i3-union-manifest.sha256",
+  "expanded_union_rows": 35,
+  "expanded_union_sha256": "604CD4D36A70710B7C1790805DA70721B97741AB7CA0924E46BAF3850F614C6A",
+  "source": {
+    "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-contract",
+    "branch": "codex/v2-requests-contract",
+    "head": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+    "write_access": false,
+    "status_evidence": "Source sibling status was inspected with git -c safe.directory; no source write was issued."
+  },
+  "checks": [
+    {
+      "id": "rules-hash",
+      "criterion": "The assigned frozen project rules are in force.",
+      "command": "Get-FileHash -Algorithm SHA256 C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "SHA256 B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A"
+    },
+    {
+      "id": "baseline-revisions",
+      "criterion": "Target and read-only source share the frozen E base.",
+      "command": "git rev-parse HEAD; git -c safe.directory=<source> -C <source> rev-parse HEAD; git -c safe.directory=<source> -C <source> status --short --branch",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Both HEADs are b8220ac92125a8afa37598b270aa4fab7aa1f470; source branch is codex/v2-requests-contract and its preexisting status was preserved."
+    },
+    {
+      "id": "bounded-source-diff",
+      "criterion": "The I3 source correction is limited to the assigned five live inputs.",
+      "command": "git diff --no-index --unified=3 <read-only R5 path> <target path> for .env.prod.example, both Compose files, tests/e2e/.env.ci and scripts/validate-env-prod.sh",
+      "exit_code": 1,
+      "status": "PASS_EXPECTED_BOUNDED_DIFF",
+      "evidence": "Expected no-index differences contain only gateway/ip_range substitutions, four nonsecret input additions/comment, and the validator checks; no unrelated product hunk was introduced."
+    },
+    {
+      "id": "bash-syntax",
+      "criterion": "The changed Bash validator parses with an available Bash parser.",
+      "command": "& 'C:/Program Files/Git/bin/bash.exe' -n scripts/validate-env-prod.sh",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Git Bash returned no diagnostics."
+    },
+    {
+      "id": "pure-validator-cases",
+      "criterion": "Default/alternative positives and required invalid network cases return the expected validator codes without evaluation.",
+      "command": "PowerShell deterministic synthetic fixture builder; invoke Git Bash scripts/validate-env-prod.sh for 13 temporary cases; suppress validator output and retain only case status",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "13/13 cases passed: default and alternative RFC1918 positives exit 0; missing inputs exit 2; trailing-dot, nonaligned, outside, fixed-host overlap, gateway=edge, gateway/edge in range, malformed gateway, non-RFC1918 and injection cases exit 3. Injection sentinel remained absent. Log: .agent/integration-i1/i3-validator.log (SHA256 A385712CF1CF6C8A18361B3DB3FFFD2DAA772636038EC94F5A31B065DCB0AA69)."
+    },
+    {
+      "id": "static-ipam-and-callers",
+      "criterion": "Both Compose IPAM blocks, live input templates and current variable callers agree.",
+      "command": "PowerShell static text check for both Compose IPAM blocks, four input keys and rg caller inventory",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Both IPAM blocks contain subnet/gateway/ip_range; static Nginx ipv4_address remains separate; no aux_addresses or wildcard; template and CI values match; 3 non-env product refs are exactly the two Compose files and validator. Log: .agent/integration-i1/i3-static.log (SHA256 D4C75C609ABC55D1E925C8EF9C5BEEE1759BF9233419B725D2BCD064D2758E26)."
+    },
+    {
+      "id": "synthetic-compose-ipam",
+      "criterion": "Authorized synthetic Compose rendering resolves the expected network values without starting services.",
+      "command": "docker compose --env-file <TEMP R5 isolated synthetic env> -f docker-compose.prod.yml config --format json; repeat for docker-compose.e2e.yml; inspect only private_net.ipam.config and services.nginx.networks.private_net.ipv4_address",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Both rendered definitions are subnet 172.30.0.0/24, gateway 172.30.0.1, ip_range 172.30.0.128/25, static edge 172.30.0.10. No services started and no network was created. Stderr was classified as Docker config.json access denied plus an optional E2E MONGO_ROOT_USER blank default; no source error or secret value was emitted. Log: .agent/integration-i1/i3-compose-render.log (SHA256 1AEB1A20B8C0F2B0EE3F2E834A23092A998053D2A7FED5376A45AAB3B23E1241)."
+    },
+    {
+      "id": "union-freeze",
+      "criterion": "The expanded path/hash inventory is exact and reproducible.",
+      "command": "Read i3-union-manifest.sha256; recompute every file SHA256; sort rows and hash UTF-8 LF join without trailing LF",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "35 rows, zero file-hash mismatches, canonical SHA256 604CD4D36A70710B7C1790805DA70721B97741AB7CA0924E46BAF3850F614C6A. The added row is docker-compose.prod.yml; the prior I2 34-row manifest remains unchanged."
+    },
+    {
+      "id": "diff-check",
+      "criterion": "The assigned product diff has no whitespace errors.",
+      "command": "git diff --check -- .env.prod.example docker-compose.prod.yml docker-compose.e2e.yml scripts/validate-env-prod.sh tests/e2e/.env.ci",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "No diff-check errors; Git emitted only existing LF-to-CRLF normalization warnings."
+    },
+    {
+      "id": "critical-preservation",
+      "criterion": "Accepted OpenAPI and generated artifacts remain byte-for-byte unchanged.",
+      "command": "Read hashes from the expanded union manifest and compare accepted I2 values",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "OpenAPI snapshot D4F97E0476CD681A9460247D9F904C7901241269B73221A097EC6BE45132CDA0, generated TypeScript 5D697D0D0615BB5BB93F0C4735B090D3420112B7B97F4FA6C3598CC31B2CA66E, and OpenApiSnapshotIT D0D715C22A77CBADFE61177454428B606A5F0476359C2B8FD879573A4A221C25 are unchanged."
+    }
+  ],
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "parser": "C:/Program Files/Git/bin/bash.exe",
+    "mode": "I3_SOURCE_PLUS_AUTHORIZED_SYNTHETIC_CONFIG",
+    "heavy_lease": "H33 short config-only",
+    "services_started": false,
+    "network_created": false,
+    "real_production_env_read": false,
+    "secrets_printed": false
+  },
+  "runtime_evidence": {
+    "status": "PASS_SOURCE_AND_SYNTHETIC_CONFIG_ONLY",
+    "exit_code": 0,
+    "evidence": "Pure validator, static checks and authorized synthetic Compose IPAM rendering passed. No production clean-start or allocation claim is made by this leaf.",
+    "external_h32_context": {
+      "owner": "R3",
+      "path": ".agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/r10-docker-network-proof.json",
+      "sha256": "0D07C5C7B346F3C0E0E68173C184A811CF283A004AAD9C7F7916CBC298F2A9BA",
+      "observed_bounds": "R3 reports dynamic 172.30.185.128/25, edge .10 and gateway .1 with cleanup verified; this is read-only cross-owner context, not I3-authored evidence."
+    },
+    "historical": "I2 H31 BFF 4/4 and frontend typeguard plus prior I1 evidence remain historical and were not rerun for this network-only correction."
+  },
+  "diff": {
+    "i2_preserved_product_paths": 34,
+    "i3_expanded_product_paths": 35,
+    "new_union_path": "docker-compose.prod.yml",
+    "changed_live_input_paths": [
+      ".env.prod.example",
+      "docker-compose.prod.yml",
+      "docker-compose.e2e.yml",
+      "tests/e2e/.env.ci",
+      "scripts/validate-env-prod.sh"
+    ],
+    "metadata_paths": [
+      ".agent/integration-i1/i3-packet.md",
+      ".agent/integration-i1/i3-source-freeze.md",
+      ".agent/integration-i1/i3-union-manifest.sha256",
+      ".agent/integration-i1/i3-checks.json",
+      ".agent/integration-i1/i3-summary.md",
+      ".agent/integration-i1/i3-validator.log",
+      ".agent/integration-i1/i3-static.log",
+      ".agent/integration-i1/i3-compose-config.log",
+      ".agent/integration-i1/i3-compose-render.log",
+      "docs/sources/manifest.yaml"
+    ],
+    "source_metadata_copied": false
+  },
+  "operator_notes": [
+    "The first synthetic run used an older intentionally invalid R5 fixture and exited 3 on unrelated secret-format checks; the final deterministic fixture replaces it and suppresses all values.",
+    "The first missing-input harness retained the new template keys and the first static inventory compared Windows path prefixes incorrectly; both harness issues were corrected before the logs were finalized.",
+    "A first metadata-only preservation assertion copied the generated TypeScript hash without its final E and exited 1; the authoritative 64-character hash ending in B2CA66E was restored and the corrected assertion exited 0.",
+    "The final rendered Compose evidence uses temporary copies of the read-only R5 isolated synthetic fixture, not a real .env.prod or the tracked CI secret values."
+  ],
+  "limitations": [
+    "No real production environment, TLS material, service startup, clean-start allocation or network mutation was run by this lease.",
+    "R3 owns independent H32 allocation evidence; the cross-owner path above is context only and was not copied or re-authored.",
+    "Fresh full Sol review of the 35-row union and this correction remains a separate parent-allocated gate.",
+    "No source snapshot regeneration, frontend generation, Gradle build, npm install or unrelated historical test rerun was performed."
+  ],
+  "status": "RELEASED_TO_ROOT"
+}

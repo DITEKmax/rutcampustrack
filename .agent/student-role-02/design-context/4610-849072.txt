@@ -1,0 +1,123 @@
+const imgIconPrevious = "https://www.figma.com/api/mcp/asset/0688d9aa-1ca1-4976-afe4-f8eccec4ba21.svg";
+const imgSourceIconDate = "https://www.figma.com/api/mcp/asset/9994c485-86ca-4a00-8f90-e46eedb35504.svg";
+const imgIconTime = "https://www.figma.com/api/mcp/asset/05436f68-942e-442d-a509-76582eaac98d.svg";
+const imgIcon = "https://www.figma.com/api/mcp/asset/164effeb-306f-47f9-9b4e-53f4e78ae336.svg";
+
+function IconPrevious({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[16px]"} data-node-id="4597:3579" data-name="icon/previous">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconPrevious} />
+    </div>
+  );
+}
+
+export default function Component18() {
+  return (
+    <div className="bg-[var(--color-surface-base,#0b0b0c)] overflow-clip relative rounded-[24px] size-full" data-node-id="4610:849072" data-name="18 · Забыл отметиться / подтверждение">
+      <div className="absolute content-stretch flex flex-col gap-[12px] h-[812px] items-start left-[16px] overflow-clip py-[20px] top-0 w-[358px]" data-node-id="4610:849073" data-name="content">
+        <div className="content-stretch flex gap-[10px] items-center overflow-clip relative shrink-0 w-[358px]" data-node-id="4610:849074" data-name="header">
+          <div className="bg-[var(--color-surface-float,#292531)] content-stretch flex items-center justify-center overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4610:849075" data-name="back">
+            <IconPrevious className="relative shrink-0 size-[16px]" />
+          </div>
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] h-[32px] leading-[normal] not-italic relative shrink-0 text-[22px] text-[color:var(--color-text-primary,#edeaf3)] w-[304px]" data-node-id="4610:849077">
+            Забыл отметиться
+          </p>
+        </div>
+        <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[8px] items-start overflow-clip p-[16px] relative rounded-[24px] shrink-0 w-[358px]" data-node-id="4610:849078" data-name="lesson-summary">
+          <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-[326px]" data-node-id="4610:849079" data-name="lesson-head">
+            <p className="[word-break:break-word] font-['Onest:SemiBold'] h-[42px] leading-[normal] not-italic relative shrink-0 text-[17px] text-[color:var(--color-text-primary,#edeaf3)] w-[270px]" data-node-id="4610:849080">
+              Математический анализ
+            </p>
+            <div className="bg-[var(--color-status-absent-fill,#f27f7f)] content-stretch flex items-center justify-center overflow-clip relative rounded-[16px] shrink-0 size-[32px]" data-node-id="4610:849081" data-name="status-н">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[15px] text-[color:var(--color-status-absent-on-fill,#0b0b0c)] whitespace-nowrap" data-node-id="4610:849082">
+                н
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex gap-[var(--space-1,4px)] items-center relative shrink-0 w-[326px]" data-node-id="4610:849083" data-name="meta">
+            <div className="relative shrink-0 size-[10px]" data-node-id="4889:538" data-name="icon/date">
+              <div className="absolute left-[-3.46px] size-[16px] top-[-3.46px]" data-node-id="4610:849084" data-name="source/icon/date">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgSourceIconDate} />
+              </div>
+            </div>
+            <p className="[word-break:break-word] font-['Onest:Regular'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] whitespace-nowrap" data-node-id="4610:849085">
+              1 сентября
+            </p>
+          </div>
+          <div className="content-stretch flex gap-[var(--space-1,4px)] items-center relative shrink-0 w-[326px]" data-node-id="4610:849086" data-name="meta">
+            <div className="relative shrink-0 size-[16px]" data-node-id="4610:849087" data-name="icon/time">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconTime} />
+            </div>
+            <p className="[word-break:break-word] font-['Onest:Regular'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] whitespace-nowrap" data-node-id="4610:849088">
+              09:00–10:30
+            </p>
+          </div>
+          <div className="content-stretch flex gap-[var(--space-1,4px)] items-center relative shrink-0 w-[326px]" data-node-id="4610:849089" data-name="meta">
+            <div className="relative shrink-0 size-[16px]" data-node-id="4610:849090" data-name="icon">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon} />
+            </div>
+            <p className="[word-break:break-word] font-['Onest:Regular'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] whitespace-nowrap" data-node-id="4610:849091">
+              Практика
+            </p>
+          </div>
+        </div>
+        <div className="[word-break:break-word] bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[4px] items-start leading-[normal] not-italic overflow-clip p-[16px] relative rounded-[24px] shrink-0 w-[358px]" data-node-id="4610:849130" data-name="attempt-budget">
+          <p className="font-['Onest:Regular'] h-[24px] relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] w-[326px]" data-node-id="4610:849131">
+            Осталось попыток
+          </p>
+          <p className="font-['Onest:SemiBold'] h-[24px] relative shrink-0 text-[24px] text-[color:var(--color-text-primary,#edeaf3)] w-[326px]" data-node-id="4610:849132">
+            5 из 5
+          </p>
+        </div>
+        <div className="bg-[var(--color-state-warning-bg,#3a2404)] content-stretch flex flex-col gap-[10px] items-start overflow-clip p-[16px] relative rounded-[24px] shrink-0 w-[358px]" data-node-id="4610:849133" data-name="confirm">
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] h-[24px] leading-[normal] not-italic relative shrink-0 text-[17px] text-[color:var(--color-state-warning-text,#f5b443)] w-[326px]" data-node-id="4610:849134">
+            Отправить запрос?
+          </p>
+          <p className="[word-break:break-word] font-['Onest:Regular'] h-[40px] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-state-warning-text,#f5b443)] w-[326px]" data-node-id="4610:849135">
+            Одна из пяти попыток будет использована.
+          </p>
+          <div className="bg-[var(--color-accent-now,#b79cfa)] content-stretch flex h-[44px] items-center justify-center overflow-clip relative rounded-[22px] shrink-0 w-[326px]" data-node-id="4610:849136" data-name="confirm-submit">
+            <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-accent-on-now,#0b0b0c)] whitespace-nowrap" data-node-id="4610:849137">
+              Отправить запрос
+            </p>
+          </div>
+          <div className="bg-[var(--color-surface-float,#292531)] border border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex h-[44px] items-center justify-center overflow-clip relative rounded-[22px] shrink-0 w-[326px]" data-node-id="4610:849138" data-name="confirm-cancel">
+            <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4610:849139">
+              Отмена
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## icon/previous
+**Node ID:** 4597:3579
+
+Временная локальная векторная заглушка смысла «предыдущий». Один stroke-вектор и метрика совпадают с icon/chevron-down; заменить финальной иконкой через instance swap.
+
+## icon/date
+**Node ID:** 4597:3590
+
+Локальный плейсхолдер смысла «дата»; рисунок заменяется свопом после выбора набора иконок.
+
+## icon/time
+**Node ID:** 4570:149
+
+Навигация: текущий день и экран «Сегодня».
+
+## Property 1=lesson-type
+**Node ID:** 4570:143
+
+Навигация: текущий день и экран «Сегодня».
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

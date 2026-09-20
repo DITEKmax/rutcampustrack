@@ -1,0 +1,91 @@
+/*
+ * FE13 aliases resolved from docs/design/tokens-v2.json. Values mirror the
+ * attendance feature deliberately; selectors remain feature-local so hosts
+ * can mount either screen without global theme mutations.
+ */
+.statistics-screen,
+.statistics-detail {
+  --statistics-surface-base: #0b0b0c;
+  --statistics-surface-raised: #1c1922;
+  --statistics-surface-float: #292531;
+  --statistics-text-primary: #edeaf3;
+  --statistics-text-secondary: #c8c2d6;
+  --statistics-text-muted: #8a8299;
+  --statistics-text-disabled: #6b6b6b;
+  --statistics-border-default: #3d3846;
+  --statistics-border-focus: #9e7aff;
+  --statistics-accent-now: #b79cfa;
+  --statistics-accent-on-now: #0b0b0c;
+  --statistics-present-fill: #61dfb8;
+  --statistics-present-text: #61dfb8;
+  --statistics-absent-fill: #f27f7f;
+  --statistics-absent-text: #f27f7f;
+  --statistics-excused-fill: #f5b443;
+  --statistics-excused-text: #f5b443;
+  --statistics-none-fill: #c4c4c4;
+  --statistics-success-bg: #063429;
+  --statistics-danger-bg: #470e0e;
+  --statistics-warning-text: #f5b443;
+  --statistics-disabled-surface: #262626;
+  --statistics-font-family: 'Onest Variable', Onest, sans-serif;
+  --statistics-font-display: 2rem;
+  --statistics-font-title: 1.5rem;
+  --statistics-font-block: 1.125rem;
+  --statistics-font-body: 1rem;
+  --statistics-font-dense: 0.875rem;
+  --statistics-font-caption: 0.8125rem;
+  --statistics-font-micro: 0.75rem;
+  --statistics-font-weight-regular: 400;
+  --statistics-font-weight-medium: 500;
+  --statistics-font-weight-bold: 600;
+  --statistics-radius-lg: 0.75rem;
+  --statistics-radius-xl: 1rem;
+  --statistics-radius-2xl: 1.5rem;
+  --statistics-radius-full: 62.4375rem;
+  --statistics-border-hairline: 0.0625rem;
+  --statistics-focus-width: 0.125rem;
+  --statistics-focus-offset: 0.125rem;
+  --statistics-content-width: 22.375rem;
+  --statistics-inset: 1rem;
+  --statistics-control: 2.75rem;
+  --statistics-metadata: 0.625rem;
+  --statistics-meta-gap: 0.25rem;
+  --statistics-disclosure: 1.375rem;
+  --statistics-plot-height: 10.625rem;
+  --statistics-history-height: 0.5rem;
+  --statistics-dock-height: 4.75rem;
+  --statistics-dock-bottom: 1rem;
+}
+
+.statistics-screen[data-theme='light'],
+.statistics-detail[data-theme='light'] {
+  --statistics-surface-base: #fcfbfe;
+  --statistics-surface-raised: #ffffff;
+  --statistics-surface-float: #ffffff;
+  --statistics-text-primary: #292531;
+  --statistics-text-secondary: #565061;
+  --statistics-text-muted: #6e6779;
+  --statistics-text-disabled: #a3a3a3;
+  --statistics-border-default: #ded9e8;
+  --statistics-border-focus: #8557f5;
+  --statistics-accent-now: #6d28d9;
+  --statistics-accent-on-now: #ffffff;
+  --statistics-present-fill: #94e6cb;
+  --statistics-present-text: #0c6a53;
+  --statistics-absent-fill: #f7aaaa;
+  --statistics-absent-text: #8e1d1d;
+  --statistics-excused-fill: #f8ce7d;
+  --statistics-excused-text: #764b09;
+  --statistics-none-fill: #dcdcdc;
+  --statistics-success-bg: #e4f9f1;
+  --statistics-danger-bg: #fdecec;
+  --statistics-warning-text: #764b09;
+  --statistics-disabled-surface: #ededed;
+}
+
+@define-mixin statistics-focus-ring {
+  &:focus-visible {
+    outline: var(--statistics-focus-width) solid var(--statistics-border-focus);
+    outline-offset: var(--statistics-focus-offset);
+  }
+}

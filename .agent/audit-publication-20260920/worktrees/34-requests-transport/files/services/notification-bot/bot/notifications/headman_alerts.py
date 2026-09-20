@@ -1,0 +1,251 @@
+"""Handler for headman alert events — sends notifications to group headmen only."""
+
+import logging
+
+from aiogram import Bot
+from aiogram.types import BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup
+
+from bot.services.send_queue import SendTask, TelegramSendQueue
+
+logger = logging.getLogger(__name__)
+
+# Telegram's hard limit for bot uploads is 50 MB; the Java side caps at 10 MB.
+# Anything larger is dropped with a warning — we never silently truncate.
+MAX_FORWARDED_FILE_BYTES = 10 * 1024 * 1024
+
+
+async def handle_headman_alert(
+    event: dict,
+    bot: Bot,
+    academic_client,
+    send_queue: TelegramSendQueue,
+    request_tracker=None,
+    **kwargs,
+) -> None:
+    """Send alert to headman(s) of the group only.
+
+    Handles excuse.requested and late_checkin.requested events.
+    Threat T-24-06: only headmen (is_headman=True) receive these notifications.
+    Threat T-24-07: validates required fields before processing.
+    """
+    event_type = event.get("event_type")
+    payload = event.get("payload", {})
+
+    try:
+        group_id = payload["group_id"]
+        user_id = payload["user_id"]
+    except KeyError as exc:
+        logger.warning("headman alert event missing required field: %s", exc)
+        return
+
+    members = await academic_client.get_group_members(group_id)
+
+    # T-24-06: filter headmen with telegram_id only
+    headmen = [m for m in members if m.is_headman and m.telegram_id]
+
+    if not headmen:
+        logger.warning("No headman with telegram_id found for group_id=%s, skipping headman alert", group_id)
+        return
+
+    # Resolve student name: payload > member lookup > fallback
+    student_name = payload.get("student_name")
+    if not student_name:
+        matching = next((m for m in members if m.user_id == user_id), None)
+        if matching:
+            student_name = matching.display_name
+        else:
+            student_name = f"Студент #{user_id}"
+
+    reply_markup = None
+
+    attachments: list[tuple[str, bytes, str]] = []
+
+    # kind+id для RequestMessageTracker — заполняются ниже, чтобы сохранить
+    # message_id каждого старосты после send_message/send_document и потом
+    # отредактировать их при получении *.decided (двусторонняя sync TG ↔ Web).
+    tracking_kind: str | None = None
+    tracking_id: str | None = None
+
+    if event_type == "excuse.requested":
+        excuse_type_label = _excuse_type_label(payload.get("excuse_type"))
+        text = f"🧾 Запрос на уважительную причину\n\nСтудент: {student_name}\nТип: {excuse_type_label}"
+
+        lessons = payload.get("lessons") or []
+        if lessons:
+            text += "\n\nПары:"
+            for lesson in lessons:
+                text += "\n• " + _format_lesson(lesson)
+
+        comment = payload.get("comment")
+        if comment:
+            text += f"\n\nКомментарий:\n{comment}"
+
+        ticket_id = payload.get("ticket_id")
+        if ticket_id:
+            tracking_kind = "excuse"
+            tracking_id = str(ticket_id)
+            reply_markup = InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(text="✅ Одобрить", callback_data=f"ex:approve:{ticket_id}"),
+                        InlineKeyboardButton(text="❌ Отклонить", callback_data=f"ex:reject:{ticket_id}"),
+                    ]
+                ]
+            )
+        else:
+            logger.warning("excuse.requested missing ticket_id, sending without buttons")
+
+        attachment_specs = payload.get("attachments") or []
+        if attachment_specs:
+            attendance_client = kwargs.get("attendance_client")
+            if attendance_client is None:
+                raise RuntimeError("attendance attachment client is not configured")
+            # Resolve every attachment for every target headman before placing
+            # any task in the queue. A later fetch failure therefore cannot
+            # leave a partially delivered event behind.
+            for headman in headmen:
+                for spec in attachment_specs:
+                    attachment_id = spec.get("id") if isinstance(spec, dict) else None
+                    if not attachment_id or not ticket_id:
+                        raise ValueError("excuse attachment metadata is incomplete")
+                    response = await attendance_client.fetch_excuse_attachment(
+                        int(headman.user_id), str(ticket_id), str(attachment_id)
+                    )
+                    data = bytes(getattr(response, "data", b""))
+                    if not data or len(data) > MAX_FORWARDED_FILE_BYTES:
+                        raise ValueError("excuse attachment has an invalid size")
+                    filename = getattr(response, "filename", "") or spec.get("name") or "attachment"
+                    attachments.append((str(headman.telegram_id), data, filename))
+    elif event_type == "late_checkin.requested":
+        text = f"✅ Запрос подтверждения присутствия\n\nСтудент: {student_name}"
+        subject_name = payload.get("subject_name")
+        if subject_name:
+            text += f"\nПредмет: {subject_name}"
+        lesson_number = payload.get("lesson_number")
+        if lesson_number:
+            text += f"\nПара: №{lesson_number}"
+        lesson_date = payload.get("lesson_date")
+        if lesson_date:
+            text += f"\nДата: {lesson_date}"
+        request_id = payload.get("request_id")
+        if request_id:
+            tracking_kind = "late_checkin"
+            tracking_id = str(request_id)
+            reply_markup = InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(text="✅ Подтвердить", callback_data=f"lcr:approve:{request_id}"),
+                        InlineKeyboardButton(text="❌ Отклонить", callback_data=f"lcr:reject:{request_id}"),
+                    ]
+                ]
+            )
+        else:
+            logger.warning("late_checkin.requested missing request_id, sending without buttons")
+    else:
+        logger.debug("handle_headman_alert called with unexpected event_type: %s", event_type)
+        return
+
+    def _build_on_sent(chat_id_value: int):
+        if request_tracker is None or tracking_kind is None or tracking_id is None:
+            return None
+
+        async def _on_sent(result):
+            message_id = getattr(result, "message_id", None)
+            if message_id is None:
+                return
+            await request_tracker.add(tracking_kind, tracking_id, chat_id_value, int(message_id))
+
+        return _on_sent
+
+    for headman in headmen:
+        headman_attachments = [item for item in attachments if item[0] == str(headman.telegram_id)]
+        if headman_attachments:
+            for _, file_bytes, file_name in headman_attachments:
+                # Telegram caption limit is 1024 chars — truncate defensively so
+                # a long comment cannot make a document send fail.
+                caption = text if len(text) <= 1024 else text[:1020] + "…"
+
+                async def _send_document(
+                    h=headman,
+                    markup=reply_markup,
+                    payload_bytes=file_bytes,
+                    payload_name=file_name,
+                    payload_caption=caption,
+                ):
+                    return await bot.send_document(
+                        chat_id=h.telegram_id,
+                        document=BufferedInputFile(payload_bytes, filename=payload_name),
+                        caption=payload_caption,
+                        reply_markup=markup,
+                    )
+
+                await send_queue.put(
+                    SendTask(
+                        coroutine_factory=_send_document,
+                        user_id=headman.user_id,
+                        chat_id=headman.telegram_id,
+                        on_sent=_build_on_sent(headman.telegram_id),
+                        category="tickets",
+                    )
+                )
+        else:
+            await send_queue.put(
+                SendTask(
+                    coroutine_factory=lambda h=headman, markup=reply_markup: bot.send_message(
+                        chat_id=h.telegram_id, text=text, reply_markup=markup
+                    ),
+                    user_id=headman.user_id,
+                    chat_id=headman.telegram_id,
+                    on_sent=_build_on_sent(headman.telegram_id),
+                    category="tickets",
+                )
+            )
+
+
+_EXCUSE_TYPE_LABELS = {
+    "illness": "Болезнь",
+    "summons": "Повестка",
+    "university_order": "Приказ университета",
+    "exemption": "Освобождение",
+    "free_attendance": "Свободное посещение",
+    "other": "Другое",
+}
+
+_RU_WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
+
+
+def _excuse_type_label(code: str | None) -> str:
+    if not code:
+        return "не указан"
+    return _EXCUSE_TYPE_LABELS.get(code, code)
+
+
+def _format_lesson(lesson: dict) -> str:
+    """Строка вида «№3 Матанализ, пн 14.04» для карточки в TG."""
+    parts: list[str] = []
+    lesson_number = lesson.get("lesson_number")
+    if lesson_number:
+        parts.append(f"№{lesson_number}")
+    subject_name = lesson.get("subject_name")
+    if subject_name:
+        parts.append(str(subject_name))
+    head = " ".join(parts).strip()
+    date_str = lesson.get("date")
+    date_part = _format_ru_date(date_str) if date_str else ""
+    if not head and not date_part:
+        return f"Пара #{lesson.get('lesson_id', '?')}"
+    return f"{head}, {date_part}" if date_part else head
+
+
+def _format_ru_date(iso: str) -> str:
+    """YYYY-MM-DD → «пн 14.04». На ошибке возвращает вход как есть."""
+    try:
+        from datetime import date
+
+        y, m, d = iso[:10].split("-")
+        parsed = date(int(y), int(m), int(d))
+        # date.weekday(): пн=0, вс=6 — совпадает с _RU_WEEKDAYS.
+        dow = _RU_WEEKDAYS[parsed.weekday()]
+        return f"{dow} {int(d):02d}.{int(m):02d}"
+    except (ValueError, IndexError, TypeError):
+        return iso

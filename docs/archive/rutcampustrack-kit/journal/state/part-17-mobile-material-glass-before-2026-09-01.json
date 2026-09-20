@@ -1,0 +1,49 @@
+{
+  "capturedAt": "2026-09-01",
+  "unit": "A: physical document nodes without entering instances; PAGE excluded",
+  "figmaFile": "VgVjQYWILLG9AC7Eh12VMk",
+  "pages": {
+    "16": { "id": "1474:4", "A": 890, "protected": true },
+    "17": { "id": "1614:7095", "A": 748, "protected": true },
+    "18": { "id": "1902:253474", "A": 836, "protected": true },
+    "19": { "id": "2438:1198", "A": 363, "protected": true },
+    "20": { "id": "2500:4187", "A": 286, "protected": true },
+    "21": { "id": "4159:142", "A": 73 },
+    "22": { "id": "4159:143", "A": 230 },
+    "23": { "id": "4159:144", "A": 220 }
+  },
+  "variables": {
+    "total": 246,
+    "componentCollectionId": "VariableCollectionId:268:2",
+    "componentCount": 9,
+    "mobileGlassMatches": 0,
+    "authOpacityControl": {
+      "name": "component/auth-glass/surface-opacity",
+      "storedValues": { "dark": 60, "light": 84 },
+      "resolvedNodeOpacity": { "dark": 0.6, "light": 0.84 },
+      "unitConclusion": "Figma stores OPACITY variable values as percent points; use 78 and 90 to resolve to 0.78 and 0.90"
+    }
+  },
+  "effectStyles": {
+    "total": 3,
+    "mobileGlassMatches": 0,
+    "raised": "S:968ae28d0e4c0fccdf1f6c6bbb0b48df8cbb7429,"
+  },
+  "mobileBottomNav": {
+    "setId": "4175:403",
+    "A": 16,
+    "variantIds": ["4175:281", "4175:312", "4175:353"],
+    "variantSize": { "width": 390, "height": 76 },
+    "glassSurfaceNodes": 0,
+    "directConsumers": 8,
+    "protectedPageConsumers": 0,
+    "consumerWidths": [358, 358, 358, 390, 390, 390, 390, 320]
+  },
+  "decorativeClosedStrokes": {
+    "targetCount": 23,
+    "navMasterVariants": 3,
+    "mobileFixtureNodes": 20,
+    "strokeWeightPx": 1
+  },
+  "transportFailures": 0
+}

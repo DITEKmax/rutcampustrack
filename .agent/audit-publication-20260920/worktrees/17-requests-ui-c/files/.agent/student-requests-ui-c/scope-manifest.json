@@ -1,0 +1,35 @@
+{
+  "baselineRevision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "worktree": ".agent/worktrees/requests-ui-c",
+  "risk": "S3",
+  "writer": "/root/requests_ui_implementation",
+  "model": "gpt-5.6-luna",
+  "effort": "max",
+  "allowedCodePaths": [
+    "frontends/mobile-core/src/features/requests/RequestsScreen.vue",
+    "frontends/mobile-core/src/features/requests/RequestCard.vue",
+    "frontends/mobile-core/src/features/requests/RequestTypeScreen.vue",
+    "frontends/mobile-core/src/features/requests/ExcuseRequestScreen.vue",
+    "frontends/mobile-core/src/features/requests/LateCheckinRequestScreen.vue",
+    "frontends/mobile-core/src/features/requests/RequestLessonSelector.vue",
+    "frontends/mobile-core/src/features/requests/RequestAttachmentField.vue",
+    "frontends/mobile-core/src/features/requests/requests.pcss",
+    "frontends/mobile-core/src/features/requests/types.ts",
+    "frontends/mobile-core/src/features/requests/state.ts",
+    "frontends/mobile-core/src/features/requests/state.test.ts",
+    "frontends/mobile-core/src/features/requests/RequestsScreen.test.ts"
+  ],
+  "evidencePaths": [
+    ".agent/student-requests-ui-c/packet.md",
+    ".agent/student-requests-ui-c/scope-manifest.json",
+    ".agent/student-requests-ui-c/source-sha256.json",
+    ".agent/student-requests-ui-c/checks.json",
+    ".agent/student-requests-ui-c/runtime-evidence.json",
+    ".agent/student-requests-ui-c/summary.md"
+  ],
+  "ownerDecision": {
+    "date": "2026-09-08",
+    "text": "Да, выбор прямо в форме: EXCUSE multiple by-day checkboxes; LATE singleSelectField.",
+    "supersedes": "missing selection-flow note only"
+  }
+}

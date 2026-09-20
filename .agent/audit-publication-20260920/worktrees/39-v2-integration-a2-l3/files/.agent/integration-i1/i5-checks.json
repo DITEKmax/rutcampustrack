@@ -1,0 +1,109 @@
+{
+  "schema": "integration-i5-checks-v1",
+  "date": "2026-09-15",
+  "risk": "S2",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3",
+  "branch": "codex/v2-integration-a2-l3",
+  "rules_sha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "node": "v24.14.0 (workspace engine)",
+    "npm": "11.9.0 (workspace engine)",
+    "vitest": "4.1.4",
+    "worker_policy": "one worker",
+    "dependencies": "existing target worktree dependencies; no install or network"
+  },
+  "checks": [
+    {
+      "id": "i4-preservation-and-r4-source-gate",
+      "criterion": "accepted I4 source is preserved and the exact accepted R4 source is transferred without drift",
+      "command": "PowerShell SHA256 comparison of 44 I4 manifest rows; source Git hash-object comparison of 14 R4 rows; source/target byte comparison; target overlap inventory",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "I4 rows=44, missing=0, mismatches=0; R4 source blobs=14, mismatches=0; R4 source/target bytes=14/14 equal; expected R4 overlap before edits=0; source worktree status remained the pre-existing 14 product changes plus its own metadata.",
+      "raw_log": "i5-evidence.md"
+    },
+    {
+      "id": "i5-product-manifest",
+      "criterion": "the integrated product inventory is exactly the accepted 44 plus accepted R4 14",
+      "command": "PowerShell recomputation of i5-union-manifest.sha256 from target bytes, canonical SHA over sorted LF rows, and supplemental environment hash",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "58 manifest rows, 0 actual hash mismatches, declared/recomputed canonical D3FF3DFDC7C093935CCE3DEF4B4C0A4151F876F1572C3A3851A4480A588FC204, I4 rows=44, R4 rows=14; supplemental environment SHA CF3212D7D65917AB03161C487471EFD6A088B7463A0EF76C542D93CA65782205, 221 bytes, excluded from product count.",
+      "raw_log": "i5-evidence.md"
+    },
+    {
+      "id": "i5-vitest-sandbox-probe",
+      "criterion": "the focused Vue-configured union can start in the available environment",
+      "command": "npm exec --offline -- vitest run --config pwa-vue/vite.config.ts --environment ../.agent/v2-requests-ui/vitest-client-environment.ts mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts mobile-core/src/features/requests/RequestsScreen.test.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1",
+      "exit_code": 1,
+      "status": "BLOCKED_HARNESS",
+      "execution_context": "Windows PowerShell; target/frontends; default sandbox",
+      "sandbox_permissions": "use_default",
+      "evidence": "esbuild failed before Vitest collection because reading ../../../../../.. and the existing pwa-vue config returned Access is denied; no product assertion ran and no source changed.",
+      "raw_log": "i5-vitest-sandbox.log"
+    },
+    {
+      "id": "i5-vitest-union",
+      "criterion": "the current integrated Requests regression union passes with observable tests",
+      "command": "npm exec --offline -- vitest run --config pwa-vue/vite.config.ts --environment ../.agent/v2-requests-ui/vitest-client-environment.ts mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts mobile-core/src/features/requests/RequestsScreen.test.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1",
+      "exit_code": 0,
+      "status": "PASS",
+      "execution_context": "Windows PowerShell; target/frontends; narrow scoped require_escalated after the recorded sandbox probe; one worker; no install/network",
+      "sandbox_permissions": "require_escalated",
+      "final_raw_capture": "The same command was rerun with login=false/no-profile solely for a complete clean stdout/stderr capture; exit 0.",
+      "evidence": "Vitest 4.1.4: 5 test files passed and 52 tests passed; RequestsScreen and real Owner harness used the existing pwa-vue Vue config plus the exact supplemental client environment. The final same-command no-profile capture has complete stdout and empty stderr.",
+      "raw_log": "i5-vitest.log"
+    },
+    {
+      "id": "i5-mobile-core-typecheck",
+      "criterion": "integrated mobile-core TypeScript source and tests typecheck",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exit_code": 0,
+      "status": "PASS",
+      "execution_context": "Windows PowerShell login=false/no-profile; target/frontends; existing dependencies",
+      "sandbox_permissions": "use_default",
+      "evidence": "tsc -p tsconfig.json --noEmit completed successfully; final no-profile capture has complete stdout and empty stderr.",
+      "raw_log": "i5-typecheck.log"
+    },
+    {
+      "id": "i5-mobile-core-lint",
+      "criterion": "integrated mobile-core lint has no warnings or errors",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exit_code": 0,
+      "status": "PASS",
+      "execution_context": "Windows PowerShell login=false/no-profile; target/frontends; existing dependencies",
+      "sandbox_permissions": "use_default",
+      "evidence": "eslint src scripts tests --max-warnings=0 completed successfully; final no-profile capture has complete stdout and empty stderr.",
+      "raw_log": "i5-lint.log"
+    },
+    {
+      "id": "i5-diff-check",
+      "criterion": "the R4 product diff has no whitespace errors",
+      "command": "git diff --check -- <14 R4 product paths>; plus product trailing-whitespace scan",
+      "exit_code": 0,
+      "status": "PASS",
+      "execution_context": "Windows PowerShell login=false/no-profile; target",
+      "sandbox_permissions": "use_default",
+      "evidence": "Product trailing-whitespace lines=0 and git diff --check exit 0. Existing LF-to-CRLF working-copy notices were warnings only.",
+      "raw_log": "i5-diff-check.log"
+    },
+    {
+      "id": "i5-runtime",
+      "criterion": "runtime evidence is explicitly classified",
+      "command": "N/A for this leaf",
+      "exit_code": null,
+      "status": "N/A",
+      "evidence": "Browser, fullservice, backend, Docker, deployment, and E/main promotion are parent-controlled later gates; the passing Vitest union is test evidence, not product runtime evidence.",
+      "raw_log": ".agent/integration-i1/i5-runtime-evidence.json"
+    }
+  ],
+  "limitations": [
+    "No browser or fullservice flow was started.",
+    "No Gradle, Docker, build, generated artifact, dependency installation, network, deployment, or production operation was run.",
+    "The source worktree remains read-only; target commit, main merge, and fresh full58 Sol review are outside this leaf.",
+    "The first default sandbox Vitest attempt is retained as a harness failure; the identical command passed under the narrow scoped escalation."
+  ]
+}

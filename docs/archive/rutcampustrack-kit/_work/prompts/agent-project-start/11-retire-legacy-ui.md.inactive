@@ -1,0 +1,23 @@
+Подготовь вывод старого UI из употребления в C:/Users/maksd/IntelliJIDEA/rutcampustrack
+после реализации новых сценариев. Прочитай job-stories.yaml, retirement-карту
+и integration evidence. Это отдельная партия очистки, с одним writer и reviewer.
+
+Определи точный scope: устаревшие components/styles/assets/routes/dependencies/
+build configs, replacement, consumers, story coverage, archive/hash и rollback.
+«Старый» не означает всю папку kit/design/frontends. Нужные web-later макеты,
+актуальные stories, server capabilities и исходные архивы сохраняются.
+
+Сначала подготовь reviewable список путей/эффектов. Проверь imports, routes,
+exports, сборку, CI/deploy references, bot и других потребителей backend.
+Каждая история сохраняется, заменяется явным решением либо подтверждённо отменена;
+отсутствие функции в mobile само по себе не разрешает её удалить.
+
+Если точный список удаления уже разрешён владельцем, выполни его с archive/
+rollback и checks. Если есть только общее «старое в архив и на удаление»,
+подготовь адресный diff-план и проверку зависимостей, затем дождись решения
+по конкретным путям. Не спрашивай повторно про уже разрешённые файлы.
+
+Источники/архивы/.git/секреты/данные не удаляй; production switch не выполняй.
+После разрешённой очистки проверь сборку, routes, новую интеграцию, dangling
+references; reviewer проверяет стабильный итог. Финал: удалённые/сохранённые
+пути, story coverage, archive, checks и ограничения.

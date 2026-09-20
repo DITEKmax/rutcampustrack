@@ -1,0 +1,32 @@
+ M docs/openapi/academic.json
+ M docs/openapi/mobile-bff.json
+ M frontends/mobile-core/fixtures/manifest.json
+ M frontends/mobile-core/src/api/generated/mobile-bff.ts
+ M frontends/mobile-core/src/api/student-client.ts
+ M frontends/mobile-core/src/api/types.ts
+ M frontends/mobile-core/src/test-adapter/fixture-transport.test.ts
+ M frontends/mobile-core/tests/contract.test.mjs
+ M proto/academic.proto
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java
+ M services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java
+ M services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java
+ M services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java
+ M services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java
+ M services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java
+ M services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java
+?? .agent/student-role-02/
+?? frontends/mobile-core/fixtures/homework-completion-completed.json
+?? frontends/mobile-core/fixtures/homework-completion-undone.json
+?? frontends/mobile-core/fixtures/homework-feed.json
+?? frontends/mobile-core/src/test-adapter/homework-fixtures.ts
+?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java
+?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java
+?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java
+?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java
+?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java
+?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java
+?? services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkJsonConfiguration.java
+?? services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/HomeworkNoStoreFilter.java
+?? services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java
+?? services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/

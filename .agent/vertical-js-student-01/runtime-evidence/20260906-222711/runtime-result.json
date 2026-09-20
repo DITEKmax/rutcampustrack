@@ -1,0 +1,177 @@
+{
+  "schema": "rct.runtime-evidence.v1",
+  "task": "JS-STUDENT-01-r1",
+  "runId": "20260906-222711",
+  "startedAt": "2026-09-06T22:27:11.8910918+03:00",
+  "status": "FAIL",
+  "stage": "pwa-browser-runtime",
+  "resources": {
+    "network": "rct-js-student-01",
+    "containers": [
+      "rct-js-student-01-pg-academic",
+      "rct-js-student-01-pg-schedule",
+      "rct-js-student-01-mongo",
+      "rct-js-student-01-redis",
+      "rct-js-student-01-rabbit"
+    ],
+    "ports": [
+      25431,
+      25432,
+      27027,
+      26379,
+      25672,
+      35672,
+      29090,
+      29091,
+      29191,
+      29092,
+      29192,
+      29093,
+      29193,
+      29080,
+      28080,
+      28443
+    ]
+  },
+  "services": {
+    "academic": {
+      "pid": 44564,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\academic.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\academic.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29091/actuator/health"
+    },
+    "auth": {
+      "pid": 29712,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\auth.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\auth.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29090/actuator/health"
+    },
+    "schedule": {
+      "pid": 12196,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\schedule.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\schedule.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29092/actuator/health"
+    },
+    "attendance": {
+      "pid": 28744,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\attendance.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\attendance.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29093/actuator/health"
+    },
+    "mobile-bff": {
+      "pid": 37584,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\mobile-bff.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\mobile-bff.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29080/actuator/health"
+    },
+    "gateway": {
+      "pid": 34464,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\gateway.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\gateway.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:28080/actuator/health"
+    }
+  },
+  "assertions": [
+    {
+      "name": "isolated infrastructure ready",
+      "passed": true,
+      "evidence": {
+        "anonymousStorage": true,
+        "containers": 5
+      }
+    },
+    {
+      "name": "six real service processes ready",
+      "passed": true,
+      "evidence": {
+        "serviceCount": 6,
+        "hiddenProcesses": true
+      }
+    }
+  ],
+  "directGatewayLogin": {
+    "statusCode": 200,
+    "contentType": "application/json",
+    "server": "",
+    "via": "",
+    "bodyLength": 1553,
+    "origin": "https://127.0.0.1:28443"
+  },
+  "pwaBrowser": {
+    "status": "FAIL",
+    "phase": "production PWA online bootstrap",
+    "origin": "https://127.0.0.1:28443",
+    "seedStatus": 200,
+    "error": "page.waitForSelector: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.today-list') to be visible\u001b[22m\n",
+    "online": null,
+    "offline": null,
+    "apiRequests": [
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/refresh",
+        "status": 200
+      }
+    ],
+    "apiResponses": [
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "status": 200,
+        "contentType": "application/json",
+        "server": null,
+        "via": null,
+        "bodyLength": 1553,
+        "problem": {},
+        "setCookies": [
+          {
+            "name": "rct_refresh",
+            "path": "/api/auth",
+            "httpOnly": true,
+            "secure": true,
+            "sameSite": "Strict"
+          }
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/refresh",
+        "status": 200,
+        "contentType": "application/json",
+        "server": null,
+        "via": null,
+        "bodyLength": 1553,
+        "problem": {},
+        "setCookies": [
+          {
+            "name": "rct_refresh",
+            "path": "/api/auth",
+            "httpOnly": true,
+            "secure": true,
+            "sameSite": "Strict"
+          }
+        ]
+      }
+    ],
+    "offlineApiRequests": [],
+    "offlineApiResponses": [],
+    "bodyText": "Студент\nСегодня\nНе удалось получить данные\n\nFailed to execute 'fetch' on 'Window': Illegal invocation\n\nСегодня\nЗадания\nУчёт\nЕщё\nПрофиль",
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "failedRequests": [],
+    "screenshot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-222711\\pwa-offline-reload.png"
+  },
+  "error": "PWA browser runtime failed at 'production PWA online bootstrap': page.waitForSelector: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.today-list') to be visible\u001b[22m\n",
+  "completedAt": "2026-09-06T22:29:29.4233502+03:00"
+}

@@ -34,6 +34,7 @@ import java.time.Instant;
  *   <li>{@link GeofenceViolationException} → 422 (вне зоны)</li>
  *   <li>{@link GeofenceBlockedException} → 403 (геоотметка blocked)</li>
  *   <li>{@link RateLimitException} → 429</li>
+ *   <li>{@link LegacyCheckinRetiredException} → 410 (legacy check-in retired)</li>
  *   <li>{@link ScheduleServiceUnavailableException} +
  *       {@link AcademicServiceUnavailableException} → 503 (gRPC fallback)</li>
  * </ul>
@@ -114,6 +115,14 @@ public class GlobalExceptionHandler {
                                                          HttpServletRequest request) {
         return problem(HttpStatus.TOO_MANY_REQUESTS, "rate-limit-exceeded",
                 "Превышен лимит запросов", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(LegacyCheckinRetiredException.class)
+    public ResponseEntity<ErrorResponse> handleLegacyCheckinRetired(
+            LegacyCheckinRetiredException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.GONE, "legacy-checkin-retired",
+                "Старая геоотметка отключена", ex.getMessage(), request);
     }
 
     @ExceptionHandler({

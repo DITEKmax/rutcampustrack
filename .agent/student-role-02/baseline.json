@@ -1,0 +1,422 @@
+{
+  "schema": "rct.student-role-02.baseline.v1",
+  "capturedAt": "2026-09-06T23:53:32.7358715+03:00",
+  "repository": "C:/Users/maksd/IntelliJIDEA/rutcampustrack",
+  "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "branch": "main",
+  "status": {
+    "porcelainEntryCount": 1604,
+    "dirtyTrackedEntryCount": 48,
+    "untrackedEntryCount": 1556,
+    "untrackedDocSourceCandidateCount": 1224,
+    "porcelainSha256": "1c25e3a6346947da0a6a4e42352d4dd80fff0831ddbfb2ab80e311211b0304a7",
+    "untrackedDocSourcePathListSha256": "a6e3a496d6c6db4d1c139a5b8ba16c78abac1ce3b88c760449b270304be47cc4",
+    "warnings": [
+      "git global ignore file inaccessible in sandbox; status retained.",
+      "services/notification-bot/.pytest_cache inaccessible; cache excluded."
+    ]
+  },
+  "hashPolicy": {
+    "algorithm": "SHA-256",
+    "trackedDirty": "hashed per file",
+    "untrackedDocSource": "status inventory path digest only; content not read/copied",
+    "previousRestoredManifest": "76 entries retained by reference in apply-result.json",
+    "excluded": [
+      ".git/**",
+      ".codex/**",
+      ".agent/**",
+      "node_modules/**",
+      "build/**",
+      "cache/**",
+      ".cache/**",
+      "dist/**",
+      "target/**",
+      "coverage/**",
+      ".pytest_cache/**",
+      "worktrees/**",
+      "*.env*",
+      "*secret*",
+      "*credentials*",
+      "*private*",
+      "archives/bundles and key material"
+    ],
+    "privateEnvRead": false,
+    "contentCopied": false
+  },
+  "dirtyTracked": [
+    {
+      "path": ".agent/vertical-js-student-01/baseline.json",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 2510,
+      "sha256": "b5b789f60b7ac4f3b001b1d69703ad6e28292c8c06c6a7eed859635baa820cdf"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/5a3b118f77f1aab8e280ae8de36b8c711f649dc4f5eb504561e08bcbf29b42b2.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 308,
+      "sha256": "5a3b118f77f1aab8e280ae8de36b8c711f649dc4f5eb504561e08bcbf29b42b2"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/5cb7c9c00bf1ced773d094dcd4cc78bc79abc10c6dce08e1c44b3971310ed40f.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 428,
+      "sha256": "5cb7c9c00bf1ced773d094dcd4cc78bc79abc10c6dce08e1c44b3971310ed40f"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/5fe054606397e33574ad8faff8cb3ec1f0dc1a7e4af3e97bd54877a248c4f229.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 255,
+      "sha256": "5fe054606397e33574ad8faff8cb3ec1f0dc1a7e4af3e97bd54877a248c4f229"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/6d989522355cff05e1e36a4bef18168cbb6cccb1534724e6457c07a9704ed00f.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 494,
+      "sha256": "6d989522355cff05e1e36a4bef18168cbb6cccb1534724e6457c07a9704ed00f"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/72887ca171fd0e68eaa2cd3c636f0e6ff8b990d02e023277891bd92568e6e7c4.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 326,
+      "sha256": "72887ca171fd0e68eaa2cd3c636f0e6ff8b990d02e023277891bd92568e6e7c4"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/897e2c20c9f290adbe37668011fe6f38b3bc94c101324cc084c57bd429a91bff.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 384,
+      "sha256": "897e2c20c9f290adbe37668011fe6f38b3bc94c101324cc084c57bd429a91bff"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/978d0d109b523854ee07b8ad87a1eedb338b992454d4038323799b2f6dd8e485.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 281,
+      "sha256": "978d0d109b523854ee07b8ad87a1eedb338b992454d4038323799b2f6dd8e485"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/ed4461d521924a71eb3cc6953188a4ca86bcdc767f4025e6adca18652c148063.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 384,
+      "sha256": "ed4461d521924a71eb3cc6953188a4ca86bcdc767f4025e6adca18652c148063"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/context/README.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 288,
+      "sha256": "69e8d454ebc853ecdf223e9250fa89286a5082bca7639b20f5113b4d6195aa84"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/560c88d0f74c2fabd63ebecc0e14ae03322744e7deb65ab346a025902aa2a5fa.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 482,
+      "sha256": "560c88d0f74c2fabd63ebecc0e14ae03322744e7deb65ab346a025902aa2a5fa"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/decisions.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 1195,
+      "sha256": "5a42db39698f5217f795b39bb5edabfab83a4cd9bfd21d6b0676686163ec6048"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/screenshots/README.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 300,
+      "sha256": "d18a8881110e4741cc698828d580538ae1a25d6d4f310d556bc3219594aaa35b"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/source-links.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 2792,
+      "sha256": "0c7f3fa2a4f38cb599a14e763b166ec3ea0782c7e366f9183291629c12bd89a9"
+    },
+    {
+      "path": "docs/design/tokens-v2.json",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 38962,
+      "sha256": "53c5f074e398cc045538df0f3a119e58ab0173b8923f93d70a8546c04ca6a779"
+    },
+    {
+      "path": "docs/implementation/backlog.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 1608,
+      "sha256": "65164956e4506c2df68bf072f47a372e1203385ce33889344cd094a023e39269"
+    },
+    {
+      "path": "docs/implementation/parallel-development.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 27885,
+      "sha256": "9752c819f99db5cc337ca4e0008d816ad2e7dc2013f8917c02e30bdcdb3d1570"
+    },
+    {
+      "path": "docs/implementation/readiness.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 3429,
+      "sha256": "1b9b3a8b01ce2b1c8a9ee1662b35dd83086155936937d075c89b5647ea2e72ba"
+    },
+    {
+      "path": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 198036,
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981"
+    },
+    {
+      "path": "frontends/AGENTS.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 2771,
+      "sha256": "4ff6effd59e9eb3afc3245b4f0c28cdd6b4d53178870d01c8edb1eb1201a3b50"
+    },
+    {
+      "path": "services/AGENTS.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 1890,
+      "sha256": "dadad5fed3f707c52a3c5824198b75a564f3f2d5918d4da172bdd6b9db50d476"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/gaps.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 2427,
+      "sha256": "7bd1867bed305166d27ac8ef41d193abd1cfd68bad91ccc5933947a3463692d2"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/46c2a4c1221ee48d754fab1b1d5d32769cc04327bc6f41657a38f602217c159e.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 320,
+      "sha256": "46c2a4c1221ee48d754fab1b1d5d32769cc04327bc6f41657a38f602217c159e"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/40e6aa0e1f0fdd340c51284f51e047b075c07c664cf7e8a620b3995bd1e53239.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 409,
+      "sha256": "40e6aa0e1f0fdd340c51284f51e047b075c07c664cf7e8a620b3995bd1e53239"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/3fefe2b0549c487653f0192bc99ddfaa1c2bce820dccd8390fff232ae9d256de.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 324,
+      "sha256": "3fefe2b0549c487653f0192bc99ddfaa1c2bce820dccd8390fff232ae9d256de"
+    },
+    {
+      "path": ".agent/vertical-js-student-01/be-packet-r1.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 2328,
+      "sha256": "af972cbb1622b9441e1a481181bd3ed6921f4f9368d0448d120c15529fdd421e"
+    },
+    {
+      "path": ".agent/vertical-js-student-01/be-progress.json",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 1683,
+      "sha256": "143dc698ab6a28c4a82c63a8fbfc121c2975361241c38d85ba564d7610886183"
+    },
+    {
+      "path": ".agent/vertical-js-student-01/checks.json",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 6619,
+      "sha256": "d311418d3a39d32efe805877a4988d8d7334811b331ca09f4dd48b62b4a8b62a"
+    },
+    {
+      "path": ".agent/vertical-js-student-01/contract-r1.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 11004,
+      "sha256": "7785d3a07dc5ea37d48db6ccad357495c8104c1850b735fe18f39f9d861df59f"
+    },
+    {
+      "path": ".agent/vertical-js-student-01/decisions.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 3955,
+      "sha256": "7e87afd92b51b92527b349860aa13588135b19b2c55a7a2cb38ef4b0421e23f9"
+    },
+    {
+      "path": ".agent/vertical-js-student-01/fe-packet-r1.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 1774,
+      "sha256": "52033b733d612a9dc47ef37b1ec96abdeb51fd678aebfa66236289f519fd4227"
+    },
+    {
+      "path": ".agent/vertical-js-student-01/freeze-plan.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 1832,
+      "sha256": "b7cdcf9dbb35884666ef6cd2b94ab91fdfed4e259172078ce8f7e9a21a5d4133"
+    },
+    {
+      "path": ".agent/vertical-js-student-01/summary.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 1643,
+      "sha256": "a66ee0ad7f802414ecdf1e22326b437fbadb7ec9d5b5bec9e2ad1906efb5ce24"
+    },
+    {
+      "path": ".agent/vertical-js-student-01/task-state.json",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 1637,
+      "sha256": "899c7e6d860145f5496ec62a8b4e8c2630e759e65756a460df53e50aff5ef961"
+    },
+    {
+      "path": "AGENTS.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 5053,
+      "sha256": "df68ad6ee6a15eaa3dce3e7d624c35dad837acc7e1d9dc7afc23db51f23577e0"
+    },
+    {
+      "path": "docs/INDEX.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 9428,
+      "sha256": "74dc54af438a6160d90c9cf5b94f91a501658cddb5b07e03bc9ceb30ff4074b9"
+    },
+    {
+      "path": "docs/agent-workflow.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 7943,
+      "sha256": "315fbbfcbb3f141bed520eee40dd8caaaf72c46710140e6be694dd2d85037c2a"
+    },
+    {
+      "path": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 61912,
+      "sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8"
+    },
+    {
+      "path": "docs/design/COMPONENT_REGISTRY.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 335979,
+      "sha256": "9bd46cf132d72ad0c8ee8ea40ead38f3fa7eda3f44c2f094c6567acaf1b0aede"
+    },
+    {
+      "path": "docs/design/brandbook-v2.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 84636,
+      "sha256": "38b1046c0537fde3f4673932180af09799faf8ce4904e4bea8753fe6a03ad170"
+    },
+    {
+      "path": "docs/design/figma-spec-mobile.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 51261,
+      "sha256": "5441988a30d7d211140a06cb010731a59564a1e90fc87ad3ba4c9d8f082c51d1"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/README.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 709,
+      "sha256": "b994ef9b1a80b8b4bd418fcefe9127cf8ac28172e131ba4a6d54883481249367"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/064bf682c6d4a398fa792a41d9ef2dcb175e5b83e95bd2b5b08871fd0fc527fe.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 551,
+      "sha256": "064bf682c6d4a398fa792a41d9ef2dcb175e5b83e95bd2b5b08871fd0fc527fe"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/080f62678853575d8e666de6485debadc448110067fcee8ab4b0dc4b219d50c2.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 316,
+      "sha256": "080f62678853575d8e666de6485debadc448110067fcee8ab4b0dc4b219d50c2"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/3196548642ea3ee3c910cf379d1240564628568e56a01185485edb85233b5ad5.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 409,
+      "sha256": "3196548642ea3ee3c910cf379d1240564628568e56a01185485edb85233b5ad5"
+    },
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/assets/sha256/3f8cad39fb38b3afaf33e6cb2869f69ebd54d51edf9735a27203f6c32d179241.svg",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 515,
+      "sha256": "3f8cad39fb38b3afaf33e6cb2869f69ebd54d51edf9735a27203f6c32d179241"
+    },
+    {
+      "path": "skills-lock.json",
+      "status": " D",
+      "state": "deleted-or-unavailable",
+      "sizeBytes": null,
+      "sha256": null
+    },
+    {
+      "path": "tests/AGENTS.md",
+      "status": " M",
+      "state": "present",
+      "sizeBytes": 1804,
+      "sha256": "58c78156ebabc076dc482a6f1ac90d6e813598920abd2cc33b974b051346d867"
+    }
+  ],
+  "untrackedDocSourceInventory": {
+    "candidateCount": 1224,
+    "pathListSha256": "a6e3a496d6c6db4d1c139a5b8ba16c78abac1ce3b88c760449b270304be47cc4",
+    "first": [
+      "DATABASES_OVERVIEW.md",
+      "docs/architecture/reference-rutcampustrack-design/api-digest.md",
+      "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "docs/architecture/reference-rutcampustrack-design/transport-decision.md",
+      "docs/architecture/reference-rutcampustrack-design/TRANSPORT.md",
+      "docs/archive/agent-bootstrap/20260905-230734-848/installed-files.json",
+      "docs/archive/agent-bootstrap/20260905-230734-848/legacy-skills/code-review/SKILL.md.inactive",
+      "docs/archive/agent-bootstrap/20260905-230734-848/legacy-skills/design-system/SKILL.md.inactive",
+      "docs/archive/agent-bootstrap/20260905-230734-848/legacy-skills/find-bugs/SKILL.md.inactive",
+      "docs/archive/agent-bootstrap/20260905-230734-848/legacy-skills/frontend-design/LICENSE.txt",
+      "docs/archive/agent-bootstrap/20260905-230734-848/legacy-skills/frontend-design/SKILL.md.inactive",
+      "docs/archive/agent-bootstrap/20260905-230734-848/legacy-skills/git-workflow/SKILL.md.inactive"
+    ],
+    "last": [
+      "docs/wireframes/student/103-student-stats.md",
+      "docs/wireframes/student/104-student-homework.md",
+      "docs/wireframes/student/105-student-map.md",
+      "docs/wireframes/student/107-student-tickets.md",
+      "docs/wireframes/student/108-student-settings.md",
+      "docs/wireframes/table-filters.md",
+      "docs/wireframes/teacher/121-teacher-home.md",
+      "docs/wireframes/teacher/122-teacher-attendance.md",
+      "docs/wireframes/teacher/123-teacher-stats.md",
+      "frontends/AGENTS.md.20260905-optimization.inactive",
+      "services/AGENTS.md.20260905-optimization.inactive",
+      "tests/AGENTS.md.20260905-optimization.inactive"
+    ]
+  },
+  "previousMergeManifest": {
+    "source": ".agent/js-student-01-main-merge/apply-result.json",
+    "restoredCollisionCount": 76,
+    "hashCoverage": "Use source manifest owner_sha256/restored_sha256 for the 76 restored collisions; no private env or archive content copied."
+  }
+}
+

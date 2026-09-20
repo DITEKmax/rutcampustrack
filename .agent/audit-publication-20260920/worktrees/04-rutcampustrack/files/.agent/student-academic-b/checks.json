@@ -1,0 +1,133 @@
+{
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "recordedAt": "2026-09-07T23:03:59.8582561Z",
+  "environment": {
+    "os": "Windows 11 10.0 amd64",
+    "java": "openjdk 21.0.10 (Microsoft-13106404)",
+    "gradle": "8.12",
+    "scope": "pure attendance report studentprojection calculators",
+    "lease": "focused Gradle rerun used require_escalated only after sandbox lock failure"
+  },
+  "checks": [
+    {
+      "id": "baseline",
+      "criterion": "preserve foreign work and start from the frozen revision",
+      "command": "git rev-parse HEAD; git status --short --untracked-files=all",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": "HEAD remains 8002b9ea4356b10779c5bb9a6d99746d32d78ae2. Numeric code/evidence and the separately owned union packet are untracked; the nested student-academic-ui worktree and its relocated files were preserved. No foreign product files were edited."
+    },
+    {
+      "id": "focused-gradle-tests",
+      "criterion": "metric/rank observable behavior and report-domain isolation",
+      "command": ".\\\\gradlew.bat :services:attendance-service:attendance-app:test --tests '*AttendanceMetricCalculatorTest' --tests '*OwnRankCalculatorTest' --tests '*ReportDomainIsolationTest' --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": {
+        "build": "BUILD SUCCESSFUL in 46s; 37 actionable tasks",
+        "totalTests": 21,
+        "tests": {
+          "ru.rutcampustrack.attendance.report.studentprojection.AttendanceMetricCalculatorTest": "10 tests, 0 skipped, 0 failures, 0 errors",
+          "ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest": "8 tests, 0 skipped, 0 failures, 0 errors",
+          "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest": "1 test, 0 skipped, 0 failures, 0 errors",
+          "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest": "1 test, 0 skipped, 0 failures, 0 errors",
+          "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest": "1 test, 0 skipped, 0 failures, 0 errors"
+        },
+        "reports": "services/attendance-service/attendance-app/build/test-results/test/",
+        "stableSnapshots": [
+          ".agent/student-academic-b/evidence/AttendanceMetricCalculatorTest.xml",
+          ".agent/student-academic-b/evidence/OwnRankCalculatorTest.xml",
+          ".agent/student-academic-b/evidence/ReportDomainIsolationTest.xml",
+          ".agent/student-academic-b/evidence/GrpcClientDeadlineTest.xml",
+          ".agent/student-academic-b/evidence/ScheduledMustHaveSchedulerLockTest.xml"
+        ],
+        "log": ".agent/student-academic-b/evidence/gradle-leased-rerun.log",
+        "runMetadata": ".agent/student-academic-b/evidence/gradle-leased-rerun.json"
+      }
+    },
+    {
+      "id": "tracked-diff-check",
+      "criterion": "no whitespace errors in tracked diff",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": "No tracked diff whitespace errors; the changed Java sources and tests were also compiled by the focused run."
+    },
+    {
+      "id": "scope-review",
+      "criterion": "only assigned numeric production/test files and owned evidence are changed",
+      "command": "git status --short --untracked-files=all",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": "Numeric product changes are limited to the three studentprojection production files and two matching tests. Numeric evidence is under .agent/student-academic-b/.agent/worktrees/student-academic-ui/ remains foreign and preserved; union/** is a separate packet excluded from the numeric manifest."
+    },
+    {
+      "id": "evidence-json",
+      "criterion": "evidence file is syntactically valid and keeps the frozen revision",
+      "command": "$json = Get-Content -Raw .agent/student-academic-b/checks.json | ConvertFrom-Json; if ($json.revision -ne \"8002b9ea4356b10779c5bb9a6d99746d32d78ae2\") { throw \"revision mismatch\" }; if ($json.checks.Count -ne 7) { throw \"check count mismatch\" }",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": "PowerShell ConvertFrom-Json accepted checks.json and found the frozen revision plus seven recorded checks."
+    },
+    {
+      "id": "manifest",
+      "criterion": "owned numeric evidence and source files have stable SHA-256 manifest values",
+      "command": "$manifest = Get-Content .agent/student-academic-b/manifest.sha256; if ($manifest.Count -ne 18) { throw \"manifest count mismatch\" }; foreach ($line in $manifest) { if ([string]::IsNullOrWhiteSpace($line)) { continue }; $parts = $line -split \"  \", 2; $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $parts[1]).Hash.ToLowerInvariant(); if ($actual -ne $parts[0]) { throw \"hash mismatch: $($parts[1])\" } }",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": "All 18 listed numeric files match manifest.sha256. The manifest excludes itself, union/** packet files, and the separately recorded UI relocation evidence."
+    },
+    {
+      "id": "domain-boundary",
+      "criterion": "pure calculators stay outside checkin, RequestContext, Spring, persistence, and gRPC dependencies",
+      "command": "$targets = @(\"services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculator.java\",\"services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/OwnRankCalculator.java\",\"services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentProjectionException.java\"); $pattern = 'attendance\\.checkin|RequestContext|org\\.springframework|javax\\.persistence|jakarta\\.persistence|grpc'; $hits = @(Select-String -Path $targets -Pattern $pattern); $samples = @(\"import ru.rutcampustrack.attendance.checkin.AttendanceDocument;\",\"import org.springframework.stereotype.Service;\",\"import jakarta.persistence.Entity;\",\"new RequestContext();\",\"grpc.ClientCall\"); $probeMatches = @($samples | Where-Object { [regex]::IsMatch($_, $pattern) }); if ($hits.Count -ne 0 -or $probeMatches.Count -ne $samples.Count) { exit 1 }",
+      "exitCode": 0,
+      "result": "PASS",
+      "evidence": {
+        "pattern": "attendance\\.checkin|RequestContext|org\\.springframework|javax\\.persistence|jakarta\\.persistence|grpc",
+        "productionHits": 0,
+        "positiveProbeMatches": 5,
+        "positiveProbeSamples": [
+          "import ru.rutcampustrack.attendance.checkin.AttendanceDocument;",
+          "import org.springframework.stereotype.Service;",
+          "import jakarta.persistence.Entity;",
+          "new RequestContext();",
+          "grpc.ClientCall"
+        ],
+        "exitCode": 0,
+        "replay": "Decoded PowerShell pattern uses one backslash before each literal dot; all five forbidden-import probes matched and all three production files had zero hits."
+      }
+    }
+  ],
+  "runtime": {
+    "status": "N/A",
+    "reason": "The calculators are pure and do not change service, persistence, network, servlet, or external application behavior. Focused tests are the applicable behavioral runtime evidence."
+  },
+  "warnings": [
+    {
+      "message": "Gradle emitted existing deprecated-API and unchecked-operation notes in unrelated attendance tests/controllers.",
+      "decision": "No code change: no request-linked reproduction or defect in this numeric scope."
+    },
+    {
+      "message": "First lease attempt failed before Gradle startup because sandbox denied fileHashes.lock.",
+      "decision": "Recorded as infrastructure evidence; the exact command was rerun with approved escalation and passed exitCode 0."
+    }
+  ],
+  "lease": {
+    "kind": "lightweight Gradle",
+    "commandCompleted": true,
+    "exitCode": 0,
+    "additionalGradleRuns": false,
+    "released": true,
+    "log": ".agent/student-academic-b/evidence/gradle-leased-rerun.log",
+    "metadata": ".agent/student-academic-b/evidence/gradle-leased-rerun.json"
+  },
+  "diff": {
+    "status": "STABLE",
+    "baseline": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "numericCodeFiles": 5,
+    "numericManifestEntries": 18,
+    "unionPacket": "separate .agent/student-academic-b/union/** evidence, excluded from numeric manifest",
+    "foreignChanges": ".agent/worktrees/student-academic-ui/ was preserved and not included in numeric manifest"
+  }
+}

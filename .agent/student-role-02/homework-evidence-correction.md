@@ -1,0 +1,3 @@
+# Evidence correction note — Homework recheck 3
+
+07.09.2026. LOW observation from immutable homework-contract-review-3.md concerns only the local writer evidence source-manifest.json, not a source file. Its HomeworkJsonConfiguration.java entry has a transcribed SHA segment 59CF8 instead of actual 59A78. Root canonical pause-2026-09-07-1232/homework-api/manifest.json was independently checked against all 31 actual files and is authoritative for integration. Original reviewer report and writer evidence remain preserved; future integration uses the canonical manifest. No product correction is needed for this observation.

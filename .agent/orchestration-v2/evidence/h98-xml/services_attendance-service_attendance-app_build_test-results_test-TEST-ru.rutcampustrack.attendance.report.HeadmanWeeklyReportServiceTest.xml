@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2026-09-20T14:48:20" hostname="DITEK-PK" time="0.479">
+  <properties/>
+  <testcase name="buildReportModels_moreThanFiveLessonsInDayThrows422()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.256"/>
+  <testcase name="buildReportModels_moreThanThirtyFiveStudentsThrows422()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.013"/>
+  <testcase name="activeSemesterWeeks_startMidWeekUsesContainingMondayAndIncludesEndWeek()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.038"/>
+  <testcase name="buildReportModels_compactsLessonSlotsNamesAndSubjectsForTemplate()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.039"/>
+  <testcase name="exportSingleWeek_pngUsesRendererService()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.029"/>
+  <testcase name="fileName_addsGapSuffixForNonConsecutiveWeeks()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.005"/>
+  <testcase name="exportSelectedWeeks_regularStudentDeniedBeforeGrpcCall()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.008"/>
+  <testcase name="buildReportModels_collectsScheduleAttendanceAndSortsStudents()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.013"/>
+  <testcase name="exportMultiWeekDocxRendersOneDocument()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.008"/>
+  <testcase name="fileName_multiWeekPngUsesZipExtension()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.004"/>
+  <testcase name="exportMultiWeekPdfRendersOnePdfDocument()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.008"/>
+  <testcase name="reportStatusSymbolsMatchM18TemplateRules()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.004"/>
+  <testcase name="exportSingleWeek_unknownFormatFailsAsBadRequest()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.004"/>
+  <testcase name="buildReportModels_weekOutsideActiveSemesterThrows422()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.004"/>
+  <testcase name="exportSingleWeek_docxReturnsFilenameContentTypeAndBytes()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.008"/>
+  <testcase name="activeSemesterWeeks_regularStudentDeniedBeforeGrpcCall()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.004"/>
+  <testcase name="exportMultiWeekPngReturnsZipArchive()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.01"/>
+  <testcase name="exportSingleWeek_pdfUsesRendererService()" classname="ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

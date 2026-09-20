@@ -1,0 +1,88 @@
+const imgIconPrevious = "https://www.figma.com/api/mcp/asset/da81cb07-99c9-4875-9862-e26c3399f3c5.svg";
+
+function IconPrevious({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[16px]"} data-node-id="4597:3579" data-name="icon/previous">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconPrevious} />
+    </div>
+  );
+}
+
+export default function Component19() {
+  return (
+    <div className="bg-[var(--color-surface-base,#0b0b0c)] overflow-clip relative rounded-[24px] size-full" data-node-id="4611:849055" data-name="19 · Профиль / сменить роль">
+      <div className="absolute content-stretch flex flex-col gap-[12px] h-[812px] items-start left-[16px] overflow-clip py-[20px] top-0 w-[358px]" data-node-id="4805:3967" data-name="content">
+        <div className="content-stretch flex gap-[10px] h-[44px] items-center overflow-clip relative shrink-0 w-full" data-node-id="4805:3968" data-name="header">
+          <div className="bg-[var(--color-surface-float,#292531)] overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4805:3969" data-name="back">
+            <IconPrevious className="absolute left-[14px] size-[16px] top-[14px]" />
+          </div>
+          <div className="[word-break:break-word] flex flex-col font-['Onest:SemiBold'] h-[32px] justify-center leading-[0] not-italic relative shrink-0 text-[22px] text-[color:var(--color-text-primary,#edeaf3)] w-[304px]" data-node-id="4805:3971">
+            <p className="leading-[normal]">Сменить роль</p>
+          </div>
+        </div>
+        <div className="content-stretch flex flex-col gap-[12px] h-[264px] items-start overflow-clip relative shrink-0 w-full" data-node-id="4805:3973" data-name="role-profiles">
+          <div className="bg-[var(--color-accent-now,#b79cfa)] content-stretch flex gap-[12px] h-[80px] items-center overflow-clip px-[16px] relative rounded-[24px] shrink-0 w-full" data-node-id="4805:3974" data-name="role-profile / selected">
+            <div className="bg-[var(--color-surface-base,#0b0b0c)] content-stretch flex h-[48px] items-center justify-center max-w-[48px] min-w-[48px] overflow-clip relative rounded-[24px] shrink-0" data-node-id="4805:3975" data-name="avatar">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--color-text-primary,#edeaf3)] w-[12px]" data-node-id="4805:3976">
+                С
+              </p>
+            </div>
+            <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[2px] items-start leading-[normal] min-w-px not-italic overflow-clip relative text-[color:var(--color-accent-on-now,#0b0b0c)]" data-node-id="4805:3977" data-name="identity">
+              <p className="font-['Onest:SemiBold'] relative shrink-0 text-[16px] w-full" data-node-id="4805:3978">
+                Студент
+              </p>
+              <p className="font-['Onest:Regular'] opacity-72 relative shrink-0 text-[13px] w-full" data-node-id="4805:3979">
+                Иван Кузнецов
+              </p>
+            </div>
+          </div>
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex gap-[12px] h-[80px] items-center overflow-clip px-[16px] relative rounded-[24px] shrink-0 w-full" data-node-id="4805:3980" data-name="role-profile">
+            <div className="bg-[var(--color-surface-float,#292531)] content-stretch flex h-[48px] items-center justify-center max-w-[48px] min-w-[48px] overflow-clip relative rounded-[24px] shrink-0" data-node-id="4805:3981" data-name="avatar">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--color-text-primary,#edeaf3)] w-[12px]" data-node-id="4805:3982">
+                С
+              </p>
+            </div>
+            <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[2px] items-start leading-[normal] min-w-px not-italic overflow-clip relative" data-node-id="4805:3983" data-name="identity">
+              <p className="font-['Onest:SemiBold'] relative shrink-0 text-[16px] text-[color:var(--color-text-primary,#edeaf3)] w-full" data-node-id="4805:3984">
+                Староста
+              </p>
+              <p className="font-['Onest:Regular'] relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] w-full" data-node-id="4805:3985">
+                Группа ИКБО-10-23
+              </p>
+            </div>
+          </div>
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex gap-[12px] h-[80px] items-center overflow-clip px-[16px] relative rounded-[24px] shrink-0 w-full" data-node-id="4805:3986" data-name="role-profile">
+            <div className="bg-[var(--color-surface-float,#292531)] content-stretch flex h-[48px] items-center justify-center max-w-[48px] min-w-[48px] overflow-clip relative rounded-[24px] shrink-0" data-node-id="4805:3987" data-name="avatar">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--color-text-primary,#edeaf3)] w-[12px]" data-node-id="4805:3988">
+                П
+              </p>
+            </div>
+            <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[2px] items-start leading-[normal] min-w-px not-italic overflow-clip relative" data-node-id="4805:3989" data-name="identity">
+              <p className="font-['Onest:SemiBold'] relative shrink-0 text-[16px] text-[color:var(--color-text-primary,#edeaf3)] w-full" data-node-id="4805:3990">
+                Преподаватель
+              </p>
+              <p className="font-['Onest:Regular'] relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] w-full" data-node-id="4805:3991">
+                Кафедра ИУ-5
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## icon/previous
+**Node ID:** 4597:3579
+
+Временная локальная векторная заглушка смысла «предыдущий». Один stroke-вектор и метрика совпадают с icon/chevron-down; заменить финальной иконкой через instance swap.
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

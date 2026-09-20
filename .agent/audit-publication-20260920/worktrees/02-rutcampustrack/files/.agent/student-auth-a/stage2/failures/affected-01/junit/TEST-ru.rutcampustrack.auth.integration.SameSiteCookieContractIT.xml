@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Security contract — SameSite cookie (M08 G8)" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-11T09:54:40" hostname="DITEK-PK" time="0.567">
+  <properties/>
+  <testcase name="/auth/refresh игнорирует произвольный X-CSRF-TOKEN header (не ломает happy-path)" classname="ru.rutcampustrack.auth.integration.SameSiteCookieContractIT" time="0.156"/>
+  <testcase name="/auth/refresh без cookie → 401 (cross-origin attack blocked by cookie absence)" classname="ru.rutcampustrack.auth.integration.SameSiteCookieContractIT" time="0.013"/>
+  <testcase name="/auth/refresh с cookie БЕЗ X-CSRF-TOKEN header → 200 (regression guard)" classname="ru.rutcampustrack.auth.integration.SameSiteCookieContractIT" time="0.135"/>
+  <testcase name="/auth/logout clears cookie with same security attributes and Max-Age=0" classname="ru.rutcampustrack.auth.integration.SameSiteCookieContractIT" time="0.142"/>
+  <testcase name="login issues cookie with HttpOnly + Secure + SameSite=Strict + Path=/api/auth" classname="ru.rutcampustrack.auth.integration.SameSiteCookieContractIT" time="0.116"/>
+  <system-out><![CDATA[{"ts":"2026-09-11T12:54:40.544+03:00","v":"1","level":"INFO","logger":"org.springframework.test.context.support.AnnotationConfigContextLoaderUtils","thread":"Test worker","msg":"Could not detect default configuration classes for test class [ru.rutcampustrack.auth.integration.SameSiteCookieContractIT]: SameSiteCookieContractIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.","service":"auth-service"}
+{"ts":"2026-09-11T12:54:40.552+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.test.context.SpringBootTestContextBootstrapper","thread":"Test worker","msg":"Found @SpringBootConfiguration ru.rutcampustrack.auth.AuthApplication for test class ru.rutcampustrack.auth.integration.SameSiteCookieContractIT","service":"auth-service"}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,33 @@
+{
+  "commit": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+  "parent": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837",
+  "sourceFreezeHash": "738036ECFE075EFD3BF356188EC2045084D59D9ABA3F324F973E118A527DD4C0",
+  "pathCount": 16,
+  "pathMismatches": 0,
+  "rawHashMismatches": 0,
+  "trackedStatus": [],
+  "untracked": [
+    ".agent/l5b-service-identity/IMPLEMENTATION.md",
+    ".agent/l5b-service-identity/checks.json",
+    ".agent/l5b-service-identity/source-hashes.json",
+    ".agent/l5b-service-identity/summary.md"
+  ],
+  "paths": [
+    "docs/security/L5B-SERVICE-IDENTITY.md",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceAuthConfiguration.java",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceAuthConfiguration.java",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+    "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+    "services/shared/shared-security/build.gradle.kts",
+    "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/DirectedServiceCredential.java",
+    "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java",
+    "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServicePrincipal.java",
+    "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentials.java",
+    "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenClientInterceptor.java",
+    "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptorTest.java",
+    "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityTlsTransportTest.java",
+    "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentialsTest.java"
+  ]
+}

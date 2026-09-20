@@ -1,0 +1,105 @@
+{
+  "date": "2026-09-20",
+  "status": "STATIC_SOURCE_RESOLUTION_ONLY",
+  "owner": "Access",
+  "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "sources": [
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/GrpcAuthInterceptor.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "349D4EA7EB8AE82E729DE6382619089274222B9F64000D554F21EF7938DC70B5",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/GrpcSecretClientInterceptor.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "489CDF1A8E5C3B93BC64F3453BFE94329EE3A58CA9893BBF19E5D89875E416D8",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcAuthInterceptor.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "FE8FEEA4DFAC4658EB0641BB7DF7406F1590B23DC48CFA96680948C43CE29002",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcSecretClientInterceptor.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "0685B05800ECD05F825F726C17E5AF377ABB7D17A35F60432F53B2C30E3595D3",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AcademicGrpcClient.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "B3DF9D30678B6DA5ACDC4ABB2BA46A812504C6F00CB9B7315D7B853DB2944E46",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/ScheduleGrpcClient.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "69708FACEED7670E956BD5ACF2303DE43A7E2D482EE6D6622F6343F4DD1E6CAC",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "2717B2C9FDF57F5B52D59E8489F4E4B7F93D4C6A71FE9F0AA5B23A4A88C33DAB",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "3FBA4D27AFE501F6C78F70E21A3C85888E301B0C8A7851166FC75FAAFBEF6F3D",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionLifecycleService.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "020AFE89A5DF85EE5E8E83ABC01D239EE506D23F703F934D9612D1718FD90550",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "20F625C39958D648E37BA52245925C5D0A1E494EA6377EB59215B2A4EB0006C7",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/proto/academic.proto",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "5F85A6691F8C27769059B0A68D5173604B81756D20BDC19EF6BE3584BBC7A2BC",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/proto/schedule.proto",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "9A244EAE37560B2A9B547F12A225B53730E428A277E7CFBE24130F7023D1DA47",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sha256": "D02202F29B05D0039C7F222C9F016F74D3919A3C1BE93CCC1E40528CB7A76DF6",
+      "kind": "source"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/lessons-l5b-design/PROPOSAL.md",
+      "revision": null,
+      "sha256": "836D567E86F868102819DACD283ECFFA0AC068B308C5A5643BC44A3C7109E0A0",
+      "kind": "accepted-contract"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/ACCESS-A2.md",
+      "revision": null,
+      "sha256": "37203D246F2FFB1D805534BF8C9E492556E74791CDD719D8BCE89F1C77F2D052",
+      "kind": "accepted-contract"
+    }
+  ],
+  "limitations": [
+    "No runtime or tests; no secrets/config values read.",
+    "Bounded inspected boundaries only; no repository-wide absence claim.",
+    "Academic f59 is separate; current Academic authority worktree is not assumed equal to that historical revision.",
+    "Scout cited v2 design; lead supersedes that citation with accepted v3 PROPOSAL hash836D567E86F868102819DACD283ECFFA0AC068B308C5A5643BC44A3C7109E0A0."
+  ],
+  "runtime": "N/A"
+}

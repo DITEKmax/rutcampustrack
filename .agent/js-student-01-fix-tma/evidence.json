@@ -1,0 +1,31 @@
+{
+  "schema": "rct.evidence.v1",
+  "task": "JS-STUDENT-01-FIX-r2",
+  "baseRevision": "cedce8c60aee04261ca87a18b898b148719bee89",
+  "scope": [
+    "frontends/tma-vue/index.html",
+    "frontends/tma-vue/package.json",
+    "frontends/tma-vue/src/App.vue",
+    "frontends/tma-vue/src/telegram.ts",
+    "frontends/tma-vue/src/tma-auth.ts",
+    "frontends/tma-vue/src/tma-auth.test.ts",
+    "frontends/tma-vue/tests/tma-entry.test.mjs"
+  ],
+  "findings": {
+    "F1": {
+      "before": "index.html had no Telegram WebApp SDK script; TelegramHost could not rely on window.Telegram.WebApp in a real Mini App entry.",
+      "after": "The official telegram.org SDK is in head before the application module.",
+      "evidence": "Source and generated dist entry tests pass; production-like browser DOM lists the official script before the app module."
+    },
+    "F2": {
+      "before": "App.vue sent raw initData with text/plain in production and used a separate fixture body path.",
+      "after": "authenticateTma serializes exactly { initData }, sets application/json and Accept headers, includes credentials, and is called by both production fetch and the fixture transport.",
+      "evidence": "6 Vitest tests pass, including JSON parse/header assertions and a fixture transport wrapper that captures the same request init."
+    },
+    "negative": {
+      "evidence": "Unit test and production-like browser show missing-host error; unit test and fixtureApi=unauthorized browser show 401 error."
+    }
+  },
+  "runtimeStatus": "PASS for local synthetic/production-like shell checks; real Telegram/auth-service gate pending root",
+  "secretHandling": "No token, initData from a real user, or credential was read or recorded. Backend variable name TMA_BOT_TOKEN is documented only."
+}

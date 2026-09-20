@@ -1,0 +1,26 @@
+[
+  {
+    "className": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.subject.SubjectServiceIT",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+    "freshXml": true
+  }
+]

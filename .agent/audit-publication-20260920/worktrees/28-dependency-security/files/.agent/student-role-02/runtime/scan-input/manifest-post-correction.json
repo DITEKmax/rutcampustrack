@@ -1,0 +1,38 @@
+{
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "generatedAt": "2026-09-07T17:09:14.9445863Z",
+  "artifacts": [
+    {
+      "source": "services\\academic-service\\academic-app\\build\\libs\\academic-app-0.1.0.jar",
+      "staged": "scan-input\\academic-app-0.1.0.jar"
+    },
+    {
+      "source": "services\\api-gateway\\build\\libs\\api-gateway-0.1.0.jar",
+      "staged": "scan-input\\api-gateway-0.1.0.jar"
+    },
+    {
+      "source": "services\\attendance-service\\attendance-app\\build\\libs\\attendance-app-0.1.0.jar",
+      "staged": "scan-input\\attendance-app-0.1.0.jar"
+    },
+    {
+      "source": "services\\auth-service\\auth-app\\build\\libs\\auth-app-0.1.0.jar",
+      "staged": "scan-input\\auth-app-0.1.0.jar"
+    },
+    {
+      "source": "services\\document-renderer-service\\document-renderer-app\\build\\libs\\document-renderer-app-0.1.0.jar",
+      "staged": "scan-input\\document-renderer-app-0.1.0.jar"
+    },
+    {
+      "source": "services\\mobile-bff\\mobile-bff-app\\build\\libs\\mobile-bff-app-0.1.0.jar",
+      "staged": "scan-input\\mobile-bff-app-0.1.0.jar"
+    },
+    {
+      "source": "services\\notification-service\\notification-app\\build\\libs\\notification-app-0.1.0.jar",
+      "staged": "scan-input\\notification-app-0.1.0.jar"
+    },
+    {
+      "source": "services\\schedule-service\\schedule-app\\build\\libs\\schedule-app-0.1.0.jar",
+      "staged": "scan-input\\schedule-app-0.1.0.jar"
+    }
+  ]
+}

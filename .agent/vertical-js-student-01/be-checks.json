@@ -1,0 +1,152 @@
+{
+  "schema": "rct.be-checks.v1",
+  "task": "JS-STUDENT-01-r1",
+  "risk": "S3",
+  "baseline": "3df5fbe6736cb2add826392ee30a4e786e96fbe1",
+  "writer": "/root/geo_contract_owner",
+  "routing": {
+    "requestedModel": "gpt-5.6-sol",
+    "requestedEffort": "high",
+    "observedRuntimeModel": null,
+    "observedRuntimeEffort": null
+  },
+  "environment": "Windows 11; Java 21.0.10; Gradle 8.12; Node 24.14.0; npm 11.9.0; Docker Server 28.5.2",
+  "checks": [
+    {
+      "name": "attendance Mongo transaction, race and nanos replay regression",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT\" :services:attendance-service:attendance-app:bootJar --console=plain",
+      "exitCode": 0,
+      "duration": "38s",
+      "evidence": "17 tests, 0 failed/errors/skipped; real Mongo replica set. Includes 299.999/300s, window boundaries, same/different-key concurrency, geo/approve/reject/manual races, rollback, immutable replay and JVM nanoseconds to Mongo milliseconds parity."
+    },
+    {
+      "name": "late-check-in event contract",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:test --tests \"ru.rutcampustrack.attendance.latecheckin.LateCheckinEventContractTest\" --console=plain",
+      "exitCode": 0,
+      "evidence": "4 tests, 0 failed/errors/skipped; requested/decided payloads validate, including CANCELLED/GEO_CONFIRMED and optional null subject_name omission."
+    },
+    {
+      "name": "signed JWT HTTP to gRPC boundary",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:integrationTest --tests \"ru.rutcampustrack.mobilebff.runtime.StudentHttpGrpcAuthIT\" --console=plain",
+      "exitCode": 0,
+      "duration": "41s",
+      "evidence": "12 tests pass through a real HTTP server and real network gRPC server using production filters/interceptors. Invalid signature, expiry, issuer, audience, missing token, spoofed X-User headers, wrong role and group are rejected."
+    },
+    {
+      "name": "canonical OpenAPI non-update drift gate",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:integrationTest --tests \"ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT\" --rerun-tasks --console=plain",
+      "exitCode": 0,
+      "duration": "51s",
+      "evidence": "3 tests pass against the production controller; committed OpenAPI snapshot unchanged and both geo request variants conform."
+    },
+    {
+      "name": "attendance Java-first OpenAPI and derived legacy types",
+      "commands": [
+        ".\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT\" -Popenapi.snapshot.update=true --console=plain",
+        ".\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT\" --console=plain",
+        "frontends/mini-app: npm run generate:types:offline (two passes)",
+        "frontends/pwa: npm run generate:types:offline (two passes)",
+        "frontends/web-panel: npm run generate:types:offline (two passes)"
+      ],
+      "exitCodes": [0, 0, 0, 0, 0],
+      "evidence": "Update 45s and LF-stable non-update 45s pass. Semantic snapshot delta is limited to the four-status history description, CANCELLED query filter, and lowercase pending/approved/rejected/cancelled response status. All three generated attendance.types.ts changed by seven lines; second generation SHA-256 for all four generated service files in each app was unchanged."
+    },
+    {
+      "name": "derived status alias compiler checks",
+      "commands": [
+        "frontends/mini-app: tsc -b",
+        "frontends/pwa: tsc -b",
+        "frontends/web-panel: npm run build"
+      ],
+      "exitCodes": [0, 0, 0],
+      "evidence": "All three consumers compile against the generated lowercase four-status response enum; web-panel build completed in 13.857s with the same baseline warnings."
+    },
+    {
+      "name": "gateway external JWT to Mobile BFF route",
+      "command": ".\\gradlew.bat :services:api-gateway:integrationTest --tests \"ru.rutcampustrack.gateway.security.InternalJwtIssuerIT\" --console=plain",
+      "exitCode": 0,
+      "duration": "44s",
+      "evidence": "6 tests, 0 failed/errors/skipped; Mobile BFF route receives an issued internal token and spoofed identity headers are stripped."
+    },
+    {
+      "name": "notification Java CANCELLED closure",
+      "command": ".\\gradlew.bat :services:notification-service:notification-app:test --tests \"*NotificationHistoryConsumerMapTypeTest\" --tests \"*WebPushDeliveryServiceTest\" --console=plain",
+      "exitCode": 0,
+      "evidence": "History 17/17 and push 24/24 pass; geo-cancelled requests create neither false rejected history nor push."
+    },
+    {
+      "name": "notification bot full suite and coverage gate",
+      "command": "uv run --with-requirements requirements.txt --with-requirements requirements-test.txt pytest -q",
+      "cwd": "services/notification-bot",
+      "exitCode": 0,
+      "duration": "28.67s",
+      "evidence": "230 tests pass; coverage 77.88% >= 50%. Cancelled actions close as geo-confirmed and callback UI waits for the authoritative decision."
+    },
+    {
+      "name": "legacy consumer closure",
+      "commands": [
+        "frontends/mini-app: npm test -- --run src/features/headman/late-checkin/__tests__/HeadmanLateCheckinPage.test.tsx",
+        "frontends/pwa: npm test -- --run src/features/notifications/__tests__/NotificationCenter.describe.test.ts",
+        "frontends/web-panel: npm run build"
+      ],
+      "exitCodes": [0, 0, 0],
+      "evidence": "Mini-app 2/2; PWA 4/4; Angular production build 26.769s. CANCELLED is terminal/safe in all located consumers. Build warnings were pre-existing unused/CommonJS diagnostics and did not trigger unrelated edits."
+    },
+    {
+      "name": "runtime artifact build",
+      "command": ".\\gradlew.bat <auth,academic,schedule,attendance,mobile-bff,gateway bootJar tasks> --console=plain",
+      "exitCode": 0,
+      "duration": "51s",
+      "evidence": "All six Spring Boot executable jars built for the isolated runtime."
+    },
+    {
+      "name": "runtime harness validation",
+      "commands": [
+        "PowerShell parser for .agent/vertical-js-student-01/runtime/run.ps1",
+        ".\\.agent\\vertical-js-student-01\\runtime\\run.ps1 -ValidateOnly"
+      ],
+      "exitCodes": [0, 0],
+      "evidence": "Syntax and required six boot jars validated before execution."
+    },
+    {
+      "name": "full task-isolated runtime",
+      "command": ".\\.agent\\vertical-js-student-01\\runtime\\run.ps1",
+      "exitCode": 0,
+      "runId": "20260906-184531",
+      "evidenceFile": ".agent/vertical-js-student-01/runtime-evidence/20260906-184531/runtime-result.json",
+      "evidence": "Five isolated infrastructure containers and six real services were UP. Gateway login and signed session/today/schedule reads passed; ETag/304 and foreign-semester 403 passed. Rabbit outage preserved an atomic PENDING receipt/request/pair/outbox; retry was byte-identical. Broker recovery delivered exactly one late_checkin.requested and one attendance.marked to a task-only sink with matching trace IDs. Coordinate check-in persisted PRESENT/STUDENT_GEO/null actor. Four invalid JWT variants returned 401 without mutation. All owned resources were cleaned."
+    }
+  ],
+  "diagnostics": [
+    {
+      "result": "attendance OpenAPI non-update drift failed 1/1 in 51s",
+      "cause": "The Java enum and runtime supported CANCELLED while the committed attendance snapshot and generated consumers still exposed three states.",
+      "action": "Bounded Java-first correction annotated the actual lowercase response values and four-state filter, updated the source description, regenerated all derivatives, and passed LF-stable non-update plus SHA-256 no-drift checks."
+    },
+    {
+      "result": "FAIL before tests",
+      "cause": "A concurrent non-owner Gradle attempt collided with the root-owned run and could not delete output.bin.",
+      "action": "No product code changed; all subsequent Gradle/runtime execution remained single-owner."
+    },
+    {
+      "result": "runtime failures 20260906-181235, 181631, 181835",
+      "cause": "Task seed schema, boolean text, then PowerShell byte[] response decoding in the new evidence harness.",
+      "action": "Harness/seed corrections only; exact owned cleanup verified after each run."
+    },
+    {
+      "result": "runtime failure 20260906-182524",
+      "cause": "A reproduced product defect: the first ACK retained nanoseconds while Mongo replay retained milliseconds.",
+      "action": "Window validation keeps full precision; persisted mutation/receipt/ACK time truncates to milliseconds. New Mongo regression and final runtime pass."
+    },
+    {
+      "result": "runtime failure 20260906-183519",
+      "cause": "Evidence projection omitted an absent Mongo null field.",
+      "action": "Harness emits explicit null while attendance count/status/source prevents a missing document from passing."
+    }
+  ],
+  "status": "VERIFIED_PENDING_FRESH_S3_REVIEW",
+  "limitations": [
+    "Fresh Sol high review could not be scheduled because the agent concurrency limit remained occupied; S3 DONE is pending that independent review.",
+    "Real Telegram host execution is outside this backend packet and remains a separate FE/runtime gate."
+  ]
+}

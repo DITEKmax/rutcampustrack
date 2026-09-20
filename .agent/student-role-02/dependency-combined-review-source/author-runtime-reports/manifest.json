@@ -1,0 +1,50 @@
+[
+  {
+    "path": "services\\academic-service\\academic-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.academic.integration.OpenApiSnapshotIT.xml",
+    "sha256": "01FCD4C719616F503F5CFA28163403E273D55959ADA6646E3CE6970C02AF081E"
+  },
+  {
+    "path": "services\\attendance-service\\attendance-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT.xml",
+    "sha256": "4F0B130FEF1022A129481C318A4EC65F87002B05CC4574A9BABB02F860988264"
+  },
+  {
+    "path": "services\\auth-service\\auth-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.auth.integration.OpenApiSnapshotIT.xml",
+    "sha256": "9F54917F02BCD6CAE82011CA97E3730B85DA70DCF35C7BF040CDE0084D14150E"
+  },
+  {
+    "path": "services\\document-renderer-service\\document-renderer-app\\build\\reports\\jacoco\\test\\jacocoTestReport.xml",
+    "sha256": "4AC17ED11F7FED326CB8761E82D18FD7FF5C38994D49F4085BC958096FEF3F34"
+  },
+  {
+    "path": "services\\document-renderer-service\\document-renderer-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml",
+    "sha256": "49714562FAB183CB9A75541DDDBB85E90CEDD2D2D5A7AA2EF8CD87363027A690"
+  },
+  {
+    "path": "services\\document-renderer-service\\document-renderer-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterTest.xml",
+    "sha256": "0EDE9AED64ACA54BD0DADBF7C0CD31B4C91461FCE7854910CBA84B4DD24FC34F"
+  },
+  {
+    "path": "services\\document-renderer-service\\document-renderer-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest.xml",
+    "sha256": "5495FFBC7F752F68675BF6B0C463E3F4E62AF0FD65407CD4B935151DA58036D7"
+  },
+  {
+    "path": "services\\mobile-bff\\mobile-bff-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT.xml",
+    "sha256": "FCF9E9B58BB3DCFF4AAA2028C7CE3DFB82E553654982C6AB2F479F727B56D025"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.notification.OpenApiSnapshotIT.xml",
+    "sha256": "ACC5FD037F29DF0E6D316C63601C81AD302E452D91E8DB365B882732E0BF7FBD"
+  },
+  {
+    "path": "services\\notification-service\\notification-app\\build\\test-results\\test\\TEST-ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest.xml",
+    "sha256": "AAEA4DB52CE8CF1A597252544393F0CB7BB56CE84009153A83A6A465C1206B0E"
+  },
+  {
+    "path": "services\\schedule-service\\schedule-app\\build\\test-results\\integrationTest\\TEST-ru.rutcampustrack.schedule.integration.OpenApiSnapshotIT.xml",
+    "sha256": "12465DAA6BD52CF8A18585D3EDC9EEFFC4A4F21971F8D716943AD2F7422B7170"
+  },
+  {
+    "path": "services\\shared\\shared-events\\build\\test-results\\test\\TEST-ru.rutcampustrack.shared.events.EventSchemaCoverageTest.xml",
+    "sha256": "FB269B988417D12CF7A7CF8F49A689CF4D8232E2820A92F23C2F699D895DE102"
+  }
+]

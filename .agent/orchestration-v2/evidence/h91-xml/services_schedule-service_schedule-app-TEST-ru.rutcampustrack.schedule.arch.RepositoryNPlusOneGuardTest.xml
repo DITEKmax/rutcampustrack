@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.schedule.arch.RepositoryNPlusOneGuardTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-20T12:40:02" hostname="DITEK-PK" time="0.129">
+  <properties/>
+  <testcase name="entitiesMustNotUseJpaRelations" classname="ru.rutcampustrack.schedule.arch.RepositoryNPlusOneGuardTest" time="0.105"/>
+  <testcase name="repositoriesReturningCollectionsMustGuardNPlusOne" classname="ru.rutcampustrack.schedule.arch.RepositoryNPlusOneGuardTest" time="0.024"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

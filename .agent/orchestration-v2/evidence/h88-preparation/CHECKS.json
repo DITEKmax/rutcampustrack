@@ -1,0 +1,24 @@
+{
+  "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3",
+  "branch": "codex/v2-runtime-build-r3",
+  "head": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837",
+  "parent": "ed9b63c9449b23fa3f5dbf2feb52cd8f9e9cfe83",
+  "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "preparation": {
+    "command": "npm ci --offline --no-audit --no-fund",
+    "workingDirectory": "frontends",
+    "exitCode": 0,
+    "result": "added 222 packages in 12s",
+    "nodeModulesBefore": false,
+    "nodeModulesAfter": true,
+    "packageLockSha256": "4AF978B91987A6A422732BF7598648521AD16A14632DEA85620C0307EED113F6",
+    "network": "offline"
+  },
+  "git": {
+    "trackedStatus": "clean",
+    "trackedDiffPaths": [],
+    "untrackedEvidence": [".agent/runtime-r3-preparation/"],
+    "sourceRevisionUnchanged": true
+  },
+  "notRun": ["producer", "Gradle", "npm build", "tests", "Docker", "services", "browser"]
+}

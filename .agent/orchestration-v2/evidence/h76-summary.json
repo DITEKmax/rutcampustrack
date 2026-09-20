@@ -1,0 +1,72 @@
+[
+  {
+    "name": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityContractTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.assignment.AssignmentClosureContractTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.config.SubjectTypeUserTypeTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcContractTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest",
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest",
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.grpc.StudentProjectionGrpcServiceTest",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.semester.SemesterAssignmentLockContractTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.attendance.report.ReportServiceTest",
+    "tests": 16,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+]

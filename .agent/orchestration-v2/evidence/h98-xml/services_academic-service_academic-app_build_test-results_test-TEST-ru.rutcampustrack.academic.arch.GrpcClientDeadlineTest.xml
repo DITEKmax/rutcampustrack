@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-20T14:47:46" hostname="DITEK-PK" time="5.013">
+  <properties/>
+  <testcase name="grpcClientsMustSetDeadline" classname="ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest" time="5.013"/>
+  <system-out><![CDATA[17:47:46.916 [Test worker] INFO com.tngtech.archunit.core.PluginLoader -- Detected Java version 21.0.10
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

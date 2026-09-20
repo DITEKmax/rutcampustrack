@@ -1,0 +1,61 @@
+3d4115f3a4c4ddba473689e27ac1a0efb519a202 2026-09-20T16:09:04+03:00 feat(security): add directed service identity for assignment closing
+71bcc27572ed72c18e49f63c512ae5e4e5790b8d 2026-09-20T14:21:03+03:00 Checkpoint accepted Requests runtime harness and diagnostic checks.
+13e5fd1985b798bbb61bcc85969e6a74b1fc6837 2026-09-20T14:12:30+03:00 Remove obsolete public lesson mass cancellation.
+ed9b63c9449b23fa3f5dbf2feb52cd8f9e9cfe83 2026-09-20T12:14:29+03:00 Integrate accepted L5A union into trusted 426
+27860f24eb380c782311bbe0cbb65c3d2c75d85d 2026-09-20T00:44:37+03:00 test: harden assignment authority concurrency cleanup
+f59b3b9951c971bde42265ae67df8754dc594a58 2026-09-19T23:18:18+03:00 feat(academic): add assignment authority contracts
+426a15b6b42e816deaa3ca5c50437e0964aaf85e 2026-09-19T21:24:04+03:00 Fix PWA request attachment prop typing
+d7ec16572db325d944f1a1fbd3b4960b827d09c3 2026-09-15T23:59:39+03:00 Integrate accepted I5 source union
+73fd5f27ceb429ad0692b073189f8a527c550830 2026-09-15T02:11:01+03:00 record H32 Docker proof evidence
+27a5be4ffc16c18067ae5901cfb76d604efbe236 2026-09-15T02:04:03+03:00 prepare R10 Docker network proof
+3e1992261a88c1a88b6aec42b69b0c96e84e0550 2026-09-15T01:38:44+03:00 repair requests harness R9 findings
+e1c67c7a4ebe0cb6e334a0cac5d108c14298a1ff 2026-09-15T00:25:06+03:00 repair requests runtime harness R8 findings
+9be3e213d0977abd66478e77af57e04373d7d829 2026-09-14T23:09:27+03:00 correct requests harness evidence base
+df4d88716dec01eab14e7f6f829d8050641b8b85 2026-09-14T23:04:36+03:00 repair requests harness R7 findings
+13bc053a0f4b88c8b9149ea6b3338aa02fa695b9 2026-09-14T00:02:49+03:00 repair requests harness provenance and readiness gates
+16badb3fc3c06a0b3aa422040c6357ae35374080 2026-09-13T22:54:39+03:00 Repair Requests runtime harness R3 findings
+a1af4071f6cd181dded58abf46497facc1dd7120 2026-09-13T21:38:54+03:00 Record migration to orchestrator 2 and preserve bootstrap packages
+6a98366b7507e3ee76cc0e13690afffd403a5321 2026-09-13T21:37:58+03:00 Establish orchestration v2 with persistent instructions and scoped handoffs
+1665d89137a98901a7b40f803cc8e9337c100e90 2026-09-13T19:06:31+03:00 Preserve Requests runtime and all student safe-stop decisions
+bb1bd4e72bae1b1393cae712c9fefec9c788684c 2026-09-13T19:05:33+03:00 Preserve Academic historical scope stop handoff
+86263384ae81353af087e61e9158af61f15e0999 2026-09-13T19:05:29+03:00 Preserve partial campus map read models and safe stop
+b8220ac92125a8afa37598b270aa4fab7aa1f470 2026-09-13T19:04:34+03:00 Preserve student Requests integration source and safe stop handoff
+76ea5daeb46e535d6e8e7e66c8f185327890b73c 2026-09-13T18:00:19+03:00 Complete student core and profile runtime acceptance with preserved evidence
+ffde92fdd1a7791ec3fb375102dc878d2fb2adc9 2026-09-13T17:53:41+03:00 Preserve reviewed student integration and live-verified profile repairs
+063b9d93d50682c12e562805f12d2dd7cab55811 2026-09-13T17:20:39+03:00 Preserve live12 profile evidence and SQL map storage decision
+8df4d3c5fba85ba4766f30133a4b60bd0398810e 2026-09-13T16:51:58+03:00 Preserve reviewed student campus map and evidence
+1b58320296d39e29514c6c2102985b27e652cea1 2026-09-13T16:45:13+03:00 Preserve student requests candidate and integration evidence
+753ab61d2fc202d764c5e106b98176b48626bb3f 2026-09-13T16:42:51+03:00 Checkpoint reviewed student attendance projections
+2328f9028a25c7ba8ecd5981e83c74fc2c5cbea1 2026-09-13T16:03:14+03:00 Save student live validation and profile repair checkpoint
+80c90df8a35f005cc445dae2ccc682bccf679939 2026-09-13T15:08:13+03:00 Save student runtime checkpoint and reviewed profile probe
+47faf8771afff119eac7f7b761dc2c8e2edb4c1d 2026-09-11T23:34:33+03:00 chore: checkpoint main work and agent evidence
+673e43b6d36b39f1ea5d91ac54331d4216db2d7b 2026-09-11T23:32:43+03:00 checkpoint: preserve E integration worktree before union import
+d3c31acb8cce53791a4981e5858a37d44fdc9a0e 2026-09-07T17:18:44+03:00 integrate shared shell and Homework API
+8002b9ea4356b10779c5bb9a6d99746d32d78ae2 2026-09-06T23:22:09+03:00 docs: synchronize current agent routing
+552cc55583aff2e539e649c447fa380268e154e0 2026-09-06T23:18:21+03:00 docs(evidence): record contract closure checks
+f479ce2ab26123361553c92ac047777558adde46 2026-09-06T23:17:19+03:00 chore(openapi): synchronize retired checkin contract
+f383c10a6e0304c4f68aab794612d1bd89b509a8 2026-09-06T22:01:42+03:00 test(tma): record resumed verification evidence
+71d38ff26b6534dd795803d50596a57a5b278a77 2026-09-06T20:49:38+03:00 chore(pwa): record secure-origin runtime evidence
+1f73c1ec81186ed7dd0cf22451ff7282e09dea5d 2026-09-06T23:08:20+03:00 fix(mobile-bff): type client input failures
+623460ef03a8ff33264acd2d4a98d908a8f86b0e 2026-09-06T22:44:51+03:00 fix(attendance): secure late decision actor and snapshot state
+2219c105d105cf9df1ef5d16c1018247dc4de675 2026-09-06T22:44:51+03:00 fix(attendance): secure late decision actor and snapshot state
+f85a4d27b9093bad6d60096552f306e8f3e2222b 2026-09-06T22:42:37+03:00 fix(mobile): replay ambiguous check-in commands
+123af361cfb332544c95f3072b3745ad45430d5a 2026-09-06T22:42:37+03:00 fix(mobile): replay ambiguous check-in commands
+147d0043c8bb4352e853d22292c345753acce34c 2026-09-06T22:33:40+03:00 fix(mobile): preserve native fetch receiver
+f699a71d327047587e8f3bdb61cbc6195d760b68 2026-09-06T22:33:40+03:00 fix(mobile): preserve native fetch receiver
+7e1d3ee4a45c45a629d4abc09d619e3b4224ba96 2026-09-06T22:01:42+03:00 test(tma): record resumed verification evidence
+e583f05140c43311b547bbaeaa55c1a7bc3c9ce9 2026-09-06T20:43:39+03:00 fix(pwa): enable secure-origin offline shell
+a78d45e4166afa0fd47fbb1397b9e1a6fd248bc0 2026-09-06T20:49:38+03:00 chore(pwa): record secure-origin runtime evidence
+2954ee1610317cf211c45ccf4b9f1be5de27234b 2026-09-06T20:50:16+03:00 test(integration): align attendance contract and runtime probes
+02cabfdfd2c0b81580833b88cef36d71c7706f4e 2026-09-06T20:43:39+03:00 fix(pwa): enable secure-origin offline shell
+9e1b3250238c2b683498dd0f6ac13ba2c8eeec26 2026-09-06T20:27:55+03:00 fix(attendance): retire legacy checkin and honor headman block
+12c6b885569bb59719b67945f6ec0e1a1f95199c 2026-09-06T20:27:55+03:00 fix(attendance): retire legacy checkin and honor headman block
+23e153f1bc6db9c311c3aaf6351eb3395eb7bb3e 2026-09-06T20:02:31+03:00 fix(tma): use official sdk and json auth
+834f0ca7975914717bf77ea50c4469b92afcfb32 2026-09-06T20:02:31+03:00 fix(tma): use official sdk and json auth
+cedce8c60aee04261ca87a18b898b148719bee89 2026-09-06T19:07:29+03:00 docs: record integrated student check-in verification and review packet
+f04542e10feb4ebe01e6acc465feea83b4783dc8 2026-09-06T19:04:04+03:00 Merge branch 'codex/js-student-01-be' into codex/js-student-01-integration
+99f8848e70683c7458428819944c1c4332f71251 2026-09-06T19:03:57+03:00 feat: implement student geo check-in backend and verify runtime
+81c967554b3c393f58aa3bf13f65b5c660de1a7e 2026-09-06T18:43:19+03:00 feat(mobile): implement student Today geo flow and offline semester reads
+3df5fbe6736cb2add826392ee30a4e786e96fbe1 2026-09-06T16:03:19+03:00 feat(mobile): freeze JS-STUDENT-01 contract foundation
+ec5c9f093fa9516a00cc9b1000d66a0bd4a10439 2026-04-07T11:35:18+03:00 On worktree-agent-af03bd54: orchestrator state updates
+c9725813bb27a6b7c7672c18774cfddee3f29579 2026-04-07T11:35:18+03:00 index on main: e28911e docs(39-01): complete journal page plan summary

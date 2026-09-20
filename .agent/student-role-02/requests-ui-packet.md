@@ -1,0 +1,26 @@
+# Shared requests and absence form UI — staged contract
+
+07.09.2026. S3. Not dispatched; wait accepted requests domain repair, transport/API and frozen integrated revision. Fresh Luna max in isolated checkout, sole writer; no children.
+
+## Goal
+Implement common student request overview/archive/type selection, EXCUSE form and manual late-checkin confirmation for PWA/TMA, reused from Today and attendance.
+## Context/evidence
+Read active-contract.md, excuse-source-resolution.md, requests-domain-packet.md and subsequent accepted repair/transport contracts. Final frames4610:142/848846/848937/849007/849072,4597:3574,4781:164 and contextual4588:527/848409,4710:232 are captured in design-context. Root reopened StudentRequestModels and canonical registry1352–1358; one MobileAbsenceRequest owns form fields/files/submit, attendance only embeds selected-lesson state. Registry later dated decisions override old wireframes; do not treat source samples as actual user limits/data.
+## Relevant scope
+Future shared mobile-core request feature/composables/domain form state/tests/PCSS/assets and explicit public exports. No backend/proto/generated/config/lockfiles or PWA/TMA host ownership. Exact API interfaces and source paths freeze at dispatch after transport review. Own .agent/student-role-02/requests-ui evidence. Other writers have independent scopes; never revert their work.
+## Required behavior
+Use server options for five reasons, file limits, remaining/limit budget, own lesson choices and independent excuse/late eligibility with kind/origin pending refs. EXCUSE multiple unique lessons, optional attachments, OTHER nonblank normalized comment and max1000; manual late exactly one eligible lesson. Display actual server limit including approved increases, not hardcoded5. Cancellation/refusal never promises budget refund. AUTO_GEO_FAILURE distinct from manual and no invented manual charge. Fetch OPEN/ARCHIVE and detail with truthful timestamps/statuses/retained attachment expiry. Downloads use authenticated API and safe file handling; expired410 remains explicit metadata state. No browser storage of requests, file bytes or tokens.
+
+Create one in-memory idempotency key per immutable logical command; preserve key+payload for unknown ACK recovery. Changing selected lessons/reason/comment/files must not accidentally reuse previous key for a different command. Duplicate activation doesn't submit twice. Reset identity/unmount safely disposes file object URLs and invalidates callbacks; late response cannot modify another scope. Server validation errors preserve correct user's editable input and identify affected fields/lessons; no client status-derived authorization. Unavailable options/dependencies fail closed with retry. All mutation controls disabled offline, with no outbox. Atomic package failure must not appear partly successful.
+
+Match selected pair, reason picker, comment/upload preview/remove/error, submit and sent confirmation; send confirmation requires authoritative acknowledgement. Shared form has no second state owner across Today/attendance/requests. Attendance inline is same screen state, not new public route; Back restores originating context and focus. Coordinate accepted shell presentation for dock/keyboard/task states without duplicate Back/CTA.
+## Constraints
+Russian/ты, Vue strict TS, separate PCSS/rem, canonical tokens/assets and Figma read-only. No extra mandatory attachments, obsolete reason aliases, compatibility routes, invented eligibility, fake status success or other-role UI. Host APIs and transport envelope conversion remain their owners' boundaries. No main changes/commit/deploy.
+## Existing patterns
+Typed StudentApi/StudentApiError and scoped query owner, accepted Homework identity/callback recovery patterns if applicable, MobileShell/navigation host contract. Accepted domain summaries carry kind/status/origin/immutable lesson snapshots; detail adds reason/comment/attachments/decision. Use finalized generated types rather than copying domain Java shape into ad-hoc frontend DTOs.
+## Acceptance criteria
+Final states and transitions present; keyboard/file control/focus semantics work. Repeated activation, unknown ACK/retry, cancel/racing decision, options stale after limit/attendance change, increased budget, foreign identity late responses, file max/count/unsupported/previews/revocation, expiry and server dependency failures are covered. New client never bypasses server own/group/eligibility authority. No partial packet success or offline writes. Both shells later execute same common feature.
+## Verification
+Read frontend/tests AGENTS and rct-verification. Focused unit/component tests, typecheck/lint/both builds, deterministic final-state visual fixtures390x844/light/rootfont/width. Then real BFF→gRPC→Mongo + authenticated file lifecycle and both-shell scenarios, with no actual Telegram messages. Record exact revision/command/exit/environment/source SHA and separate fixture from real evidence. Fresh independent Sol high review required; full student role remains open.
+## Do not
+No persistent file/request queue, token cache, notification send, broad shell/backend refactor, unreviewed API change, fabricated screenshot/runtime PASS, main merge or production operations. Report precise source/contract gap before broadening writer scope.

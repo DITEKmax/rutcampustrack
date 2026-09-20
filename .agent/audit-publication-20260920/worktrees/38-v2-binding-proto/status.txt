@@ -1,0 +1,7 @@
+ M AGENTS.md
+ M proto/academic.proto
+ M proto/schedule.proto
+ M services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java
+ M services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java
+ M services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java
+?? .agent/v2-binding-proto/

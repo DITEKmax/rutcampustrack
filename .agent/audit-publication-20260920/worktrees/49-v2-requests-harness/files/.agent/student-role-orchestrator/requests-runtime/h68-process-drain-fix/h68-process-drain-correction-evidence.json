@@ -1,0 +1,141 @@
+{
+  "schema": "rct.student-requests-h68-process-drain-correction.v1",
+  "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+  "runnerSha256": "05c76b696bf987370c0597c3af76c9db94fb588aa3ac3087d6907110ebbb9716",
+  "childPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-process-drain-fix\\synthetic-stream-child.mjs",
+  "childSha256": "9f24360bc64dcbe5d9b1ea9b3f1f5502bb568537a00810ff2e0bfbb42ba142af",
+  "command": "AST-extracted production Invoke-ExternalSafe -> node synthetic-stream-child.mjs; stdout/stderr/both/nonzero 1 MiB, timeout child 1 s",
+  "controlledRuntime": "Synthetic Node children only; no network, ports, Docker, Gradle, credentials or keys.",
+  "largeStreamCases": {
+    "stdoutOnly": {
+      "mode": "stdout",
+      "exitCode": 0,
+      "stdoutLength": 1048576,
+      "stderrLength": 0,
+      "outputLength": 1048578,
+      "stdoutSha256": "956f8c406228d40a85d69e3a26ac269d8472b0cef7e171ef67135c845cd17c24",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutPrefix": "OOOOOOOO",
+      "stderrPrefix": "",
+      "typedProperties": [
+        "ExitCode",
+        "Output",
+        "Stdout",
+        "Stderr"
+      ]
+    },
+    "stderrOnly": {
+      "mode": "stderr",
+      "exitCode": 0,
+      "stdoutLength": 0,
+      "stderrLength": 1048576,
+      "outputLength": 1048578,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "39b7909f0f28b1b169e9206e1472d327c68c9cb56108931b21aeea6c87cfee7c",
+      "stdoutPrefix": "",
+      "stderrPrefix": "EEEEEEEE",
+      "typedProperties": [
+        "ExitCode",
+        "Output",
+        "Stdout",
+        "Stderr"
+      ]
+    },
+    "simultaneous": {
+      "mode": "both",
+      "exitCode": 0,
+      "stdoutLength": 1048576,
+      "stderrLength": 1048576,
+      "outputLength": 2097154,
+      "stdoutSha256": "956f8c406228d40a85d69e3a26ac269d8472b0cef7e171ef67135c845cd17c24",
+      "stderrSha256": "39b7909f0f28b1b169e9206e1472d327c68c9cb56108931b21aeea6c87cfee7c",
+      "stdoutPrefix": "OOOOOOOO",
+      "stderrPrefix": "EEEEEEEE",
+      "typedProperties": [
+        "ExitCode",
+        "Output",
+        "Stdout",
+        "Stderr"
+      ]
+    },
+    "expectedBytes": 1048576,
+    "expectedStdoutSha256": "956f8c406228d40a85d69e3a26ac269d8472b0cef7e171ef67135c845cd17c24",
+    "expectedStderrSha256": "39b7909f0f28b1b169e9206e1472d327c68c9cb56108931b21aeea6c87cfee7c"
+  },
+  "nonzero": {
+    "mode": "nonzero",
+    "exitCode": 7,
+    "stdoutLength": 1048576,
+    "stderrLength": 1048576,
+    "outputLength": 2097154,
+    "stdoutSha256": "956f8c406228d40a85d69e3a26ac269d8472b0cef7e171ef67135c845cd17c24",
+    "stderrSha256": "39b7909f0f28b1b169e9206e1472d327c68c9cb56108931b21aeea6c87cfee7c",
+    "stdoutPrefix": "OOOOOOOO",
+    "stderrPrefix": "EEEEEEEE",
+    "typedProperties": [
+      "ExitCode",
+      "Output",
+      "Stdout",
+      "Stderr"
+    ]
+  },
+  "timeout": {
+    "result": {
+      "mode": "timeout",
+      "exitCode": 124,
+      "stdoutLength": 0,
+      "stderrLength": 0,
+      "outputLength": 26,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutPrefix": "",
+      "stderrPrefix": "",
+      "typedProperties": [
+        "ExitCode",
+        "Output",
+        "Stdout",
+        "Stderr"
+      ]
+    },
+    "markerPidObserved": 35368,
+    "ownedProcessAbsent": true,
+    "treeResult": {
+      "mode": "timeout-tree",
+      "exitCode": 124,
+      "stdoutLength": 0,
+      "stderrLength": 0,
+      "outputLength": 26,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutPrefix": "",
+      "stderrPrefix": "",
+      "typedProperties": [
+        "ExitCode",
+        "Output",
+        "Stdout",
+        "Stderr"
+      ]
+    },
+    "treeMarkerPidObserved": 18840,
+    "descendantMarkerPidObserved": 34452,
+    "ownedProcessTreeAbsent": true
+  },
+  "checks": {
+    "largeStreamsExact": true,
+    "nonzeroExitPreserved": true,
+    "timeout124": true,
+    "noOwnedChildAfterTimeout": true,
+    "noOwnedProcessTreeAfterTimeout": true,
+    "boundedAsyncDrainAndDispose": true,
+    "typedFields": [
+      "ExitCode",
+      "Output",
+      "Stdout",
+      "Stderr"
+    ]
+  },
+  "limitations": [
+    "Synthetic subprocesses prove the production helper through AST extraction; no Docker/Gradle/network/runtime services were used.",
+    "The tree case keeps the owned parent alive until the bounded timeout and verifies its known descendant PID is gone after Kill(true); this does not claim arbitrary daemon discovery or cleanup when a parent has already exited while retaining pipe handles."
+  ]
+}

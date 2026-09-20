@@ -1,0 +1,612 @@
+{
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-binding-proto",
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "gradle": "repository gradlew.bat (Gradle output identifies 8.12)",
+    "runtime": "not run; declaration-only scope"
+  },
+  "checks": [
+    {
+      "id": "source-contract-comparison",
+      "criteria": [
+        "binding blocks preserve exact field/enum text",
+        "Academic has no binding surface/import",
+        "Schedule owns each binding RPC/declaration once",
+        "unrelated significant proto source is unchanged",
+        "qualified LessonInfo and tag-1 fields remain intact"
+      ],
+      "command": "& '.\\.agent\\v2-binding-proto\\source-check.ps1'",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "SOURCE_CHECK PASS; all block, RPC, package, type and tag assertions passed"
+    },
+    {
+      "id": "proto-diff-whitespace",
+      "criteria": ["no whitespace errors in product diff"],
+      "command": "git diff --check -- proto\\academic.proto proto\\schedule.proto",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "No diff-check errors; Git emitted only the existing LF-to-CRLF normalization warning"
+    },
+    {
+      "id": "handwritten-reference-search",
+      "criteria": ["no binding consumer/handler reference in services"],
+      "command": "rg -n -i --glob '!**/build/**' --glob '!**/.gradle/**' 'ReserveHomeworkBinding|ConfirmHomeworkBinding|GetHomeworkBindings|HomeworkBindingState|HomeworkBindingResponse|HomeworkBindingsRequest|HomeworkBindingsResponse' services",
+      "exit_code": 1,
+      "status": "PASS_NO_MATCH",
+      "evidence": "No matches; exit 1 is rg's expected no-match code"
+    },
+    {
+      "id": "h1-five-module-proto-compile",
+      "criteria": ["all five modules generate and compile Java/test sources"],
+      "command": ".\\gradlew.bat --no-daemon --max-workers=2 --console=plain :services:schedule-service:schedule-app:generateProto :services:schedule-service:schedule-app:compileJava :services:schedule-service:schedule-app:compileTestJava :services:academic-service:academic-app:generateProto :services:academic-service:academic-app:compileJava :services:academic-service:academic-app:compileTestJava :services:attendance-service:attendance-app:generateProto :services:attendance-service:attendance-app:compileJava :services:attendance-service:attendance-app:compileTestJava :services:mobile-bff:mobile-bff-app:generateProto :services:mobile-bff:mobile-bff-app:compileJava :services:mobile-bff:mobile-bff-app:compileTestJava :services:document-renderer-service:document-renderer-app:generateProto :services:document-renderer-service:document-renderer-app:compileJava :services:document-renderer-service:document-renderer-app:compileTestJava",
+      "exit_code": 1,
+      "status": "FAIL_UNRELATED_BASELINE",
+      "raw_log_path": null,
+      "raw_log_retention": "H1 output was returned by the tool only; no retained file was fabricated",
+      "executed": [
+        ":services:schedule-service:schedule-app:generateProto",
+        ":services:schedule-service:schedule-app:compileJava",
+        ":services:schedule-service:schedule-app:compileTestJava"
+      ],
+      "not_reached": [
+        ":services:academic-service:academic-app:generateProto",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:attendance-service:attendance-app:generateProto",
+        ":services:attendance-service:attendance-app:compileJava",
+        ":services:attendance-service:attendance-app:compileTestJava",
+        ":services:mobile-bff:mobile-bff-app:generateProto",
+        ":services:mobile-bff:mobile-bff-app:compileJava",
+        ":services:mobile-bff:mobile-bff-app:compileTestJava",
+        ":services:document-renderer-service:document-renderer-app:generateProto",
+        ":services:document-renderer-service:document-renderer-app:compileJava",
+        ":services:document-renderer-service:document-renderer-app:compileTestJava"
+      ],
+      "evidence": "Stopped at ScheduleUserContextFilterIT/StrictModeIT InternalJwtTestFactory compile errors; no proto compilation error"
+    },
+    {
+      "id": "h1-scoped-test-correction",
+      "criteria": [
+        "only the two addendum-approved Schedule security tests changed",
+        "current complete JWT fixture API is used",
+        "expiry, signature, role and legacy-header assertions remain"
+      ],
+      "command": "git diff --check -- services\\schedule-service\\schedule-app\\src\\test\\java\\ru\\rutcampustrack\\schedule\\security\\ScheduleUserContextFilterIT.java services\\schedule-service\\schedule-app\\src\\test\\java\\ru\\rutcampustrack\\schedule\\security\\ScheduleUserContextFilterStrictModeIT.java",
+      "exit_code": 0,
+      "status": "PASS_STATIC_SCOPE",
+      "evidence": "Only the two approved test files contain correction hunks; diff-check has no errors"
+    },
+    {
+      "id": "h2-five-module-proto-compile",
+      "criteria": ["all five modules generate and compile Java/test sources after correction"],
+      "command": ".\\gradlew.bat --no-daemon --max-workers=2 --console=plain :services:schedule-service:schedule-app:generateProto :services:schedule-service:schedule-app:compileJava :services:schedule-service:schedule-app:compileTestJava :services:academic-service:academic-app:generateProto :services:academic-service:academic-app:compileJava :services:academic-service:academic-app:compileTestJava :services:attendance-service:attendance-app:generateProto :services:attendance-service:attendance-app:compileJava :services:attendance-service:attendance-app:compileTestJava :services:mobile-bff:mobile-bff-app:generateProto :services:mobile-bff:mobile-bff-app:compileJava :services:mobile-bff:mobile-bff-app:compileTestJava :services:document-renderer-service:document-renderer-app:generateProto :services:document-renderer-service:document-renderer-app:compileJava :services:document-renderer-service:document-renderer-app:compileTestJava",
+      "exit_code": 1,
+      "status": "FAIL_UNRELATED_AFTER_CORRECTION",
+      "raw_log_path": ".agent/v2-binding-proto/h2-gradle.log",
+      "raw_log_sha256": "AA84DD5580E559793F461BD8C83EF401F2DC884F39F7FE117C533F508928D15A",
+      "raw_log_bytes": 80952,
+      "executed": [
+        ":services:schedule-service:schedule-app:generateProto",
+        ":services:schedule-service:schedule-app:compileJava",
+        ":services:schedule-service:schedule-app:compileTestJava"
+      ],
+      "not_reached": [
+        ":services:academic-service:academic-app:generateProto",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:attendance-service:attendance-app:generateProto",
+        ":services:attendance-service:attendance-app:compileJava",
+        ":services:attendance-service:attendance-app:compileTestJava",
+        ":services:mobile-bff:mobile-bff-app:generateProto",
+        ":services:mobile-bff:mobile-bff-app:compileJava",
+        ":services:mobile-bff:mobile-bff-app:compileTestJava",
+        ":services:document-renderer-service:document-renderer-app:generateProto",
+        ":services:document-renderer-service:document-renderer-app:compileJava",
+        ":services:document-renderer-service:document-renderer-app:compileTestJava"
+      ],
+      "evidence": "Corrected JWT tests produced no compile errors; schedule compileTestJava then reported unrelated missing shared/schedule classes (100 compiler errors) and AccessDeniedException for build/reports/problems/problems-report.html. No scope extension permitted."
+    },
+    {
+      "id": "h2-representative-artifacts",
+      "criteria": [
+        "expected representative source files exist",
+        "expected representative class outputs exist with non-zero lengths"
+      ],
+      "command": "PowerShell Get-Item -LiteralPath over the six source paths and six corresponding build/classes paths; emit Path, Length, LastWriteTimeUtc",
+      "exit_code": 0,
+      "status": "PASS_EXISTENCE_METADATA",
+      "evidence": "All twelve paths exist. Class sizes: GrpcDeadlineArchRules 3180, IntegrationTestNamingRule 3216, OutboxRecord 1991, OutboxStorage 688, LessonService 15990, LessonRepository 8212 bytes."
+    },
+    {
+      "id": "h2-representative-class-readability",
+      "criteria": [
+        "representative shared test-fixture and main classes are readable and parseable",
+        "representative schedule main classes are readable and parseable"
+      ],
+      "commands": [
+        "javap -classpath services\\shared\\shared-observability\\build\\classes\\java\\testFixtures ru.rutcampustrack.shared.observability.GrpcDeadlineArchRules",
+        "javap -classpath services\\shared\\shared-test-containers\\build\\classes\\java\\testFixtures ru.rutcampustrack.shared.testcontainers.IntegrationTestNamingRule",
+        "javap -classpath services\\shared\\shared-outbox\\build\\classes\\java\\main ru.rutcampustrack.shared.outbox.OutboxRecord",
+        "javap -classpath services\\shared\\shared-outbox\\build\\classes\\java\\main ru.rutcampustrack.shared.outbox.OutboxStorage",
+        "javap -classpath services\\schedule-service\\schedule-app\\build\\classes\\java\\main ru.rutcampustrack.schedule.lesson.LessonService",
+        "javap -classpath services\\schedule-service\\schedule-app\\build\\classes\\java\\main ru.rutcampustrack.schedule.lesson.repository.LessonRepository"
+      ],
+      "exit_codes": [0, 0, 0, 0, 0, 0],
+      "status": "PASS_READABLE",
+      "evidence": "javap loaded and parsed each class from its output directory; no class-read failure observed."
+    },
+    {
+      "id": "h2-build-classpath-wiring",
+      "criteria": [
+        "schedule app declares shared main dependencies",
+        "schedule app declares required shared test-fixture dependencies",
+        "shared fixture modules apply fixture publication pattern",
+        "schedule proto source set points at root proto directory"
+      ],
+      "command": "rg -n -i -g 'build.gradle.kts' 'shared-outbox|shared-observability|shared-test-containers|testFixtures|sourceSets|proto' services/schedule-service/schedule-app services/shared/shared-observability services/shared/shared-test-containers services/shared/shared-outbox",
+      "exit_code": 0,
+      "status": "PASS_CONFIG_EVIDENCE",
+      "evidence": "build.gradle.kts output contains shared-outbox/shared-observability implementation declarations, shared-observability/shared-test-containers testFixtures declarations, java-test-fixtures module configuration and root proto source-set wiring."
+    },
+    {
+      "id": "h2-incremental-output-state",
+      "criteria": [
+        "inspect compileTestJava temporary output",
+        "inspect compileJava incremental metadata"
+      ],
+      "command": "PowerShell Test-Path/Get-Item/Get-ChildItem over services\\schedule-service\\schedule-app\\build\\tmp\\compileTestJava and build\\tmp\\compileJava\\previous-compilation-data.bin",
+      "exit_code": 0,
+      "status": "OBSERVED",
+      "evidence": "compileTestJava directory exists with zero children; previous-compilation-data.bin exists and is 174187 bytes. This supports, but does not prove, stale/mismatched incremental state."
+    },
+    {
+      "id": "h2-accessdenied-causal-separation",
+      "criteria": [
+        "inspect report path and read-only ACL",
+        "separate report-write failure from classpath errors"
+      ],
+      "command": "PowerShell Get-Item build\\reports\\problems\\problems-report.html and Get-Acl access filtered to CodexSandboxUsers",
+      "exit_code": 0,
+      "status": "PASS_SEPARATE_REPORT_EVIDENCE",
+      "evidence": "Report exists; inherited CodexSandboxUsers ReadAndExecute/Synchronize was observed. H2 AccessDeniedException is a report overwrite failure and does not establish unreadable representative class artifacts."
+    },
+    {
+      "id": "h2-effective-classpath-cause",
+      "criteria": [
+        "distinguish missing artifact",
+        "distinguish unreadable artifact",
+        "identify effective test classpath defect when evidence is insufficient"
+      ],
+      "command": "Read-only synthesis from retained H2 log, representative output inspection, javap, ACL and build.gradle.kts evidence",
+      "exit_code": null,
+      "status": "DIAGNOSTIC_UNKNOWN",
+      "evidence": "Missing and unreadable representative artifacts are ruled out; dependency wiring is present. Exact effective compileTestJava classpath or incremental-resolution cause is not retained and remains unknown. No retry/rebuild or source/config/ACL correction was performed."
+    },
+    {
+      "id": "checkpoint-staging",
+      "criteria": [
+        "stage only owned source, tests, pointer and evidence files"
+      ],
+      "command": "git add -- AGENTS.md proto\\academic.proto proto\\schedule.proto services\\schedule-service\\schedule-app\\src\\test\\java\\ru\\rutcampustrack\\schedule\\security\\ScheduleUserContextFilterIT.java services\\schedule-service\\schedule-app\\src\\test\\java\\ru\\rutcampustrack\\schedule\\security\\ScheduleUserContextFilterStrictModeIT.java .agent\\v2-binding-proto",
+      "exit_code": 1,
+      "status": "BLOCKED_PERMISSION",
+      "evidence": "Git could not create .git/worktrees/v2-binding-proto/index.lock: Permission denied. No escalation, bypass or alternate metadata path used; stable working-tree paths and hashes remain available."
+    },
+    {
+      "id": "h5-init-static-review",
+      "criteria": [
+        "local init script targets the original five-module task order",
+        "incremental compilation is disabled only for the invocation",
+        "Java and test classpaths retain iteration order",
+        "source/main/task outputs and bounded representative enumeration are captured",
+        "dependency JavaCompile tasks reached by the same graph are captured"
+      ],
+      "command": "rg -n 'h5TargetTaskOrder|compileTestJava|compileJava|options.incremental|classpathOrderPreserved|classpath.each|sourceDirs|mainOutput|targetedDirectoryEnumeration|h5RepresentativeRelativePaths|h5RepresentativePackageRelativePaths|h5DirectoryEnumerationLimit|h5DirectorySampleLimit|h5DirectoryEntryLimit|DirectoryStream|newDirectoryStream|ErrorResponse|H5_CLASSPATH_REPORT' .agent\\v2-binding-proto\\h5-classpath.init.gradle",
+      "exit_code": 0,
+      "status": "PASS_STATIC_REVIEW",
+      "evidence": "Static inspection found the fixed target order, all JavaCompile hooks, incremental=false, unsorted classpath iteration, output/source records, bounded 64-directory representative checks, bounded DirectoryStream package enumeration and owned report paths. No Gradle invocation was used for this review."
+    },
+    {
+      "id": "h5-five-module-classpath-diagnostic",
+      "criteria": [
+        "run exactly one five-module generateProto/compileJava/compileTestJava union",
+        "capture target and reached dependency JavaCompile classpaths",
+        "retain raw log and exact exit code"
+      ],
+      "command": "& .\\gradlew.bat --no-daemon --max-workers=2 --console=plain --no-build-cache --rerun-tasks --init-script .\\.agent\\v2-binding-proto\\h5-classpath.init.gradle :services:schedule-service:schedule-app:generateProto :services:schedule-service:schedule-app:compileJava :services:schedule-service:schedule-app:compileTestJava :services:academic-service:academic-app:generateProto :services:academic-service:academic-app:compileJava :services:academic-service:academic-app:compileTestJava :services:attendance-service:attendance-app:generateProto :services:attendance-service:attendance-app:compileJava :services:attendance-service:attendance-app:compileTestJava :services:mobile-bff:mobile-bff-app:generateProto :services:mobile-bff:mobile-bff-app:compileJava :services:mobile-bff:mobile-bff-app:compileTestJava :services:document-renderer-service:document-renderer-app:generateProto :services:document-renderer-service:document-renderer-app:compileJava :services:document-renderer-service:document-renderer-app:compileTestJava 2>&1 | Tee-Object -FilePath '.agent\\v2-binding-proto\\h5-gradle.log'; $h5Exit=$LASTEXITCODE; Write-Output ('H5_EXIT=' + $h5Exit); exit $h5Exit",
+      "exit_code": 1,
+      "status": "FAIL_UNRELATED_REACHED_DEPENDENCY",
+      "raw_log_path": ".agent/v2-binding-proto/h5-gradle.log",
+      "raw_log_sha256": "0D2F6F72E662557A05A19CCFD80BD0240EAB51735D737752A8F1045D470D7995",
+      "raw_log_bytes": 16035,
+      "executed": [
+        ":services:schedule-service:schedule-app:generateProto",
+        ":services:shared:shared-web-api:compileJava",
+        ":services:schedule-service:schedule-api-contract:compileJava",
+        ":services:shared:shared-events:compileJava",
+        ":services:shared:shared-logback:compileJava",
+        ":services:shared:shared-observability:compileJava",
+        ":services:shared:shared-outbox:compileJava"
+      ],
+      "not_reached": [
+        ":services:schedule-service:schedule-app:compileJava",
+        ":services:schedule-service:schedule-app:compileTestJava",
+        ":services:academic-service:academic-app:generateProto",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:attendance-service:attendance-app:generateProto",
+        ":services:attendance-service:attendance-app:compileJava",
+        ":services:attendance-service:attendance-app:compileTestJava",
+        ":services:mobile-bff:mobile-bff-app:generateProto",
+        ":services:mobile-bff:mobile-bff-app:compileJava",
+        ":services:mobile-bff:mobile-bff-app:compileTestJava",
+        ":services:document-renderer-service:document-renderer-app:generateProto",
+        ":services:document-renderer-service:document-renderer-app:compileJava",
+        ":services:document-renderer-service:document-renderer-app:compileTestJava"
+      ],
+      "evidence": "The single invocation stopped at shared-outbox:compileJava with 13 source errors (IdempotencyStore/MetricNames) and four warnings; all target five-module compileJava/compileTestJava tasks were not reached. H5_CLASSPATH_REPORT files for six reached JavaCompile tasks were retained and parseable. The raw log separately records AccessDeniedException for build/reports/problems/problems-report.html."
+    },
+    {
+      "id": "h5-reached-classpath-reports",
+      "criteria": [
+        "capture every reached JavaCompile task in the one H5 graph",
+        "retain report path and parseable structured classpath data"
+      ],
+      "command": "Get-ChildItem .agent\\v2-binding-proto -Filter h5-classpath-*.log | ConvertFrom-Json each report and summarize taskPath/classpathCount/captureErrors",
+      "exit_code": 0,
+      "status": "PASS_PARTIAL_DEPENDENCY_CAPTURE",
+      "report_hashes": [
+        {"path": ".agent/v2-binding-proto/h5-classpath-reached-_services_shared_shared-web-api_compileJava.log", "bytes": 2732, "sha256": "71DE4B706614403D5ADCB291CA4A9393B17250B285913506D244DCED4E9994B9"},
+        {"path": ".agent/v2-binding-proto/h5-classpath-reached-_services_schedule-service_schedule-api-contract_compileJava.log", "bytes": 16853, "sha256": "03BF3B2C5257F292B612575FC62FAD44D2437F97BD9D4A1F1568325545CA58F4"},
+        {"path": ".agent/v2-binding-proto/h5-classpath-reached-_services_shared_shared-events_compileJava.log", "bytes": 6968, "sha256": "4349EB50FD7FC2F854E5B5B6D92AA2F75A8B143485B54E32C8D16490A18E18FC"},
+        {"path": ".agent/v2-binding-proto/h5-classpath-reached-_services_shared_shared-logback_compileJava.log", "bytes": 4631, "sha256": "11BF5EF1DE9D6C7468C8CC774AB85006D32A5E5707FA775118F666A2206F57AA"},
+        {"path": ".agent/v2-binding-proto/h5-classpath-reached-_services_shared_shared-observability_compileJava.log", "bytes": 9709, "sha256": "338234DD47403CF003C474D3A3ED9117B6AD9404FAF41A09735F71BD80F8B77A"},
+        {"path": ".agent/v2-binding-proto/h5-classpath-reached-_services_shared_shared-outbox_compileJava.log", "bytes": 37651, "sha256": "7424FB4C05CAB99D5488362DE98AF9F83B4682D47B6C956EE427988EB7A95F64"}
+      ],
+      "evidence": "Six reached reports parse successfully: shared-web-api, schedule-api-contract, shared-events, shared-logback, shared-observability and shared-outbox. Target terminal app reports are absent because the graph stopped at shared-outbox."
+    },
+    {
+      "id": "h5-classpath-causal-evidence",
+      "criteria": [
+        "preserve captured classpath order",
+        "distinguish dependency output directory presence/readability from javac errors"
+      ],
+      "command": "Read shared-outbox H5 report in original classpath order and inspect CP[2]/CP[3] flags; read representative class outputs",
+      "exit_code": 0,
+      "status": "DIAGNOSTIC_OPEN",
+      "evidence": "shared-outbox report has 51 entries and zero capture errors; CP[2]=shared-observability/build/classes/java/main and CP[3]=shared-events/build/classes/java/main, both exists/readable/directories. IdempotencyStore.class, MetricNames.class and ErrorResponse.class exist and each javap read exits 0. Javac nevertheless reports the first two packages missing; exact compiler-process classpath/argument state remains unknown."
+    },
+    {
+      "id": "h5-symbol-readability-recheck",
+      "criteria": [
+        "read H5 error symbols after the run",
+        "read corroborating ErrorResponse output"
+      ],
+      "commands": [
+        "javap -classpath services\\shared\\shared-events\\build\\classes\\java\\main ru.rutcampustrack.shared.events.IdempotencyStore",
+        "javap -classpath services\\shared\\shared-observability\\build\\classes\\java\\main ru.rutcampustrack.shared.observability.MetricNames",
+        "javap -classpath services\\shared\\shared-web-api\\build\\classes\\java\\main ru.rutcampustrack.shared.web.api.exception.ErrorResponse"
+      ],
+      "exit_codes": [0, 0, 0],
+      "status": "PASS_READABLE_POST_H5",
+      "evidence": "All three class files were loaded and parsed from their output directories; no read/format failure observed."
+    },
+    {
+      "id": "h5-report-permission-separation",
+      "criteria": [
+        "confirm report ACL after H5",
+        "keep report write denial separate from classpath evidence"
+      ],
+      "command": "Get-Item build\\reports\\problems\\problems-report.html and Get-Acl access filtered to CodexSandboxUsers",
+      "exit_code": 0,
+      "status": "PASS_SEPARATE_REPORT_EVIDENCE",
+      "evidence": "H5 raw line 171 records AccessDeniedException on problems-report.html; post-H5 read-only ACL query shows inherited CodexSandboxUsers ReadAndExecute/Synchronize. No ACL change was made."
+    },
+    {
+      "id": "h5-target-classpaths",
+      "criteria": [
+        "capture compileJava and compileTestJava classpaths for all five target apps"
+      ],
+      "command": "H5 init doFirst target reports in the single union invocation",
+      "exit_code": null,
+      "status": "OPEN_NOT_REACHED",
+      "evidence": "The graph failed at shared-outbox:compileJava before any target terminal compileJava or compileTestJava task, so target classpaths were not captured. No retry or alternate invocation is authorized in this lease."
+    },
+    {
+      "id": "h6-init-isolation",
+      "criteria": [
+        "reuse H5 capture behavior with incremental disabled",
+        "write only fresh H6 report names",
+        "preserve H5 script and reports"
+      ],
+      "command": "rg -n 'H6|h6-classpath|options.incremental|classpathOrderPreserved|DirectoryStream|newDirectoryStream|ErrorResponse' .agent\\v2-binding-proto\\h6-classpath.init.gradle",
+      "exit_code": 0,
+      "status": "PASS_STATIC_ISOLATION",
+      "evidence": "H6 private copy retains the H5 diagnostic hooks and uses h6-classpath-* report names plus H6_CLASSPATH_REPORT; H5 hash and six H5 reports were preserved."
+    },
+    {
+      "id": "h6-shared-outbox-reproducer",
+      "criteria": [
+        "run exactly one shared-outbox compileJava reproducer",
+        "use no-build-cache, rerun-tasks, incremental-off init and max-workers=1",
+        "retain fresh raw log and classpath report hashes"
+      ],
+      "command": "& .\\gradlew.bat --no-daemon --max-workers=1 --console=plain --no-build-cache --rerun-tasks --init-script .\\.agent\\v2-binding-proto\\h6-classpath.init.gradle :services:shared:shared-outbox:compileJava 2>&1 | Tee-Object -FilePath '.agent\\v2-binding-proto\\h6-gradle.log'; $h6Exit=$LASTEXITCODE; Write-Output ('H6_EXIT=' + $h6Exit); exit $h6Exit",
+      "exit_code": 0,
+      "status": "PASS_BOUNDED_REPRODUCER",
+      "raw_log_path": ".agent/v2-binding-proto/h6-gradle.log",
+      "raw_log_sha256": "31AF95897C1BD931C378347122618F7C1E9E76D37CB650FBE10EA5D080F1F9E8",
+      "raw_log_bytes": 3113,
+      "executed": [
+        ":services:shared:shared-events:compileJava",
+        ":services:shared:shared-observability:compileJava",
+        ":services:shared:shared-outbox:compileJava"
+      ],
+      "evidence": "Single escalated exact command completed BUILD SUCCESSFUL in 33 seconds; no AccessDeniedException; H6 is one-task only and does not verify the five-module union. H5 reports remained untouched."
+    },
+    {
+      "id": "h6-reached-classpath-reports",
+      "criteria": [
+        "capture every reached JavaCompile task in H6",
+        "retain parseable structured classpath data"
+      ],
+      "command": "Get-ChildItem .agent\\v2-binding-proto -Filter h6-classpath-*.log and ConvertFrom-Json each report",
+      "exit_code": 0,
+      "status": "PASS_DEPENDENCY_CAPTURE",
+      "report_hashes": [
+        {"path": ".agent/v2-binding-proto/h6-classpath-reached-_services_shared_shared-events_compileJava.log", "bytes": 6786, "sha256": "AC3E802DEA0CD86B2CFD400FDAA2A9C0A546ADE465AEEF2870CFA030B944690B"},
+        {"path": ".agent/v2-binding-proto/h6-classpath-reached-_services_shared_shared-observability_compileJava.log", "bytes": 9429, "sha256": "77B43FD394ADD0493519D736490576F15C3B1FFF2BC8EE165ABD5F16B7A981C6"},
+        {"path": ".agent/v2-binding-proto/h6-classpath-reached-_services_shared_shared-outbox_compileJava.log", "bytes": 36965, "sha256": "51CF067F9B3ACCF268E71D26C0C22E234B91FB3A2BBE5F934B747A6E200A778B"}
+      ],
+      "evidence": "Three reached JavaCompile reports parse at exit 0; each has zero capture errors. Target app reports were not expected in the one-task H6 graph."
+    },
+    {
+      "id": "h6-h5-classpath-comparison",
+      "criteria": [
+        "compare H5 and H6 classpath order",
+        "record context differences without overclaiming causality"
+      ],
+      "command": "Read H5/H6 shared-outbox JSON reports preserving index order",
+      "exit_code": 0,
+      "status": "PASS_CONTEXT_COMPARISON",
+      "evidence": "Both reports have 51 entries and NonCacheClasspathDifferences=0; CP[2]/CP[3] are the same project output directories. The 49 differences are external cache roots (H5 CodexSandboxOffline versus H6 maksd). H5 normal sandbox/max-workers=2 union and H6 escalated/max-workers=1 one-task topology changed together, so permissions are correlated but not isolated as sole cause."
+    },
+    {
+      "id": "h6-environment-snapshot",
+      "criteria": [
+        "record safe user/toolchain/cache context",
+        "avoid secrets and ACL mutation"
+      ],
+      "command": "Read-only whoami/Get-Command java/java -version and report/log ownership snapshot",
+      "exit_code": 0,
+      "status": "OBSERVED_SAFE_ENVIRONMENT",
+      "evidence": "Normal snapshot: ditek-pk\\codexsandboxoffline, Java 21.0.10, JAVA_HOME C:\\Users\\maksd\\.jdks\\ms-21.0.10. H5 report/log owner is CodexSandboxOffline; H6 owner is maksd; H5 cache root is C:\\Users\\CodexSandboxOffline\\.gradle and H6 is C:\\Users\\maksd\\.gradle. No secrets read."
+    },
+    {
+      "id": "h6-target-classpaths",
+      "criteria": ["capture five target app compileJava and compileTestJava classpaths"],
+      "command": "H6 init target reports in the one-task reproducer",
+      "exit_code": null,
+      "status": "OPEN_NOT_REACHED",
+      "evidence": "H6 intentionally stopped after shared-outbox dependency compileJava; no target app classpath was captured."
+    },
+    {
+      "id": "h7-init-static-isolation",
+      "criteria": [
+        "use fresh H7 report names",
+        "retain H6/H5 artifacts",
+        "keep incremental disabled and classpath order"
+      ],
+      "command": "rg -n 'H7|h7-classpath|options.incremental|classpathOrderPreserved|DirectoryStream' .agent\\v2-binding-proto\\h7-classpath.init.gradle",
+      "exit_code": 0,
+      "status": "PASS_STATIC_ISOLATION",
+      "script_sha256": "DDEA58433BE51049D572EEFC3AA4D011CE684327C4E31C157385A6BF40B8FE94",
+      "evidence": "Private H7 init copied H6 capture behavior and writes only h7-classpath-* reports; no H5/H6 artifact was overwritten."
+    },
+    {
+      "id": "h7-five-module-union",
+      "criteria": [
+        "run one narrow normal-cache five-module union",
+        "retain exact malformed command and first source failure"
+      ],
+      "command": "& .\\gradlew.bat --no-daemon --no-parallel --max-workers=1 --console=plain --init-script .\\.agent\\v2-binding-proto\\h7-classpath.init.gradle [15 targets, final document-renderer path malformed] 2>&1 | Tee-Object -FilePath '.agent\\v2-binding-proto\\h7-gradle.log'; $h7Exit=$LASTEXITCODE; Write-Output ('H7_EXIT=' + $h7Exit); exit $h7Exit",
+      "exit_code": 1,
+      "status": "FAIL_EXECUTION_DEFECT_FIRST_SOURCE_BLOCKER",
+      "raw_log_path": ".agent/v2-binding-proto/h7-gradle.log",
+      "raw_log_sha256": "A1B4462476EA7FCBCB61AEBB65374631BC1FEDB3C7035CB9E37288E2C858F622",
+      "raw_log_bytes": 9623,
+      "executed": [
+        ":services:schedule-service:schedule-app:generateProto",
+        ":services:schedule-service:schedule-app:compileJava",
+        ":services:schedule-service:schedule-app:compileTestJava",
+        ":services:academic-service:academic-app:generateProto",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:attendance-service:attendance-app:generateProto",
+        ":services:attendance-service:attendance-app:compileJava",
+        ":services:attendance-service:attendance-app:compileTestJava",
+        ":services:mobile-bff:mobile-bff-app:generateProto",
+        ":services:mobile-bff:mobile-bff-app:compileJava",
+        ":services:mobile-bff:mobile-bff-app:compileTestJava"
+      ],
+      "not_reached": [
+        ":services:document-renderer-service:document-renderer-app:generateProto",
+        ":services:document-renderer-service:document-renderer-app:compileJava",
+        ":services:document-renderer-service:document-renderer-app:compileTestJava"
+      ],
+      "evidence": "H7 ran 51 seconds and stopped with two UUID cannot-find-symbol errors in ScheduleUserContextFilterStrictModeIT.java:20. The malformed final argument was :services:document-renderer-service:compileJava; no retry was made."
+    },
+    {
+      "id": "h8-uuid-correction",
+      "criteria": [
+        "add only the authorized UUID import",
+        "preserve strict test assertions and factory-call semantics"
+      ],
+      "command": "source-check.ps1 and git diff --check on the approved test correction",
+      "exit_code": 0,
+      "status": "PASS_BOUNDED_CORRECTION",
+      "evidence": "Only import java.util.UUID was added to ScheduleUserContextFilterStrictModeIT.java; source-check and diff-check returned exit code 0. Strict-test SHA256 is D2FCF168798DA4676D25557C6421E5A43400EA146D6836429BCBF3815066BCB1."
+    },
+    {
+      "id": "h8-five-module-union",
+      "criteria": [
+        "retain the exact malformed H8 command and first post-correction failure",
+        "do not treat the malformed invocation as the five-module gate"
+      ],
+      "command": "& .\\gradlew.bat --no-daemon --no-parallel --max-workers=1 --console=plain --init-script .\\.agent\\v2-binding-proto\\h8-classpath.init.gradle :services:schedule-service:schedule-app:generateProto :services:schedule-service:schedule-app:compileJava :services:schedule-service:schedule-app:compileTestJava :services:academic-service:academic-app:generateProto :services:academic-service:academic-app:compileJava :services:academic-service:academic-app:compileTestJava :services:attendance-service:attendance-app:generateProto :services:attendance-service:attendance-app:compileJava :services:attendance-service:attendance-app:compileTestJava :services:mobile-bff:mobile-bff-app:generateProto :services:mobile-bff:mobile-bff-app:compileJava :services:mobile-bff:mobile-bff-app:compileTestJava :services:document-renderer-service:compileJava :services:document-renderer-service:document-renderer-app:compileTestJava 2>&1 | Tee-Object -FilePath '.agent\\v2-binding-proto\\h8-gradle.log'; $h8Exit=$LASTEXITCODE; Write-Output ('H8_EXIT=' + $h8Exit); exit $h8Exit",
+      "exit_code": 1,
+      "status": "FAIL_EXECUTION_DEFECT_BASELINE_SOURCE_BLOCKER",
+      "raw_log_path": ".agent/v2-binding-proto/h8-gradle.log",
+      "raw_log_sha256": "06603355987F6FAFA38EC16F7BF2414D48762F098E37C9E935C071BEF1407425",
+      "raw_log_bytes": 25032,
+      "executed": [
+        ":services:schedule-service:schedule-app:generateProto",
+        ":services:schedule-service:schedule-app:compileJava",
+        ":services:schedule-service:schedule-app:compileTestJava",
+        ":services:academic-service:academic-app:generateProto",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:attendance-service:attendance-app:generateProto",
+        ":services:attendance-service:attendance-app:compileJava",
+        ":services:attendance-service:attendance-app:compileTestJava",
+        ":services:mobile-bff:mobile-bff-app:generateProto",
+        ":services:mobile-bff:mobile-bff-app:compileJava",
+        ":services:mobile-bff:mobile-bff-app:compileTestJava"
+      ],
+      "not_reached": [
+        ":services:document-renderer-service:document-renderer-app:generateProto",
+        ":services:document-renderer-service:document-renderer-app:compileJava",
+        ":services:document-renderer-service:document-renderer-app:compileTestJava"
+      ],
+      "evidence": "H8 ran 1 minute 57 seconds and stopped at mobile-bff OpenApiSnapshotIT.java:228 because the existing 4-argument JWT.validToken call does not match the current 9-argument API. The final document-renderer argument was malformed, so H8 is not the exact union gate."
+    },
+    {
+      "id": "h8b-canonical-task-arguments",
+      "criteria": [
+        "canonical array has fifteen tasks",
+        "canonical order equals frozen H5 order",
+        "five module roots are real build modules",
+        "no duplicates or omissions"
+      ],
+      "command": "Read h8b-task-args.json; extract frozen H5 task tokens from evidence.md; compare arrays/order and Test-Path each module root build.gradle.kts",
+      "exit_code": 0,
+      "status": "PASS_STATIC_CANONICAL_ARRAY",
+      "canonical_path": ".agent/v2-binding-proto/h8b-task-args.json",
+      "canonical_sha256": "6E4BAFEDB487D6AE3FBA49C65E583CABEF884629972D1C0C3EC56C091C3BF064",
+      "historical_pre_f2_sha256": "AFFF5C046A8769AFC5C80FEB0B3B28E611DC01E26917051DC75369C9C3E7A2CF",
+      "task_count": 15,
+      "module_roots": [
+        "services/schedule-service/schedule-app",
+        "services/academic-service/academic-app",
+        "services/attendance-service/attendance-app",
+        "services/mobile-bff/mobile-bff-app",
+        "services/document-renderer-service/document-renderer-app"
+      ],
+      "evidence": "Mechanical comparison output: CANONICAL_TASK_COUNT=15, FROZEN_TASK_COUNT=15, CANONICAL_DUPLICATE_ROOTS=0, ORDER_MATCH=True, ROOT_ORDER_MATCH=True, ALL_BUILD_GRADLE_PRESENT=True, TASK_ROOTS_VALID=True."
+    },
+    {
+      "id": "h9-init-static-isolation",
+      "criteria": [
+        "use fresh H9 report names",
+        "retain H8/H7/H6/H5 artifacts",
+        "keep incremental disabled and classpath order"
+      ],
+      "command": "rg -n 'H9|h9-classpath|options.incremental|classpathOrderPreserved|DirectoryStream' .agent\\v2-binding-proto\\h9-classpath.init.gradle",
+      "exit_code": 0,
+      "status": "PASS_STATIC_ISOLATION",
+      "script_sha256": "BA53E6114D7F26451983AA78525B93EA2BFED1BA16FA13BEA0C17A6F0963A394",
+      "evidence": "Private H9 init copied H8 capture behavior and writes only h9-classpath-* reports; prior reports were preserved."
+    },
+    {
+      "id": "h9-five-module-union",
+      "criteria": [
+        "run exact canonical fifteen-target union once",
+        "all five modules generate proto and compile Java/test sources",
+        "retain raw log and exact exit"
+      ],
+      "command": "$h9Canonical = Get-Content '.agent\\v2-binding-proto\\h8b-task-args.json' -Raw | ConvertFrom-Json; $h9Tasks = @($h9Canonical.tasks); if ($h9Tasks.Count -ne 15) { Write-Output ('H9_CANONICAL_TASK_COUNT=' + $h9Tasks.Count); exit 2 }; & .\\gradlew.bat --no-daemon --no-parallel --max-workers=1 --console=plain --init-script .\\.agent\\v2-binding-proto\\h9-classpath.init.gradle @h9Tasks 2>&1 | Tee-Object -FilePath '.agent\\v2-binding-proto\\h9-gradle.log'; $h9Exit=$LASTEXITCODE; Write-Output ('H9_CANONICAL_TASK_COUNT=' + $h9Tasks.Count); Write-Output ('H9_EXIT=' + $h9Exit); exit $h9Exit",
+      "exit_code": 0,
+      "status": "PASS_FIVE_MODULE_COMPILE_GATE",
+      "raw_log_path": ".agent/v2-binding-proto/h9-gradle.log",
+      "raw_log_sha256": "A9098B6607B642A9AE9BA956A050ACFA8844C0EC5BE7912E7016C2992EB64787",
+      "raw_log_bytes": 25087,
+      "canonical_args_path": ".agent/v2-binding-proto/h8b-task-args.json",
+      "canonical_args_sha256": "6E4BAFEDB487D6AE3FBA49C65E583CABEF884629972D1C0C3EC56C091C3BF064",
+      "canonical_task_count": 15,
+      "gradle_summary": "BUILD SUCCESSFUL in 2m 9s; 59 actionable tasks: 30 executed, 29 up-to-date",
+      "evidence": "Every canonical target task reached: five generateProto, five compileJava and five compileTestJava tasks. H9 used existing normal cache state, no rerun/no-build-cache flags, no clean or runtime. H9 lease released at exit."
+    },
+    {
+      "id": "h9-reached-classpath-reports",
+      "criteria": [
+        "capture reached dependency and all ten target JavaCompile reports",
+        "reports parse with zero capture errors",
+        "retain exact report paths and hashes"
+      ],
+      "command": "Get-ChildItem .agent\\v2-binding-proto -Filter h9-classpath-*.log | ConvertFrom-Json each report; summarize report count, target count and capture errors",
+      "exit_code": 0,
+      "status": "PASS_TARGET_CLASSPATH_CAPTURE",
+      "report_count": 24,
+      "target_report_count": 10,
+      "capture_error_count": 0,
+      "target_classpath_counts": [143, 193, 153, 203, 165, 216, 88, 122, 75, 102],
+      "report_hashes": [
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_academic-service_academic-api-contract_compileJava.log", "bytes": 16615, "sha256": "40D762C85B9A4861265B388E5C9F594AF9E47E7CD9F3D8D20122127F0796D054"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_attendance-service_attendance-api-contract_compileJava.log", "bytes": 16639, "sha256": "CDCF158E29AA548CED87D0A5E2E9F40D4F59DD964E0BC904225156A2740A87C6"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_mobile-bff_mobile-bff-api-contract_compileJava.log", "bytes": 5387, "sha256": "B5766F4892E3FA4C820C6CC77340E962D5FCA38D1D382599D85FE74DC8202F0F"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_schedule-service_schedule-api-contract_compileJava.log", "bytes": 16615, "sha256": "CD10320EE631F77CA2045657097687C855B5CAA25988BA9BB6AC44F7FE7CC2D9"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_shared_shared-events_compileJava.log", "bytes": 6786, "sha256": "F762CC5AF0B5D702CDC28D26616058A0A56B7CE2A50838DA1F0EEEC8051BC049"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_shared_shared-logback_compileJava.log", "bytes": 4533, "sha256": "45B768D8C1701F18B2EFE08695DA4288548E8840DDEA16A8F5301A7EB587C04A"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_shared_shared-observability_compileJava.log", "bytes": 9429, "sha256": "131FF16B88B8E02B6AF833482A8CB6B3D417ECA6648249A9BAB156EACE834EE6"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_shared_shared-observability_compileTestFixturesJava.log", "bytes": 13725, "sha256": "FC5D0890AABBD31554743F5DD5BAE6A023F5D6432DB5D5B72A59488261B45042"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_shared_shared-outbox_compileJava.log", "bytes": 36965, "sha256": "B064EC2D5B049F4B58E72CB1B67850B9B199C769AC08FC2D3F8D0B9ADCD854D4"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_shared_shared-security_compileJava.log", "bytes": 17398, "sha256": "131D8D8D65C8613C066845CFF998C451774E3082D53E9EA946C64A4A3721992A"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_shared_shared-security_compileTestFixturesJava.log", "bytes": 19790, "sha256": "93226998449AFF10C447E9E6670C79AF091E6EBFCD61A282AF7EDDEA89D74C8B"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_shared_shared-test-containers_compileTestFixturesJava.log", "bytes": 23216, "sha256": "59CA230147FEBF684EB402DEE075CAAF4111EFF788399F9E0C792341AE5D9894"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_shared_shared-web_compileJava.log", "bytes": 26802, "sha256": "E780136D0B270DF5598608CBEBB03B93F68DF590B4D4922568724ABF5E8999B5"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-reached-_services_shared_shared-web-api_compileJava.log", "bytes": 2704, "sha256": "D1F59E838DB311F0CB5B695300504F7FFEDA23CFACEF6D53C6592BA423FF8D01"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-target-01-_services_schedule-service_schedule-app_compileJava.log", "bytes": 119318, "sha256": "284DD03F8327AC80C93F3A808860325F0BC6202E332E612D609F6BBD92BE664D"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-target-02-_services_schedule-service_schedule-app_compileTestJava.log", "bytes": 177889, "sha256": "ED7EAE9A1FC0BC97B2CD2F40905E7D161D067FA986A8447F43F40C277EBB953B"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-target-03-_services_academic-service_academic-app_compileJava.log", "bytes": 123184, "sha256": "FF2605AB2F27133D028D4690C10EC63812FA3201945CF8660A82B4947479F412"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-target-04-_services_academic-service_academic-app_compileTestJava.log", "bytes": 180810, "sha256": "7DA20941E2AA7D41E97736124FB92F76A26D6A5548EA55A724640EBB6339A24D"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-target-05-_services_attendance-service_attendance-app_compileJava.log", "bytes": 127481, "sha256": "C3081CCBBC3AB123EA905F816714BBDE2864CB122C21DFF6EF5CEC2E72A41B54"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-target-06-_services_attendance-service_attendance-app_compileTestJava.log", "bytes": 185609, "sha256": "3F9D7A9C3594493CB9EACFD9A42591A50C1DC4C292904AB6651FE53BD24F5901"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-target-07-_services_mobile-bff_mobile-bff-app_compileJava.log", "bytes": 59726, "sha256": "56E64F912967B006628CE04A57CCA16C5ED017663C2EF7253801D0C305614F50"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-target-08-_services_mobile-bff_mobile-bff-app_compileTestJava.log", "bytes": 94816, "sha256": "AA130EFF7C808FE2A6EC0F3709C3ADEAF17690F0D2FF9F9FB7F285E709C97C30"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-target-09-_services_document-renderer-service_document-renderer-app_compileJava.log", "bytes": 62478, "sha256": "5250D72485DAB202E1AF19550288509C4CE758B7CDA6FF53692E1CC08EC7542D"},
+        {"path": ".agent/v2-binding-proto/h9-classpath-target-10-_services_document-renderer-service_document-renderer-app_compileTestJava.log", "bytes": 87893, "sha256": "3520B449017F7ECAE51052F7CF56796971FDB4AF503AED7424F3FBD8BDADCFE1"}
+      ],
+      "evidence": "All 24 reports were parseable; all ten target reports are present in canonical target order and captureErrors is zero for every report."
+    },
+    {
+      "id": "final-source-hash-snapshot",
+      "criteria": [
+        "record final five-file product/test inventory",
+        "prove proto source and approved test corrections are stable"
+      ],
+      "command": "Get-FileHash -Algorithm SHA256 over the two proto files, three approved test files and source-check.ps1",
+      "exit_code": 0,
+      "status": "PASS_STABLE_SOURCE_HASHES",
+      "files": [
+        {"path": "proto/academic.proto", "sha256": "980C12514EB3E2B1E1C90A94207115CC70A2AC64458BAB4B99F14467016C45B9"},
+        {"path": "proto/schedule.proto", "sha256": "984538E5ED0414F06A9BB9CAE4AF2BC981CB50A32190EF5FA06B0858C1AAB0FB"},
+        {"path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java", "sha256": "9314F3404E0FC6FA702106F467A180E4296F32ED86375652881A976B29C0F3DA"},
+        {"path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java", "sha256": "D2FCF168798DA4676D25557C6421E5A43400EA146D6836429BCBF3815066BCB1"},
+        {"path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java", "sha256": "3886D055A127DF7BA2DCDE605334926D25938963209FDF3BB3D1F0F0FD96C52C"},
+        {"path": ".agent/v2-binding-proto/source-check.ps1", "sha256": "1278F2F536E5B0073C913031FBD71076C173E768A7542BEFEB5DDEA851730C6C"}
+      ],
+      "evidence": "Source-check returned SOURCE_CHECK PASS before H9; H9 generated/compiled sources from this stable five-file scoped diff."
+    }
+  ],
+  "runtime_evidence": {
+    "status": "N/A",
+    "reason": "Declaration-only proto scope; main explicitly excluded Docker/server/IT runtime"
+  },
+  "review": {
+    "status": "OPEN",
+    "required": "fresh independent Sol high diff review by main"
+  }
+}

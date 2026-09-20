@@ -1,0 +1,42 @@
+[
+  {
+    "className": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityContractTest",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.assignment.AssignmentClosureContractTest",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.config.SubjectTypeUserTypeTest",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcContractTest",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.semester.SemesterAssignmentLockContractTest",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.grpc.StudentProjectionGrpcServiceTest",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest",
+    "freshXml": true
+  },
+  {
+    "className": "ru.rutcampustrack.attendance.report.ReportServiceTest",
+    "freshXml": true
+  }
+]

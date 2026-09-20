@@ -1,0 +1,29 @@
+{
+  "stage": "H102",
+  "start": "2026-09-20T15:31:15.9784455Z",
+  "baseRevision": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+  "freezeHash": "73A276C1382318C7DA893C821BAA55C3B26B37A848FD9D0C1A5A9906CD528336",
+  "planHash": "3BDBFD347798B1820F4361AB0A9E359107FB7C09CF9A502C3C07368E1CAE5C2A",
+  "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-recurring-writer",
+  "command": [
+    ".\\gradlew.bat",
+    ":services:schedule-service:schedule-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+    "--tests",
+    "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+    "--tests",
+    "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report"
+  ],
+  "exitCode": 0,
+  "javaVersion": "openjdk version \"21.0.10\" 2026-01-20 LTS\r\nOpenJDK Runtime Environment Microsoft-13106404 (build 21.0.10+7-LTS)\r\nOpenJDK 64-Bit Server VM Microsoft-13106404 (build 21.0.10+7-LTS, mixed mode, sharing)",
+  "powershell": "7.6.5",
+  "testcontainersReuse": "false",
+  "end": "2026-09-20T15:32:28.1708475Z",
+  "sourceMismatches": [],
+  "freshTestClasses": 3
+}

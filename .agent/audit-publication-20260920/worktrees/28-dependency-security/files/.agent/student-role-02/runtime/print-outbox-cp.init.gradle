@@ -1,0 +1,7 @@
+allprojects {
+ afterEvaluate { p ->
+  if (p.path == ':services:shared:shared-outbox') {
+   tasks.register('printMainCompileClasspath') { doLast { println p.sourceSets.main.compileClasspath.asPath } }
+  }
+ }
+}

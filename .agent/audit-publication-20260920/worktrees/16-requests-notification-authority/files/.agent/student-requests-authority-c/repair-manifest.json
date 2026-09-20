@@ -1,0 +1,122 @@
+{
+  "schema": "rct.requests-notification-authority.repair-manifest.v1",
+  "recordedAt": "2026-09-08",
+  "baseRevision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "scope": "Requests notification authority cumulative P1 delta",
+  "immutableBaselines": {
+    "transport": {
+      "sourceManifestSha256": "4725C54BF3F6300557697C4A756ED1565D5CCD8005F229C6C60AE3250744B2C4",
+      "productEntries": 82,
+      "inheritedPathsExcludedFromAuthoredCount": 82,
+      "destinationGuard": "PASS"
+    },
+    "acceptedRepair": {
+      "sourceManifestSha256": "7B64350F73272787BD383E89611B75BE10959B02B4A0342695E45C46769462F3",
+      "paths": [
+        {
+          "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+          "sha256": "1FE05ED7FA57A2DC3CFA1EA77635B414D94B986D7DFFEAFC78EA544D3485FF32"
+        },
+        {
+          "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java",
+          "sha256": "95BFF3CE808623BFCD370499410A33BFC3C38465AF9097FE3016F80D49E51EDA"
+        }
+      ],
+      "authoredCount": 0,
+      "destinationGuard": "PASS"
+    }
+  },
+  "cumulativeP1Delta": [
+    {
+      "path": "proto/attendance.proto",
+      "status": "changed",
+      "sourceBaselineSha256": "4108E3F9AFF3025E131158C0D7FC0D766D2CC4F6F61F955C95AD196B175B08F8",
+      "currentSha256": "54CC1E7EFFAB9860390555FA2B345798230A884E2F1E1974F0931DAF34D27D2B"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceRequestBotGrpcServiceImpl.java",
+      "status": "changed",
+      "sourceBaselineSha256": "49627433A2DFB43BACA94BC2216AFB0F011BA6C7BBF6D4DE676093B9C50024E3",
+      "currentSha256": "DDD7394E4133C92D544773F68097E975E2586CC349EC3332C401C574258A3F9E"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java",
+      "status": "changed",
+      "sourceBaselineSha256": "DEFCA9A5DC3D03F96A8E184B7040638CD04418DC014AB1DA01528EE7F09B25C2",
+      "currentSha256": "142609485B22E52C9A6AA2506D332FD42E8F37CFEC178FCC22910777C9CB6D10"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "status": "changed",
+      "sourceBaselineSha256": "7AD59234BD0A45FBF8A3AAD9D60971F2558021398C4D018348786D4BE421DEBC",
+      "currentSha256": "BD054202143BEB11265608080373BD874228C4057DB64ABC8F17A3C141B9DE1F"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceRequestBotGrpcServiceTest.java",
+      "status": "added",
+      "sourceBaselineSha256": null,
+      "currentSha256": "841AC611D48894D5D8639FC6BB9482C4D4C8451EB6301C698731A730FC8C48EA"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+      "status": "changed",
+      "sourceBaselineSha256": "1C0E6A2C4699D56BB17FD56DCEB24347C4DE3290F4E121D31DFCEB6662C44644",
+      "currentSha256": "0591DAC19F2FD5BDB7C3E41C9F66106FD9D0799945F8CFBD66141FEE9261BD7C"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/attendance_client.py",
+      "status": "changed",
+      "sourceBaselineSha256": "8FC2CE88DDC65A23E115642A2C0B49A71FE6BC248D4E741393149968B26E5CD7",
+      "currentSha256": "8BF8A0BB9BBDD7A4C122F7406592052BC0F6088CB7920E92884256648C04C37A"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/attendance_pb2.py",
+      "status": "changed",
+      "sourceBaselineSha256": "4CCB0F068260C04D9ADFC1F10FDED1117A9D15E4D08153244603D55323843D22",
+      "currentSha256": "5247912C39E1B6F04C31F5C358DDA6EFAEE04BF1B127D831E81582EB6F507DA6"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/attendance_pb2_grpc.py",
+      "status": "changed",
+      "sourceBaselineSha256": "0F31792BE3F87EDF79D8F552D3104BCB55A04EB1FB980E3F7AED040D2238F1F0",
+      "currentSha256": "40738D25B754F358C2AF36B1FB9A2261EAC483F7503E981E74C2C921D41C0C91"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/headman_alerts.py",
+      "status": "changed",
+      "sourceBaselineSha256": "C05368C5305FD58C07C5378B0B94764A68006F083EE49112BFC371203C071D68",
+      "currentSha256": "14E8C4271BF2A0F59E3DC3A49D7A2197FF22AF72D371AE8E9BD222CADFD57FE8"
+    },
+    {
+      "path": "services/notification-bot/tests/test_attendance_request_grpc_client.py",
+      "status": "added",
+      "sourceBaselineSha256": null,
+      "currentSha256": "B79A43C0C56631FB439C166BD20F008B9A4FDEC84466306D8E5B456337318573"
+    },
+    {
+      "path": "services/notification-bot/tests/test_headman_alerts.py",
+      "status": "changed",
+      "sourceBaselineSha256": "B92B37AFE5D17480D79D68791BD12D112E88A09157E0C2C82EC3905237BE849E",
+      "currentSha256": "370F8DA5F6258ECA05B811B7F92C43187A5920155164E36AB7E1F20F7506C59A"
+    }
+  ],
+  "counts": {
+    "inheritedTransportExcluded": 82,
+    "acceptedRepairExcluded": 2,
+    "cumulativeP1Delta": 12
+  },
+  "evidenceFiles": [
+    ".agent/student-requests-authority-c/packet.md",
+    ".agent/student-requests-authority-c/resume-packet.md",
+    ".agent/student-requests-authority-c/generator-evidence.md",
+    ".agent/student-requests-authority-c/checks.json",
+    ".agent/student-requests-authority-c/runtime-evidence.md",
+    ".agent/student-requests-authority-c/diff.md",
+    ".agent/student-requests-authority-c/import-guard.md",
+    ".agent/student-requests-authority-c/current-path-manifest.txt"
+  ],
+  "review": {
+    "status": "PENDING",
+    "next": "Independent Sol P1 review after stable diff and focused Java checks"
+  }
+}

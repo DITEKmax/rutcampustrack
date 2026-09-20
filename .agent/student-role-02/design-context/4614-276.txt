@@ -1,0 +1,92 @@
+const imgIconPrevious = "https://www.figma.com/api/mcp/asset/3c889a14-b191-4363-8684-bcbdc2e12e48.svg";
+const imgChecked = "https://www.figma.com/api/mcp/asset/deff7d76-98a6-445d-a127-f838bdc7fc2f.svg";
+
+function IconPrevious({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[16px]"} data-node-id="4597:3579" data-name="icon/previous">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconPrevious} />
+    </div>
+  );
+}
+
+export default function Component19() {
+  return (
+    <div className="bg-[var(--color-surface-base,#0b0b0c)] overflow-clip relative rounded-[24px] size-full" data-node-id="4614:276" data-name="19 · Профиль / оформление">
+      <div className="absolute content-stretch flex flex-col gap-[12px] h-[812px] items-start left-[16px] overflow-clip py-[20px] top-0 w-[358px]" data-node-id="4614:277" data-name="content">
+        <div className="content-stretch flex gap-[10px] items-center overflow-clip relative shrink-0 w-[358px]" data-node-id="4614:278" data-name="header">
+          <div className="bg-[var(--color-surface-float,#292531)] content-stretch flex items-center justify-center overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4614:279" data-name="back">
+            <IconPrevious className="relative shrink-0 size-[16px]" />
+          </div>
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] h-[32px] leading-[normal] not-italic relative shrink-0 text-[22px] text-[color:var(--color-text-primary,#edeaf3)] w-[304px]" data-node-id="4614:281">
+            Оформление
+          </p>
+        </div>
+        <div className="h-[176px] relative shrink-0 w-[358px]" data-node-id="4658:849249" data-name="settings/ThemeSwitcher/local">
+          <p className="[word-break:break-word] absolute font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.45] left-0 not-italic text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-dense,14px)] top-0 whitespace-nowrap" data-node-id="4658:849250" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+            Тема интерфейса
+          </p>
+          <div className="absolute content-stretch flex flex-col gap-[var(--space-2,8px)] h-[148px] items-start left-0 overflow-clip p-[var(--space-0,0px)] top-[28px] w-[358px]" data-node-id="4658:849251" data-name="Radiogroup">
+            <div className="h-[44px] relative shrink-0 w-[358px]" data-node-id="4658:849278" data-name="Theme option / Светлая">
+              <div className="absolute content-stretch flex flex-col gap-[var(--space-0,0px)] h-[var(--icon-size-md,20px)] items-center justify-center left-0 p-[var(--space-0,0px)] top-[12px] w-[var(--icon-size-sm,16px)]" data-node-id="4658:849279" data-name="Control line">
+                <div className="border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-solid relative rounded-[var(--radius-full,999px)] shrink-0 size-[16px]" data-node-id="4658:849280" data-name="Radio box" />
+              </div>
+              <div className="absolute content-stretch flex flex-col gap-[var(--space-1,4px)] items-start left-[24px] overflow-clip p-[var(--space-0,0px)] top-[12px] w-[334px]" data-node-id="4658:849284" data-name="Copy">
+                <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Regular')] leading-[1.45] not-italic relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-dense,14px)] w-[334px]" data-node-id="4658:849285" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                  Светлая
+                </p>
+              </div>
+            </div>
+            <div className="h-[44px] relative shrink-0 w-[358px]" data-node-id="4658:849288" data-name="Theme option / Тёмная">
+              <div className="absolute content-stretch flex flex-col gap-[var(--space-0,0px)] h-[var(--icon-size-md,20px)] items-center justify-center left-0 p-[var(--space-0,0px)] top-[12px] w-[var(--icon-size-sm,16px)]" data-node-id="4658:849289" data-name="Control line">
+                <div className="border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-solid relative rounded-[var(--radius-full,999px)] shrink-0 size-[16px]" data-node-id="4658:849290" data-name="Radio box" />
+              </div>
+              <div className="absolute content-stretch flex flex-col gap-[var(--space-1,4px)] items-start left-[24px] overflow-clip p-[var(--space-0,0px)] top-[12px] w-[334px]" data-node-id="4658:849294" data-name="Copy">
+                <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Regular')] leading-[1.45] not-italic relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-dense,14px)] w-[334px]" data-node-id="4658:849295" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                  Тёмная
+                </p>
+              </div>
+            </div>
+            <div className="h-[44px] relative shrink-0 w-[358px]" data-node-id="4658:849297" data-name="Theme option / Как в системе">
+              <div className="absolute content-stretch flex flex-col gap-[var(--space-0,0px)] h-[var(--icon-size-md,20px)] items-center justify-center left-0 p-[var(--space-0,0px)] top-[12px] w-[var(--icon-size-sm,16px)]" data-node-id="4658:849298" data-name="Control line">
+                <div className="border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-solid relative rounded-[var(--radius-full,999px)] shrink-0 size-[16px]" data-node-id="4658:849299" data-name="Radio box">
+                  <div className="absolute left-[-1px] size-[16px] top-[-1px]" data-node-id="4658:849300" data-name="Checked">
+                    <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgChecked} />
+                  </div>
+                </div>
+              </div>
+              <div className="absolute content-stretch flex flex-col gap-[var(--space-1,4px)] items-start left-[24px] overflow-clip p-[var(--space-0,0px)] top-[12px] w-[334px]" data-node-id="4658:849303" data-name="Copy">
+                <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Regular')] leading-[1.45] not-italic relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-dense,14px)] w-[334px]" data-node-id="4658:849304" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                  Как в системе
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="[word-break:break-word] bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[6px] items-start leading-[normal] not-italic overflow-clip p-[16px] relative rounded-[24px] shrink-0 w-[358px]" data-node-id="4614:447" data-name="theme-note">
+          <p className="font-['Onest:SemiBold'] relative shrink-0 text-[15px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4614:448">
+            Системная тема
+          </p>
+          <p className="font-['Onest:Regular'] h-[40px] relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] w-[326px]" data-node-id="4614:449">
+            В Telegram этот режим следует теме клиента.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+These styles are contained in the design: dense-strong: Font(family: "var(--font-family-sans)", style: Medium, size: var(--font-size-dense), weight: var(--font-weight-medium), lineHeight: 1.4500000476837158, letterSpacing: 0), dense: Font(family: "var(--font-family-sans)", style: Regular, size: var(--font-size-dense), weight: var(--font-weight-regular), lineHeight: 1.4500000476837158, letterSpacing: 0).
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## icon/previous
+**Node ID:** 4597:3579
+
+Временная локальная векторная заглушка смысла «предыдущий». Один stroke-вектор и метрика совпадают с icon/chevron-down; заменить финальной иконкой через instance swap.
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

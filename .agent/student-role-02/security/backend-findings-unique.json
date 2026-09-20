@@ -1,0 +1,461 @@
+[
+  {
+    "VulnerabilityID": "GHSA-r7wm-3cxj-wff9",
+    "PkgName": "com.fasterxml.jackson.core:jackson-core",
+    "InstalledVersion": "2.18.2",
+    "FixedVersion": "2.18.8, 2.21.4",
+    "Severity": "HIGH",
+    "Title": "jackson-core: Async parser maxNumberLength bypass via chunked digit accumulation (incomplete fix for GHSA-72hv-8253-57qq)",
+    "PrimaryURL": "https://github.com/advisories/GHSA-r7wm-3cxj-wff9"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-54512",
+    "PkgName": "com.fasterxml.jackson.core:jackson-databind",
+    "InstalledVersion": "2.18.2",
+    "FixedVersion": "2.18.8, 3.1.4, 2.21.4",
+    "Severity": "HIGH",
+    "Title": "jackson-databind: jackson-databind: Arbitrary code execution via PolymorphicTypeValidator bypass",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-54512"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-54513",
+    "PkgName": "com.fasterxml.jackson.core:jackson-databind",
+    "InstalledVersion": "2.18.2",
+    "FixedVersion": "2.18.8, 2.21.4, 3.1.4",
+    "Severity": "HIGH",
+    "Title": "jackson-databind: Jackson-databind: Security bypass allows arbitrary code execution",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-54513"
+  },
+  {
+    "VulnerabilityID": "CVE-2024-7254",
+    "PkgName": "com.google.protobuf:protobuf-java",
+    "InstalledVersion": "3.25.1",
+    "FixedVersion": "3.25.5, 4.27.5, 4.28.2",
+    "Severity": "HIGH",
+    "Title": "protobuf: StackOverflow vulnerability in Protocol Buffers",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2024-7254"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-63337",
+    "PkgName": "com.rabbitmq:amqp-client",
+    "InstalledVersion": "5.22.0",
+    "FixedVersion": "5.33.0",
+    "Severity": "HIGH",
+    "Title": "The RabbitMQ Java client library allows Java and JVM-based application ...",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-63337"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-69219",
+    "PkgName": "com.rabbitmq:amqp-client",
+    "InstalledVersion": "5.22.0",
+    "FixedVersion": "5.33.1",
+    "Severity": "HIGH",
+    "Title": "The RabbitMQ Java client library allows Java and JVM-based application ...",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-69219"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-69220",
+    "PkgName": "com.rabbitmq:amqp-client",
+    "InstalledVersion": "5.22.0",
+    "FixedVersion": "5.33.1",
+    "Severity": "HIGH",
+    "Title": "The RabbitMQ Java client library allows Java and JVM-based application ...",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-69220"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-55163",
+    "PkgName": "io.grpc:grpc-netty-shaded",
+    "InstalledVersion": "1.63.0",
+    "FixedVersion": "1.75.0",
+    "Severity": "HIGH",
+    "Title": "netty: netty-codec-http2: Netty MadeYouReset HTTP/2 DDoS Vulnerability",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-55163"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-40984",
+    "PkgName": "io.micrometer:micrometer-core",
+    "InstalledVersion": "1.14.2",
+    "FixedVersion": "1.16.6, 1.15.12",
+    "Severity": "HIGH",
+    "Title": "micrometer-core: micrometer-jetty11: micrometer-jetty12: Micrometer: Denial of Service via specially crafted HTTP requests",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-40984"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-42583",
+    "PkgName": "io.netty:netty-codec",
+    "InstalledVersion": "4.1.116.Final",
+    "FixedVersion": "4.1.133.Final",
+    "Severity": "HIGH",
+    "Title": "netty: io.netty/netty-codec-compression: io.netty/netty-codec: Netty: Denial of Service via excessive memory allocation in LZ4FrameDecoder",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-42583"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-59901",
+    "PkgName": "io.netty:netty-codec",
+    "InstalledVersion": "4.1.116.Final",
+    "FixedVersion": "4.1.136.Final",
+    "Severity": "HIGH",
+    "Title": "io.netty/netty-codec-compression: Netty: Infinite loop in netty-codec-compression (bzip2)",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-59901"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-24970",
+    "PkgName": "io.netty:netty-handler",
+    "InstalledVersion": "4.1.116.Final",
+    "FixedVersion": "4.1.118.Final",
+    "Severity": "HIGH",
+    "Title": "io.netty:netty-handler: SslHandler doesn't correctly validate packets which can lead to native crash when using native SSLEngine",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-24970"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-44249",
+    "PkgName": "io.netty:netty-handler",
+    "InstalledVersion": "4.1.116.Final",
+    "FixedVersion": "4.2.15.Final, 4.1.135.Final",
+    "Severity": "HIGH",
+    "Title": "netty-handler: netty-handler: IPv6 subnet rule bypass due to incorrect masking operation",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-44249"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-45416",
+    "PkgName": "io.netty:netty-handler",
+    "InstalledVersion": "4.1.116.Final",
+    "FixedVersion": "4.2.15.Final, 4.1.135.Final",
+    "Severity": "HIGH",
+    "Title": "netty-handler: Netty: Denial of Service due to eager buffer allocation in TLS handshake",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-45416"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-50010",
+    "PkgName": "io.netty:netty-handler",
+    "InstalledVersion": "4.1.116.Final",
+    "FixedVersion": "4.2.15.Final, 4.1.135.Final",
+    "Severity": "HIGH",
+    "Title": "netty-handler: Netty: Improper trust manager handling leads to hostname verification bypass",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-50010"
+  },
+  {
+    "VulnerabilityID": "CVE-2024-57699",
+    "PkgName": "net.minidev:json-smart",
+    "InstalledVersion": "2.5.1",
+    "FixedVersion": "2.5.2",
+    "Severity": "HIGH",
+    "Title": "json-smart: Potential DoS via stack exhaustion (incomplete fix for CVE-2023-1370)",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2024-57699"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-24813",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "11.0.3, 10.1.35, 9.0.99",
+    "Severity": "CRITICAL",
+    "Title": "tomcat: Potential RCE and/or information disclosure and/or information corruption with partial PUT",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-24813"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-48988",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "11.0.8, 10.1.42, 9.0.106",
+    "Severity": "HIGH",
+    "Title": "tomcat: Apache Tomcat DoS in multipart upload",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-48988"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-48989",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "11.0.10, 10.1.44, 9.0.108",
+    "Severity": "HIGH",
+    "Title": "tomcat: http/2 \"MadeYouReset\" DoS attack through HTTP/2 control frames",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-48989"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-52520",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "11.0.9, 10.1.43, 9.0.107",
+    "Severity": "HIGH",
+    "Title": "tomcat: Apache Tomcat denial of service",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-52520"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-53506",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "9.0.107, 10.1.43, 11.0.9",
+    "Severity": "HIGH",
+    "Title": "tomcat: Apache Tomcat denial of service",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-53506"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-55752",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "11.0.11, 10.1.45, 9.0.109",
+    "Severity": "HIGH",
+    "Title": "tomcat: org.apache.tomcat/tomcat-catalina: Apache Tomcat: Directory traversal via rewrite with possible RCE",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-55752"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-24734",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "11.0.18, 10.1.52, 9.0.115",
+    "Severity": "HIGH",
+    "Title": "tomcat: Apache Tomcat: Certificate revocation bypass due to improper OCSP response validation",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-24734"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-24880",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "9.0.116, 10.1.52, 11.0.20",
+    "Severity": "HIGH",
+    "Title": "Apache Tomcat: Apache Tomcat: HTTP Request/Response Smuggling via invalid chunk extension",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-24880"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-34483",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "9.0.116, 10.1.54, 11.0.21",
+    "Severity": "HIGH",
+    "Title": "Apache Tomcat: Apache Tomcat: Information disclosure due to improper encoding in JsonAccessLogValve",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-34483"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-34487",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "9.0.117, 10.1.54, 11.0.21",
+    "Severity": "HIGH",
+    "Title": "Apache Tomcat: Apache Tomcat: Information disclosure via sensitive data in log files",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-34487"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-41284",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "9.0.118, 10.1.55, 11.0.22",
+    "Severity": "HIGH",
+    "Title": "tomcat: Apache Tomcat: Denial of Service due to uncontrolled resource allocation",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-41284"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-41293",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "9.0.118, 10.1.55, 11.0.22",
+    "Severity": "CRITICAL",
+    "Title": "tomcat-coyote: Apache Tomcat: HTTP/2 request headers not validated",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-41293"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-42498",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "9.0.118, 10.1.55, 11.0.22",
+    "Severity": "HIGH",
+    "Title": "tomcat-coyote: Apache Tomcat: Information disclosure due to HTTP Authentication Header exposure during WebSocket authentication.",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-42498"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-43512",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "9.0.118, 10.1.55, 11.0.22",
+    "Severity": "CRITICAL",
+    "Title": "tomcat-coyote: Apache Tomcat: Authentication bypass via digest authentication",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-43512"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-43513",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "9.0.118, 10.1.55, 11.0.22",
+    "Severity": "HIGH",
+    "Title": "tomcat-catalina: Apache Tomcat: Improper Handling of Case Sensitivity in LockOutRealm",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-43513"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-43515",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "9.0.118, 10.1.55, 11.0.22",
+    "Severity": "CRITICAL",
+    "Title": "tomcat-coyote: tomcat: Improper Authorization allows security bypass",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-43515"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-65182",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "11.0.25, 10.1.58, 9.0.121",
+    "Severity": "CRITICAL",
+    "Title": "Apache Tomcat: Apache Tomcat: Security constraint bypass due to improper access control",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-65182"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-65905",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "11.0.25, 10.1.58, 9.0.121",
+    "Severity": "CRITICAL",
+    "Title": "tomcat: Apache Tomcat: Authentication bypass via limited replay attack in DIGEST authenticator",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-65905"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-68525",
+    "PkgName": "org.apache.tomcat.embed:tomcat-embed-core",
+    "InstalledVersion": "10.1.34",
+    "FixedVersion": "11.0.25, 10.1.58, 9.0.121",
+    "Severity": "CRITICAL",
+    "Title": "org.apache.tomcat/tomcat: Apache Tomcat: Unauthorized resource access via FORM authentication bypass",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-68525"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-49146",
+    "PkgName": "org.postgresql:postgresql",
+    "InstalledVersion": "42.7.4",
+    "FixedVersion": "42.7.7",
+    "Severity": "HIGH",
+    "Title": "pgjdbc: pgjdbc insecure authentication in channel binding",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-49146"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-42198",
+    "PkgName": "org.postgresql:postgresql",
+    "InstalledVersion": "42.7.4",
+    "FixedVersion": "42.7.11",
+    "Severity": "HIGH",
+    "Title": "jdbc.postgresql.org: pgjdbc: Client-side Denial of Service via malicious SCRAM-SHA-256 authentication",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-42198"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-54291",
+    "PkgName": "org.postgresql:postgresql",
+    "InstalledVersion": "42.7.4",
+    "FixedVersion": "42.7.12",
+    "Severity": "HIGH",
+    "Title": "org.postgresql/postgresql: com.ongres.scram/scram-client: pgjdbc: Man-in-the-middle protection bypass via SCRAM-SHA-256-PLUS downgrade",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-54291"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-41249",
+    "PkgName": "org.springframework:spring-core",
+    "InstalledVersion": "6.2.1",
+    "FixedVersion": "6.2.11",
+    "Severity": "HIGH",
+    "Title": "org.springframework/spring-core: Spring Framework Annotation Detection Vulnerability",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-41249"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-41850",
+    "PkgName": "org.springframework:spring-expression",
+    "InstalledVersion": "6.2.1",
+    "FixedVersion": "7.0.8, 6.2.19",
+    "Severity": "HIGH",
+    "Title": "spring-framework: Spring Framework: Denial of Service via specially crafted SpEL expressions",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-41850"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-41842",
+    "PkgName": "org.springframework:spring-webmvc",
+    "InstalledVersion": "6.2.1",
+    "FixedVersion": "7.0.8, 6.2.19",
+    "Severity": "HIGH",
+    "Title": "spring-framework: Spring Framework: Denial of Service when resolving static resources",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-41842"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-41845",
+    "PkgName": "org.springframework:spring-webmvc",
+    "InstalledVersion": "6.2.1",
+    "FixedVersion": "7.0.8, 6.2.19",
+    "Severity": "HIGH",
+    "Title": "org.springframework: Spring Framework: Cross-site scripting (XSS) via incorrect JavaScript escaping",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-41845"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-22235",
+    "PkgName": "org.springframework.boot:spring-boot",
+    "InstalledVersion": "3.4.1",
+    "FixedVersion": "3.3.11, 3.4.5",
+    "Severity": "HIGH",
+    "Title": "org.springframework.boot/spring-boot: Spring Boot EndpointRequest.to() creates wrong matcher if actuator endpoint is not exposed",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-22235"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-40973",
+    "PkgName": "org.springframework.boot:spring-boot",
+    "InstalledVersion": "3.4.1",
+    "FixedVersion": "4.0.6, 3.5.14",
+    "Severity": "HIGH",
+    "Title": "Spring Boot: Spring Boot: Arbitrary Code Execution and Session Hijacking via predictable temporary directory",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-40973"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-41695",
+    "PkgName": "org.springframework.data:spring-data-commons",
+    "InstalledVersion": "3.4.1",
+    "FixedVersion": "4.0.6, 3.5.12",
+    "Severity": "HIGH",
+    "Title": "Spring Data Commons: Spring Data Commons: Denial of Service via crafted property path strings",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-41695"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-41716",
+    "PkgName": "org.springframework.data:spring-data-commons",
+    "InstalledVersion": "3.4.1",
+    "FixedVersion": "4.0.6, 3.5.12",
+    "Severity": "HIGH",
+    "Title": "Spring Data Commons: Spring Data Commons: Denial of Service due to cache exhaustion via attacker-supplied strings",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-41716"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-41006",
+    "PkgName": "org.springframework.hateoas:spring-hateoas",
+    "InstalledVersion": "2.4.1",
+    "FixedVersion": "3.0.4, 2.5.3",
+    "Severity": "HIGH",
+    "Title": "Spring HATEOAS Collection+JSON/UBER deserializers do not honor Jackson configuration",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-41006"
+  },
+  {
+    "VulnerabilityID": "CVE-2026-41007",
+    "PkgName": "org.springframework.hateoas:spring-hateoas",
+    "InstalledVersion": "2.4.1",
+    "FixedVersion": "3.0.4, 2.5.3",
+    "Severity": "HIGH",
+    "Title": "spring-hateoas: Spring HATEOAS: Denial of Service via unbounded static cache",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-41007"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-41232",
+    "PkgName": "org.springframework.security:spring-security-core",
+    "InstalledVersion": "6.4.2",
+    "FixedVersion": "6.4.6",
+    "Severity": "CRITICAL",
+    "Title": "Spring-Security: Spring Security authorization bypass for method security annotations on private methods",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-41232"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-41248",
+    "PkgName": "org.springframework.security:spring-security-core",
+    "InstalledVersion": "6.4.2",
+    "FixedVersion": "6.4.10, 6.5.4",
+    "Severity": "HIGH",
+    "Title": "org.springframework.security/spring-security-core: Spring Security authorization bypass",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-41248"
+  },
+  {
+    "VulnerabilityID": "CVE-2025-22228",
+    "PkgName": "org.springframework.security:spring-security-crypto",
+    "InstalledVersion": "6.4.2",
+    "FixedVersion": "6.3.8, 6.4.4, 6.2.10, 6.1.14, 6.0.16, 5.8.18, 5.7.16",
+    "Severity": "HIGH",
+    "Title": "spring-security-core: Spring Security BCryptPasswordEncoder does not enforce maximum password length",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2025-22228"
+  }
+]

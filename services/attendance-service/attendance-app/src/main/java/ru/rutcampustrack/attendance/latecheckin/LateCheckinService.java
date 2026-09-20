@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
@@ -19,6 +21,8 @@ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
+import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
@@ -60,6 +64,8 @@ public class LateCheckinService {
     private final LateCheckinEventPublisher eventPublisher;
     private final BusinessMetrics businessMetrics;
     private final Clock clock;
+    private final PairWriteCoordinator pairWriteCoordinator;
+    private final SemesterCacheService semesterCacheService;
 
     public LateCheckinService(LateCheckinRepository repository,
                               RequestContext requestContext,
@@ -69,7 +75,9 @@ public class LateCheckinService {
                               AttendanceWritePort attendanceWritePort,
                               LateCheckinEventPublisher eventPublisher,
                               BusinessMetrics businessMetrics,
-                              Clock clock) {
+                              Clock clock,
+                              PairWriteCoordinator pairWriteCoordinator,
+                              SemesterCacheService semesterCacheService) {
         this.repository = repository;
         this.requestContext = requestContext;
         this.scheduleGrpcClient = scheduleGrpcClient;
@@ -79,6 +87,8 @@ public class LateCheckinService {
         this.eventPublisher = eventPublisher;
         this.businessMetrics = businessMetrics;
         this.clock = clock;
+        this.pairWriteCoordinator = pairWriteCoordinator;
+        this.semesterCacheService = semesterCacheService;
     }
 
     @Transactional
@@ -120,8 +130,13 @@ public class LateCheckinService {
                 .studentId(requestContext.getUserId())
                 .groupId(requestContext.getGroupId())
                 .lessonId(lessonId)
+                .subjectId(lesson.getSubjectId())
+                .semesterId(semesterCacheService.getActiveSemesterId())
+                .lessonNumber(lesson.getLessonNumber())
+                .lessonDate(LocalDate.parse(lesson.getDate()))
                 .studentName(studentName)
                 .status(LateCheckinRequestStatus.PENDING)
+                .origin(LateCheckinRequestOrigin.MANUAL)
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
@@ -226,7 +241,7 @@ public class LateCheckinService {
         if (!Objects.equals(request.getGroupId(), requestContext.getGroupId())) {
             throw new AccessDeniedException("Запрос принадлежит другой группе");
         }
-        applyDecision(requestId, requestContext.getUserId(), approved);
+        applyAuthorizedDecision(requestId, requestContext.getUserId(), approved);
         return repository.findById(requestId).orElse(request);
     }
 
@@ -235,21 +250,47 @@ public class LateCheckinService {
      * Idempotent — duplicate deliveries to an already-decided request are ignored.
      *
      * @param requestId  the Mongo id of the LateCheckinRequest
-     * @param decisionBy telegram user_id (bot path) or internal user_id (web path)
+     * @param decisionBy positive internal academic user_id from notification-bot
      * @param approved   true → APPROVED + attendance upsert; false → REJECTED
      */
     @Transactional
     public void applyDecision(String requestId, Long decisionBy, boolean approved) {
+        LateCheckinRequest initial = repository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+
+        // Duplicate or stale delivery is a no-op and must not acquire the pair lock.
+        if (initial.getStatus() != LateCheckinRequestStatus.PENDING) {
+            return;
+        }
+        if (decisionBy == null || decisionBy <= 0 || initial.getGroupId() == null) {
+            throw new AccessDeniedException("Решение может принимать только староста своей группы");
+        }
+        var headmanCheck = academicGrpcClient.isHeadman(decisionBy, initial.getGroupId());
+        if (headmanCheck == null || !headmanCheck.getIsHeadman()) {
+            throw new AccessDeniedException("Решение может принимать только староста своей группы");
+        }
+
+        applyAuthorizedDecision(requestId, decisionBy, approved);
+    }
+
+    private void applyAuthorizedDecision(String requestId, Long decisionBy, boolean approved) {
+        LateCheckinRequest initial = repository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+
+        Instant now = clock.instant();
+        pairWriteCoordinator.lock(initial.getStudentId(), initial.getLessonId(), initial.getGroupId(), now);
         LateCheckinRequest request = repository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
 
-        // Idempotency: already decided → drop silently (duplicate bot delivery)
+        // Idempotency/race: a geo retry or another delivery may have decided it after authorization.
         if (request.getStatus() != LateCheckinRequestStatus.PENDING) {
             return;
         }
 
-        Instant now = clock.instant();
         request.setStatus(approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED);
+        request.setResolutionReason(approved
+                ? LateCheckinResolutionReason.HEADMAN_APPROVED
+                : LateCheckinResolutionReason.HEADMAN_REJECTED);
         request.setDecisionBy(decisionBy);
         request.setDecisionAt(now);
         request.setUpdatedAt(now);
@@ -257,12 +298,10 @@ public class LateCheckinService {
         LateCheckinRequest saved = repository.save(request);
 
         if (approved) {
-            attendanceWritePort.mark(
-                    saved.getStudentId(),
-                    saved.getLessonId(),
-                    saved.getGroupId(),
-                    AttendanceStatus.PRESENT,
-                    AttendanceSource.LATE_CHECKIN);
+            attendanceWritePort.markWithLesson(
+                    saved.getStudentId(), saved.getLessonId(), saved.getGroupId(),
+                    saved.getSubjectId(), saved.getSemesterId(), saved.getLessonNumber(), saved.getLessonDate(),
+                    AttendanceStatus.PRESENT, AttendanceSource.LATE_CHECKIN, decisionBy);
         }
 
         LessonResponse lesson = scheduleGrpcClient.getLessonById(saved.getLessonId());

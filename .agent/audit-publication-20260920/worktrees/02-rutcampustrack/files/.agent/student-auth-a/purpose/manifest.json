@@ -1,0 +1,102 @@
+{
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "scope": "Auth token purpose correction",
+  "risk": "S3",
+  "productFiles": [
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+      "sha256": "81429C4219EC00FD2207E11460C8AB03314787C7CDFB45EA28B3A18A72E1BD5D",
+      "bytes": 16164
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java",
+      "sha256": "A321630875C98B40DE20D30D8D220885C80AB35B871EE9207C2F10DA2EB864FA",
+      "bytes": 2513
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sha256": "61E4DB92A8376452787C8467AE61FC8CEE75DE539C226C04BD5D558646867855",
+      "bytes": 9229
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "sha256": "F313EAF985473AC7205D21EB850014F4E4D6C762B9994F0285B361E25DB2F574",
+      "bytes": 6224
+    }
+  ],
+  "canonicalSources": [
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\student-role-02\\auth-token-purpose-probe\\evidence.md",
+      "sha256": "BC14178C5D8D2B58D09B44F7D46778A140EF328D3FD0D630862F6290F6E8BC20",
+      "bytes": 2621
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\student-role-02\\profile-auth-decision-packet.md",
+      "sha256": "E47819AD123D69E32FC24B7AD9429FFD747CA160A714C0484E3B61CFEA694BBF",
+      "bytes": 6432
+    }
+  ],
+  "evidenceFiles": [
+    ".agent/student-auth-a/purpose/packet.md",
+    ".agent/student-auth-a/purpose/evidence.md",
+    ".agent/student-auth-a/purpose/checks.json",
+    ".agent/student-auth-a/purpose/runtime-evidence.md",
+    ".agent/student-auth-a/purpose/diff.md",
+    ".agent/student-auth-a/purpose/summary.md",
+    ".agent/student-auth-a/purpose/manifest.json",
+    ".agent/student-auth-a/purpose/manifest-verification.json",
+    ".agent/student-auth-a/purpose/evidence/executed.log",
+    ".agent/student-auth-a/purpose/evidence/junit/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+    ".agent/student-auth-a/purpose/evidence/junit/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml"
+  ],
+  "capturedArtifacts": [
+    {
+      "sourcePath": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+      "sourceSha256": "E1A5DCEAAB7F8D07ABF065616CF8F1FFBD5405EAA2CA668B5191BC697361B55F",
+      "sourceBytes": 1552,
+      "evidencePath": ".agent/student-auth-a/purpose/evidence/junit/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+      "evidenceSha256": "8444CB3C65BE74DF80E72B9D122B3D7DD6580E443124B0A01207AFEF1C0D62ED",
+      "evidenceBytes": 1538,
+      "lineEndingNormalization": "CRLF source represented as LF evidence copy"
+    },
+    {
+      "sourcePath": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml",
+      "sourceSha256": "9903E9773A7C508BCA3886868A54DC6267620A2D2D17184BA6C3B414DF3BF217",
+      "sourceBytes": 1971,
+      "evidencePath": ".agent/student-auth-a/purpose/evidence/junit/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml",
+      "evidenceSha256": "F6C2280E3034F8A76E74B36649824A56368624D2FF0CEE2AF3ADE0EEB5B884EA",
+      "evidenceBytes": 1836,
+      "lineEndingNormalization": "CRLF source represented as LF evidence copy"
+    },
+    {
+      "sourcePath": "captured Gradle tool output",
+      "sourceSha256": null,
+      "sourceBytes": null,
+      "evidencePath": ".agent/student-auth-a/purpose/evidence/executed.log",
+      "evidenceSha256": "D9E19FA60930E8C317130586225D301B38799635EE58D73F1577DF8722D51F99",
+      "evidenceBytes": 474
+    }
+  ],
+  "checks": [
+    {
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:test --tests ru.rutcampustrack.auth.service.JwtTokenPurposeTest --tests ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest --no-daemon --max-workers=1",
+      "exitCode": 0,
+      "result": "PASS: 13 tests, 0 failures, 0 errors, 0 skipped"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "PASS"
+    }
+  ],
+  "runtime": {
+    "boundedUnit": "PASS",
+    "fullHttpGatewayAndSecurityScanner": "OPEN",
+    "reason": "Requires root-owned S3 integration packet and runtime resources"
+  },
+  "limitations": [
+    "No full Gateway/HTTP ingress or downstream token exchange evidence",
+    "No revocation semantics claim",
+    "No real keys, secrets, Redis, DB, network, Testcontainers, migration, config/dependency edit, or commit"
+  ]
+}

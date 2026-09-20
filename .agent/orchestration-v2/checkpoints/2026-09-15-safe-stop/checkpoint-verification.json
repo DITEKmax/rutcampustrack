@@ -1,0 +1,8 @@
+{
+  "verifiedAt": "2026-09-15T03:31:42.0693815+03:00",
+  "worktrees": 8,
+  "hashedFiles": 236,
+  "mismatches": [],
+  "snapshotSha256": "45B080FA64A63BC880FF2BABAC78A860313B8BCC83139887E70239CBC9ECD5D4",
+  "note": "Final read-only STOP integrity recheck, not product tests"
+}

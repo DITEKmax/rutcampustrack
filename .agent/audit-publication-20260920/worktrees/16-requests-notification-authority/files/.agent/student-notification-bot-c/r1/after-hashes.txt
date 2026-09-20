@@ -1,0 +1,9 @@
+revision: d3c31acb8cce53791a4981e5858a37d44fdc9a0e (working tree after r1 patch)
+environment: Windows PowerShell; bundled Python 3.12.14; 2026-09-08
+command: Get-FileHash -Algorithm SHA256 <four assigned paths>
+services/notification-bot/bot/grpc_client/attendance_client.py F4B2B3D0953E1865F1338D1EAD438172E98A883D01BA73150F2480D4E16BDEF4
+services/notification-bot/tests/test_attendance_request_grpc_client.py 7A8F2499CAC2FFCD3DC5577781BCC05542571AA7E1DC512DD816EF106CED8D74
+services/notification-bot/bot/notifications/student_alerts.py 40B97DCF64ECE31E607A37E204B5986E2DDFA7E15E4E9108F0316CCA8BBA9923
+services/notification-bot/tests/test_excuse_decided.py 34DCE5D8B35F50DFD26D90AA8A0030CEBB3F389B0B8248736176DAA3DA8FE0D0
+
+All four assigned working-tree hashes changed from the recorded pre-r1 state because the patch updates the two released P1 files and the two owned behavior/test files. The pre-existing P1 late-checkin hunks in student_alerts.py remain intact.

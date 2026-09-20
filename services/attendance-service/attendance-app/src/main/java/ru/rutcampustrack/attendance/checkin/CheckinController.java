@@ -16,9 +16,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
- * REST controller for geo-checkin (D-06).
- * Implements CheckinApi — all mappings defined in the interface.
- * Per CLAUDE.md: controller only delegates and wraps in HATEOAS.
+ * REST compatibility controller for the retired geo-checkin endpoint.
+ * Implements CheckinApi — all mappings defined in the interface. The injected
+ * service fails closed before any legacy write operation.
  */
 @RestController
 public class CheckinController implements CheckinApi {

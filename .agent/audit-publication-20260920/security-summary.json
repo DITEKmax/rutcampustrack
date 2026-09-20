@@ -1,0 +1,8 @@
+{
+  "initialScanFindings": 174,
+  "initialScanFiles": 144,
+  "excludedPaths": 2015,
+  "additionalScan": "NOT RUN: owner requested no additional checks",
+  "originals": "Preserved locally",
+  "limitations": "Potential false positives and some source files excluded; see publication-exclusions.json"
+}

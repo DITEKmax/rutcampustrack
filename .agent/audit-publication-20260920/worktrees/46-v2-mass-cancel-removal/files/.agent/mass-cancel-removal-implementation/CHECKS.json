@@ -1,0 +1,31 @@
+{
+  "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-mass-cancel-removal",
+  "branch": "codex/mass-cancel-removal-20260920",
+  "baseRevision": "ed9b63c9449b23fa3f5dbf2feb52cd8f9e9cfe83",
+  "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "checks": [
+    {"id":"diff-check","criterion":"No whitespace errors","command":"git diff --check","exitCode":0,"environment":"Windows PowerShell; implementation worktree","result":"PASS"},
+    {"id":"openapi-schedule-absence","criterion":"Removed route and schemas absent from valid JSON","command":"Node JSON parse and absence assertions for /schedule/lessons/mass-cancel, MassCancelRequest, MassCancelResponse","exitCode":0,"environment":"Node.js; implementation worktree","result":"PASS"},
+    {"id":"java-contract-absence","criterion":"Public mapping/controller batch/service/DTO exposure absent","command":"rg over assigned Java product paths for MassCancelRequest, MassCancelResponse, massCancelLessons, and removed mapping","exitCode":0,"environment":"PowerShell rg; implementation worktree","result":"PASS"},
+    {"id":"generated-contract-absence","criterion":"Schedule generated clients and web aliases omit removed exposure","command":"rg over three generated Schedule files and web-panel schema.ts","exitCode":0,"environment":"PowerShell rg; implementation worktree","result":"PASS"},
+    {"id":"shared-query-preserved","criterion":"gRPC-shared repository query retained","command":"rg findByScheduleItemIdInAndDateBetweenAndStatusIn in repository and ScheduleGrpcServiceImpl","exitCode":0,"environment":"PowerShell rg; implementation worktree","result":"PASS"},
+    {"id":"generator-contract-absence","criterion":"Schedule-only generation uses trusted immutable:false astToString API and produces no forbidden exposure","command":"Dynamic import of openapi-typescript@7.13.0 from trusted v2-runtime-build-r2 node_modules; schedule-only generation and scan","exitCode":0,"environment":"Node.js; package SHA256 70BB8B789FADEDB1C1D0923907A5B9B9FDF64E727E8182D9FA9128BC5723769B","result":"PASS"},
+    {"id":"v17-fixture-static","criterion":"LessonApiIT uses V17-safe occurrence/physical fixture and no deleteAll cleanup","command":"Static required-token and forbidden-deleteAll check","exitCode":0,"environment":"PowerShell rg; implementation worktree","result":"PASS"},
+    {"id":"lesson-api-regressions-static","criterion":"Authenticated missing-route and runtime API-doc absence assertions exist","command":"Static check for removed route, isNotFound, /api-docs, and absent route/schema JSON paths","exitCode":0,"environment":"PowerShell rg; implementation worktree","result":"PASS"},
+    {"id":"eleven-path-diff","criterion":"Only assigned eleven product/test/generated paths changed","command":"git diff --name-only compared with frozen source map","exitCode":0,"environment":"Git; implementation worktree","result":"PASS"}
+  ],
+  "runtime": {
+    "id":"lesson-apiit-postgres",
+    "status":"PENDING_ROOT_HEAVY_LEASE",
+    "command":".\\gradlew.bat :services:schedule-service:schedule-app:integrationTest --tests \"ru.rutcampustrack.schedule.integration.LessonApiIT\"",
+    "exitCode":null,
+    "environment":"Root-owned isolated PostgreSQL/Spring runtime; H85 heavy queue",
+    "result":"NOT_RUN_BY_LEAF"
+  },
+  "diff": {
+    "pathCount":11,
+    "insertions":76,
+    "deletions":787,
+    "productReady":false
+  }
+}

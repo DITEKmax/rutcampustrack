@@ -1,0 +1,470 @@
+{
+  "schema": "rct.diff.v1",
+  "recordedAt": "2026-09-08",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "branch": "codex/student-role-02-requests-transport",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/requests-transport",
+  "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "status": "DIRTY_HANDOFF",
+  "trackedModifiedCount": 46,
+  "untrackedCount": 45,
+  "diffStat": "docs/openapi/mobile-bff.json                       | 840 ++++++++++++++++++++-\r\n event-schemas/excuse.decided.json                  |   8 +-\r\n event-schemas/excuse.requested.json                |  35 +\r\n event-schemas/late_checkin.decided.json            |   2 +\r\n event-schemas/late_checkin.decision.json           |  10 +-\r\n frontends/mobile-core/scripts/generate-types.mjs   |   1 -\r\n .../mobile-core/src/api/generated/mobile-bff.ts    | 590 ++++++++++++++-\r\n frontends/mobile-core/src/api/student-client.ts    | 145 +++-\r\n frontends/mobile-core/src/api/types.ts             |  24 +-\r\n proto/attendance.proto                             | 229 ++++++\r\n .../contract/enums/ExcuseTicketStatus.java         |   3 +-\r\n .../attendance/contract/enums/ExcuseType.java      |   3 +\r\n .../enums/LateCheckinResolutionReason.java         |   4 +-\r\n .../attendance/config/MongoConfig.java             |  33 +\r\n .../attendance/config/RabbitConfig.java            |  51 ++\r\n .../attendance/event/EventConsumer.java            |  63 +-\r\n .../exception/GlobalExceptionHandler.java          |  10 +\r\n .../attendance/excuse/ExcuseController.java        |  27 +-\r\n .../attendance/excuse/ExcuseEventPublisher.java    |  39 +-\r\n .../attendance/excuse/ExcuseService.java           |  38 +-\r\n .../attendance/excuse/entity/ExcuseTicket.java     |  14 +\r\n .../grpc/AttendanceStudentGrpcServiceImpl.java     | 179 +++++\r\n .../latecheckin/LateCheckinController.java         |  23 +-\r\n .../latecheckin/LateCheckinEventPublisher.java     |   8 +-\r\n .../attendance/latecheckin/LateCheckinService.java |   6 +\r\n .../latecheckin/entity/LateCheckinRequest.java     |   6 +\r\n .../src/main/resources/application.yml             |   1 +\r\n .../attendance/event/EventConsumerTest.java        |  56 +-\r\n .../excuse/ExcuseEventPublisherTest.java           |  34 +\r\n .../attendance/integration/EventConsumerIT.java    |   6 +\r\n .../latecheckin/LateCheckinEventContractTest.java  |  66 +-\r\n .../mobilebff/contract/api/StudentApi.java         | 149 ++++\r\n .../mobilebff/contract/model/StudentApiModels.java |   7 +-\r\n .../mobilebff/error/MobileProblemHandler.java      |  24 +-\r\n .../mobilebff/grpc/MobileAttendanceClient.java     | 113 ++-\r\n .../mobilebff/security/MobileIdentityFilter.java   |   4 +\r\n .../mobilebff/student/StudentApiController.java    |  74 +-\r\n .../src/main/resources/application.yml             |   6 +\r\n services/notification-bot/bot/__main__.py          |  10 +-\r\n services/notification-bot/bot/config.py            |   4 +\r\n .../bot/consumers/event_consumer.py                |  53 +-\r\n .../bot/consumers/event_dispatcher.py              |  31 +-\r\n services/notification-bot/bot/handlers/excuse.py   |  16 +-\r\n .../bot/notifications/headman_alerts.py            |  96 +--\r\n .../bot/notifications/student_alerts.py            |  22 +-\r\n .../bot/services/idempotency_guard.py              |  67 +-\r\n 46 files changed, 3018 insertions(+), 212 deletions(-)",
+  "files": [
+    {
+      "path": ".agent/student-role-02/checks.json",
+      "status": "??",
+      "sha256": "50F40ACBC40CD7E1F005249C05F764F1BEEB120284BB3557122C1B722600110B"
+    },
+    {
+      "path": ".agent/student-role-02/evidence.md",
+      "status": "??",
+      "sha256": "7D698ED0027F2A0E6CB06C343868D41F99B9E90BA2581B04736181DB06BF82FE"
+    },
+    {
+      "path": ".agent/student-role-02/requests-review-3-source/manifest.json",
+      "status": "??",
+      "sha256": "780A861F826CFAC2CFB6D0A80E966FA451FBB51B4DB747556D599AB479FA8403"
+    },
+    {
+      "path": ".agent/student-role-02/requests-transport-decision-result.md",
+      "status": "??",
+      "sha256": "DF488B7D6012230AA6F772D9FC37ABCAAF186AD4951D5B1D8CCBDEB77C55B1F2"
+    },
+    {
+      "path": ".agent/student-role-02/requests-transport-defect-gate.md",
+      "status": "??",
+      "sha256": "FBBB17B0DE900AAD5ED808C23DD87FCA73096FBE2A2854F2A13615FC0B181E67"
+    },
+    {
+      "path": ".agent/student-role-02/requests-transport-implementation-packet.md",
+      "status": "??",
+      "sha256": "B6EEF042AD82C35F7521841831A78699635EC6CCA80C4E0274382D3932F81D61"
+    },
+    {
+      "path": ".agent/student-role-02/requests-transport-preintegration32-manifest.json",
+      "status": "??",
+      "sha256": "BFF5AEEF9E07D8A062304DFB5985F903FB4A3808A1444580AB64DA99749904A0"
+    },
+    {
+      "path": ".agent/student-role-02/runtime.md",
+      "status": "??",
+      "sha256": "82B9B269C447647B941F8DA2940DD006C9223585540531B0D935C28606B27E57"
+    },
+    {
+      "path": ".agent/student-role-02/summary.md",
+      "status": "??",
+      "sha256": "755E11DC141A9ED485CFC0740F2772062F62250963E0925F31923F3CEAF486D7"
+    },
+    {
+      "path": "docs/openapi/mobile-bff.json",
+      "status": "M",
+      "sha256": "400F18A71F5D371600F58FD26CBEEFACD9EDFFA0701562D03AFA9E51954C17DC"
+    },
+    {
+      "path": "event-schemas/excuse.decided.json",
+      "status": "M",
+      "sha256": "E427D64C0C6CBC0950F41BF0431399A2951494EE0E5D5830080583EF0ADDCA4A"
+    },
+    {
+      "path": "event-schemas/excuse.decision.json",
+      "status": "??",
+      "sha256": "6E6FEC57F8F7ED71A1CF08D8C3F10F4833F34E4BDD1007007E806635BADB9B28"
+    },
+    {
+      "path": "event-schemas/excuse.requested.json",
+      "status": "M",
+      "sha256": "2880EC5DBB29055E01EA2BD829278C9BCE54FEFBB44A9229E145E5D86EAE1BA4"
+    },
+    {
+      "path": "event-schemas/late_checkin.decided.json",
+      "status": "M",
+      "sha256": "A6AC22666974E17472635712D75A334512F351C76936764BEE3D0B1DD8FA3021"
+    },
+    {
+      "path": "event-schemas/late_checkin.decision.json",
+      "status": "M",
+      "sha256": "A08B72077895F6500C1EC7C06BA7CED3B84EE64986E9BA102A14C146E8C2F07C"
+    },
+    {
+      "path": "frontends/mobile-core/scripts/generate-types.mjs",
+      "status": "M",
+      "sha256": "58B3EBEA0EB3FBEDE61DBB800F23658BCBBB238AF0446854B22F1CA7EAEAFCFE"
+    },
+    {
+      "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+      "status": "M",
+      "sha256": "A3D7F77A25AFE50E3D376C8DC4938C4A99574733BDF0A71CB5A29CECE1010CE0"
+    },
+    {
+      "path": "frontends/mobile-core/src/api/student-client.test.ts",
+      "status": "??",
+      "sha256": "011EEABC0D2520E96795D4D71DA65E8B4C668955BED80BA07D96AFCF5B4D84BC"
+    },
+    {
+      "path": "frontends/mobile-core/src/api/student-client.ts",
+      "status": "M",
+      "sha256": "B42390C6F3578AF1ED6219EE6153787FF1C89D116208C0806F907CC34844E7EA"
+    },
+    {
+      "path": "frontends/mobile-core/src/api/types.ts",
+      "status": "M",
+      "sha256": "FA9C45D48F2E899CC63A25256351B28F3D15F883D1D291BCEEF6295DFFC5E273"
+    },
+    {
+      "path": "proto/attendance.proto",
+      "status": "M",
+      "sha256": "4108E3F9AFF3025E131158C0D7FC0D766D2CC4F6F61F955C95AD196B175B08F8"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java",
+      "status": "M",
+      "sha256": "A0D8ADC463E6CB7EA8C36A451193019D2C449802089265F66B66C064A0F54C2A"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java",
+      "status": "M",
+      "sha256": "59C4E01CF39CF79FBACABA196C9BDFB102E59A98558ECE209AC7DC91D5842A1A"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java",
+      "status": "M",
+      "sha256": "2106D010925C292E74659D10674F1B2C8217B0C9BBF7425C4AC686DF2CA98410"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java",
+      "status": "??",
+      "sha256": "1EDAF447F5DC3DC24702EDD089AA48B4681C0B1E8760065A692D83953E7DB4F6"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java",
+      "status": "??",
+      "sha256": "AA71AB2A1D63760AF98041FCBE62F776F19E7F8DCC496BE4894D68445BD449FE"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java",
+      "status": "??",
+      "sha256": "71840E8D3F097C870B41B2B343DCCAB07CC55934491C3AD2AEC1D2A3054C2B8A"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java",
+      "status": "M",
+      "sha256": "E18F5B7E1A4C485F1F2B23FD326E7F7D14A75F8FF3F40ACD405F659683657EDF"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/RabbitConfig.java",
+      "status": "M",
+      "sha256": "AE6E8316F6D0FF7F6029154A916972AE071F63FAC35F5E41DC4BF151540C1FB3"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/EventConsumer.java",
+      "status": "M",
+      "sha256": "EAF305B83E136BD943E19EBC9F8C50E4C5EDDE35CB6397C305913F2F6BC19DAF"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/GlobalExceptionHandler.java",
+      "status": "M",
+      "sha256": "165D5E71B8A43BC9AF6174C0A12BF586C08AA8D6458634AD03BADE12F2A23D14"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/InvalidIdempotencyKeyException.java",
+      "status": "??",
+      "sha256": "77C59E8438FF31B96A357A16856BD7D0242A51ED9144629CB40B306A2109DE75"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/LegacyEndpointRetiredException.java",
+      "status": "??",
+      "sha256": "D7ADBFCFACB4A3500C1AF797099E814AFA3BC25F510F9660C0D132FCD710B85C"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/PayloadTooLargeException.java",
+      "status": "??",
+      "sha256": "EE39175D7C140B6C7EB018781647CF26ADC012FD39640BDC45BE8CF7A5290917"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java",
+      "status": "M",
+      "sha256": "8B14EBE8DC16F34E6422BF7AA06325FC10CD8129943094D49D1F594E228ABFC3"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseController.java",
+      "status": "M",
+      "sha256": "34FBAC0E0E1B129DC2E8764C2581861BF6E3204CE0D33E7BE88A045F032DFA67"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java",
+      "status": "M",
+      "sha256": "3D3E1E12B1A9087A8A7A2BEF9A52185061372FB5BADEC66E80D0ECF308BA1E7F"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseService.java",
+      "status": "M",
+      "sha256": "5F4C7814CDCC7CD4E041518673601DA914FCF5C05B0955799877263C7850FAE0"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceRequestBotGrpcSecretInterceptor.java",
+      "status": "??",
+      "sha256": "4701B401139521696C5201F7BB3D78155B32F68AB61F0D38D0FC745ABC41B88D"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceRequestBotGrpcServiceImpl.java",
+      "status": "??",
+      "sha256": "49627433A2DFB43BACA94BC2216AFB0F011BA6C7BBF6D4DE676093B9C50024E3"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java",
+      "status": "M",
+      "sha256": "796B4206655E608396A02EC443B7AFF9E6D347CC997E9BEAE87D3436988B2366"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcErrors.java",
+      "status": "??",
+      "sha256": "8557AA2F548D10B6EBA63A04940B6072744BFD9FCAD3A1ECA590445FC379927C"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapper.java",
+      "status": "??",
+      "sha256": "E7737B9C492B18E1E6C7889BE89247F15D884269536A8ABC2FDCE4ABE3C0244F"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestTransportException.java",
+      "status": "??",
+      "sha256": "504A3355A45E9151D396F1F283EA61E954AD89AD42EFB0C2ECBB678BF77A3914"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java",
+      "status": "M",
+      "sha256": "5B8777BCDF922E058E1331F04BB0A033917A8251650DF9E3DABCBBBE8A2A0CB7"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinController.java",
+      "status": "M",
+      "sha256": "10A08BF7DDE1E98BE9864A9558BDE9D15163A36B9C13263F03DAEF37A15D7A0D"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java",
+      "status": "M",
+      "sha256": "94EFD22554A5FF3ACDEC684AC1B56C07F03259EF1E5CA914C5E84DFB17F0E50D"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinService.java",
+      "status": "M",
+      "sha256": "E05D81593017FEE01815678A8B11F9C57D535B9A6CD9BCB32A622E9231336EA6"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/AttachmentState.java",
+      "status": "??",
+      "sha256": "C1B9880413CDFBBE20CA3DEC8D577E9C424F9D658CD8739AD4D2D8C8B853724C"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDescriptorDocument.java",
+      "status": "??",
+      "sha256": "15F372F6201CC7EA8F118D67CDA149FA22CB704B5DC944C9E0219A4ED09D7C0E"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDocument.java",
+      "status": "??",
+      "sha256": "A4F991C7AD4DAC3F8C96CA1341F86D996D72DFFED699EBD13A0694EDCEFD4B95"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLateCheckinBudgetDocument.java",
+      "status": "??",
+      "sha256": "4A05FE8AB665FEE1206B3633208258457DE9FE9EFD806CFE08B7976DE9F9186B"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLessonSnapshotDocument.java",
+      "status": "??",
+      "sha256": "AC4748E5306FCD9EF5E56E45348225AF0930FC96BB7F2FCD1AC955ABE07F29EC"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentRequestReceiptDocument.java",
+      "status": "??",
+      "sha256": "85C71600C938C7FA556799110EE7936B3A6E42D77F1670AAD22F8C0E9AE47CD0"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRepository.java",
+      "status": "??",
+      "sha256": "5823836AD0B68FD591480E6FCAB148C1EB07FDCAB54C3A3F8DB139A7861E6931"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRetentionJob.java",
+      "status": "??",
+      "sha256": "EA02BE8110064978D3DB12FAFD1C6E4C0D96F4433FA3FEA7D3E29532B79C6EB8"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestBucket.java",
+      "status": "??",
+      "sha256": "3C1AAE15A5DD7D7C62D81D0B5EBE1FB0EEBDE34276A0592616B49803EA4F1E1C"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentLateCheckinBudgetRepository.java",
+      "status": "??",
+      "sha256": "98C0E67DEC2E78E729928B0E44A373D5F0D20F5404D31DFEDFD5AFBF0E7747B2"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java",
+      "status": "??",
+      "sha256": "DEFCA9A5DC3D03F96A8E184B7040638CD04418DC014AB1DA01528EE7F09B25C2"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestReceiptRepository.java",
+      "status": "??",
+      "sha256": "7C6ADBF803AC9226CAF050498AD612992D9B3ACF1ACBC48022B4638309261B76"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "status": "??",
+      "sha256": "7AD59234BD0A45FBF8A3AAD9D60971F2558021398C4D018348786D4BE421DEBC"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/resources/application.yml",
+      "status": "M",
+      "sha256": "F4633C5574B93D6785E052579B6AC506E8900EADF5C3B92677C95AD6D2DB774A"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/EventConsumerTest.java",
+      "status": "M",
+      "sha256": "F4545F60F129F9F2B7EDB7BA792AF66AD667D47B622C5F80265EE6196E4DE16D"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java",
+      "status": "M",
+      "sha256": "4CA61BBB52BA3F5193F653B542BA59F54D97C5BCDD20FBA849F54EC77C376E8E"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcErrorsTest.java",
+      "status": "??",
+      "sha256": "F6BA4E60D7B1D108FAA1527E5C0ABAD27629D4DEC2ECF4B7AE80149528F7266D"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "status": "M",
+      "sha256": "EB08344837F1821D46EBD46093778153B12764D280764760F920CE2C6DC1B3AC"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java",
+      "status": "??",
+      "sha256": "CDD850FECDC8C07984D36677EC32820E6599ABA3771DA009E5E78D3367E97EC6"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java",
+      "status": "M",
+      "sha256": "9AB49F8A149FB0D9AAA5F069B114803268B2F1D81331784CC98C7301AEEC5EFD"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "status": "??",
+      "sha256": "968F4A4967D0AD2FDB0055C647D709F6A0A020B59DDB3396C64007E57A150DE6"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+      "status": "??",
+      "sha256": "1C0E6A2C4699D56BB17FD56DCEB24347C4DE3290F4E121D31DFCEB6662C44644"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+      "status": "M",
+      "sha256": "B6AD7CA3758E08352FA322B01342225B6207B95A6BB1CDD694E7FE2D5684438D"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+      "status": "M",
+      "sha256": "D520DA228D8A57C39615558DB5E9520F299743D4650CA79D13D13603067BE9B3"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java",
+      "status": "??",
+      "sha256": "93A4297FB838C77FC136B9B6947DE0C3033AF8E93022C5BD6AF6B82E44E53752"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java",
+      "status": "M",
+      "sha256": "8CD597961B4DB4F26BAE28E01BD27C9FED7452E7CD1E74CA1CC5ABBC445796D3"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+      "status": "M",
+      "sha256": "FB77435745FAEFD5B93164D776D17D8EA3916E8AA7A46C8CC9658A536C36C760"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/security/MobileIdentityFilter.java",
+      "status": "M",
+      "sha256": "D077004048A4562499A984C118A221422ADC69BA8B655C9189778CE5003D00D0"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java",
+      "status": "M",
+      "sha256": "550028795F8170D00F632B491DDDA142D14C9603F60C45804CCAE33DD136D4AA"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacade.java",
+      "status": "??",
+      "sha256": "D15D5EC9A92C91FBBB4716C917F93AEB9C0B4D6B1B76687EE406E38A16F4B968"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/resources/application.yml",
+      "status": "M",
+      "sha256": "443D64B58F007C75DAEBDB42413A6F83D75B2169B3A9F91F137A02BF5ED214E8"
+    },
+    {
+      "path": "services/notification-bot/bot/__main__.py",
+      "status": "M",
+      "sha256": "D1A4A33AAF87545A4C05888E4618807C9804C766E0EF00B3B5F6FD7D2CDD513F"
+    },
+    {
+      "path": "services/notification-bot/bot/config.py",
+      "status": "M",
+      "sha256": "55238BA97F18836A512BB5C84E01C7AF6798698FB8731BB09EB5815EF8F80DA6"
+    },
+    {
+      "path": "services/notification-bot/bot/consumers/event_consumer.py",
+      "status": "M",
+      "sha256": "B98ABB031B3CD08313C86403DAAB7EDFCA0C3B32ECC296CE548EC2C1EAEAB581"
+    },
+    {
+      "path": "services/notification-bot/bot/consumers/event_dispatcher.py",
+      "status": "M",
+      "sha256": "8B5144D89555D1DEED5BDA026C1E91AEB568BBBE2D3CB9603A7FD1FBD60309AF"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/attendance_client.py",
+      "status": "??",
+      "sha256": "8FC2CE88DDC65A23E115642A2C0B49A71FE6BC248D4E741393149968B26E5CD7"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/attendance_pb2_grpc.py",
+      "status": "??",
+      "sha256": "0F31792BE3F87EDF79D8F552D3104BCB55A04EB1FB980E3F7AED040D2238F1F0"
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/attendance_pb2.py",
+      "status": "??",
+      "sha256": "4CCB0F068260C04D9ADFC1F10FDED1117A9D15E4D08153244603D55323843D22"
+    },
+    {
+      "path": "services/notification-bot/bot/handlers/excuse.py",
+      "status": "M",
+      "sha256": "D5C15D1835752B46D2D412BFE3A5E4F3861BDBDEE129465057FDE6420215B0D6"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/headman_alerts.py",
+      "status": "M",
+      "sha256": "C05368C5305FD58C07C5378B0B94764A68006F083EE49112BFC371203C071D68"
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/student_alerts.py",
+      "status": "M",
+      "sha256": "E6DDE170C3D9E60EE826234CADC31C12AEB8984FB4897614965F2BE2BC8FF15C"
+    },
+    {
+      "path": "services/notification-bot/bot/services/idempotency_guard.py",
+      "status": "M",
+      "sha256": "9EA1552AFF4442857DDF02349C97C1CEBC145F45DDDEC88AE00402FA443666B8"
+    },
+    {
+      "path": "services/notification-bot/uv.lock",
+      "status": "??",
+      "sha256": "C59E3D361F8F175C3D661018029AEB9DF00761B74D70F79D6D1E3971FCC59082"
+    }
+  ],
+  "artifactNote": "This manifest excludes itself to avoid self-hash recursion."
+}

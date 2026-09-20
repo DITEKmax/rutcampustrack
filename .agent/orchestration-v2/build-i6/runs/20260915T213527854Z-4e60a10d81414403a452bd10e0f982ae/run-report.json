@@ -1,0 +1,34 @@
+{
+  "schema": "rct.i6-build-producer.v1",
+  "status": "FAIL",
+  "runId": "20260915T213527854Z-4e60a10d81414403a452bd10e0f982ae",
+  "startedAt": "2026-09-15T21:35:27.8625888+00:00",
+  "finishedAt": "2026-09-15T21:35:28.0964628+00:00",
+  "unionRepo": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build",
+  "expectedRevision": "0000000000000000000000000000000000000000",
+  "manifestPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\build-i6\\negative-failure-6.json",
+  "manifestSha256": null,
+  "cleanBeforeBuild": null,
+  "cleanAfterBuild": null,
+  "environment": {},
+  "commands": [
+    {
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build rev-parse HEAD",
+      "purpose": "resolve exact union revision",
+      "exitCode": 0,
+      "startedAt": "2026-09-15 21:35:27.9654513+00:00",
+      "finishedAt": "2026-09-15 21:35:28.0447357+00:00",
+      "stdout": "001-git-revision.stdout.log",
+      "stderr": "001-git-revision.stderr.log"
+    }
+  ],
+  "artifacts": {},
+  "failure": {
+    "message": "union revision does not match expected exact revision: d7ec16572db325d944f1a1fbd3b4960b827d09c3"
+  },
+  "limitations": [
+    "Build producer is external evidence for the exact clean integration worktree; it does not start services or Docker.",
+    "A failed command stops the run and never emits a trusted build manifest.",
+    "No dependency install or cache copy is performed by this producer."
+  ]
+}

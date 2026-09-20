@@ -1,0 +1,48 @@
+{
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "packet": {
+    "path": ".agent/student-auth-a/session-domain/packet.md",
+    "sha256": "6352E0D3A870C88CD9FE9796F860E9C98B5D9A32D0239FA48130D2286C29658F",
+    "bytes": 6110
+  },
+  "sharedContract": {
+    "path": ".agent/student-auth-a/session/shared-integration-contract.md",
+    "sha256": "47FC36F57AFCEEC489B5C95C6C169C2CBA9F53FEED2287CF6946B1CB150D807E",
+    "bytes": 20188
+  },
+  "scope": "Fresh pure auth/session domain: eight models, two atomic ports, three services, and three focused unit test classes.",
+  "sourceFiles": [
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthRole.java", "sha256": "2232E8973B0804A43BBF84D51FBAF432F35C72A1C6A709A175B302DCE35857FD", "bytes": 182},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleStatus.java", "sha256": "89CF00BAE0BC524F8783BB860352DB2F40A31C5BDFEBB4352ECF0A879B002B57", "bytes": 702},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleGrant.java", "sha256": "171B2644B245770368A865B7907942578EC12343B8A4282F7023F5824C940DCE", "bytes": 1696},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionState.java", "sha256": "F89E60C86A9E3A5CAE9E3790ECDA3D258E024B38969030E246DB26AE0360D32F", "bytes": 5452},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionSnapshot.java", "sha256": "15A5A5A31F4412F8D076CB133091B3F8E4D3C93592911A54711CBF1B627A26CA", "bytes": 3708},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionRevokeReason.java", "sha256": "0C076E9BF5CF002542EF35931E0BAC26FB5F1F5558BD39C7FDFAF6E1C0C5857F", "bytes": 162},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthMethod.java", "sha256": "60BEE3DC0D44DF2E3F3813E7FD67F0401678D6F4173AF32CAAD9F726DA5566A8", "bytes": 105},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SecurityEvent.java", "sha256": "8FFDA7A8CC0019AA8D8D158219357D7AB550BD1B66881A58652DC873D5FB5963", "bytes": 1185},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/SessionStatePort.java", "sha256": "90A8CBEB4C81520C7672069CEC1D910A0B83FC9E794AB5173774CCB6EAE24BDA", "bytes": 14186},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/CredentialSessionTransactionPort.java", "sha256": "0CFB943D94A7FBD702C37F7255D62B03E4B0C733DFCA7272D94B4ACA5758E7C2", "bytes": 3946},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java", "sha256": "135A9B8775878C34E7FCA28329FC1AD4C798D079A03993ECBB7C136C5661A35F", "bytes": 4572},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java", "sha256": "F5F06EF05CC7D3F15C2941E407128DE63B4FF0A1C6D1300CB0E655B2D0FD8D1A", "bytes": 4056},
+    {"path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionLifecycleService.java", "sha256": "FD11F7F3027614BC59BAF781F8834BA834EC4DA87642C59DF08315E2E2334851", "bytes": 15089},
+    {"path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java", "sha256": "9AB6EA8BCB637AB4506847201485B31F9D85F7CE0AFE09FE2FB4BB0E36DDFFFA", "bytes": 3175},
+    {"path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java", "sha256": "C18767DE6BB7F6D66034EDFC33AAFD8449807EC72C88E38089F065E6AFA14775", "bytes": 2588},
+    {"path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java", "sha256": "54A19164B107B9FE06A8CE036ACCA5E93261EB97CB61D198D74D5CB86B4BB8D7", "bytes": 30067}
+  ],
+  "copiedJUnitXml": [
+    {"sourcePath": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.session.ActiveRolePolicyTest.xml", "copyPath": ".agent/student-auth-a/session-domain/evidence/junit/TEST-ru.rutcampustrack.auth.session.ActiveRolePolicyTest.xml", "sourceSha256": "0371F06571125119D38384DFC7ACBE503FFA0AD0843FE0B1369DE7EAFA8918D4", "copySha256": "0371F06571125119D38384DFC7ACBE503FFA0AD0843FE0B1369DE7EAFA8918D4", "sourceBytes": 920, "copyBytes": 920, "byteIdentical": true, "tests": 4, "failures": 0, "errors": 0, "skipped": 0},
+    {"sourcePath": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.session.PasswordPolicyTest.xml", "copyPath": ".agent/student-auth-a/session-domain/evidence/junit/TEST-ru.rutcampustrack.auth.session.PasswordPolicyTest.xml", "sourceSha256": "CD44597B55D8A0D84100630F1115F16ACD8FAD4D39CD0642BE5818FB20C37901", "copySha256": "CD44597B55D8A0D84100630F1115F16ACD8FAD4D39CD0642BE5818FB20C37901", "sourceBytes": 1104, "copyBytes": 1104, "byteIdentical": true, "tests": 5, "failures": 0, "errors": 0, "skipped": 0},
+    {"sourcePath": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.session.SessionLifecycleServiceTest.xml", "copyPath": ".agent/student-auth-a/session-domain/evidence/junit/TEST-ru.rutcampustrack.auth.session.SessionLifecycleServiceTest.xml", "sourceSha256": "AC9BE989F360F131AFC4866DD749994EA387C65A83D237E5CF93C728493FAF63", "copySha256": "AC9BE989F360F131AFC4866DD749994EA387C65A83D237E5CF93C728493FAF63", "sourceBytes": 1685, "copyBytes": 1685, "byteIdentical": true, "tests": 8, "failures": 0, "errors": 0, "skipped": 0}
+  ],
+  "checks": [
+    {"command": ".\\gradlew.bat :services:auth-service:auth-app:test --tests ru.rutcampustrack.auth.session.ActiveRolePolicyTest --tests ru.rutcampustrack.auth.session.PasswordPolicyTest --tests ru.rutcampustrack.auth.session.SessionLifecycleServiceTest --no-daemon --max-workers=1", "exitCode": 0, "result": "PASS: 17 tests, 0 failures, 0 errors, 0 skipped"},
+    {"command": "git diff --check", "exitCode": 0, "result": "PASS for scoped changes; pre-existing purpose4 files emitted only LF-to-CRLF warnings"},
+    {"command": "javac --release 21 -proc:none on session-domain main sources", "exitCode": 3, "result": "WARN/non-authoritative: compiler emitted class files but ended with 'Fatal Error: Cannot close compiler resources' without source diagnostics; Gradle compile/test subsequently passed"}
+  ],
+  "environment": {"os": "Windows", "shell": "PowerShell", "java": "21.0.10", "gradle": "8.12", "runtime": "N/A: pure domain; no HTTP/SQL/Gateway launch"},
+  "limitations": [
+    "Unit double lock tests exercise domain outcomes only and do not prove PostgreSQL transaction isolation or SQL CAS.",
+    "No HTTP, Gateway, admission, Redis, JPA, migration, scanner, or production runtime evidence is claimed.",
+    "No JWT minting, adapter wiring, generated contract, or deployment was performed."
+  ]
+}

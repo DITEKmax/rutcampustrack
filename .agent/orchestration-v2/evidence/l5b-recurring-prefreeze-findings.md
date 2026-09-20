@@ -1,0 +1,9 @@
+# Recurring writer pre-freeze source findings (2026-09-20)
+These were read while the sole author was implementing, not an independent review or executed failure. All sent as one source-completion batch; no test run yet.
+- V18 initially added non-null day_of_week/week_type_snapshot without existing-row values. Valid nonempty V17 canonical data would fail DDL. Preserve valid data; no guessed mutable-template snapshot backfill.
+- Initial V18 used FOR KEY SHARE for insertion fence. Ordinary cap UPDATE of a non-key column uses FOR NO KEY UPDATE, compatible with KEY SHARE. Require common exclusive fence lock and realPG two-order proof. Official primary source: https://www.postgresql.org/docs/current/explicit-locking.html section13.3.2/table13.3. This is separate from the withdrawn old L5A deadlock claim; no claim that this new race was executed yet.
+- Initial V18 replaced V17 physical guard and required fence on status-only UPDATE, preventing updates of existing canonical rows before bootstrap and reversing physical→fence order. Prefer narrow INSERT guard preserving existing V17 update/delete invariants.
+- Writer initially required equal remote/local cap; stale higher remote end must not widen or unnecessarily replace lower local cap, and lower remote end must reject protocol divergence. Final date check uses local cap.
+- Backdated initial CLOSED without materialization was superseded by owner automatic Н decision. Producer/Attendance/Academic combined contract needed; source-only source facts show current roster and active semester are not historical authority.
+- Old DTO overload solely for pre-assignment fixtures is not needed product compatibility; update scoped fixtures/call sites rather than add a production adapter for test convenience.
+Final source/check/review acceptance pending. Do not treat working snapshots as final implementation.

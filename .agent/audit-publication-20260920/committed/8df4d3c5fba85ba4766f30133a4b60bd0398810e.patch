@@ -1,0 +1,3293 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index d3da70d1..e0a94877 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,19 +1,3 @@
+-## Решение владельца 2026-09-13 — orchestration v2
+-
+-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
+-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
+-`CURRENT.md` и свой пакет из той же директории до работы.
+-Это явное project-only решение заменяет несовместимые старые routing-пункты
+-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
+-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
+-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
+-не полагайся на память/наследование. Код только assigned developer, один writer
+-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
+-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
+-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
+-сохраняются; другие проекты/global config не изменяются.
+-
+----
+ # RutCampusTrack — агентная разработка
+ 
+ Это project-specific инструкция Vue/PCSS и BFF. Общий канон Codex для моделей,
+diff --git a/docs/agent-workflow.md b/docs/agent-workflow.md
+index eb62068a..f6acad78 100644
+--- a/docs/agent-workflow.md
++++ b/docs/agent-workflow.md
+@@ -1,19 +1,3 @@
+-## Решение владельца 2026-09-13 — orchestration v2
+-
+-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
+-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
+-`CURRENT.md` и свой пакет из той же директории до работы.
+-Это явное project-only решение заменяет несовместимые старые routing-пункты
+-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
+-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
+-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
+-не полагайся на память/наследование. Код только assigned developer, один writer
+-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
+-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
+-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
+-сохраняются; другие проекты/global config не изменяются.
+-
+----
+ # Агентный workflow RutCampusTrack
+ 
+ ✏️ 06.09.2026, решение владельца. Общий model/risk routing, coordinator layer,
+diff --git a/frontends/AGENTS.md b/frontends/AGENTS.md
+index f0b2065a..575cc7eb 100644
+--- a/frontends/AGENTS.md
++++ b/frontends/AGENTS.md
+@@ -1,19 +1,3 @@
+-## Решение владельца 2026-09-13 — orchestration v2
+-
+-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
+-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
+-`CURRENT.md` и свой пакет из той же директории до работы.
+-Это явное project-only решение заменяет несовместимые старые routing-пункты
+-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
+-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
+-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
+-не полагайся на память/наследование. Код только assigned developer, один writer
+-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
+-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
+-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
+-сохраняются; другие проекты/global config не изменяются.
+-
+----
+ # Vue / PCSS
+ 
+ - Vue и strict TypeScript: страницы компонуют features; transport, состояние и
+diff --git a/frontends/mobile-core/src/features/map/MapScreen.vue b/frontends/mobile-core/src/features/map/MapScreen.vue
+new file mode 100644
+index 00000000..979f5af6
+--- /dev/null
++++ b/frontends/mobile-core/src/features/map/MapScreen.vue
+@@ -0,0 +1,476 @@
++<script setup lang="ts">
++import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
++import type { MapRevokeSignal, MapViewState } from './map-contract'
++import type { MapController } from './map-controller'
++import './map-screen.pcss'
++
++const props = withDefaults(defineProps<{
++  controller: MapController
++  theme?: 'dark' | 'light'
++}>(), { theme: 'dark' })
++
++const emit = defineEmits<{ back: []; revoke: [signal: MapRevokeSignal] }>()
++const state = shallowRef<MapViewState>(props.controller.getSnapshot())
++const viewport = ref<HTMLElement | null>(null)
++const buildingSelect = ref<HTMLSelectElement | null>(null)
++const floorSelect = ref<HTMLSelectElement | null>(null)
++const viewportWidth = ref(0)
++const viewportHeight = ref(0)
++const scale = ref(1)
++const drag = ref<{ pointerId: number; x: number; y: number } | null>(null)
++let unsubscribe: (() => void) | null = null
++let unsubscribeInvalidation: (() => void) | null = null
++let resizeObserver: ResizeObserver | null = null
++let mounted = false
++let mountGeneration = 0
++let selectorGeneration = 0
++
++type SelectionIdentity = {
++  readonly buildingId: string | null
++  readonly floorId: string | null
++  readonly assetUrl: string | null
++  readonly asset: string | null
++}
++
++type SelectorInteraction = {
++  readonly mountGeneration: number
++  readonly selectorGeneration: number
++  readonly before: SelectionIdentity
++}
++
++const building = computed(() => state.value.catalog?.buildings.find((item) => item.id === state.value.selectedBuildingId) ?? null)
++const descriptor = computed(() => state.value.plan && state.value.assetFormat ? state.value.plan[state.value.assetFormat] : null)
++const intrinsicWidth = computed(() => descriptor.value?.width ?? descriptor.value?.viewBox?.[2] ?? 640)
++const intrinsicHeight = computed(() => descriptor.value?.height ?? descriptor.value?.viewBox?.[3] ?? 360)
++const fitScale = computed(() => {
++  if (viewportWidth.value <= 0 || viewportHeight.value <= 0) return 1
++  return Math.min(1, viewportWidth.value / intrinsicWidth.value, viewportHeight.value / intrinsicHeight.value)
++})
++const imageWidth = computed(() => Math.max(1, Math.round(intrinsicWidth.value * fitScale.value * scale.value)))
++const imageHeight = computed(() => Math.max(1, Math.round(intrinsicHeight.value * fitScale.value * scale.value)))
++const zoomLabel = computed(() => `${Math.round(scale.value * 100)}%`)
++const zoomAnnouncement = computed(() => {
++  const base = state.value.announcement.replace(/,?\s*масштаб\s+\d+%\.?$/iu, '').trim()
++  return base ? `${base} Масштаб ${zoomLabel.value}.` : `Масштаб ${zoomLabel.value}.`
++})
++const canZoomOut = computed(() => scale.value > 1)
++const canZoomIn = computed(() => scale.value < 4)
++const hasViewer = computed(() => state.value.phase === 'ready' && state.value.assetUrl !== null)
++const showRetainedRetry = computed(() => hasViewer.value && (state.value.message !== null || state.value.syncStatus === 'update-failed' || state.value.syncStatus === 'storage-unavailable'))
++
++onMounted(() => {
++  mounted = true
++  mountGeneration += 1
++  invalidateSelectorHandlers()
++  unsubscribe = props.controller.subscribe((next) => {
++    const previous = state.value
++    state.value = next
++    if (supersedesSelectorInteraction(previous, next)) invalidateSelectorHandlers()
++  })
++  unsubscribeInvalidation = props.controller.subscribeInvalidation((signal) => {
++    invalidateSelectorHandlers()
++    emit('revoke', signal)
++  })
++  resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(updateViewportSize) : null
++  void openMap()
++})
++
++onBeforeUnmount(() => {
++  mounted = false
++  mountGeneration += 1
++  invalidateSelectorHandlers()
++  unsubscribe?.()
++  unsubscribeInvalidation?.()
++  resizeObserver?.disconnect()
++  props.controller.dispose()
++})
++
++watch(() => state.value.assetUrl, () => resetViewport())
++
++watch(viewport, (element, previous) => {
++  if (previous) resizeObserver?.unobserve(previous)
++  if (element) {
++    resizeObserver?.observe(element)
++    updateViewportSize()
++  }
++}, { flush: 'post' })
++
++async function selectBuilding(value: string): Promise<void> {
++  const before = selectionIdentity()
++  const interaction: SelectorInteraction = { mountGeneration, selectorGeneration: ++selectorGeneration, before }
++  await props.controller.selectBuilding(value)
++  if (!isCurrentSelectorInteraction(interaction)) return
++  await restoreControlledSelectors(interaction)
++  if (!isCurrentSelectorInteraction(interaction)) return
++  if (selectionChanged(interaction.before, selectionIdentity())) resetViewportForInteraction(interaction)
++}
++
++async function selectFloor(value: string): Promise<void> {
++  const before = selectionIdentity()
++  const interaction: SelectorInteraction = { mountGeneration, selectorGeneration: ++selectorGeneration, before }
++  await props.controller.selectFloor(value)
++  if (!isCurrentSelectorInteraction(interaction)) return
++  await restoreControlledSelectors(interaction)
++  if (!isCurrentSelectorInteraction(interaction)) return
++  if (selectionChanged(interaction.before, selectionIdentity())) resetViewportForInteraction(interaction)
++}
++
++async function restoreControlledSelectors(interaction: SelectorInteraction): Promise<void> {
++  if (!isCurrentSelectorInteraction(interaction)) return
++  await nextTick()
++  if (!isCurrentSelectorInteraction(interaction)) return
++  if (buildingSelect.value && isCurrentSelectorInteraction(interaction)) {
++    buildingSelect.value.value = state.value.selectedBuildingId ?? ''
++  }
++  if (!isCurrentSelectorInteraction(interaction)) return
++  if (floorSelect.value && isCurrentSelectorInteraction(interaction)) {
++    floorSelect.value.value = state.value.selectedFloorId ?? ''
++  }
++}
++
++function selectionIdentity(): SelectionIdentity {
++  const plan = state.value.plan
++  const asset = plan === null ? null : [
++    plan.version,
++    plan.png.format,
++    plan.png.state,
++    plan.png.id ?? '',
++    plan.png.bytes,
++    plan.png.sha256 ?? '',
++    plan.svg.format,
++    plan.svg.state,
++    plan.svg.id ?? '',
++    plan.svg.bytes,
++    plan.svg.sha256 ?? '',
++  ].join(':')
++  return { buildingId: state.value.selectedBuildingId, floorId: state.value.selectedFloorId, assetUrl: state.value.assetUrl, asset }
++}
++
++function selectionChanged(before: ReturnType<typeof selectionIdentity>, after: ReturnType<typeof selectionIdentity>): boolean {
++  return before.buildingId !== after.buildingId || before.floorId !== after.floorId || before.assetUrl !== after.assetUrl || before.asset !== after.asset
++}
++
++function isCurrentSelectorInteraction(interaction: SelectorInteraction): boolean {
++  return mounted
++    && interaction.mountGeneration === mountGeneration
++    && interaction.selectorGeneration === selectorGeneration
++}
++
++function invalidateSelectorHandlers(): void {
++  selectorGeneration += 1
++}
++
++function supersedesSelectorInteraction(previous: MapViewState, next: MapViewState): boolean {
++  return previous.offline !== next.offline
++    || (previous.phase !== next.phase && (next.phase === 'idle' || next.phase === 'session-inactive' || previous.phase === 'session-inactive'))
++}
++
++async function retry(): Promise<void> {
++  invalidateSelectorHandlers()
++  await props.controller.retry()
++}
++
++async function openMap(): Promise<void> {
++  await props.controller.open()
++}
++
++function zoomBy(delta: number): void {
++  scale.value = clamp(Number((scale.value + delta).toFixed(2)), 1, 4)
++}
++
++function resetViewport(): void {
++  scale.value = 1
++  viewport.value?.scrollTo({ left: 0, top: 0 })
++}
++
++function resetViewportForInteraction(interaction: SelectorInteraction): void {
++  if (!isCurrentSelectorInteraction(interaction)) return
++  resetViewport()
++}
++
++function onKeydown(event: KeyboardEvent): void {
++  if (!hasViewer.value) return
++  if (event.key === '+' || event.key === '=') {
++    event.preventDefault()
++    zoomBy(0.25)
++  } else if (event.key === '-' || event.key === '_') {
++    event.preventDefault()
++    zoomBy(-0.25)
++  } else if (event.key === '0') {
++    event.preventDefault()
++    resetViewport()
++  } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown') {
++    event.preventDefault()
++    const distance = event.shiftKey ? 48 : 24
++    viewport.value?.scrollBy({
++      left: event.key === 'ArrowLeft' ? -distance : event.key === 'ArrowRight' ? distance : 0,
++      top: event.key === 'ArrowUp' ? -distance : event.key === 'ArrowDown' ? distance : 0,
++    })
++  }
++}
++
++function onWheel(event: WheelEvent): void {
++  if (!event.ctrlKey && !event.metaKey) return
++  event.preventDefault()
++  zoomBy(event.deltaY < 0 ? 0.25 : -0.25)
++}
++
++function onPointerdown(event: PointerEvent): void {
++  if (event.button !== 0) return
++  if ((event.target as Element).closest('button')) return
++  drag.value = { pointerId: event.pointerId, x: event.clientX, y: event.clientY }
++  ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
++}
++
++function onPointermove(event: PointerEvent): void {
++  if (!drag.value || drag.value.pointerId !== event.pointerId) return
++  viewport.value?.scrollBy({ left: drag.value.x - event.clientX, top: drag.value.y - event.clientY })
++  drag.value = { pointerId: event.pointerId, x: event.clientX, y: event.clientY }
++}
++
++function onPointerup(event: PointerEvent): void {
++  if (drag.value?.pointerId === event.pointerId) drag.value = null
++}
++
++function clamp(value: number, min: number, max: number): number {
++  return Math.min(max, Math.max(min, value))
++}
++
++function updateViewportSize(): void {
++  viewportWidth.value = viewport.value?.clientWidth ?? 0
++  viewportHeight.value = viewport.value?.clientHeight ?? 0
++}
++
++function syncLabel(syncStatus: MapViewState['syncStatus'], offline: boolean, message: string | null): string | null {
++  if (syncStatus === 'updated') return 'Карты обновлены и сохранены для офлайн-доступа.'
++  if (syncStatus === 'unchanged') return 'Сохранённые карты актуальны.'
++  if (syncStatus === 'update-failed') return 'Обновление не удалось; показана последняя сохранённая версия.'
++  if (syncStatus === 'storage-unavailable' && offline) return message ?? 'Текущая карта доступна из памяти; подключись к сети, чтобы обновить её.'
++  if (syncStatus === 'storage-unavailable') return 'Хранилище недоступно; текущая карта работает онлайн.'
++  if (syncStatus === 'no-cache') return 'Полной сохранённой версии пока нет.'
++  return null
++}
++</script>
++
++<template>
++  <main
++    class="map-screen"
++    :data-theme="theme"
++    aria-labelledby="map-title"
++  >
++    <header class="map-screen__header">
++      <button
++        class="map-screen__back"
++        type="button"
++        aria-label="Назад"
++        @click="emit('back')"
++      >
++        ←
++      </button>
++      <h1 id="map-title">
++        Карта кампуса
++      </h1>
++      <span
++        class="map-screen__header-spacer"
++        aria-hidden="true"
++      />
++      <p
++        v-if="state.offline"
++        class="map-screen__offline"
++        role="status"
++      >
++        {{ state.syncStatus === 'storage-unavailable' ? 'Офлайн · текущая карта доступна из памяти; подключись к сети, чтобы обновить её.' : 'Офлайн · используются сохранённые карты' }}
++      </p>
++    </header>
++
++    <section
++      v-if="state.catalog"
++      class="map-screen__selectors"
++      aria-label="Выбор карты"
++    >
++      <label class="map-field">
++        <span>Корпус</span>
++        <select
++          ref="buildingSelect"
++          :value="state.selectedBuildingId ?? ''"
++          :disabled="state.catalog.buildings.length === 0"
++          aria-label="Корпус"
++          @change="selectBuilding(($event.target as HTMLSelectElement).value)"
++        >
++          <option
++            v-for="item in state.catalog.buildings"
++            :key="item.id"
++            :value="item.id"
++          >
++            {{ item.label }}
++          </option>
++        </select>
++      </label>
++      <label class="map-field">
++        <span>Этаж</span>
++        <select
++          ref="floorSelect"
++          :value="state.selectedFloorId ?? ''"
++          :disabled="!building || building.floors.length === 0"
++          aria-label="Этаж"
++          @change="selectFloor(($event.target as HTMLSelectElement).value)"
++        >
++          <option
++            v-for="floor in building?.floors ?? []"
++            :key="floor.id"
++            :value="floor.id"
++          >
++            {{ floor.label }}
++          </option>
++        </select>
++      </label>
++    </section>
++
++    <section
++      v-if="state.phase === 'loading'"
++      class="map-screen__state"
++      aria-live="polite"
++    >
++      <p aria-hidden="true">
++        ◌
++      </p>
++      <p>Загружаем карту…</p>
++    </section>
++    <section
++      v-else-if="state.phase === 'empty-catalog' || state.phase === 'empty-floors' || state.phase === 'no-plan' || state.phase === 'offline-no-cache' || state.phase === 'unavailable' || state.phase === 'forbidden' || state.phase === 'session-inactive'"
++      class="map-screen__state"
++      :class="{ 'map-screen__state--error': state.phase === 'forbidden' || state.phase === 'session-inactive', 'map-screen__state--empty': state.phase === 'no-plan' }"
++      :role="state.phase === 'forbidden' || state.phase === 'session-inactive' ? 'alert' : 'status'"
++    >
++      <template v-if="state.phase === 'no-plan'">
++        <p>Для этого этажа схема не загружена</p>
++        <p>Выбери другой этаж</p>
++      </template>
++      <template v-else>
++        <h2>{{ state.phase === 'offline-no-cache' ? 'Карта не сохранена' : state.phase === 'forbidden' ? 'Нет доступа' : state.phase === 'session-inactive' ? 'Сессия недоступна' : 'Карта пока недоступна' }}</h2>
++        <p>{{ state.message }}</p>
++      </template>
++      <button
++        v-if="state.phase === 'offline-no-cache' || state.phase === 'unavailable'"
++        class="map-screen__retry"
++        type="button"
++        @click="retry"
++      >
++        Повторить
++      </button>
++    </section>
++    <section
++      v-else-if="state.phase === 'error'"
++      class="map-screen__state map-screen__state--error"
++      role="alert"
++    >
++      <h2>Не удалось показать карту</h2>
++      <p>{{ state.message }}</p>
++      <button
++        class="map-screen__retry"
++        type="button"
++        @click="retry"
++      >
++        Повторить
++      </button>
++    </section>
++    <section
++      v-else-if="hasViewer"
++      class="map-viewer"
++      aria-label="Просмотр плана этажа"
++    >
++      <div class="map-viewer__canvas">
++        <div class="map-viewer__toolbar">
++          <button
++            class="map-viewer__button"
++            type="button"
++            :disabled="!canZoomOut"
++            aria-label="Уменьшить карту"
++            @click="zoomBy(-0.25)"
++          >
++            −
++          </button>
++          <span class="map-viewer__toolbar-label">{{ zoomLabel }}</span>
++          <button
++            class="map-viewer__button"
++            type="button"
++            :disabled="!canZoomIn"
++            aria-label="Увеличить карту"
++            @click="zoomBy(0.25)"
++          >
++            +
++          </button>
++          <button
++            class="map-viewer__button"
++            type="button"
++            aria-label="Сбросить масштаб и положение"
++            @click="resetViewport"
++          >
++            ⟳
++          </button>
++        </div>
++        <div
++          ref="viewport"
++          class="map-viewer__viewport"
++          tabindex="0"
++          role="application"
++          aria-label="План этажа. Стрелки перемещают, плюс и минус меняют масштаб, 0 сбрасывает"
++          @keydown="onKeydown"
++          @pointerdown="onPointerdown"
++          @pointermove="onPointermove"
++          @pointerup="onPointerup"
++          @pointercancel="onPointerup"
++          @wheel="onWheel"
++        >
++          <img
++            class="map-viewer__image"
++            :src="state.assetUrl ?? undefined"
++            :alt="state.assetAlt ?? 'План этажа'"
++            :width="imageWidth"
++            :height="imageHeight"
++            draggable="false"
++          >
++        </div>
++      </div>
++      <button
++        v-if="showRetainedRetry"
++        class="map-screen__retry map-viewer__retry"
++        type="button"
++        @click="retry"
++      >
++        Повторить обновление
++      </button>
++      <p
++        class="map-viewer__status"
++        role="status"
++        aria-live="polite"
++      >
++        {{ zoomAnnouncement }}
++      </p>
++      <p
++        v-if="syncLabel(state.syncStatus, state.offline, state.message)"
++        class="map-screen__sync"
++        role="status"
++      >
++        {{ syncLabel(state.syncStatus, state.offline, state.message) }}
++      </p>
++    </section>
++    <section
++      v-else
++      class="map-screen__state"
++      aria-live="polite"
++    >
++      <p>
++        Открой карту, чтобы загрузить план этажа.
++      </p>
++    </section>
++
++    <p
++      class="map-screen__visually-hidden"
++      role="status"
++      aria-live="polite"
++    >
++      {{ zoomAnnouncement }}
++    </p>
++  </main>
++</template>
+diff --git a/frontends/mobile-core/src/features/map/index.ts b/frontends/mobile-core/src/features/map/index.ts
+new file mode 100644
+index 00000000..8577eb5a
+--- /dev/null
++++ b/frontends/mobile-core/src/features/map/index.ts
+@@ -0,0 +1,48 @@
++import type { MapControllerOptions } from './map-controller'
++import type { MapReadPort } from './map-contract'
++import { MapController } from './map-controller'
++import { MapOfflineStore } from './map-offline-store'
++import { MapSynchronizer } from './map-sync'
++import type { AssetValidationOptions } from './map-validation'
++
++export * from './map-contract'
++export * from './map-controller'
++export * from './map-offline-store'
++export * from './map-sync'
++export * from './map-validation'
++export { default as MapScreen } from './MapScreen.vue'
++
++export interface MapFeatureOptions extends Omit<MapControllerOptions, 'store' | 'synchronizer'> {
++  readonly store?: MapOfflineStore
++  readonly synchronizer?: MapSynchronizer
++  readonly validation?: AssetValidationOptions
++  readonly isCurrent?: (scope: MapControllerOptions['scope']) => boolean
++}
++
++export interface MapFeature {
++  readonly controller: MapController
++  readonly store?: MapOfflineStore
++  readonly synchronizer?: MapSynchronizer
++}
++
++export function createMapFeature(options: MapFeatureOptions): MapFeature {
++  if (options.surface === 'tma') {
++    return { controller: new MapController(options) }
++  }
++  const store = options.store ?? new MapOfflineStore()
++  const synchronizer = options.synchronizer ?? new MapSynchronizer({
++    port: options.port,
++    store,
++    ...(options.validation ? { validation: options.validation } : {}),
++    ...(options.isCurrent ? { isCurrent: options.isCurrent } : {}),
++  })
++  return {
++    controller: new MapController({ ...options, store, synchronizer }),
++    store,
++    synchronizer,
++  }
++}
++
++export function mapPortOnly(port: MapReadPort): Pick<MapFeatureOptions, 'port'> {
++  return { port }
++}
+diff --git a/frontends/mobile-core/src/features/map/map-contract.ts b/frontends/mobile-core/src/features/map/map-contract.ts
+new file mode 100644
+index 00000000..04278964
+--- /dev/null
++++ b/frontends/mobile-core/src/features/map/map-contract.ts
+@@ -0,0 +1,225 @@
++export type MapSurface = 'pwa' | 'tma'
++export type MapFormat = 'png' | 'svg'
++export type MapAssetState = 'absent' | 'processing' | 'ready' | 'failed'
++
++export interface MapAssetDescriptor {
++  readonly id: string | null
++  readonly format: MapFormat
++  readonly contentType: 'image/png' | 'image/svg+xml'
++  readonly state: MapAssetState
++  readonly bytes: number
++  readonly sha256: string | null
++  readonly width?: number
++  readonly height?: number
++  readonly viewBox?: readonly [number, number, number, number]
++}
++
++export interface MapPlanMetadata {
++  readonly buildingId: string
++  readonly floorId: string
++  readonly version: string
++  readonly label: string
++  readonly png: MapAssetDescriptor
++  readonly svg: MapAssetDescriptor
++}
++
++export interface MapFloor {
++  readonly id: string
++  readonly label: string
++  readonly plan: MapPlanMetadata | null
++}
++
++export interface MapBuilding {
++  readonly id: string
++  readonly label: string
++  readonly floors: readonly MapFloor[]
++}
++
++export interface MapCatalog {
++  readonly revision: string
++  readonly buildings: readonly MapBuilding[]
++}
++
++export interface MapManifest extends MapCatalog {
++  readonly schemaVersion: 1
++  readonly validationPolicyVersion: 1
++}
++
++export type MapPlan = MapPlanMetadata
++
++export interface MapAssetRequest {
++  readonly buildingId: string
++  readonly floorId: string
++  readonly version: string
++  readonly format: MapFormat
++  readonly assetId: string
++  readonly signal: AbortSignal
++}
++
++export interface MapFloorRequest {
++  readonly buildingId: string
++  readonly floorId: string
++  readonly signal: AbortSignal
++}
++
++export interface MapOpenFloorRequest extends MapFloorRequest {
++  readonly intentId: string
++}
++
++export interface MapManifestRequest {
++  readonly knownRevision?: string
++  readonly signal: AbortSignal
++}
++
++export type MapManifestResponse =
++  | { readonly kind: 'unchanged'; readonly revision: string }
++  | { readonly kind: 'snapshot'; readonly manifest: MapManifest }
++
++export interface MapReadPort {
++  readCatalog(signal: AbortSignal): Promise<MapCatalog>
++  readPlan(request: MapFloorRequest): Promise<MapPlan | null>
++  readAsset(request: MapAssetRequest): Promise<Blob>
++  openFloor(request: MapOpenFloorRequest): Promise<void>
++  readManifest?(request: MapManifestRequest): Promise<MapManifestResponse>
++}
++
++export interface MapOwnerScope {
++  readonly ownerKey: string
++  readonly generation: number
++  /** Only the authenticated session adapter may set this for an explicit new generation. */
++  readonly freshAuthority?: boolean
++}
++
++export interface MapCachedAsset {
++  readonly key: string
++  readonly buildingId: string
++  readonly floorId: string
++  readonly version: string
++  readonly format: MapFormat
++  readonly assetId: string
++  readonly contentType: 'image/png' | 'image/svg+xml'
++  readonly bytes: number
++  readonly sha256: string
++  readonly blob: Blob
++}
++
++export interface MapSnapshot {
++  readonly ownerKey: string
++  readonly generation: number
++  readonly epoch: number
++  readonly manifest: MapManifest
++  readonly assets: readonly MapCachedAsset[]
++}
++
++export type MapAuthorityState = 'virgin' | 'active' | 'revoked' | 'pending'
++
++export interface MapOwnerState {
++  readonly ownerKey: string
++  readonly generation: number | null
++  readonly epoch: number
++  readonly activeRevision: string | null
++  readonly authority: MapAuthorityState
++}
++
++export type MapRevokeStatus = 'completed' | 'failed'
++
++export interface MapRevokeResult {
++  readonly ownerKey: string
++  readonly epoch: number
++  readonly status: MapRevokeStatus
++  readonly durable: boolean
++  readonly pending: boolean
++  readonly error?: MapError
++}
++
++export type MapInvalidationKind = 'unauthorized' | 'forbidden' | 'authority-changed' | 'session-inactive'
++
++export interface MapRevokeSignal {
++  readonly ownerKey: string
++  readonly generation: number
++  readonly authKind: MapInvalidationKind
++  readonly result: MapRevokeResult | null
++}
++
++export type MapSyncStatus =
++  | 'disabled'
++  | 'unchanged'
++  | 'updated'
++  | 'no-cache'
++  | 'update-failed'
++  | 'storage-unavailable'
++  | 'stale'
++
++export interface MapSyncResult {
++  readonly status: MapSyncStatus
++  readonly snapshot: MapSnapshot | null
++  readonly error?: MapError
++}
++
++export type MapErrorKind =
++  | 'aborted'
++  | 'network'
++  | 'unauthorized'
++  | 'forbidden'
++  | 'session-inactive'
++  | 'offline'
++  | 'invalid-response'
++  | 'asset-invalid'
++  | 'corrupt'
++  | 'storage'
++  | 'stale'
++  | 'unknown'
++
++export class MapError extends Error {
++  readonly kind: MapErrorKind
++  readonly causeValue: unknown
++
++  constructor(kind: MapErrorKind, message: string, causeValue?: unknown) {
++    super(message)
++    this.name = 'MapError'
++    this.kind = kind
++    this.causeValue = causeValue
++  }
++}
++
++export class MapStaleCommitError extends MapError {
++  constructor(message = 'Снимок карты устарел и не был записан') {
++    super('stale', message)
++    this.name = 'MapStaleCommitError'
++  }
++}
++
++export interface MapViewState {
++  readonly phase:
++    | 'idle'
++    | 'loading'
++    | 'ready'
++    | 'empty-catalog'
++    | 'empty-floors'
++    | 'no-plan'
++    | 'offline-no-cache'
++    | 'unavailable'
++    | 'forbidden'
++    | 'session-inactive'
++    | 'error'
++  readonly message: string | null
++  readonly catalog: MapCatalog | null
++  readonly selectedBuildingId: string | null
++  readonly selectedFloorId: string | null
++  readonly plan: MapPlan | null
++  readonly assetUrl: string | null
++  readonly assetFormat: MapFormat | null
++  readonly assetAlt: string | null
++  readonly scale: number
++  readonly announcement: string
++  readonly offline: boolean
++  readonly syncStatus: MapSyncStatus | null
++}
++
++export function mapAssetKey(asset: Pick<MapCachedAsset, 'buildingId' | 'floorId' | 'version' | 'format' | 'assetId'>): string {
++  return [asset.buildingId, asset.floorId, asset.version, asset.format, asset.assetId].map(encodeURIComponent).join('/')
++}
++
++export function mapFloorKey(buildingId: string, floorId: string): string {
++  return `${encodeURIComponent(buildingId)}/${encodeURIComponent(floorId)}`
++}
+diff --git a/frontends/mobile-core/src/features/map/map-controller.ts b/frontends/mobile-core/src/features/map/map-controller.ts
+new file mode 100644
+index 00000000..cef9297c
+--- /dev/null
++++ b/frontends/mobile-core/src/features/map/map-controller.ts
+@@ -0,0 +1,826 @@
++import type {
++  MapAssetDescriptor,
++  MapCatalog,
++  MapOpenFloorRequest,
++  MapOwnerScope,
++  MapOwnerState,
++  MapPlan,
++  MapReadPort,
++  MapInvalidationKind,
++  MapRevokeResult,
++  MapRevokeSignal,
++  MapSnapshot,
++  MapViewState,
++} from './map-contract'
++import { MapError, MapStaleCommitError, mapAssetKey } from './map-contract'
++import { MapOfflineStore, type MapLifecycleEvent } from './map-offline-store'
++import { assetRequestFor, validateAssetBlob, validateCatalog, validatePlan } from './map-validation'
++import { MapSynchronizer } from './map-sync'
++
++export interface MapObjectUrlApi {
++  createObjectURL(blob: Blob): string
++  revokeObjectURL(url: string): void
++}
++
++export interface MapControllerOptions {
++  readonly port: MapReadPort
++  readonly surface: 'pwa' | 'tma'
++  readonly online: boolean
++  readonly sessionActive: boolean
++  readonly scope: MapOwnerScope
++  readonly store?: MapOfflineStore
++  readonly synchronizer?: MapSynchronizer
++  readonly objectUrlApi?: MapObjectUrlApi
++  readonly intentIdFactory?: () => string
++}
++
++export type MapStateListener = (state: MapViewState) => void
++export type MapInvalidationListener = (signal: MapRevokeSignal) => void
++
++const initialState: MapViewState = {
++  phase: 'idle',
++  message: null,
++  catalog: null,
++  selectedBuildingId: null,
++  selectedFloorId: null,
++  plan: null,
++  assetUrl: null,
++  assetFormat: null,
++  assetAlt: null,
++  scale: 1,
++  announcement: '',
++  offline: false,
++  syncStatus: null,
++}
++
++interface MapRequest {
++  readonly token: number
++  readonly sessionToken: number
++  readonly controller: AbortController
++  readonly signal: AbortSignal
++  readonly scope: MapOwnerScope
++}
++
++export class MapController {
++  private readonly port: MapReadPort
++  private readonly surface: 'pwa' | 'tma'
++  private readonly store: MapOfflineStore | undefined
++  private readonly synchronizer: MapSynchronizer | undefined
++  private readonly objectUrlApi: MapObjectUrlApi | undefined
++  private readonly intentIdFactory: () => string
++  private readonly listeners = new Set<MapStateListener>()
++  private readonly invalidationListeners = new Set<MapInvalidationListener>()
++  private state: MapViewState = initialState
++  private online: boolean
++  private sessionActive: boolean
++  private scope: MapOwnerScope
++  private requestController: AbortController | null = null
++  private loadToken = 0
++  private sessionToken = 0
++  private currentUrl: string | null = null
++  private disposed = false
++  private syncInFlightToken: number | null = null
++  private pendingLifecycleEvent: MapLifecycleEvent | null = null
++  private unsubscribeLifecycle: (() => void) | null = null
++  private revokeInFlight: Promise<MapRevokeResult | null> | null = null
++  private revokeInFlightScope: MapOwnerScope | null = null
++  private liveOnlyScope: MapOwnerScope | null = null
++  private retainedLiveOnlyOfflineScope: MapOwnerScope | null = null
++
++  constructor(options: MapControllerOptions) {
++    this.port = options.port
++    this.surface = options.surface
++    this.online = options.online
++    this.sessionActive = options.sessionActive
++    this.scope = options.scope
++    this.store = options.store
++    this.synchronizer = options.synchronizer
++    this.synchronizer?.setScope(this.scope, this.sessionActive)
++    this.objectUrlApi = options.objectUrlApi ?? defaultObjectUrlApi()
++    this.intentIdFactory = options.intentIdFactory ?? defaultIntentId
++    if (this.surface === 'pwa' && this.store) {
++      this.unsubscribeLifecycle = this.store.subscribeLifecycle(this.scope, (event) => this.handleLifecycleEvent(event))
++    }
++  }
++
++  getSnapshot(): MapViewState {
++    return this.state
++  }
++
++  subscribe(listener: MapStateListener): () => void {
++    this.listeners.add(listener)
++    listener(this.state)
++    return () => this.listeners.delete(listener)
++  }
++
++  subscribeInvalidation(listener: MapInvalidationListener): () => void {
++    this.invalidationListeners.add(listener)
++    return () => this.invalidationListeners.delete(listener)
++  }
++
++  async open(): Promise<MapRevokeResult | null> {
++    return this.reload(true)
++  }
++
++  async retry(): Promise<MapRevokeResult | null> {
++    if (this.hasRetainedLiveOnlyOfflineView()) return null
++    return this.reload(false)
++  }
++
++  async selectBuilding(buildingId: string): Promise<MapRevokeResult | null> {
++    if (this.hasRetainedLiveOnlyOfflineView()) return null
++    const request = this.startRequest()
++    try {
++      await this.requireDurableAuthority(request, true)
++    } catch (error) {
++      return this.isCurrent(request) ? this.handleLoadError(error) : null
++    }
++    const building = this.state.catalog?.buildings.find((item) => item.id === buildingId)
++    if (!building) {
++      try {
++        await this.requireDurableAuthority(request, true)
++      } catch (error) {
++        return this.isCurrent(request) ? this.handleLoadError(error) : null
++      }
++      return null
++    }
++    const floorId = building.floors.some((floor) => floor.id === this.state.selectedFloorId) ? this.state.selectedFloorId : building.floors[0]?.id ?? null
++    if (this.state.selectedBuildingId === buildingId && this.state.selectedFloorId === floorId) {
++      try {
++        await this.requireDurableAuthority(request, true)
++      } catch (error) {
++        return this.isCurrent(request) ? this.handleLoadError(error) : null
++      }
++      return null
++    }
++    if (!this.updateSelection(request, buildingId, floorId)) return null
++    try {
++      const snapshot = await this.offlineSnapshot(request)
++      if (!this.isCurrent(request)) return null
++      return await this.loadSelectedFloor(true, request, snapshot)
++    } catch (error) {
++      if (this.isCurrent(request)) return await this.handleLoadError(error)
++      return null
++    }
++  }
++
++  async selectFloor(floorId: string): Promise<MapRevokeResult | null> {
++    if (this.hasRetainedLiveOnlyOfflineView()) return null
++    const request = this.startRequest()
++    try {
++      await this.requireDurableAuthority(request, true)
++    } catch (error) {
++      return this.isCurrent(request) ? this.handleLoadError(error) : null
++    }
++    const building = this.selectedBuilding()
++    if (!building || !building.floors.some((floor) => floor.id === floorId)) {
++      try {
++        await this.requireDurableAuthority(request, true)
++      } catch (error) {
++        return this.isCurrent(request) ? this.handleLoadError(error) : null
++      }
++      return null
++    }
++    if (this.state.selectedBuildingId === building.id && this.state.selectedFloorId === floorId) {
++      try {
++        await this.requireDurableAuthority(request, true)
++      } catch (error) {
++        return this.isCurrent(request) ? this.handleLoadError(error) : null
++      }
++      return null
++    }
++    if (!this.updateSelection(request, building.id, floorId)) return null
++    try {
++      const snapshot = await this.offlineSnapshot(request)
++      if (!this.isCurrent(request)) return null
++      return await this.loadSelectedFloor(true, request, snapshot)
++    } catch (error) {
++      if (this.isCurrent(request)) return await this.handleLoadError(error)
++      return null
++    }
++  }
++
++  setOnline(online: boolean): void {
++    if (this.disposed || online === this.online) return
++    const wasCurrentLiveOnlyRetained = !online && this.online && this.surface === 'pwa' && this.sessionActive && this.liveOnlyScope !== null && sameScope(this.liveOnlyScope, this.scope) && this.hasRetainedView()
++    this.online = online
++    this.liveOnlyScope = null
++    this.retainedLiveOnlyOfflineScope = null
++    this.abortRequest()
++    if (!online && this.surface === 'tma') {
++      this.clearAssetUrl()
++      this.patchState({ phase: 'unavailable', offline: true, catalog: null, selectedBuildingId: null, selectedFloorId: null, plan: null, assetUrl: null, assetFormat: null, assetAlt: null, scale: 1, syncStatus: null, message: 'Карта доступна только онлайн в этой оболочке.', announcement: '' })
++      return
++    }
++    if (wasCurrentLiveOnlyRetained) {
++      this.retainedLiveOnlyOfflineScope = this.scope
++      this.patchState({ phase: 'ready', offline: true, syncStatus: 'storage-unavailable', message: 'Текущая карта доступна из памяти; подключись к сети, чтобы обновить её.' })
++      return
++    }
++    this.patchState(this.hasRetainedView() ? { offline: !online, syncStatus: null } : { offline: !online, assetUrl: null, assetFormat: null, plan: null, syncStatus: null })
++    void this.reload(false)
++  }
++
++  setSession(active: boolean, scope: MapOwnerScope, options: { readonly revokeCache?: boolean } = {}): Promise<MapRevokeResult | null> {
++    if (this.disposed) return Promise.resolve(null)
++    const previousScope = this.scope
++    this.liveOnlyScope = null
++    this.retainedLiveOnlyOfflineScope = null
++    const ownerChanged = scope.ownerKey !== previousScope.ownerKey
++    const changed = active !== this.sessionActive || scope.ownerKey !== this.scope.ownerKey || scope.generation !== this.scope.generation
++    const shouldRevoke = this.surface === 'pwa' && this.store && (!active || ownerChanged || options.revokeCache === true)
++    if (changed || shouldRevoke) this.sessionToken += 1
++    const revocation = shouldRevoke ? this.revokeScope(previousScope).then((result) => {
++      this.emitInvalidation(previousScope, 'session-inactive', result)
++      return result
++    }) : Promise.resolve(null)
++    this.sessionActive = active
++    this.scope = scope
++    this.synchronizer?.setScope(scope, active)
++    this.pendingLifecycleEvent = null
++    if (!changed) {
++      if (shouldRevoke) {
++        this.sessionActive = false
++        this.synchronizer?.setScope(this.scope, false)
++        this.abortRequest()
++        this.clearAssetUrl()
++        this.patchState({ catalog: null, plan: null, assetUrl: null, assetFormat: null, assetAlt: null, selectedBuildingId: null, selectedFloorId: null, syncStatus: null, phase: 'session-inactive', message: 'Сессия недоступна. Войди снова, чтобы открыть карту.', announcement: '', offline: !this.online })
++      }
++      return revocation
++    }
++    this.abortRequest()
++    this.clearAssetUrl()
++    this.patchState({ catalog: null, plan: null, assetUrl: null, assetFormat: null, assetAlt: null, selectedBuildingId: null, selectedFloorId: null, syncStatus: null, phase: active ? 'idle' : 'session-inactive', message: active ? null : 'Сессия недоступна. Войди снова, чтобы открыть карту.', announcement: '', offline: !this.online })
++    if (this.surface === 'pwa' && this.store) {
++      this.unsubscribeLifecycle?.()
++      this.unsubscribeLifecycle = this.store.subscribeLifecycle(this.scope, (event) => this.handleLifecycleEvent(event))
++    }
++    if (active) void this.reload(true)
++    return revocation
++  }
++
++  dispose(): void {
++    if (this.disposed) return
++    this.disposed = true
++    this.liveOnlyScope = null
++    this.retainedLiveOnlyOfflineScope = null
++    this.abortRequest()
++    this.clearAssetUrl()
++    this.unsubscribeLifecycle?.()
++    this.listeners.clear()
++  }
++
++  private async reload(explicitOpen: boolean): Promise<MapRevokeResult | null> {
++    if (this.disposed) return null
++    const request = this.startRequest()
++    const retained = this.hasRetainedView()
++    this.patchRequestState(request, { phase: retained ? 'ready' : 'loading', message: retained ? this.state.message : null, offline: !this.online, ...(retained ? {} : { assetUrl: null, assetFormat: null, plan: null }) })
++    if (!this.sessionActive) {
++      this.patchState({ phase: 'session-inactive', message: 'Сессия недоступна. Войди снова, чтобы открыть карту.', assetAlt: null, announcement: '' })
++      return null
++    }
++    try {
++      if (!this.online) {
++        if (this.surface !== 'pwa' || !this.store) {
++          this.patchRequestState(request, { phase: 'unavailable', message: 'Карта доступна только онлайн в этой оболочке.' })
++          return null
++        }
++        await this.requireDurableAuthority(request)
++        this.assertCurrent(request)
++        let snapshot
++        try {
++          this.assertCurrent(request)
++          snapshot = await this.store.readSnapshot(request.scope)
++          this.assertCurrent(request)
++        } catch (error) {
++          if (error instanceof MapError && error.kind === 'storage') {
++            const authority = await this.requireDurableAuthority(request)
++            if (authority) throw new MapError('storage', error.message, { authorityUnchanged: true, cause: error })
++          }
++          throw error
++        }
++        if (!this.isCurrent(request)) return null
++        await this.requireDurableAuthority(request)
++        if (!snapshot) {
++          this.patchRequestState(request, { phase: 'offline-no-cache', message: 'Сохранённой карты ещё нет. Подключись к сети, чтобы загрузить карты.' })
++          return null
++        }
++        return await this.showSnapshot(snapshot, request, false, explicitOpen)
++      }
++
++      if (this.surface === 'pwa' && this.synchronizer && !this.isLiveOnly(request)) {
++        this.syncInFlightToken = request.token
++        let adoptedPendingEvent = false
++        let sync
++        try {
++          this.assertCurrent(request)
++          sync = await this.synchronizer.synchronize(request.scope, request.signal)
++        } finally {
++          if (this.syncInFlightToken === request.token) this.syncInFlightToken = null
++        }
++        if (!this.isCurrent(request)) return null
++        const pending = this.takePendingLifecycleEvent()
++        if (pending?.kind === 'updated') {
++          const latest = await this.readCurrentSnapshot(request)
++          if (latest) {
++            sync = { ...sync, snapshot: latest }
++            adoptedPendingEvent = true
++          }
++        }
++        if (!this.isCurrent(request)) return null
++        this.patchRequestState(request, { syncStatus: sync.status })
++        if (sync.error?.kind === 'unauthorized' || sync.error?.kind === 'forbidden') {
++          return await this.revokeCache(sync.error.kind)
++        }
++        if (sync.error && isDurableAuthorityLoss(sync.error)) {
++          this.denyDurableAuthority(sync.error)
++          return null
++        }
++        if (sync.status === 'stale' && !sync.snapshot) return null
++        if (sync.status === 'storage-unavailable') this.enterLiveOnly(request)
++        if (sync.status !== 'storage-unavailable' && sync.error?.kind === 'storage' && this.hasRetainedView() && isRecoverableStorageError(sync.error)) return await this.handleLoadError(sync.error)
++        if (sync.snapshot && !this.isLiveOnly(request)) {
++          return await this.showSnapshot(sync.snapshot, request, !adoptedPendingEvent && (sync.status === 'update-failed' || sync.status === 'storage-unavailable'), explicitOpen)
++        }
++      } else if (this.isLiveOnly(request)) {
++        this.patchRequestState(request, { syncStatus: 'storage-unavailable' })
++      }
++      await this.requireDurableAuthority(request, true)
++      this.assertCurrent(request)
++      const rawCatalog = await this.port.readCatalog(request.signal)
++      this.assertCurrent(request)
++      const catalog = validateCatalog(rawCatalog)
++      this.assertCurrent(request)
++      if (!this.patchCatalog(catalog, request)) return null
++      return await this.loadSelectedFloor(explicitOpen, request)
++    } catch (error) {
++      if (!this.isCurrent(request)) return null
++      return await this.handleLoadError(error)
++    }
++  }
++
++  private async showSnapshot(snapshot: MapSnapshot, request: MapRequest, updateFailed: boolean, explicitOpen: boolean): Promise<MapRevokeResult | null> {
++    await this.requireDurableAuthority(request)
++    if (!this.isCurrent(request) || !this.patchCatalog(snapshot.manifest, request)) return null
++    return this.loadSelectedFloor(explicitOpen, request, snapshot, updateFailed)
++  }
++
++  private async loadSelectedFloor(explicitOpen: boolean, request: MapRequest, snapshot?: MapSnapshot, updateFailed = false): Promise<MapRevokeResult | null> {
++    if (this.isLiveOnly(request)) snapshot = undefined
++    await this.requireDurableAuthority(request, true)
++    if (!this.isCurrent(request)) return null
++    const building = this.selectedBuilding()
++    if (!building) {
++      this.clearAssetUrl(request)
++      this.patchRequestState(request, { phase: 'empty-catalog', message: 'Корпусов для показа карты пока нет.', catalog: this.state.catalog, plan: null, assetUrl: null, assetFormat: null, assetAlt: null })
++      return null
++    }
++    const floor = building.floors.find((item) => item.id === this.state.selectedFloorId) ?? building.floors[0]
++    if (!floor) {
++      this.clearAssetUrl(request)
++      this.patchRequestState(request, { phase: 'empty-floors', message: 'Для выбранного корпуса этажи не опубликованы.', plan: null, assetUrl: null, assetFormat: null, assetAlt: null })
++      return null
++    }
++    if (floor.id !== this.state.selectedFloorId) this.patchRequestState(request, { selectedFloorId: floor.id })
++    if (!this.online && !snapshot) {
++      this.patchRequestState(request, { phase: 'offline-no-cache', message: 'Выбранный этаж не сохранён для офлайн-доступа.' })
++      return null
++    }
++    if (explicitOpen) {
++      void this.sendDemand(building.id, floor.id, request)
++    }
++    let plan: MapPlan | null = floor.plan
++    if (!snapshot) {
++      this.assertCurrent(request)
++      const rawPlan = await this.port.readPlan({ buildingId: building.id, floorId: floor.id, signal: request.signal })
++      this.assertCurrent(request)
++      plan = rawPlan === null ? null : validatePlan(rawPlan, building.id, floor.id)
++      this.assertCurrent(request)
++      await this.requireDurableAuthority(request, true)
++    }
++    if (!plan) {
++      this.clearAssetUrl(request)
++      this.patchRequestState(request, { phase: 'no-plan', plan: null, assetUrl: null, assetFormat: null, assetAlt: null, message: 'Для выбранного этажа план ещё не опубликован.' })
++      return null
++    }
++    const retainedPlan = this.hasRetainedViewFor(plan)
++    if (!retainedPlan) this.clearAssetUrl(request)
++    this.patchRequestState(request, { plan, ...(retainedPlan ? {} : { assetUrl: null, assetFormat: null, assetAlt: null }), message: updateFailed ? 'Показана последняя сохранённая версия; обновление не удалось.' : null })
++    return this.loadAsset(plan, building.label, floor.label, snapshot, request)
++  }
++
++  private async loadAsset(plan: MapPlan, buildingLabel: string, floorLabel: string, snapshot: MapSnapshot | undefined, request: MapRequest): Promise<MapRevokeResult | null> {
++    if (this.hasRetainedViewFor(plan)) {
++      this.patchRequestState(request, { phase: 'ready', plan, assetUrl: this.state.assetUrl, assetFormat: this.state.assetFormat, assetAlt: `${buildingLabel}, ${floorLabel}: ${plan.label}`, message: this.state.message ?? null })
++      return null
++    }
++    const descriptors = [plan.png, plan.svg]
++    const ready = descriptors.filter((descriptor) => descriptor.state === 'ready' && descriptor.id !== null && descriptor.sha256 !== null)
++    if (ready.length === 0) {
++      if (descriptors.some((descriptor) => descriptor.state === 'processing')) this.patchRequestState(request, { phase: 'loading', message: 'План ещё обрабатывается. Попробуй позже.' })
++      else if (descriptors.some((descriptor) => descriptor.state === 'failed')) this.patchRequestState(request, { phase: 'error', message: 'Опубликованные форматы плана недоступны.' })
++      else this.patchRequestState(request, { phase: 'no-plan', message: 'Для выбранного этажа нет готового плана.' })
++      return null
++    }
++    const errors: unknown[] = []
++    for (const descriptor of ready) {
++      if (!this.isCurrent(request)) return null
++      try {
++        await this.requireDurableAuthority(request, true)
++        this.assertCurrent(request)
++        const blob = snapshot ? this.cachedBlob(snapshot, plan, descriptor) : await this.port.readAsset(assetRequestFor(descriptor, plan.buildingId, plan.floorId, plan.version, request.signal))
++        this.assertCurrent(request)
++        const validated = await validateAssetBlob(descriptor, blob)
++        this.assertCurrent(request)
++        await this.requireDurableAuthority(request, true)
++        this.assertCurrent(request)
++        const url = this.objectUrlApi?.createObjectURL(validated.blob)
++        if (!url) throw new MapError('storage', 'objectURL недоступен')
++        this.replaceAssetUrl(url, request)
++        const fallback = descriptor.format === 'svg' && ready[0]?.format === 'png'
++        if (!this.patchRequestState(request, { phase: 'ready', plan, assetUrl: url, assetFormat: descriptor.format, assetAlt: `${buildingLabel}, ${floorLabel}: ${plan.label}`, message: null, announcement: fallback ? 'Схема показана, масштаб 100%.' : 'Схема загружена, масштаб 100%.' })) this.objectUrlApi?.revokeObjectURL(url)
++        return null
++      } catch (error) {
++        if (!this.isCurrent(request)) return null
++        if (error instanceof MapError && (error.kind === 'stale' || isDurableAuthorityLoss(error))) {
++          this.denyDurableAuthority(error)
++          return null
++        }
++        if (error instanceof MapError && (error.kind === 'unauthorized' || error.kind === 'forbidden')) {
++          return await this.revokeCache(error.kind)
++        }
++        errors.push(error)
++      }
++    }
++    if (!this.isCurrent(request)) return null
++    const last = errors.at(-1)
++    if (this.hasRetainedViewFor(plan)) {
++      this.patchRequestState(request, { phase: 'ready', plan, message: last instanceof MapError && last.kind === 'storage' ? 'Показана последняя сохранённая версия; offline-хранилище временно недоступно.' : 'Показана последняя сохранённая версия; обновление не удалось.' })
++      return null
++    }
++    this.clearAssetUrl(request)
++    this.patchRequestState(request, { phase: 'error', assetUrl: null, assetFormat: null, message: last instanceof MapError && last.kind === 'storage' ? 'План не сохранён в текущем offline-хранилище.' : 'Не удалось проверить ни один формат плана.' })
++    return null
++  }
++
++  private cachedBlob(snapshot: MapSnapshot, plan: MapPlan, descriptor: MapAssetDescriptor): Blob {
++    if (descriptor.id === null) throw new MapError('storage', 'ready формат не имеет asset id')
++    const key = mapAssetKey({ buildingId: plan.buildingId, floorId: plan.floorId, version: plan.version, format: descriptor.format, assetId: descriptor.id })
++    const asset = snapshot.assets.find((item) => item.key === key)
++    if (!asset) throw new MapError('storage', 'выбранный формат отсутствует в полном offline snapshot')
++    return asset.blob
++  }
++
++  private async sendDemand(buildingId: string, floorId: string, request: MapRequest): Promise<MapRevokeResult | null> {
++    if (!this.online || this.sessionActive === false || !this.isCurrent(request)) return null
++    const intentId = this.intentIdFactory()
++    const openRequest: MapOpenFloorRequest = { buildingId, floorId, intentId, signal: request.signal }
++    try {
++      this.assertCurrent(request)
++      await this.port.openFloor(openRequest)
++      if (!this.isCurrent(request)) return null
++      return null
++    } catch (error) {
++      if (!this.isCurrent(request)) return null
++      const mapError = asMapError(error, 'не удалось отправить событие открытия этажа')
++      if (mapError.kind === 'unauthorized' || mapError.kind === 'forbidden') return this.revokeCache(mapError.kind)
++      return null
++    }
++  }
++
++  private patchCatalog(catalog: MapCatalog, request: MapRequest): boolean {
++    if (!this.isCurrent(request)) return false
++    const currentBuilding = catalog.buildings.find((building) => building.id === this.state.selectedBuildingId) ?? catalog.buildings[0] ?? null
++    const currentFloor = currentBuilding?.floors.find((floor) => floor.id === this.state.selectedFloorId) ?? currentBuilding?.floors[0] ?? null
++    this.patchRequestState(request, { catalog, selectedBuildingId: currentBuilding?.id ?? null, selectedFloorId: currentFloor?.id ?? null })
++    if (catalog.buildings.length === 0) this.patchRequestState(request, { phase: 'empty-catalog', message: 'Корпусов для показа карты пока нет.' })
++    else if (currentBuilding && currentBuilding.floors.length === 0) this.patchRequestState(request, { phase: 'empty-floors', message: 'Для выбранного корпуса этажи не опубликованы.' })
++    return true
++  }
++
++  private updateSelection(request: MapRequest, buildingId: string, floorId: string | null): boolean {
++    if (!this.isCurrent(request)) return false
++    this.clearAssetUrl(request)
++    this.patchRequestState(request, { selectedBuildingId: buildingId, selectedFloorId: floorId, plan: null, assetUrl: null, assetFormat: null, assetAlt: null, phase: 'loading', message: null, announcement: 'Выбор этажа обновлён.' })
++    return true
++  }
++
++  private startRequest(): MapRequest {
++    this.abortRequest()
++    const controller = new AbortController()
++    this.requestController = controller
++    return { token: this.loadToken, sessionToken: this.sessionToken, controller, signal: controller.signal, scope: this.scope }
++  }
++
++  private async offlineSnapshot(request: MapRequest): Promise<MapSnapshot | undefined> {
++    if (this.surface !== 'pwa' || !this.store) return undefined
++    if (this.isLiveOnly(request)) return undefined
++    await this.requireDurableAuthority(request, true)
++    this.assertCurrent(request)
++    try {
++      this.assertCurrent(request)
++      const snapshot = await this.store.readSnapshot(request.scope)
++      this.assertCurrent(request)
++      await this.requireDurableAuthority(request, true)
++      return snapshot ?? undefined
++    } catch (error) {
++      if (error instanceof MapError && error.kind === 'stale') throw error
++      if (isStorageInfrastructureError(error)) {
++        if (this.online && this.isCurrent(request)) {
++          this.enterLiveOnly(request)
++          return undefined
++        }
++        throw error
++      }
++      if (error instanceof MapError && error.kind === 'corrupt') return undefined
++      throw error
++    }
++  }
++
++  private selectedBuilding() {
++    return this.state.catalog?.buildings.find((building) => building.id === this.state.selectedBuildingId) ?? null
++  }
++
++  private async requireDurableAuthority(request: MapRequest, allowLiveOnly = false): Promise<MapOwnerState | undefined> {
++    if (!this.sessionActive) throw new MapError('session-inactive', 'Сессия недоступна для карты')
++    this.assertCurrent(request)
++    if (this.surface !== 'pwa' || !this.store) return undefined
++    if (allowLiveOnly && this.online && this.isLiveOnly(request)) return undefined
++    try {
++      this.assertCurrent(request)
++      const state = await this.store.getOwnerState(request.scope)
++      this.assertCurrent(request)
++      if (state.ownerKey !== request.scope.ownerKey || state.generation !== request.scope.generation || (state.authority !== 'virgin' && state.authority !== 'active')) {
++        throw new MapError('stale', 'durable authority владельца карты недействительна для trusted scope', { authorityChanged: true, authority: state.authority, generation: state.generation, requestedGeneration: request.scope.generation, epoch: state.epoch, activeRevision: state.activeRevision })
++      }
++      return state
++    } catch (error) {
++      if (!this.isCurrent(request)) throw new MapStaleCommitError()
++      if (allowLiveOnly && this.online && isStorageInfrastructureError(error)) {
++        this.enterLiveOnly(request)
++        return undefined
++      }
++      throw error
++    }
++  }
++
++  private isCurrent(request: MapRequest): boolean {
++    return !this.disposed && this.sessionActive && request.sessionToken === this.sessionToken && sameScope(this.scope, request.scope) && request.token === this.loadToken && this.requestController === request.controller && !request.signal.aborted
++  }
++
++  private assertCurrent(request: MapRequest): void {
++    if (!this.isCurrent(request)) throw new MapStaleCommitError()
++  }
++
++  private patchRequestState(request: MapRequest, patch: Partial<MapViewState>): boolean {
++    if (!this.isCurrent(request)) return false
++    this.patchState(patch)
++    return true
++  }
++
++  private isLiveOnly(request: MapRequest): boolean {
++    return this.online && this.surface === 'pwa' && this.liveOnlyScope !== null && sameScope(this.liveOnlyScope, request.scope)
++  }
++
++  private hasRetainedLiveOnlyOfflineView(): boolean {
++    return !this.online && this.surface === 'pwa' && this.sessionActive && this.retainedLiveOnlyOfflineScope !== null && sameScope(this.retainedLiveOnlyOfflineScope, this.scope) && this.hasRetainedView()
++  }
++
++  private enterLiveOnly(request: MapRequest): void {
++    if (!this.isCurrent(request)) return
++    this.liveOnlyScope = request.scope
++    this.patchRequestState(request, { syncStatus: 'storage-unavailable' })
++  }
++
++  private abortRequest(): void {
++    this.loadToken += 1
++    this.requestController?.abort()
++    this.requestController = null
++  }
++
++  private replaceAssetUrl(url: string, request?: MapRequest): void {
++    if (request) this.assertCurrent(request)
++    this.clearAssetUrl(request)
++    this.currentUrl = url
++  }
++
++  private clearAssetUrl(request?: MapRequest): void {
++    if (request) this.assertCurrent(request)
++    if (this.currentUrl) this.objectUrlApi?.revokeObjectURL(this.currentUrl)
++    this.currentUrl = null
++  }
++
++  private patchState(patch: Partial<MapViewState>): void {
++    this.state = { ...this.state, ...patch }
++    for (const listener of this.listeners) listener(this.state)
++  }
++
++  private emitInvalidation(scope: MapOwnerScope, authKind: MapInvalidationKind, result: MapRevokeResult | null): void {
++    const signal: MapRevokeSignal = { ownerKey: scope.ownerKey, generation: scope.generation, authKind, result }
++    for (const listener of this.invalidationListeners) listener(signal)
++  }
++
++  private async handleLoadError(error: unknown): Promise<MapRevokeResult | null> {
++    const mapError = error instanceof MapError ? error : new MapError('unknown', 'Карта временно недоступна.', error)
++    if (isDurableAuthorityLoss(mapError)) {
++      this.denyDurableAuthority(mapError)
++      return null
++    }
++    if (mapError.kind === 'stale') {
++      this.denyDurableAuthority(mapError)
++      return null
++    }
++    if (mapError.kind === 'forbidden' || mapError.kind === 'unauthorized') {
++      return await this.revokeCache(mapError.kind)
++    }
++    if (this.hasRetainedView() && (mapError.kind !== 'storage' || isRecoverableStorageError(mapError))) {
++      this.patchState({ phase: 'ready', offline: !this.online, message: mapError.message })
++      return null
++    }
++    const phase = mapError.kind === 'session-inactive' ? 'session-inactive' : mapError.kind === 'network' || mapError.kind === 'offline' ? 'unavailable' : 'error'
++    this.patchState({ phase, message: mapError.message, assetUrl: null, assetFormat: null })
++    return null
++  }
++
++  private denyDurableAuthority(error?: MapError): void {
++    this.sessionToken += 1
++    this.sessionActive = false
++    this.liveOnlyScope = null
++    this.retainedLiveOnlyOfflineScope = null
++    this.synchronizer?.setScope(this.scope, false)
++    this.abortRequest()
++    this.clearAssetUrl()
++    this.pendingLifecycleEvent = null
++    this.patchState({ phase: 'session-inactive', catalog: null, plan: null, selectedBuildingId: null, selectedFloorId: null, assetUrl: null, assetFormat: null, assetAlt: null, syncStatus: null, message: 'Кэш карты отозван. Войди снова, чтобы открыть карту.', announcement: '' })
++    this.emitInvalidation(this.scope, 'authority-changed', authorityLossResult(error, this.scope))
++  }
++
++  private async revokeCache(authKind: MapInvalidationKind): Promise<MapRevokeResult | null> {
++    if (this.revokeInFlight && this.revokeInFlightScope && sameScope(this.revokeInFlightScope, this.scope)) return this.revokeInFlight
++    const capturedScope = this.scope
++    this.sessionToken += 1
++    this.sessionActive = false
++    this.liveOnlyScope = null
++    this.retainedLiveOnlyOfflineScope = null
++    this.synchronizer?.setScope(this.scope, false)
++    this.abortRequest()
++    this.clearAssetUrl()
++    this.pendingLifecycleEvent = null
++    this.patchState({ phase: 'session-inactive', catalog: null, plan: null, selectedBuildingId: null, selectedFloorId: null, assetUrl: null, assetFormat: null, assetAlt: null, message: 'Доступ к кэшу карты отзывается. Войди снова, чтобы открыть карту.', announcement: '' })
++    const operation = (async (): Promise<MapRevokeResult | null> => {
++      const result = await this.revokeScope(capturedScope)
++      this.emitInvalidation(capturedScope, authKind, result)
++      if (this.disposed || !sameScope(this.scope, capturedScope) || this.sessionActive) return result
++      this.patchState({ phase: 'session-inactive', catalog: null, plan: null, selectedBuildingId: null, selectedFloorId: null, assetUrl: null, assetFormat: null, assetAlt: null, message: result?.status === 'failed' ? 'Доступ к кэшу карты запрещён, но durable очистка ещё не завершена. Повтори очистку позже.' : 'Доступ к кэшу карты отозван. Войди снова, чтобы открыть карту.', announcement: '' })
++      return result
++    })()
++    this.revokeInFlightScope = capturedScope
++    const tracked = operation.finally(() => {
++      if (this.revokeInFlight === tracked) {
++        this.revokeInFlight = null
++        this.revokeInFlightScope = null
++      }
++    })
++    this.revokeInFlight = tracked
++    return tracked
++  }
++
++  private handleLifecycleEvent(event: MapLifecycleEvent): void {
++    if (this.disposed || event.ownerKey !== this.scope.ownerKey) return
++    if (event.generation !== null && event.generation !== this.scope.generation) return
++    if (event.kind === 'revoked') {
++      this.sessionToken += 1
++      this.pendingLifecycleEvent = null
++      this.sessionActive = false
++      this.liveOnlyScope = null
++      this.retainedLiveOnlyOfflineScope = null
++      this.synchronizer?.setScope(this.scope, false)
++      this.abortRequest()
++      this.clearAssetUrl()
++      this.patchState({ phase: 'session-inactive', catalog: null, plan: null, selectedBuildingId: null, selectedFloorId: null, assetUrl: null, assetFormat: null, assetAlt: null, message: 'Кэш карты отозван. Войди снова, чтобы открыть карту.', announcement: '' })
++      if (!(this.revokeInFlight && this.revokeInFlightScope && sameScope(this.revokeInFlightScope, this.scope))) this.emitInvalidation(this.scope, 'authority-changed', lifecycleRevokeResult(this.scope, event))
++      return
++    }
++    if (this.syncInFlightToken !== null) {
++      this.rememberLifecycleEvent(event)
++      return
++    }
++    if (event.revision && event.revision === this.state.catalog?.revision) return
++    if (this.surface === 'pwa') void this.adoptLatestSnapshot()
++  }
++
++  private hasRetainedView(): boolean {
++    return this.currentUrl !== null && this.state.assetUrl === this.currentUrl && this.state.plan !== null && this.state.assetFormat !== null
++  }
++
++  private hasRetainedViewFor(plan: MapPlan): boolean {
++    return this.hasRetainedView() && this.state.plan !== null && planIdentity(this.state.plan) === planIdentity(plan)
++  }
++
++  private rememberLifecycleEvent(event: MapLifecycleEvent): void {
++    const current = this.pendingLifecycleEvent
++    if (!current || current.kind !== 'revoked' && (event.epoch > current.epoch || event.epoch === current.epoch)) this.pendingLifecycleEvent = event
++  }
++
++  private takePendingLifecycleEvent(): MapLifecycleEvent | null {
++    const event = this.pendingLifecycleEvent
++    this.pendingLifecycleEvent = null
++    return event
++  }
++
++  private async adoptLatestSnapshot(): Promise<void> {
++    if (this.disposed || this.surface !== 'pwa' || !this.store || !this.sessionActive) return
++    const request = this.startRequest()
++    try {
++      const snapshot = await this.readCurrentSnapshot(request)
++      if (!snapshot || !this.isCurrent(request)) return
++      if (snapshot.manifest.revision === this.state.catalog?.revision) return
++      await this.showSnapshot(snapshot, request, false, false)
++    } catch (error) {
++      if (this.isCurrent(request)) await this.handleLoadError(error)
++    }
++  }
++
++  private async readCurrentSnapshot(request: MapRequest): Promise<MapSnapshot | null> {
++    if (!this.store || !this.isCurrent(request) || this.isLiveOnly(request)) return null
++    await this.requireDurableAuthority(request)
++    this.assertCurrent(request)
++    const snapshot = await this.store.readSnapshot(request.scope)
++    this.assertCurrent(request)
++    await this.requireDurableAuthority(request)
++    return this.isCurrent(request) ? snapshot : null
++  }
++
++  private async revokeScope(scope: MapOwnerScope): Promise<MapRevokeResult | null> {
++    if (!this.store) return null
++    try {
++      return await this.store.revokeOwner(scope)
++    } catch (error) {
++      const mapError = error instanceof MapError ? error : new MapError('storage', 'не удалось завершить очистку offline-кэша', error)
++      return { ownerKey: scope.ownerKey, epoch: 0, status: 'failed', durable: false, pending: true, error: mapError }
++    }
++  }
++}
++
++function isDurableAuthorityLoss(error: MapError): boolean {
++  const cause = error.causeValue
++  return typeof cause === 'object' && cause !== null && 'authorityChanged' in cause && (cause as { readonly authorityChanged?: unknown }).authorityChanged === true
++}
++
++function isRecoverableStorageError(error: MapError): boolean {
++  const cause = error.causeValue
++  return typeof cause === 'object' && cause !== null && 'authorityUnchanged' in cause && (cause as { readonly authorityUnchanged?: unknown }).authorityUnchanged === true
++}
++
++function isStorageInfrastructureError(error: unknown): error is MapError {
++  if (!(error instanceof MapError)) return true
++  return (error.kind === 'storage' || error.kind === 'unknown') && !isDurableAuthorityLoss(error)
++}
++
++function authorityLossResult(error: MapError | undefined, scope: MapOwnerScope): MapRevokeResult {
++  const cause = error?.causeValue
++  const metadata = typeof cause === 'object' && cause !== null ? cause as { readonly authority?: unknown; readonly epoch?: unknown; readonly activeRevision?: unknown } : null
++  const authority = metadata?.authority
++  const durable = authority === 'revoked' && metadata?.activeRevision === null
++  const pending = authority === 'pending'
++  const epoch = typeof metadata?.epoch === 'number' ? metadata.epoch : 0
++  const result: MapRevokeResult = { ownerKey: scope.ownerKey, epoch, status: durable ? 'completed' : 'failed', durable, pending }
++  if (!durable && error) return { ...result, error }
++  return result
++}
++
++function lifecycleRevokeResult(scope: MapOwnerScope, event: MapLifecycleEvent): MapRevokeResult {
++  return { ownerKey: scope.ownerKey, epoch: event.epoch, status: 'completed', durable: true, pending: false }
++}
++
++function sameScope(left: MapOwnerScope, right: MapOwnerScope): boolean {
++  return left.ownerKey === right.ownerKey && left.generation === right.generation
++}
++
++function asMapError(error: unknown, message: string): MapError {
++  return error instanceof MapError ? error : new MapError('unknown', message, error)
++}
++
++function planIdentity(plan: MapPlan): string {
++  return [
++    plan.buildingId,
++    plan.floorId,
++    plan.version,
++    assetIdentity(plan.png),
++    assetIdentity(plan.svg),
++  ].map(encodeURIComponent).join('/')
++}
++
++function assetIdentity(descriptor: MapAssetDescriptor): string {
++  return [descriptor.format, descriptor.state, descriptor.id ?? '', descriptor.bytes, descriptor.sha256 ?? ''].join(':')
++}
++
++function defaultObjectUrlApi(): MapObjectUrlApi | undefined {
++  if (typeof globalThis.URL?.createObjectURL !== 'function' || typeof globalThis.URL?.revokeObjectURL !== 'function') return undefined
++  return { createObjectURL: (blob) => globalThis.URL.createObjectURL(blob), revokeObjectURL: (url) => globalThis.URL.revokeObjectURL(url) }
++}
++
++function defaultIntentId(): string {
++  if (typeof globalThis.crypto?.randomUUID === 'function') return globalThis.crypto.randomUUID()
++  return `map-open-${Date.now()}-${Math.random().toString(16).slice(2)}`
++}
+diff --git a/frontends/mobile-core/src/features/map/map-offline-store.ts b/frontends/mobile-core/src/features/map/map-offline-store.ts
+new file mode 100644
+index 00000000..a6751aa1
+--- /dev/null
++++ b/frontends/mobile-core/src/features/map/map-offline-store.ts
+@@ -0,0 +1,513 @@
++import type {
++  MapAssetDescriptor,
++  MapAuthorityState,
++  MapCachedAsset,
++  MapManifest,
++  MapOwnerScope,
++  MapOwnerState,
++  MapRevokeResult,
++  MapSnapshot,
++} from './map-contract'
++import { MapError, MapStaleCommitError, mapAssetKey } from './map-contract'
++import { validateCachedAsset, validateManifest, type AssetValidationOptions } from './map-validation'
++
++const DEFAULT_DATABASE_NAME = 'rct-student-map'
++// Keep the existing IDB version so older fixtures can open the store. Records
++// without generation/authority remain fail-closed as revoked in ownerStateFromRecord.
++const DATABASE_VERSION = 1
++const OWNER_STORE = 'owners'
++
++interface PersistedSnapshot {
++  readonly manifest: MapManifest
++  readonly assets: readonly MapCachedAsset[]
++}
++
++interface PersistedOwnerRecord {
++  readonly ownerKey: string
++  readonly generation?: number
++  readonly authority?: MapAuthorityState
++  readonly epoch: number
++  readonly activeRevision: string | null
++  readonly snapshot: PersistedSnapshot | null
++}
++
++interface PendingRevocation {
++  readonly databaseName: string
++  readonly ownerKey: string
++  readonly generation: number
++  epoch: number
++  inFlight: Promise<MapRevokeResult> | null
++}
++
++// A failed tombstone keeps a process-local deny fence until retry succeeds. It
++// cannot describe a durable erase across a reload or a new realm when every
++// IndexedDB write is failing; callers must retain the retry obligation.
++const pendingRevocations = new Map<string, PendingRevocation>()
++
++function pendingRevocationKey(databaseName: string, ownerKey: string): string {
++  return `${databaseName}\u0000${ownerKey}`
++}
++
++export interface MapOfflineStoreOptions {
++  readonly databaseName?: string
++  readonly indexedDB?: IDBFactory
++  readonly validation?: AssetValidationOptions
++}
++
++export interface MapLifecycleEvent {
++  readonly kind: 'revoked' | 'updated'
++  readonly ownerKey: string
++  readonly generation: number | null
++  readonly epoch: number
++  readonly revision: string | null
++}
++
++export class MapOfflineStore {
++  private readonly databaseName: string
++  private readonly indexedDb: IDBFactory | undefined
++  private readonly validation: AssetValidationOptions
++  private databasePromise: Promise<IDBDatabase> | null = null
++  private readonly lifecycleListeners = new Map<string, Set<(event: MapLifecycleEvent) => void>>()
++  private readonly lifecycleChannel: BroadcastChannel | null
++  private closeRequested = false
++
++  constructor(options: MapOfflineStoreOptions = {}) {
++    this.databaseName = options.databaseName ?? DEFAULT_DATABASE_NAME
++    this.indexedDb = options.indexedDB ?? globalThis.indexedDB
++    this.validation = options.validation ?? {}
++    this.lifecycleChannel = typeof globalThis.BroadcastChannel === 'function' ? new globalThis.BroadcastChannel(`${this.databaseName}:lifecycle`) : null
++    if (this.lifecycleChannel) this.lifecycleChannel.onmessage = (event: MessageEvent<MapLifecycleEvent>) => this.dispatchLifecycle(event.data, false)
++  }
++
++  subscribeLifecycle(scope: MapOwnerScope, listener: (event: MapLifecycleEvent) => void): () => void {
++    const trustedScope = requireScope(scope)
++    const listeners = this.lifecycleListeners.get(trustedScope.ownerKey) ?? new Set<(event: MapLifecycleEvent) => void>()
++    listeners.add(listener)
++    this.lifecycleListeners.set(trustedScope.ownerKey, listeners)
++    return () => {
++      listeners.delete(listener)
++      if (listeners.size === 0) this.lifecycleListeners.delete(trustedScope.ownerKey)
++    }
++  }
++
++  async getOwnerState(scope: MapOwnerScope): Promise<MapOwnerState> {
++    return this.ensureScopeState(requireScope(scope))
++  }
++
++  private async ensureScopeState(scope: MapOwnerScope): Promise<MapOwnerState> {
++    if (!Number.isSafeInteger(scope.generation) || scope.generation <= 0) throw new MapError('stale', 'generation trusted scope недействителен')
++    const key = pendingRevocationKey(this.databaseName, scope.ownerKey)
++    const pending = pendingRevocations.get(key)
++    if (pending) {
++      const record = await this.readRecord(scope.ownerKey).catch((error: unknown) => {
++        if (error instanceof MapError && error.kind === 'storage') return undefined
++        throw error
++      })
++      return pendingState(scope.ownerKey, record, pending)
++    }
++    const observed = await this.readRecord(scope.ownerKey)
++    if (!observed) return ownerStateFromRecord(scope.ownerKey, undefined, scope.generation)
++    if (observed) {
++      const observedState = ownerStateFromRecord(scope.ownerKey, observed)
++      const canAdvance = observedState.generation !== null && scope.generation > observedState.generation && scope.freshAuthority === true && observedState.authority !== 'pending'
++      if (observedState.generation === scope.generation || !canAdvance) return observedState.generation === scope.generation ? observedState : { ...observedState, authority: 'revoked' }
++    }
++    const database = await this.openDatabase()
++    const transaction = database.transaction(OWNER_STORE, 'readwrite')
++    const objectStore = transaction.objectStore(OWNER_STORE)
++    let nextState: MapOwnerState | null = null
++    let operationError: MapError | null = null
++    return new Promise<MapOwnerState>((resolve, reject) => {
++      transaction.oncomplete = () => {
++        if (operationError) reject(operationError)
++        else if (nextState) resolve(nextState)
++        else reject(new MapError('storage', 'IDB authority transaction did not produce a state'))
++      }
++      transaction.onerror = () => { operationError ??= storageError(transaction.error) }
++      transaction.onabort = () => { reject(operationError ?? new MapError('storage', 'IDB authority transaction aborted')) }
++      const request = objectStore.get(scope.ownerKey)
++      request.onerror = () => {
++        operationError = storageError(request.error)
++        try { transaction.abort() } catch { /* transaction already closed */ }
++      }
++      request.onsuccess = () => {
++        const current = request.result as PersistedOwnerRecord | undefined
++        const pendingAtTransition = pendingRevocations.get(key)
++        if (pendingAtTransition) {
++          nextState = pendingState(scope.ownerKey, current, pendingAtTransition)
++          return
++        }
++        if (!current) {
++          nextState = ownerStateFromRecord(scope.ownerKey, undefined, scope.generation)
++          return
++        }
++        const currentState = ownerStateFromRecord(scope.ownerKey, current)
++        if (currentState.generation === scope.generation) {
++          nextState = currentState
++          return
++        }
++        if (currentState.generation !== null && scope.generation > currentState.generation && scope.freshAuthority === true && currentState.authority !== 'pending') {
++          const freshEpoch = currentState.epoch + 1
++          objectStore.put({ ownerKey: scope.ownerKey, generation: scope.generation, authority: 'virgin', epoch: freshEpoch, activeRevision: null, snapshot: null } satisfies PersistedOwnerRecord)
++          nextState = { ownerKey: scope.ownerKey, generation: scope.generation, authority: 'virgin', epoch: freshEpoch, activeRevision: null }
++          return
++        }
++        nextState = { ...currentState, authority: 'revoked' }
++      }
++    })
++  }
++
++  async readSnapshot(scope: MapOwnerScope): Promise<MapSnapshot | null> {
++    const trustedScope = requireScope(scope)
++    const authority = await this.getOwnerState(trustedScope)
++    if (authority.authority === 'pending' || authority.authority === 'revoked') throw authorityError(authority, trustedScope)
++    if (authority.authority === 'virgin') return null
++    const record = await this.readRecord(trustedScope.ownerKey)
++    if (!record || record.generation !== trustedScope.generation || record.authority !== 'active' || !record.snapshot) {
++      const current = await this.getOwnerState(trustedScope)
++      throw authorityError(current, trustedScope)
++    }
++    return this.readValidatedSnapshot(record, trustedScope)
++  }
++
++  private async readValidatedSnapshot(record: PersistedOwnerRecord, scope: MapOwnerScope): Promise<MapSnapshot> {
++    try {
++      const persistedSnapshot = record.snapshot
++      if (!persistedSnapshot) throw new Error('snapshot отсутствует')
++      const manifest = validateManifest(persistedSnapshot.manifest)
++      if (record.activeRevision !== manifest.revision || persistedSnapshot.assets.some((asset) => asset.key !== mapAssetKey(asset))) {
++        throw new Error('revision or asset key mismatch')
++      }
++      const expected = readyDescriptors(manifest)
++      const actualKeys = new Set(persistedSnapshot.assets.map((asset) => asset.key))
++      if (actualKeys.size !== persistedSnapshot.assets.length || expected.size !== actualKeys.size || [...expected.keys()].some((key) => !actualKeys.has(key))) throw new Error('complete snapshot asset set mismatch')
++      for (const asset of persistedSnapshot.assets) {
++        const descriptor = expected.get(asset.key)
++        if (!descriptor || asset.bytes !== descriptor.bytes || asset.sha256 !== descriptor.sha256) throw new Error(`unexpected asset ${asset.key}`)
++        await validateCachedAsset(asset, descriptor, this.validation)
++        const afterAsset = await this.getOwnerState(scope)
++        if (afterAsset.authority !== 'active' || afterAsset.generation !== scope.generation || afterAsset.epoch !== record.epoch || afterAsset.activeRevision !== manifest.revision) throw authorityError(afterAsset, scope)
++      }
++      const current = await this.getOwnerState(scope)
++      if (current.authority !== 'active' || current.generation !== scope.generation || current.epoch !== record.epoch || current.activeRevision !== manifest.revision) throw authorityError(current, scope)
++      return {
++        ownerKey: scope.ownerKey,
++        generation: scope.generation,
++        epoch: record.epoch,
++        manifest,
++        assets: persistedSnapshot.assets,
++      }
++    } catch (error) {
++      if (error instanceof MapError && (error.kind === 'storage' || error.kind === 'stale')) throw error
++      throw new MapError('corrupt', 'сохранённый снимок карты повреждён и не доверен', error)
++    }
++  }
++
++  async commitSnapshot(scope: MapOwnerScope, expected: MapOwnerState, manifest: MapManifest, assets: readonly MapCachedAsset[]): Promise<MapSnapshot> {
++    const trustedScope = requireScope(scope)
++    if (expected.ownerKey !== trustedScope.ownerKey) throw new MapStaleCommitError('scope owner не совпадает с captured owner')
++    if (expected.generation !== trustedScope.generation) throw new MapStaleCommitError('scope generation не совпадает с captured authority')
++    if (expected.authority === 'revoked' || expected.authority === 'pending') throw authorityError(expected, trustedScope)
++    if (pendingRevocations.has(pendingRevocationKey(this.databaseName, trustedScope.ownerKey))) throw new MapStaleCommitError('очистка offline-кэша владельца ещё не завершена')
++    const checkedManifest = validateManifest(manifest)
++    await validateCompleteAssets(checkedManifest, assets, this.validation)
++    const database = await this.openDatabase()
++    const transaction = database.transaction(OWNER_STORE, 'readwrite')
++    const objectStore = transaction.objectStore(OWNER_STORE)
++    let operationError: MapError | null = null
++    let currentEpoch = expected.epoch
++    let resultGeneration = scope.generation
++
++    const result = await new Promise<MapSnapshot>((resolve, reject) => {
++      transaction.oncomplete = () => {
++        if (operationError) {
++          reject(operationError)
++          return
++        }
++        resolve({ ownerKey: trustedScope.ownerKey, generation: resultGeneration, epoch: currentEpoch, manifest: checkedManifest, assets })
++      }
++      transaction.onerror = () => {
++        operationError ??= storageError(transaction.error)
++      }
++      transaction.onabort = () => {
++        reject(operationError ?? new MapError('storage', 'IDB transaction aborted'))
++      }
++      const request = objectStore.get(trustedScope.ownerKey)
++      request.onerror = () => {
++        operationError = storageError(request.error)
++        try { transaction.abort() } catch { /* transaction already closed */ }
++      }
++      request.onsuccess = () => {
++        const current = request.result as PersistedOwnerRecord | undefined
++        if (pendingRevocations.has(pendingRevocationKey(this.databaseName, trustedScope.ownerKey))) {
++          operationError = new MapStaleCommitError('очистка offline-кэша владельца началась до commit')
++          try { transaction.abort() } catch { /* transaction already closed */ }
++          return
++        }
++        const actualState = ownerStateFromRecord(trustedScope.ownerKey, current, expected.authority === 'virgin' ? trustedScope.generation : undefined)
++        const expectedAuthority = expected.authority ?? (expected.activeRevision === null && expected.epoch === 0 ? 'virgin' : 'active')
++        if (actualState.generation !== trustedScope.generation) {
++          operationError = authorityError(actualState, trustedScope)
++          try { transaction.abort() } catch { /* transaction already closed */ }
++          return
++        }
++        if (actualState.authority === 'revoked' || actualState.authority === 'pending' || (actualState.authority !== expectedAuthority && !(actualState.authority === 'virgin' && expectedAuthority === 'active'))) {
++          operationError = authorityError(actualState, trustedScope)
++          try { transaction.abort() } catch { /* transaction already closed */ }
++          return
++        }
++        const actualEpoch = current?.epoch ?? 0
++        const actualRevision = current?.activeRevision ?? null
++        if (actualEpoch !== expected.epoch || actualRevision !== expected.activeRevision) {
++          operationError = new MapStaleCommitError('IDB epoch или active revision изменились до commit')
++          try { transaction.abort() } catch { /* transaction already closed */ }
++          return
++        }
++        currentEpoch = actualEpoch
++        resultGeneration = scope.generation
++        objectStore.put({
++          ownerKey: trustedScope.ownerKey,
++          generation: trustedScope.generation,
++          authority: 'active',
++          epoch: actualEpoch,
++          activeRevision: checkedManifest.revision,
++          snapshot: { manifest: checkedManifest, assets },
++        } satisfies PersistedOwnerRecord)
++      }
++    })
++    this.dispatchLifecycle({ kind: 'updated', ownerKey: trustedScope.ownerKey, generation: result.generation, epoch: result.epoch, revision: result.manifest.revision }, true)
++    return result
++  }
++
++  async revokeOwner(scope: MapOwnerScope): Promise<MapRevokeResult> {
++    return this.startRevoke(requireScope(scope))
++  }
++
++  async retryRevoke(scope: MapOwnerScope): Promise<MapRevokeResult> {
++    return this.startRevoke(requireScope(scope))
++  }
++
++  private async startRevoke(scope: MapOwnerScope): Promise<MapRevokeResult> {
++    const trustedScope = requireScope(scope)
++    const key = pendingRevocationKey(this.databaseName, trustedScope.ownerKey)
++    let pending = pendingRevocations.get(key)
++    if (pending && pending.generation !== trustedScope.generation) return failedRevoke(trustedScope, pending.epoch, new MapError('stale', 'очистка принадлежит другому trusted generation', { authorityChanged: true, ownerKey: trustedScope.ownerKey, generation: pending.generation, requestedGeneration: trustedScope.generation, epoch: pending.epoch, activeRevision: null }))
++    if (!pending) {
++      const generation = trustedScope.generation
++      let current: PersistedOwnerRecord | undefined
++      try {
++        current = await this.readRecord(trustedScope.ownerKey)
++      } catch (error) {
++        pending = pendingRevocations.get(key)
++        if (pending) return this.runPendingRevoke(pending, key)
++        const mapError = error instanceof MapError ? error : new MapError('storage', 'не удалось проверить durable authority перед revoke', error)
++        pending = { databaseName: this.databaseName, ownerKey: trustedScope.ownerKey, generation, epoch: 0, inFlight: null }
++        pendingRevocations.set(key, pending)
++        return failedRevoke(trustedScope, 0, mapError, true)
++      }
++      pending = pendingRevocations.get(key)
++      if (pending) return this.runPendingRevoke(pending, key)
++      const currentState = ownerStateFromRecord(trustedScope.ownerKey, current)
++      if (current && currentState.generation !== generation) {
++        return failedRevoke(trustedScope, currentState.epoch, authorityError(currentState, trustedScope))
++      }
++      pending = { databaseName: this.databaseName, ownerKey: trustedScope.ownerKey, generation, epoch: 0, inFlight: null }
++      pendingRevocations.set(key, pending)
++    }
++    return this.runPendingRevoke(pending, key)
++  }
++
++  private runPendingRevoke(pending: PendingRevocation, key: string): Promise<MapRevokeResult> {
++    if (pending.inFlight) return pending.inFlight
++    const operation = this.performRevoke(pending)
++    pending.inFlight = operation.finally(() => {
++      if (pendingRevocations.get(key) === pending) pending!.inFlight = null
++      this.closeIfSettled()
++    })
++    return pending.inFlight
++  }
++
++  private async performRevoke(pending: PendingRevocation): Promise<MapRevokeResult> {
++    let nextEpoch = pending.epoch
++    try {
++      const database = await this.openDatabase()
++      const transaction = database.transaction(OWNER_STORE, 'readwrite')
++      const objectStore = transaction.objectStore(OWNER_STORE)
++      let operationError: MapError | null = null
++      await new Promise<void>((resolve, reject) => {
++        transaction.oncomplete = () => {
++          if (operationError) reject(operationError)
++          else resolve()
++        }
++        transaction.onerror = () => { operationError ??= storageError(transaction.error) }
++        transaction.onabort = () => { reject(operationError ?? new MapError('storage', 'IDB revoke transaction aborted')) }
++        const request = objectStore.get(pending.ownerKey)
++        request.onerror = () => {
++          operationError = storageError(request.error)
++          try { transaction.abort() } catch { /* transaction already closed */ }
++        }
++        request.onsuccess = () => {
++          const current = request.result as PersistedOwnerRecord | undefined
++          const currentState = ownerStateFromRecord(pending.ownerKey, current, pending.generation)
++          if (current && currentState.generation !== pending.generation) {
++            operationError = authorityError(currentState, { ownerKey: pending.ownerKey, generation: pending.generation })
++            try { transaction.abort() } catch { /* transaction already closed */ }
++            return
++          }
++          const targetGeneration = pending.generation
++          nextEpoch = Math.max(pending.epoch, current?.epoch ?? 0) + 1
++          pending.epoch = nextEpoch
++          objectStore.put({
++            ownerKey: pending.ownerKey,
++            generation: targetGeneration,
++            authority: 'revoked',
++            epoch: nextEpoch,
++            activeRevision: null,
++            snapshot: null,
++          } satisfies PersistedOwnerRecord)
++        }
++      })
++      if (nextEpoch === 0) throw new MapError('storage', 'IDB revoke не вернул epoch')
++      pendingRevocations.delete(pendingRevocationKey(this.databaseName, pending.ownerKey))
++      this.dispatchLifecycle({ kind: 'revoked', ownerKey: pending.ownerKey, generation: pending.generation, epoch: nextEpoch, revision: null }, true)
++      return { ownerKey: pending.ownerKey, epoch: nextEpoch, status: 'completed', durable: true, pending: false }
++    } catch (error) {
++      const mapError = error instanceof MapError ? error : new MapError('storage', 'не удалось завершить очистку offline-кэша', error)
++      const pendingKey = pendingRevocationKey(this.databaseName, pending.ownerKey)
++      if (mapError.kind === 'stale' && pendingRevocations.get(pendingKey) === pending) pendingRevocations.delete(pendingKey)
++      return { ownerKey: pending.ownerKey, epoch: nextEpoch, status: 'failed', durable: false, pending: mapError.kind !== 'stale', error: mapError }
++    }
++  }
++
++  close(): void {
++    this.closeRequested = true
++    this.closeIfSettled()
++  }
++
++  private closeIfSettled(): void {
++    if (!this.closeRequested) return
++    for (const pending of pendingRevocations.values()) {
++      if (pending.databaseName === this.databaseName && pending.inFlight) return
++    }
++    this.lifecycleChannel?.close()
++    this.databasePromise?.then((database) => database.close()).catch(() => undefined)
++    this.databasePromise = null
++  }
++
++  private dispatchLifecycle(event: MapLifecycleEvent, broadcast: boolean): void {
++    if (broadcast) this.lifecycleChannel?.postMessage(event)
++    for (const listener of this.lifecycleListeners.get(event.ownerKey) ?? []) listener(event)
++  }
++
++  private async readRecord(ownerKey: string): Promise<PersistedOwnerRecord | undefined> {
++    const database = await this.openDatabase()
++    const transaction = database.transaction(OWNER_STORE, 'readonly')
++    const request = transaction.objectStore(OWNER_STORE).get(ownerKey)
++    return requestValue<PersistedOwnerRecord | undefined>(request)
++  }
++
++  private openDatabase(): Promise<IDBDatabase> {
++    if (this.databasePromise) return this.databasePromise
++    if (!this.indexedDb) {
++      return Promise.reject(new MapError('storage', 'IndexedDB недоступна в текущей оболочке'))
++    }
++    this.databasePromise = new Promise<IDBDatabase>((resolve, reject) => {
++      const request = this.indexedDb?.open(this.databaseName, DATABASE_VERSION)
++      if (!request) {
++        reject(new MapError('storage', 'IndexedDB не вернула open request'))
++        return
++      }
++      request.onupgradeneeded = () => {
++        const database = request.result
++        if (!database.objectStoreNames.contains(OWNER_STORE)) database.createObjectStore(OWNER_STORE, { keyPath: 'ownerKey' })
++      }
++      request.onsuccess = () => resolve(request.result)
++      request.onerror = () => reject(storageError(request.error))
++      request.onblocked = () => reject(new MapError('storage', 'IndexedDB upgrade заблокирован'))
++    }).catch((error: unknown) => {
++      this.databasePromise = null
++      throw error
++    })
++    return this.databasePromise
++  }
++}
++
++async function validateCompleteAssets(manifest: MapManifest, assets: readonly MapCachedAsset[], validation: AssetValidationOptions): Promise<void> {
++  const expected = readyDescriptors(manifest)
++  if (new Set(assets.map((asset) => asset.key)).size !== assets.length || expected.size !== assets.length) throw new MapError('storage', 'snapshot не содержит полный набор готовых ассетов')
++  for (const asset of assets) {
++    const descriptor = expected.get(asset.key)
++    if (!descriptor || asset.bytes !== descriptor.bytes || asset.sha256 !== descriptor.sha256) throw new MapError('storage', `snapshot содержит неожиданный ассет ${asset.key}`)
++    await validateCachedAsset(asset, descriptor, validation)
++  }
++}
++
++function readyDescriptors(manifest: MapManifest): Map<string, MapAssetDescriptor> {
++  const result = new Map<string, MapAssetDescriptor>()
++  for (const building of manifest.buildings) {
++    for (const floor of building.floors) {
++      if (!floor.plan) continue
++      for (const descriptor of [floor.plan.png, floor.plan.svg]) {
++        if (descriptor.state !== 'ready' || descriptor.id === null || descriptor.sha256 === null) continue
++        const key = mapAssetKey({ buildingId: building.id, floorId: floor.id, version: floor.plan.version, format: descriptor.format, assetId: descriptor.id })
++        result.set(key, descriptor)
++      }
++    }
++  }
++  return result
++}
++
++function ownerStateFromRecord(ownerKey: string, record: PersistedOwnerRecord | undefined, virginGeneration?: number): MapOwnerState {
++  if (!record) return { ownerKey, generation: virginGeneration ?? null, epoch: 0, activeRevision: null, authority: 'virgin' }
++  const generation = Number.isSafeInteger(record.generation) && (record.generation ?? 0) > 0 ? record.generation! : null
++  if (generation === null) return { ownerKey, generation: null, epoch: Math.max(0, record.epoch), activeRevision: record.activeRevision ?? null, authority: 'revoked' }
++  const authority = record.authority ?? (record.activeRevision === null ? (record.epoch > 0 ? 'revoked' : 'virgin') : 'active')
++  return { ownerKey, generation, epoch: Math.max(0, record.epoch), activeRevision: record.activeRevision ?? null, authority }
++}
++
++function pendingState(ownerKey: string, record: PersistedOwnerRecord | undefined, pending: PendingRevocation): MapOwnerState {
++  return {
++    ownerKey,
++    generation: pending.generation ?? ownerStateFromRecord(ownerKey, record).generation,
++    epoch: Math.max(record?.epoch ?? 0, pending.epoch),
++    activeRevision: null,
++    authority: 'pending',
++  }
++}
++
++function requireScope(value: unknown): MapOwnerScope {
++  if (typeof value !== 'object' || value === null) throw new MapError('stale', 'операция карты требует trusted MapOwnerScope')
++  const scope = value as Partial<MapOwnerScope>
++  const generation = scope.generation
++  if (typeof scope.ownerKey !== 'string' || scope.ownerKey.length === 0 || typeof generation !== 'number' || !Number.isSafeInteger(generation) || generation <= 0) {
++    throw new MapError('stale', 'операция карты требует полного trusted MapOwnerScope')
++  }
++  return scope as MapOwnerScope
++}
++
++function authorityError(state: MapOwnerState, scope: MapOwnerScope): MapError {
++  return new MapError('stale', 'durable authority владельца карты недействительна для trusted scope', {
++    authorityChanged: true,
++    authority: state.authority,
++    ownerKey: state.ownerKey,
++    generation: state.generation,
++    requestedGeneration: scope.generation,
++    epoch: state.epoch,
++    activeRevision: state.activeRevision,
++  })
++}
++
++function failedRevoke(scope: MapOwnerScope, epoch: number, error: MapError, pending = false): MapRevokeResult {
++  return { ownerKey: scope.ownerKey, epoch, status: 'failed', durable: false, pending, error }
++}
++
++function requestValue<T>(request: IDBRequest<T>): Promise<T> {
++  return new Promise<T>((resolve, reject) => {
++    request.onsuccess = () => resolve(request.result)
++    request.onerror = () => reject(storageError(request.error))
++  })
++}
++
++function storageError(error: DOMException | null): MapError {
++  return new MapError('storage', error?.message || 'ошибка IndexedDB', error)
++}
+diff --git a/frontends/mobile-core/src/features/map/map-screen.pcss b/frontends/mobile-core/src/features/map/map-screen.pcss
+new file mode 100644
+index 00000000..55beffd6
+--- /dev/null
++++ b/frontends/mobile-core/src/features/map/map-screen.pcss
+@@ -0,0 +1,267 @@
++@import '../../styles/tokens.pcss';
++@import './map-tokens.pcss';
++
++.map-screen {
++  box-sizing: border-box;
++  min-block-size: 100dvh;
++  max-inline-size: calc(var(--rct-mobile-content-width) + var(--rct-space-4) + var(--rct-space-4));
++  margin-inline: auto;
++  padding: calc(env(safe-area-inset-top) + var(--rct-space-4)) var(--rct-space-4) calc(env(safe-area-inset-bottom) + var(--rct-space-6));
++  color: var(--rct-color-text-primary);
++  background: var(--rct-color-surface-base);
++  color-scheme: dark light;
++  font-family: var(--rct-font-family-sans);
++  font-feature-settings: "tnum" 1, "lnum" 1;
++  font-variant-numeric: tabular-nums;
++  @mixin rct-type-body;
++}
++
++.map-screen *,
++.map-screen *::before,
++.map-screen *::after {
++  box-sizing: inherit;
++}
++
++.map-screen__header {
++  display: grid;
++  grid-template-columns: var(--rct-map-min-touch) minmax(0, 1fr) var(--rct-map-min-touch);
++  align-items: center;
++  gap: var(--rct-space-2);
++  margin-block-end: var(--rct-space-5);
++}
++
++.map-screen__back,
++.map-viewer__button {
++  display: inline-grid;
++  place-items: center;
++  min-inline-size: var(--rct-map-min-touch);
++  min-block-size: var(--rct-map-min-touch);
++  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
++  border-radius: var(--rct-map-radius-md);
++  color: var(--rct-color-text-primary);
++  background: var(--rct-color-surface-raised);
++  font: inherit;
++  cursor: pointer;
++  @mixin rct-focus-ring;
++}
++
++.map-screen__back {
++  font-size: var(--rct-map-title-size);
++}
++
++.map-screen__back:disabled,
++.map-viewer__button:disabled {
++  color: var(--rct-color-disabled-text);
++  background: var(--rct-color-disabled-surface);
++  cursor: not-allowed;
++}
++
++.map-screen__header h1 {
++  margin: 0;
++  font-size: var(--rct-map-title-size);
++  font-weight: var(--rct-font-weight-bold);
++  line-height: var(--rct-leading-tight);
++  text-align: center;
++}
++
++.map-screen__header-spacer {
++  min-block-size: var(--rct-map-min-touch);
++}
++
++.map-screen__offline {
++  grid-column: 1 / -1;
++  margin: 0;
++  color: var(--rct-color-warning-text);
++  text-align: center;
++  @mixin rct-type-micro;
++}
++
++.map-screen__selectors {
++  display: grid;
++  gap: var(--rct-space-3);
++  margin-block-end: var(--rct-space-4);
++}
++
++.map-field {
++  display: grid;
++  gap: var(--rct-map-label-gap);
++}
++
++.map-field span {
++  color: var(--rct-color-text-primary);
++  @mixin rct-type-dense;
++}
++
++.map-field select {
++  min-block-size: var(--rct-map-field-height);
++  inline-size: 100%;
++  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
++  border-radius: var(--rct-map-radius-md);
++  padding: 0 var(--rct-space-3);
++  color: var(--rct-color-text-primary);
++  background: var(--rct-color-surface-raised);
++  font: inherit;
++  @mixin rct-focus-ring;
++}
++
++.map-field select:disabled {
++  color: var(--rct-color-disabled-text);
++  background: var(--rct-color-disabled-surface);
++}
++
++.map-screen__state {
++  display: grid;
++  gap: var(--rct-space-3);
++  justify-items: center;
++  min-block-size: var(--rct-map-canvas-min-block);
++  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
++  border-radius: var(--rct-map-radius-md);
++  padding: var(--rct-space-5);
++  color: var(--rct-color-text-secondary);
++  background: var(--rct-color-surface-raised);
++  text-align: center;
++}
++
++.map-screen__state h2,
++.map-screen__state p {
++  margin: 0;
++}
++
++.map-screen__state h2 {
++  color: var(--rct-color-text-primary);
++  font-size: var(--rct-font-size-title);
++  font-weight: var(--rct-font-weight-bold);
++  line-height: var(--rct-leading-tight);
++}
++
++.map-screen__state--error {
++  border-color: var(--rct-color-danger-text);
++}
++
++.map-screen__state--empty {
++  align-content: center;
++  gap: var(--rct-space-2);
++  justify-items: start;
++  block-size: var(--rct-map-canvas-min-block);
++  min-block-size: var(--rct-map-canvas-min-block);
++  padding: var(--rct-space-4);
++  color: var(--rct-color-text-primary);
++  background: var(--rct-color-surface-base);
++  text-align: start;
++}
++
++.map-screen__state--empty p {
++  @mixin rct-type-dense;
++}
++
++.map-screen__state--empty p:first-child {
++  color: var(--rct-color-text-primary);
++  font-weight: var(--rct-font-weight-medium);
++}
++
++.map-screen__state--empty p + p {
++  color: var(--rct-color-text-secondary);
++}
++
++.map-screen__retry {
++  min-block-size: var(--rct-map-min-touch);
++  border: 0;
++  border-radius: var(--rct-map-radius-md);
++  padding: 0 var(--rct-space-4);
++  color: var(--rct-color-accent-on-now);
++  background: var(--rct-color-accent-now);
++  font: inherit;
++  font-weight: var(--rct-font-weight-bold);
++  cursor: pointer;
++  @mixin rct-focus-ring;
++}
++
++.map-screen__sync {
++  margin: var(--rct-space-3) 0 0;
++  color: var(--rct-color-warning-text);
++  @mixin rct-type-micro;
++}
++
++.map-viewer {
++  display: grid;
++  gap: var(--rct-space-3);
++}
++
++.map-viewer__canvas {
++  position: relative;
++  min-inline-size: 0;
++}
++
++.map-viewer__toolbar {
++  position: absolute;
++  z-index: 1;
++  inset-block-start: var(--rct-space-3);
++  inset-inline-start: var(--rct-space-2);
++  inset-inline-end: var(--rct-space-3);
++  display: flex;
++  align-items: center;
++  justify-content: flex-end;
++  gap: var(--rct-space-2);
++  max-inline-size: calc(100% - var(--rct-space-2) - var(--rct-space-3));
++  flex-wrap: wrap;
++}
++
++.map-viewer__toolbar-label {
++  color: var(--rct-color-text-secondary);
++  text-align: center;
++  @mixin rct-type-micro;
++}
++
++.map-viewer__button {
++  font-size: var(--rct-font-size-title);
++}
++
++.map-viewer__viewport {
++  display: block;
++  inline-size: 100%;
++  min-inline-size: 0;
++  block-size: var(--rct-map-canvas-min-block);
++  overflow: auto;
++  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
++  border-radius: var(--rct-map-radius-md);
++  background: var(--rct-color-surface-raised);
++  cursor: grab;
++  touch-action: none;
++  @mixin rct-focus-ring;
++}
++
++.map-viewer__viewport:active {
++  cursor: grabbing;
++}
++
++.map-viewer__image {
++  display: block;
++  margin: auto;
++  user-select: none;
++  pointer-events: none;
++  object-fit: contain;
++}
++
++.map-viewer__status {
++  margin: 0;
++  color: var(--rct-color-text-secondary);
++  text-align: center;
++  @mixin rct-type-micro;
++}
++
++.map-screen__visually-hidden {
++  position: absolute;
++  inline-size: var(--rct-border-hairline);
++  block-size: var(--rct-border-hairline);
++  overflow: hidden;
++  clip-path: inset(50%);
++  white-space: nowrap;
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .map-screen * {
++    scroll-behavior: auto;
++    transition-duration: 0s;
++    animation-duration: 0s;
++  }
++}
+diff --git a/frontends/mobile-core/src/features/map/map-sync.ts b/frontends/mobile-core/src/features/map/map-sync.ts
+new file mode 100644
+index 00000000..ae5a4357
+--- /dev/null
++++ b/frontends/mobile-core/src/features/map/map-sync.ts
+@@ -0,0 +1,383 @@
++import type {
++  MapAssetDescriptor,
++  MapCachedAsset,
++  MapManifest,
++  MapOwnerScope,
++  MapOwnerState,
++  MapReadPort,
++  MapSnapshot,
++  MapSyncResult,
++} from './map-contract'
++import { MapError, MapStaleCommitError, mapAssetKey } from './map-contract'
++import { assetRequestFor, validateAssetBlob, validateManifest, type AssetValidationOptions } from './map-validation'
++import { MapOfflineStore } from './map-offline-store'
++
++const MAX_SNAPSHOT_BYTES = 128 * 1024 * 1024
++const DEFAULT_CONCURRENCY = 3
++
++export interface MapSynchronizerOptions {
++  readonly port: MapReadPort
++  readonly store: MapOfflineStore
++  readonly validation?: AssetValidationOptions
++  readonly concurrency?: number
++  readonly isCurrent?: (scope: MapOwnerScope) => boolean
++}
++
++export class MapSynchronizer {
++  private readonly port: MapReadPort
++  private readonly store: MapOfflineStore
++  private readonly validation: AssetValidationOptions
++  private readonly concurrency: number
++  private readonly isCurrent: (scope: MapOwnerScope) => boolean
++  private currentScope: MapOwnerScope | null = null
++  private currentActive = true
++  private operationToken = 0
++  private operationController: AbortController | null = null
++  private operationSignal: AbortSignal | null = null
++  private readonly signalTokens = new WeakMap<AbortSignal, number>()
++
++  constructor(options: MapSynchronizerOptions) {
++    this.port = options.port
++    this.store = options.store
++    this.validation = options.validation ?? {}
++    this.concurrency = Math.max(1, Math.min(6, Math.floor(options.concurrency ?? DEFAULT_CONCURRENCY)))
++    this.isCurrent = options.isCurrent ?? (() => true)
++  }
++
++  setScope(scope: MapOwnerScope, active = true): void {
++    this.operationToken += 1
++    this.operationController?.abort()
++    this.operationController = null
++    this.operationSignal = null
++    this.currentScope = scope
++    this.currentActive = active
++  }
++
++  async synchronize(scope: MapOwnerScope, signal: AbortSignal): Promise<MapSyncResult> {
++    this.operationController?.abort()
++    const operationController = new AbortController()
++    this.operationToken += 1
++    this.operationController = operationController
++    this.operationSignal = signal
++    this.signalTokens.set(signal, this.operationToken)
++    let ownerState: MapOwnerState
++    let previous: MapSnapshot | null
++    let previousCorrupt = false
++    try {
++      this.assertCurrent(scope, signal)
++      ownerState = await this.store.getOwnerState(scope)
++      this.assertCurrent(scope, signal)
++    } catch (error) {
++      if (signal.aborted || !this.scopeIsCurrent(scope, signal)) return staleResult()
++      const mapError = asMapError(error, 'сохранённый offline snapshot недоступен')
++      if (mapError.kind === 'stale') return staleResult(mapError)
++      return result('storage-unavailable', null, mapError)
++    }
++    if (!this.scopeIsCurrent(scope, signal)) return staleResult()
++    if (!authorityAllowsSync(ownerState, scope)) return result('stale', null, ownerAuthorityError(ownerState, scope))
++    try {
++      this.assertCurrent(scope, signal)
++      previous = await this.store.readSnapshot(scope)
++      this.assertCurrent(scope, signal)
++      if (!this.scopeIsCurrent(scope, signal)) return staleResult()
++    } catch (error) {
++      if (!this.scopeIsCurrent(scope, signal)) return staleResult()
++      const mapError = asMapError(error, 'сохранённый offline snapshot недоступен')
++      if (mapError.kind === 'stale') return staleResult(mapError)
++      if (mapError.kind !== 'corrupt') return await this.resultAfterReconcile(scope, signal, ownerState, null, 'storage-unavailable', mapError)
++      previous = null
++      previousCorrupt = true
++    }
++
++    if (!authorityAllowsSync(ownerState, scope)) return result('stale', null, ownerAuthorityError(ownerState, scope))
++    if (!this.port.readManifest) {
++      return this.resultAfterReconcile(scope, signal, ownerState, previous, 'update-failed', new MapError('invalid-response', 'MapReadPort не предоставил full manifest'))
++    }
++    let response
++    try {
++      await this.requireAuthority(scope, signal)
++      this.assertCurrent(scope, signal)
++      response = await this.port.readManifest({
++        ...(!previousCorrupt && ownerState.activeRevision ? { knownRevision: ownerState.activeRevision } : {}),
++        signal,
++      })
++      this.assertCurrent(scope, signal)
++    } catch (error) {
++      const mapError = asMapError(error, 'не удалось проверить версию offline snapshot')
++      if (mapError.kind === 'aborted' || mapError.kind === 'stale') return staleResult(mapError)
++      return this.resultAfterReconcile(scope, signal, ownerState, previous, 'update-failed', mapError)
++    }
++    if (!this.scopeIsCurrent(scope, signal) || signal.aborted) return staleResult()
++    const afterManifest = await this.reconcileAuthority(scope, signal, ownerState, previous)
++    if (!this.scopeIsCurrent(scope, signal)) return staleResult()
++    if (afterManifest.kind !== 'same' && !canRepairCorruptSnapshot(afterManifest, previousCorrupt)) return reconciliationResult(afterManifest, 'update-failed', previous)
++
++    if (response.kind === 'unchanged') {
++      if (previousCorrupt) return result('update-failed', null, new MapError('corrupt', 'повреждённый offline snapshot требует полного manifest'))
++      if (!response.revision || !previous || previous.manifest.revision !== response.revision) {
++        return result('no-cache', null, new MapError('storage', 'сервер подтвердил revision без полного offline snapshot'))
++      }
++      return result('unchanged', reconciliationSnapshot(afterManifest, previous))
++    }
++
++    let manifest: MapManifest
++    try {
++      manifest = validateManifest(response.manifest)
++    } catch (error) {
++      return this.resultAfterReconcile(scope, signal, ownerState, previous, 'update-failed', asMapError(error, 'manifest карты не прошёл проверку'))
++    }
++    const afterManifestValidation = await this.reconcileAuthority(scope, signal, ownerState, previous)
++    if (!this.scopeIsCurrent(scope, signal)) return staleResult()
++    if (afterManifestValidation.kind !== 'same' && !canRepairCorruptSnapshot(afterManifestValidation, previousCorrupt)) return reconciliationResult(afterManifestValidation, 'update-failed', previous)
++    if (previous?.manifest.revision === manifest.revision) return result('unchanged', reconciliationSnapshot(afterManifestValidation, previous))
++
++    const entries = readyAssetEntries(manifest)
++    const totalBytes = entries.reduce((sum, entry) => sum + entry.descriptor.bytes, 0)
++    if (totalBytes > MAX_SNAPSHOT_BYTES) return result('update-failed', previous, new MapError('asset-invalid', 'полный offline snapshot превышает лимит 128 MiB'))
++    const previousByIdentity = new Map(previous?.assets.map((asset) => [assetIdentity(asset), asset]) ?? [])
++    let assets: MapCachedAsset[]
++    try {
++      assets = await this.fetchAssets(entries, previousByIdentity, scope, signal)
++    } catch (error) {
++      const mapError = asMapError(error, 'offline snapshot не собран атомарно')
++      if (mapError.kind === 'stale' || mapError.kind === 'aborted') return staleResult(mapError)
++      return this.resultAfterReconcile(scope, signal, ownerState, previous, 'update-failed', mapError)
++    }
++    if (!this.scopeIsCurrent(scope, signal) || signal.aborted) return staleResult()
++    const afterAssets = await this.reconcileAuthority(scope, signal, ownerState, previous)
++    if (!this.scopeIsCurrent(scope, signal)) return staleResult()
++    if (afterAssets.kind !== 'same' && !canRepairCorruptSnapshot(afterAssets, previousCorrupt)) return reconciliationResult(afterAssets, 'update-failed', previous)
++    try {
++      const commitAuthority = await this.requireAuthority(scope, signal)
++      this.assertCurrent(scope, signal)
++      const snapshot = await this.store.commitSnapshot(scope, commitAuthority, manifest, assets)
++      this.assertCurrent(scope, signal)
++      if (!this.scopeIsCurrent(scope, signal) || signal.aborted) return staleResult()
++      await this.requireAuthority(scope, signal)
++      const committedOwnerState: MapOwnerState = { ownerKey: snapshot.ownerKey, generation: snapshot.generation, epoch: snapshot.epoch, activeRevision: snapshot.manifest.revision, authority: 'active' }
++      return this.resultAfterReconcile(scope, signal, committedOwnerState, snapshot, 'updated', undefined, snapshot)
++    } catch (error) {
++      const mapError = asMapError(error, 'offline snapshot не был переключён')
++      return this.resultAfterReconcile(scope, signal, ownerState, previous, mapError.kind === 'storage' ? 'storage-unavailable' : 'update-failed', mapError)
++    }
++  }
++
++  private async fetchAssets(
++    entries: readonly ReadyAssetEntry[],
++    previousByIdentity: ReadonlyMap<string, MapCachedAsset>,
++    scope: MapOwnerScope,
++    signal: AbortSignal,
++  ): Promise<MapCachedAsset[]> {
++    const assets: MapCachedAsset[] = []
++    let cursor = 0
++    const worker = async (): Promise<void> => {
++      while (true) {
++        if (signal.aborted || !this.scopeIsCurrent(scope, signal)) throw new MapStaleCommitError()
++        const index = cursor++
++        const entry = entries[index]
++        if (!entry) return
++        const key = mapAssetKey({
++          buildingId: entry.buildingId,
++          floorId: entry.floorId,
++          version: entry.version,
++          format: entry.descriptor.format,
++          assetId: entry.descriptor.id,
++        })
++        const reused = previousByIdentity.get(assetIdentity(entry.descriptor))
++        if (reused) {
++          this.assertCurrent(scope, signal)
++          assets[index] = {
++            ...reused,
++            key,
++            buildingId: entry.buildingId,
++            floorId: entry.floorId,
++            version: entry.version,
++            format: entry.descriptor.format,
++            assetId: entry.descriptor.id,
++            contentType: entry.descriptor.contentType,
++            bytes: entry.descriptor.bytes,
++            sha256: entry.descriptor.sha256,
++          }
++          continue
++        }
++        await this.requireAuthority(scope, signal)
++        this.assertCurrent(scope, signal)
++        const request = assetRequestFor(entry.descriptor, entry.buildingId, entry.floorId, entry.version, signal)
++        const blob = await this.port.readAsset(request)
++        this.assertCurrent(scope, signal)
++        await this.requireAuthority(scope, signal)
++        const validated = await validateAssetBlob(entry.descriptor, blob, this.validation)
++        this.assertCurrent(scope, signal)
++        await this.requireAuthority(scope, signal)
++        if (!this.scopeIsCurrent(scope, signal)) throw new MapStaleCommitError()
++        assets[index] = {
++          key,
++          buildingId: entry.buildingId,
++          floorId: entry.floorId,
++          version: entry.version,
++          format: entry.descriptor.format,
++          assetId: entry.descriptor.id,
++          contentType: entry.descriptor.contentType,
++          bytes: validated.blob.size,
++          sha256: validated.sha256,
++          blob: validated.blob,
++        }
++      }
++    }
++    await Promise.all(Array.from({ length: Math.min(this.concurrency, Math.max(entries.length, 1)) }, () => worker()))
++    return assets
++  }
++
++  private scopeIsCurrent(scope: MapOwnerScope, signal?: AbortSignal): boolean {
++    const operationToken = signal ? this.signalTokens.get(signal) : this.operationToken
++    return operationToken === this.operationToken && this.operationController !== null && (signal === undefined || this.operationSignal === signal) && !this.operationController.signal.aborted && this.currentActive && (this.currentScope === null || (this.currentScope.ownerKey === scope.ownerKey && this.currentScope.generation === scope.generation)) && this.isCurrent(scope)
++  }
++
++  private assertCurrent(scope: MapOwnerScope, signal: AbortSignal): void {
++    if (!this.scopeIsCurrent(scope, signal) || signal.aborted) throw new MapStaleCommitError()
++  }
++
++  private async requireAuthority(scope: MapOwnerScope, signal: AbortSignal): Promise<MapOwnerState> {
++    this.assertCurrent(scope, signal)
++    const state = await this.store.getOwnerState(scope)
++    this.assertCurrent(scope, signal)
++    if (!authorityAllowsSync(state, scope)) throw ownerAuthorityError(state, scope)
++    return state
++  }
++
++  private async resultAfterReconcile(
++    scope: MapOwnerScope,
++    signal: AbortSignal,
++    ownerState: MapOwnerState,
++    previous: MapSnapshot | null,
++    status: MapSyncResult['status'],
++    error?: MapError,
++    fallbackSnapshot: MapSnapshot | null = previous,
++  ): Promise<MapSyncResult> {
++    const reconciliation = await this.reconcileAuthority(scope, signal, ownerState, previous)
++    return reconciliationResult(reconciliation, status, fallbackSnapshot, error)
++  }
++
++  private async reconcileAuthority(
++    scope: MapOwnerScope,
++    signal: AbortSignal,
++    expected: MapOwnerState,
++    previous: MapSnapshot | null,
++  ): Promise<Reconciliation> {
++    if (!this.scopeIsCurrent(scope, signal)) return { kind: 'stale', error: new MapStaleCommitError() }
++
++    let current: MapOwnerState
++    try {
++      this.assertCurrent(scope, signal)
++      current = await this.store.getOwnerState(scope)
++    } catch (error) {
++      if (!this.scopeIsCurrent(scope, signal)) return { kind: 'stale', error: new MapStaleCommitError() }
++      const mapError = asMapError(error, 'сохранённый offline snapshot недоступен')
++      return mapError.kind === 'stale' ? { kind: 'stale', error: mapError } : { kind: 'storage-error', error: mapError }
++    }
++    if (!this.scopeIsCurrent(scope, signal)) return { kind: 'stale', error: new MapStaleCommitError() }
++
++    if (!authorityAllowsSync(current, scope) || (expected.generation !== null && current.generation !== expected.generation)) return { kind: 'authority-lost', error: ownerAuthorityError(current, scope) }
++    const epochChanged = current.epoch !== expected.epoch
++    const authorityBecameNull = current.activeRevision === null && (expected.activeRevision !== null || previous !== null)
++    if (epochChanged || authorityBecameNull) return { kind: 'authority-lost', error: ownerAuthorityError(current, scope) }
++
++    let latest: MapSnapshot | null
++    try {
++      this.assertCurrent(scope, signal)
++      latest = await this.store.readSnapshot(scope)
++    } catch (error) {
++      if (!this.scopeIsCurrent(scope, signal)) return { kind: 'stale', error: new MapStaleCommitError() }
++      const mapError = asMapError(error, 'сохранённый offline snapshot недоступен')
++      if (mapError.kind === 'stale') return { kind: 'authority-lost', error: ownerAuthorityError(current, scope) }
++      if (current.activeRevision !== expected.activeRevision || current.generation !== expected.generation || !authorityAllowsSync(current, scope)) return { kind: 'authority-lost', error: ownerAuthorityError(current, scope) }
++      if (mapError.kind === 'corrupt') return { kind: 'storage-error', error: mapError }
++      return { kind: 'storage-error', error: authorityUnchangedStorageError(mapError, current, scope) }
++    }
++    if (!this.scopeIsCurrent(scope, signal)) return { kind: 'stale', error: new MapStaleCommitError() }
++
++    if (!latest) {
++      if (current.activeRevision !== null || previous !== null) return { kind: 'authority-lost', error: ownerAuthorityError(current, scope) }
++      return { kind: 'same', snapshot: null }
++    }
++    if (latest.generation !== scope.generation || latest.epoch !== expected.epoch || latest.epoch !== current.epoch) return { kind: 'authority-lost', error: ownerAuthorityError(current, scope) }
++    if (current.activeRevision === null || current.authority !== 'active') return { kind: 'authority-lost', error: ownerAuthorityError(current, scope) }
++    if (current.activeRevision !== expected.activeRevision || latest.manifest.revision !== previous?.manifest.revision) return { kind: 'winner', snapshot: latest }
++    return { kind: 'same', snapshot: latest }
++  }
++}
++
++type Reconciliation =
++  | { readonly kind: 'same'; readonly snapshot: MapSnapshot | null }
++  | { readonly kind: 'winner'; readonly snapshot: MapSnapshot }
++  | { readonly kind: 'authority-lost'; readonly error: MapError }
++  | { readonly kind: 'storage-error'; readonly error: MapError }
++  | { readonly kind: 'stale'; readonly error: MapError }
++
++function reconciliationResult(reconciliation: Reconciliation, status: MapSyncResult['status'], fallbackSnapshot: MapSnapshot | null, error?: MapError): MapSyncResult {
++  if (reconciliation.kind === 'same') return result(status, reconciliation.snapshot ?? fallbackSnapshot, error)
++  if (reconciliation.kind === 'winner') return result('stale', reconciliation.snapshot, error ?? new MapStaleCommitError())
++  if (reconciliation.kind === 'authority-lost') return result('stale', null, reconciliation.error)
++  if (reconciliation.kind === 'stale') return staleResult(reconciliation.error)
++  return result(status === 'updated' ? 'storage-unavailable' : status, fallbackSnapshot, reconciliation.error)
++}
++
++function authorityAllowsSync(ownerState: MapOwnerState, scope: MapOwnerScope): boolean {
++  return ownerState.ownerKey === scope.ownerKey && ownerState.generation === scope.generation && (ownerState.authority === 'virgin' || ownerState.authority === 'active')
++}
++
++function ownerAuthorityError(ownerState: MapOwnerState, scope: MapOwnerScope): MapError {
++  return new MapError('stale', 'durable authority владельца карты изменилась', { authorityChanged: true, authority: ownerState.authority, generation: ownerState.generation, requestedGeneration: scope.generation, epoch: ownerState.epoch, activeRevision: ownerState.activeRevision })
++}
++
++function authorityUnchangedStorageError(error: MapError, ownerState: MapOwnerState, scope: MapOwnerScope): MapError {
++  return new MapError('storage', error.message, { authorityUnchanged: authorityAllowsSync(ownerState, scope), authority: ownerState.authority, generation: ownerState.generation, epoch: ownerState.epoch, activeRevision: ownerState.activeRevision, cause: error })
++}
++
++function canRepairCorruptSnapshot(reconciliation: Reconciliation, previousCorrupt: boolean): boolean {
++  return previousCorrupt && reconciliation.kind === 'storage-error' && reconciliation.error.kind === 'corrupt'
++}
++
++function reconciliationSnapshot(reconciliation: Reconciliation, fallback: MapSnapshot | null): MapSnapshot | null {
++  if (reconciliation.kind === 'same') return reconciliation.snapshot ?? fallback
++  if (reconciliation.kind === 'winner') return reconciliation.snapshot
++  return fallback
++}
++
++interface ReadyAssetEntry {
++  readonly buildingId: string
++  readonly floorId: string
++  readonly version: string
++  readonly descriptor: MapAssetDescriptor & { readonly id: string; readonly sha256: string }
++}
++
++function assetIdentity(asset: Pick<MapCachedAsset, 'assetId' | 'format' | 'sha256' | 'bytes'> | (MapAssetDescriptor & { readonly id: string; readonly sha256: string })): string {
++  const id = 'assetId' in asset ? asset.assetId : asset.id
++  return [id, asset.format, asset.sha256, asset.bytes].map(encodeURIComponent).join('/')
++}
++
++function readyAssetEntries(manifest: MapManifest): ReadyAssetEntry[] {
++  const entries: ReadyAssetEntry[] = []
++  for (const building of manifest.buildings) {
++    for (const floor of building.floors) {
++      if (!floor.plan) continue
++      for (const descriptor of [floor.plan.png, floor.plan.svg]) {
++        if (descriptor.state === 'ready' && descriptor.id !== null && descriptor.sha256 !== null) entries.push({ buildingId: building.id, floorId: floor.id, version: floor.plan.version, descriptor: descriptor as ReadyAssetEntry['descriptor'] })
++      }
++    }
++  }
++  return entries
++}
++
++function result(status: MapSyncResult['status'], snapshot: MapSnapshot | null, error?: MapError): MapSyncResult {
++  return error ? { status, snapshot, error } : { status, snapshot }
++}
++
++function staleResult(error = new MapStaleCommitError()): MapSyncResult {
++  return result('stale', null, error)
++}
++
++function asMapError(error: unknown, message: string): MapError {
++  if (error instanceof MapError) return error
++  return new MapError('unknown', message, error)
++}
+diff --git a/frontends/mobile-core/src/features/map/map-tokens.pcss b/frontends/mobile-core/src/features/map/map-tokens.pcss
+new file mode 100644
+index 00000000..db704396
+--- /dev/null
++++ b/frontends/mobile-core/src/features/map/map-tokens.pcss
+@@ -0,0 +1,8 @@
++.map-screen {
++  --rct-map-canvas-min-block: 12.5rem;
++  --rct-map-radius-md: 0.625rem;
++  --rct-map-min-touch: 2.75rem;
++  --rct-map-field-height: 2.5rem;
++  --rct-map-label-gap: 0.375rem;
++  --rct-map-title-size: 1.375rem;
++}
+diff --git a/frontends/mobile-core/src/features/map/map-validation.ts b/frontends/mobile-core/src/features/map/map-validation.ts
+new file mode 100644
+index 00000000..a633a562
+--- /dev/null
++++ b/frontends/mobile-core/src/features/map/map-validation.ts
+@@ -0,0 +1,373 @@
++import type {
++  MapAssetDescriptor,
++  MapAssetRequest,
++  MapCachedAsset,
++  MapCatalog,
++  MapFormat,
++  MapManifest,
++  MapPlan,
++} from './map-contract'
++import { MapError, mapAssetKey } from './map-contract'
++
++const MAX_ASSET_BYTES = 10 * 1024 * 1024
++const MAX_RASTER_SIDE = 16_384
++const MAX_RASTER_PIXELS = 40_000_000
++const MAX_SVG_EXTENT = 16_384
++const MAX_SVG_ELEMENTS = 10_000
++const SHA256_RE = /^[a-f0-9]{64}$/i
++const SVG_NS = 'http://www.w3.org/2000/svg'
++const XMLNS_NS = 'http://www.w3.org/2000/xmlns/'
++
++const SVG_ELEMENTS = new Set([
++  'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'text',
++])
++const SVG_ATTRIBUTES = new Set([
++  'aria-label', 'class', 'cx', 'cy', 'd', 'fill', 'fill-opacity', 'font-size', 'height',
++  'id', 'opacity', 'points', 'r', 'role', 'rx', 'ry', 'stroke', 'stroke-linecap',
++  'stroke-linejoin', 'stroke-opacity', 'stroke-width', 'text-anchor', 'viewbox',
++  'width', 'x', 'x1', 'x2', 'y', 'y1', 'y2',
++])
++
++export interface ValidatedMapAsset {
++  readonly descriptor: MapAssetDescriptor
++  readonly blob: Blob
++  readonly sha256: string
++  readonly width?: number
++  readonly height?: number
++  readonly viewBox?: readonly [number, number, number, number]
++}
++
++export interface AssetValidationOptions {
++  readonly decodePng?: (blob: Blob) => Promise<{ readonly width: number; readonly height: number }>
++}
++
++export function validateCatalog(input: unknown): MapCatalog {
++  const source = asRecord(input, 'catalog')
++  const revision = nonEmptyString(source.revision, 'catalog.revision')
++  const buildings = arrayOf(source.buildings, 'catalog.buildings').map((building, index) => validateBuilding(building, index))
++  assertUnique(buildings.map((building) => building.id), 'catalog building ids')
++  for (const building of buildings) {
++    assertUnique(building.floors.map((floor) => floor.id), `building ${building.id} floor ids`)
++    for (const floor of building.floors) {
++      if (floor.plan !== null) validatePlanMetadata(floor.plan, building.id, floor.id)
++    }
++  }
++  return { revision, buildings }
++}
++
++export function validatePlan(input: unknown, buildingId: string, floorId: string): MapPlan {
++  return validatePlanMetadata(input, buildingId, floorId)
++}
++
++export function validateManifest(input: unknown): MapManifest {
++  const source = asRecord(input, 'manifest')
++  if (source.schemaVersion !== 1) throw invalid('manifest.schemaVersion', 'неподдерживаемая версия схемы')
++  if (source.validationPolicyVersion !== 1) throw invalid('manifest.validationPolicyVersion', 'неподдерживаемая политика проверки')
++  const catalog = validateCatalog(source)
++  return {
++    schemaVersion: 1,
++    validationPolicyVersion: 1,
++    revision: catalog.revision,
++    buildings: catalog.buildings,
++  }
++}
++
++export async function validateAssetBlob(descriptor: MapAssetDescriptor, blob: Blob, options: AssetValidationOptions = {}): Promise<ValidatedMapAsset> {
++  if (descriptor.state !== 'ready' || descriptor.id === null || descriptor.sha256 === null) throw invalid('asset.state', 'запрошен ассет, который не готов')
++  const expectedType = descriptor.format === 'png' ? 'image/png' : 'image/svg+xml'
++  if (descriptor.contentType !== expectedType) throw invalid('asset.contentType', 'MIME не соответствует формату')
++  if (blob.type !== expectedType) throw invalid('asset.blob.type', 'ответ ассета имеет неожиданный MIME')
++  if (!Number.isSafeInteger(descriptor.bytes) || descriptor.bytes <= 0 || descriptor.bytes > MAX_ASSET_BYTES) throw invalid('asset.bytes', 'размер ассета выходит за лимит')
++  if (blob.size !== descriptor.bytes) throw invalid('asset.bytes', 'размер ассета не совпадает с манифестом')
++  if (!SHA256_RE.test(descriptor.sha256)) throw invalid('asset.sha256', 'манифест не содержит SHA-256')
++
++  const bytes = new Uint8Array(await blob.arrayBuffer())
++  const sha256 = await digestSha256(bytes)
++  if (sha256 !== descriptor.sha256.toLowerCase()) throw invalid('asset.sha256', 'хеш ассета не совпадает с манифестом')
++
++  if (descriptor.format === 'png') {
++    const dimensions = validatePngStructure(bytes, descriptor)
++    const decoded = await (options.decodePng ?? decodePngBlob)(blob)
++    if (decoded.width !== dimensions.width || decoded.height !== dimensions.height) throw invalid('asset.png.decode', 'декодированные размеры PNG не совпадают')
++    return { descriptor, blob, sha256, ...dimensions }
++  }
++  const svg = decodeUtf8(bytes)
++  const viewBox = validateSvg(svg, descriptor)
++  return { descriptor, blob, sha256, viewBox }
++}
++
++export async function validateCachedAsset(asset: MapCachedAsset, descriptor: MapAssetDescriptor, options: AssetValidationOptions = {}): Promise<ValidatedMapAsset> {
++  if (descriptor.state !== 'ready' || descriptor.id === null || descriptor.sha256 === null || asset.assetId !== descriptor.id || asset.format !== descriptor.format || asset.contentType !== descriptor.contentType || asset.key !== mapAssetKey(asset)) {
++    throw invalid('cache.asset-key', 'сохранённый ассет не принадлежит заявленному формату')
++  }
++  return validateAssetBlob(descriptor, asset.blob, options)
++}
++
++export function assetRequestFor(descriptor: MapAssetDescriptor, buildingId: string, floorId: string, version: string, signal: AbortSignal): MapAssetRequest {
++  if (descriptor.state !== 'ready' || descriptor.id === null) throw invalid('asset.request', 'нельзя запросить неготовый формат')
++  return { buildingId, floorId, version, format: descriptor.format, assetId: descriptor.id, signal }
++}
++
++export function maxAssetBytes(): number {
++  return MAX_ASSET_BYTES
++}
++
++function validateBuilding(input: unknown, index: number): MapCatalog['buildings'][number] {
++  const source = asRecord(input, `catalog.buildings[${index}]`)
++  const id = nonEmptyString(source.id, `building[${index}].id`)
++  const label = nonEmptyString(source.label, `building[${index}].label`)
++  const floors = arrayOf(source.floors, `building[${index}].floors`).map((floor, floorIndex) => {
++    const item = asRecord(floor, `building[${index}].floors[${floorIndex}]`)
++    const floorId = nonEmptyString(item.id, `floor[${floorIndex}].id`)
++    const floorLabel = nonEmptyString(item.label, `floor[${floorIndex}].label`)
++    const plan = item.plan === null || item.plan === undefined ? null : validatePlanMetadata(item.plan, id, floorId)
++    return { id: floorId, label: floorLabel, plan }
++  })
++  return { id, label, floors }
++}
++
++function validatePlanMetadata(input: unknown, buildingId: string, floorId: string): MapPlan {
++  const source = asRecord(input, 'plan')
++  if (source.buildingId !== buildingId || source.floorId !== floorId) throw invalid('plan.parent', 'план ссылается на другой корпус или этаж')
++  const version = nonEmptyString(source.version, 'plan.version')
++  const label = nonEmptyString(source.label, 'plan.label')
++  const png = validateAssetDescriptor(source.png, 'plan.png', 'png')
++  const svg = validateAssetDescriptor(source.svg, 'plan.svg', 'svg')
++  return { buildingId, floorId, version, label, png, svg }
++}
++
++function validateAssetDescriptor(input: unknown, path: string, format: MapFormat): MapAssetDescriptor {
++  const source = asRecord(input, path)
++  const state = source.state
++  if (state !== 'absent' && state !== 'processing' && state !== 'ready' && state !== 'failed') throw invalid(`${path}.state`, 'неизвестное состояние формата')
++  const expectedType = format === 'png' ? 'image/png' : 'image/svg+xml'
++  if (source.contentType !== expectedType) throw invalid(`${path}.contentType`, 'неверный MIME')
++  const bytes = source.bytes
++  if (typeof bytes !== 'number' || !Number.isSafeInteger(bytes) || bytes < 0 || bytes > MAX_ASSET_BYTES) throw invalid(`${path}.bytes`, 'неверный размер')
++  const idValue = source.id
++  const shaValue = source.sha256
++  let id: string | null = null
++  let sha256: string | null = null
++  if (state === 'ready') {
++    id = nonEmptyString(idValue, `${path}.id`)
++    sha256 = nonEmptyString(shaValue, `${path}.sha256`)
++    if (!SHA256_RE.test(sha256)) throw invalid(`${path}.sha256`, 'нужен SHA-256 для готового ассета')
++  }
++  if (state !== 'ready' && idValue !== null && idValue !== undefined) throw invalid(`${path}.id`, 'неготовый формат не должен содержать asset id')
++  if (state !== 'ready' && shaValue !== null && shaValue !== undefined) throw invalid(`${path}.sha256`, 'неготовый формат не должен содержать SHA-256')
++  const descriptor: MapAssetDescriptor = { id, format, contentType: expectedType, state, bytes, sha256 }
++  if (source.width !== undefined) descriptorWithOptionalNumber(descriptor, source.width, `${path}.width`)
++  if (source.height !== undefined) descriptorWithOptionalNumber(descriptor, source.height, `${path}.height`)
++  if (source.viewBox !== undefined) descriptorWithOptionalViewBox(descriptor, source.viewBox, `${path}.viewBox`)
++  if (state !== 'ready' && bytes !== 0) throw invalid(`${path}.bytes`, 'неготовый формат не должен содержать размер файла')
++  return descriptor
++}
++
++function descriptorWithOptionalNumber(descriptor: MapAssetDescriptor, value: unknown, path: string): void {
++  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0 || value > MAX_RASTER_SIDE) throw invalid(path, 'размер выходит за лимит')
++  const target = path.endsWith('.height') ? 'height' : 'width'
++  ;(descriptor as { width?: number; height?: number })[target] = value
++}
++
++function descriptorWithOptionalViewBox(descriptor: MapAssetDescriptor, value: unknown, path: string): void {
++  if (!Array.isArray(value) || value.length !== 4 || value.some((item) => typeof item !== 'number' || !Number.isFinite(item))) throw invalid(path, 'viewBox должен быть массивом из четырёх чисел')
++  const [x, y, width, height] = value as [number, number, number, number]
++  if (width <= 0 || height <= 0 || width > MAX_SVG_EXTENT || height > MAX_SVG_EXTENT) throw invalid(path, 'viewBox выходит за лимит')
++  ;(descriptor as { viewBox?: readonly [number, number, number, number] }).viewBox = [x, y, width, height]
++}
++
++function validatePngStructure(bytes: Uint8Array, descriptor: MapAssetDescriptor): { width: number; height: number } {
++  const signature = [137, 80, 78, 71, 13, 10, 26, 10]
++  if (bytes.length < 24 || signature.some((item, index) => bytes[index] !== item)) throw invalid('asset.png', 'неверная PNG сигнатура')
++  let offset = 8
++  let seenHeader = false
++  let seenData = false
++  let seenEnd = false
++  let width = 0
++  let height = 0
++  while (offset + 12 <= bytes.length) {
++    const length = readUint32(bytes, offset)
++    const typeStart = offset + 4
++    const dataStart = typeStart + 4
++    const crcStart = dataStart + length
++    if (length > bytes.length || crcStart + 4 > bytes.length) throw invalid('asset.png', 'PNG содержит обрезанный chunk')
++    const type = String.fromCharCode(...bytes.slice(typeStart, dataStart))
++    const typeAndData = bytes.slice(typeStart, crcStart)
++    if (readUint32(bytes, crcStart) !== crc32(typeAndData)) throw invalid('asset.png', 'CRC PNG chunk не совпадает')
++    if (type === 'IHDR') {
++      if (seenHeader || length !== 13 || offset !== 8) throw invalid('asset.png', 'некорректный IHDR')
++      seenHeader = true
++      width = readUint32(bytes, dataStart)
++      height = readUint32(bytes, dataStart + 4)
++    } else if (type === 'IDAT') {
++      if (!seenHeader || seenEnd) throw invalid('asset.png', 'некорректный IDAT')
++      seenData = true
++    } else if (type === 'IEND') {
++      if (!seenHeader || !seenData || length !== 0 || seenEnd) throw invalid('asset.png', 'некорректный IEND')
++      seenEnd = true
++    }
++    offset = crcStart + 4
++    if (seenEnd) break
++  }
++  if (!seenHeader || !seenData || !seenEnd || offset !== bytes.length) throw invalid('asset.png', 'PNG не завершён IEND')
++  if (width <= 0 || height <= 0 || width > MAX_RASTER_SIDE || height > MAX_RASTER_SIDE || width * height > MAX_RASTER_PIXELS) throw invalid('asset.png', 'размер PNG выходит за лимит')
++  if (descriptor.width !== undefined && descriptor.width !== width) throw invalid('asset.png.width', 'ширина PNG не совпадает')
++  if (descriptor.height !== undefined && descriptor.height !== height) throw invalid('asset.png.height', 'высота PNG не совпадает')
++  return { width, height }
++}
++
++async function decodePngBlob(blob: Blob): Promise<{ readonly width: number; readonly height: number }> {
++  const createBitmap = (globalThis as typeof globalThis & { createImageBitmap?: (image: Blob) => Promise<ImageBitmap> }).createImageBitmap
++  if (createBitmap) {
++    let bitmap: ImageBitmap | null = null
++    try {
++      bitmap = await createBitmap(blob)
++      return { width: bitmap.width, height: bitmap.height }
++    } catch (error) {
++      throw invalid('asset.png.decode', 'браузер не смог декодировать PNG', error)
++    } finally {
++      bitmap?.close()
++    }
++  }
++  const ImageCtor = (globalThis as typeof globalThis & { Image?: new () => HTMLImageElement }).Image
++  const createObjectUrl = globalThis.URL?.createObjectURL
++  const revokeObjectUrl = globalThis.URL?.revokeObjectURL
++  if (!ImageCtor || !createObjectUrl || !revokeObjectUrl) throw invalid('asset.png.decode', 'декодер PNG недоступен в текущем runtime')
++  const image = new ImageCtor()
++  const url = createObjectUrl(blob)
++  try {
++    image.src = url
++    if (typeof image.decode === 'function') await image.decode()
++    else await new Promise<void>((resolve, reject) => {
++      image.onload = () => resolve()
++      image.onerror = () => reject(new Error('PNG load failed'))
++    })
++    return { width: image.naturalWidth, height: image.naturalHeight }
++  } catch (error) {
++    throw invalid('asset.png.decode', 'браузер не смог декодировать PNG', error)
++  } finally {
++    revokeObjectUrl(url)
++  }
++}
++
++function validateSvg(source: string, descriptor: MapAssetDescriptor): readonly [number, number, number, number] {
++  if (source.length === 0 || /<!\s*(?:DOCTYPE|ENTITY)|<\?xml|<\?(?!xml)|<script\b|<style\b|<foreignObject\b|<image\b|<use\b|<animate(?:Transform|Motion)?\b|@import/i.test(source)) throw invalid('asset.svg', 'SVG содержит запрещённый XML или активное содержимое')
++  const Parser = (globalThis as typeof globalThis & { DOMParser?: typeof DOMParser }).DOMParser
++  if (!Parser) throw invalid('asset.svg.parser', 'строгий XML DOMParser недоступен в текущем runtime')
++  const viewBox = parseSvgWithDomParser(source, Parser)
++  if (descriptor.viewBox && descriptor.viewBox.some((value, index) => value !== viewBox[index])) throw invalid('asset.svg.viewBox', 'viewBox не совпадает с манифестом')
++  return viewBox
++}
++
++function parseSvgWithDomParser(source: string, Parser: typeof DOMParser): readonly [number, number, number, number] {
++  const document = new Parser().parseFromString(source, 'image/svg+xml')
++  if (document.getElementsByTagName('parsererror').length > 0) throw invalid('asset.svg.xml', 'SVG не является well-formed XML')
++  const root = document.documentElement
++  if (!root || root.localName !== 'svg' || root.namespaceURI !== SVG_NS) throw invalid('asset.svg.root', 'нужен SVG root в namespace SVG')
++  const viewBox = readSvgViewBox(root.getAttribute('viewBox'))
++  let count = 0
++  walkSvgElement(root, true, () => { count += 1; if (count > MAX_SVG_ELEMENTS) throw invalid('asset.svg', 'слишком много SVG-элементов') })
++  return viewBox
++}
++
++function walkSvgElement(element: Element, root: boolean, visit: () => void): void {
++  visit()
++  for (const attribute of Array.from(element.attributes)) {
++    if (attribute.namespaceURI === XMLNS_NS) {
++      if (!root || attribute.name !== 'xmlns' || attribute.value !== SVG_NS) throw invalid('asset.svg.namespace', 'разрешён только root xmlns SVG')
++      continue
++    }
++    const attributeName = attribute.localName.toLowerCase()
++    if (attribute.namespaceURI !== null || !SVG_ATTRIBUTES.has(attributeName) || !validSvgAttributeValue(attributeName, attribute.value)) throw invalid('asset.svg.attribute', `SVG-атрибут ${attribute.name} запрещён`)
++  }
++  if (root && element.getAttribute('xmlns') !== SVG_NS) throw invalid('asset.svg.namespace', 'SVG root должен объявить namespace')
++  for (const child of Array.from(element.childNodes)) {
++    if (child.nodeType === 1) {
++      const childElement = child as Element
++      if (childElement.namespaceURI !== SVG_NS || !SVG_ELEMENTS.has(childElement.localName)) throw invalid('asset.svg.element', `SVG-элемент ${childElement.localName} запрещён`)
++      walkSvgElement(childElement, false, visit)
++    } else if (child.nodeType !== 3 && child.nodeType !== 4) {
++      throw invalid('asset.svg.xml', 'SVG содержит неподдерживаемый узел')
++    }
++  }
++}
++
++function readSvgViewBox(value: string | null): readonly [number, number, number, number] {
++  if (!value) throw invalid('asset.svg.viewBox', 'SVG должен иметь viewBox')
++  const parts = value.trim().split(/[\s,]+/).map(Number)
++  if (parts.length !== 4 || parts.some((item) => !Number.isFinite(item))) throw invalid('asset.svg.viewBox', 'некорректный viewBox')
++  const viewBox = parts as [number, number, number, number]
++  if (viewBox[2] <= 0 || viewBox[3] <= 0 || viewBox[2] > MAX_SVG_EXTENT || viewBox[3] > MAX_SVG_EXTENT) throw invalid('asset.svg.viewBox', 'viewBox выходит за лимит')
++  return viewBox
++}
++
++function validSvgAttributeValue(name: string, value: string): boolean {
++  if (containsUnsafeSvgValue(value)) return false
++  if (name === 'fill' || name === 'stroke') return /^(?:none|currentcolor|transparent|#[0-9a-f]{3,8}|[a-z]{1,32})$/i.test(value)
++  if (name === 'd') return /^[0-9a-z\s,.+-]+$/i.test(value)
++  if (name === 'points') return /^[0-9e\s,.+-]+$/i.test(value)
++  if (name === 'stroke-linecap') return /^(?:butt|round|square)$/i.test(value)
++  if (name === 'stroke-linejoin') return /^(?:miter|round|bevel)$/i.test(value)
++  if (name === 'text-anchor') return /^(?:start|middle|end)$/i.test(value)
++  if (name === 'role') return /^(?:img|presentation)$/i.test(value)
++  if (name === 'id' || name === 'class') return /^[A-Za-z0-9_.-]{1,64}$/.test(value)
++  if (name === 'aria-label') return value.length > 0 && value.length <= 256 && !/[<>&]/.test(value)
++  if (name === 'viewbox') return /^[0-9e\s,.+-]+$/i.test(value)
++  return /^-?(?:\d+(?:\.\d+)?|\.\d+)(?:e[-+]?\d+)?$/i.test(value)
++}
++
++function containsUnsafeSvgValue(value: string): boolean {
++  const decodedCss = value.replace(/\\([0-9a-f]{1,6})(?:\s)?/gi, (_, code: string) => String.fromCodePoint(Number.parseInt(code, 16)))
++  return /[\\<>]|\b(?:https?|file|javascript|data):|url\s*\(|[()]/i.test(decodedCss)
++}
++
++function decodeUtf8(bytes: Uint8Array): string {
++  try {
++    return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
++  } catch (error) {
++    throw invalid('asset.svg.encoding', 'SVG не является корректным UTF-8', error)
++  }
++}
++
++async function digestSha256(bytes: Uint8Array): Promise<string> {
++  const subtle = globalThis.crypto?.subtle
++  if (!subtle) throw new MapError('asset-invalid', 'Web Crypto недоступна для проверки хеша')
++  const digest = await subtle.digest('SHA-256', bytes.slice().buffer as ArrayBuffer)
++  return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('')
++}
++
++function readUint32(bytes: Uint8Array, offset: number): number {
++  return ((bytes[offset] ?? 0) * 0x1000000) + ((bytes[offset + 1] ?? 0) << 16) + ((bytes[offset + 2] ?? 0) << 8) + (bytes[offset + 3] ?? 0)
++}
++
++function crc32(bytes: Uint8Array): number {
++  let crc = 0xffffffff
++  for (const byte of bytes) {
++    crc ^= byte
++    for (let bit = 0; bit < 8; bit += 1) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1))
++  }
++  return (crc ^ 0xffffffff) >>> 0
++}
++
++function asRecord(input: unknown, path: string): Record<string, unknown> {
++  if (typeof input !== 'object' || input === null || Array.isArray(input)) throw invalid(path, 'ожидался объект')
++  return input as Record<string, unknown>
++}
++
++function arrayOf(input: unknown, path: string): unknown[] {
++  if (!Array.isArray(input)) throw invalid(path, 'ожидался массив')
++  return input
++}
++
++function nonEmptyString(input: unknown, path: string): string {
++  if (typeof input !== 'string' || input.trim().length === 0 || input.length > 512) throw invalid(path, 'ожидалась непустая строка')
++  return input
++}
++
++function assertUnique(values: readonly string[], path: string): void {
++  if (new Set(values).size !== values.length) throw invalid(path, 'обнаружены повторяющиеся идентификаторы')
++}
++
++function invalid(path: string, message: string, causeValue?: unknown): MapError {
++  return new MapError('invalid-response', `${path}: ${message}`, causeValue)
++}
+diff --git a/services/AGENTS.md b/services/AGENTS.md
+index c0f1d41d..34254e3e 100644
+--- a/services/AGENTS.md
++++ b/services/AGENTS.md
+@@ -1,19 +1,3 @@
+-## Решение владельца 2026-09-13 — orchestration v2
+-
+-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
+-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
+-`CURRENT.md` и свой пакет из той же директории до работы.
+-Это явное project-only решение заменяет несовместимые старые routing-пункты
+-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
+-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
+-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
+-не полагайся на память/наследование. Код только assigned developer, один writer
+-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
+-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
+-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
+-сохраняются; другие проекты/global config не изменяются.
+-
+----
+ # Backend / BFF
+ 
+ - Java 21, Spring Boot, Gradle wrapper; версии/команды — из build и CI. Сверяй
+diff --git a/tests/AGENTS.md b/tests/AGENTS.md
+index ffba8704..0596e3be 100644
+--- a/tests/AGENTS.md
++++ b/tests/AGENTS.md
+@@ -1,19 +1,3 @@
+-## Решение владельца 2026-09-13 — orchestration v2
+-
+-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
+-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
+-`CURRENT.md` и свой пакет из той же директории до работы.
+-Это явное project-only решение заменяет несовместимые старые routing-пункты
+-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
+-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
+-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
+-не полагайся на память/наследование. Код только assigned developer, один writer
+-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
+-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
+-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
+-сохраняются; другие проекты/global config не изменяются.
+-
+----
+ # Проверки
+ 
+ - Команды — из scripts, Gradle wrapper и CI текущего checkout; подготовительная партия

@@ -1,0 +1,55 @@
+{
+  "schema": "admission-producer-runtime-failure-v1",
+  "status": "HEAVY RELEASE",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "sourceHashes": {
+    "path": "../source-hashes.json",
+    "sha256": "DF8896D704B015E75C7266BCC0E6AAB1F56BDCC98D03276E75878C1342DCDA98",
+    "bytes": 5613,
+    "entries": 17
+  },
+  "guards": {
+    "pre": {"source": "17/17", "java": 0, "ports": "free", "docker": "empty"},
+    "post": {"source": "17/17", "java": 0, "ports": "free", "docker": "empty; escalated query exit 0"}
+  },
+  "commands": [
+    {
+      "id": "shared-focused",
+      "command": ".\\gradlew.bat :services:shared:shared-security:test --tests 'ru.rutcampustrack.shared.security.InternalJwtValidatorTest' --tests 'ru.rutcampustrack.shared.security.DualModeUserContextFilterTest' --no-daemon --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 0,
+      "build": "BUILD SUCCESSFUL in 59s",
+      "suites": [
+        {"name": "InternalJwtValidatorTest", "tests": 8, "failures": 0, "errors": 0, "skipped": 0, "sha256": "4A2CB52F2DC2F98BF1343E623AAD7E4C29006E8E5F53A7BD0E3918F9E8F3CF65", "bytes": 1510},
+        {"name": "DualModeUserContextFilterTest", "tests": 8, "failures": 0, "errors": 0, "skipped": 0, "sha256": "C248B3DA9361E70D837FECF89E8234DD749D2B50592A7C4133E67F8ED4DF7F9F", "bytes": 2561}
+      ]
+    },
+    {
+      "id": "auth-focused",
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:test --tests 'ru.rutcampustrack.auth.service.JwtTokenPurposeTest' --tests 'ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest' --tests 'ru.rutcampustrack.auth.session.SessionAdmissionServiceTest' --tests 'ru.rutcampustrack.auth.arch.AuthApiContractTest' --no-daemon --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 1,
+      "build": "BUILD FAILED in 1m16s",
+      "total": {"tests": 25, "failures": 4, "errors": 0, "skipped": 0},
+      "suites": [
+        {"name": "AuthApiContractTest", "tests": 3, "failures": 0, "errors": 0, "skipped": 0, "sha256": "387E14C7546CD3AB279E3001C6BFE4B37C52BBE1C2FB9CEFFE7F577CAEC28D5B", "bytes": 847},
+        {"name": "JwtAuthenticationFilterPurposeTest", "tests": 5, "failures": 0, "errors": 0, "skipped": 0, "sha256": "4DE1C95E4F61EB2BD181F1D204766B82AF0540D55F0B030F6E316DD6093BBD63", "bytes": 1972},
+        {"name": "JwtTokenPurposeTest", "tests": 10, "failures": 2, "errors": 0, "skipped": 0, "sha256": "BFD5510E1BA12C453A9A74B7B9A0B014928364DAC1FB3E70594795FC28EDF151", "bytes": 4707, "cause": "two fixed positive cases expired: iat 09:00Z/exp 09:01Z, run at 18:39Z; ExpiredJwtException at source lines 119 and 140"},
+        {"name": "SessionAdmissionServiceTest", "tests": 7, "failures": 2, "errors": 0, "skipped": 0, "sha256": "066B5F440DAB9C3D377457DFA8B556EBF3F82C951D64F40366B99C53B609EB37", "bytes": 3045, "cause": "active setup omitted group_id while snapshot groupId=10; SESSION_STATE_STALE at requireIdentityMatch line 204, test lines 81 and 187"}
+      ]
+    },
+    {
+      "id": "admission-it",
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:integrationTest --tests 'ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT' --no-daemon --no-parallel --max-workers=1 --console=plain",
+      "status": "NOT RUN",
+      "reason": "Batch stopped after auth-focused command exit 1; no Testcontainers command ran."
+    }
+  ],
+  "xmlCopies": [
+    {"path": "junit/TEST-ru.rutcampustrack.shared.security.InternalJwtValidatorTest.xml", "sha256": "4A2CB52F2DC2F98BF1343E623AAD7E4C29006E8E5F53A7BD0E3918F9E8F3CF65", "bytes": 1510},
+    {"path": "junit/TEST-ru.rutcampustrack.shared.security.DualModeUserContextFilterTest.xml", "sha256": "C248B3DA9361E70D837FECF89E8234DD749D2B50592A7C4133E67F8ED4DF7F9F", "bytes": 2561},
+    {"path": "junit/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml", "sha256": "BFD5510E1BA12C453A9A74B7B9A0B014928364DAC1FB3E70594795FC28EDF151", "bytes": 4707},
+    {"path": "junit/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml", "sha256": "4DE1C95E4F61EB2BD181F1D204766B82AF0540D55F0B030F6E316DD6093BBD63", "bytes": 1972},
+    {"path": "junit/TEST-ru.rutcampustrack.auth.session.SessionAdmissionServiceTest.xml", "sha256": "066B5F440DAB9C3D377457DFA8B556EBF3F82C951D64F40366B99C53B609EB37", "bytes": 3045},
+    {"path": "junit/TEST-ru.rutcampustrack.auth.arch.AuthApiContractTest.xml", "sha256": "387E14C7546CD3AB279E3001C6BFE4B37C52BBE1C2FB9CEFFE7F577CAEC28D5B", "bytes": 847}
+  ],
+  "dockerPostQuery": {"initialDefaultSandbox": "access denied", "escalatedExit": 0, "containers": 0}
+}

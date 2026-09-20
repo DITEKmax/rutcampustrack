@@ -1,0 +1,44 @@
+{
+  "scope": "L5A frozen coverage runtime gates",
+  "revision": "codex/v2-assignment-authority",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "source_freeze": {
+    "status": "H61_FAILURE_CORRECTION_FROZEN_FOR_H63",
+    "academicGrpcIT_sha256": "57AE1E3CEB13219413B66007070B9AA2308695BBC28351BA1A5D798009E6B2FF",
+    "subjectAssignmentAuthorityIT_sha256": "F8D5429B58451C69A390EB957E4D7329628CDF362BFC965EF82468862EBC3700",
+    "all_eight_hashes_verified_post_correction": true
+  },
+  "checks": [
+    {
+      "name": "H60 Attendance ReportServiceTest",
+      "status": "PASS",
+      "exit_code": 0,
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "raw": ".agent/v2-assignment-authority/evidence/h60-attendance-2026-09-19.log",
+      "xml": ".agent/v2-assignment-authority/evidence/h60-xml/TEST-ru.rutcampustrack.attendance.report.ReportServiceTest.xml",
+      "xml_sha256": "B8452C76649E21E4D346C6750F890AFD8958024006A90FC8CB43652D9FEFA1A4"
+    },
+    {
+      "name": "H61 six Academic integration selectors",
+      "status": "FAIL_STOPPED",
+      "exit_code": 1,
+      "tests_started": false,
+      "phase": "compileTestJava",
+      "first_failure": "SubjectAssignmentAuthorityIT.java:100 unresolved variable otherFixture",
+      "raw": ".agent/v2-assignment-authority/evidence/h61-academic-2026-09-19.log",
+      "fresh_xml": false,
+      "existing_xml_last_write": "2026-09-19 21:18:12 local (pre-H61)",
+      "docker_before": ".agent/v2-assignment-authority/evidence/h61-docker-before-2026-09-19.txt",
+      "docker_after": ".agent/v2-assignment-authority/evidence/h61-docker-after-2026-09-19.txt",
+      "docker_id_delta": "added=0;removed=0"
+    }
+  ],
+  "limitations": [
+    "H61 did not reach PostgreSQL, routes, gRPC, race, or Testcontainers because compileTestJava failed first.",
+    "No source correction or retry was made under the failed lease; root decision/next bounded lease is required.",
+    "Foreign Docker containers were preserved; no cleanup was performed because no H61-owned container existed."
+  ]
+}

@@ -16,17 +16,17 @@ from bot.handlers.late_checkin import handle_late_checkin_decision
 async def test_approve_publishes_decision_and_edits_text(
     callback_query_factory, event_publisher_mock, academic_client_mock
 ):
-    cb = callback_query_factory("lcr:approve:req-42", user_id=777)
+    cb = callback_query_factory("lcr:approve:req-42", user_id=123456789)
 
     await handle_late_checkin_decision(cb, event_publisher=event_publisher_mock, academic_client=academic_client_mock)
 
     event_publisher_mock.publish.assert_awaited_once_with(
         "late_checkin.decision",
-        {"request_id": "req-42", "approved": True, "decision_by": 777},
+        {"request_id": "req-42", "approved": True, "decision_by": 42},
     )
     edited = cb.message.edit_text.await_args.args[0]
-    assert "✅ Подтверждено" in edited
-    cb.answer.assert_awaited_once_with("✅ Подтверждено")
+    assert "⏳ Решение отправлено" in edited
+    cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 @pytest.mark.asyncio
@@ -39,11 +39,11 @@ async def test_reject_publishes_decision_with_approved_false(
 
     event_publisher_mock.publish.assert_awaited_once_with(
         "late_checkin.decision",
-        {"request_id": "req-99", "approved": False, "decision_by": 777},
+        {"request_id": "req-99", "approved": False, "decision_by": 42},
     )
     edited = cb.message.edit_text.await_args.args[0]
-    assert "❌ Отклонено" in edited
-    cb.answer.assert_awaited_once_with("❌ Отклонено")
+    assert "⏳ Решение отправлено" in edited
+    cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 @pytest.mark.asyncio
@@ -96,7 +96,7 @@ async def test_edit_text_failure_still_answers(callback_query_factory, event_pub
     await handle_late_checkin_decision(cb, event_publisher=event_publisher_mock, academic_client=academic_client_mock)
 
     event_publisher_mock.publish.assert_awaited_once()
-    cb.answer.assert_awaited_once_with("✅ Подтверждено")
+    cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 # ================================================== M09 G6 role check
@@ -127,6 +127,23 @@ async def test_unlinked_telegram_user_gets_denied_without_publish(
     not_found.found = False
     not_found.is_headman = False
     academic_client_mock.get_user_by_telegram_id = AsyncMock(return_value=not_found)
+
+    await handle_late_checkin_decision(cb, event_publisher=event_publisher_mock, academic_client=academic_client_mock)
+
+    event_publisher_mock.publish.assert_not_called()
+    cb.answer.assert_awaited_once_with("Недостаточно прав", show_alert=True)
+
+
+@pytest.mark.asyncio
+async def test_headman_without_positive_internal_id_gets_denied_without_publish(
+    callback_query_factory, event_publisher_mock, academic_client_mock
+):
+    cb = callback_query_factory("lcr:approve:req-42", user_id=123456789)
+    invalid_actor = MagicMock()
+    invalid_actor.found = True
+    invalid_actor.is_headman = True
+    invalid_actor.user_id = 0
+    academic_client_mock.get_user_by_telegram_id = AsyncMock(return_value=invalid_actor)
 
     await handle_late_checkin_decision(cb, event_publisher=event_publisher_mock, academic_client=academic_client_mock)
 

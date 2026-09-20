@@ -1,0 +1,20 @@
+# I3 — isolate Compose dynamic allocation from trusted Nginx address
+
+## Goal
+S3: repair the single HIGH finding from full I2 integration review without weakening exact proxy trust. Source/config only first; no production startup.
+## Context/evidence
+I2 full34 review FAIL one HIGH, reviewer released; stable union32031090D593BBC8B53869590F14D90386A97B1AD4786CDC7B6C16586C8CC266. Root opened prod networks1009..1014/static902 and E2E networks525..530/static520: full dynamic subnet includes static .10. Templates use172.30.0.0/24 and172.30.0.10; many dependent services start before Nginx. Config validation does not prove allocation. Exact Compose clean-start reproduction not run. All other accepted A2/L3/R5 behavior/checks retained.
+## Relevant scope
+Same assigned Luna integration writer in C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3. Extend product scope only docker-compose.prod.yml, docker-compose.e2e.yml, .env.prod.example, tracked tests/e2e/.env.ci nonsecret network keys only, scripts/validate-env-prod.sh, narrowly necessary current network-input docs/CI callers. Own integration metadata/provenance and bounded pure validator checks. Accepted source worktrees read-only; no edits there.
+## Required behavior
+Use explicit GATEWAY_DYNAMIC_IP_RANGE and GATEWAY_NETWORK_GATEWAY consistently in both Compose ipam blocks alongside existing subnet and static edge. Documented example: subnet172.30.0.0/24, gateway172.30.0.1, edge172.30.0.10, dynamic172.30.0.128/25. No trust wildcard or aux-address reservation of the edge itself. Validate required inputs, canonical aligned IPv4 CIDRs, RFC1918 parent, entire dynamic-range containment, static edge and gateway usable within parent and distinct, both outside dynamic interval. Reject malformed/trailing-dot/unaligned/outside/overlapping inputs without shell evaluation. Preserve configurable accepted parent subnets; do not arbitrarily hardcode /24. Inventory exact tracked callers of these network inputs and update every necessary live input consistently. Preserve all other env values; never print secrets.
+## Constraints
+One writer, preserve other work; RULES C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md SHA B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A. Luna max, no children/Terra/E/original/source-worktree changes/push/deploy/main merge. No actual production env access/bootstrap/TLS/services/network mutations in source stage.
+## Existing patterns
+Existing strict ipv4_to_int/cidr_bounds and required-variable validator, explicit Compose env-file callers. Coordinate read-only with R3 proof owner: it independently prepares exact Docker ip-range/gateway evidence under H32; do not duplicate runtime resources. Product configuration and R3 harness remain separate scopes.
+## Acceptance criteria
+Both rendered Compose IPAM definitions exclude static trusted address from dynamic allocation; exact caller/template/validator consistency. Positive default and alternative private subnet cases, missing/invalid/overlap/gateway-equal-edge negatives, including trailing-dot and nonaligned ranges. Freeze exact expanded union path/hash inventory. Later synthetic config checks and appropriate real isolated allocation evidence, then fresh full integration review including this correction and prior34 files.
+## Verification
+Now source + pure Bash/static/validator tests only with synthetic nonsecret fixtures. No Docker create/run/Gradle/npm builds. Return frozen diff, relevant checks, proposed exact config commands and remaining proof. Main separately grants heavy lease after R3 proof coordination. Prior H31 BFF4/4/typeguard and earlier46 checks remain historical evidence if corresponding source hashes unchanged; do not rerun unrelated Java checks for network-only edits.
+## Do not
+No whole-stack deployment, real secrets/env reads, snapshot regeneration, schema/auth changes, weakened validation, invented allocation proof, or reviewer authorship. Keep original failure and new evidence distinguishable.

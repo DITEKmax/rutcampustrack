@@ -1,0 +1,3112 @@
+[
+  {
+    "worktree": "02-rutcampustrack",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/profile-ui/"
+  },
+  {
+    "worktree": "02-rutcampustrack",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/CredentialSessionTransactionPort.java"
+  },
+  {
+    "worktree": "04-rutcampustrack",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/b2-academic-scope/"
+  },
+  {
+    "worktree": "04-rutcampustrack",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/b2-projection-computation/"
+  },
+  {
+    "worktree": "04-rutcampustrack",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/student-academic-ui/"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-2/Default/declarative_performance_observer.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-2/GPUPersistentCache/DawnGraphiteCache/6364HUQ4W4H7RKR7NMQK6IVM6XY564JE/cache.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "link or >20MB artifact",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-3/component_crx_cache/485187ce78b5eaa19aaba6cb088a3d8ef80fafe00f5068fa71a7989775436e2e"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-3/Default/declarative_performance_observer.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-3/Default/heavy_ad_intervention_opt_out.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-3/Default/Storage/ext/nmmhkkegccagdldgiimedpiccmgmieda/def/declarative_performance_observer.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-3/first_party_sets.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-3/GPUPersistentCache/DawnGraphiteCache/6364HUQ4W4H7RKR7NMQK6IVM6XY564JE/cache.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "link or >20MB artifact",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-3/optimization_guide_model_store/43/DC3E7836E4D434CA/2EFDA02702ECAE57/model.tflite"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "link or >20MB artifact",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-3/WasmTtsEngine/20260826.1/bindings_main.wasm"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "link or >20MB artifact",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-4/component_crx_cache/485187ce78b5eaa19aaba6cb088a3d8ef80fafe00f5068fa71a7989775436e2e"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-4/Default/declarative_performance_observer.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-4/Default/heavy_ad_intervention_opt_out.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-4/Default/Storage/ext/nmmhkkegccagdldgiimedpiccmgmieda/def/declarative_performance_observer.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-4/first_party_sets.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-4/GPUPersistentCache/DawnGraphiteCache/6364HUQ4W4H7RKR7NMQK6IVM6XY564JE/cache.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "link or >20MB artifact",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-4/optimization_guide_model_store/43/DC3E7836E4D434CA/88A3092D76B63C04/model.tflite"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "link or >20MB artifact",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile-4/WasmTtsEngine/20260826.1/bindings_main.wasm"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile/Default/declarative_performance_observer.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile/Default/heavy_ad_intervention_opt_out.db"
+  },
+  {
+    "worktree": "07-student-academic-ui",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-academic-ui/cdp-qa/chrome-profile/GPUPersistentCache/DawnGraphiteCache/6364HUQ4W4H7RKR7NMQK6IVM6XY564JE/cache.db"
+  },
+  {
+    "worktree": "10-rutcampustrack",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/campus-map-read-backend/"
+  },
+  {
+    "worktree": "12-rutcampustrack",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/requests-backend-union-e-r1/"
+  },
+  {
+    "worktree": "12-rutcampustrack",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/requests-bff-contract/"
+  },
+  {
+    "worktree": "12-rutcampustrack",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/requests-isolation/"
+  },
+  {
+    "worktree": "12-rutcampustrack",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/requests-notification-authority/"
+  },
+  {
+    "worktree": "12-rutcampustrack",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/requests-ui-c/"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/3rdpartylicenses.txt"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-2GVBUYEQ.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-2JMSH3X2.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-2JWDYDNN.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-2R4V3TV2.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-3RW67N3A.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-3TOQTTX2.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-3V52JPBS.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-4CRBDMCY.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-4CYPCDQR.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-4DAJJIBN.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-4HKPA4JH.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-4IIH3CKJ.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-4IZRFGW6.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-4N6XW6I5.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-4UZU6PB3.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-4W5MGMHC.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-5JAJI33L.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-5KBXZC64.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-5LFTIQ66.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-5W6F5ZOF.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-5YLVGZTE.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-5ZRYCB6U.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-6C2Z7WKV.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-6PNX36BR.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-6SEXS7RP.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-6YHLFLZX.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-7CBIBP7M.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-7EWFGLVH.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-7HRZZWRA.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-7O7GTZAJ.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-A3AG5JRK.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ABSEBU7O.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ABZHNSGT.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ADG7JADO.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-AFHS7MYH.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-AH2HPPYY.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-AK6GI2A3.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ASXPTFC3.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ATDE6RGT.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-AXATLOR6.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-AXZH3YW2.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-AZT6PUJE.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-BMIACBPJ.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-BN4FJCIX.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-C4UQBVER.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-D3KHYGTW.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-D473XD5J.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-D637QQ2X.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-DD5OP3MH.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-DDKJCGLG.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-DEX2PALU.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-DFMA2CVT.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-DJ2RPNP7.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-DSHYYANK.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-EDHGF7KA.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-EDOAMJIH.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-EHM5LZIK.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-EQF645NZ.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ER3A3I7I.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ETO2ZMHA.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-EUDZI2IL.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-EX2J5GVO.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-F5X5MWHG.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-FBP7VOTN.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-FHCOXAT2.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-FLYPJVNC.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-FXVHNUXR.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-GMM7ZD5X.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-GPJKMQ3H.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-GQQCTVWA.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-GVVU6SIC.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-H2F4KNPO.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-HAK7OYJ7.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-HH6ZL7EU.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-HJTC4BQ3.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-HO33PPVZ.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-HO7J4OVD.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-HOE5CGZP.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-IJ4GBDXK.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-IMJYDWSH.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-IP2LE3HY.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-IRXPELUZ.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ITCMZYCF.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-IUQ3IW76.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-IXCUMFN4.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-IXWUUF5G.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-J3RSB4D2.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-J4UIBNRA.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-J6RUF2LF.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JAN6EI2Q.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JBCGJI6W.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JCRDVYYU.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JJD6XB7X.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JJKWJHIU.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JJPAZGDY.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JJV6RX2K.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JQHNKDIT.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JVCSG5NW.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-K6KUAQNK.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-K6QYXVRL.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-KGLTBGTL.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-KM2GB5WP.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-KVCX3SN5.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-L2BV4JLN.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-LAG5UWOU.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-LPWQ4H44.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-MLSZPY3U.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-MTA5HPIR.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-MXJVUOXR.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-MY2JPF6D.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-N5F72P4T.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-NF5OK7JX.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-NTYKDERJ.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-NW4AYMB2.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OBS3Q73U.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OGPJ74AT.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OIE5ZM3B.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OJ7KCVNF.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OMBFTJI7.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OPCRLDCP.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OPFGSR7N.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ORJB2PAA.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-P44ONVFR.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-PBI7HWRK.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-Q36W3V4N.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-Q5NBFBPR.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-Q6VYOTIV.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-QCZSYMQC.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-QIYWXOVG.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-QK7Y35QF.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-QLHLHLXI.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-QO24ODNY.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-QP5XOUY4.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-RCCVVX3F.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-RLIV462S.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ROWYGNBT.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-RTC2DLWR.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-SHMCWMJ5.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-SSVTX3CO.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-TUHV2K7F.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-UUG4KCU3.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-VN3CQEPZ.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-VT44SU37.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-W4UVPXJ6.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-WBGCF5VK.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-WMD4QLDP.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-WP7NX34V.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-WSD33GHR.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-WZKFC67V.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-XBYWMMNV.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-XEOLPU5R.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-XF67MXIR.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-XKUTY3WV.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-XSH734KI.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-YBKGW4S2.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-YJ2SADDD.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-YO2SV2T7.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-YOHEKK4G.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ZDWKDPSB.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ZS2B5R4G.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ZZ3IIGHJ.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ZZ4RBUZC.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/index.html"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/main-2VYUWSD2.js"
+  },
+  {
+    "worktree": "18-be",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/main-F4UHJ2FF.js"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/scan-input/academic-app-0.1.0.jar"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/scan-input/api-gateway-0.1.0.jar"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/scan-input/attendance-app-0.1.0.jar"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/scan-input/auth-app-0.1.0.jar"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/scan-input/document-renderer-app-0.1.0.jar"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/scan-input/mobile-bff-app-0.1.0.jar"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/scan-input/notification-app-0.1.0.jar"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/scan-input/schedule-app-0.1.0.jar"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/trivy-cache/db/metadata.json"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/trivy-cache/db/trivy.db"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/trivy-cache/java-db/metadata.json"
+  },
+  {
+    "worktree": "28-dependency-security",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/trivy-cache/java-db/trivy-java.db"
+  },
+  {
+    "worktree": "48-v2-requests-contract",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".env.prod.example"
+  },
+  {
+    "worktree": "48-v2-requests-contract",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "tests/e2e/.env.ci"
+  },
+  {
+    "worktree": "49-v2-requests-harness",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-orchestrator/requests-runtime/h62-edge-diagnosis/fixture/keys/server.crt"
+  },
+  {
+    "worktree": "49-v2-requests-harness",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-orchestrator/requests-runtime/h62-edge-diagnosis/fixture/keys/server.key"
+  },
+  {
+    "worktree": "49-v2-requests-harness",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-orchestrator/requests-runtime/h68-probe-secrets-fix/secrets-fix-check.mjs"
+  },
+  {
+    "worktree": "49-v2-requests-harness",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-orchestrator/requests-runtime/h68-probe-secrets-fix/secrets-fix-correction-check.mjs"
+  },
+  {
+    "worktree": "49-v2-requests-harness",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-orchestrator/requests-runtime/r13-network-recovery-pass.stderr.log"
+  },
+  {
+    "worktree": "49-v2-requests-harness",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-orchestrator/requests-runtime/r13-network-recovery-pass.stdout.log"
+  },
+  {
+    "worktree": "49-v2-requests-harness",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-orchestrator/requests-runtime/r13-network-recovery-regression.stderr.log"
+  },
+  {
+    "worktree": "49-v2-requests-harness",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-orchestrator/requests-runtime/r13-network-recovery-regression.stdout.log"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/amqp-client-5.33.1.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/angus-activation-2.0.3.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/annotations-13.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/antlr4-runtime-4.13.2.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/aopalliance-1.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/aspectjweaver-1.9.25.1.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/auth-api-contract-0.1.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/byte-buddy-1.17.8.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/classmate-1.7.3.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/commons-lang3-3.17.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/context-propagation-1.1.4.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/HdrHistogram-2.2.2.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/hibernate-commons-annotations-7.0.3.Final.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/hibernate-core-6.6.53.Final.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/hibernate-validator-8.0.3.Final.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/HikariCP-6.3.3.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/istack-commons-runtime-4.1.2.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jackson-annotations-2.21.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jackson-core-2.21.4.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jackson-databind-2.21.4.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jackson-dataformat-yaml-2.21.4.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jackson-datatype-jdk8-2.21.4.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jackson-datatype-jsr310-2.21.4.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jackson-module-parameter-names-2.21.4.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jakarta.activation-api-2.1.4.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jakarta.annotation-api-2.1.1.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jakarta.inject-api-2.0.1.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jakarta.persistence-api-3.1.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jakarta.servlet-api-6.0.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jakarta.transaction-api-2.0.1.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jakarta.validation-api-3.0.2.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jakarta.xml.bind-api-4.0.5.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jandex-3.2.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jaxb-core-4.0.9.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jaxb-runtime-4.0.9.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jboss-logging-3.6.3.Final.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jjwt-api-0.12.6.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jjwt-impl-0.12.6.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jjwt-jackson-0.12.6.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jspecify-1.0.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/jul-to-slf4j-2.0.18.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/kotlin-stdlib-1.9.25.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/kotlin-stdlib-jdk7-1.9.25.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/kotlin-stdlib-jdk8-1.9.25.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/LatencyUtils-2.0.3.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/lettuce-core-6.6.0.RELEASE.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/log4j-api-2.24.3.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/log4j-to-slf4j-2.24.3.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/logback-classic-1.5.34.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/logback-core-1.5.34.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/logstash-logback-encoder-7.4.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/micrometer-commons-1.15.12.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/micrometer-core-1.15.12.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/micrometer-jakarta9-1.15.12.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/micrometer-observation-1.15.12.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/micrometer-registry-prometheus-1.15.12.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/micrometer-tracing-1.5.12.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/micrometer-tracing-bridge-otel-1.5.12.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/netty-buffer-4.1.137.Final.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/netty-codec-4.1.137.Final.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/netty-common-4.1.137.Final.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/netty-handler-4.1.137.Final.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/netty-resolver-4.1.137.Final.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/netty-transport-4.1.137.Final.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/netty-transport-native-unix-common-4.1.137.Final.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/okhttp-4.12.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/okio-jvm-3.6.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-api-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-context-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-exporter-common-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-exporter-otlp-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-exporter-otlp-common-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-exporter-sender-okhttp-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-extension-trace-propagators-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-sdk-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-sdk-common-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-sdk-extension-autoconfigure-spi-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-sdk-logs-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-sdk-metrics-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-sdk-trace-1.49.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/opentelemetry-semconv-1.32.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/postgresql-42.7.12.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/prometheus-metrics-config-1.3.10.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/prometheus-metrics-core-1.3.10.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/prometheus-metrics-exposition-formats-1.3.10.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/prometheus-metrics-exposition-textformats-1.3.10.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/prometheus-metrics-model-1.3.10.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/prometheus-metrics-tracer-common-1.3.10.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/reactive-streams-1.0.4.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/reactor-core-3.7.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/redis-authx-core-0.1.1-beta2.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/shared-events-0.1.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/shared-logback-0.1.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/shared-observability-0.1.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/shared-web-0.1.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/shared-web-api-0.1.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/slf4j-api-2.0.18.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/snakeyaml-2.4.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-amqp-3.2.12.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-aop-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-aspects-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-beans-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-boot-3.5.16.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-boot-actuator-3.5.16.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-boot-actuator-autoconfigure-3.5.16.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-boot-autoconfigure-3.5.16.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-boot-jarmode-tools-3.5.16.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-context-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-context-support-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-core-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-data-commons-3.5.13.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-data-jpa-3.5.13.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-data-keyvalue-3.5.13.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-data-redis-3.5.13.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-expression-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-jcl-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-jdbc-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-messaging-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-orm-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-oxm-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-rabbit-3.2.12.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-retry-2.0.13.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-security-config-6.5.11.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-security-core-6.5.11.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-security-crypto-6.5.11.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-security-web-6.5.11.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-tx-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-web-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/spring-webmvc-6.2.19.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/springdoc-openapi-starter-common-2.8.9.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/springdoc-openapi-starter-webmvc-api-2.8.9.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/springdoc-openapi-starter-webmvc-ui-2.8.9.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/swagger-annotations-jakarta-2.2.30.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/swagger-core-jakarta-2.2.30.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/swagger-models-jakarta-2.2.30.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/swagger-ui-5.21.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/tomcat-embed-core-10.1.59.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/tomcat-embed-el-10.1.59.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/tomcat-embed-websocket-10.1.59.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/txw2-4.0.9.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/auth-token-purpose-probe/lib/webjars-locator-lite-1.1.3.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/inspect/core27.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/runtime/inspect/core30.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/security/backend-artifacts/academic-app-0.1.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/security/backend-artifacts/mobile-bff-app-0.1.0.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/security/trivy-cache/db/metadata.json"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/security/trivy-cache/db/trivy.db"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/security/trivy-cache/java-db/metadata.json"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/student-role-02/security/trivy-cache/java-db/trivy-java.db"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/js-student-01/be/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/js-student-01/contract/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/js-student-01/fe/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/js-student-01/fix-be/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/js-student-01/fix-pwa/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/js-student-01/fix-retry/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/js-student-01/fix-review/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/js-student-01/fix-tma/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/js-student-01/integration/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/student-role-02-requests-domain/.agent/requests-domain-evidence.md"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/student-role-02/dependency-checks/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/student-role-02/dependency-security/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/student-role-02/homework-adapters/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/student-role-02/homework-api/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/student-role-02/homework-ui/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/student-role-02/integration/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/student-role-02/requests-domain/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/student-role-02/requests-transport/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/student-role-02/shared-shell/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-access-scope/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-assignment-authority/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-binding-proto/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-integration-a2-l3/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-integration-l5a/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-l5b-historical-attendance/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-l5b-recurring-writer/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-l5b-retrospective-union/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-l5b-service-identity/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-map-read/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-mass-cancel-removal/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-pwa-build-fix/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-requests-contract/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-requests-harness/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-requests-ui/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-runtime-build-r2/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-runtime-build-r3/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".agent/worktrees/v2-runtime-build/"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": ".env.prod.example"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "docs/research/reference-rutcampustrack-design/Onest.zip"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/css/fontshare.css"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/css/google-fonts.css"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/fontshare/ClashDisplay-600.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/fontshare/ClashDisplay-700.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/fontshare/GeneralSans-500.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/fontshare/GeneralSans-600.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/google/DMSans-latin-ext.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/google/DMSans-latin.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/google/JetBrainsMono-cyrillic-ext.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/google/JetBrainsMono-cyrillic.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/google/JetBrainsMono-greek.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/google/JetBrainsMono-latin-ext.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/google/JetBrainsMono-latin.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/fonts/google/JetBrainsMono-vietnamese.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/js/main.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/js/no-js-flag.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/js/theme-bootstrap.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/og/ruttrack-og-1200x630.png"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/og/ruttrack-og.svg"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/vendor/gsap/gsap.min.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/vendor/gsap/ScrollTrigger.min.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/vendor/phosphor/duotone.css"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/vendor/phosphor/Phosphor-Duotone.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/vendor/phosphor/Phosphor.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/assets/vendor/phosphor/regular.css"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/favicon.svg"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/landing/dist/index.html"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/.env.development"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/api-BoKDGk31.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/api-DXpG0GLk.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/App-CqVfTLoK.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/ArrowLeft.es-C8tIak-R.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/ArrowsClockwise.es-ChqhMMB3.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/BottomSheet-CWBMhMrn.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/CaretDown.es-DaGx8J7R.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/CaretRight.es-BG2EyctY.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/Check.es-ByrHs0uA.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/CheckCircle.es-Ci9U3Jx6.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/CheckInPage-BLlo7H9K.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/CircleNotch.es-B7nnXUzA.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/geist-cyrillic-wght-normal-CHSlOQsW.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/geist-latin-ext-wght-normal-DMtmJ5ZE.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/geist-latin-wght-normal-Dm3htQBi.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/GroupHub-Cas5z9gh.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/headmanApi-CXNGpK0M.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/HeadmanExcusesPage-v2O2KJeE.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/HeadmanJournalPage-DK-5nNdq.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/HeadmanLateCheckinPage-BBn9U_Xr.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/HeadmanStatsPage-BU0og1Nk.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/HeadmanStudentsPage-Cnm455r6.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/HeadmanSubjectsPage-B7pbruBC.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/HomeDashboard-CiXvwYcB.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/HomeworkPage-sEQJQAss.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/index-Bowhw6yO.css"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/index-C45dpMQK.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/location-CjN8jxWw.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/OverviewPage-COockdq9.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/Paperclip.es-CF3ZhZow.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/ProfilePage-aJuMplJy.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/SchedulePage-CJP054PV.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/Square.es-CHPUi_XD.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/StatsPage-CupMW4fv.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/StudentExcusesPage-BjNAcrXI.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/StudentLateCheckinPage-GZgRehl6.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/studentRequestsApi-CQhh67Oc.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/Trash.es--1wXcKCN.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/useDateNavigation-5-QQwrlB.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/useMainButton-gxMjjOcb.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/useMutation-CGMuk7uJ.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/useQueries-BKfp8n20.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/useQuery-CXVRL_CI.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/assets/UserCircle.es-D3Tc1L-v.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/mini-app/dist/index.html"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/pwa/dist/index.html"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/pwa/dist/sw.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/3rdpartylicenses.txt"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-2JMSH3X2.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-2R4V3TV2.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-3RW67N3A.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-4CYPCDQR.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-4DAJJIBN.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-5JAJI33L.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-5W6F5ZOF.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-5YLVGZTE.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-5ZRYCB6U.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-6C2Z7WKV.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-6PNX36BR.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-6SEXS7RP.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-7CBIBP7M.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-7EWFGLVH.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-7O7GTZAJ.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ABSEBU7O.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ADG7JADO.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-AK6GI2A3.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ASXPTFC3.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-AXZH3YW2.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-BN4FJCIX.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-D473XD5J.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-D637QQ2X.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-DD5OP3MH.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-DEX2PALU.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-EQDQRRRY.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-FBP7VOTN.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-FLYPJVNC.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-GGQ7LRWG.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-GVVU6SIC.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-HAK7OYJ7.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-HJTC4BQ3.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-HO7J4OVD.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-HOE5CGZP.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-IMJYDWSH.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-IP2LE3HY.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ITCMZYCF.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-IXWUUF5G.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JBCGJI6W.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JJKWJHIU.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JQHNKDIT.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-JVCSG5NW.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-K6QYXVRL.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-KGLTBGTL.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-KM2GB5WP.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-L2BV4JLN.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-LAG5UWOU.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-LPWQ4H44.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-MTA5HPIR.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-MXJVUOXR.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-N5F72P4T.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-NTYKDERJ.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-NW4AYMB2.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OGPJ74AT.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OJ7KCVNF.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OMBFTJI7.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OPCRLDCP.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-OPFGSR7N.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-Q5NBFBPR.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-Q6VYOTIV.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-QCZSYMQC.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-QIYWXOVG.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-QLHLHLXI.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-QO24ODNY.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ROWYGNBT.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-SDHE3IGQ.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-SGYCFQGT.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-SHMCWMJ5.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-SSVTX3CO.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-TUHV2K7F.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-VN3CQEPZ.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-VT44SU37.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-W2JZXLNS.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-W4BNGQYG.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-W4UVPXJ6.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-WBGCF5VK.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-WMD4QLDP.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-WP7NX34V.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-WSD33GHR.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-X3HN3VDP.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-XBYWMMNV.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-XEOLPU5R.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-YBKGW4S2.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-YO2SV2T7.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ZDWKDPSB.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/chunk-ZS2B5R4G.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/favicon.svg"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/index.html"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/logo.svg"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/main-F4UHJ2FF.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/dm-sans-latin-ext-wght-normal-7P2MDJRX.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/dm-sans-latin-wght-normal-X7UMQEPN.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/inter-cyrillic-ext-wght-normal-IYF56FF6.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/inter-cyrillic-wght-normal-JEOLYBOO.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/inter-greek-ext-wght-normal-EOVOK2B5.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/inter-greek-wght-normal-IRE366VL.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/inter-latin-ext-wght-normal-HA22NDSG.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/inter-latin-wght-normal-NRMW37G5.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/inter-vietnamese-wght-normal-CE5GGD3W.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-400-normal-C5JECUCT.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-400-normal-FGCZYWMY.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-500-normal-ABSXDA7Y.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-500-normal-VZRFRX2D.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-ext-400-normal-C7IFWGF6.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-ext-400-normal-PWXUA557.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-ext-500-normal-3HPBCRGM.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-ext-500-normal-ALWIYOP7.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-greek-400-normal-JJNQZMPZ.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-greek-400-normal-O7JTTR3P.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-greek-500-normal-RHDMXKAE.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-greek-500-normal-S2QQDTY6.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-400-normal-3OOWLGQ2.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-400-normal-WDD34GPP.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-500-normal-ETEQEOVZ.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-500-normal-V4XIP5OW.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-ext-400-normal-55RNMRQS.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-ext-400-normal-JVR3IR4Z.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-ext-500-normal-2BKZW4LT.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-ext-500-normal-W67NWU5E.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-vietnamese-400-normal-7ULXAK72.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-vietnamese-400-normal-KU7YLUPA.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-vietnamese-500-normal-HO6446ON.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-vietnamese-500-normal-LNSQLO7C.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/Phosphor-2TTV6TYS.ttf"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/Phosphor-FILTTWNO.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/Phosphor-KLBJTFWE.woff"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/Phosphor-Y4JO5C3F.svg"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/plus-jakarta-sans-cyrillic-ext-wght-normal-JQUONSEA.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/plus-jakarta-sans-latin-ext-wght-normal-UBEBQO7H.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/plus-jakarta-sans-latin-wght-normal-XZSBT77D.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/media/plus-jakarta-sans-vietnamese-wght-normal-TOS5SH3L.woff2"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/polyfills-B6TNHZQ6.js"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/browser/styles-QRYOVJ25.css"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "frontends/web-panel/dist/prerendered-routes.json"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "gradle/wrapper/gradle-wrapper.jar"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "services/notification-bot/.env.example"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "services/notification-service/notification-app/src/test/resources/test-public.pem"
+  },
+  {
+    "worktree": "root",
+    "reason": "runtime/cache/key-material exclusion",
+    "path": "tests/e2e/.env.ci"
+  }
+]

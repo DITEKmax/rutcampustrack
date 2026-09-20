@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-09-10T21:10:39" hostname="DITEK-PK" time="2.953">
+  <properties/>
+  <testcase name="everyFrozenRequiredClaimMustBePresent()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.152"/>
+  <testcase name="missingAndWrongTypeClaims_throw()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.214"/>
+  <testcase name="canonicalAndSemanticInvariants_areRequired()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.151"/>
+  <testcase name="joseHeader_mayIncludeCanonicalJwtType()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.079"/>
+  <testcase name="blankAndNullToken_throwWithoutBearerInMessage()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.24"/>
+  <testcase name="validToken_returnsCompleteFrozenClaims()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.178"/>
+  <testcase name="duplicateJoseHeader_withValidSignature_isRejected()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.32"/>
+  <testcase name="joseHeader_mustContainExactlyCanonicalAlgAndType()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.148"/>
+  <testcase name="duplicatePayload_withValidSignature_isRejected()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.232"/>
+  <testcase name="onlyRs256Tokens_areAccepted()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.289"/>
+  <testcase name="terminalToken_isReadOnlyAndCanOmitGroup()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.102"/>
+  <testcase name="expiredToken_throws()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.187"/>
+  <testcase name="wrongSignatureIssuerAudienceAndPurpose_throw()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.522"/>
+  <testcase name="timeClaims_mustBeWholeSecondAndOrdered()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.111"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

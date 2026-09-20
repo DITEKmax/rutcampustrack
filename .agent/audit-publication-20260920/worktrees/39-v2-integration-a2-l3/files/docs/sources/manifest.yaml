@@ -1,0 +1,279 @@
+version: 1
+date: 2026-09-14
+owner: integration-i1
+sources:
+  - id: access-a2
+    canonical_path: .agent/orchestration-v2/ACCESS-A2.md
+    status: accepted-source
+    owner: root/access
+    supersedes: prior A2 proposals and stale source history
+    decision_date: 2026-09-14
+    worktree: .agent/worktrees/v2-access-scope
+    revision: b8220ac92125a8afa37598b270aa4fab7aa1f470
+    manifest_sha256: 0A033E8E07EC57AD6219844512D0232C666BC71385F3A844D24F4C28C13A7923
+  - id: lessons-l3
+    canonical_path: .agent/orchestration-v2/LESSONS-L3.md
+    status: accepted-source
+    owner: root/lessons
+    supersedes: Academic binding ownership in the E baseline
+    decision_date: 2026-09-14
+    worktree: .agent/worktrees/v2-binding-proto
+    revision: b8220ac92125a8afa37598b270aa4fab7aa1f470
+    evidence: .agent/v2-binding-proto/evidence.md
+  - id: requests-contract-r5
+    canonical_path: .agent/orchestration-v2/INTEGRATION-I2-R5.md
+    status: accepted-source
+    owner: root/requests-contract
+    supersedes: I1 OpenAPI snapshot failure classification for the bounded R5 contract delta
+    decision_date: 2026-09-15
+    worktree: .agent/worktrees/v2-requests-contract
+    revision: b8220ac92125a8afa37598b270aa4fab7aa1f470
+    source_manifest: .agent/requests-contract-r5/source-manifest.json
+    source_manifest_sha256: ED35EDC347D30D610F7530DA767C90674A6F1853E4C76331535D8098FE3992F6
+  - id: integration-i3-ipam
+    canonical_path: .agent/orchestration-v2/INTEGRATION-I3-IPAM.md
+    status: accepted-source-correction
+    owner: root/integration
+    supersedes: I2 HIGH finding that the full private subnet included static Nginx edge 172.30.0.10
+    decision_date: 2026-09-15
+    worktree: .agent/worktrees/v2-integration-a2-l3
+    revision: b8220ac92125a8afa37598b270aa4fab7aa1f470
+    prior_union_sha256: 32031090D593BBC8B53869590F14D90386A97B1AD4786CDC7B6C16586C8CC266
+    expanded_union_sha256: 604CD4D36A70710B7C1790805DA70721B97741AB7CA0924E46BAF3850F614C6A
+  - id: integration-i4-map
+    canonical_path: .agent/orchestration-v2/INTEGRATION-I4-MAP.md
+    status: accepted-source-integration
+    owner: root/integration
+    supersedes: no prior map integration; combines the accepted M2/M3 map-read packet with the accepted I3 union
+    decision_date: 2026-09-15
+    worktree: .agent/worktrees/v2-map-read
+    revision: b8220ac92125a8afa37598b270aa4fab7aa1f470
+    source_manifest: .agent/v2-map-read/source-manifest.json
+    source_manifest_sha256: E16EEBA8BA3FBF0260E1BEE755D0CC45C859358CDFBE4F097CB8CB687371324C
+    prior_union_sha256: 604CD4D36A70710B7C1790805DA70721B97741AB7CA0924E46BAF3850F614C6A
+    expanded_union_sha256: 28447CAB436CE49C2AADEC9103A4293E358D5BCBE569C9B61C85F7C655FABDA9
+artifacts:
+  - path: proto/academic.proto
+    status: composed
+    owner: integration-i1
+    source_a2_sha256: BF7C37FEFD9253F347B4DA9C07696C5ACBDD45DD6B4E3378103B32CACCB9966C
+    source_l3_sha256: 980C12514EB3E2B1E1C90A94207115CC70A2AC64458BAB4B99F14467016C45B9
+    base_sha256: 406436542CBD50E588ABA80FD9821EF4D2FA88C680FC85038705BCAE4322257E
+    final_sha256: 2EF807ACD1E3A31057A553B01EAFE466ABA87BBC16D62B5D4C30C165C9CBCD32
+    note: A2 additions composed with the approved L3 removal/move; not an exact-copy checksum.
+  - path: proto/schedule.proto
+    status: exact-copy
+    owner: integration-i1
+    checksum: 984538E5ED0414F06A9BB9CAE4AF2BC981CB50A32190EF5FA06B0858C1AAB0FB
+    source: lessons-l3
+  - path: services/academic-service/academic-app/build.gradle.kts
+    status: exact-copy
+    owner: integration-i1
+    checksum: 0DAB34508BE348798C1848A3D8D0A0C0C31BB7E923C0B9D66DC3E34D28FD4DF2
+    source: access-a2
+  - path: services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java
+    status: composed
+    owner: integration-i4
+    source_a2_sha256: E7C73C72DB01F14FBAC89DE7DDC083498DB1B8F8DAD7E73CDFFF50C71E1E72D4
+    source_map_sha256: C29987CCCB30ACA6C2DE2ECFA2DF2019A3CD4C9FC4AE6C3CF25591A8976A8876
+    final_sha256: E5849ED4538C250ED6C616CB783F8C0155F5E9C5EBD64ADD60D76DDDF4D07E64
+    note: Preserved the A2 student-projection dependency and RPCs while composing the accepted map-read dependency, handlers, and converters.
+  - path: services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java
+    status: composed
+    owner: integration-i4
+    source_a2_sha256: ABD2FD0A1C8DF359DFA30C50D94D1587A6029B47472088F97135CF2601FC0CD9
+    source_map_sha256: 3D7267482244397C457F5AD716B0AE575C08C82EDF525F01DAD253CDC5691FA5
+    final_sha256: 09F12A55F148C8FE3432E44976C1C7702E48F755BC1DE1646D24825877F51B48
+    note: Union of projection, homework, and all three campus-map JWT method registrations.
+  - path: services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/
+    status: exact-copy-set
+    owner: integration-i1
+    source: access-a2
+    files: 7
+  - path: services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java
+    status: composed
+    owner: integration-i4
+    source_a2_sha256: 8BAF484F84265F1B8E6F27641DDEC1D400EDD42D7B72755FFAF0700F86B501BA
+    source_map_sha256: 498758B8803E8E179150137447B1EA5D28757A71276F587CB0C7288D97D175A2
+    final_sha256: 2C40B6FC2A1CF557FA83E59A61D86661B34719BE81F034F81A52B036961E0700
+    note: Preserved the A2 projection and homework assertions while adding the accepted map JWT positive/negative parameterized cases.
+  - path: services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentProjectionGrpcServiceTest.java
+    status: adapted
+    owner: integration-i4
+    source_a2_sha256: 8AC3F337367249CF36D5655D72FD204A0A742F2852CF773174EEB1CF72C5146C
+    final_sha256: 88B88E029C9E050F18B8B3476D07C4B450553EEB00F69E9C7D3F19765D4A5DF9
+    note: Added only the required CampusMapReadService constructor mock; assertions are unchanged.
+  - path: services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/
+    status: exact-copy-set
+    owner: integration-i1
+    source: access-a2
+    files: 2
+  - path: services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java
+    status: exact-copy
+    owner: integration-i1
+    checksum: 9314F3404E0FC6FA702106F467A180E4296F32ED86375652881A976B29C0F3DA
+    source: lessons-l3
+  - path: services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java
+    status: exact-copy
+    owner: integration-i1
+    checksum: D2FCF168798DA4676D25557C6421E5A43400EA146D6836429BCBF3815066BCB1
+    source: lessons-l3
+  - path: services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java
+    status: composed
+    owner: integration-i2
+    source_l3_sha256: 3886D055A127DF7BA2DCDE605334926D25938963209FDF3BB3D1F0F0FD96C52C
+    source_r5_sha256: D0D715C22A77CBADFE61177454428B606A5F0476359C2B8FD879573A4A221C25
+    final_sha256: D0D715C22A77CBADFE61177454428B606A5F0476359C2B8FD879573A4A221C25
+    note: Preserved the I1 UUID/JWT fixture and added only the accepted R5 requestBody.required assertion.
+  - path: .env.prod.example
+    status: exact-copy
+    owner: integration-i2
+    checksum: 1D77EDA0ADB35354E61D1F44743876E94D143EC37E1C51BE9DD4E6F9354C8C8C
+    source: requests-contract-r5
+  - path: .github/workflows/ci.yml
+    status: exact-copy
+    owner: integration-i2
+    checksum: 1D6ED2F8EB9ACD7FF9E2D928B9A3C773DC909FB19CC752FECA38839A356774DF
+    source: requests-contract-r5
+  - path: README.md
+    status: exact-copy
+    owner: integration-i2
+    checksum: 816136C47D608C590DDF63B9C16E32451A4A1C82ED6AE1FBE16CD99E5AC99CC3
+    source: requests-contract-r5
+  - path: docker-compose.e2e.yml
+    status: exact-copy
+    owner: integration-i2
+    checksum: 4D840B4CA3CCCF66D0E1EA4C795154F8DF140DD3A575C65C92EF779608272232
+    source: requests-contract-r5
+  - path: docs/openapi/mobile-bff.json
+    status: exact-copy
+    owner: integration-i2
+    checksum: D4F97E0476CD681A9460247D9F904C7901241269B73221A097EC6BE45132CDA0
+    source: requests-contract-r5
+  - path: docs/operations/deploy/prod-deploy-checklist.md
+    status: exact-copy
+    owner: integration-i2
+    checksum: 0B9CAD94786B06169C1D605714F3A37BBE4DCE5A918B97508EA4A193BF7CF74C
+    source: requests-contract-r5
+  - path: docs/operations/runbooks/backup-restore.md
+    status: exact-copy
+    owner: integration-i2
+    checksum: 574B2CCE59EAD4192238187C330E184C6C2657D1FCBBAC5B5510AFD6C77F02B4
+    source: requests-contract-r5
+  - path: docs/operations/runbooks/cert-renewal.md
+    status: exact-copy
+    owner: integration-i2
+    checksum: EE919BD62D227BDC0741C491DF0F31798CD5012309ABC24070D870D17D93F974
+    source: requests-contract-r5
+  - path: docs/operations/runbooks/loki-major-upgrade.md
+    status: exact-copy
+    owner: integration-i2
+    checksum: 9CD74B21022DEBC3F0172E780EB1FB69D07E92514385835C7A4327CA18115C46
+    source: requests-contract-r5
+  - path: docs/testing/M16-vps-verify.md
+    status: exact-copy
+    owner: integration-i2
+    checksum: 4D4CC4B95B33ED8DD0AEF6CDF85EECCAAC0477F89646FD18B6558B39E8585F10
+    source: requests-contract-r5
+  - path: frontends/mobile-core/src/api/generated/mobile-bff.ts
+    status: exact-copy
+    owner: integration-i2
+    checksum: 5D697D0D0615BB5BB93F0C4735B090D3420112B7B97F4FA6C3598CC31B2CA66E
+    source: requests-contract-r5
+  - path: nginx/scripts/init-letsencrypt.sh
+    status: exact-copy
+    owner: integration-i2
+    checksum: 19953F6895AF52E61E26DD97B8CB72435E3ADB7D978E370946D35529D94F5258
+    source: requests-contract-r5
+  - path: scripts/preflight-deploy.sh
+    status: exact-copy
+    owner: integration-i2
+    checksum: E940074644C99297FEA88B415B6FC9DCCE203EF7B80ECC71D1DC3E17F3950C4A
+    source: requests-contract-r5
+  - path: scripts/validate-env-prod.sh
+    status: exact-copy
+    owner: integration-i2
+    checksum: 7FA889714468B3081D090F906D91C992272C679B8068440D9C3F35961D53BAD8
+    source: requests-contract-r5
+  - path: services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java
+    status: exact-copy
+    owner: integration-i2
+    checksum: B8061B3E0F824210D338F9BA7FB08B33A3F1F331D07ABD81E5B3EE2513B90B1E
+    source: requests-contract-r5
+  - path: tests/e2e/.env.ci
+    status: exact-copy-opaque
+    owner: integration-i2
+    checksum: 2317922EEEB11A57539C42C19F49A208D508DE03AB4F7F21EBB0D2AF158711DB
+    source: requests-contract-r5
+    note: Tracked accepted row copied without opening, logging or printing its values.
+  - path: services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormat.java
+    status: exact-copy
+    owner: integration-i4
+    checksum: 83029C6ED4C4AD7391EF6128486CF1D45C34FC770A398B4F590845502A6BEBBB
+    source: map-read source-manifest candidate model import
+  - path: services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormatState.java
+    status: exact-copy
+    owner: integration-i4
+    checksum: D8E20EFA3F4FBD9D5812ABF9C749BEB5E6B5C121E052A081D9F29E333AB57ACA
+    source: map-read source-manifest candidate model import
+  - path: services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadException.java
+    status: exact-copy
+    owner: integration-i4
+    checksum: C3B3D44FFA33BF791CA420EE16DFEE63E036F0B916AB99B9398F0F9C6F901955
+    source: map-read source-manifest candidate model import
+  - path: services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadModels.java
+    status: exact-copy-destination
+    owner: integration-i4
+    checksum: 55AFEBC88AB0DA09D115EDE2E6CA868E61B7ECEFC27369F3E9DF7232EFB5EA2D
+    source: map-read source-manifest candidate model import destination
+    note: Source manifest records external candidate SHA 6FAB3B059B94ACB202BFBC9FBF91E2984078A4547D488714D2F46E0633ABD0A0 and destination SHA 55AFEBC88AB0DA09D115EDE2E6CA868E61B7ECEFC27369F3E9DF7232EFB5EA2D; the accepted destination was copied.
+  - path: services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadRepository.java
+    status: exact-copy
+    owner: integration-i4
+    checksum: 579A98B36E589E4C5290CEBECD3971EFD58F6FC72CD11AA9B604C812186D5550
+    source: map-read source-manifest
+  - path: services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadService.java
+    status: exact-copy
+    owner: integration-i4
+    checksum: DFB12285B1F2413359FA422D7743C4B57F68533D7116673AFA510375C2D03B58
+    source: map-read source-manifest
+  - path: services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java
+    status: exact-copy
+    owner: integration-i4
+    checksum: 39D7AD63EB5D807FA7A869AC4FCC8FEFAABAF55C84DBD7570A077159284191FB
+    source: map-read source-manifest
+  - path: services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java
+    status: adapted
+    owner: integration-i4
+    source_map_sha256: 15A92266A8851B9D3CE0E97A10BA73C3693B5E9F609A58CDB27CD7354D6567F9
+    final_sha256: F9AC077159005EF780B01B106785832D0E0762AF3DA9A941AFCF779DF6970C5D
+    source: map-read source-manifest
+    note: Added only the required StudentProjectionScopeService constructor mock; assertions are unchanged.
+  - path: services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java
+    status: exact-copy
+    owner: integration-i4
+    checksum: 513C784FB21994DDB215F4EFC546774CDC4D37C626150CCEF6BC1586595DB077
+    source: map-read source-manifest
+updates:
+  - id: integration-i3-ipam
+    status: source-correction
+    owner: integration-i3
+    source: integration-i3-ipam
+    paths:
+      - path: .env.prod.example
+        previous_sha256: 1D77EDA0ADB35354E61D1F44743876E94D143EC37E1C51BE9DD4E6F9354C8C8C
+        final_sha256: 55D5CC19B526001D5E0B87413184C104A23FEB0D8BFDBF3D9BDB916B7CDC0687
+      - path: docker-compose.prod.yml
+        previous_sha256: 85FC029C9DB3FA514887072E2F731F18FB31E691F156595D52EFF282608FAAB0
+        final_sha256: F601260775C6BECDE42C5CEBD157D7F6AD0BD62CBC7B1D0A204C8963C9A41CA3
+      - path: docker-compose.e2e.yml
+        previous_sha256: 4D840B4CA3CCCF66D0E1EA4C795154F8DF140DD3A575C65C92EF779608272232
+        final_sha256: EA3D7A5EA29E824BCF666E38EEAA14CB06CD0B9F175C6D3D8FCBC4267FA4F178
+      - path: tests/e2e/.env.ci
+        previous_sha256: 2317922EEEB11A57539C42C19F49A208D508DE03AB4F7F21EBB0D2AF158711DB
+        final_sha256: ABCE3E3F2642181E2CF4B7F60EC0BE41A1BCEC32D36A264C9D83962FC20742E5
+        note: Only nonsecret gateway/subnet/range inputs and their comment changed; other values were preserved.
+      - path: scripts/validate-env-prod.sh
+        previous_sha256: 7FA889714468B3081D090F906D91C992272C679B8068440D9C3F35961D53BAD8
+        final_sha256: 6F64C95863D69E7476517AD14A88215E278799C6CE480AEA9F533C85986F9548
+    manifest: .agent/integration-i1/i3-union-manifest.sha256

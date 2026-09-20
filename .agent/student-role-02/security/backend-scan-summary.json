@@ -1,0 +1,41 @@
+{
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2 plus stable Homework repair working diff",
+  "environment": "Windows Docker Desktop; Trivy 0.74.0 fixed image sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969; network none/read-only/cap-drop ALL/no-new-privileges",
+  "checks": [
+    {
+      "name": "backend fs coverage probe",
+      "evidence": "trivy-homework-backend.json",
+      "exitCode": 0,
+      "command": "trivy fs /scope --skip-db-update --skip-java-db-update --offline-scan --scanners vuln --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/trivy-homework-backend.json --no-progress",
+      "status": "NOT_ASSESSED",
+      "packages": 0
+    },
+    {
+      "high": 43,
+      "evidence": "trivy-homework-backend-rootfs.json",
+      "findingInstances": 82,
+      "command": "trivy rootfs /scope --skip-db-update --skip-java-db-update --offline-scan --scanners vuln --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/trivy-homework-backend-rootfs.json --no-progress",
+      "packages": 256,
+      "uniqueFindings": 51,
+      "exitCode": 1,
+      "critical": 8,
+      "name": "backend JAR vulnerability scan",
+      "status": "FAIL"
+    }
+  ],
+  "artifacts": [
+    {
+      "sha256": "7E9115447BD9CB8316E866E563CF17A1FBF555CA8C61C76FE46E2A682172EC24",
+      "file": "backend-artifacts/mobile-bff-app-0.1.0.jar"
+    },
+    {
+      "sha256": "21DA70ED26D78AE4E18D959D5C36C333FBDE7A381A60D0917739E51E9739C926",
+      "file": "backend-artifacts/academic-app-0.1.0.jar"
+    }
+  ],
+  "limitations": [
+    "Version matches require reachability assessment or remediation; not all exploit preconditions are proven.",
+    "Scan precedes completedAt delta and does not cover final full-role runtime or every service artifact.",
+    "No ignore-unfixed or broad suppression."
+  ]
+}

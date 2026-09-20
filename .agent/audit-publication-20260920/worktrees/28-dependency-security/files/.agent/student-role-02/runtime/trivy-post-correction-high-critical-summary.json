@@ -1,0 +1,35 @@
+{
+  "report": "trivy-reports/backend-rootfs-post-correction-high-critical-2026-09-07.json",
+  "reportSha256": "4F84E829D9D715356C3A1352A71ED43B7F26E3232159D480CE79F49E9F46DA6E",
+  "schemaVersion": 2,
+  "trivyVersion": "0.74.0",
+  "reportId": "01a07cde-95e2-748b-924e-0976c1e94d5b",
+  "createdAt": "2026-09-07T17:15:57.282300671Z",
+  "artifactName": "/scope",
+  "artifactType": "filesystem",
+  "targetRows": [
+    {
+      "target": "Java",
+      "type": "jar",
+      "class": "lang-pkgs",
+      "packageRecords": 1141,
+      "vulnerabilityRecords": 0
+    }
+  ],
+  "rootJars": [
+    "academic-app-0.1.0.jar",
+    "api-gateway-0.1.0.jar",
+    "attendance-app-0.1.0.jar",
+    "auth-app-0.1.0.jar",
+    "document-renderer-app-0.1.0.jar",
+    "mobile-bff-app-0.1.0.jar",
+    "notification-app-0.1.0.jar",
+    "schedule-app-0.1.0.jar"
+  ],
+  "rootJarCount": 8,
+  "packageRecords": 1141,
+  "vulnerabilityRecords": 0,
+  "high": 0,
+  "critical": 0,
+  "gate": true
+}

@@ -1,0 +1,195 @@
+{
+  "schema": "rct.student-requests-h84-actuator-counter-check.v1",
+  "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+  "runnerSha256": "033236b56ebfb8193a86d67b033f8cf23f5cc18f4132a2fac5f525b756fd540c",
+  "actualHttpFixture": {
+    "schema": "rct.actuator-counter-diagnostic.v1",
+    "port": 18987,
+    "metric": "spring.cloud.gateway.requests",
+    "tagQuery": "routeId:mobile-bff-student-requests-excuse",
+    "statusCode": 200,
+    "contentType": "application/vnd.spring-boot.actuator.v3+json",
+    "contentRuntimeType": "System.Byte[]",
+    "transport": "UTF8_BYTES",
+    "errorCategory": "",
+    "metricName": "spring.cloud.gateway.requests",
+    "measurements": [
+      {
+        "statistic": "COUNT",
+        "value": 11
+      }
+    ],
+    "availableTags": [
+      {
+        "tag": "routeId",
+        "values": [
+          "mobile-bff-student-requests-excuse"
+        ]
+      }
+    ],
+    "parseStatus": "PASS"
+  },
+  "gatewayRouteCount": 7,
+  "failureMessage": "actuator request counter unavailable on port 18516",
+  "diagnostic": {
+    "schema": "rct.actuator-counter-diagnostic.v1",
+    "failedPort": 18516,
+    "records": [
+      {
+        "schema": "rct.actuator-counter-diagnostic.v1",
+        "port": 18516,
+        "metric": "http.server.requests",
+        "tagQuery": "uri:/api/v1/student/requests/excuse",
+        "statusCode": 404,
+        "contentType": "",
+        "contentRuntimeType": "System.String",
+        "transport": "STRING",
+        "errorCategory": "",
+        "metricName": "http.server.requests",
+        "measurements": [
+          {
+            "statistic": "COUNT",
+            "value": 5
+          }
+        ],
+        "availableTags": [],
+        "parseStatus": "PASS"
+      },
+      {
+        "schema": "rct.actuator-counter-diagnostic.v1",
+        "port": 18515,
+        "metric": "http.server.requests",
+        "tagQuery": "",
+        "statusCode": 200,
+        "contentType": "",
+        "contentRuntimeType": "System.String",
+        "transport": "STRING",
+        "errorCategory": "",
+        "metricName": "http.server.requests",
+        "measurements": [
+          {
+            "statistic": "COUNT",
+            "value": 3
+          }
+        ],
+        "availableTags": [
+          {
+            "tag": "uri",
+            "values": [
+              "/api/v1/student/requests/excuse"
+            ]
+          },
+          {
+            "tag": "method",
+            "values": [
+              "POST"
+            ]
+          }
+        ],
+        "parseStatus": "PASS"
+      },
+      {
+        "schema": "rct.actuator-counter-diagnostic.v1",
+        "port": 18516,
+        "metric": "http.server.requests",
+        "tagQuery": "",
+        "statusCode": 200,
+        "contentType": "",
+        "contentRuntimeType": "System.String",
+        "transport": "STRING",
+        "errorCategory": "",
+        "metricName": "http.server.requests",
+        "measurements": [
+          {
+            "statistic": "COUNT",
+            "value": 5
+          }
+        ],
+        "availableTags": [],
+        "parseStatus": "PASS"
+      },
+      {
+        "schema": "rct.actuator-counter-diagnostic.v1",
+        "port": 18515,
+        "metric": "spring.cloud.gateway.requests",
+        "tagQuery": "",
+        "statusCode": 200,
+        "contentType": "",
+        "contentRuntimeType": "System.String",
+        "transport": "STRING",
+        "errorCategory": "",
+        "metricName": "spring.cloud.gateway.requests",
+        "measurements": [
+          {
+            "statistic": "COUNT",
+            "value": 7
+          }
+        ],
+        "availableTags": [
+          {
+            "tag": "routeId",
+            "values": [
+              "mobile-bff-student-requests-excuse"
+            ]
+          },
+          {
+            "tag": "synthetic",
+            "values": [
+              "<redacted>"
+            ]
+          }
+        ],
+        "parseStatus": "PASS"
+      },
+      {
+        "schema": "rct.actuator-counter-diagnostic.v1",
+        "port": 18515,
+        "metric": "spring.cloud.gateway.requests",
+        "tagQuery": "routeId:mobile-bff-student-requests-excuse",
+        "statusCode": 200,
+        "contentType": "",
+        "contentRuntimeType": "System.String",
+        "transport": "STRING",
+        "errorCategory": "",
+        "metricName": "spring.cloud.gateway.requests",
+        "measurements": [
+          {
+            "statistic": "COUNT",
+            "value": 7
+          }
+        ],
+        "availableTags": [
+          {
+            "tag": "routeId",
+            "values": [
+              "mobile-bff-student-requests-excuse"
+            ]
+          },
+          {
+            "tag": "synthetic",
+            "values": [
+              "<redacted>"
+            ]
+          }
+        ],
+        "parseStatus": "PASS"
+      }
+    ]
+  },
+  "checks": {
+    "parser": "PASS",
+    "exactWhitelistedShape": "PASS",
+    "actualVendorJsonTransport": "PASS",
+    "gatewayRouteCounterContract": "PASS",
+    "fractionalCountRejected": "PASS",
+    "unsafeFloatingCountRejected": "PASS",
+    "failedBffFilteredStatus": "PASS",
+    "bothUnfilteredHttpServerRequests": "PASS",
+    "gatewayMetricAndSpecificRoute": "PASS",
+    "redaction": "PASS",
+    "genericThrowPreserved": "PASS",
+    "docker": "NOT_RUN",
+    "network": "NOT_RUN",
+    "productRuntime": "NOT_RUN"
+  }
+}

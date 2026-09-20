@@ -1,0 +1,30 @@
+{
+  "url": "http://localhost:5175/",
+  "httpStatus": 200,
+  "server": "existing fixture server; not started by this task",
+  "surface": "root",
+  "dockVisible": true,
+  "keyboardVisible": false,
+  "keyboardOwnershipProbe": {
+    "command": "node --experimental-strip-types .agent/student-role-02/shared-shell/mobile-shell-runtime-probe.mjs",
+    "exitCode": 0,
+    "before": true,
+    "afterHostKeyboardTrue": false,
+    "propType": "Boolean",
+    "propDefault": "undefined"
+  },
+  "typography": {
+    "shellFont": "\"Onest Variable\", Onest, sans-serif",
+    "navFont": "\"Onest Variable\", Onest, sans-serif",
+    "fontFeatureSettings": "\"lnum\", \"tnum\"",
+    "fontVariantNumeric": "tabular-nums"
+  },
+  "nav": [
+    {"id":"today","label":"Сегодня","disabled":false},
+    {"id":"homework","label":"Задания","disabled":true},
+    {"id":"attendance","label":"Учёт","disabled":true},
+    {"id":"more","label":"Ещё","disabled":true},
+    {"id":"profile","label":"Профиль","disabled":true}
+  ],
+  "observedAt": "2026-09-07T00:31:57+03:00"
+}

@@ -1,0 +1,44 @@
+{
+  "schema": "rct.student-requests-h81-probe-diagnostics.v1",
+  "scope": "Invoke-RequestsProbe nonzero diagnostics consumer boundary",
+  "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "sourceFreeze": {
+    "runnerPath": ".agent/student-role-orchestrator/requests-runtime/runner.ps1",
+    "runnerSha256": "A3EF61508AFB391E223FCF51C0F3CFECB7A2B1A197D7495FE81524A0ABE631A3",
+    "targetedCheckPath": ".agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/h68-probe-check.ps1",
+    "targetedCheckSha256": "D8550E3E42BCF5D60B85F941693E98599CBA0C0B3090D29D687A9CB3F9928EED",
+    "h78ContractPath": ".agent/student-role-orchestrator/requests-runtime/h78-bson-descriptor-boundary/contract.md",
+    "h78ContractSha256": "873C2A001344210B3549B09BC85A613A4AE37261AB03FCC251FD29E9B67FDC60",
+    "status": "FROZEN"
+  },
+  "checks": [
+    {
+      "command": "pwsh -NoProfile -File .agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/h68-probe-check.ps1",
+      "exitCode": 0,
+      "environment": "Windows PowerShell 7.4; login:false; offline synthetic Node helpers",
+      "result": "PASS: typed streams, strict stdout parsing, redacted FAIL.error retention, bounded fallback, JSON-safe redaction, history, timeout, cleanup-capture and legacy Output compatibility",
+      "notRun": ["Docker", "Gradle", "network", "product runtime"]
+    }
+  ],
+  "cases": {
+    "validFailSchemaStatusError": "PASS",
+    "boundedSanitizedError": "PASS",
+    "malformedFallbackAndOpaqueSentinelExclusion": "PASS",
+    "successAndExistingRegressionChecks": "PASS"
+  },
+  "runtimeEvidence": {
+    "status": "ROOT_REQUIRED",
+    "rootH81Observation": "Node I1 exited 1 before Mongo; prior report retained only stderr and the generic withheld-output failure; cleanup was empty; product cause remains UNKNOWN",
+    "nextAction": "Root runs the frozen native helper/runtime attempt and records the actual redacted FAIL.error before product diagnosis"
+  },
+  "diff": [
+    "runner.ps1: parse and validate already-redacted FAIL JSON on nonzero exit, retain bounded error in diagnostics/history, preserve generic fallback",
+    "h68-probe-check.ps1: temporary helper cases for valid FAIL.error, bounded text, and malformed sentinel exclusion",
+    "h78-bson-descriptor-boundary/contract.md: add B256 prefix to the owner rules digest"
+  ],
+  "limitations": [
+    "The synthetic check proves the consumer boundary, not the root-owned product I1 failure cause.",
+    "No product runtime, Mongo, Docker, Gradle, network, keys, ports, or Node probe source was changed or run by this leaf.",
+    "H78 BSON native proof and accepted conversion behavior are preserved and not revalidated here."
+  ]
+}

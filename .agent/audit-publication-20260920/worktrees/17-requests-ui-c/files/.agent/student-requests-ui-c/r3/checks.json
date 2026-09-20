@@ -1,0 +1,89 @@
+{
+  "contract": "Requests UI r3 compact contract",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "capturedAt": "2026-09-08",
+  "environment": {
+    "os": "Windows",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "cwd": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-ui-c/frontends"
+  },
+  "checks": [
+    {
+      "name": "mobile-core typecheck",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "evidence": "tsc -p tsconfig.json --noEmit"
+    },
+    {
+      "name": "mobile-core lint",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "evidence": "eslint src scripts tests --max-warnings=0"
+    },
+    {
+      "name": "requests state tests",
+      "command": "npx vitest run mobile-core/src/features/requests/state.test.ts",
+      "exitCode": 0,
+      "evidence": "1 test file passed; 4 tests passed"
+    },
+    {
+      "name": "RequestsScreen targeted test",
+      "command": "npx vitest run mobile-core/src/features/requests/RequestsScreen.test.ts",
+      "exitCode": 1,
+      "classification": "tooling-baseline-boundary",
+      "evidence": "0 tests ran; vite:import-analysis could not parse ExcuseRequestScreen.vue at line 84 and requested @vitejs/plugin-vue"
+    },
+    {
+      "name": "RequestsScreen targeted retry",
+      "command": "npx vitest --configLoader runner run mobile-core/src/features/requests/RequestsScreen.test.ts",
+      "exitCode": 1,
+      "classification": "same tooling-baseline-boundary",
+      "evidence": "0 tests ran; the same vite:import-analysis parse boundary occurred at ExcuseRequestScreen.vue line 84"
+    },
+    {
+      "name": "frontends contract tests",
+      "command": "npm run test:contract",
+      "exitCode": 0,
+      "evidence": "11 tests passed; 0 failed"
+    },
+    {
+      "name": "generated types check",
+      "command": "npm run generate:types:check",
+      "exitCode": 1,
+      "classification": "out-of-scope generated drift",
+      "evidence": "Generated mobile BFF types drifted; run npm run generate:types",
+      "action": "No generated/API file changed because this is outside the frozen UI scope"
+    },
+    {
+      "name": "source guard hash check",
+      "command": "PowerShell Get-FileHash comparison against .agent/student-requests-ui-c/source-sha256.json",
+      "exitCode": 0,
+      "evidence": "SOURCE_HASHES_MATCH"
+    },
+    {
+      "name": "runtime listener cleanup",
+      "command": "Get-NetTCPConnection -State Listen -LocalPort 18540,18541",
+      "exitCode": 0,
+      "evidence": "NO_LISTENERS_18540_18541"
+    }
+  ],
+  "scopeDiff": {
+    "productFiles": 12,
+    "harnessFiles": 3,
+    "r3ChangedFromBaseline": [
+      "frontends/mobile-core/src/features/requests/ExcuseRequestScreen.vue",
+      "frontends/mobile-core/src/features/requests/LateCheckinRequestScreen.vue",
+      "frontends/mobile-core/src/features/requests/RequestsScreen.test.ts",
+      "frontends/mobile-core/src/features/requests/requests.pcss",
+      "frontends/.requests-harness/main.ts"
+    ],
+    "sourceGuardHashesUnchanged": true,
+    "outsideScopeFilesChanged": false
+  },
+  "limitations": [
+    "The targeted RequestsScreen suite is blocked before test collection by the repository's plain Vitest import-analysis path lacking plugin-vue.",
+    "Generated mobile BFF type drift is pre-existing/out of UI scope and was not corrected.",
+    "The temporary harness is not full application integration and has no HTTP transport."
+  ]
+}

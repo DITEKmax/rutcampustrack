@@ -1,0 +1,1040 @@
+Compiled from "TestcontainersConfiguration.java"
+public class org.testcontainers.utility.TestcontainersConfiguration {
+  private static final org.slf4j.Logger log;
+
+  private final java.lang.Object $lock;
+
+  private static java.lang.String PROPERTIES_FILE_NAME;
+
+  private static java.io.File USER_CONFIG_FILE;
+
+  private static final java.lang.String AMBASSADOR_IMAGE;
+
+  private static final java.lang.String SOCAT_IMAGE;
+
+  private static final java.lang.String VNC_RECORDER_IMAGE;
+
+  private static final java.lang.String COMPOSE_IMAGE;
+
+  private static final java.lang.String ALPINE_IMAGE;
+
+  private static final java.lang.String RYUK_IMAGE;
+
+  private static final java.lang.String KAFKA_IMAGE;
+
+  private static final java.lang.String PULSAR_IMAGE;
+
+  private static final java.lang.String LOCALSTACK_IMAGE;
+
+  private static final java.lang.String SSHD_IMAGE;
+
+  private static final java.lang.String ORACLE_IMAGE;
+
+  private static final org.testcontainers.shaded.com.google.common.collect.ImmutableMap<org.testcontainers.utility.DockerImageName, java.lang.String> CONTAINER_MAPPING;
+
+  private static final java.util.concurrent.atomic.AtomicReference<java.lang.Object> instance;
+
+  private final java.util.Properties userProperties;
+
+  private final java.util.Properties classpathProperties;
+
+  private final java.util.Map<java.lang.String, java.lang.String> environment;
+
+  static java.util.concurrent.atomic.AtomicReference<org.testcontainers.utility.TestcontainersConfiguration> getInstanceField();
+    Code:
+       0: getstatic     #79                 // Field instance:Ljava/util/concurrent/atomic/AtomicReference;
+       3: checkcast     #81                 // class java/util/concurrent/atomic/AtomicReference
+       6: areturn
+
+  org.testcontainers.utility.TestcontainersConfiguration(java.util.Properties, java.util.Properties, java.util.Map<java.lang.String, java.lang.String>);
+    Code:
+       0: aload_0
+       1: invokespecial #87                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: iconst_0
+       6: anewarray     #4                  // class java/lang/Object
+       9: putfield      #89                 // Field $lock:Ljava/lang/Object;
+      12: aload_0
+      13: aload_1
+      14: putfield      #91                 // Field userProperties:Ljava/util/Properties;
+      17: aload_0
+      18: aload_2
+      19: putfield      #93                 // Field classpathProperties:Ljava/util/Properties;
+      22: aload_0
+      23: aload_3
+      24: putfield      #95                 // Field environment:Ljava/util/Map;
+      27: return
+
+  public java.lang.String getAmbassadorContainerImage();
+    Code:
+       0: aload_0
+       1: ldc           #31                 // String richnorth/ambassador
+       3: invokespecial #104                // Method getImage:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       6: invokevirtual #109                // Method org/testcontainers/utility/DockerImageName.asCanonicalNameString:()Ljava/lang/String;
+       9: areturn
+
+  public java.lang.String getSocatContainerImage();
+    Code:
+       0: aload_0
+       1: ldc           #34                 // String alpine/socat
+       3: invokespecial #104                // Method getImage:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       6: invokevirtual #109                // Method org/testcontainers/utility/DockerImageName.asCanonicalNameString:()Ljava/lang/String;
+       9: areturn
+
+  public java.lang.String getVncRecordedContainerImage();
+    Code:
+       0: aload_0
+       1: ldc           #37                 // String testcontainers/vnc-recorder
+       3: invokespecial #104                // Method getImage:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       6: invokevirtual #109                // Method org/testcontainers/utility/DockerImageName.asCanonicalNameString:()Ljava/lang/String;
+       9: areturn
+
+  public java.lang.String getDockerComposeContainerImage();
+    Code:
+       0: aload_0
+       1: ldc           #40                 // String docker/compose
+       3: invokespecial #104                // Method getImage:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       6: invokevirtual #109                // Method org/testcontainers/utility/DockerImageName.asCanonicalNameString:()Ljava/lang/String;
+       9: areturn
+
+  public java.lang.String getTinyImage();
+    Code:
+       0: aload_0
+       1: ldc           #43                 // String alpine
+       3: invokespecial #104                // Method getImage:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       6: invokevirtual #109                // Method org/testcontainers/utility/DockerImageName.asCanonicalNameString:()Ljava/lang/String;
+       9: areturn
+
+  public boolean isRyukPrivileged();
+    Code:
+       0: aload_0
+       1: ldc           #117                // String ryuk.container.privileged
+       3: ldc           #119                // String true
+       5: invokevirtual #123                // Method getEnvVarOrProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       8: invokestatic  #129                // Method java/lang/Boolean.parseBoolean:(Ljava/lang/String;)Z
+      11: ireturn
+
+  public java.lang.String getRyukImage();
+    Code:
+       0: aload_0
+       1: ldc           #46                 // String testcontainers/ryuk
+       3: invokespecial #104                // Method getImage:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       6: invokevirtual #109                // Method org/testcontainers/utility/DockerImageName.asCanonicalNameString:()Ljava/lang/String;
+       9: areturn
+
+  public java.lang.String getSSHdImage();
+    Code:
+       0: aload_0
+       1: ldc           #58                 // String testcontainers/sshd
+       3: invokespecial #104                // Method getImage:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       6: invokevirtual #109                // Method org/testcontainers/utility/DockerImageName.asCanonicalNameString:()Ljava/lang/String;
+       9: areturn
+
+  public java.lang.Integer getRyukTimeout();
+    Code:
+       0: aload_0
+       1: ldc           #135                // String ryuk.container.timeout
+       3: ldc           #137                // String 30
+       5: invokevirtual #123                // Method getEnvVarOrProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       8: invokestatic  #143                // Method java/lang/Integer.parseInt:(Ljava/lang/String;)I
+      11: invokestatic  #147                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      14: areturn
+
+  public java.lang.String getKafkaImage();
+    Code:
+       0: aload_0
+       1: ldc           #49                 // String confluentinc/cp-kafka
+       3: invokespecial #104                // Method getImage:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       6: invokevirtual #109                // Method org/testcontainers/utility/DockerImageName.asCanonicalNameString:()Ljava/lang/String;
+       9: areturn
+
+  public java.lang.String getOracleImage();
+    Code:
+       0: aload_0
+       1: ldc           #61                 // String gvenzl/oracle-xe
+       3: invokespecial #104                // Method getImage:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       6: invokevirtual #109                // Method org/testcontainers/utility/DockerImageName.asCanonicalNameString:()Ljava/lang/String;
+       9: areturn
+
+  public java.lang.String getPulsarImage();
+    Code:
+       0: aload_0
+       1: ldc           #52                 // String apachepulsar/pulsar
+       3: invokespecial #104                // Method getImage:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       6: invokevirtual #109                // Method org/testcontainers/utility/DockerImageName.asCanonicalNameString:()Ljava/lang/String;
+       9: areturn
+
+  public java.lang.String getLocalStackImage();
+    Code:
+       0: aload_0
+       1: ldc           #55                 // String localstack/localstack
+       3: invokespecial #104                // Method getImage:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       6: invokevirtual #109                // Method org/testcontainers/utility/DockerImageName.asCanonicalNameString:()Ljava/lang/String;
+       9: areturn
+
+  public boolean isDisableChecks();
+    Code:
+       0: aload_0
+       1: ldc           #154                // String checks.disable
+       3: ldc           #156                // String false
+       5: invokevirtual #159                // Method getEnvVarOrUserProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       8: invokestatic  #129                // Method java/lang/Boolean.parseBoolean:(Ljava/lang/String;)Z
+      11: ireturn
+
+  public boolean environmentSupportsReuse();
+    Code:
+       0: aload_0
+       1: ldc           #162                // String testcontainers.reuse.enable
+       3: ldc           #156                // String false
+       5: invokevirtual #159                // Method getEnvVarOrUserProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       8: invokestatic  #129                // Method java/lang/Boolean.parseBoolean:(Ljava/lang/String;)Z
+      11: ireturn
+
+  public java.lang.String getDockerClientStrategyClassName();
+    Code:
+       0: aload_0
+       1: getfield      #95                 // Field environment:Ljava/util/Map;
+       4: ldc           #165                // String TESTCONTAINERS_DOCKER_CLIENT_STRATEGY
+       6: invokeinterface #169,  2          // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      11: checkcast     #171                // class java/lang/String
+      14: astore_1
+      15: aload_1
+      16: ifnull        21
+      19: aload_1
+      20: areturn
+      21: aload_0
+      22: ldc           #173                // String docker.client.strategy
+      24: aconst_null
+      25: invokevirtual #159                // Method getEnvVarOrUserProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+      28: areturn
+
+  public java.lang.String getTransportType();
+    Code:
+       0: aload_0
+       1: ldc           #177                // String transport.type
+       3: ldc           #179                // String httpclient5
+       5: invokevirtual #123                // Method getEnvVarOrProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       8: areturn
+
+  public java.lang.Integer getImagePullPauseTimeout();
+    Code:
+       0: aload_0
+       1: ldc           #182                // String pull.pause.timeout
+       3: ldc           #137                // String 30
+       5: invokevirtual #123                // Method getEnvVarOrProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       8: invokestatic  #143                // Method java/lang/Integer.parseInt:(Ljava/lang/String;)I
+      11: invokestatic  #147                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      14: areturn
+
+  public java.lang.Integer getImagePullTimeout();
+    Code:
+       0: aload_0
+       1: ldc           #185                // String pull.timeout
+       3: ldc           #187                // String 120
+       5: invokevirtual #123                // Method getEnvVarOrProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       8: invokestatic  #143                // Method java/lang/Integer.parseInt:(Ljava/lang/String;)I
+      11: invokestatic  #147                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      14: areturn
+
+  public java.lang.String getImageSubstitutorClassName();
+    Code:
+       0: aload_0
+       1: ldc           #190                // String image.substitutor
+       3: aconst_null
+       4: invokevirtual #123                // Method getEnvVarOrProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       7: areturn
+
+  public java.lang.String getImagePullPolicy();
+    Code:
+       0: aload_0
+       1: ldc           #193                // String pull.policy
+       3: aconst_null
+       4: invokevirtual #123                // Method getEnvVarOrProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       7: areturn
+
+  public java.lang.Integer getClientPingTimeout();
+    Code:
+       0: aload_0
+       1: ldc           #196                // String client.ping.timeout
+       3: ldc           #198                // String 10
+       5: invokevirtual #123                // Method getEnvVarOrProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       8: invokestatic  #143                // Method java/lang/Integer.parseInt:(Ljava/lang/String;)I
+      11: invokestatic  #147                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      14: areturn
+
+  private java.lang.String getConfigurable(java.lang.String, java.lang.String, java.util.Properties...);
+    Code:
+       0: aload_1
+       1: ldc           #207                // String \\.
+       3: ldc           #209                // String _
+       5: invokevirtual #212                // Method java/lang/String.replaceAll:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       8: invokevirtual #215                // Method java/lang/String.toUpperCase:()Ljava/lang/String;
+      11: astore        4
+      13: aload         4
+      15: ldc           #217                // String TESTCONTAINERS_
+      17: invokevirtual #220                // Method java/lang/String.startsWith:(Ljava/lang/String;)Z
+      20: ifne          55
+      23: aload         4
+      25: ldc           #222                // String DOCKER_
+      27: invokevirtual #220                // Method java/lang/String.startsWith:(Ljava/lang/String;)Z
+      30: ifne          55
+      33: new           #224                // class java/lang/StringBuilder
+      36: dup
+      37: invokespecial #225                // Method java/lang/StringBuilder."<init>":()V
+      40: ldc           #217                // String TESTCONTAINERS_
+      42: invokevirtual #229                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      45: aload         4
+      47: invokevirtual #229                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      50: invokevirtual #232                // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+      53: astore        4
+      55: aload_0
+      56: getfield      #95                 // Field environment:Ljava/util/Map;
+      59: aload         4
+      61: invokeinterface #236,  2          // InterfaceMethod java/util/Map.containsKey:(Ljava/lang/Object;)Z
+      66: ifeq          96
+      69: aload_0
+      70: getfield      #95                 // Field environment:Ljava/util/Map;
+      73: aload         4
+      75: invokeinterface #169,  2          // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      80: checkcast     #171                // class java/lang/String
+      83: astore        5
+      85: aload         5
+      87: invokevirtual #239                // Method java/lang/String.isEmpty:()Z
+      90: ifne          96
+      93: aload         5
+      95: areturn
+      96: aload_3
+      97: astore        5
+      99: aload         5
+     101: arraylength
+     102: istore        6
+     104: iconst_0
+     105: istore        7
+     107: iload         7
+     109: iload         6
+     111: if_icmpge     146
+     114: aload         5
+     116: iload         7
+     118: aaload
+     119: astore        8
+     121: aload         8
+     123: aload_1
+     124: invokevirtual #244                // Method java/util/Properties.get:(Ljava/lang/Object;)Ljava/lang/Object;
+     127: ifnull        140
+     130: aload         8
+     132: aload_1
+     133: invokevirtual #244                // Method java/util/Properties.get:(Ljava/lang/Object;)Ljava/lang/Object;
+     136: checkcast     #171                // class java/lang/String
+     139: areturn
+     140: iinc          7, 1
+     143: goto          107
+     146: aload_2
+     147: areturn
+
+  public java.lang.String getEnvVarOrProperty(java.lang.String, java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: iconst_2
+       4: anewarray     #243                // class java/util/Properties
+       7: dup
+       8: iconst_0
+       9: aload_0
+      10: getfield      #91                 // Field userProperties:Ljava/util/Properties;
+      13: aastore
+      14: dup
+      15: iconst_1
+      16: aload_0
+      17: getfield      #93                 // Field classpathProperties:Ljava/util/Properties;
+      20: aastore
+      21: invokespecial #252                // Method getConfigurable:(Ljava/lang/String;Ljava/lang/String;[Ljava/util/Properties;)Ljava/lang/String;
+      24: areturn
+
+  public java.lang.String getEnvVarOrUserProperty(java.lang.String, java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: iconst_1
+       4: anewarray     #243                // class java/util/Properties
+       7: dup
+       8: iconst_0
+       9: aload_0
+      10: getfield      #91                 // Field userProperties:Ljava/util/Properties;
+      13: aastore
+      14: invokespecial #252                // Method getConfigurable:(Ljava/lang/String;Ljava/lang/String;[Ljava/util/Properties;)Ljava/lang/String;
+      17: areturn
+
+  public java.lang.String getUserProperty(java.lang.String, java.lang.String);
+    Code:
+       0: aload_0
+       1: getfield      #91                 // Field userProperties:Ljava/util/Properties;
+       4: aload_1
+       5: invokevirtual #244                // Method java/util/Properties.get:(Ljava/lang/Object;)Ljava/lang/Object;
+       8: ifnull        25
+      11: aload_0
+      12: getfield      #91                 // Field userProperties:Ljava/util/Properties;
+      15: aload_1
+      16: invokevirtual #244                // Method java/util/Properties.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      19: checkcast     #171                // class java/lang/String
+      22: goto          26
+      25: aload_2
+      26: areturn
+
+  public java.util.Properties getProperties();
+    Code:
+       0: iconst_2
+       1: anewarray     #243                // class java/util/Properties
+       4: dup
+       5: iconst_0
+       6: aload_0
+       7: getfield      #91                 // Field userProperties:Ljava/util/Properties;
+      10: aastore
+      11: dup
+      12: iconst_1
+      13: aload_0
+      14: getfield      #93                 // Field classpathProperties:Ljava/util/Properties;
+      17: aastore
+      18: invokestatic  #261                // InterfaceMethod java/util/stream/Stream.of:([Ljava/lang/Object;)Ljava/util/stream/Stream;
+      21: new           #243                // class java/util/Properties
+      24: dup
+      25: invokespecial #262                // Method java/util/Properties."<init>":()V
+      28: invokedynamic #281,  0            // InvokeDynamic #0:apply:()Ljava/util/function/BinaryOperator;
+      33: invokeinterface #285,  3          // InterfaceMethod java/util/stream/Stream.reduce:(Ljava/lang/Object;Ljava/util/function/BinaryOperator;)Ljava/lang/Object;
+      38: checkcast     #243                // class java/util/Properties
+      41: areturn
+
+  public boolean updateGlobalConfig(java.lang.String, java.lang.String);
+    Code:
+       0: aload_1
+       1: ifnonnull     15
+       4: new           #290                // class java/lang/NullPointerException
+       7: dup
+       8: ldc_w         #292                // String prop is marked non-null but is null
+      11: invokespecial #295                // Method java/lang/NullPointerException."<init>":(Ljava/lang/String;)V
+      14: athrow
+      15: aload_2
+      16: ifnonnull     30
+      19: new           #290                // class java/lang/NullPointerException
+      22: dup
+      23: ldc_w         #297                // String value is marked non-null but is null
+      26: invokespecial #295                // Method java/lang/NullPointerException."<init>":(Ljava/lang/String;)V
+      29: athrow
+      30: aload_0
+      31: aload_1
+      32: aload_2
+      33: invokevirtual #300                // Method updateUserConfig:(Ljava/lang/String;Ljava/lang/String;)Z
+      36: ireturn
+
+  public boolean updateUserConfig(java.lang.String, java.lang.String);
+    Code:
+       0: aload_0
+       1: getfield      #89                 // Field $lock:Ljava/lang/Object;
+       4: dup
+       5: astore_3
+       6: monitorenter
+       7: aload_1
+       8: ifnonnull     22
+      11: new           #290                // class java/lang/NullPointerException
+      14: dup
+      15: ldc_w         #292                // String prop is marked non-null but is null
+      18: invokespecial #295                // Method java/lang/NullPointerException."<init>":(Ljava/lang/String;)V
+      21: athrow
+      22: aload_2
+      23: ifnonnull     37
+      26: new           #290                // class java/lang/NullPointerException
+      29: dup
+      30: ldc_w         #297                // String value is marked non-null but is null
+      33: invokespecial #295                // Method java/lang/NullPointerException."<init>":(Ljava/lang/String;)V
+      36: athrow
+      37: aload_2
+      38: aload_0
+      39: getfield      #91                 // Field userProperties:Ljava/util/Properties;
+      42: aload_1
+      43: invokevirtual #244                // Method java/util/Properties.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      46: invokevirtual #308                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      49: ifeq          56
+      52: iconst_0
+      53: aload_3
+      54: monitorexit
+      55: ireturn
+      56: aload_0
+      57: getfield      #91                 // Field userProperties:Ljava/util/Properties;
+      60: aload_1
+      61: aload_2
+      62: invokevirtual #312                // Method java/util/Properties.setProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;
+      65: pop
+      66: getstatic     #314                // Field USER_CONFIG_FILE:Ljava/io/File;
+      69: invokevirtual #319                // Method java/io/File.createNewFile:()Z
+      72: pop
+      73: new           #321                // class java/io/FileOutputStream
+      76: dup
+      77: getstatic     #314                // Field USER_CONFIG_FILE:Ljava/io/File;
+      80: invokespecial #324                // Method java/io/FileOutputStream."<init>":(Ljava/io/File;)V
+      83: astore        4
+      85: aconst_null
+      86: astore        5
+      88: aload_0
+      89: getfield      #91                 // Field userProperties:Ljava/util/Properties;
+      92: aload         4
+      94: ldc_w         #326                // String Modified by Testcontainers
+      97: invokevirtual #330                // Method java/util/Properties.store:(Ljava/io/OutputStream;Ljava/lang/String;)V
+     100: aload         4
+     102: ifnull        187
+     105: aload         5
+     107: ifnull        130
+     110: aload         4
+     112: invokevirtual #335                // Method java/io/OutputStream.close:()V
+     115: goto          187
+     118: astore        6
+     120: aload         5
+     122: aload         6
+     124: invokevirtual #339                // Method java/lang/Throwable.addSuppressed:(Ljava/lang/Throwable;)V
+     127: goto          187
+     130: aload         4
+     132: invokevirtual #335                // Method java/io/OutputStream.close:()V
+     135: goto          187
+     138: astore        6
+     140: aload         6
+     142: astore        5
+     144: aload         6
+     146: athrow
+     147: astore        7
+     149: aload         4
+     151: ifnull        184
+     154: aload         5
+     156: ifnull        179
+     159: aload         4
+     161: invokevirtual #335                // Method java/io/OutputStream.close:()V
+     164: goto          184
+     167: astore        8
+     169: aload         5
+     171: aload         8
+     173: invokevirtual #339                // Method java/lang/Throwable.addSuppressed:(Ljava/lang/Throwable;)V
+     176: goto          184
+     179: aload         4
+     181: invokevirtual #335                // Method java/io/OutputStream.close:()V
+     184: aload         7
+     186: athrow
+     187: aload_0
+     188: getfield      #91                 // Field userProperties:Ljava/util/Properties;
+     191: aload_1
+     192: aload_2
+     193: invokevirtual #312                // Method java/util/Properties.setProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;
+     196: pop
+     197: iconst_1
+     198: aload_3
+     199: monitorexit
+     200: ireturn
+     201: astore        4
+     203: getstatic     #341                // Field log:Lorg/slf4j/Logger;
+     206: ldc_w         #343                // String Can\'t store environment property {} in {}
+     209: aload_1
+     210: getstatic     #314                // Field USER_CONFIG_FILE:Ljava/io/File;
+     213: invokeinterface #349,  4          // InterfaceMethod org/slf4j/Logger.debug:(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V
+     218: iconst_0
+     219: aload_3
+     220: monitorexit
+     221: ireturn
+     222: astore        9
+     224: aload_3
+     225: monitorexit
+     226: aload         9
+     228: athrow
+    Exception table:
+       from    to  target type
+         110   115   118   Class java/lang/Throwable
+          88   100   138   Class java/lang/Throwable
+          88   100   147   any
+         159   164   167   Class java/lang/Throwable
+         138   149   147   any
+          37    53   201   Class java/lang/Exception
+          56   198   201   Class java/lang/Exception
+           7    55   222   any
+          56   200   222   any
+         201   221   222   any
+         222   226   222   any
+
+  private static org.testcontainers.utility.TestcontainersConfiguration loadConfiguration();
+    Code:
+       0: new           #2                  // class org/testcontainers/utility/TestcontainersConfiguration
+       3: dup
+       4: getstatic     #314                // Field USER_CONFIG_FILE:Ljava/io/File;
+       7: invokevirtual #361                // Method java/io/File.toURI:()Ljava/net/URI;
+      10: invokevirtual #367                // Method java/net/URI.toURL:()Ljava/net/URL;
+      13: invokestatic  #371                // Method readProperties:(Ljava/net/URL;)Ljava/util/Properties;
+      16: getstatic     #373                // Field PROPERTIES_FILE_NAME:Ljava/lang/String;
+      19: invokestatic  #379                // Method org/testcontainers/utility/ClasspathScanner.scanFor:(Ljava/lang/String;)Ljava/util/stream/Stream;
+      22: invokedynamic #385,  0            // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+      27: invokeinterface #389,  2          // InterfaceMethod java/util/stream/Stream.map:(Ljava/util/function/Function;)Ljava/util/stream/Stream;
+      32: new           #243                // class java/util/Properties
+      35: dup
+      36: invokespecial #262                // Method java/util/Properties."<init>":()V
+      39: invokedynamic #394,  0            // InvokeDynamic #2:apply:()Ljava/util/function/BinaryOperator;
+      44: invokeinterface #285,  3          // InterfaceMethod java/util/stream/Stream.reduce:(Ljava/lang/Object;Ljava/util/function/BinaryOperator;)Ljava/lang/Object;
+      49: checkcast     #243                // class java/util/Properties
+      52: invokestatic  #400                // Method java/lang/System.getenv:()Ljava/util/Map;
+      55: invokespecial #402                // Method "<init>":(Ljava/util/Properties;Ljava/util/Properties;Ljava/util/Map;)V
+      58: areturn
+      59: astore_0
+      60: aload_0
+      61: athrow
+    Exception table:
+       from    to  target type
+           0    58    59   Class java/net/MalformedURLException
+
+  private static java.util.Properties readProperties(java.net.URL);
+    Code:
+       0: getstatic     #341                // Field log:Lorg/slf4j/Logger;
+       3: ldc_w         #410                // String Testcontainers configuration overrides will be loaded from {}
+       6: aload_0
+       7: invokeinterface #413,  3          // InterfaceMethod org/slf4j/Logger.debug:(Ljava/lang/String;Ljava/lang/Object;)V
+      12: new           #243                // class java/util/Properties
+      15: dup
+      16: invokespecial #262                // Method java/util/Properties."<init>":()V
+      19: astore_1
+      20: aload_0
+      21: invokevirtual #419                // Method java/net/URL.openStream:()Ljava/io/InputStream;
+      24: astore_2
+      25: aconst_null
+      26: astore_3
+      27: aload_1
+      28: aload_2
+      29: invokevirtual #423                // Method java/util/Properties.load:(Ljava/io/InputStream;)V
+      32: aload_2
+      33: ifnull        108
+      36: aload_3
+      37: ifnull        58
+      40: aload_2
+      41: invokevirtual #426                // Method java/io/InputStream.close:()V
+      44: goto          108
+      47: astore        4
+      49: aload_3
+      50: aload         4
+      52: invokevirtual #339                // Method java/lang/Throwable.addSuppressed:(Ljava/lang/Throwable;)V
+      55: goto          108
+      58: aload_2
+      59: invokevirtual #426                // Method java/io/InputStream.close:()V
+      62: goto          108
+      65: astore        4
+      67: aload         4
+      69: astore_3
+      70: aload         4
+      72: athrow
+      73: astore        5
+      75: aload_2
+      76: ifnull        105
+      79: aload_3
+      80: ifnull        101
+      83: aload_2
+      84: invokevirtual #426                // Method java/io/InputStream.close:()V
+      87: goto          105
+      90: astore        6
+      92: aload_3
+      93: aload         6
+      95: invokevirtual #339                // Method java/lang/Throwable.addSuppressed:(Ljava/lang/Throwable;)V
+      98: goto          105
+     101: aload_2
+     102: invokevirtual #426                // Method java/io/InputStream.close:()V
+     105: aload         5
+     107: athrow
+     108: goto          148
+     111: astore_2
+     112: getstatic     #341                // Field log:Lorg/slf4j/Logger;
+     115: ldc_w         #428                // String Attempted to read Testcontainers configuration file at {} but the file was not found. Exception message: {}
+     118: aload_0
+     119: aload_2
+     120: invokestatic  #434                // Method org/testcontainers/shaded/org/apache/commons/lang3/exception/ExceptionUtils.getRootCauseMessage:(Ljava/lang/Throwable;)Ljava/lang/String;
+     123: invokeinterface #349,  4          // InterfaceMethod org/slf4j/Logger.debug:(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V
+     128: goto          148
+     131: astore_2
+     132: getstatic     #341                // Field log:Lorg/slf4j/Logger;
+     135: ldc_w         #436                // String Attempted to read Testcontainers configuration file at {} but could it not be loaded. Exception message: {}
+     138: aload_0
+     139: aload_2
+     140: invokestatic  #434                // Method org/testcontainers/shaded/org/apache/commons/lang3/exception/ExceptionUtils.getRootCauseMessage:(Ljava/lang/Throwable;)Ljava/lang/String;
+     143: invokeinterface #349,  4          // InterfaceMethod org/slf4j/Logger.debug:(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V
+     148: aload_1
+     149: areturn
+    Exception table:
+       from    to  target type
+          40    44    47   Class java/lang/Throwable
+          27    32    65   Class java/lang/Throwable
+          27    32    73   any
+          83    87    90   Class java/lang/Throwable
+          65    75    73   any
+          20   108   111   Class java/io/FileNotFoundException
+          20   108   131   Class java/io/IOException
+
+  private org.testcontainers.utility.DockerImageName getImage(java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+       5: invokevirtual #449                // Method getConfiguredSubstituteImage:(Lorg/testcontainers/utility/DockerImageName;)Lorg/testcontainers/utility/DockerImageName;
+       8: areturn
+
+  org.testcontainers.utility.DockerImageName getConfiguredSubstituteImage(org.testcontainers.utility.DockerImageName);
+    Code:
+       0: getstatic     #451                // Field CONTAINER_MAPPING:Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap;
+       3: invokevirtual #455                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap.entrySet:()Lorg/testcontainers/shaded/com/google/common/collect/ImmutableSet;
+       6: invokevirtual #461                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableSet.iterator:()Lorg/testcontainers/shaded/com/google/common/collect/UnmodifiableIterator;
+       9: astore_2
+      10: aload_2
+      11: invokeinterface #466,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      16: ifeq          102
+      19: aload_2
+      20: invokeinterface #470,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      25: checkcast     #7                  // class java/util/Map$Entry
+      28: astore_3
+      29: aload_1
+      30: aload_3
+      31: invokeinterface #473,  1          // InterfaceMethod java/util/Map$Entry.getKey:()Ljava/lang/Object;
+      36: checkcast     #106                // class org/testcontainers/utility/DockerImageName
+      39: invokevirtual #477                // Method org/testcontainers/utility/DockerImageName.isCompatibleWith:(Lorg/testcontainers/utility/DockerImageName;)Z
+      42: ifeq          99
+      45: aload_3
+      46: invokeinterface #480,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+      51: invokestatic  #486                // Method java/util/Optional.ofNullable:(Ljava/lang/Object;)Ljava/util/Optional;
+      54: aload_0
+      55: invokedynamic #495,  0            // InvokeDynamic #3:apply:(Lorg/testcontainers/utility/TestcontainersConfiguration;)Ljava/util/function/Function;
+      60: invokevirtual #498                // Method java/util/Optional.map:(Ljava/util/function/Function;)Ljava/util/Optional;
+      63: invokedynamic #503,  0            // InvokeDynamic #4:apply:()Ljava/util/function/Function;
+      68: invokevirtual #498                // Method java/util/Optional.map:(Ljava/util/function/Function;)Ljava/util/Optional;
+      71: invokedynamic #508,  0            // InvokeDynamic #5:apply:()Ljava/util/function/Function;
+      76: invokevirtual #498                // Method java/util/Optional.map:(Ljava/util/function/Function;)Ljava/util/Optional;
+      79: invokedynamic #511,  0            // InvokeDynamic #6:apply:()Ljava/util/function/Function;
+      84: invokevirtual #498                // Method java/util/Optional.map:(Ljava/util/function/Function;)Ljava/util/Optional;
+      87: aload_1
+      88: invokevirtual #514                // Method java/util/Optional.orElse:(Ljava/lang/Object;)Ljava/lang/Object;
+      91: checkcast     #106                // class org/testcontainers/utility/DockerImageName
+      94: aload_1
+      95: invokevirtual #517                // Method org/testcontainers/utility/DockerImageName.asCompatibleSubstituteFor:(Lorg/testcontainers/utility/DockerImageName;)Lorg/testcontainers/utility/DockerImageName;
+      98: areturn
+      99: goto          10
+     102: aload_1
+     103: areturn
+
+  public java.util.Properties getUserProperties();
+    Code:
+       0: aload_0
+       1: getfield      #91                 // Field userProperties:Ljava/util/Properties;
+       4: areturn
+
+  public java.util.Properties getClasspathProperties();
+    Code:
+       0: aload_0
+       1: getfield      #93                 // Field classpathProperties:Ljava/util/Properties;
+       4: areturn
+
+  public java.util.Map<java.lang.String, java.lang.String> getEnvironment();
+    Code:
+       0: aload_0
+       1: getfield      #95                 // Field environment:Ljava/util/Map;
+       4: areturn
+
+  public boolean equals(java.lang.Object);
+    Code:
+       0: aload_1
+       1: aload_0
+       2: if_acmpne     7
+       5: iconst_1
+       6: ireturn
+       7: aload_1
+       8: instanceof    #2                  // class org/testcontainers/utility/TestcontainersConfiguration
+      11: ifne          16
+      14: iconst_0
+      15: ireturn
+      16: aload_1
+      17: checkcast     #2                  // class org/testcontainers/utility/TestcontainersConfiguration
+      20: astore_2
+      21: aload_2
+      22: aload_0
+      23: invokevirtual #529                // Method canEqual:(Ljava/lang/Object;)Z
+      26: ifne          31
+      29: iconst_0
+      30: ireturn
+      31: aload_0
+      32: invokevirtual #531                // Method getUserProperties:()Ljava/util/Properties;
+      35: astore_3
+      36: aload_2
+      37: invokevirtual #531                // Method getUserProperties:()Ljava/util/Properties;
+      40: astore        4
+      42: aload_3
+      43: ifnonnull     54
+      46: aload         4
+      48: ifnull        65
+      51: goto          63
+      54: aload_3
+      55: aload         4
+      57: invokevirtual #532                // Method java/lang/Object.equals:(Ljava/lang/Object;)Z
+      60: ifne          65
+      63: iconst_0
+      64: ireturn
+      65: aload_0
+      66: invokevirtual #534                // Method getClasspathProperties:()Ljava/util/Properties;
+      69: astore        5
+      71: aload_2
+      72: invokevirtual #534                // Method getClasspathProperties:()Ljava/util/Properties;
+      75: astore        6
+      77: aload         5
+      79: ifnonnull     90
+      82: aload         6
+      84: ifnull        102
+      87: goto          100
+      90: aload         5
+      92: aload         6
+      94: invokevirtual #532                // Method java/lang/Object.equals:(Ljava/lang/Object;)Z
+      97: ifne          102
+     100: iconst_0
+     101: ireturn
+     102: aload_0
+     103: invokevirtual #536                // Method getEnvironment:()Ljava/util/Map;
+     106: astore        7
+     108: aload_2
+     109: invokevirtual #536                // Method getEnvironment:()Ljava/util/Map;
+     112: astore        8
+     114: aload         7
+     116: ifnonnull     127
+     119: aload         8
+     121: ifnull        139
+     124: goto          137
+     127: aload         7
+     129: aload         8
+     131: invokevirtual #532                // Method java/lang/Object.equals:(Ljava/lang/Object;)Z
+     134: ifne          139
+     137: iconst_0
+     138: ireturn
+     139: iconst_1
+     140: ireturn
+
+  protected boolean canEqual(java.lang.Object);
+    Code:
+       0: aload_1
+       1: instanceof    #2                  // class org/testcontainers/utility/TestcontainersConfiguration
+       4: ireturn
+
+  public int hashCode();
+    Code:
+       0: bipush        59
+       2: istore_1
+       3: iconst_1
+       4: istore_2
+       5: aload_0
+       6: invokevirtual #531                // Method getUserProperties:()Ljava/util/Properties;
+       9: astore_3
+      10: iload_2
+      11: bipush        59
+      13: imul
+      14: aload_3
+      15: ifnonnull     23
+      18: bipush        43
+      20: goto          27
+      23: aload_3
+      24: invokevirtual #548                // Method java/lang/Object.hashCode:()I
+      27: iadd
+      28: istore_2
+      29: aload_0
+      30: invokevirtual #534                // Method getClasspathProperties:()Ljava/util/Properties;
+      33: astore        4
+      35: iload_2
+      36: bipush        59
+      38: imul
+      39: aload         4
+      41: ifnonnull     49
+      44: bipush        43
+      46: goto          54
+      49: aload         4
+      51: invokevirtual #548                // Method java/lang/Object.hashCode:()I
+      54: iadd
+      55: istore_2
+      56: aload_0
+      57: invokevirtual #536                // Method getEnvironment:()Ljava/util/Map;
+      60: astore        5
+      62: iload_2
+      63: bipush        59
+      65: imul
+      66: aload         5
+      68: ifnonnull     76
+      71: bipush        43
+      73: goto          81
+      76: aload         5
+      78: invokevirtual #548                // Method java/lang/Object.hashCode:()I
+      81: iadd
+      82: istore_2
+      83: iload_2
+      84: ireturn
+
+  public java.lang.String toString();
+    Code:
+       0: new           #224                // class java/lang/StringBuilder
+       3: dup
+       4: invokespecial #225                // Method java/lang/StringBuilder."<init>":()V
+       7: ldc_w         #556                // String TestcontainersConfiguration(userProperties=
+      10: invokevirtual #229                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      13: aload_0
+      14: invokevirtual #531                // Method getUserProperties:()Ljava/util/Properties;
+      17: invokevirtual #559                // Method java/lang/StringBuilder.append:(Ljava/lang/Object;)Ljava/lang/StringBuilder;
+      20: ldc_w         #561                // String , classpathProperties=
+      23: invokevirtual #229                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      26: aload_0
+      27: invokevirtual #534                // Method getClasspathProperties:()Ljava/util/Properties;
+      30: invokevirtual #559                // Method java/lang/StringBuilder.append:(Ljava/lang/Object;)Ljava/lang/StringBuilder;
+      33: ldc_w         #563                // String , environment=
+      36: invokevirtual #229                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      39: aload_0
+      40: invokevirtual #536                // Method getEnvironment:()Ljava/util/Map;
+      43: invokevirtual #559                // Method java/lang/StringBuilder.append:(Ljava/lang/Object;)Ljava/lang/StringBuilder;
+      46: ldc_w         #565                // String )
+      49: invokevirtual #229                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      52: invokevirtual #232                // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+      55: areturn
+
+  public static org.testcontainers.utility.TestcontainersConfiguration getInstance();
+    Code:
+       0: getstatic     #79                 // Field instance:Ljava/util/concurrent/atomic/AtomicReference;
+       3: invokevirtual #568                // Method java/util/concurrent/atomic/AtomicReference.get:()Ljava/lang/Object;
+       6: astore_0
+       7: aload_0
+       8: ifnonnull     61
+      11: getstatic     #79                 // Field instance:Ljava/util/concurrent/atomic/AtomicReference;
+      14: dup
+      15: astore_1
+      16: monitorenter
+      17: getstatic     #79                 // Field instance:Ljava/util/concurrent/atomic/AtomicReference;
+      20: invokevirtual #568                // Method java/util/concurrent/atomic/AtomicReference.get:()Ljava/lang/Object;
+      23: astore_0
+      24: aload_0
+      25: ifnonnull     51
+      28: invokestatic  #570                // Method loadConfiguration:()Lorg/testcontainers/utility/TestcontainersConfiguration;
+      31: astore_2
+      32: aload_2
+      33: ifnonnull     42
+      36: getstatic     #79                 // Field instance:Ljava/util/concurrent/atomic/AtomicReference;
+      39: goto          43
+      42: aload_2
+      43: astore_0
+      44: getstatic     #79                 // Field instance:Ljava/util/concurrent/atomic/AtomicReference;
+      47: aload_0
+      48: invokevirtual #574                // Method java/util/concurrent/atomic/AtomicReference.set:(Ljava/lang/Object;)V
+      51: aload_1
+      52: monitorexit
+      53: goto          61
+      56: astore_3
+      57: aload_1
+      58: monitorexit
+      59: aload_3
+      60: athrow
+      61: aload_0
+      62: getstatic     #79                 // Field instance:Ljava/util/concurrent/atomic/AtomicReference;
+      65: if_acmpne     72
+      68: aconst_null
+      69: goto          73
+      72: aload_0
+      73: checkcast     #2                  // class org/testcontainers/utility/TestcontainersConfiguration
+      76: checkcast     #2                  // class org/testcontainers/utility/TestcontainersConfiguration
+      79: areturn
+    Exception table:
+       from    to  target type
+          17    53    56   any
+          56    59    56   any
+
+  private java.lang.String lambda$getConfiguredSubstituteImage$2(java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aconst_null
+       3: invokevirtual #123                // Method getEnvVarOrProperty:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       6: areturn
+
+  private static java.util.Properties lambda$loadConfiguration$1(java.util.Properties, java.util.Properties);
+    Code:
+       0: aload_1
+       1: aload_0
+       2: invokevirtual #579                // Method java/util/Properties.putAll:(Ljava/util/Map;)V
+       5: aload_1
+       6: areturn
+
+  private static java.util.Properties lambda$getProperties$0(java.util.Properties, java.util.Properties);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #579                // Method java/util/Properties.putAll:(Ljava/util/Map;)V
+       5: aload_0
+       6: areturn
+
+  static {};
+    Code:
+       0: ldc           #2                  // class org/testcontainers/utility/TestcontainersConfiguration
+       2: invokestatic  #588                // Method org/slf4j/LoggerFactory.getLogger:(Ljava/lang/Class;)Lorg/slf4j/Logger;
+       5: putstatic     #341                // Field log:Lorg/slf4j/Logger;
+       8: ldc_w         #590                // String testcontainers.properties
+      11: putstatic     #373                // Field PROPERTIES_FILE_NAME:Ljava/lang/String;
+      14: new           #316                // class java/io/File
+      17: dup
+      18: ldc_w         #592                // String user.home
+      21: invokestatic  #595                // Method java/lang/System.getProperty:(Ljava/lang/String;)Ljava/lang/String;
+      24: new           #224                // class java/lang/StringBuilder
+      27: dup
+      28: invokespecial #225                // Method java/lang/StringBuilder."<init>":()V
+      31: ldc_w         #597                // String .
+      34: invokevirtual #229                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      37: getstatic     #373                // Field PROPERTIES_FILE_NAME:Ljava/lang/String;
+      40: invokevirtual #229                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      43: invokevirtual #232                // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+      46: invokespecial #600                // Method java/io/File."<init>":(Ljava/lang/String;Ljava/lang/String;)V
+      49: putstatic     #314                // Field USER_CONFIG_FILE:Ljava/io/File;
+      52: invokestatic  #604                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap.builder:()Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+      55: ldc           #31                 // String richnorth/ambassador
+      57: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+      60: ldc_w         #606                // String ambassador.container.image
+      63: invokevirtual #610                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+      66: ldc           #34                 // String alpine/socat
+      68: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+      71: ldc_w         #612                // String socat.container.image
+      74: invokevirtual #610                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+      77: ldc           #37                 // String testcontainers/vnc-recorder
+      79: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+      82: ldc_w         #614                // String vncrecorder.container.image
+      85: invokevirtual #610                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+      88: ldc           #40                 // String docker/compose
+      90: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+      93: ldc_w         #616                // String compose.container.image
+      96: invokevirtual #610                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+      99: ldc           #43                 // String alpine
+     101: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+     104: ldc_w         #618                // String tinyimage.container.image
+     107: invokevirtual #610                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+     110: ldc           #46                 // String testcontainers/ryuk
+     112: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+     115: ldc_w         #620                // String ryuk.container.image
+     118: invokevirtual #610                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+     121: ldc           #49                 // String confluentinc/cp-kafka
+     123: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+     126: ldc_w         #622                // String kafka.container.image
+     129: invokevirtual #610                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+     132: ldc           #52                 // String apachepulsar/pulsar
+     134: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+     137: ldc_w         #624                // String pulsar.container.image
+     140: invokevirtual #610                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+     143: ldc           #55                 // String localstack/localstack
+     145: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+     148: ldc_w         #626                // String localstack.container.image
+     151: invokevirtual #610                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+     154: ldc           #58                 // String testcontainers/sshd
+     156: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+     159: ldc_w         #628                // String sshd.container.image
+     162: invokevirtual #610                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+     165: ldc           #61                 // String gvenzl/oracle-xe
+     167: invokestatic  #445                // Method org/testcontainers/utility/DockerImageName.parse:(Ljava/lang/String;)Lorg/testcontainers/utility/DockerImageName;
+     170: ldc_w         #630                // String oracle.container.image
+     173: invokevirtual #610                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder;
+     176: invokevirtual #634                // Method org/testcontainers/shaded/com/google/common/collect/ImmutableMap$Builder.build:()Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap;
+     179: putstatic     #451                // Field CONTAINER_MAPPING:Lorg/testcontainers/shaded/com/google/common/collect/ImmutableMap;
+     182: new           #81                 // class java/util/concurrent/atomic/AtomicReference
+     185: dup
+     186: invokespecial #635                // Method java/util/concurrent/atomic/AtomicReference."<init>":()V
+     189: putstatic     #79                 // Field instance:Ljava/util/concurrent/atomic/AtomicReference;
+     192: return
+}

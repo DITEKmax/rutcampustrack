@@ -1,0 +1,22 @@
+{
+  "arguments": [
+    ":services:academic-service:academic-app:test",
+    "--tests",
+    "ru.rutcampustrack.academic.history.HistoricalMembershipServiceTest",
+    ":services:academic-service:academic-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.academic.integration.EventIT",
+    "--tests",
+    "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+    "--continue",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report"
+  ],
+  "resultDirectories": [
+    "services/academic-service/academic-app/build/test-results/test",
+    "services/academic-service/academic-app/build/test-results/integrationTest"
+  ],
+  "meaning": "Guard-order units plus fixed event fixture and new atomic rollback/concurrent roster PostgreSQL acceptance proof; other passes retained"
+}

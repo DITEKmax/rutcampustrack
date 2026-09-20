@@ -1,0 +1,20 @@
+{
+  "extends": "../../frontends/tsconfig.foundation.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "allowJs": false,
+    "baseUrl": ".",
+    "paths": {
+      "vue": ["C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/frontends/node_modules/vue"],
+      "vitest": ["C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/frontends/node_modules/vitest"]
+    }
+  },
+  "include": [
+    "./harness.d.ts",
+    "../../frontends/mobile-core/src/vue.d.ts",
+    "../../frontends/pwa-vue/src/env.d.ts",
+    "../../frontends/mobile-core/src/features/profile/**/*.ts",
+    "../../frontends/mobile-core/src/features/profile/**/*.vue"
+  ]
+}

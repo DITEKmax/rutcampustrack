@@ -1,0 +1,9 @@
+# Rabbit invalid-envelope observation — 07.09.2026
+
+During root full backend check on frozen dependency45 (d3c31 plus accepted candidate dependency/config/test changes), Attendance integration output repeatedly reported IdempotencyGuard rejection of lesson.started without event_id. The raw output remains in dependency-root-check/gradle-check.log. This is not a new dependency regression claim or an instruction to change logging.
+
+Root traced the input to unchanged services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitConsumerIT.java:45: its publishToFanoutExchange_doesNotThrow sends only event_type and lesson_id to rut-uit.events, with no event_id or payload envelope. The test asserts only that publish does not throw. Actual EventConsumer.onEvent invokes tryClaim, which rejects the missing ID. Repeated listener errors are consistent with redelivery of that malformed fixture. Root found no explicit retry/requeue factory configuration in the searched Attendance main/shared source. That source search is not proof of every possible external configuration or production behavior.
+
+The Requests transport frozen contract already requires actual bounded retry/DLQ and invalid-schema behavior for new decision events. Root sent this evidence to its sole writer: do not assume an existing bounded retry mechanism without actual runtime proof; preserve no-success-ACK semantics for transient failure and appropriate rejection of invalid decisions. Do not widen into unrelated lesson lifecycle or weaken fail-closed handling merely to remove logs. Existing invalid fixture cleanup or broader consumer policy needs a separately bounded correction if it becomes necessary.
+
+Full dependency check remains judged on its completed exit and tests, with this observation visible separately. No production queue/message operations were performed.

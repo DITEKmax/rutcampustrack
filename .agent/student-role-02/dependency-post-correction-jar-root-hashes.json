@@ -1,0 +1,50 @@
+[
+  {
+    "source": "services\\academic-service\\academic-app\\build\\libs\\academic-app-0.1.0.jar",
+    "sourceSha256": "E91E10E5D7609EF00321CCAD0212B122C49423B695EB5659220B806763267A0C",
+    "stagedSha256": "E91E10E5D7609EF00321CCAD0212B122C49423B695EB5659220B806763267A0C",
+    "match": true
+  },
+  {
+    "source": "services\\api-gateway\\build\\libs\\api-gateway-0.1.0.jar",
+    "sourceSha256": "124E11D90AC89C1D5DC16EA9E4D5751BD5412F80565851FB805183F069F5773A",
+    "stagedSha256": "124E11D90AC89C1D5DC16EA9E4D5751BD5412F80565851FB805183F069F5773A",
+    "match": true
+  },
+  {
+    "source": "services\\attendance-service\\attendance-app\\build\\libs\\attendance-app-0.1.0.jar",
+    "sourceSha256": "05E6AD53CD53C9490AD392AC7293271760946AAE0BB3A95F7A7D3473515EA771",
+    "stagedSha256": "05E6AD53CD53C9490AD392AC7293271760946AAE0BB3A95F7A7D3473515EA771",
+    "match": true
+  },
+  {
+    "source": "services\\auth-service\\auth-app\\build\\libs\\auth-app-0.1.0.jar",
+    "sourceSha256": "FF3B78750E3E81DCDA966899E9C35F3C7B62650B84F86B8076AEF55C4027974D",
+    "stagedSha256": "FF3B78750E3E81DCDA966899E9C35F3C7B62650B84F86B8076AEF55C4027974D",
+    "match": true
+  },
+  {
+    "source": "services\\document-renderer-service\\document-renderer-app\\build\\libs\\document-renderer-app-0.1.0.jar",
+    "sourceSha256": "730C78A238F3F149561F2D382DE5F93AE69EE3E6DFD9E7FFDE43FE0277FFAACC",
+    "stagedSha256": "730C78A238F3F149561F2D382DE5F93AE69EE3E6DFD9E7FFDE43FE0277FFAACC",
+    "match": true
+  },
+  {
+    "source": "services\\mobile-bff\\mobile-bff-app\\build\\libs\\mobile-bff-app-0.1.0.jar",
+    "sourceSha256": "4178B2678C7783272D950F01E5920EB02895EF0982C5A9D1275E215F95AB1763",
+    "stagedSha256": "4178B2678C7783272D950F01E5920EB02895EF0982C5A9D1275E215F95AB1763",
+    "match": true
+  },
+  {
+    "source": "services\\notification-service\\notification-app\\build\\libs\\notification-app-0.1.0.jar",
+    "sourceSha256": "689FCF42CFBB9C64FA523320181AE6B5654339EF0062FDEBD300F62FF7862628",
+    "stagedSha256": "689FCF42CFBB9C64FA523320181AE6B5654339EF0062FDEBD300F62FF7862628",
+    "match": true
+  },
+  {
+    "source": "services\\schedule-service\\schedule-app\\build\\libs\\schedule-app-0.1.0.jar",
+    "sourceSha256": "A861F4B9AEFAA37E0E189328FFDD8DF8FA0893EE3D75CC0E68437929A1A04D1C",
+    "stagedSha256": "A861F4B9AEFAA37E0E189328FFDD8DF8FA0893EE3D75CC0E68437929A1A04D1C",
+    "match": true
+  }
+]

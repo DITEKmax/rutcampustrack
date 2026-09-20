@@ -1,0 +1,183 @@
+{
+  "schema": "rct.runtime-evidence.v1",
+  "task": "JS-STUDENT-01-r1",
+  "runId": "20260906-230112",
+  "startedAt": "2026-09-06T23:01:12.8063719+03:00",
+  "status": "FAIL",
+  "stage": "student-read-api",
+  "resources": {
+    "network": "rct-js-student-01",
+    "containers": [
+      "rct-js-student-01-pg-academic",
+      "rct-js-student-01-pg-schedule",
+      "rct-js-student-01-mongo",
+      "rct-js-student-01-redis",
+      "rct-js-student-01-rabbit"
+    ],
+    "ports": [
+      25431,
+      25432,
+      27027,
+      26379,
+      25672,
+      35672,
+      29090,
+      29091,
+      29191,
+      29092,
+      29192,
+      29093,
+      29193,
+      29080,
+      28080,
+      28443
+    ]
+  },
+  "services": {
+    "academic": {
+      "pid": 44044,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\academic.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\academic.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29091/actuator/health"
+    },
+    "auth": {
+      "pid": 56188,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\auth.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\auth.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29090/actuator/health"
+    },
+    "schedule": {
+      "pid": 42308,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\schedule.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\schedule.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29092/actuator/health"
+    },
+    "attendance": {
+      "pid": 13140,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\attendance.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\attendance.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29093/actuator/health"
+    },
+    "mobile-bff": {
+      "pid": 33148,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\mobile-bff.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\mobile-bff.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29080/actuator/health"
+    },
+    "gateway": {
+      "pid": 20120,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\gateway.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-230112\\gateway.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:28080/actuator/health"
+    }
+  },
+  "assertions": [
+    {
+      "name": "isolated infrastructure ready",
+      "passed": true,
+      "evidence": {
+        "containers": 5,
+        "anonymousStorage": true
+      }
+    },
+    {
+      "name": "six real service processes ready",
+      "passed": true,
+      "evidence": {
+        "hiddenProcesses": true,
+        "serviceCount": 6
+      }
+    },
+    {
+      "name": "PWA browser evidence reused for server-only run",
+      "passed": true,
+      "evidence": {
+        "priorRun": "20260906-224922",
+        "browserPhase": "PASS"
+      }
+    },
+    {
+      "name": "task-only RabbitMQ evidence sink ready",
+      "passed": true,
+      "evidence": {
+        "exchange": "rut-uit.events",
+        "durableAcrossBrokerRestart": true,
+        "queue": "rct-js-student-01-evidence"
+      }
+    },
+    {
+      "name": "real auth login through gateway",
+      "passed": true,
+      "evidence": {
+        "httpStatus": 200,
+        "tokenRecorded": false
+      }
+    },
+    {
+      "name": "headman-blocked student POST is mutation-free",
+      "passed": true,
+      "evidence": {
+        "problemCode": "CHECKIN_NOT_ELIGIBLE",
+        "httpStatus": 409,
+        "countsAfter": {
+          "attendances": 0,
+          "requests": 0,
+          "receipts": 0,
+          "pairs": 0,
+          "outbox": 0
+        },
+        "countsBefore": {
+          "attendances": 0,
+          "requests": 0,
+          "receipts": 0,
+          "pairs": 0,
+          "outbox": 0
+        },
+        "lessonId": 3
+      }
+    },
+    {
+      "name": "legacy attendance/checkin is retired before mutation",
+      "passed": true,
+      "evidence": {
+        "httpStatus": 410,
+        "problemType": "https://api.rutcampustrack.ru/problems/legacy-checkin-retired",
+        "countsAfter": {
+          "attendances": 0,
+          "requests": 0,
+          "receipts": 0,
+          "pairs": 0,
+          "outbox": 0
+        },
+        "countsBefore": {
+          "attendances": 0,
+          "requests": 0,
+          "receipts": 0,
+          "pairs": 0,
+          "outbox": 0
+        }
+      }
+    }
+  ],
+  "directGatewayLogin": {
+    "statusCode": 200,
+    "contentType": "application/json",
+    "server": "",
+    "via": "",
+    "bodyLength": 1553,
+    "origin": "https://127.0.0.1:28443"
+  },
+  "pwaBrowser": {
+    "status": "NOT_RUN",
+    "reason": "Server assertions only; prior browser PASS remains the applicable evidence.",
+    "priorEvidence": ".agent/vertical-js-student-01/runtime-evidence/20260906-224922/runtime-result.json"
+  },
+  "error": "Assertion failed: Today contains both seeded lessons in schedule order",
+  "completedAt": "2026-09-06T23:03:10.9424089+03:00"
+}

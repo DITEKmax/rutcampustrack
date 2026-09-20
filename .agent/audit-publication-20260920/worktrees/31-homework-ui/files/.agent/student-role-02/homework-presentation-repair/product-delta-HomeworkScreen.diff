@@ -1,0 +1,82 @@
+diff --git "a/C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\student-role-02\\homework-combined-review-source\\frontends\\mobile-core\\src\\features\\homework\\HomeworkScreen.vue" "b/frontends\\mobile-core\\src\\features\\homework\\HomeworkScreen.vue"
+index 757fa720..0a497da9 100644
+--- "a/C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\student-role-02\\homework-combined-review-source\\frontends\\mobile-core\\src\\features\\homework\\HomeworkScreen.vue"
++++ "b/frontends\\mobile-core\\src\\features\\homework\\HomeworkScreen.vue"
+@@ -103,10 +103,14 @@ function iconStyle(icon: string): Record<string, string> {
+ 
+ function isExpanded(id: string): boolean {
+   return expandedIds.value.has(id)
+ }
+ 
++function hasDescription(item: StudentHomeworkItem): boolean {
++  return item.description.trim().length > 0
++}
++
+ function toggleExpanded(id: string): void {
+   const next = new Set(expandedIds.value)
+   if (next.has(id)) next.delete(id)
+   else next.add(id)
+   expandedIds.value = next
+@@ -412,17 +416,25 @@ onBeforeUnmount(() => {
+                 :data-completion="item.completed ? 'completed' : 'open'"
+                 :data-pending="itemPending(item.id)"
+                 :data-material="item.link === null ? 'none' : materialState(item).supported ? 'available' : 'unsafe'"
+               >
+                 <h3>{{ item.subject.name }}</h3>
++                <p class="homework-card__title">
++                  {{ item.title }}
++                </p>
+                 <p
++                  v-if="hasDescription(item) && isExpanded(item.id)"
++                  :id="`homework-description-${item.id}`"
+                   class="homework-card__description"
+-                  :class="{ 'homework-card__description--expanded': isExpanded(item.id) }"
+                 >
+                   {{ item.description }}
+                 </p>
+-                <div class="homework-card__actions">
++                <div
++                  v-if="item.link !== null || hasDescription(item)"
++                  class="homework-card__actions"
++                  :class="{ 'homework-card__actions--no-material': item.link === null }"
++                >
+                   <button
+                     v-if="item.link !== null && materialState(item).supported"
+                     class="homework-material"
+                     type="button"
+                     @click="openMaterial(item)"
+@@ -440,14 +452,15 @@ onBeforeUnmount(() => {
+                     role="status"
+                   >
+                     Материалы недоступны: ссылка не поддерживается.
+                   </p>
+                   <button
++                    v-if="hasDescription(item)"
+                     class="homework-expand"
+                     type="button"
+                     :aria-expanded="isExpanded(item.id)"
+-                    :aria-controls="`homework-description-${item.id}`"
++                    :aria-controls="isExpanded(item.id) ? `homework-description-${item.id}` : undefined"
+                     :aria-label="isExpanded(item.id) ? 'Свернуть описание' : 'Раскрыть описание'"
+                     @click="toggleExpanded(item.id)"
+                   >
+                     <span
+                       class="homework-icon homework-expand__icon"
+@@ -455,17 +468,10 @@ onBeforeUnmount(() => {
+                       aria-hidden="true"
+                       :class="{ 'homework-expand__icon--open': isExpanded(item.id) }"
+                     />
+                   </button>
+                 </div>
+-                <p
+-                  v-if="isExpanded(item.id)"
+-                  :id="`homework-description-${item.id}`"
+-                  class="homework-card__disclosure"
+-                >
+-                  {{ item.title }}
+-                </p>
+                 <button
+                   :ref="(element) => setTrackRef(item.id, element)"
+                   class="homework-completion"
+                   :class="{ 'homework-completion--completed': item.completed, 'homework-completion--readonly': isReadOnly }"
+                   type="button"

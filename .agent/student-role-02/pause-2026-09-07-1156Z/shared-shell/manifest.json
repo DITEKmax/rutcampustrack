@@ -1,0 +1,58 @@
+{
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "files": [
+    {
+      "path": "frontends/mobile-core/package.json",
+      "sha256": "3BFDB82D648307E33006108059C5F69EFF2F61F477E8DF499732191CE637EA26"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/today/today-screen.pcss",
+      "sha256": "73F70DB145AFF155D8459430A48B561A6A1C182C0849A313E20663402E19084E"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/today/TodayScreen.vue",
+      "sha256": "717DE86EC368873ABCAD04A6B8AA938F2D86605EF56C8D396650950CC8928D9D"
+    },
+    {
+      "path": "frontends/mobile-core/src/index.ts",
+      "sha256": "50266856FC2F98D43C4B0972D82D2AA98C15D89F184C17628EB29F4A476E15A5"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+      "sha256": "1B716DD5ABCD418B756C98253F24B87778EED26FEADD0FB8A6434008F718AA1A"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/mobile-shell.pcss",
+      "sha256": "9DF1A2079BB1356CD87253A2702BE1C7ED1BF284212CCA97C851FD17EB6E3B18"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+      "sha256": "48B5BA2E8398628377A545309D5BDBD0708CE4C33E138FCCFC00B9F81EC28562"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/MobileShell.vue",
+      "sha256": "5F1DAE4030128D146ABD10672A73FE94983A091EF186AB0FD338E125D079CFAE"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/host.ts",
+      "sha256": "B48FC3B170B44DFCC7EB4B2534153C3BF62D792A639F75F973A19D80F810501D"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/navigation.ts",
+      "sha256": "F101000CFC8968F6B31A7A720E0577E91E49FB3BC9EAF2AEDC1416DF32D75F9B"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/shell-contract.ts",
+      "sha256": "815A67E3F1688749F0F977550773D32E8FB57CB46A65D2228BDDAA3802A2000B"
+    },
+    {
+      "path": "frontends/mobile-core/src/styles/tokens.pcss",
+      "sha256": "B871D9DD0D22CCB171661F59AD1C7F0B4AA4123D245C0C35D6F139ACD458E071"
+    },
+    {
+      "path": "frontends/mobile-core/tests/navigation.test.mjs",
+      "sha256": "31BB8726437133DC485A5EB3C1DC58072BAAC4A24FBD343F59C597B73B19DAEB"
+    }
+  ],
+  "capturedAt": "2026-09-07T09:34:40.3640978Z"
+}

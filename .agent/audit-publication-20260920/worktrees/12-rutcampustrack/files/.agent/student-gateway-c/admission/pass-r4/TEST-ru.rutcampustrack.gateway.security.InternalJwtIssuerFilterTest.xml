@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-09-10T19:41:20" hostname="DITEK-PK" time="3.594">
+  <properties/>
+  <testcase name="explicitNullInternalGroupId_returns503WithoutDownstreamCall()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.394"/>
+  <testcase name="malformedInternalTimeClaim_returns503WithoutDownstreamCall()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.564"/>
+  <testcase name="filterOrder_isAfterJwtAuth()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.365"/>
+  <testcase name="validAdmission_forwardsSignedInternalTokenAndSanitizesLegacyIdentity()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.296"/>
+  <testcase name="authorityDenial_returnsTypedPublicResponseWithoutDownstreamCall()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.258"/>
+  <testcase name="noAccessTokenAttribute_passesThroughWithoutAuthorityCall()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.27"/>
+  <testcase name="fractionalInternalExpiration_returns503WithoutDownstreamCall()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.861"/>
+  <testcase name="validAdmission_withoutGroupId_acceptsAbsentOptionalGroupId()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.263"/>
+  <testcase name="missingAccessExpectations_returns503WithoutAuthorityCall()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.095"/>
+  <testcase name="downstreamFailure_isPropagatedWithOriginalIdentity()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.216"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

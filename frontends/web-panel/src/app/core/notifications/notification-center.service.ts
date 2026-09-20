@@ -208,6 +208,11 @@ export class NotificationCenterService {
     // Пробрасываем raw envelope подписчикам (авто-закрытие карточек и т.п.).
     this.eventSubject.next(envelope);
 
+    // GEO_CONFIRMED закрывает действие старосты. Студент уже получил успешный
+    // check-in ACK, поэтому отдельная запись не должна выглядеть как отказ.
+    if (envelope.type === 'late_checkin.decided'
+        && envelope.payload?.['status'] === 'cancelled') return;
+
     if (!STORED_TYPES.has(envelope.type)) return;
 
     // NOTIF unification: респектим локальные пользовательские настройки.

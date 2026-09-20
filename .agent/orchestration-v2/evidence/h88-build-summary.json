@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "source": {
+    "absoluteRepo": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3",
+    "cleanAfterBuild": true,
+    "cleanBeforeBuild": true,
+    "revision": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837"
+  },
+  "jarCount": 6,
+  "pwa": "frontends/pwa-vue/dist",
+  "commands": [
+    {
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3 rev-parse HEAD",
+      "exitCode": 0
+    },
+    {
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3 status --porcelain=v1 --untracked-files=all",
+      "exitCode": 0
+    },
+    {
+      "command": ".\\gradlew.bat --version",
+      "exitCode": 0
+    },
+    {
+      "command": "java -version",
+      "exitCode": 0
+    },
+    {
+      "command": "node --version",
+      "exitCode": 0
+    },
+    {
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 0
+    },
+    {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 0
+    },
+    {
+      "command": ".\\gradlew.bat :services:schedule-service:schedule-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 0
+    },
+    {
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 0
+    },
+    {
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 0
+    },
+    {
+      "command": ".\\gradlew.bat :services:api-gateway:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build --workspace @rct/pwa-vue",
+      "exitCode": 0
+    },
+    {
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3 rev-parse HEAD",
+      "exitCode": 0
+    },
+    {
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3 status --porcelain=v1 --untracked-files=all",
+      "exitCode": 0
+    }
+  ],
+  "producerHash": "DB8A4B84E4D042F72F5E0912C2F270CA063AB4735228CB9299A45748DFAC7A83"
+}

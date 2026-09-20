@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" tests="14" skipped="0" failures="4" errors="0" timestamp="2026-09-10T21:01:25" hostname="DITEK-PK" time="3.444">
+  <properties/>
+  <testcase name="everyFrozenRequiredClaimMustBePresent()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.199"/>
+  <testcase name="missingAndWrongTypeClaims_throw()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.164"/>
+  <testcase name="canonicalAndSemanticInvariants_areRequired()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.384"/>
+  <testcase name="joseHeader_mayIncludeCanonicalJwtType()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.152">
+    <failure message="ru.rutcampustrack.shared.security.InternalJwtException: Invalid internal token" type="ru.rutcampustrack.shared.security.InternalJwtException">ru.rutcampustrack.shared.security.InternalJwtException: Invalid internal token
+	at app//ru.rutcampustrack.shared.security.InternalJwtValidator.validate(InternalJwtValidator.java:103)
+	at app//ru.rutcampustrack.shared.security.InternalJwtValidatorTest.joseHeader_mayIncludeCanonicalJwtType(InternalJwtValidatorTest.java:134)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.lang.IllegalArgumentException: Collection of Identifiable instances may not be null or empty.
+	at io.jsonwebtoken.lang.Assert.notEmpty(Assert.java:302)
+	at io.jsonwebtoken.impl.lang.IdRegistry.&lt;init&gt;(IdRegistry.java:55)
+	at io.jsonwebtoken.impl.lang.IdRegistry.&lt;init&gt;(IdRegistry.java:51)
+	at io.jsonwebtoken.impl.DefaultJwtParserBuilder$4.changed(DefaultJwtParserBuilder.java:327)
+	at io.jsonwebtoken.impl.lang.DefaultCollectionMutator.clear(DefaultCollectionMutator.java:75)
+	at ru.rutcampustrack.shared.security.InternalJwtValidator.validate(InternalJwtValidator.java:64)
+	... 4 more
+</failure>
+  </testcase>
+  <testcase name="blankAndNullToken_throwWithoutBearerInMessage()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.166"/>
+  <testcase name="validToken_returnsCompleteFrozenClaims()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.362">
+    <failure message="ru.rutcampustrack.shared.security.InternalJwtException: Invalid internal token" type="ru.rutcampustrack.shared.security.InternalJwtException">ru.rutcampustrack.shared.security.InternalJwtException: Invalid internal token
+	at app//ru.rutcampustrack.shared.security.InternalJwtValidator.validate(InternalJwtValidator.java:103)
+	at app//ru.rutcampustrack.shared.security.InternalJwtValidatorTest.validToken_returnsCompleteFrozenClaims(InternalJwtValidatorTest.java:50)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.lang.IllegalArgumentException: Collection of Identifiable instances may not be null or empty.
+	at io.jsonwebtoken.lang.Assert.notEmpty(Assert.java:302)
+	at io.jsonwebtoken.impl.lang.IdRegistry.&lt;init&gt;(IdRegistry.java:55)
+	at io.jsonwebtoken.impl.lang.IdRegistry.&lt;init&gt;(IdRegistry.java:51)
+	at io.jsonwebtoken.impl.DefaultJwtParserBuilder$4.changed(DefaultJwtParserBuilder.java:327)
+	at io.jsonwebtoken.impl.lang.DefaultCollectionMutator.clear(DefaultCollectionMutator.java:75)
+	at ru.rutcampustrack.shared.security.InternalJwtValidator.validate(InternalJwtValidator.java:64)
+	... 4 more
+</failure>
+  </testcase>
+  <testcase name="duplicateJoseHeader_withValidSignature_isRejected()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.324"/>
+  <testcase name="joseHeader_mustContainExactlyCanonicalAlgAndType()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.225"/>
+  <testcase name="duplicatePayload_withValidSignature_isRejected()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.251"/>
+  <testcase name="onlyRs256Tokens_areAccepted()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.235"/>
+  <testcase name="terminalToken_isReadOnlyAndCanOmitGroup()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.144">
+    <failure message="ru.rutcampustrack.shared.security.InternalJwtException: Invalid internal token" type="ru.rutcampustrack.shared.security.InternalJwtException">ru.rutcampustrack.shared.security.InternalJwtException: Invalid internal token
+	at app//ru.rutcampustrack.shared.security.InternalJwtValidator.validate(InternalJwtValidator.java:103)
+	at app//ru.rutcampustrack.shared.security.InternalJwtValidatorTest.terminalToken_isReadOnlyAndCanOmitGroup(InternalJwtValidatorTest.java:68)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.lang.IllegalArgumentException: Collection of Identifiable instances may not be null or empty.
+	at io.jsonwebtoken.lang.Assert.notEmpty(Assert.java:302)
+	at io.jsonwebtoken.impl.lang.IdRegistry.&lt;init&gt;(IdRegistry.java:55)
+	at io.jsonwebtoken.impl.lang.IdRegistry.&lt;init&gt;(IdRegistry.java:51)
+	at io.jsonwebtoken.impl.DefaultJwtParserBuilder$4.changed(DefaultJwtParserBuilder.java:327)
+	at io.jsonwebtoken.impl.lang.DefaultCollectionMutator.clear(DefaultCollectionMutator.java:75)
+	at ru.rutcampustrack.shared.security.InternalJwtValidator.validate(InternalJwtValidator.java:64)
+	... 4 more
+</failure>
+  </testcase>
+  <testcase name="expiredToken_throws()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.118">
+    <failure message="java.lang.AssertionError: &#13;&#10;Expecting throwable message:&#13;&#10;  &quot;Invalid internal token&quot;&#13;&#10;to contain:&#13;&#10;  &quot;expired&quot;&#13;&#10;but did not.&#13;&#10;&#13;&#10;Throwable that failed the check:&#13;&#10;&#13;&#10;ru.rutcampustrack.shared.security.InternalJwtException: Invalid internal token&#13;&#10;&#9;at ru.rutcampustrack.shared.security.InternalJwtValidator.validate(InternalJwtValidator.java:103)&#13;&#10;&#9;at ru.rutcampustrack.shared.security.InternalJwtValidatorTest.lambda$expiredToken_throws$0(InternalJwtValidatorTest.java:84)&#13;&#10;&#9;at org.assertj.core.api.ThrowableAssert.catchThrowable(ThrowableAssert.java:63)&#13;&#10;&#9;at org.assertj.core.api.AssertionsForClassTypes.catchThrowable(AssertionsForClassTypes.java:904)&#13;&#10;&#9;at org.assertj.core.api.Assertions.catchThrowable(Assertions.java:1470)&#13;&#10;&#9;at org.assertj.core.api.Assertions.assertThatThrownBy(Assertions.java:1313)&#13;&#10;&#9;at ru.rutcampustrack.shared.security.InternalJwtValidatorTest.expiredToken_throws(InternalJwtValidatorTest.java:84)&#13;&#10;&#9;at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)&#13;&#10;&#9;at java.base/java.lang.reflect.Method.invoke(Method.java:580)&#13;&#10;&#9;at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:767)&#13;&#10;&#9;at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)&#13;&#10;&#9;at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)&#13;&#10;&#9;at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)&#13;&#10;&#9;at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)&#13;&#10;&#9;at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)&#13;&#10;&#9;at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)&#13;&#10;&#9;at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)&#13;&#10;&#9;at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)&#13;&#10;&#9;at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)&#13;&#10;&#9;at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)&#13;&#10;&#9;at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)&#13;&#10;&#9;at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)&#13;&#10;&#9;at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)&#13;&#10;&#9;at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$8(TestMethodTestDescriptor.java:217)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)&#13;&#10;&#9;at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:213)&#13;&#10;&#9;at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:138)&#13;&#10;&#9;at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:68)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)&#13;&#10;&#9;at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)&#13;&#10;&#9;at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)&#13;&#10;&#9;at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)&#13;&#10;&#9;at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)&#13;&#10;&#9;at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)&#13;&#10;&#9;at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)&#13;&#10;&#9;at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)&#13;&#10;&#9;at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)&#13;&#10;&#9;at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)&#13;&#10;&#9;at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)&#13;&#10;&#9;at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)&#13;&#10;&#9;at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)&#13;&#10;&#9;at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.processAllTestClasses(JUnitPlatformTestClassProcessor.java:124)&#13;&#10;&#9;at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.access$000(JUnitPlatformTestClassProcessor.java:99)&#13;&#10;&#9;at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor.stop(JUnitPlatformTestClassProcessor.java:94)&#13;&#10;&#9;at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:63)&#13;&#10;&#9;at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)&#13;&#10;&#9;at java.base/java.lang.reflect.Method.invoke(Method.java:580)&#13;&#10;&#9;at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)&#13;&#10;&#9;at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)&#13;&#10;&#9;at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)&#13;&#10;&#9;at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92)&#13;&#10;&#9;at jdk.proxy2/jdk.proxy2.$Proxy6.stop(Unknown Source)&#13;&#10;&#9;at org.gradle.api.internal.tasks.testing.worker.TestWorker$3.run(TestWorker.java:200)&#13;&#10;&#9;at org.gradle.api.internal.tasks.testing.worker.TestWorker.executeAndMaintainThreadName(TestWorker.java:132)&#13;&#10;&#9;at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:103)&#13;&#10;&#9;at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:63)&#13;&#10;&#9;at org.gradle.process.internal.worker.child.ActionExecutionWorker.execute(ActionExecutionWorker.java:56)&#13;&#10;&#9;at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:121)&#13;&#10;&#9;at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:71)&#13;&#10;&#9;at worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69)&#13;&#10;&#9;at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)&#13;&#10;Caused by: java.lang.IllegalArgumentException: Collection of Identifiable instances may not be null or empty.&#13;&#10;&#9;at io.jsonwebtoken.lang.Assert.notEmpty(Assert.java:302)&#13;&#10;&#9;at io.jsonwebtoken.impl.lang.IdRegistry.&lt;init&gt;(IdRegistry.java:55)&#13;&#10;&#9;at io.jsonwebtoken.impl.lang.IdRegistry.&lt;init&gt;(IdRegistry.java:51)&#13;&#10;&#9;at io.jsonwebtoken.impl.DefaultJwtParserBuilder$4.changed(DefaultJwtParserBuilder.java:327)&#13;&#10;&#9;at io.jsonwebtoken.impl.lang.DefaultCollectionMutator.clear(DefaultCollectionMutator.java:75)&#13;&#10;&#9;at ru.rutcampustrack.shared.security.InternalJwtValidator.validate(InternalJwtValidator.java:64)&#13;&#10;&#9;... 87 more&#13;&#10;" type="java.lang.AssertionError">java.lang.AssertionError: 
+Expecting throwable message:
+  &quot;Invalid internal token&quot;
+to contain:
+  &quot;expired&quot;
+but did not.
+
+Throwable that failed the check:
+
+ru.rutcampustrack.shared.security.InternalJwtException: Invalid internal token
+	at ru.rutcampustrack.shared.security.InternalJwtValidator.validate(InternalJwtValidator.java:103)
+	at ru.rutcampustrack.shared.security.InternalJwtValidatorTest.lambda$expiredToken_throws$0(InternalJwtValidatorTest.java:84)
+	at org.assertj.core.api.ThrowableAssert.catchThrowable(ThrowableAssert.java:63)
+	at org.assertj.core.api.AssertionsForClassTypes.catchThrowable(AssertionsForClassTypes.java:904)
+	at org.assertj.core.api.Assertions.catchThrowable(Assertions.java:1470)
+	at org.assertj.core.api.Assertions.assertThatThrownBy(Assertions.java:1313)
+	at ru.rutcampustrack.shared.security.InternalJwtValidatorTest.expiredToken_throws(InternalJwtValidatorTest.java:84)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:767)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$8(TestMethodTestDescriptor.java:217)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:213)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:138)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:68)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.processAllTestClasses(JUnitPlatformTestClassProcessor.java:124)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.access$000(JUnitPlatformTestClassProcessor.java:99)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor.stop(JUnitPlatformTestClassProcessor.java:94)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:63)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92)
+	at jdk.proxy2/jdk.proxy2.$Proxy6.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker$3.run(TestWorker.java:200)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.executeAndMaintainThreadName(TestWorker.java:132)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:103)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:63)
+	at org.gradle.process.internal.worker.child.ActionExecutionWorker.execute(ActionExecutionWorker.java:56)
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:121)
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:71)
+	at worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69)
+	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
+Caused by: java.lang.IllegalArgumentException: Collection of Identifiable instances may not be null or empty.
+	at io.jsonwebtoken.lang.Assert.notEmpty(Assert.java:302)
+	at io.jsonwebtoken.impl.lang.IdRegistry.&lt;init&gt;(IdRegistry.java:55)
+	at io.jsonwebtoken.impl.lang.IdRegistry.&lt;init&gt;(IdRegistry.java:51)
+	at io.jsonwebtoken.impl.DefaultJwtParserBuilder$4.changed(DefaultJwtParserBuilder.java:327)
+	at io.jsonwebtoken.impl.lang.DefaultCollectionMutator.clear(DefaultCollectionMutator.java:75)
+	at ru.rutcampustrack.shared.security.InternalJwtValidator.validate(InternalJwtValidator.java:64)
+	... 87 more
+
+	at ru.rutcampustrack.shared.security.InternalJwtValidatorTest.expiredToken_throws(InternalJwtValidatorTest.java:86)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="wrongSignatureIssuerAudienceAndPurpose_throw()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.471"/>
+  <testcase name="timeClaims_mustBeWholeSecondAndOrdered()" classname="ru.rutcampustrack.shared.security.InternalJwtValidatorTest" time="0.236"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

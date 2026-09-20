@@ -1,0 +1,7 @@
+{
+  "stage": "H86",
+  "testcontainersAfter": [],
+  "verifiedNoTestcontainers": true,
+  "beforeInventory": "Empty-file pipeline output; no serialized pre-census retained",
+  "reuseEnabled": false
+}

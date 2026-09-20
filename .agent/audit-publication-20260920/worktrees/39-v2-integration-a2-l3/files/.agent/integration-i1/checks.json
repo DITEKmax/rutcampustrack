@@ -1,0 +1,134 @@
+{
+  "schema": "integration-i1-checks-v1",
+  "date": "2026-09-14",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3",
+  "branch": "codex/v2-integration-a2-l3",
+  "a2_source_manifest_sha256": "0A033E8E07EC57AD6219844512D0232C666BC71385F3A844D24F4C28C13A7923",
+  "union_manifest_sha256": "EB831B86E3E61559B4B9B3755AD36F69F582039CB6D460F88B003544E210DC85",
+  "union_manifest_path": ".agent/integration-i1/union-manifest.sha256",
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "gradle": "repository gradlew.bat, Gradle 8.12",
+    "java": "Java 21 (reported by Gradle runtime)",
+    "runtime": "no application runtime; H19 build gate only"
+  },
+  "checks": [
+    {
+      "id": "source-hash-verification",
+      "criterion": "accepted source files are transferred without unapproved changes",
+      "command": "PowerShell Get-FileHash SHA256 comparison of target against A2 13 exact rows and L3 4 exact rows",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "All 17 exact copied product files match their accepted source worktree hashes. The overlapping academic.proto is composed and has separate base/source/final hashes in source-freeze.md. The canonical 18-path union manifest is EB831B86E3E61559B4B9B3755AD36F69F582039CB6D460F88B003544E210DC85."
+    },
+    {
+      "id": "proto-ownership-static",
+      "criterion": "Academic has no binding import/declarations and Schedule owns each binding declaration once while A2 resolver/map/Homework declarations remain",
+      "command": "rg -n 'schedule.proto|ReserveHomeworkBinding|ConfirmHomeworkBinding|GetHomeworkBindings|HomeworkBinding(State|Response|Request|sResponse)' proto/academic.proto proto/schedule.proto; rg -n 'ResolveStudentProjectionScope|reserved 2|GetCampusMapManifest|SetHomeworkCompletion|GetHomeworksForWeek' proto/academic.proto",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Binding RPCs/messages occur only in proto/schedule.proto; academic.proto has no schedule import or binding surface and retains the A2 resolver, reserved tag 2, Homework and map declarations."
+    },
+    {
+      "id": "product-diff-whitespace",
+      "criterion": "union product diff has no whitespace errors",
+      "command": "git diff --check -- AGENTS.md proto/academic.proto proto/schedule.proto services/academic-service/academic-app/build.gradle.kts services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "No diff-check errors; Git emitted only the existing LF-to-CRLF normalization warning."
+    },
+    {
+      "id": "scope-exact18",
+      "criterion": "the working tree contains exactly the frozen 18 product paths, excluding owned metadata",
+      "command": "PowerShell compare frozen 18-path array with git diff --name-only plus git ls-files --others --exclude-standard after excluding AGENTS.md, .agent/integration-i1/* and docs/sources/*",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "The computed product path set contains exactly 18 expected paths with no missing or extra entries."
+    },
+    {
+      "id": "h19-canonical15",
+      "criterion": "five consumer modules generate and compile Java and test sources on the combined union",
+      "command": ".\\gradlew.bat --no-daemon --no-parallel --max-workers=1 --no-problems-report --console=plain :services:schedule-service:schedule-app:generateProto :services:schedule-service:schedule-app:compileJava :services:schedule-service:schedule-app:compileTestJava :services:academic-service:academic-app:generateProto :services:academic-service:academic-app:compileJava :services:academic-service:academic-app:compileTestJava :services:attendance-service:attendance-app:generateProto :services:attendance-service:attendance-app:compileJava :services:attendance-service:attendance-app:compileTestJava :services:mobile-bff:mobile-bff-app:generateProto :services:mobile-bff:mobile-bff-app:compileJava :services:mobile-bff:mobile-bff-app:compileTestJava :services:document-renderer-service:document-renderer-app:generateProto :services:document-renderer-service:document-renderer-app:compileJava :services:document-renderer-service:document-renderer-app:compileTestJava",
+      "exit_code": 1,
+      "status": "FAIL_CAUSE_UNRESOLVED",
+      "a2_source_manifest_sha256": "0A033E8E07EC57AD6219844512D0232C666BC71385F3A844D24F4C28C13A7923",
+      "union_manifest_sha256": "EB831B86E3E61559B4B9B3755AD36F69F582039CB6D460F88B003544E210DC85",
+      "execution_context": {
+        "sandbox_permissions": "use_default",
+        "workdir": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3",
+        "shell": "PowerShell",
+        "heavy_lane": "I1 exclusive",
+        "escalation": "none"
+      },
+      "executed": [
+        ":services:schedule-service:schedule-app:generateProto",
+        ":services:shared:shared-web-api:compileJava",
+        ":services:schedule-service:schedule-api-contract:compileJava",
+        ":services:shared:shared-events:compileJava",
+        ":services:shared:shared-logback:compileJava",
+        ":services:shared:shared-observability:compileJava",
+        ":services:shared:shared-outbox:compileJava"
+      ],
+      "not_reached": [
+        ":services:schedule-service:schedule-app:compileJava",
+        ":services:schedule-service:schedule-app:compileTestJava",
+        ":services:academic-service:academic-app:generateProto",
+        ":services:academic-service:academic-app:compileJava",
+        ":services:academic-service:academic-app:compileTestJava",
+        ":services:attendance-service:attendance-app:generateProto",
+        ":services:attendance-service:attendance-app:compileJava",
+        ":services:attendance-service:attendance-app:compileTestJava",
+        ":services:mobile-bff:mobile-bff-app:generateProto",
+        ":services:mobile-bff:mobile-bff-app:compileJava",
+        ":services:mobile-bff:mobile-bff-app:compileTestJava",
+        ":services:document-renderer-service:document-renderer-app:generateProto",
+        ":services:document-renderer-service:document-renderer-app:compileJava",
+        ":services:document-renderer-service:document-renderer-app:compileTestJava"
+      ],
+      "log_path": ".agent/integration-i1/h19-canonical15.log",
+      "log_sha256": "F3A5EB5DDF23C7C530539EA64F8D034C88E30483E9948A390C8E688E5783AC23",
+      "log_bytes": 14348,
+      "evidence": "The first actual failure is the out-of-scope dependency task :services:shared:shared-outbox:compileJava: 13 unresolved symbols/packages for ru.rutcampustrack.shared.events.IdempotencyStore and ru.rutcampustrack.shared.observability.MetricNames, plus 4 warnings. The direct error locations are outside the I1 union; the causal classification remains unresolved because no classpath/output diagnostic was run. The queue stopped at this failure."
+    },
+    {
+      "id": "h20-shared-outbox-reproducer",
+      "criterion": "bounded reproduction distinguishes the H19 shared-outbox failure under the approved escalated context without changing I1 source, ACL or configuration",
+      "command": ".\\gradlew.bat --no-daemon --no-parallel --max-workers=1 --no-problems-report --no-build-cache --rerun-tasks --console=plain :services:shared:shared-outbox:compileJava",
+      "exit_code": 0,
+      "status": "PASS_BOUNDED_ESCALATED_REPRODUCER",
+      "execution_context": {
+        "sandbox_permissions": "require_escalated",
+        "whoami": "ditek-pk\\maksd",
+        "workdir": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3",
+        "java_path": "C:/Users/maksd/.jdks/ms-21.0.10/bin/java.exe",
+        "java_version": "21.0.10",
+        "gradle_cache": "C:/Users/maksd/.gradle",
+        "heavy_lane": "I1 exclusive",
+        "source_acl_config_changes": "none"
+      },
+      "preflight": {
+        "IdempotencyStore.class": "readable, 338 bytes",
+        "MetricNames.class": "readable, 1080 bytes",
+        "shared-outbox main output directory": "exists"
+      },
+      "log_path": ".agent/integration-i1/h20-shared-outbox.log",
+      "log_sha256": "2CDDB5784B43919FA16829138462937FD0629562EA90A12287F321F4FF2104E4",
+      "log_bytes": 2372,
+      "test_counts": null,
+      "evidence": "The exact one-task reproducer reached shared-events:compileJava, shared-observability:compileJava and shared-outbox:compileJava and returned BUILD SUCCESSFUL with 3 actionable tasks executed. It emitted 2 Jackson annotation warnings and 4 deprecation warnings but no compilation error. This is new evidence that the H19 failure is execution/cache/task-topology dependent; it does not establish permissions as the sole cause and does not convert H19's five-module union into PASS."
+    }
+  ],
+  "runtime_evidence": {
+    "status": "BLOCKED_AFTER_H19_OUT_OF_SCOPE_FAILURE",
+    "exit_code": 1,
+    "evidence": "Only the combined build gate was started. Schedule generateProto reached PASS before the out-of-scope shared-outbox compile failure. Focused A2 tests, Schedule security tests and BFF OpenAPI test were not run because H19 requires stop-first-failure and root decision. The failure cause is unproven; no source correction or environment/classpath diagnostic was attempted.",
+    "cleanup": "No Docker/Testcontainers resource was started by H19; no owned runtime cleanup was required."
+  },
+  "limitations": [
+    "H19 did not reach the five app compile targets after the baseline shared-outbox failure.",
+    "Focused A2 and changed L3 tests remain pending until root decides whether to run a bounded diagnostic/isolation for the out-of-scope shared dependency without widening I1 source.",
+    "No application runtime, real transfer/grant chain or production operation was exercised."
+  ]
+}

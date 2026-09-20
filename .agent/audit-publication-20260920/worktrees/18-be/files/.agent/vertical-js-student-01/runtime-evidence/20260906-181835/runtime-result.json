@@ -1,0 +1,59 @@
+{
+  "schema": "rct.runtime-evidence.v1",
+  "task": "JS-STUDENT-01-r1",
+  "runId": "20260906-181835",
+  "startedAt": "2026-09-06T18:18:35.2760412+03:00",
+  "status": "FAIL",
+  "stage": "remaining-services-and-schedule-seed",
+  "resources": {
+    "network": "rct-js-student-01",
+    "containers": [
+      "rct-js-student-01-pg-academic",
+      "rct-js-student-01-pg-schedule",
+      "rct-js-student-01-mongo",
+      "rct-js-student-01-redis",
+      "rct-js-student-01-rabbit"
+    ],
+    "ports": [
+      25431,
+      25432,
+      27027,
+      26379,
+      25672,
+      35672,
+      29090,
+      29091,
+      29191,
+      29092,
+      29192,
+      29093,
+      29193,
+      29080,
+      28080
+    ]
+  },
+  "services": {
+    "academic": {
+      "pid": 47532,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-181835\\academic.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-181835\\academic.err.log"
+    },
+    "auth": {
+      "pid": 35384,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-181835\\auth.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\be\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-181835\\auth.err.log"
+    }
+  },
+  "assertions": [
+    {
+      "name": "isolated infrastructure ready",
+      "passed": true,
+      "evidence": {
+        "containers": 5,
+        "anonymousStorage": true
+      }
+    }
+  ],
+  "error": "Readiness timeout after 180s: auth http://127.0.0.1:29090/actuator/health",
+  "completedAt": "2026-09-06T18:22:01.2733448+03:00"
+}

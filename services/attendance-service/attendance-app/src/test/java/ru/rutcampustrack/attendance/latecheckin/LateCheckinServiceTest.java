@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -24,12 +25,15 @@ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -45,6 +49,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -61,6 +66,7 @@ class LateCheckinServiceTest {
     private static final Long OTHER_GROUP_ID = 99L;
     private static final Long LESSON_ID = 42L;
     private static final Long SUBJECT_ID = 7L;
+    private static final Long SEMESTER_ID = 1L;
     private static final String REQUEST_ID = "req-1";
     private static final Instant NOW = Instant.parse("2026-04-23T10:00:00Z");
 
@@ -73,6 +79,8 @@ class LateCheckinServiceTest {
     @Mock private LateCheckinEventPublisher eventPublisher;
     @Mock private BusinessMetrics businessMetrics;
     @Mock private Counter lateCheckinCreatedCounter;
+    @Mock private PairWriteCoordinator pairWriteCoordinator;
+    @Mock private SemesterCacheService semesterCacheService;
 
     private final Clock clock = Clock.fixed(NOW, ZoneId.of("UTC"));
 
@@ -83,7 +91,7 @@ class LateCheckinServiceTest {
         service = new LateCheckinService(
                 repository, requestContext, scheduleGrpcClient, academicGrpcClient,
                 attendanceRepository, attendanceWritePort, eventPublisher,
-                businessMetrics, clock);
+                businessMetrics, clock, pairWriteCoordinator, semesterCacheService);
         lenient().when(businessMetrics.lateCheckinCreatedCounter()).thenReturn(lateCheckinCreatedCounter);
     }
 
@@ -295,9 +303,10 @@ class LateCheckinServiceTest {
         assertThat(captor.getValue().getDecisionBy()).isEqualTo(headmanId);
         assertThat(captor.getValue().getDecisionAt()).isEqualTo(NOW);
 
-        verify(attendanceWritePort).mark(
-                STUDENT_ID, LESSON_ID, GROUP_ID,
-                AttendanceStatus.PRESENT, AttendanceSource.LATE_CHECKIN);
+        verify(attendanceWritePort).markWithLesson(
+                STUDENT_ID, LESSON_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID, 3,
+                LocalDate.of(2026, 4, 23), AttendanceStatus.PRESENT,
+                AttendanceSource.LATE_CHECKIN, headmanId);
         verify(eventPublisher).publishDecided(any(), any(), eq(3), eq(SUBJECT_ID), eq("Математика"));
         assertThat(decided).isNotNull();
     }
@@ -382,6 +391,34 @@ class LateCheckinServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
+    @Test
+    void applyDecision_validatesInternalActorInTheRequestGroupBeforePairWrite() {
+        Long internalHeadmanId = 42L;
+        LateCheckinRequest pending = newPending(REQUEST_ID);
+        when(repository.findById(REQUEST_ID)).thenReturn(Optional.of(pending));
+        when(academicGrpcClient.isHeadman(internalHeadmanId, GROUP_ID))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
+
+        assertThatThrownBy(() -> service.applyDecision(REQUEST_ID, internalHeadmanId, true))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(pairWriteCoordinator, never()).lock(anyLong(), anyLong(), anyLong(), any());
+        verify(repository, never()).save(any());
+        verifyNoInteractions(attendanceWritePort, eventPublisher, scheduleGrpcClient);
+    }
+
+    @Test
+    void applyDecision_rejectsMissingActorBeforeGroupLookupOrWrite() {
+        LateCheckinRequest pending = newPending(REQUEST_ID);
+        when(repository.findById(REQUEST_ID)).thenReturn(Optional.of(pending));
+
+        assertThatThrownBy(() -> service.applyDecision(REQUEST_ID, null, true))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verifyNoInteractions(academicGrpcClient, pairWriteCoordinator, attendanceWritePort, eventPublisher);
+        verify(repository, never()).save(any());
+    }
+
     // ============================================================== helpers
 
     private void stubStudentCaller() {
@@ -418,6 +455,10 @@ class LateCheckinServiceTest {
                 .studentId(STUDENT_ID)
                 .groupId(GROUP_ID)
                 .lessonId(LESSON_ID)
+                .subjectId(SUBJECT_ID)
+                .semesterId(SEMESTER_ID)
+                .lessonNumber(3)
+                .lessonDate(LocalDate.of(2026, 4, 23))
                 .studentName("Иванов И.")
                 .status(LateCheckinRequestStatus.PENDING)
                 .createdAt(NOW)

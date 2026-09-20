@@ -1,0 +1,100 @@
+{
+  "recordedAt": "2026-09-09T18:50:00+03:00",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "runtime": {
+    "server": "Vite 7.3.6 with pwa-vue/vite.config.ts and --configLoader runner",
+    "serverUrl": "http://127.0.0.1:18540/.requests-harness/",
+    "serverPid": 47856,
+    "browser": "Microsoft Edge headless (installed local binary)",
+    "capture": "CDP Emulation.setDeviceMetricsOverride plus Page.captureScreenshot",
+    "debugPort": "127.0.0.1:18541 (temporary, released)"
+  },
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "deviceScaleFactor": 1
+  },
+  "screenshots": [
+    {
+      "state": "open",
+      "path": ".agent/student-requests-ui-c/r6/open.png",
+      "sha256": "F0A852CBBA387B8B358209E1EB8537A729C04C1E66A9D482BB783B3B424D7149",
+      "width": 390,
+      "height": 844,
+      "bytes": 29558,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "maxRight": 390,
+      "observation": "Открытые заявки, pending card, отмена и dock видимы; горизонтального overflow нет."
+    },
+    {
+      "state": "archive",
+      "path": ".agent/student-requests-ui-c/r6/archive.png",
+      "sha256": "46627276654B867839734094DCD6DB5F8183BDB02BD276C44914F2C89411EAEE",
+      "width": 390,
+      "height": 844,
+      "bytes": 24840,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "maxRight": 390,
+      "observation": "Архивная approved заявка, решение и dock видимы; горизонтального overflow нет."
+    },
+    {
+      "state": "type",
+      "path": ".agent/student-requests-ui-c/r6/type.png",
+      "sha256": "FBC766DB25C06941A4B551217AD0C6D4FD7E5ABB70DCC76E50489D8D41DC81C4",
+      "width": 390,
+      "height": 844,
+      "bytes": 12076,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "maxRight": 390,
+      "observation": "Экран выбора типа с двумя карточками видим; горизонтального overflow нет."
+    },
+    {
+      "state": "excuse",
+      "path": ".agent/student-requests-ui-c/r6/excuse.png",
+      "sha256": "B57EDFCF94BB0D02247797D94B825DD2DB4D24F0F3642DF2A97C702EB844B526",
+      "width": 390,
+      "height": 844,
+      "bytes": 39999,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "maxRight": 390,
+      "scrollHeight": 1110,
+      "observation": "Recovery warning показывает present-ineligible и missing выбранные пары, доступно удаление; raw lesson-missing ID не отображается."
+    },
+    {
+      "state": "excuse-focus",
+      "path": ".agent/student-requests-ui-c/r6/excuse-focus.png",
+      "sha256": "D2C8BE02CB68BA860247D7EDE77C63C1CFB625954D2BCD65FFD97ECAB8F34B62",
+      "width": 390,
+      "height": 844,
+      "bytes": 40717,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "maxRight": 390,
+      "scrollHeight": 1110,
+      "activeElement": "INPUT.request-visually-hidden",
+      "focusEvidence": "Фокус file input установлен через CDP; видимое поле выбора файла имеет purple focus-within ring. Recovery и focus представлены двумя кадрами из-за вертикального scrollHeight."
+    },
+    {
+      "state": "late",
+      "path": ".agent/student-requests-ui-c/r6/late.png",
+      "sha256": "698A7E89158CFC59E28866475A3D1D0BDD27D388B7FACEBAC5472D0CB7F03FEC",
+      "width": 390,
+      "height": 844,
+      "bytes": 30736,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "maxRight": 390,
+      "observation": "Late single-select, budget и submit confirmation видимы; горизонтального overflow нет."
+    }
+  ],
+  "observations": {
+    "overflow": "PASS under exact CDP 390x844 metrics: all states scrollWidth/bodyScrollWidth/maxRight are 390.",
+    "darkTheme": "PASS for represented harness dark surface.",
+    "lightTheme": "DEFERRED by owner; not an R6 acceptance gate.",
+    "reducedMotion": "Source guard has prefers-reduced-motion: reduce disabling transition and animation; browser capture did not claim an unrepresented light or motion variant."
+  }
+}

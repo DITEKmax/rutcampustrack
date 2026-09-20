@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.integration.OtpIT" tests="8" skipped="0" failures="2" errors="0" timestamp="2026-09-11T09:54:39" hostname="DITEK-PK" time="0.909">
+  <properties/>
+  <testcase name="changePassword_withWrongCurrent_returns401()" classname="ru.rutcampustrack.auth.integration.OtpIT" time="0.192">
+    <failure message="org.opentest4j.AssertionFailedError: &#13;&#10;expected: 401 UNAUTHORIZED&#13;&#10; but was: 403 FORBIDDEN" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: 
+expected: 401 UNAUTHORIZED
+ but was: 403 FORBIDDEN
+	at app//ru.rutcampustrack.auth.integration.OtpIT.changePassword_withWrongCurrent_returns401(OtpIT.java:182)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="otpVerifyByCode_withUnknownCode_returns401()" classname="ru.rutcampustrack.auth.integration.OtpIT" time="0.058"/>
+  <testcase name="otpVerify_withCorrectCode_returnsTokenPair()" classname="ru.rutcampustrack.auth.integration.OtpIT" time="0.173"/>
+  <testcase name="otpVerifyByCode_withCorrectCode_returnsTokenPair()" classname="ru.rutcampustrack.auth.integration.OtpIT" time="0.109"/>
+  <testcase name="changePassword_withCorrectCurrent_returns204()" classname="ru.rutcampustrack.auth.integration.OtpIT" time="0.172">
+    <failure message="org.opentest4j.AssertionFailedError: &#13;&#10;expected: 204 NO_CONTENT&#13;&#10; but was: 400 BAD_REQUEST" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: 
+expected: 204 NO_CONTENT
+ but was: 400 BAD_REQUEST
+	at app//ru.rutcampustrack.auth.integration.OtpIT.changePassword_withCorrectCurrent_returns204(OtpIT.java:154)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="otpVerify_withWrongCode_returns401()" classname="ru.rutcampustrack.auth.integration.OtpIT" time="0.099"/>
+  <testcase name="otpRequest_withNonexistentTelegramId_returns401()" classname="ru.rutcampustrack.auth.integration.OtpIT" time="0.04"/>
+  <testcase name="otpRequest_withValidTelegramId_returns204NoBody()" classname="ru.rutcampustrack.auth.integration.OtpIT" time="0.053"/>
+  <system-out><![CDATA[{"ts":"2026-09-11T12:54:39.611+03:00","v":"1","level":"INFO","logger":"org.springframework.test.context.support.AnnotationConfigContextLoaderUtils","thread":"Test worker","msg":"Could not detect default configuration classes for test class [ru.rutcampustrack.auth.integration.OtpIT]: OtpIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.","service":"auth-service"}
+{"ts":"2026-09-11T12:54:39.623+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.test.context.SpringBootTestContextBootstrapper","thread":"Test worker","msg":"Found @SpringBootConfiguration ru.rutcampustrack.auth.AuthApplication for test class ru.rutcampustrack.auth.integration.OtpIT","service":"auth-service"}
+{"ts":"2026-09-11T12:54:39.967+03:00","v":"1","level":"INFO","logger":"org.springframework.amqp.rabbit.connection.CachingConnectionFactory","thread":"http-nio-auto-1-exec-1","msg":"Attempting to connect to: [localhost:5672]","traceId":"ba7f9328b77edf700e60133090ce0e15","service":"auth-service"}
+{"ts":"2026-09-11T12:54:39.977+03:00","v":"1","level":"WARN","logger":"ru.rutcampustrack.auth.event.DomainEventListener","thread":"http-nio-auto-1-exec-1","msg":"Failed to publish event otp.requested (9242d19c-7621-4dc7-9e18-4748a9aaf705): java.net.ConnectException: Connection refused: getsockopt","traceId":"ba7f9328b77edf700e60133090ce0e15","service":"auth-service"}
+{"ts":"2026-09-11T12:54:40.045+03:00","v":"1","level":"INFO","logger":"org.springframework.amqp.rabbit.connection.CachingConnectionFactory","thread":"http-nio-auto-1-exec-2","msg":"Attempting to connect to: [localhost:5672]","traceId":"386afb3443a774ca44d547869b8a5f52","service":"auth-service"}
+{"ts":"2026-09-11T12:54:40.046+03:00","v":"1","level":"WARN","logger":"ru.rutcampustrack.auth.event.DomainEventListener","thread":"http-nio-auto-1-exec-2","msg":"Failed to publish event otp.verified (03b3f29a-36c1-42ed-98dd-58de3a4e882f): java.net.ConnectException: Connection refused: getsockopt","traceId":"386afb3443a774ca44d547869b8a5f52","service":"auth-service"}
+{"ts":"2026-09-11T12:54:40.100+03:00","v":"1","level":"INFO","logger":"org.springframework.amqp.rabbit.connection.CachingConnectionFactory","thread":"http-nio-auto-1-exec-3","msg":"Attempting to connect to: [localhost:5672]","traceId":"b69c71809ddfe927c379f47bc158480f","service":"auth-service"}
+{"ts":"2026-09-11T12:54:40.102+03:00","v":"1","level":"WARN","logger":"ru.rutcampustrack.auth.event.DomainEventListener","thread":"http-nio-auto-1-exec-3","msg":"Failed to publish event otp.requested (5c89b024-e1f8-4391-9061-6cf172d2454c): java.net.ConnectException: Connection refused: getsockopt","traceId":"b69c71809ddfe927c379f47bc158480f","service":"auth-service"}
+{"ts":"2026-09-11T12:54:40.156+03:00","v":"1","level":"INFO","logger":"org.springframework.amqp.rabbit.connection.CachingConnectionFactory","thread":"http-nio-auto-1-exec-4","msg":"Attempting to connect to: [localhost:5672]","traceId":"9a0ead5c9b5e7d56732b2bfa36211f23","service":"auth-service"}
+{"ts":"2026-09-11T12:54:40.159+03:00","v":"1","level":"WARN","logger":"ru.rutcampustrack.auth.event.DomainEventListener","thread":"http-nio-auto-1-exec-4","msg":"Failed to publish event otp.verified (13b1946a-c8b6-48ad-a351-64ad92cb0631): java.net.ConnectException: Connection refused: getsockopt","traceId":"9a0ead5c9b5e7d56732b2bfa36211f23","service":"auth-service"}
+{"ts":"2026-09-11T12:54:40.409+03:00","v":"1","level":"INFO","logger":"org.springframework.amqp.rabbit.connection.CachingConnectionFactory","thread":"http-nio-auto-1-exec-7","msg":"Attempting to connect to: [localhost:5672]","traceId":"5ec9492dbd07f588614e878f120f812c","service":"auth-service"}
+{"ts":"2026-09-11T12:54:40.410+03:00","v":"1","level":"WARN","logger":"ru.rutcampustrack.auth.event.DomainEventListener","thread":"http-nio-auto-1-exec-7","msg":"Failed to publish event otp.requested (2c968d25-b9f9-4bd6-b954-7ce62a7f67e5): java.net.ConnectException: Connection refused: getsockopt","traceId":"5ec9492dbd07f588614e878f120f812c","service":"auth-service"}
+{"ts":"2026-09-11T12:54:40.525+03:00","v":"1","level":"INFO","logger":"org.springframework.amqp.rabbit.connection.CachingConnectionFactory","thread":"http-nio-auto-1-exec-10","msg":"Attempting to connect to: [localhost:5672]","traceId":"f9416ddfdbb5b60695e988fb28c5e188","service":"auth-service"}
+{"ts":"2026-09-11T12:54:40.527+03:00","v":"1","level":"WARN","logger":"ru.rutcampustrack.auth.event.DomainEventListener","thread":"http-nio-auto-1-exec-10","msg":"Failed to publish event otp.requested (49ecf9fb-c5ea-4a82-9ecd-e879e4705a23): java.net.ConnectException: Connection refused: getsockopt","traceId":"f9416ddfdbb5b60695e988fb28c5e188","service":"auth-service"}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,17 @@
+{
+  "baseRevision": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837",
+  "freezeHash": "738036ECFE075EFD3BF356188EC2045084D59D9ABA3F324F973E118A527DD4C0",
+  "sourcePaths": 16,
+  "sourceHashMismatches": 0,
+  "h93Exit": 0,
+  "sharedTests": 22.0,
+  "retainedAppTests": 42,
+  "failures": 0.0,
+  "errors": 0.0,
+  "skipped": 0.0,
+  "appEvidence": "H91 individual app tests PASS; overall H91 FAIL, later shared-only test corrections",
+  "priorReview": "h92-full-review.md FAIL Medium configured reverse-audience fixture",
+  "correction": "Only shared ServerInterceptorTest fixture; other15 hashes unchanged",
+  "review": "PASS0 fresh independent full16 recheck; h93-full-recheck.md",
+  "productionRuntime": "NOT CLAIMED"
+}

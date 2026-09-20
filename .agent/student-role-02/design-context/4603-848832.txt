@@ -1,0 +1,131 @@
+const imgIconPrevious = "https://www.figma.com/api/mcp/asset/54fb2bac-9a94-4622-b890-7d4e93d642e3.svg";
+const imgChevronColor = "https://www.figma.com/api/mcp/asset/9a067581-8e6d-433b-a2da-3fdf76c3b502.svg";
+
+function IconPrevious({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[16px]"} data-node-id="4597:3579" data-name="icon/previous">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconPrevious} />
+    </div>
+  );
+}
+
+type MapFloorPlanViewerProps = {
+  className?: string;
+  state?: "empty";
+};
+
+function MapFloorPlanViewer({ className, state = "empty" }: MapFloorPlanViewerProps) {
+  return (
+    <div className={className || "content-stretch flex flex-col items-start relative w-[760px]"} data-node-id="721:39641">
+      <div className="bg-[var(--color-surface-base,#0b0b0c)] border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex flex-col gap-[var(--space-3,12px)] h-[200px] items-start justify-center overflow-clip p-[var(--space-4,16px)] relative rounded-[var(--radius-md,10px)] shrink-0 w-full" data-node-id="721:39642" data-name="canvas">
+        <div className="[word-break:break-word] content-stretch flex flex-col gap-[var(--space-2,8px)] items-start leading-[1.45] not-italic overflow-clip relative shrink-0 text-[length:var(--font-size-dense,14px)] w-full whitespace-nowrap" data-node-id="721:39658" data-name="state-content">
+          <p className="font-[family-name:var(--font-family-sans,'Onest:Medium')] relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)]" data-node-id="721:39659" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+            Для этого этажа схема не загружена
+          </p>
+          <p className="font-[family-name:var(--font-family-sans,'Onest:Regular')] relative shrink-0 text-[color:var(--color-text-secondary,#c8c2d6)]" data-node-id="721:39660" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+            Выбери другой этаж
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Component17() {
+  return (
+    <div className="bg-[var(--color-surface-base,#0b0b0c)] overflow-clip relative rounded-[24px] size-full" data-node-id="4603:848832" data-name="17 · Карта / корпуса">
+      <div className="absolute content-stretch flex flex-col gap-[16px] items-start left-[16px] top-[76px] w-[358px]" data-node-id="4603:848833" data-name="body/Карта кампуса">
+        <div className="content-stretch flex flex-col gap-[12px] items-start overflow-clip relative shrink-0 w-[358px]" data-node-id="I4603:848833;4516:847926" data-name="mobile/building-floor-picker">
+          <div className="content-stretch flex flex-col gap-[6px] items-start overflow-clip relative shrink-0 w-[358px]" data-node-id="I4603:848833;4516:847927" data-name="field/Корпус">
+            <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.45] not-italic relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-dense,14px)] whitespace-nowrap" data-node-id="I4603:848833;4516:847928">
+              Корпус
+            </p>
+            <div className="content-stretch flex flex-col gap-[var(--space-1,4px)] h-[44px] items-start p-[var(--space-0,0px)] relative shrink-0 w-[358px]" data-node-id="I4603:848833;4516:847929" data-name="SelectField / Корпус">
+              <div className="h-[40px] overflow-clip relative shrink-0 w-full" data-node-id="I4603:848833;4516:847929;80:155" data-name="Field">
+                <div className="absolute bg-[var(--color-surface-raised,#1c1922)] border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex gap-[var(--space-2,8px)] h-[40px] items-center left-0 px-[var(--space-3,12px)] py-[var(--space-2,8px)] right-0 rounded-[var(--radius-xl,16px)] top-0" data-node-id="I4603:848833;4516:847929;80:156" data-name="TextInput">
+                  <div className="content-stretch flex flex-[1_0_0] gap-[var(--space-0,0px)] h-[24px] items-center min-w-px overflow-clip p-[var(--space-0,0px)] relative" data-node-id="I4603:848833;4516:847929;80:156;77:109" data-name="Value area">
+                    <p className="[word-break:break-word] flex-[1_0_0] font-[family-name:var(--font-family-sans,'Onest:Regular')] h-[24px] leading-[1.5] max-w-[280px] min-w-px not-italic overflow-hidden relative text-[16px] text-[color:var(--color-text-primary,#edeaf3)] text-ellipsis whitespace-nowrap" data-node-id="I4603:848833;4516:847929;80:156;77:110" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                      Корпус 5
+                    </p>
+                  </div>
+                </div>
+                <div className="absolute overflow-clip right-[12px] size-[16px] top-[12px]" data-node-id="I4603:848833;4516:847929;80:179" data-name="Chevron">
+                  <div className="absolute bg-[var(--color-text-secondary,#c8c2d6)] left-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-size-[16px_16px] size-[16px] top-0" data-node-id="I4603:848833;4516:847929;80:182" style={{ maskImage: `url("${imgChevronColor}")` }} data-name="Chevron color" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="content-stretch flex flex-col gap-[6px] items-start overflow-clip relative shrink-0 w-[358px]" data-node-id="I4603:848833;4516:847941" data-name="field/Этаж">
+            <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.45] not-italic relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-dense,14px)] whitespace-nowrap" data-node-id="I4603:848833;4516:847942">
+              Этаж
+            </p>
+            <div className="content-stretch flex flex-col gap-[var(--space-1,4px)] h-[44px] items-start p-[var(--space-0,0px)] relative shrink-0 w-[358px]" data-node-id="I4603:848833;4516:847943" data-name="SelectField / Этаж">
+              <div className="h-[40px] overflow-clip relative shrink-0 w-full" data-node-id="I4603:848833;4516:847943;80:155" data-name="Field">
+                <div className="absolute bg-[var(--color-surface-raised,#1c1922)] border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex gap-[var(--space-2,8px)] h-[40px] items-center left-0 px-[var(--space-3,12px)] py-[var(--space-2,8px)] right-0 rounded-[var(--radius-xl,16px)] top-0" data-node-id="I4603:848833;4516:847943;80:156" data-name="TextInput">
+                  <div className="content-stretch flex flex-[1_0_0] gap-[var(--space-0,0px)] h-[24px] items-center min-w-px overflow-clip p-[var(--space-0,0px)] relative" data-node-id="I4603:848833;4516:847943;80:156;77:109" data-name="Value area">
+                    <p className="[word-break:break-word] flex-[1_0_0] font-[family-name:var(--font-family-sans,'Onest:Regular')] h-[24px] leading-[1.5] max-w-[280px] min-w-px not-italic overflow-hidden relative text-[16px] text-[color:var(--color-text-primary,#edeaf3)] text-ellipsis whitespace-nowrap" data-node-id="I4603:848833;4516:847943;80:156;77:110" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                      3 этаж
+                    </p>
+                  </div>
+                </div>
+                <div className="absolute overflow-clip right-[12px] size-[16px] top-[12px]" data-node-id="I4603:848833;4516:847943;80:179" data-name="Chevron">
+                  <div className="absolute bg-[var(--color-text-secondary,#c8c2d6)] left-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-size-[16px_16px] size-[16px] top-0" data-node-id="I4603:848833;4516:847943;80:182" style={{ maskImage: `url("${imgChevronColor}")` }} data-name="Chevron color" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <MapFloorPlanViewer className="content-stretch flex flex-col h-[200px] items-start relative shrink-0 w-[358px]" />
+      </div>
+      <div className="absolute content-stretch flex gap-[10px] h-[44px] items-center left-[16px] overflow-clip top-[20px]" data-node-id="4800:4023" data-name="header">
+        <div className="bg-[var(--color-surface-float,#292531)] overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4800:4024" data-name="back">
+          <IconPrevious className="absolute left-[14px] size-[16px] top-[14px]" />
+        </div>
+        <div className="[word-break:break-word] flex flex-col font-['Onest:SemiBold'] h-[32px] justify-center leading-[0] not-italic relative shrink-0 text-[22px] text-[color:var(--color-text-primary,#edeaf3)] w-[304px]" data-node-id="4800:4026">
+          <p className="leading-[normal]">Карта кампуса</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+These styles are contained in the design: body: Font(family: "var(--font-family-sans)", style: Regular, size: var(--font-size-body), weight: var(--font-weight-regular), lineHeight: 1.5, letterSpacing: 0), dense-strong: Font(family: "var(--font-family-sans)", style: Medium, size: var(--font-size-dense), weight: var(--font-weight-medium), lineHeight: 1.4500000476837158, letterSpacing: 0), dense: Font(family: "var(--font-family-sans)", style: Regular, size: var(--font-size-dense), weight: var(--font-weight-regular), lineHeight: 1.4500000476837158, letterSpacing: 0).
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## shared/SelectField
+**Node ID:** 80:329
+
+SelectField: состояния TextInput плюс open и busy. Открытый список собран каркасом с заглушкой Popover; показаны default, hover, selected и disabled с причиной. state=busy — загрузка вариантов: наследует TextInput busy по брендбуку §6.3; подпись, размер и раскладка не меняются.
+
+## shared/TextInput
+**Node ID:** 77:152
+
+Однострочное поле ввода. При state=busy подпись, слоты и габариты сохраняются; Busy wave / middle использует color/surface/raised, обрезается внутренним radius/md и лежит ниже текста и иконок.
+
+## icon/chevron-down
+**Node ID:** 260:1687
+
+Временная векторная заглушка. Заменить на финальную иконку через instance swap без изменения геометрии контрола.
+
+## state=empty
+**Node ID:** 721:39641
+
+Просмотр схемы этажа. Реальный SVG приходит готовым; библиотека показывает намеренно абстрактную серую заглушку. Органы зума наложены поверх canvas; alt-text обязателен.
+
+## map/FloorPlanViewer
+**Node ID:** 721:39699
+
+state = default | loading | empty | error. Canvas принимает готовый SVG; заглушка намеренно абстрактная. zoom-controls поверх canvas, control/min-touch=44. alt-text обязателен. Действия скачивания нет.
+
+## icon/previous
+**Node ID:** 4597:3579
+
+Временная локальная векторная заглушка смысла «предыдущий». Один stroke-вектор и метрика совпадают с icon/chevron-down; заменить финальной иконкой через instance swap.
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

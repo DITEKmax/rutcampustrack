@@ -72,4 +72,17 @@ describe('describeNotification', () => {
     expect(result.body).toContain('12:20')
     expect(result.body).toContain('самостоятельная отметка невозможна')
   })
+
+  it('never describes geo-confirmed cancellation as a rejection', () => {
+    const result = describeNotification(
+      record('late_checkin.decided', {
+        status: 'cancelled',
+        resolution_reason: 'geo_confirmed',
+      }),
+    )
+
+    expect(result.title).toBe('Присутствие подтверждено')
+    expect(result.body).toContain('успешной геоотметки')
+    expect(result.title + result.body).not.toContain('отклон')
+  })
 })

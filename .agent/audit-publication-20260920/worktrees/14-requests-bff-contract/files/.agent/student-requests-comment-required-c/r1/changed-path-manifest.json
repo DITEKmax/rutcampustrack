@@ -1,0 +1,57 @@
+{
+  "schema": "rct.comment-required-producer-chain.repair.v1",
+  "date": "2026-09-09",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "contractSha256": "51A1760E1EE4A14BC9622BE5A8351F1BFD1268DB6F70056BAE8D0C8070372A08",
+  "sourceManifestSha256": "A190D4C62F763E60E8BF0326BB7444D3EC161ACBFDB01198FDEB29724D7EC1F6",
+  "targetWorktree": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract",
+  "dependencySourceWorktree": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-notification-authority",
+  "dependencyImports": [
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "targetBeforeSha256": "7AD59234BD0A45FBF8A3AAD9D60971F2558021398C4D018348786D4BE421DEBC",
+      "sourceBeforeSha256": "B962498813AD3CC4E77EDBFE81E5E82E3013CFE1CF7B0490762880D23FCD3960",
+      "targetAfterDependencySha256": "B962498813AD3CC4E77EDBFE81E5E82E3013CFE1CF7B0490762880D23FCD3960",
+      "targetAfterImplementationSha256": "1D9B4C24DCC77BD6E87C5ACFFE15EE40CBDBF8C444D6D55D4089912F7FE0BD8E"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+      "targetBeforeSha256": "1C0E6A2C4699D56BB17FD56DCEB24347C4DE3290F4E121D31DFCEB6662C44644",
+      "sourceBeforeSha256": "D1DDCDE648C3186914BA52846973497F08D82BBA6C198743A5254EC37E8B0B22",
+      "targetAfterDependencySha256": "D1DDCDE648C3186914BA52846973497F08D82BBA6C198743A5254EC37E8B0B22",
+      "targetAfterImplementationSha256": "D1DDCDE648C3186914BA52846973497F08D82BBA6C198743A5254EC37E8B0B22",
+      "byteExact": true
+    }
+  ],
+  "changedPaths": [
+    {"path":"proto/attendance.proto","kind":"implementation","beforeSha256":"4108E3F9AFF3025E131158C0D7FC0D766D2CC4F6F61F955C95AD196B175B08F8","afterSha256":"5B4366A81A0F6D2C976BE48058C9C1BE7062E78E9567CC6EDBF9E9A0F8102C20"},
+    {"path":"services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java","kind":"implementation","beforeSha256":"DEFCA9A5DC3D03F96A8E184B7040638CD04418DC014AB1DA01528EE7F09B25C2","afterSha256":"A6356840FAF4D34EF3B0E1022DC3CEACBD82AE2CEB92943FDD4198A578EA5AA9"},
+    {"path":"services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java","kind":"implementation-after-dependency-import","beforeSha256":"B962498813AD3CC4E77EDBFE81E5E82E3013CFE1CF7B0490762880D23FCD3960","afterSha256":"1D9B4C24DCC77BD6E87C5ACFFE15EE40CBDBF8C444D6D55D4089912F7FE0BD8E"},
+    {"path":"services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapper.java","kind":"implementation","beforeSha256":"E7737B9C492B18E1E6C7889BE89247F15D884269536A8ABC2FDCE4ABE3C0244F","afterSha256":"78E8F6515CC4AE010AA46B0B94057F0B9F7B750B589753E6C2149134771CB5AC"},
+    {"path":"services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java","kind":"implementation","beforeSha256":"651B83E0E7B629F2750EE51231915B9A55D072E3F04FB31EDD6C0D4864198286","afterSha256":"55787C37F55BFB87F8694306C6476CE6586F4AE843E8774C3F37E3EB489A2561"},
+    {"path":"services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacade.java","kind":"implementation","beforeSha256":"D15D5EC9A92C91FBBB4716C917F93AEB9C0B4D6B1B76687EE406E38A16F4B968","afterSha256":"E956D322667F5DEB8B1042F123863F9E70F3AC473166D639C1E366D00C3A6F8C"},
+    {"path":"services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java","kind":"test","beforeSha256":"968F4A4967D0AD2FDB0055C647D709F6A0A020B59DDB3396C64007E57A150DE6","afterSha256":"4AB8154262472792F051C0E15B742379A4D652C02430B2E1D3C9B54B93FE8BE2"},
+    {"path":"services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java","kind":"dependency-import-byte-exact","beforeSha256":"1C0E6A2C4699D56BB17FD56DCEB24347C4DE3290F4E121D31DFCEB6662C44644","afterSha256":"D1DDCDE648C3186914BA52846973497F08D82BBA6C198743A5254EC37E8B0B22"},
+    {"path":"services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapperTest.java","kind":"new-test","before":"ABSENT","afterSha256":"4487CF3F4898BA4DEDE5E9658480A0CCE2112CF2EA59D29C55CB19F664226238"},
+    {"path":"services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacadeOptionsTest.java","kind":"new-test","before":"ABSENT","afterSha256":"ABF68FB0B76998E3AAA210528618EF461C6D4FA8CCDBB74DA50E2B5C55857B82"},
+    {"path":"services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contract/StudentRequestOptionsJsonTest.java","kind":"new-test","before":"ABSENT","afterSha256":"E81125CB2E5013AADFBBF30325C1B23545735ED8CC3F6E75C385EB2B1A133560"}
+  ],
+  "supersedes": {
+    "immutableAcceptedP1FinalManifestSha256": "6D822BB002AA0AF2FE768855FA8EA2CA2986DE379A1D3424029B18662EFD9DEE",
+    "immutableAcceptedP2Exact5ManifestSha256": "61C14D95E6E8EA61BCE791EC648218C39FE9771E62E355605A2BAAF313722B97",
+    "affectedPathHashes": {
+      "proto/attendance.proto": {"old":"4108E3F9AFF3025E131158C0D7FC0D766D2CC4F6F61F955C95AD196B175B08F8","new":"5B4366A81A0F6D2C976BE48058C9C1BE7062E78E9567CC6EDBF9E9A0F8102C20"},
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java": {"old":"DEFCA9A5DC3D03F96A8E184B7040638CD04418DC014AB1DA01528EE7F09B25C2","new":"A6356840FAF4D34EF3B0E1022DC3CEACBD82AE2CEB92943FDD4198A578EA5AA9"},
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java": {"old":"7AD59234BD0A45FBF8A3AAD9D60971F2558021398C4D018348786D4BE421DEBC","new":"1D9B4C24DCC77BD6E87C5ACFFE15EE40CBDBF8C444D6D55D4089912F7FE0BD8E"},
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapper.java": {"old":"E7737B9C492B18E1E6C7889BE89247F15D884269536A8ABC2FDCE4ABE3C0244F","new":"78E8F6515CC4AE010AA46B0B94057F0B9F7B750B589753E6C2149134771CB5AC"},
+      "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java": {"old":"651B83E0E7B629F2750EE51231915B9A55D072E3F04FB31EDD6C0D4864198286","new":"55787C37F55BFB87F8694306C6476CE6586F4AE843E8774C3F37E3EB489A2561"},
+      "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacade.java": {"old":"D15D5EC9A92C91FBBB4716C917F93AEB9C0B4D6B1B76687EE406E38A16F4B968","new":"E956D322667F5DEB8B1042F123863F9E70F3AC473166D639C1E366D00C3A6F8C"},
+      "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java": {"old":"968F4A4967D0AD2FDB0055C647D709F6A0A020B59DDB3396C64007E57A150DE6","new":"4AB8154262472792F051C0E15B742379A4D652C02430B2E1D3C9B54B93FE8BE2"}
+    }
+  },
+  "newFilesBeforeImplementation": [
+    "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapperTest.java",
+    "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentRequestFacadeOptionsTest.java",
+    "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contract/StudentRequestOptionsJsonTest.java"
+  ]
+}

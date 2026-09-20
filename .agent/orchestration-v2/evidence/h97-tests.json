@@ -1,0 +1,38 @@
+[
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/test",
+    "name": "ru.rutcampustrack.schedule.arch.GrpcClientDeadlineTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:30:16.2073545Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/test",
+    "name": "ru.rutcampustrack.schedule.arch.RepositoryNPlusOneGuardTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:30:16.2093549Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/test",
+    "name": "ru.rutcampustrack.schedule.arch.ScheduledMustHaveSchedulerLockTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:30:16.2108652Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/test",
+    "name": "ru.rutcampustrack.schedule.recurring.RecurringDateCalculatorTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T14:30:16.2093549Z"
+  }
+]

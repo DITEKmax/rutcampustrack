@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" tests="53" skipped="0" failures="1" errors="0" timestamp="2026-09-10T18:43:38" hostname="DITEK-PK" time="5.674">
+  <properties/>
+  <testcase name="malformedJwt_returns401()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="3.774"/>
+  <testcase name="validAccess_withoutGroupId_passes()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.614"/>
+  <testcase name="validBootstrap_onProtectedRoute_isDeniedBeforeAdmission()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.026"/>
+  <testcase name="missing issuer" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.045"/>
+  <testcase name="wrong issuer" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.023"/>
+  <testcase name="wrong type issuer" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.024"/>
+  <testcase name="missing audience" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.024"/>
+  <testcase name="wrong audience" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.022"/>
+  <testcase name="wrong type audience" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.019"/>
+  <testcase name="multiple audiences" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.031"/>
+  <testcase name="missing issued-at" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.022"/>
+  <testcase name="string issued-at" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.025"/>
+  <testcase name="non-whole issued-at" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.047"/>
+  <testcase name="future issued-at" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.023"/>
+  <testcase name="missing expiration" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.02"/>
+  <testcase name="string expiration" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.024"/>
+  <testcase name="non-whole expiration" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.024"/>
+  <testcase name="issued-at is not before expiration" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.027"/>
+  <testcase name="nonpositive subject" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.021"/>
+  <testcase name="negative subject" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.02"/>
+  <testcase name="overflow subject" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.02"/>
+  <testcase name="missing subject" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.021"/>
+  <testcase name="nonstring subject" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.021"/>
+  <testcase name="wrong type token use" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.022"/>
+  <testcase name="missing session id" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.017"/>
+  <testcase name="wrong session id" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.017"/>
+  <testcase name="missing session version" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.017"/>
+  <testcase name="missing roles version" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.015"/>
+  <testcase name="missing role" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.017"/>
+  <testcase name="wrong type role" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.018"/>
+  <testcase name="unknown role" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.022"/>
+  <testcase name="missing status" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.021"/>
+  <testcase name="unknown status" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.02"/>
+  <testcase name="wrong type group id" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.016"/>
+  <testcase name="null group id" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.034">
+    <failure message="java.lang.NullPointerException: Cannot invoke &quot;reactor.core.publisher.Mono.block()&quot; because the return value of &quot;ru.rutcampustrack.gateway.filter.JwtAuthenticationFilter.filter(org.springframework.web.server.ServerWebExchange, org.springframework.cloud.gateway.filter.GatewayFilterChain)&quot; is null" type="java.lang.NullPointerException">java.lang.NullPointerException: Cannot invoke &quot;reactor.core.publisher.Mono.block()&quot; because the return value of &quot;ru.rutcampustrack.gateway.filter.JwtAuthenticationFilter.filter(org.springframework.web.server.ServerWebExchange, org.springframework.cloud.gateway.filter.GatewayFilterChain)&quot; is null
+	at ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.assertUnauthorized(JwtAuthenticationFilterTest.java:459)
+	at ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.signedInvalidAccessClaims_areRejected(JwtAuthenticationFilterTest.java:318)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:762)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="wrong type headman flag" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.018"/>
+  <testcase name="missing read-only flag" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.019"/>
+  <testcase name="wrong type read-only flag" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.021"/>
+  <testcase name="optionsRequest_stripsClientIdentityHeadersAndPassesThrough()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.04"/>
+  <testcase name="missingOrMalformedBearer_onPostLogout_remainsIdempotentAndUnauthenticated()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.016"/>
+  <testcase name="validAccess_onPostLogout_setsExpectationsForLiveAdmission()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.017"/>
+  <testcase name="validAccess_withOptionalGroupIdString_passesWithoutLegacyGroupHeader()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.017"/>
+  <testcase name="publicRoute_login_passesThroughWithoutJwt()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.006"/>
+  <testcase name="validAccess_protectedRoute_setsPrivateExpectationsAndStripsIdentityHeaders()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.018"/>
+  <testcase name="refreshTokenUse_returns401()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.014"/>
+  <testcase name="expiredAccess_returns401()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.015"/>
+  <testcase name="missingTokenUse_returns401()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.012"/>
+  <testcase name="publicRoute_otp_passesThroughWithoutJwt()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.008"/>
+  <testcase name="validAccess_headmanRoleIsRecognizedWithoutLocalAuthorization()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.016"/>
+  <testcase name="validBootstrap_onAllowedLogoutPassesWithoutAdmissionExpectations()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.015"/>
+  <testcase name="invalidRole_returns401()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.014"/>
+  <testcase name="missingAuthorizationHeader_returns401()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.006"/>
+  <testcase name="authHeaderWithoutBearerPrefix_returns401()" classname="ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.8\f09415827a71be7ed621c7bd02550678f28bc81c\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

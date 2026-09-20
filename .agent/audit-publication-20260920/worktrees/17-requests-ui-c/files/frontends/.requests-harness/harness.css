@@ -1,0 +1,6 @@
+html, body, #app { margin: 0; min-block-size: 100%; background: #0b0b0c; }
+*, *::before, *::after { box-sizing: border-box; }
+.harness-app { min-block-size: 100dvh; }
+.host-dock { position: fixed; inset-block-end: 1rem; inset-inline-start: 50%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); inline-size: min(22.375rem, calc(100% - 2rem)); min-block-size: 4.75rem; transform: translateX(-50%); border-radius: 1.5rem; padding: 0.5rem; color: #edeaf3; background: color-mix(in srgb, #292531 78%, transparent); font-family: 'Onest Variable', Onest, sans-serif; font-size: 0.75rem; text-align: center; backdrop-filter: blur(0.75rem); }
+.host-dock span { display: grid; place-items: center; border-radius: 1rem; }
+.host-dock__active { color: #0b0b0c; background: #b79cfa; }

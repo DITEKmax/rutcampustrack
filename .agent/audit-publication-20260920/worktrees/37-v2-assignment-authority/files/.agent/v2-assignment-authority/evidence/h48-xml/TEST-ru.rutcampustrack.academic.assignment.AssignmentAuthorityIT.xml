@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT" tests="5" skipped="0" failures="5" errors="0" timestamp="2026-09-19T17:30:14" hostname="DITEK-PK" time="0.132">
+  <properties/>
+  <testcase name="addTeacherPersistsFullIdentityAndRestKeepsNullEffectiveEnd()" classname="ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT" time="0.073">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)" type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.insertGroup(AbstractAssignmentAuthorityIT.java:124)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.newFixture(AbstractAssignmentAuthorityIT.java:32)
+	at app//ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.createFixture(AssignmentAuthorityIT.java:45)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: value too long for type character varying(32)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 11 more
+</failure>
+  </testcase>
+  <testcase name="sameTeacherSameTypeOverlapRaceCommitsOneAndReturnsOne409()" classname="ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT" time="0.013">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)" type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.insertGroup(AbstractAssignmentAuthorityIT.java:124)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.newFixture(AbstractAssignmentAuthorityIT.java:32)
+	at app//ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.createFixture(AssignmentAuthorityIT.java:45)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: value too long for type character varying(32)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 11 more
+</failure>
+  </testcase>
+  <testcase name="myAssignmentsRouteExcludesFutureAndExpiredAssignmentsAndRequiresActiveGrant()" classname="ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT" time="0.013">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)" type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.insertGroup(AbstractAssignmentAuthorityIT.java:124)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.newFixture(AbstractAssignmentAuthorityIT.java:32)
+	at app//ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.createFixture(AssignmentAuthorityIT.java:45)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: value too long for type character varying(32)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 11 more
+</failure>
+  </testcase>
+  <testcase name="inactiveOrMissingTeacherGrantIsRejectedWithoutWrite()" classname="ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT" time="0.012">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)" type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.insertGroup(AbstractAssignmentAuthorityIT.java:124)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.newFixture(AbstractAssignmentAuthorityIT.java:32)
+	at app//ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.createFixture(AssignmentAuthorityIT.java:45)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: value too long for type character varying(32)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 11 more
+</failure>
+  </testcase>
+  <testcase name="differentTeachersAndAdjacentPeriodsAreAllowed()" classname="ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT" time="0.012">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)" type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id]; ERROR: value too long for type character varying(32)
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.insertGroup(AbstractAssignmentAuthorityIT.java:124)
+	at app//ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT.newFixture(AbstractAssignmentAuthorityIT.java:32)
+	at app//ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.createFixture(AssignmentAuthorityIT.java:45)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: value too long for type character varying(32)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 11 more
+</failure>
+  </testcase>
+  <system-out><![CDATA[20:29:40.471 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT]: AssignmentAuthorityIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:29:40.954 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.rutcampustrack.academic.AcademicApplication for test class ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT
+20:29:41.320 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+20:29:41.327 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+20:29:41.340 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.20.4
+20:29:41.868 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+20:29:42.389 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+20:29:42.391 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+20:29:42.419 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.5.2
+  API Version: 1.51
+  Operating System: Docker Desktop
+  Total Memory: 11963 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+20:29:43.430 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Creating container for image: testcontainers/ryuk:0.11.0
+20:29:44.085 [Test worker] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+20:29:44.262 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 is starting: a35443bc28c6c9fc60d8020f376dbd15a5befff26c8c79ba6b39c6096f338e1b
+20:29:44.979 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 started in PT1.5487763S
+20:29:44.985 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+20:29:44.986 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+20:29:44.987 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+20:29:44.987 [Test worker] INFO tc.postgres:16 -- Creating container for image: postgres:16
+20:29:44.989 [Test worker] WARN tc.postgres:16 -- Reuse was requested but the environment does not support the reuse of containers
+To enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at C:\Users\maksd\.testcontainers.properties
+20:29:45.096 [Test worker] INFO tc.postgres:16 -- Container postgres:16 is starting: 75a12563a465478433b9875718219c1c3346c775f5942fb2706f24460222658f
+20:29:47.146 [Test worker] INFO tc.postgres:16 -- Container postgres:16 started in PT2.1581986S
+20:29:47.147 [Test worker] INFO tc.postgres:16 -- Container is started (JDBC URL: jdbc:postgresql://localhost:60082/academic_db?loggerLevel=OFF)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+{"ts":"2026-09-19T20:29:48.273+03:00","v":"1","level":"INFO","logger":"org.hibernate.validator.internal.util.Version","thread":"background-preinit","msg":"HV000001: Hibernate Validator 8.0.3.Final","service":"academic-service"}
+{"ts":"2026-09-19T20:29:48.376+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT","thread":"Test worker","msg":"Starting AssignmentAuthorityIT using Java 21.0.10 with PID 32536 (started by maksd in C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-assignment-authority\\services\\academic-service\\academic-app)","service":"academic-service"}
+{"ts":"2026-09-19T20:29:48.377+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT","thread":"Test worker","msg":"Running with Spring Boot v3.5.16, Spring v6.2.19","service":"academic-service"}
+{"ts":"2026-09-19T20:29:48.378+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT","thread":"Test worker","msg":"The following 1 profile is active: \"test\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:50.879+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Multiple Spring Data modules found, entering strict repository configuration mode","service":"academic-service"}
+{"ts":"2026-09-19T20:29:50.884+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Bootstrapping Spring Data JPA repositories in DEFAULT mode.","service":"academic-service"}
+{"ts":"2026-09-19T20:29:51.256+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Finished Spring Data repository scanning in 357 ms. Found 15 JPA repository interfaces.","service":"academic-service"}
+{"ts":"2026-09-19T20:29:55.140+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat initialized with port 0 (http)","service":"academic-service"}
+{"ts":"2026-09-19T20:29:55.533+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Initializing ProtocolHandler [\"http-nio-auto-1\"]","service":"academic-service"}
+{"ts":"2026-09-19T20:29:55.553+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardService","thread":"Test worker","msg":"Starting service [Tomcat]","service":"academic-service"}
+{"ts":"2026-09-19T20:29:55.554+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardEngine","thread":"Test worker","msg":"Starting Servlet engine: [Apache Tomcat/10.1.59]","service":"academic-service"}
+{"ts":"2026-09-19T20:29:55.763+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","thread":"Test worker","msg":"Initializing Spring embedded WebApplicationContext","service":"academic-service"}
+{"ts":"2026-09-19T20:29:55.765+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","thread":"Test worker","msg":"Root WebApplicationContext: initialization completed in 7367 ms","service":"academic-service"}
+{"ts":"2026-09-19T20:29:57.282+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.security.AcademicUserContextFilter","thread":"Test worker","msg":"Filter 'academicUserContextFilter' configured for use","service":"academic-service"}
+{"ts":"2026-09-19T20:29:57.770+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Starting...","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.118+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.pool.HikariPool","thread":"Test worker","msg":"HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3ec0b1ea","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.121+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Start completed.","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.182+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.FlywayExecutor","thread":"Test worker","msg":"Database: jdbc:postgresql://localhost:60082/academic_db?loggerLevel=OFF (PostgreSQL 16.13)","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.303+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Schema history table \"public\".\"flyway_schema_history\" does not exist yet","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.312+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbValidate","thread":"Test worker","msg":"Successfully validated 26 migrations (execution time 00:00.080s)","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.342+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Creating Schema History table \"public\".\"flyway_schema_history\" ...","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.422+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Current version of schema \"public\": << Empty Schema >>","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.458+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"1 - baseline\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.568+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"2 - seed test data\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.599+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"3 - login sequences\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.620+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"4 - campus settings bigserial\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.647+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"5 - add enum casts\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.668+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"6 - add semester first week type\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.689+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"7 - add user avatar\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.710+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"8 - group unify name\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.735+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"9 - groups archived at\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.755+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"10 - semesters no overlap\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.827+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"11 - enum equality operators\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.860+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"12 - subjects group id\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.866+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.892+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"13 - homework lesson binding\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.918+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"14 - update campus coordinates\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.935+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"15 - shedlock table\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.953+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"16 - academic outbox\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.976+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"17 - add performance indexes\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:58.994+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"18 - event consumer processed\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.012+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"19 - audit log\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.033+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"20 - audit log indexes\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.052+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"21 - user name icu collation\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.069+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"22 - user name sort index\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.086+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"23 - homework notifications\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.107+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"24 - auth session authority\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.149+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"25 - student subject homework foundation\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.154+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: extension \"btree_gist\" already exists, skipping (SQL State: 42710 - Error Code: 0)","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.202+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"26 - campus map\"","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.274+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Successfully applied 26 migrations to schema \"public\", now at version v26 (execution time 00:00.440s)","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.477+03:00","v":"1","level":"INFO","logger":"org.hibernate.jpa.internal.util.LogHelper","thread":"Test worker","msg":"HHH000204: Processing PersistenceUnitInfo [name: default]","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.621+03:00","v":"1","level":"INFO","logger":"org.hibernate.Version","thread":"Test worker","msg":"HHH000412: Hibernate ORM core version 6.6.53.Final","service":"academic-service"}
+{"ts":"2026-09-19T20:29:59.732+03:00","v":"1","level":"INFO","logger":"org.hibernate.cache.internal.RegionFactoryInitiator","thread":"Test worker","msg":"HHH000026: Second-level cache disabled","service":"academic-service"}
+{"ts":"2026-09-19T20:30:00.065+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo","thread":"Test worker","msg":"No LoadTimeWeaver setup: ignoring JPA class transformer","service":"academic-service"}
+{"ts":"2026-09-19T20:30:00.202+03:00","v":"1","level":"WARN","logger":"org.hibernate.orm.deprecation","thread":"Test worker","msg":"HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)","service":"academic-service"}
+{"ts":"2026-09-19T20:30:00.233+03:00","v":"1","level":"INFO","logger":"org.hibernate.orm.connections.pooling","thread":"Test worker","msg":"HHH10001005: Database info:\n\tDatabase JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']\n\tDatabase driver: undefined/unknown\n\tDatabase version: 16.13\n\tAutocommit mode: undefined/unknown\n\tIsolation level: undefined/unknown\n\tMinimum pool size: undefined/unknown\n\tMaximum pool size: undefined/unknown","service":"academic-service"}
+{"ts":"2026-09-19T20:30:02.258+03:00","v":"1","level":"INFO","logger":"org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator","thread":"Test worker","msg":"HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)","service":"academic-service"}
+{"ts":"2026-09-19T20:30:02.325+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"Test worker","msg":"Initialized JPA EntityManagerFactory for persistence unit 'default'","service":"academic-service"}
+{"ts":"2026-09-19T20:30:02.638+03:00","v":"1","level":"INFO","logger":"org.springframework.data.jpa.repository.query.QueryEnhancerFactory","thread":"Test worker","msg":"Hibernate is in classpath; If applicable, HQL parser will be used.","service":"academic-service"}
+{"ts":"2026-09-19T20:30:04.669+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.client.autoconfigure.GrpcClientAutoConfiguration","thread":"Test worker","msg":"Detected grpc-netty: Creating NettyChannelFactory + InProcessChannelFactory","service":"academic-service"}
+{"ts":"2026-09-19T20:30:12.541+03:00","v":"1","level":"ERROR","logger":"ru.rutcampustrack.shared.security.PublicKeyProvider","thread":"Test worker","msg":"Auth Service unreachable: I/O error on GET request for \"http://localhost:9999/auth/public-key\": null","service":"academic-service"}
+{"ts":"2026-09-19T20:30:14.065+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.security.AcademicUserContextFilter","thread":"Test worker","msg":"Filter 'academicUserContextFilter' configured for use","service":"academic-service"}
+{"ts":"2026-09-19T20:30:14.068+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","thread":"Test worker","msg":"Initializing Spring TestDispatcherServlet ''","service":"academic-service"}
+{"ts":"2026-09-19T20:30:14.068+03:00","v":"1","level":"INFO","logger":"org.springframework.test.web.servlet.TestDispatcherServlet","thread":"Test worker","msg":"Initializing Servlet ''","service":"academic-service"}
+{"ts":"2026-09-19T20:30:14.081+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.actuate.endpoint.web.EndpointLinksResolver","thread":"Test worker","msg":"Exposing 2 endpoints beneath base path '/actuator'","service":"academic-service"}
+{"ts":"2026-09-19T20:30:14.103+03:00","v":"1","level":"INFO","logger":"org.springframework.test.web.servlet.TestDispatcherServlet","thread":"Test worker","msg":"Completed initialization in 34 ms","service":"academic-service"}
+{"ts":"2026-09-19T20:30:14.227+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Starting ProtocolHandler [\"http-nio-auto-1\"]","service":"academic-service"}
+{"ts":"2026-09-19T20:30:14.246+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat started on port 63750 (http) with context path '/'","service":"academic-service"}
+{"ts":"2026-09-19T20:30:14.266+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT","thread":"Test worker","msg":"Started AssignmentAuthorityIT in 27.061 seconds (process running for 36.643)","service":"academic-service"}
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.8\f09415827a71be7ed621c7bd02550678f28bc81c\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

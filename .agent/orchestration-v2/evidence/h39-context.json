@@ -1,0 +1,18 @@
+{
+  "user": "maksd",
+  "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "command": [
+    ":services:academic-service:academic-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report",
+    "--no-build-cache",
+    "--init-script",
+    ".agent/integration-i1/h37-classpath.init.gradle"
+  ],
+  "java": "C:\\Users\\maksd\\.jdks\\ms-21.0.10",
+  "startUtc": "2026-09-15T17:43:59.0731227Z"
+}

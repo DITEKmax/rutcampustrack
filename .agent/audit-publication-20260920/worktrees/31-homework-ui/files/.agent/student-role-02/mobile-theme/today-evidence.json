@@ -1,0 +1,877 @@
+[
+  {
+    "name": "explicit-dark-16",
+    "mode": "dark",
+    "colorScheme": "dark",
+    "rootFont": 16,
+    "screenshot": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-ui/.agent/student-role-02/mobile-theme/screenshots/today-explicit-dark-16.png",
+    "palette": {
+      "rootTheme": "dark",
+      "rootFontSize": "16px",
+      "colorScheme": "dark",
+      "fontsReady": true,
+      "onestLoaded": true,
+      "tokens": {
+        "surfaceBase": "#0b0b0c",
+        "surfaceRaised": "#1c1922",
+        "surfaceFloat": "#292531",
+        "textPrimary": "#edeaf3",
+        "textSecondary": "#c8c2d6",
+        "accentNow": "#b79cfa",
+        "accentOnNow": "#0b0b0c",
+        "onFillStrong": "#ffffff",
+        "dockOpacity": "78%",
+        "dockBlur": "1.5625rem"
+      },
+      "contrast": {
+        "primaryOnBase": 16.55,
+        "secondaryOnRaised": 10.02,
+        "heroOnAccent": 8.57,
+        "roleOnGradient": 9.39,
+        "actionOnGradient": 14.02,
+        "activeNavOnAccent": 8.57
+      },
+      "controls": {
+        "role": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(104.93deg, rgb(59, 26, 122) -5.26%, rgb(87, 41, 161) 49.47%, rgb(46, 31, 77) 100%)",
+          "gradientStops": [
+            [
+              59,
+              26,
+              122
+            ],
+            [
+              87,
+              41,
+              161
+            ],
+            [
+              46,
+              31,
+              77
+            ]
+          ]
+        },
+        "action": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(90deg, rgb(23, 18, 41) 0%, rgb(41, 23, 77) 55%, rgb(59, 20, 107) 100%)",
+          "gradientStops": [
+            [
+              23,
+              18,
+              41
+            ],
+            [
+              41,
+              23,
+              77
+            ],
+            [
+              59,
+              20,
+              107
+            ]
+          ]
+        },
+        "hero": {
+          "color": "rgb(11, 11, 12)",
+          "backgroundColor": "rgb(183, 156, 250)"
+        },
+        "card": {
+          "color": "rgb(11, 11, 12)",
+          "backgroundColor": "rgb(183, 156, 250)"
+        },
+        "dock": {
+          "backgroundColor": "color(srgb 0.160784 0.145098 0.192157 / 0.78)",
+          "backdropFilter": "blur(25px)"
+        }
+      },
+      "geometry": {
+        "viewportWidth": 390,
+        "scrollWidth": 390,
+        "noHorizontalOverflow": true,
+        "roleWidth": 112,
+        "heroHeight": 171,
+        "actionHeight": 45,
+        "navWidth": 358
+      }
+    },
+    "mediaTransition": null
+  },
+  {
+    "name": "explicit-light-16",
+    "mode": "light",
+    "colorScheme": "dark",
+    "rootFont": 16,
+    "screenshot": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-ui/.agent/student-role-02/mobile-theme/screenshots/today-explicit-light-16.png",
+    "palette": {
+      "rootTheme": "light",
+      "rootFontSize": "16px",
+      "colorScheme": "light",
+      "fontsReady": true,
+      "onestLoaded": true,
+      "tokens": {
+        "surfaceBase": "#fcfbfe",
+        "surfaceRaised": "#ffffff",
+        "surfaceFloat": "#ffffff",
+        "textPrimary": "#292531",
+        "textSecondary": "#565061",
+        "accentNow": "#6d28d9",
+        "accentOnNow": "#ffffff",
+        "onFillStrong": "#ffffff",
+        "dockOpacity": "90%",
+        "dockBlur": "1.5625rem"
+      },
+      "contrast": {
+        "primaryOnBase": 14.52,
+        "secondaryOnRaised": 7.73,
+        "heroOnAccent": 7.1,
+        "roleOnGradient": 9.39,
+        "actionOnGradient": 14.02,
+        "activeNavOnAccent": 7.1
+      },
+      "controls": {
+        "role": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(104.93deg, rgb(59, 26, 122) -5.26%, rgb(87, 41, 161) 49.47%, rgb(46, 31, 77) 100%)",
+          "gradientStops": [
+            [
+              59,
+              26,
+              122
+            ],
+            [
+              87,
+              41,
+              161
+            ],
+            [
+              46,
+              31,
+              77
+            ]
+          ]
+        },
+        "action": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(90deg, rgb(23, 18, 41) 0%, rgb(41, 23, 77) 55%, rgb(59, 20, 107) 100%)",
+          "gradientStops": [
+            [
+              23,
+              18,
+              41
+            ],
+            [
+              41,
+              23,
+              77
+            ],
+            [
+              59,
+              20,
+              107
+            ]
+          ]
+        },
+        "hero": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(109, 40, 217)"
+        },
+        "card": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(109, 40, 217)"
+        },
+        "dock": {
+          "backgroundColor": "color(srgb 1 1 1 / 0.9)",
+          "backdropFilter": "blur(25px)"
+        }
+      },
+      "geometry": {
+        "viewportWidth": 390,
+        "scrollWidth": 390,
+        "noHorizontalOverflow": true,
+        "roleWidth": 112,
+        "heroHeight": 171,
+        "actionHeight": 45,
+        "navWidth": 358
+      }
+    },
+    "mediaTransition": {
+      "before": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "after": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "restored": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "expectedStable": true,
+      "expectedChanged": false
+    }
+  },
+  {
+    "name": "system-dark-16",
+    "mode": "system",
+    "colorScheme": "dark",
+    "rootFont": 16,
+    "screenshot": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-ui/.agent/student-role-02/mobile-theme/screenshots/today-system-dark-16.png",
+    "palette": {
+      "rootTheme": "system",
+      "rootFontSize": "16px",
+      "colorScheme": "dark",
+      "fontsReady": true,
+      "onestLoaded": true,
+      "tokens": {
+        "surfaceBase": "#0b0b0c",
+        "surfaceRaised": "#1c1922",
+        "surfaceFloat": "#292531",
+        "textPrimary": "#edeaf3",
+        "textSecondary": "#c8c2d6",
+        "accentNow": "#b79cfa",
+        "accentOnNow": "#0b0b0c",
+        "onFillStrong": "#ffffff",
+        "dockOpacity": "78%",
+        "dockBlur": "1.5625rem"
+      },
+      "contrast": {
+        "primaryOnBase": 16.55,
+        "secondaryOnRaised": 10.02,
+        "heroOnAccent": 8.57,
+        "roleOnGradient": 9.39,
+        "actionOnGradient": 14.02,
+        "activeNavOnAccent": 8.57
+      },
+      "controls": {
+        "role": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(104.93deg, rgb(59, 26, 122) -5.26%, rgb(87, 41, 161) 49.47%, rgb(46, 31, 77) 100%)",
+          "gradientStops": [
+            [
+              59,
+              26,
+              122
+            ],
+            [
+              87,
+              41,
+              161
+            ],
+            [
+              46,
+              31,
+              77
+            ]
+          ]
+        },
+        "action": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(90deg, rgb(23, 18, 41) 0%, rgb(41, 23, 77) 55%, rgb(59, 20, 107) 100%)",
+          "gradientStops": [
+            [
+              23,
+              18,
+              41
+            ],
+            [
+              41,
+              23,
+              77
+            ],
+            [
+              59,
+              20,
+              107
+            ]
+          ]
+        },
+        "hero": {
+          "color": "rgb(11, 11, 12)",
+          "backgroundColor": "rgb(183, 156, 250)"
+        },
+        "card": {
+          "color": "rgb(11, 11, 12)",
+          "backgroundColor": "rgb(183, 156, 250)"
+        },
+        "dock": {
+          "backgroundColor": "color(srgb 0.160784 0.145098 0.192157 / 0.78)",
+          "backdropFilter": "blur(25px)"
+        }
+      },
+      "geometry": {
+        "viewportWidth": 390,
+        "scrollWidth": 390,
+        "noHorizontalOverflow": true,
+        "roleWidth": 112,
+        "heroHeight": 171,
+        "actionHeight": 45,
+        "navWidth": 358
+      }
+    },
+    "mediaTransition": {
+      "before": {
+        "surfaceBase": "#0b0b0c",
+        "colorScheme": "dark"
+      },
+      "after": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "restored": {
+        "surfaceBase": "#0b0b0c",
+        "colorScheme": "dark"
+      },
+      "expectedStable": false,
+      "expectedChanged": true
+    }
+  },
+  {
+    "name": "system-light-16",
+    "mode": "system",
+    "colorScheme": "light",
+    "rootFont": 16,
+    "screenshot": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-ui/.agent/student-role-02/mobile-theme/screenshots/today-system-light-16.png",
+    "palette": {
+      "rootTheme": "system",
+      "rootFontSize": "16px",
+      "colorScheme": "light",
+      "fontsReady": true,
+      "onestLoaded": true,
+      "tokens": {
+        "surfaceBase": "#fcfbfe",
+        "surfaceRaised": "#ffffff",
+        "surfaceFloat": "#ffffff",
+        "textPrimary": "#292531",
+        "textSecondary": "#565061",
+        "accentNow": "#6d28d9",
+        "accentOnNow": "#ffffff",
+        "onFillStrong": "#ffffff",
+        "dockOpacity": "90%",
+        "dockBlur": "1.5625rem"
+      },
+      "contrast": {
+        "primaryOnBase": 14.52,
+        "secondaryOnRaised": 7.73,
+        "heroOnAccent": 7.1,
+        "roleOnGradient": 9.39,
+        "actionOnGradient": 14.02,
+        "activeNavOnAccent": 7.1
+      },
+      "controls": {
+        "role": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(104.93deg, rgb(59, 26, 122) -5.26%, rgb(87, 41, 161) 49.47%, rgb(46, 31, 77) 100%)",
+          "gradientStops": [
+            [
+              59,
+              26,
+              122
+            ],
+            [
+              87,
+              41,
+              161
+            ],
+            [
+              46,
+              31,
+              77
+            ]
+          ]
+        },
+        "action": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(90deg, rgb(23, 18, 41) 0%, rgb(41, 23, 77) 55%, rgb(59, 20, 107) 100%)",
+          "gradientStops": [
+            [
+              23,
+              18,
+              41
+            ],
+            [
+              41,
+              23,
+              77
+            ],
+            [
+              59,
+              20,
+              107
+            ]
+          ]
+        },
+        "hero": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(109, 40, 217)"
+        },
+        "card": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(109, 40, 217)"
+        },
+        "dock": {
+          "backgroundColor": "color(srgb 1 1 1 / 0.9)",
+          "backdropFilter": "blur(25px)"
+        }
+      },
+      "geometry": {
+        "viewportWidth": 390,
+        "scrollWidth": 390,
+        "noHorizontalOverflow": true,
+        "roleWidth": 112,
+        "heroHeight": 171,
+        "actionHeight": 45,
+        "navWidth": 358
+      }
+    },
+    "mediaTransition": {
+      "before": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "after": {
+        "surfaceBase": "#0b0b0c",
+        "colorScheme": "dark"
+      },
+      "restored": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "expectedStable": false,
+      "expectedChanged": true
+    }
+  },
+  {
+    "name": "explicit-dark-20",
+    "mode": "dark",
+    "colorScheme": "dark",
+    "rootFont": 20,
+    "screenshot": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-ui/.agent/student-role-02/mobile-theme/screenshots/today-explicit-dark-20.png",
+    "palette": {
+      "rootTheme": "dark",
+      "rootFontSize": "20px",
+      "colorScheme": "dark",
+      "fontsReady": true,
+      "onestLoaded": true,
+      "tokens": {
+        "surfaceBase": "#0b0b0c",
+        "surfaceRaised": "#1c1922",
+        "surfaceFloat": "#292531",
+        "textPrimary": "#edeaf3",
+        "textSecondary": "#c8c2d6",
+        "accentNow": "#b79cfa",
+        "accentOnNow": "#0b0b0c",
+        "onFillStrong": "#ffffff",
+        "dockOpacity": "78%",
+        "dockBlur": "1.5625rem"
+      },
+      "contrast": {
+        "primaryOnBase": 16.55,
+        "secondaryOnRaised": 10.02,
+        "heroOnAccent": 8.57,
+        "roleOnGradient": 9.39,
+        "actionOnGradient": 14.02,
+        "activeNavOnAccent": 8.57
+      },
+      "controls": {
+        "role": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(104.93deg, rgb(59, 26, 122) -5.26%, rgb(87, 41, 161) 49.47%, rgb(46, 31, 77) 100%)",
+          "gradientStops": [
+            [
+              59,
+              26,
+              122
+            ],
+            [
+              87,
+              41,
+              161
+            ],
+            [
+              46,
+              31,
+              77
+            ]
+          ]
+        },
+        "action": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(90deg, rgb(23, 18, 41) 0%, rgb(41, 23, 77) 55%, rgb(59, 20, 107) 100%)",
+          "gradientStops": [
+            [
+              23,
+              18,
+              41
+            ],
+            [
+              41,
+              23,
+              77
+            ],
+            [
+              59,
+              20,
+              107
+            ]
+          ]
+        },
+        "hero": {
+          "color": "rgb(11, 11, 12)",
+          "backgroundColor": "rgb(183, 156, 250)"
+        },
+        "card": {
+          "color": "rgb(11, 11, 12)",
+          "backgroundColor": "rgb(183, 156, 250)"
+        },
+        "dock": {
+          "backgroundColor": "color(srgb 0.160784 0.145098 0.192157 / 0.78)",
+          "backdropFilter": "blur(31.25px)"
+        }
+      },
+      "geometry": {
+        "viewportWidth": 390,
+        "scrollWidth": 390,
+        "noHorizontalOverflow": true,
+        "roleWidth": 140,
+        "heroHeight": 213.75,
+        "actionHeight": 56.25,
+        "navWidth": 350
+      }
+    },
+    "mediaTransition": null
+  },
+  {
+    "name": "explicit-light-20",
+    "mode": "light",
+    "colorScheme": "dark",
+    "rootFont": 20,
+    "screenshot": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-ui/.agent/student-role-02/mobile-theme/screenshots/today-explicit-light-20.png",
+    "palette": {
+      "rootTheme": "light",
+      "rootFontSize": "20px",
+      "colorScheme": "light",
+      "fontsReady": true,
+      "onestLoaded": true,
+      "tokens": {
+        "surfaceBase": "#fcfbfe",
+        "surfaceRaised": "#ffffff",
+        "surfaceFloat": "#ffffff",
+        "textPrimary": "#292531",
+        "textSecondary": "#565061",
+        "accentNow": "#6d28d9",
+        "accentOnNow": "#ffffff",
+        "onFillStrong": "#ffffff",
+        "dockOpacity": "90%",
+        "dockBlur": "1.5625rem"
+      },
+      "contrast": {
+        "primaryOnBase": 14.52,
+        "secondaryOnRaised": 7.73,
+        "heroOnAccent": 7.1,
+        "roleOnGradient": 9.39,
+        "actionOnGradient": 14.02,
+        "activeNavOnAccent": 7.1
+      },
+      "controls": {
+        "role": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(104.93deg, rgb(59, 26, 122) -5.26%, rgb(87, 41, 161) 49.47%, rgb(46, 31, 77) 100%)",
+          "gradientStops": [
+            [
+              59,
+              26,
+              122
+            ],
+            [
+              87,
+              41,
+              161
+            ],
+            [
+              46,
+              31,
+              77
+            ]
+          ]
+        },
+        "action": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(90deg, rgb(23, 18, 41) 0%, rgb(41, 23, 77) 55%, rgb(59, 20, 107) 100%)",
+          "gradientStops": [
+            [
+              23,
+              18,
+              41
+            ],
+            [
+              41,
+              23,
+              77
+            ],
+            [
+              59,
+              20,
+              107
+            ]
+          ]
+        },
+        "hero": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(109, 40, 217)"
+        },
+        "card": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(109, 40, 217)"
+        },
+        "dock": {
+          "backgroundColor": "color(srgb 1 1 1 / 0.9)",
+          "backdropFilter": "blur(31.25px)"
+        }
+      },
+      "geometry": {
+        "viewportWidth": 390,
+        "scrollWidth": 390,
+        "noHorizontalOverflow": true,
+        "roleWidth": 140,
+        "heroHeight": 213.75,
+        "actionHeight": 56.25,
+        "navWidth": 350
+      }
+    },
+    "mediaTransition": {
+      "before": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "after": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "restored": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "expectedStable": true,
+      "expectedChanged": false
+    }
+  },
+  {
+    "name": "explicit-dark-24",
+    "mode": "dark",
+    "colorScheme": "dark",
+    "rootFont": 24,
+    "screenshot": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-ui/.agent/student-role-02/mobile-theme/screenshots/today-explicit-dark-24.png",
+    "palette": {
+      "rootTheme": "dark",
+      "rootFontSize": "24px",
+      "colorScheme": "dark",
+      "fontsReady": true,
+      "onestLoaded": true,
+      "tokens": {
+        "surfaceBase": "#0b0b0c",
+        "surfaceRaised": "#1c1922",
+        "surfaceFloat": "#292531",
+        "textPrimary": "#edeaf3",
+        "textSecondary": "#c8c2d6",
+        "accentNow": "#b79cfa",
+        "accentOnNow": "#0b0b0c",
+        "onFillStrong": "#ffffff",
+        "dockOpacity": "78%",
+        "dockBlur": "1.5625rem"
+      },
+      "contrast": {
+        "primaryOnBase": 16.55,
+        "secondaryOnRaised": 10.02,
+        "heroOnAccent": 8.57,
+        "roleOnGradient": 9.39,
+        "actionOnGradient": 14.02,
+        "activeNavOnAccent": 8.57
+      },
+      "controls": {
+        "role": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(104.93deg, rgb(59, 26, 122) -5.26%, rgb(87, 41, 161) 49.47%, rgb(46, 31, 77) 100%)",
+          "gradientStops": [
+            [
+              59,
+              26,
+              122
+            ],
+            [
+              87,
+              41,
+              161
+            ],
+            [
+              46,
+              31,
+              77
+            ]
+          ]
+        },
+        "action": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(90deg, rgb(23, 18, 41) 0%, rgb(41, 23, 77) 55%, rgb(59, 20, 107) 100%)",
+          "gradientStops": [
+            [
+              23,
+              18,
+              41
+            ],
+            [
+              41,
+              23,
+              77
+            ],
+            [
+              59,
+              20,
+              107
+            ]
+          ]
+        },
+        "hero": {
+          "color": "rgb(11, 11, 12)",
+          "backgroundColor": "rgb(183, 156, 250)"
+        },
+        "card": {
+          "color": "rgb(11, 11, 12)",
+          "backgroundColor": "rgb(183, 156, 250)"
+        },
+        "dock": {
+          "backgroundColor": "color(srgb 0.160784 0.145098 0.192157 / 0.78)",
+          "backdropFilter": "blur(37.5px)"
+        }
+      },
+      "geometry": {
+        "viewportWidth": 390,
+        "scrollWidth": 390,
+        "noHorizontalOverflow": true,
+        "roleWidth": 168,
+        "heroHeight": 295.5,
+        "actionHeight": 67.5,
+        "navWidth": 342
+      }
+    },
+    "mediaTransition": null
+  },
+  {
+    "name": "explicit-light-24",
+    "mode": "light",
+    "colorScheme": "dark",
+    "rootFont": 24,
+    "screenshot": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-ui/.agent/student-role-02/mobile-theme/screenshots/today-explicit-light-24.png",
+    "palette": {
+      "rootTheme": "light",
+      "rootFontSize": "24px",
+      "colorScheme": "light",
+      "fontsReady": true,
+      "onestLoaded": true,
+      "tokens": {
+        "surfaceBase": "#fcfbfe",
+        "surfaceRaised": "#ffffff",
+        "surfaceFloat": "#ffffff",
+        "textPrimary": "#292531",
+        "textSecondary": "#565061",
+        "accentNow": "#6d28d9",
+        "accentOnNow": "#ffffff",
+        "onFillStrong": "#ffffff",
+        "dockOpacity": "90%",
+        "dockBlur": "1.5625rem"
+      },
+      "contrast": {
+        "primaryOnBase": 14.52,
+        "secondaryOnRaised": 7.73,
+        "heroOnAccent": 7.1,
+        "roleOnGradient": 9.39,
+        "actionOnGradient": 14.02,
+        "activeNavOnAccent": 7.1
+      },
+      "controls": {
+        "role": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(104.93deg, rgb(59, 26, 122) -5.26%, rgb(87, 41, 161) 49.47%, rgb(46, 31, 77) 100%)",
+          "gradientStops": [
+            [
+              59,
+              26,
+              122
+            ],
+            [
+              87,
+              41,
+              161
+            ],
+            [
+              46,
+              31,
+              77
+            ]
+          ]
+        },
+        "action": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundImage": "linear-gradient(90deg, rgb(23, 18, 41) 0%, rgb(41, 23, 77) 55%, rgb(59, 20, 107) 100%)",
+          "gradientStops": [
+            [
+              23,
+              18,
+              41
+            ],
+            [
+              41,
+              23,
+              77
+            ],
+            [
+              59,
+              20,
+              107
+            ]
+          ]
+        },
+        "hero": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(109, 40, 217)"
+        },
+        "card": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(109, 40, 217)"
+        },
+        "dock": {
+          "backgroundColor": "color(srgb 1 1 1 / 0.9)",
+          "backdropFilter": "blur(37.5px)"
+        }
+      },
+      "geometry": {
+        "viewportWidth": 390,
+        "scrollWidth": 390,
+        "noHorizontalOverflow": true,
+        "roleWidth": 168,
+        "heroHeight": 295.5,
+        "actionHeight": 67.5,
+        "navWidth": 342
+      }
+    },
+    "mediaTransition": {
+      "before": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "after": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "restored": {
+        "surfaceBase": "#fcfbfe",
+        "colorScheme": "light"
+      },
+      "expectedStable": true,
+      "expectedChanged": false
+    }
+  }
+]

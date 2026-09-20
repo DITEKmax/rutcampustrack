@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-09-10T19:09:00" hostname="DITEK-PK" time="0.054">
+  <properties/>
+  <testcase name="ipLoginKeyResolver: отсутствие login → fallback только на IP (без :login:)" classname="ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest" time="0.013"/>
+  <testcase name="loginKeyResolver: X-Login нормализуется в lowercase" classname="ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest" time="0.004"/>
+  <testcase name="ipLoginKeyResolver: composite key — ip:&lt;ip&gt;:login:&lt;login&gt;" classname="ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest" time="0.003"/>
+  <testcase name="loginKeyResolver: пустой header → fallback на IP" classname="ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest" time="0.005"/>
+  <testcase name="ipLoginKeyResolver: разные IP с одним login дают РАЗНЫЕ ключи" classname="ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest" time="0.005"/>
+  <testcase name="ipKeyResolver: без X-Forwarded-For fallback на 'unknown' (no remote addr in mock)" classname="ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest" time="0.004"/>
+  <testcase name="userIdKeyResolver: authenticated exchange attribute → ключ 'user:&lt;id&gt;'" classname="ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest" time="0.004"/>
+  <testcase name="userIdKeyResolver: без X-User-Id fallback на IP" classname="ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest" time="0.004"/>
+  <testcase name="userIdKeyResolver: forged X-User-Id without internal attribute falls back to IP" classname="ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest" time="0.003"/>
+  <testcase name="ipKeyResolver: raw X-Forwarded-For не меняет canonical peer key" classname="ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

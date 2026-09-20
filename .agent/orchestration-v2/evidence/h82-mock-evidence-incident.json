@@ -1,0 +1,11 @@
+{
+  "stage": "H82 diagnostic local mock check",
+  "observedEvidenceSha256": "21A9F1AC09680985A37FEC8C20D252DC083AE9D0DF83BE469DC6D1A21DA17872",
+  "observedResult": "FAIL",
+  "authorReportedPassSha256": "B7B740BF80C436C1CD32515EC90556FE3CCDC9212892DC9131BBFEE74D37ED72",
+  "retainedPassFile": false,
+  "attribution": "UNKNOWN",
+  "sourceRunnerSha256": "557782C04789D3E7F42BEF672594A01883BB61C3A5E138F37E04491E7BDEA700",
+  "sourceUnchangedVerified": true,
+  "rootDecision": "Do not accept unavailable PASS artifact; preserve current FAIL. H83 actual diagnostics in progress. New check evidence must use unique path after runtime; no reconstruction."
+}

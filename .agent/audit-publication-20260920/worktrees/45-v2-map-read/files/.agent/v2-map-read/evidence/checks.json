@@ -1,0 +1,161 @@
+{
+  "revision": {
+    "command": "git rev-parse HEAD; git branch --show-current; git rev-parse --show-toplevel",
+    "exitCode": 0,
+    "output": [
+      "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "codex/v2-map-read",
+      "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-map-read"
+    ],
+    "criterion": "exact E baseline and isolated branch/worktree"
+  },
+  "worktreeInventory": {
+    "command": "git worktree list --porcelain",
+    "exitCode": 0,
+    "criterion": "own normal worktree exists while original, E, candidate, and other worktrees remain separate",
+    "evidence": "The inventory retained the original main checkout, E b8220ac9 checkout, candidate 86263384 checkout, and codex/v2-map-read at the required path."
+  },
+  "scopeInventory": {
+    "command": "git diff --name-only; git ls-files --others --exclude-standard",
+    "exitCode": 0,
+    "criterion": "bounded diff inventory",
+    "evidence": "Tracked edits are AcademicGrpcServiceImpl, StudentHomeworkGrpcIdentityInterceptor, and its constructor-adaptation test; untracked files are local evidence, map source, and focused map tests only.",
+    "environmentWarnings": ["Git could not access C:/Users/maksd/.config/git/ignore (permission denied)."]
+  },
+  "diffWhitespace": {
+    "command": "git diff --check",
+    "exitCode": 0,
+    "criterion": "tracked source diff has no whitespace errors",
+    "environmentWarnings": ["Git reported LF-to-CRLF working-copy warnings and the PowerShell profile reported virtual-terminal setup warnings."]
+  },
+  "modelSyntax": {
+    "preparationCommand": "New-Item -ItemType Directory -Force C:/Users/maksd/AppData/Local/Temp/rct-map-model-syntax-m2",
+    "preparationExitCode": 0,
+    "command": "javac -proc:none -d C:/Users/maksd/AppData/Local/Temp/rct-map-model-syntax-m2 services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormat.java services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormatState.java services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadException.java services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadModels.java",
+    "exitCode": 0,
+    "environment": "Windows PowerShell; javac 21.0.10",
+    "criterion": "dependency-free imported/extended model sources are syntactically compilable",
+    "status": "SOURCE_ONLY_COMPLETED"
+  },
+  "invariantScan": {
+    "command": "rg -n \"@Transactional\\(readOnly = true, isolation = Isolation.REPEATABLE_READ\\)|MAX_ASSET_BYTES|65_536|findPlanById|findCatalogById|MAP_MANIFEST_METHOD_NAME|MAP_FLOOR_PLAN_METHOD_NAME|MAP_ASSET_METHOD_NAME\" services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc",
+    "exitCode": 0,
+    "criterion": "required transaction, bound parent lookup, byte bound/chunk bound, and signed map registrations are present",
+    "status": "SOURCE_ONLY_COMPLETED"
+  },
+  "forbiddenScopeScan": {
+    "command": "git diff --name-only | rg \"(^|/)(proto|generated|shared-security|config|frontend|BFF|access|schedule|map9)\"",
+    "exitCode": 1,
+    "expected": "No matching forbidden path; rg returns 1 for no matches.",
+    "criterion": "no forbidden path was changed",
+    "status": "NO_MATCH_EXPECTED"
+  },
+  "evidenceJsonSyntax": {
+    "command": "Get-Content -Raw .agent/v2-map-read/source-manifest.json | ConvertFrom-Json; Get-Content -Raw .agent/v2-map-read/evidence/checks.json | ConvertFrom-Json",
+    "exitCode": 0,
+    "criterion": "local evidence JSON parses",
+    "status": "SOURCE_ONLY_COMPLETED"
+  },
+  "manifestHashVerification": {
+    "command": "Get-Content -Raw .agent/v2-map-read/source-manifest.json | ConvertFrom-Json; Get-FileHash -Algorithm SHA256 for every path in files and compare with its manifest sha256",
+    "exitCode": 0,
+    "criterion": "all tracked source hashes in source-manifest.json match the current working tree",
+    "status": "SOURCE_ONLY_COMPLETED"
+  },
+  "boundedCorrection": {
+    "defects": [
+      {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadService.java:516",
+        "correction": "Use Optional<Catalog> for findCatalogById and retain missing-parent fail-closed validation."
+      },
+      {
+        "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java:162-166",
+        "correction": "Verify the valid unknown-building lookup, then clear invocations and prove malformed 020 performs no repository lookup."
+      }
+    ],
+    "sourceHashCommand": "Get-FileHash -Algorithm SHA256 services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadService.java,services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+    "sourceHashExitCode": 0,
+      "sourceHashes": {
+      "CampusMapReadService.java": "DFB12285B1F2413359FA422D7743C4B57F68533D7116673AFA510375C2D03B58",
+      "CampusMapReadServiceTest.java": "3DF1CACEDF02552E24D42DD83C09717084925F7820D14945AF6E15AF953A9733"
+    },
+    "status": "SOURCE_ONLY_COMPLETED"
+  },
+  "coverageExpansion": {
+    "testFiles": [
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java"
+    ],
+    "coveredBoundaries": [
+      "missing archived-aware user and invalid user/group/session/roles claims before map lookup",
+      "ACTIVE regular plus EXPELLED/GRADUATED/ARCHIVED read-only allow/deny matrix",
+      "canonical building/floor/asset IDs, unknown and foreign floor parents, invalid current pointers and unknown versions",
+      "wrong asset id/parent/version, missing catalog parent, non-ready states, and duplicate/missing/misparented format slots",
+      "asset hash/dimension/MIME/size metadata rejection before BYTEA load and computed content digest failure after load before chunks",
+      "all three signed map registrations for valid, missing, and bad tokens; handler safe failures, downstream IllegalStateException as INTERNAL, no emission, and cancellation",
+      "non-ready ABSENT/PROCESSING/FAILED slots with null asset IDs return NOT_FOUND before metadata/BYTEA, while missing READY metadata returns DATA_LOSS before BYTEA"
+    ],
+    "sourceHashCommand": "Get-FileHash -Algorithm SHA256 services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java,services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java,services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+    "sourceHashExitCode": 0,
+    "sourceHashes": {
+      "CampusMapReadServiceTest.java": "3DF1CACEDF02552E24D42DD83C09717084925F7820D14945AF6E15AF953A9733",
+      "CampusMapGrpcReadTest.java": "15A92266A8851B9D3CE0E97A10BA73C3693B5E9F609A58CDB27CD7354D6567F9",
+      "StudentHomeworkGrpcIdentityInterceptorTest.java": "498758B8803E8E179150137447B1EA5D28757A71276F587CB0C7288D97D175A2"
+    },
+    "status": "AUTHORED_NOT_RUN"
+  },
+  "handlerClassificationCorrection": {
+    "defect": "AcademicGrpcServiceImpl caught every IllegalStateException from each map handler as PERMISSION_DENIED, including downstream service/repository/serialization failures.",
+    "correction": "Identity extraction is isolated around StudentHomeworkGrpcIdentity.requireClaims; downstream RuntimeException, including IllegalStateException, maps to generic INTERNAL for all three handlers.",
+    "sourceHashCommand": "Get-FileHash -Algorithm SHA256 services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java,services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java",
+    "sourceHashExitCode": 0,
+    "sourceHashes": {
+      "AcademicGrpcServiceImpl.java": "C29987CCCB30ACA6C2DE2ECFA2DF2019A3CD4C9FC4AE6C3CF25591A8976A8876",
+      "CampusMapGrpcReadTest.java": "15A92266A8851B9D3CE0E97A10BA73C3693B5E9F609A58CDB27CD7354D6567F9"
+    },
+    "status": "SOURCE_ONLY_COMPLETED"
+  },
+  "assetBoundaryClarification": {
+    "behavior": "Valid non-ready ABSENT/PROCESSING/FAILED slots have null asset_id; a positive requested asset id therefore returns NOT_FOUND before metadata/BYTEA. A matching READY slot with missing metadata returns DATA_LOSS before BYTEA.",
+    "sourceHashCommand": "Get-FileHash -Algorithm SHA256 services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+    "sourceHashExitCode": 0,
+    "sourceHash": "3DF1CACEDF02552E24D42DD83C09717084925F7820D14945AF6E15AF953A9733",
+    "status": "SOURCE_ONLY_COMPLETED"
+  },
+  "boundedStaticChecks": {
+    "handlerClassification": {
+      "command": "PowerShell source assertion for isolated requireClaims handling and generic INTERNAL RuntimeException catch in AcademicGrpcServiceImpl",
+      "exitCode": 0,
+      "status": "SOURCE_ONLY_COMPLETED"
+    },
+    "assetBoundaries": {
+      "command": "PowerShell source assertion for parameterized non-ready asset and missing READY metadata tests",
+      "exitCode": 0,
+      "status": "SOURCE_ONLY_COMPLETED"
+    }
+  },
+  "runtime": {
+    "status": "NOT_RUN",
+    "exitCode": null,
+    "reason": "Frozen M2 contract prohibits Gradle/Maven/Docker/build/runtime execution before main heavy lease; no real data or service endpoint was used."
+  },
+  "heavyChecksQueued": [
+    {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.map.CampusMapReadServiceTest --tests ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest --tests ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest",
+      "status": "QUEUED",
+      "reason": "focused unit/source test batch; test task excludes *IT"
+    },
+    {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest",
+      "status": "QUEUED",
+      "reason": "module integrationTest task for *IT sources, kept distinct from test"
+    }
+  ],
+  "openGates": [
+    "heavy Gradle compile/unit/integration execution",
+    "fresh Sol high independent review",
+    "root integration and changed-scope recheck",
+    "runtime/database checks if later lease declares them applicable"
+  ]
+}

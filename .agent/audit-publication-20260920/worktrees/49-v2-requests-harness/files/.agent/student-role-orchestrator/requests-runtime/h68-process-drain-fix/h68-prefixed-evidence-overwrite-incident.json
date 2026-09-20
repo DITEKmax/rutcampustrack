@@ -1,0 +1,24 @@
+{
+  "schema": "rct.student-requests-h68-prefixed-evidence-overwrite-incident.v1",
+  "historicalPath": "h68-probe-secrets-prefixed-evidence.json",
+  "incident": "The historical prefixed evidence path was overwritten during fixture adjustment before the original bytes were separately copied.",
+  "originalBytesRecovered": false,
+  "originalSha256": null,
+  "doNotClaimOriginalArtifact": true,
+  "postcheckCopy": {
+    "path": "h68-probe-secrets-prefixed-evidence.postcheck.json",
+    "sha256": "fd054268fcf8d1044f4073277e765cb8398167b06fb4d9d2d423d7767296207c"
+  },
+  "freshPreFixReproduction": {
+    "path": "h68-probe-secrets-prefixed-evidence.recovered.json",
+    "sha256": "2ea4bc7ea9606786bcdeeb827ebc72697c44bfe3dcd806146308c99cc89650d6",
+    "probeSha256": "3a23ba65c71fa396c07c5ae5efae5979a374fb46e2b1ec019a3f20dd7fc707e6",
+    "preloadSha256": "d7f0c81c4c6a1a896ef4e20a92f33650f1752bd78c53cc85dc94d4385483efba",
+    "provenance": "Fresh actual-entrypoint rerun after temporarily restoring the exact pre-fix source hash and original synthetic fixture shape; this is a new run, not a byte recovery and not a transcript reconstruction."
+  },
+  "currentHistoricalPathSha256": "2ea4bc7ea9606786bcdeeb827ebc72697c44bfe3dcd806146308c99cc89650d6",
+  "limitations": [
+    "The original overwritten bytes and original artifact hash are unavailable.",
+    "Reviewer contemporaneous observation and the fresh pre-fix rerun establish the defect, but neither is presented as the original artifact."
+  ]
+}

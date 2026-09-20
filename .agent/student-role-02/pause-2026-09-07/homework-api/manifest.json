@@ -1,0 +1,92 @@
+{
+  "files": [
+    {
+      "path": "docs/openapi/mobile-bff.json",
+      "sha256": "5C7161832192DFC72DFEA6C4FA7FB1285DA71BDA5DF7A848BF6CE2ED1B69BC75"
+    },
+    {
+      "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+      "sha256": "DF81A01124BEF02FA2E95C8A5DF5318AB356E1C1D9FF5C4B73630A54847359D7"
+    },
+    {
+      "path": "frontends/mobile-core/src/api/student-client.ts",
+      "sha256": "9C58BC308683302C2C04382CD1BDA1378555155D6AF61991B9D75B85A9CA1B33"
+    },
+    {
+      "path": "frontends/mobile-core/src/api/types.ts",
+      "sha256": "4F3373429838D9B4D976C62A8B6EF76E59CF4C2B4FF49A3D512CFC4AB9B80A9B"
+    },
+    {
+      "path": "frontends/mobile-core/src/test-adapter/fixture-transport.test.ts",
+      "sha256": "867629F8FDA856448BA07F0151C0BA1A4DE64A729F477DD42980E78AF4AAD3CA"
+    },
+    {
+      "path": "proto/academic.proto",
+      "sha256": "236C5037D78BD2D6A377539D66F35B4F8BCAE1D0FF92CE5B0A82D82A0A6F4425"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "sha256": "2189A36EBF9DE127780FA93319425E4F51B33FC7AE4F6CAE5709CC733FD47882"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java",
+      "sha256": "4DA9E957B5C54175808F4DEEDF9363333272A5309B019318ED636B14018C0667"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+      "sha256": "6B88450D1A7CAF7F54C2C1CDCD41F8A89D956F4D342FC5902C112E47D55AEB3B"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java",
+      "sha256": "2F8ECE7A800B8A1D96E6A303FC5D16DB020ABF62C5E17D3B29D8A7D58FEDC3A1"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java",
+      "sha256": "32ED088A8EEEFB3B5878C1E132A0DAE588F3328523B6CAC23B4359041C05F549"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+      "sha256": "9A3D25908EBCEBAB53D729686F535D911BA5EDA8DDEC252F5818FAC48DAD1DA6"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java",
+      "sha256": "BB2F899657DEB801A29BD025FF397B9DAC7E50C74EC00A6214723DB089239ED9"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java",
+      "sha256": "D07A5F90A36489DAE715388E94D6B32F3A2497D1A42390B9A06F068C18618FD7"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/StudentApi.java",
+      "sha256": "2FD1B068A210C86E3DC119B616A9B827F07F2D4412AB66F92D6CCBCA0F7B24B0"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java",
+      "sha256": "480A0993E7A97A1540F014AD31248D1FD7A26BB75E6E221C3E0A81B26ABAC50C"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java",
+      "sha256": "1D04C9435F0E84C9ABA04F0B11BF49FB7074AF0A87FCE47AA43257C12667C73F"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+      "sha256": "7636D7FD92B4F08DC0F504383D47F9FDD82976951FF7FDFA62B7DAA6A837630F"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentApiController.java",
+      "sha256": "76DA973BCFD2955C889E0AE26BCFFF138B49D153BFCD70E33A2E71D63976043C"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+      "sha256": "9D16867B89EB83C3484814A9E051BEA68FE1C8CE0740B909398B8CE3869767F0"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/student/StudentQueryHomeworkTest.java",
+      "sha256": "B45CA82B51FFAD6A67D505ACA6D306A0E5B691106442411A897FA20AE596B805"
+    }
+  ],
+  "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "branch": "codex/student-role-02-homework-api",
+  "lane": "homework-api",
+  "state": "PAUSED_BY_OWNER"
+}

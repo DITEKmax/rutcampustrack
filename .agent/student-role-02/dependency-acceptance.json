@@ -1,0 +1,26 @@
+{
+  "recordedAt": "2026-09-07T21:04:04.1389690Z",
+  "status": "ACCEPTED_DEPENDENCY_AND_CHECK_RECONCILIATION",
+  "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "sourceFiles": 45,
+  "sourceChecks": 45,
+  "copyChecks": 45,
+  "mismatches": 0,
+  "manifestSha256": "3E795CB3F0CB8E95944BCBF1DC623E197554FAC24C5F5D2F5BB65ADFDDEF1D6A",
+  "rootCheck": "dependency-root-check/result.json",
+  "fullCheckExit": 0,
+  "reportedTests": 1651,
+  "executedTests": 1647,
+  "preexistingDisabledTests": 4,
+  "failures": 0,
+  "errors": 0,
+  "review": "dependency-combined-review-result.md",
+  "security": "8 JAR /1141 package records/0HIGH/0CRITICAL/57MEDIUM; immutable prior exact artifact handoff verified by reviewer",
+  "excludedGates": [
+    "Gateway trusted IP/composite validation/single dispatch",
+    "Auth token purpose/session authority",
+    "Requests full ingress",
+    "Full student role"
+  ],
+  "mainMerged": false
+}

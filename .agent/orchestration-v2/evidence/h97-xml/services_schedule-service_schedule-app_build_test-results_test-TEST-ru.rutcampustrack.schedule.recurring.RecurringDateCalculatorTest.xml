@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.schedule.recurring.RecurringDateCalculatorTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-20T14:30:12" hostname="DITEK-PK" time="0.205">
+  <properties/>
+  <testcase name="parityUsesIsoWeekWithoutSemesterRelativeRewrite()" classname="ru.rutcampustrack.schedule.recurring.RecurringDateCalculatorTest" time="0.194"/>
+  <testcase name="semesterEndIsInclusiveWhenItFallsOnTheRequestedWeekday()" classname="ru.rutcampustrack.schedule.recurring.RecurringDateCalculatorTest" time="0.001"/>
+  <testcase name="midpointCreationKeepsEarlierSemesterDatesAndStopsAtExclusiveCap()" classname="ru.rutcampustrack.schedule.recurring.RecurringDateCalculatorTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

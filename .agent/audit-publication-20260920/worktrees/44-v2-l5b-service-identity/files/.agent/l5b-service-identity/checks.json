@@ -1,0 +1,64 @@
+{
+  "baseline": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837",
+  "source_revision": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837 + worktree changes",
+  "environment": "Windows 11, Java 21.0.10, Gradle wrapper; root heavy queue",
+  "checks": [
+    {
+      "name": "git diff whitespace check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "No whitespace errors; Git reported only the existing LF-to-CRLF normalization warning for the edited Gradle file."
+    },
+    {
+      "name": "16-file source hash verification",
+      "command": "PowerShell Get-FileHash SHA256 for every path in .agent/l5b-service-identity/source-hashes.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "All 16 expected SHA-256 values matched the assigned worktree bytes after the H91 bounded correction."
+    },
+    {
+      "name": "focused Gradle batch",
+      "command": "gradlew.bat :services:shared:shared-security:test --tests '*ServiceIdentity*Test' --tests '*ServiceTokenCallCredentialsTest' :services:academic-service:academic-app:test --tests '*AssignmentCloseServiceIdentityInterceptorTest' --tests '*StudentHomeworkGrpcIdentityInterceptorTest' --tests '*AssignmentClosureContractTest' --tests '*SubjectAssignmentAuthorityContractTest' :services:schedule-service:schedule-app:test --tests '*AssignmentCloseServiceIdentityInterceptorTest'",
+      "exit_code": 1,
+      "status": "FAIL_COMPILE_TEST_ONLY",
+      "evidence": "Root H90 evidence h90-context.json/h90-stderr.log: shared-security compileTestJava failed at ServiceIdentityServerInterceptorTest.java:144 because a generic ServerInterceptor method cannot be represented by a lambda; product shared compileJava passed and tests did not run. The bounded correction replaced only that test lambda with an explicit generic anonymous ServerInterceptor. H91 rerun remains root-owned.",
+      "correction": {
+        "scope": "ServiceIdentityServerInterceptorTest.java:144-155 and ServiceIdentityTlsTransportTest.java:136-150, only",
+        "reproduction": "Generic ServerInterceptor method used as a lambda; nullable ManagedChannel reassigned after declaration was captured by assertThatThrownBy; plaintext fixture retained the default host:port authority while CallCredentials expected localhost.",
+        "replacement": "Explicit anonymous ServerInterceptor overriding <ReqT, RespT> interceptCall; final callChannel alias retained for cleanup; plaintext channel overrides authority to AUTHORITY while remaining usePlaintext().",
+        "source_drift": "No product or dependency changes; no assertions or TLS guards weakened"
+      }
+    },
+    {
+      "name": "root H91 focused Gradle batch",
+      "command": "gradlew.bat :services:shared:shared-security:test --tests '*ServiceIdentity*Test' --tests '*ServiceTokenCallCredentialsTest' :services:academic-service:academic-app:test --tests '*AssignmentCloseServiceIdentityInterceptorTest' --tests '*StudentHomeworkGrpcIdentityInterceptorTest' --tests '*AssignmentClosureContractTest' --tests '*SubjectAssignmentAuthorityContractTest' :services:schedule-service:schedule-app:test --tests '*AssignmentCloseServiceIdentityInterceptorTest' --continue --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exit_code": 1,
+      "status": "FAIL_COMPILE_TEST_ONLY",
+      "evidence": "Root H91 h91-context.json/h91-stderr.log: shared-security compileTestJava had the sole error ServiceIdentityTlsTransportTest.java:266, where plainServer called loopbackEphemeral() declaring an unnecessary checked IOException. Academic and Schedule produced 11 fresh classes / 42 tests with zero failures or errors; shared tests did not run.",
+      "correction": {
+        "scope": "ServiceIdentityTlsTransportTest.java:293 only",
+        "reproduction": "private static InetSocketAddress loopbackEphemeral() throws IOException",
+        "replacement": "Removed the unnecessary throws IOException declaration; the body already calls only non-throwing APIs.",
+        "source_drift": "No product, dependency, assertion, or TLS guard changes"
+      }
+    },
+    {
+      "name": "H92 full-diff review",
+      "command": "Independent review evidence h92-full-review.md",
+      "exit_code": 1,
+      "status": "FAIL_MEDIUM_TEST_COVERAGE",
+      "evidence": "Reviewer found no production defect. ServiceIdentityServerInterceptorTest.reverseAudienceCredentialIsUnauthenticated declared reverseCredential but configured only academicCredential, so the test exercised unknown-token rejection rather than configured reverse-audience rejection; assertRejected already verifies UNAUTHENTICATED and handler not reached.",
+      "correction": {
+        "scope": "ServiceIdentityServerInterceptorTest.java reverseAudienceCredentialIsUnauthenticated fixture only",
+        "replacement": "Configured List.of(academicCredential, reverseCredential), preserving the existing method policy, UNAUTHENTICATED expectation, and handler-not-reached assertion.",
+        "source_drift": "No production, dependency, docs, or other manifest path changes"
+      }
+    }
+  ],
+  "runtime_evidence": {
+    "status": "PENDING_ROOT_H93_LEASE",
+    "scope": "ServiceIdentityTlsTransportTest local TLS/plaintext/untrusted-peer cases",
+    "notes": "No product runtime or production certificate provisioning is claimed."
+  }
+}

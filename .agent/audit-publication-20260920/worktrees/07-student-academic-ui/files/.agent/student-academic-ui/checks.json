@@ -1,0 +1,101 @@
+{
+  "schema": "rct.checks.v1",
+  "task": "FE13 Attendance8 + Statistics5",
+  "contract": ".agent/student-academic-ui/packet.md",
+  "baseline": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "revision": "working tree at 8002b9ea4356b10779c5bb9a6d99746d32d78ae2; pre-commit verification",
+  "recordedAt": "2026-09-08T03:17:25+03:00",
+  "environment": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "vite": "7.3.6",
+    "vitest": "4.1.4",
+    "worktree": "C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/student-academic-ui",
+    "branch": "codex/student-academic-ui"
+  },
+  "checks": [
+    {
+      "name": "Harness Vue SFC typecheck",
+      "command": "npx --no-install vue-tsc -p mobile-core/harness/attendance-statistics/tsconfig.json --noEmit",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "All harness, Attendance and Statistics .vue/.ts entrypoints typecheck."
+    },
+    {
+      "name": "Scoped ESLint",
+      "command": "npx --no-install eslint mobile-core/src/features/attendance mobile-core/src/features/statistics mobile-core/harness/attendance-statistics --max-warnings=0",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "Owned FE13 paths pass with zero warnings."
+    },
+    {
+      "name": "Scoped view-model tests",
+      "command": "npx --no-install vitest run mobile-core/src/features/attendance/attendance-view-model.test.ts mobile-core/src/features/statistics/statistics-view-model.test.ts",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "2 test files and 7 tests passed, including opaque g:123 series id and full history labels."
+    },
+    {
+      "name": "Harness production build",
+      "command": "npx --no-install vite build --config mobile-core/harness/attendance-statistics/vite.config.ts --configLoader runner",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "Vite 7.3.6 transformed 40 modules and emitted harness-dist."
+    },
+    {
+      "name": "Harness fixture HTTP matrix",
+      "command": "Started Vite on 127.0.0.1:18210 and :18211; curl.exe requested all 13 fixture URLs plus /main.ts",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "13 fixture URLs and main.ts returned HTTP 200; task-owned servers stopped after probes."
+    },
+    {
+      "name": "Diff whitespace check",
+      "command": "git diff --check (and final git diff --cached --check after staging)",
+      "cwd": "worktree root",
+      "exitCode": 0,
+      "evidence": "No whitespace errors in the bounded diff."
+    }
+  ],
+  "diagnostics": [
+    {
+      "name": "Concurrent Vite dependency optimization warning",
+      "exitCode": 1,
+      "reproduction": "Starting both task-owned Vite dev servers concurrently caused one EPERM rename in mobile-core/node_modules/.vite/deps_temp_*.",
+      "evidence": "The affected server became ready, later HMR updates succeeded, all 13 HTTP probes returned 200, and the production build passed.",
+      "correction": "No product change; this is shared local optimize-cache contention.",
+      "recheck": "Vite production build exit 0 and HTTP matrix exit 0."
+    }
+  ],
+  "runtime": {
+    "status": "PARTIAL_BROWSER_EVIDENCE_BLOCKED_IN_LEAF",
+    "servers": [
+      {
+        "port": 18210,
+        "purpose": "Attendance harness",
+        "startupLog": ".agent/student-academic-ui/runtime/harness-18210.out.log",
+        "stopped": true
+      },
+      {
+        "port": 18211,
+        "purpose": "Statistics harness",
+        "startupLog": ".agent/student-academic-ui/runtime/harness-18211.out.log",
+        "stopped": true
+      }
+    ],
+    "browser": {
+      "requiredViewport": "390x844",
+      "cuaState": "listBrowsers returned []; listApps returned []",
+      "attempts": [
+        "createBrowserTab('iab', 'http://127.0.0.1:18210/...') -> Browser is not available: iab",
+        "createBrowserTab('chrome', 'http://127.0.0.1:18210/...') -> Browser is not available: chrome",
+        "getBrowser({url:'http://127.0.0.1:18210/'}) -> No browser is available"
+      ],
+      "screenshotClaim": false,
+      "keyboardClaim": false,
+      "ownerAction": "Root must attach its independent CUA screenshots and focus evidence before fresh Sol review."
+    },
+    "cleanup": "PIDs 42268 and 36000 stopped after HTTP probes; ports 18210/18211 no longer LISTENING."
+  }
+}

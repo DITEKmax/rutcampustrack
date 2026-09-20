@@ -1,0 +1,107 @@
+{
+  "task": "H59 metrics configuration correction",
+  "status": "AUTHOR_PASS_RELEASE_FOR_REVIEW",
+  "revision": "73fd5f27ceb429ad0692b073189f8a527c550830",
+  "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness",
+  "environment": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "powershell": "7.6.5",
+    "runtime": "not run by author",
+    "authorOwnedProcesses": "none started"
+  },
+  "sources": {
+    "rules": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\RULES.md",
+    "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+    "contract": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\REQUESTS-H59-METRICS-FIX.md",
+    "contractSha256": "2714D1C64A8DBEE24BB7B3CD3228E0377AF727CCB9750A8016E8AD2785038771",
+    "rootFailureLog": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\evidence\\h59-academic-filtered.log",
+    "rootReport": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\evidence\\h59-report.json"
+  },
+  "runner": {
+    "path": ".agent/student-role-orchestrator/requests-runtime/runner.ps1",
+    "beforeSnapshot": ".agent/student-role-orchestrator/requests-runtime/h59-metrics-fix/runner-before.ps1",
+    "beforeSha256": "67F6D0E471FCE5DC7835023D32BB5BD3D26EEB00426AD9AD7A7C2C62409FCA3D",
+    "afterSha256": "2B47DA9105461EB3C9D11FAE7CA92B319A7B8695725F665D96D8F03930CCD9A0",
+    "removedLine": "MANAGEMENT_ENDPOINT_METRICS_ENABLED = 'true'",
+    "retainedExposure": "health,info,metrics",
+    "retainedAccess": "unrestricted"
+  },
+  "checks": [
+    {
+      "name": "rules-and-contract-hashes",
+      "command": "Get-FileHash -Algorithm SHA256 RULES.md; Get-FileHash -Algorithm SHA256 REQUESTS-H59-METRICS-FIX.md",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "baseline-revision-and-runner-hash",
+      "command": "git log -1 --format=%H; Get-FileHash -Algorithm SHA256 requests-runtime/runner.ps1",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "status": "PASS",
+      "evidence": "HEAD=73fd5f27ceb429ad0692b073189f8a527c550830; beforeSha256=67F6D0E4...FCA3D"
+    },
+    {
+      "name": "before-snapshot",
+      "command": "Copy-Item runner.ps1 h59-metrics-fix/runner-before.ps1; Get-FileHash -Algorithm SHA256 h59-metrics-fix/runner-before.ps1",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "powershell-ast-and-runtime-settings",
+      "command": "Parser::ParseFile(runner.ps1); assert one HashtableAst containing exposure health,info,metrics and access unrestricted; assert metrics-enabled key absent",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "status": "PASS",
+      "evidence": "AST_PASS runtime-common-hashtable=1 exposure=health,info,metrics access=unrestricted metrics-enabled-key=absent"
+    },
+    {
+      "name": "exact-bounded-patch",
+      "command": "Compare raw before snapshot and current runner; replace exactly one obsolete metrics-enabled line and require all remaining bytes equal",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "status": "PASS",
+      "evidence": "BOUNDED_PATCH_PASS removed-lines=1 all-other-bytes-preserved=true"
+    },
+    {
+      "name": "snapshot-diff",
+      "command": "git diff --no-index --unified=2 h59-metrics-fix/runner-before.ps1 runner.ps1",
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "status": "PASS_EXPECTED_DIFF",
+      "evidence": "one deletion, zero additions; exit 1 is git diff's changed-files result"
+    },
+    {
+      "name": "preexisting-wip-preservation",
+      "command": "git -c core.excludesFile= status --short --branch; compare pre-edit inventory excluding runner.ps1 and h59-metrics-fix/",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "status": "PASS",
+      "evidence": "PRESERVATION_PASS preexisting-status-inventory-unchanged=true"
+    }
+  ],
+  "runtimeEvidence": {
+    "rootRunId": "20260919-183652649-mnkcr-fz",
+    "rootStatus": "FAIL",
+    "academicPhase": "FAIL",
+    "cleanupStatus": "PASS",
+    "cleanupErrors": 0,
+    "postFixStartup": "UNVERIFIED",
+    "dockerInvokedByAuthor": false,
+    "gradleInvokedByAuthor": false,
+    "activeAuthorProcesses": false
+  },
+  "scopeDiff": {
+    "functionalLinesRemoved": 1,
+    "functionalLinesAdded": 0,
+    "productFilesChanged": 0,
+    "sharedStatusFilesChanged": 0,
+    "oldRunFoldersChanged": 0
+  },
+  "limitations": [
+    "Root must rerun the repaired harness before claiming Spring startup, I1, I2, security, cleanup, or full runtime PASS.",
+    "This leaf did not run Docker, Gradle, build, dependency, or network-proof checks."
+  ]
+}

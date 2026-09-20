@@ -1,0 +1,18 @@
+[
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-integration-l5a\\.agent\\v2-integration-l5a\\source-manifest.json",
+    "Hash": "EA25A1E220E1FDC184F2321FBC0F08E7E3C897A22ABFD5AD71C58A08573E6284"
+  },
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+    "Hash": "05C76B696BF987370C0597C3AF76C9DB94FB588AA3AC3087D6907110EBBB9716"
+  },
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\probe.mjs",
+    "Hash": "1093B32778D8A7AF7CBC3E8F691073597257EB3091AC6A51DF8B12DE8E8731D6"
+  },
+  {
+    "Path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\build-i6\\h57-build\\requests-build-manifest.v1.json",
+    "Hash": "61E73ED658D43CD878AFE6DA6AB703D2C73844E8114329FD991566BF9C009F4F"
+  }
+]

@@ -1,0 +1,416 @@
+diff --git a/event-schemas/excuse.decided.json b/event-schemas/excuse.decided.json
+index aef4d732..ff4027a3 100644
+--- a/event-schemas/excuse.decided.json
++++ b/event-schemas/excuse.decided.json
+@@ -45,7 +45,8 @@
+         "status": {
+           "enum": [
+             "approved",
+-            "rejected"
++            "rejected",
++            "cancelled"
+           ]
+         },
+         "decision_by": {
+@@ -56,7 +57,10 @@
+           "description": "user_id старосты, принявшего решение"
+         },
+         "decision_comment": {
+-          "type": "string",
++          "type": [
++            "string",
++            "null"
++          ],
+           "description": "Необязательный комментарий старосты, показывается студенту"
+         },
+         "decided_at": {
+diff --git a/event-schemas/excuse.requested.json b/event-schemas/excuse.requested.json
+index efab82ac..03db7cb1 100644
+--- a/event-schemas/excuse.requested.json
++++ b/event-schemas/excuse.requested.json
+@@ -40,6 +40,9 @@
+           "type": "string",
+           "enum": [
+             "illness",
++            "medical_examination",
++            "competition_participation",
++            "family_circumstances",
+             "summons",
+             "university_order",
+             "exemption",
+@@ -94,6 +97,38 @@
+         },
+         "has_attachments": {
+           "type": "boolean"
++        },
++        "attachments": {
++          "type": "array",
++          "description": "Metadata only. Binary attachment data is retained in attendance Mongo and is never placed in the outbox event.",
++          "items": {
++            "type": "object",
++            "required": [
++              "id",
++              "name",
++              "content_type",
++              "size",
++              "sha256",
++              "state",
++              "uploaded_at",
++              "expires_at"
++            ],
++            "properties": {
++              "id": { "type": "string" },
++              "name": { "type": "string" },
++              "content_type": { "type": "string" },
++              "size": { "type": "integer", "minimum": 0 },
++              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
++              "state": { "enum": ["active", "expired"] },
++              "uploaded_at": { "type": "string", "format": "date-time" },
++              "expires_at": { "type": "string", "format": "date-time" },
++              "expired_at": {
++                "type": ["string", "null"],
++                "format": "date-time"
++              }
++            },
++            "additionalProperties": false
++          }
+         }
+       }
+     },
+diff --git a/event-schemas/late_checkin.decided.json b/event-schemas/late_checkin.decided.json
+index e05eff5b..d33e3873 100644
+--- a/event-schemas/late_checkin.decided.json
++++ b/event-schemas/late_checkin.decided.json
+@@ -66,6 +66,8 @@
+             "headman_approved",
+             "headman_rejected",
+             "geo_confirmed",
++            "student_cancelled",
++            "present_priority",
+             null
+           ]
+         },
+diff --git a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java
+index bd2ab3fc..6755f3e5 100644
+--- a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java
++++ b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java
+@@ -4,5 +4,6 @@ public enum ExcuseTicketStatus {
+     DRAFT,
+     SUBMITTED,
+     APPROVED,
+-    REJECTED;
++    REJECTED,
++    CANCELLED;
+ }
+diff --git a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java
+index d8b8251b..f49d4535 100644
+--- a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java
++++ b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java
+@@ -2,6 +2,9 @@ package ru.rutcampustrack.attendance.contract.enums;
+ 
+ public enum ExcuseType {
+     ILLNESS,
++    MEDICAL_EXAMINATION,
++    COMPETITION_PARTICIPATION,
++    FAMILY_CIRCUMSTANCES,
+     SUMMONS,
+     UNIVERSITY_ORDER,
+     EXEMPTION,
+diff --git a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java
+index 1e4ce804..9c15e670 100644
+--- a/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java
++++ b/services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java
+@@ -3,5 +3,7 @@ package ru.rutcampustrack.attendance.contract.enums;
+ public enum LateCheckinResolutionReason {
+     GEO_CONFIRMED,
+     HEADMAN_APPROVED,
+-    HEADMAN_REJECTED
++    HEADMAN_REJECTED,
++    PRESENT_PRIORITY,
++    CANCELLED_BY_STUDENT
+ }
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
+index 36d022f9..73d6b816 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
+@@ -119,6 +119,39 @@ public class MongoConfig {
+                         org.springframework.data.mongodb.core.query.Criteria.where("status").is("PENDING")))
+                 .named("uniq_lcr_pending_student_lesson"));
+ 
++        // Student request union/list and owner-scoped attachment reads.
++        IndexOperations excuseOps = mongoTemplate.indexOps("excuse_tickets");
++        excuseOps.ensureIndex(new Index()
++                .on("student_id", Sort.Direction.ASC)
++                .on("updated_at", Sort.Direction.DESC)
++                .named("idx_excuse_student_updated"));
++
++        IndexOperations requestReceiptOps = mongoTemplate.indexOps("student_request_receipts");
++        requestReceiptOps.ensureIndex(new Index()
++                .on("student_id", Sort.Direction.ASC)
++                .on("command_kind", Sort.Direction.ASC)
++                .on("idempotency_key", Sort.Direction.ASC)
++                .unique()
++                .named("uniq_student_request_receipt"));
++
++        IndexOperations budgetOps = mongoTemplate.indexOps("student_late_checkin_budgets");
++        budgetOps.ensureIndex(new Index()
++                .on("student_id", Sort.Direction.ASC)
++                .on("semester_id", Sort.Direction.ASC)
++                .unique()
++                .named("uniq_student_late_budget"));
++
++        IndexOperations attachmentOps = mongoTemplate.indexOps("request_attachments");
++        attachmentOps.ensureIndex(new Index()
++                .on("request_id", Sort.Direction.ASC)
++                .on("owner_student_id", Sort.Direction.ASC)
++                .on("position", Sort.Direction.ASC)
++                .named("idx_request_attachment_owner_position"));
++        attachmentOps.ensureIndex(new Index()
++                .on("state", Sort.Direction.ASC)
++                .on("expires_at", Sort.Direction.ASC)
++                .named("idx_request_attachment_expiry"));
++
+         IndexOperations receiptOps = mongoTemplate.indexOps("student_checkin_receipts");
+         receiptOps.ensureIndex(new Index()
+                 .on("student_id", Sort.Direction.ASC)
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java
+index 9f8beb59..05e565d3 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java
+@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
+ import org.springframework.stereotype.Component;
+ import ru.rutcampustrack.attendance.event.EventEnvelope;
+ import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
++import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
+ import ru.rutcampustrack.shared.outbox.OutboxStorage;
+ 
+ import java.util.ArrayList;
+@@ -71,6 +72,35 @@ public class ExcuseEventPublisher {
+         saveToOutbox(EVENT_REQUESTED, buildRequestedPayload(ticket, lessonDetails));
+     }
+ 
++    /**
++     * Publishes the student-request representation with attachment metadata.
++     * Attachment bytes are retained in {@code request_attachments}; the outbox
++     * carries descriptors only so a retry cannot duplicate or expose binary data.
++     */
++    public void publishRequested(ExcuseTicket ticket,
++                                 List<Map<String, Object>> lessonDetails,
++                                 List<RequestAttachmentDescriptorDocument> descriptors) {
++        Map<String, Object> payload = buildRequestedPayload(ticket, lessonDetails);
++        List<Map<String, Object>> attachments = new ArrayList<>();
++        if (descriptors != null) {
++            for (RequestAttachmentDescriptorDocument descriptor : descriptors) {
++                Map<String, Object> item = new LinkedHashMap<>();
++                item.put("id", descriptor.getId());
++                item.put("name", descriptor.getName());
++                item.put("content_type", descriptor.getContentType());
++                item.put("size", descriptor.getSize());
++                item.put("sha256", descriptor.getSha256());
++                item.put("state", descriptor.getState() == null ? null : descriptor.getState().name().toLowerCase());
++                item.put("uploaded_at", descriptor.getUploadedAt() == null ? null : descriptor.getUploadedAt().toString());
++                item.put("expires_at", descriptor.getExpiresAt() == null ? null : descriptor.getExpiresAt().toString());
++                attachments.add(item);
++            }
++        }
++        payload.put("attachments", attachments);
++        payload.put("has_attachments", !attachments.isEmpty());
++        saveToOutbox(EVENT_REQUESTED, payload);
++    }
++
+     /**
+      * Variant of {@link #publishRequested(ExcuseTicket, List)} that carries a
+      * supporting document. The document is base64-encoded so it can travel
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java
+index 3cdcf541..b8b2f888 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java
+@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
+ import org.springframework.data.mongodb.core.mapping.Field;
+ import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+ import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
++import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
++import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
+ 
+ import java.time.Instant;
+ import java.util.List;
+@@ -40,12 +42,24 @@ public class ExcuseTicket {
+     @Field("lesson_ids")
+     private List<Long> lessonIds;
+ 
++    /** Active semester used for student request budget/options ownership. */
++    @Field("semester_id")
++    private Long semesterId;
++
++    /** Immutable schedule data used by archive/detail reads after schedule changes. */
++    @Field("lesson_snapshots")
++    private List<StudentLessonSnapshotDocument> lessonSnapshots;
++
+     @Field("excuse_type")
+     private ExcuseType excuseType;
+ 
+     @Field("comment")
+     private String comment;
+ 
++    /** Descriptors only; binary bytes live in request_attachments. */
++    @Field("attachment_descriptors")
++    private List<RequestAttachmentDescriptorDocument> attachmentDescriptors;
++
+     @Field("status")
+     @Builder.Default
+     private ExcuseTicketStatus status = ExcuseTicketStatus.SUBMITTED;
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java
+index d0f32f66..89320aad 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java
+@@ -184,6 +184,8 @@ public class AttendanceStudentGrpcServiceImpl
+                 case GEO_CONFIRMED -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_GEO_CONFIRMED;
+                 case HEADMAN_APPROVED -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_APPROVED;
+                 case HEADMAN_REJECTED -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_REJECTED;
++                case CANCELLED_BY_STUDENT -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_STUDENT_CANCELLED;
++                case PRESENT_PRIORITY -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_UNSPECIFIED;
+             });
+         }
+         return result.build();
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java
+index f42fda49..f82a8232 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java
+@@ -3,6 +3,7 @@ package ru.rutcampustrack.attendance.latecheckin;
+ import com.fasterxml.jackson.core.JsonProcessingException;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import org.springframework.stereotype.Component;
++import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
+ import ru.rutcampustrack.attendance.event.EventEnvelope;
+ import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+ import ru.rutcampustrack.shared.outbox.OutboxStorage;
+@@ -77,7 +78,7 @@ public class LateCheckinEventPublisher {
+                 request.getStatus() != null ? request.getStatus().name().toLowerCase() : null);
+         payload.put("resolution_reason",
+                 request.getResolutionReason() != null
+-                        ? request.getResolutionReason().name().toLowerCase()
++                        ? wireResolutionReason(request.getResolutionReason())
+                         : null);
+         payload.put("decided_at",
+                 request.getDecisionAt() != null ? request.getDecisionAt().toString() : null);
+@@ -91,6 +92,11 @@ public class LateCheckinEventPublisher {
+         saveToOutbox(EVENT_DECIDED, payload);
+     }
+ 
++    private static String wireResolutionReason(LateCheckinResolutionReason reason) {
++        return reason == LateCheckinResolutionReason.CANCELLED_BY_STUDENT
++                ? "student_cancelled" : reason.name().toLowerCase();
++    }
++
+     private void saveToOutbox(String eventType, Map<String, Object> payload) {
+         Map<String, Object> envelope = EventEnvelope.build(eventType, payload);
+         String json;
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java
+index a3512d66..a3b9fde8 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java
+@@ -45,6 +45,12 @@ public class LateCheckinRequest {
+     @Field("subject_id")
+     private Long subjectId;
+ 
++    @Field("subject_name")
++    private String subjectName;
++
++    @Field("subject_type")
++    private String subjectType;
++
+     @Field("semester_id")
+     private Long semesterId;
+ 
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java
+index 73aa55f1..b36d0692 100644
+--- a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java
+@@ -9,6 +9,7 @@ import org.mockito.Mock;
+ import org.mockito.junit.jupiter.MockitoExtension;
+ import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+ import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
++import ru.rutcampustrack.attendance.events.EventSchemaValidator;
+ import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
+ import ru.rutcampustrack.shared.outbox.OutboxStorage;
+ 
+@@ -18,6 +19,7 @@ import java.util.List;
+ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.mockito.ArgumentMatchers.eq;
+ import static org.mockito.Mockito.verify;
++import static org.mockito.Mockito.times;
+ 
+ /**
+  * Unit tests for ExcuseEventPublisher (Phase 59-05 + M02 Группа 5).
+@@ -131,6 +133,38 @@ class ExcuseEventPublisherTest {
+         assertThat(payload.get("decided_at").asText()).isEqualTo(decidedAt.toString());
+     }
+ 
++    @Test
++    void publishDecided_allTerminalVariantsWithNullCommentMatchSchema() throws Exception {
++        Instant decidedAt = Instant.parse("2026-04-14T13:00:00Z");
++        for (ExcuseTicketStatus status : List.of(ExcuseTicketStatus.APPROVED,
++                ExcuseTicketStatus.REJECTED, ExcuseTicketStatus.CANCELLED)) {
++            publisher().publishDecided(ExcuseTicket.builder()
++                    .id("terminal-" + status.name().toLowerCase())
++                    .studentId(100L).groupId(10L).lessonIds(List.of(1L))
++                    .excuseType(ExcuseType.ILLNESS).status(status)
++                    .decisionBy(status == ExcuseTicketStatus.CANCELLED ? null : 777L)
++                    .decisionAt(decidedAt).createdAt(decidedAt).updatedAt(decidedAt)
++                    .build());
++        }
++
++        ArgumentCaptor<String> payloads = ArgumentCaptor.forClass(String.class);
++        verify(outboxStorage, times(3)).save(eq("excuse.decided"), payloads.capture());
++        assertThat(payloads.getAllValues()).allSatisfy(payload -> {
++            try {
++                assertThat(EventSchemaValidator.validate("excuse.decided.json", payload)).isEmpty();
++            } catch (Exception error) {
++                throw new AssertionError("excuse.decided must validate", error);
++            }
++        });
++        assertThat(payloads.getAllValues()).extracting(payload -> {
++            try {
++                return objectMapper.readTree(payload).get("payload").get("status").asText();
++            } catch (Exception error) {
++                throw new AssertionError("valid JSON expected", error);
++            }
++        }).containsExactlyInAnyOrder("approved", "rejected", "cancelled");
++    }
++
+     // D-27 regression
+     @Test
+     void publishRequested_userIdEqualsStudentId() throws Exception {
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java
+index 4c57a9a4..242d9da1 100644
+--- a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java
+@@ -169,6 +169,28 @@ class LateCheckinEventContractTest {
+         assertThat(payload.get("decision_by").isNull()).isTrue();
+     }
+ 
++    @Test
++    void publishDecided_studentCancelledUsesCanonicalWireReasonAndSchema() throws Exception {
++        LateCheckinRequest request = LateCheckinRequest.builder()
++                .id("req-student-cancelled")
++                .studentId(100L)
++                .groupId(10L)
++                .lessonId(42L)
++                .status(LateCheckinRequestStatus.CANCELLED)
++                .resolutionReason(LateCheckinResolutionReason.CANCELLED_BY_STUDENT)
++                .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
++                .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
++                .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
++                .build();
++
++        publisher.publishDecided(request, LocalDate.of(2026, 4, 23), 3, 7L, null);
++
++        OutboxRecord record = outbox.captured.getFirst();
++        assertThat(EventSchemaValidator.validate("late_checkin.decided.json", record.payload())).isEmpty();
++        assertThat(mapper.readTree(record.payload()).get("payload").get("resolution_reason").asText())
++                .isEqualTo("student_cancelled");
++    }
++
+     @Test
+     void decisionCommandRequiresPositiveInternalActor() throws Exception {
+         String valid = mapper.writeValueAsString(EventEnvelope.build("late_checkin.decision", Map.of(

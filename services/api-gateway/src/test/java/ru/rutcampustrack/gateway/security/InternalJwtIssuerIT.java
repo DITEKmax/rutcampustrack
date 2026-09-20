@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,14 @@ class InternalJwtIssuerIT {
     @Autowired
     WebTestClient client;
 
+    @Autowired
+    InternalJwtIssuerClient internalJwtIssuerClient;
+
+    @BeforeEach
+    void resetIssuerCache() {
+        internalJwtIssuerClient.invalidateAll();
+    }
+
     @BeforeAll
     static void startInfra() throws NoSuchAlgorithmException {
         KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
@@ -113,6 +122,7 @@ class InternalJwtIssuerIT {
         r.add("ACADEMIC_SERVICE_URL", () -> "http://localhost:" + WIREMOCK.port());
         r.add("SCHEDULE_SERVICE_URL", () -> "http://localhost:" + WIREMOCK.port());
         r.add("ATTENDANCE_SERVICE_URL", () -> "http://localhost:" + WIREMOCK.port());
+        r.add("MOBILE_BFF_URL", () -> "http://localhost:" + WIREMOCK.port());
         r.add("NOTIFICATION_WEB_URL", () -> "http://localhost:" + WIREMOCK.port());
         // Rate-limit в этих тестах не тестируется — Redis отсутствует, fail-open пропустит
         r.add("spring.data.redis.host", () -> "127.0.0.1");
@@ -147,6 +157,32 @@ class InternalJwtIssuerIT {
         assertThat(found).as("downstream должен получить X-Internal-Token=fake-internal-token-42").isTrue();
 
         // Token-exchange был вызван хотя бы 1 раз
+        WIREMOCK.verify(com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
+                postRequestedFor(urlEqualTo("/internal/issue-internal-jwt")));
+    }
+
+    @Test
+    @DisplayName("Student check-in route reaches Mobile BFF with internal JWT and no legacy identity headers")
+    void studentCheckinRoute_reachesMobileBffWithTrustedIdentityOnly() {
+        WIREMOCK.resetRequests();
+        String jwt = signExternalJwt(42L, "STUDENT", 7L, false,
+                new Date(System.currentTimeMillis() + 60_000));
+
+        client.post().uri("/api/v1/student/lessons/77/checkin")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                .header("Idempotency-Key", "gateway-checkin-77")
+                .header("X-User-Id", "999")
+                .header("X-User-Role", "ADMIN")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"geo\":{\"kind\":\"UNAVAILABLE\",\"reason\":\"TIMEOUT\"}}")
+                .exchange()
+                .expectStatus().isOk();
+
+        WIREMOCK.verify(1, postRequestedFor(urlEqualTo("/api/v1/student/lessons/77/checkin"))
+                .withHeader("X-Internal-Token", com.github.tomakehurst.wiremock.client.WireMock
+                        .equalTo("fake-internal-token-42"))
+                .withoutHeader("X-User-Id")
+                .withoutHeader("X-User-Role"));
         WIREMOCK.verify(com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
                 postRequestedFor(urlEqualTo("/internal/issue-internal-jwt")));
     }

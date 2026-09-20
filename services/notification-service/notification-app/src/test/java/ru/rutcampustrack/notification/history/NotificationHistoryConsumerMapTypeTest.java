@@ -67,6 +67,13 @@ class NotificationHistoryConsumerMapTypeTest {
     }
 
     @Test
+    void skipsLateCheckinCancelledByGeoInsteadOfRecordingFalseApproval() {
+        assertThat(NotificationHistoryConsumer.mapType("late_checkin.decided",
+                Map.of("status", "cancelled", "resolution_reason", "geo_confirmed")))
+                .isEmpty();
+    }
+
+    @Test
     void mapsAttendanceMarkedByHeadman() {
         assertThat(NotificationHistoryConsumer.mapType("attendance.marked",
                 Map.of("marked_by", "headman")))

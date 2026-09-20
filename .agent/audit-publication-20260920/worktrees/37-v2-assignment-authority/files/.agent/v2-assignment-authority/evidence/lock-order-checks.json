@@ -1,0 +1,125 @@
+{
+  "scope": "L5A current assignTeacher/addTeacher lock-order regression",
+  "risk": "S3",
+  "base_revision": "f59b3b9951c971bde42265ae67df8754dc594a58",
+  "parent_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "rules_sha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "packet_sha256": "82B77EFC3696E27D8448AAF94556C0E91D3859075439506F6298086D6FDA492A",
+  "production_baseline": {
+    "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+    "sha256": "377BF9B1E2F6E2B88529DD362177F0C47318D7A6C31561C4E516FA89491AFFA3",
+    "diff_exit_code": 0,
+    "status": "UNCHANGED_AT_F59"
+  },
+  "test_source": {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java",
+    "sha256": "50E533093C36D1B0409D6F27CEE01859310CBE115B02CD7C3BE1C99BBD88F621",
+    "selector": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.assignTeacherAndAddTeacherUseOrderedLocks"
+  },
+  "synchronization": {
+    "entrypoints": [
+      "POST /academic/assignments",
+      "POST /academic/subjects/{subjectId}/teachers/{teacherId}"
+    ],
+    "real_repository_calls": [
+      "SemesterRepository.findByIdForUpdate",
+      "SubjectRepository.findByIdForUpdate"
+    ],
+    "barrier_events": [
+      "assign.semester.locked",
+      "add.semester.attempted",
+      "add.subject.locked",
+      "assign.released"
+    ],
+    "spy_scope": "request-thread-scoped role map; @MockitoSpyBean default Answer delegates to the original Spring Data proxy; armed after JDBC fixture setup",
+    "cleanup": "release latch in finally, shutdown executor, join both request threads",
+    "external_inverse_locks": false,
+    "sleep_based_proof": false
+  },
+  "assertions": [
+    "both actual HTTP responses are 201",
+    "response assignment IDs are positive and distinct",
+    "exactly two rows remain for the fixture subject",
+    "teacher identities and lecture/practice tuple types are preserved"
+  ],
+  "planned_h72_command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.assignTeacherAndAddTeacherUseOrderedLocks --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+  "planned_h73_command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT --tests ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+  "static_checks": {
+    "git_diff_check": {"status": "PASS", "exit_code": 0},
+    "trailing_whitespace": {"status": "PASS", "exit_code": 0}
+  },
+  "runtime": {
+    "h72": {
+      "status": "FAIL_HARNESS_BEFORE_PG",
+      "exit_code": 1,
+      "pg40p01_reproduced": false,
+      "owned_containers_absent_after_cleanup": true,
+      "immutable_artifacts": [
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h72-context.json",
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h72-AssignmentAuthorityIT.xml",
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h72-owned-cleanup.json"
+      ],
+      "root_cause": "Mockito Cannot call abstract real method at the repository spy callback (AssignmentAuthorityIT.java:163), followed by the old latch timeout; the real PostgreSQL path was not reached."
+    },
+    "h74": {
+      "status": "PASS_REAL_ENTRYPOINTS",
+      "exit_code": 0,
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "test_hash": "B3F4A942F3EAFBF27FB56B7E95EA5B9A5EF0D8CE6EA8B25406F235D007B2E10E",
+      "subject_service_hash": "377BF9B1E2F6E2B88529DD362177F0C47318D7A6C31561C4E516FA89491AFFA3",
+      "observed_sql_lock_mode": "Hibernate emitted FOR NO KEY UPDATE for both semester and subject rows; PostgreSQL FK KEY SHARE is compatible with this observed mode.",
+      "pg40p01_reproduced": false,
+      "artifact_paths": [
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h74-context.json",
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h74-AssignmentAuthorityIT.xml",
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h74-stdout.log",
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h74-stderr.log",
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h74-owned-cleanup.json"
+      ]
+    },
+    "h73": {"status": "CANCELLED_NOT_STARTED", "exit_code": null},
+    "h75": {
+      "status": "PASS_WHOLE_CLASS",
+      "exit_code": 0,
+      "selector": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+      "scope": "whole class, seven tests",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "test_hash": "50E533093C36D1B0409D6F27CEE01859310CBE115B02CD7C3BE1C99BBD88F621",
+      "subject_service_hash": "377BF9B1E2F6E2B88529DD362177F0C47318D7A6C31561C4E516FA89491AFFA3",
+      "artifact_hashes": {
+        "context": "C882C29991F2205027B5927E1F07B3E1D97E610E749F89B665AC826CB0BB477C",
+        "xml": "6B587A59F2C0E7637CD1D2DADD47DB040AF2EE5A7B931E744679C08BE8C36EC6",
+        "owned_cleanup": "9AC9E8C6A7E1D8DC5157CD830FCC2F91141BEE4A43712C5798E2516E324B03CF"
+      },
+      "artifact_paths": [
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h75-context.json",
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h75-AssignmentAuthorityIT.xml",
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h75-stdout.log",
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h75-stderr.log",
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/h75-owned-cleanup.json"
+      ]
+    },
+    "docker": {"status": "NOTRUN", "exit_code": null}
+  },
+  "correction": {
+    "status": "SOURCE_CORRECTED_RUNTIME_PASS",
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java",
+    "delegation": "The saved public Mockito MockCreationSettings.defaultAnswer is invoked for each intercepted repository call. Spring Test 6.2.19 configures JDK Spring Data proxy spies with AdditionalAnswers.delegatesTo(existingBean); InvocationOnMock.callRealMethod is no longer used.",
+    "request_failure_diagnostic": "Each barrier wait checks Future.isDone and reports MockMvc HTTP status plus getResolvedException before reporting a timeout.",
+    "production_subject_service_unchanged": true
+  },
+  "cleanup_correction": {
+    "status": "SOURCE_FROZEN_NO_RUNTIME",
+    "source_hash": "50E533093C36D1B0409D6F27CEE01859310CBE115B02CD7C3BE1C99BBD88F621",
+    "strategy": "Capture primary Throwable; release the latch; cancel unfinished request futures; use shutdownNow only when a request is unfinished, otherwise orderly shutdown; await termination for a bounded 20 seconds; attach cleanup failures as suppressed to the primary failure or surface them standalone.",
+    "interrupt_limit": "Thread interruption is a bounded cleanup signal and does not claim to forcibly terminate arbitrary JDBC work.",
+    "production_subject_service_unchanged": true
+  },
+  "decision": "H74 passed the meaningful two-entrypoint regression on unchanged f59 with exact 201 responses and two assignment rows. The earlier current-cycle assertion is withdrawn: observed Hibernate SQL used FOR NO KEY UPDATE for both rows, so no production lock-order correction is authorized. Preserve this test-only regression for independent review; do not force a negative failure or add artificial inverse locks."
+}

@@ -1,0 +1,263 @@
+{
+  "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "capturedAt": "2026-09-07T15:12:42.4975530Z",
+  "purpose": "Pre-integration32 destination and main guard; no product changes",
+  "files": [
+    {
+      "path": "event-schemas/excuse.decided.json",
+      "acceptedSourceSha256": "E427D64C0C6CBC0950F41BF0431399A2951494EE0E5D5830080583EF0ADDCA4A",
+      "mainExists": true,
+      "mainSha256": "7346733A0A6478DD24DDE10A44F2AE29AC849B42E941FA7AC2FE95891906DA92",
+      "destinationExists": true,
+      "destinationSha256": "7346733A0A6478DD24DDE10A44F2AE29AC849B42E941FA7AC2FE95891906DA92"
+    },
+    {
+      "path": "event-schemas/excuse.requested.json",
+      "acceptedSourceSha256": "2880EC5DBB29055E01EA2BD829278C9BCE54FEFBB44A9229E145E5D86EAE1BA4",
+      "mainExists": true,
+      "mainSha256": "0D523F7F6594328F6DE98E51B53CC75F28AE8325A7A83047F928B9310E942105",
+      "destinationExists": true,
+      "destinationSha256": "0D523F7F6594328F6DE98E51B53CC75F28AE8325A7A83047F928B9310E942105"
+    },
+    {
+      "path": "event-schemas/late_checkin.decided.json",
+      "acceptedSourceSha256": "A6AC22666974E17472635712D75A334512F351C76936764BEE3D0B1DD8FA3021",
+      "mainExists": true,
+      "mainSha256": "70E9BBB3D213A00551479874AC4CFC0DD0C47F6BB8AFE94A346CD01A45C9C05B",
+      "destinationExists": true,
+      "destinationSha256": "70E9BBB3D213A00551479874AC4CFC0DD0C47F6BB8AFE94A346CD01A45C9C05B"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java",
+      "acceptedSourceSha256": "A0D8ADC463E6CB7EA8C36A451193019D2C449802089265F66B66C064A0F54C2A",
+      "mainExists": true,
+      "mainSha256": "563FB76B577CD9CECEEAB99F7AEDEC443386876EE0BA2EF5A9E4748D1C0EC18B",
+      "destinationExists": true,
+      "destinationSha256": "6BE9AC30E3EA02F833DA7C267BC48E48AFE98BEC37654978ADD9B42D7C001087"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java",
+      "acceptedSourceSha256": "59C4E01CF39CF79FBACABA196C9BDFB102E59A98558ECE209AC7DC91D5842A1A",
+      "mainExists": true,
+      "mainSha256": "A58D6275853D944EB94462E65149A9BF6D4E24B9DBCABD329C4A3E6D60DDC542",
+      "destinationExists": true,
+      "destinationSha256": "F89E8DEAFD4773654104029BD6B0D625A19C79969CF77F0B86B82BFA058A923D"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java",
+      "acceptedSourceSha256": "2106D010925C292E74659D10674F1B2C8217B0C9BBF7425C4AC686DF2CA98410",
+      "mainExists": true,
+      "mainSha256": "33A67F2AA5DC6D777F97498E644D7D23E8AA8E633485E0D63BA2136AC41AB6C0",
+      "destinationExists": true,
+      "destinationSha256": "33A67F2AA5DC6D777F97498E644D7D23E8AA8E633485E0D63BA2136AC41AB6C0"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java",
+      "acceptedSourceSha256": "1EDAF447F5DC3DC24702EDD089AA48B4681C0B1E8760065A692D83953E7DB4F6",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java",
+      "acceptedSourceSha256": "AA71AB2A1D63760AF98041FCBE62F776F19E7F8DCC496BE4894D68445BD449FE",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java",
+      "acceptedSourceSha256": "71840E8D3F097C870B41B2B343DCCAB07CC55934491C3AD2AEC1D2A3054C2B8A",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java",
+      "acceptedSourceSha256": "E18F5B7E1A4C485F1F2B23FD326E7F7D14A75F8FF3F40ACD405F659683657EDF",
+      "mainExists": true,
+      "mainSha256": "CD36360E591EC0466D5914CD23096CC71ACACC396069EAFFB34791D966D8D1DA",
+      "destinationExists": true,
+      "destinationSha256": "CD36360E591EC0466D5914CD23096CC71ACACC396069EAFFB34791D966D8D1DA"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java",
+      "acceptedSourceSha256": "8B14EBE8DC16F34E6422BF7AA06325FC10CD8129943094D49D1F594E228ABFC3",
+      "mainExists": true,
+      "mainSha256": "07B1216FE2500DCD8A266F088DD7C96643EF79D7741BD75FFD8D264BD7C68D50",
+      "destinationExists": true,
+      "destinationSha256": "F51704BCD166BBFD94015CBBBB74957F94AA14DE50709CBB0447C237B72DBE7C"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java",
+      "acceptedSourceSha256": "F358683D0BCE41B28FA92BC366F2ECA044245BD691628B1095E6AF79AD1270EE",
+      "mainExists": true,
+      "mainSha256": "65B1A826147B003669813EF5E670FF4517906F3283B725CFF0638B260E8C04E8",
+      "destinationExists": true,
+      "destinationSha256": "30002FF328AEBE738DC058AEC009345E9FFBB399198EEB89D37FAB0D87EFFA74"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java",
+      "acceptedSourceSha256": "24B43A4F8EE6CB2FC79F51391250F8A36F1F74A01C183D984FADCAE55E6DE4E3",
+      "mainExists": true,
+      "mainSha256": "BF3BAC9CFA1F8F3AD7B1B6E80025C8A40F6CD2D151574E7097F2DB92D12C6D9C",
+      "destinationExists": true,
+      "destinationSha256": "BF3BAC9CFA1F8F3AD7B1B6E80025C8A40F6CD2D151574E7097F2DB92D12C6D9C"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java",
+      "acceptedSourceSha256": "5B8777BCDF922E058E1331F04BB0A033917A8251650DF9E3DABCBBBE8A2A0CB7",
+      "mainExists": true,
+      "mainSha256": "B0A1192ECDB573D8EB6BFD180425520CABEFFEE16626B7E91DCCDEA0DD72553F",
+      "destinationExists": true,
+      "destinationSha256": "B0A1192ECDB573D8EB6BFD180425520CABEFFEE16626B7E91DCCDEA0DD72553F"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java",
+      "acceptedSourceSha256": "94EFD22554A5FF3ACDEC684AC1B56C07F03259EF1E5CA914C5E84DFB17F0E50D",
+      "mainExists": true,
+      "mainSha256": "82FFEB1F37026C017F5E01C65C1D16C185F9C68813C41659084F995D0221302D",
+      "destinationExists": true,
+      "destinationSha256": "82FFEB1F37026C017F5E01C65C1D16C185F9C68813C41659084F995D0221302D"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/AttachmentState.java",
+      "acceptedSourceSha256": "C1B9880413CDFBBE20CA3DEC8D577E9C424F9D658CD8739AD4D2D8C8B853724C",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDescriptorDocument.java",
+      "acceptedSourceSha256": "15F372F6201CC7EA8F118D67CDA149FA22CB704B5DC944C9E0219A4ED09D7C0E",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/RequestAttachmentDocument.java",
+      "acceptedSourceSha256": "A4F991C7AD4DAC3F8C96CA1341F86D996D72DFFED699EBD13A0694EDCEFD4B95",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLateCheckinBudgetDocument.java",
+      "acceptedSourceSha256": "4A05FE8AB665FEE1206B3633208258457DE9FE9EFD806CFE08B7976DE9F9186B",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentLessonSnapshotDocument.java",
+      "acceptedSourceSha256": "AC4748E5306FCD9EF5E56E45348225AF0930FC96BB7F2FCD1AC955ABE07F29EC",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/entity/StudentRequestReceiptDocument.java",
+      "acceptedSourceSha256": "85C71600C938C7FA556799110EE7936B3A6E42D77F1670AAD22F8C0E9AE47CD0",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRepository.java",
+      "acceptedSourceSha256": "5823836AD0B68FD591480E6FCAB148C1EB07FDCAB54C3A3F8DB139A7861E6931",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestAttachmentRetentionJob.java",
+      "acceptedSourceSha256": "EA02BE8110064978D3DB12FAFD1C6E4C0D96F4433FA3FEA7D3E29532B79C6EB8",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/RequestBucket.java",
+      "acceptedSourceSha256": "3C1AAE15A5DD7D7C62D81D0B5EBE1FB0EEBDE34276A0592616B49803EA4F1E1C",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentLateCheckinBudgetRepository.java",
+      "acceptedSourceSha256": "98C0E67DEC2E78E729928B0E44A373D5F0D20F5404D31DFEDFD5AFBF0E7747B2",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestModels.java",
+      "acceptedSourceSha256": "DEFCA9A5DC3D03F96A8E184B7040638CD04418DC014AB1DA01528EE7F09B25C2",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestReceiptRepository.java",
+      "acceptedSourceSha256": "7C6ADBF803AC9226CAF050498AD612992D9B3ACF1ACBC48022B4638309261B76",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "acceptedSourceSha256": "5095C2A63EDF7E6561F6C08E2071C97270489A5C1CDA1B73EF64507B3132A662",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java",
+      "acceptedSourceSha256": "4CA61BBB52BA3F5193F653B542BA59F54D97C5BCDD20FBA849F54EC77C376E8E",
+      "mainExists": true,
+      "mainSha256": "75A0DCE2D6D416844BA52746B1A6A300B390934B6FA164C9052E99A86105147C",
+      "destinationExists": true,
+      "destinationSha256": "6595C55F2084ED87708049E90E261070D40ED793367D32B9019B314442D10602"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java",
+      "acceptedSourceSha256": "6E0AE3179A52EE9482B87EF3A5180B6B1B563475CD018615D1D590C5C91C6480",
+      "mainExists": true,
+      "mainSha256": "DD2C63C20BCA4D86EB32ADA4D34A06DE1358EE57013F0A72E21676E700A0F1D3",
+      "destinationExists": true,
+      "destinationSha256": "DD2C63C20BCA4D86EB32ADA4D34A06DE1358EE57013F0A72E21676E700A0F1D3"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+      "acceptedSourceSha256": "968F4A4967D0AD2FDB0055C647D709F6A0A020B59DDB3396C64007E57A150DE6",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+      "acceptedSourceSha256": "7F96615F5A43BC8BD020BC51A4F3951340C3F9088363A56ABE8EF95CC373C322",
+      "mainExists": false,
+      "mainSha256": null,
+      "destinationExists": false,
+      "destinationSha256": null
+    }
+  ]
+}

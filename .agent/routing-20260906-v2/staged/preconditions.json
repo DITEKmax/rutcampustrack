@@ -1,0 +1,23 @@
+{
+  "packet": "routing-20260906-v2",
+  "stage": {
+    "config-routing.toml": "B0A4194064FD48147A8EA50C895181446105D4C0152637552E1793A34C670735",
+    "global/AGENTS.md": "0F7CAF7DC94A9A9151AE8B3ECBB0E3D71393007BF8449684555AB1C0F0C4931E",
+    "global/agents/explorer.toml": "BF5B77B494CFFB03E167C906B7254C1A0F2A002D27B290316096974E31614053",
+    "global/agents/developer.toml": "B694FAAEB5704D09E8CA45544A94E931A4C2C6B9F9CA95C63576502CB6F0BD9A",
+    "global/agents/reviewer.toml": "67D64FE394017E9D9A0A9A711193AACA41A21A7FDB5C5FB99B37778A09183DCA"
+  },
+  "live_preconditions": {
+    "global/AGENTS.md": "F1099BC84FDB03831C85A5BA30A0C3B80B4ACF585CF2DD4FED9684F7B7E1FD17",
+    "global/config.toml": "DA7A5FBA1C17E1F28458D51492F93EEF1396B6BFC69BE1FD52FF82B23EC3FB9F",
+    "global/agents/explorer.toml": "DEEBA6EB84B9AAC37A54E254DAB62DAE1F43C737BE2499F14CE9770EC3830173",
+    "global/agents/developer.toml": "12D59489A557B49852174ACEA12071C4CBED49943547193F077226B08393125C",
+    "global/agents/reviewer.toml": "6CAD88ABC625E96626283AC34F54600F7066FBFAB8556CA415E9D194B3CAB249",
+    "project/config.toml": "5847FE4EFE0A72551E920CC562A664D211F3EA18E0DE0169183D37EC9F81A1FA",
+    "project/agents/explorer.toml": "9727DF7BF9C114956E6EF4B1180175D2657584919A00D339379FA8E8AFDAAB40",
+    "project/agents/developer.toml": "E1EE51A54BC4A839465A97C977BA5962149B5DFF79684A7F17E8888ACEC5F170",
+    "project/agents/reviewer.toml": "17DF508550AEE4F5802A9AC6D5E88E388B56061F6F019CCC60DF7752A6528E5E"
+  },
+  "targets": "Global root is C:/Users/maksd/.codex; project root is this repository. The apply script renders only six supported config values and replaces nine exact targets after all stage/live checks. Global/local protected targets are staged only.",
+  "observability": "Hashes are preconditions/evidence, not contents; config does not prove runtime model or total slot capacity."
+}

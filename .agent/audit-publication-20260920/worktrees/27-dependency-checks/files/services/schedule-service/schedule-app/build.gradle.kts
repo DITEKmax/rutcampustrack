@@ -1,0 +1,112 @@
+plugins {
+    java
+    id("org.springframework.boot")
+    id("io.spring.dependency-management")
+    id("com.google.protobuf") version "0.9.4"
+}
+
+group = "ru.rutcampustrack"
+version = "0.1.0"
+
+dependencyManagement {
+    imports {
+        mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
+        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
+        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
+    }
+}
+
+dependencies {
+    implementation(project(":services:schedule-service:schedule-api-contract"))
+
+    // M11 G0.5: shared-web Spring Boot starter (catch-all Spring MVC handler
+    // через @AutoConfiguration). Schedule-domain handler с
+    // @Order(HIGHEST_PRECEDENCE) обрабатывает только domain исключения.
+    implementation(project(":services:shared:shared-web"))
+
+    // M02 — shared-outbox + shared-events (D5(a) единый envelope)
+    implementation(project(":services:shared:shared-outbox"))
+    implementation(project(":services:shared:shared-events"))
+
+    // M03a — shared-security (Internal JWT validator + dual-mode filter)
+    implementation(project(":services:shared:shared-security"))
+
+    // M04 — shared-observability (MdcKeys + BusinessMetrics + HealthIndicators)
+    implementation(project(":services:shared:shared-observability"))
+
+    // M04 QA7 — shared-logback (JSON-вывод + masking через logback-base.xml)
+    implementation(project(":services:shared:shared-logback"))
+
+    // M04 QA2 — distributed tracing OTel + OTLP exporter → grafana/tempo
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-hateoas")
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+
+    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
+
+    // M02 — ShedLock (distributed cluster locks для @Scheduled)
+    implementation(libs.shedlock.spring)
+    implementation(libs.shedlock.provider.jdbc.template)
+
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation(libs.json.schema.validator)
+    testImplementation(libs.archunit.junit5)
+    testImplementation(testFixtures(project(":services:shared:shared-security")))
+    testImplementation(testFixtures(project(":services:shared:shared-observability")))
+    // M08 Группа 1 (P2-8/1) — IntegrationTestNamingRule shared rule
+    testImplementation(testFixtures(project(":services:shared:shared-test-containers")))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
+    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
+    implementation("io.grpc:grpc-netty")
+    implementation("com.google.protobuf:protobuf-java")
+    compileOnly("javax.annotation:javax.annotation-api:1.3.2")
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir(rootProject.file("proto"))
+        }
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
+    }
+    plugins {
+        create("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
+        }
+    }
+    generateProtoTasks {
+        ofSourceSet("main").forEach {
+            it.plugins {
+                create("grpc") { }
+            }
+        }
+    }
+}

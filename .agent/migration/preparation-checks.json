@@ -1,0 +1,59 @@
+{
+  "revision": "87784165874e2da6fc261abc1c01584e24624289",
+  "writer": "/root/preparation_writer",
+  "model": "gpt-5.6-terra",
+  "effort": "high",
+  "risk": "S2",
+  "environment": "Windows PowerShell; documentation-only preparation",
+  "checks": [
+    {
+      "criterion": "registry has every stable source ID, source text and separated provenance",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .agent\\migration\\generate-preparation-registry.ps1",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "147 stories; 147 source statements; source/archive SHA-256 equals 87af4670...bd4981"
+    },
+    {
+      "criterion": "backend delta retains exactly the 175 request-ID universe",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .agent\\migration\\generate-backend-delta.ps1",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "175 requests; all 31 owner decisions recorded closed; 30 affected request rows (20 revised with null action/pending scoped code comparison, 7 accepted-decision, 3 retire-request pending consumer audit); 145 open request-or-question; contract freeze is technical-gate only"
+    },
+    {
+      "criterion": "JSON-compatible YAML, counts, required artifacts and exact playbook copy",
+      "command": "PowerShell ConvertFrom-Json + count/hash assertions",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "manifest 2240 entries; 10 preparation entries; exact playbook SHA-256 match against its external root; 10 required docs"
+    },
+    {
+      "criterion": "current manifest sources, targets, retained duplicates and hashes",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .agent\\migration\\verify-preparation-manifest.ps1",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "2206 checked; 34 excluded; 109 retained duplicates resolved; missing target/source, source drift and target hash failures = 0"
+    },
+    {
+      "criterion": "semantic traceability and literal static contract paths",
+      "command": "PowerShell assertions over generated registry/backend delta",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "147 full source definition blocks; 145 non-cancelled domain commands with source+line; 147 verification_commands; all API operations null/contract-pending; 5 cited source-named data groups; 65 latest-only new IDs and no phantom history supersedence; one 62-edge map (7 direct, 2 closed-decision, 53 reconciliation semantic candidates) consumed both directions with zero asymmetry, required AC-07/R-26 and SC-01/R-25 edges present, and all 30 closed requests linked or given a recorded no-link reason; 175 backend requests split into 30 closed affected rows and 145 open rows while all 31 owner decisions remain closed; literal static paths missing = 0; revised without supersedes = 0"
+    },
+    {
+      "criterion": "changed application/service runtime",
+      "command": "not applicable: no product code, API, config or runtime behavior changed",
+      "exit_code": null,
+      "result": "SKIPPED",
+      "evidence": "tests/AGENTS.md permits documentation syntax/link/config checks for documentation-only work"
+    },
+    {
+      "criterion": "independent Sol high review",
+      "command": "final focused Sol high read-only review",
+      "exit_code": null,
+      "result": "PASS",
+      "evidence": "history preserved: FAIL6 then FAIL1; final focused Sol review PASS with findings=0. It verified all 62 numeric/range/exact-ID evidence lines, evidence_errors=0, registry/backend map symmetry 62/62 with no missing or extra edges, and manifest PASS 2206/34/109/zero errors"
+    }
+  ]
+}

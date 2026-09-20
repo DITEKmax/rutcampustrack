@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.shared.security.DualModeUserContextFilterTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-10T18:37:55" hostname="DITEK-PK" time="11.358">
+  <properties/>
+  <testcase name="noHeadersAtAll_legacyDisabled_returns401()" classname="ru.rutcampustrack.shared.security.DualModeUserContextFilterTest" time="7.876"/>
+  <testcase name="noHeadersAtAll_legacyEnabled_continuesChain()" classname="ru.rutcampustrack.shared.security.DualModeUserContextFilterTest" time="0.796"/>
+  <testcase name="internalTokenTakesPrecedence_overLegacyHeaders()" classname="ru.rutcampustrack.shared.security.DualModeUserContextFilterTest" time="1.051"/>
+  <testcase name="noInternalToken_legacyDisabled_returns401()" classname="ru.rutcampustrack.shared.security.DualModeUserContextFilterTest" time="0.098"/>
+  <testcase name="invalidInternalToken_returns401()" classname="ru.rutcampustrack.shared.security.DualModeUserContextFilterTest" time="0.776"/>
+  <testcase name="infrastructurePath_skipsFilter_evenInStrictMode()" classname="ru.rutcampustrack.shared.security.DualModeUserContextFilterTest" time="0.115"/>
+  <testcase name="internalToken_applied_chainContinues()" classname="ru.rutcampustrack.shared.security.DualModeUserContextFilterTest" time="0.47"/>
+  <testcase name="noInternalToken_legacyEnabled_fallsBackToLegacy()" classname="ru.rutcampustrack.shared.security.DualModeUserContextFilterTest" time="0.163"/>
+  <system-out><![CDATA[21:38:06.156 [Test worker] WARN ru.rutcampustrack.shared.security.DualModeUserContextFilter -- Internal JWT rejected: Invalid internal token
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.15.11\a38b16385e867f59a641330f0362ebe742788ed8\byte-buddy-agent-1.15.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

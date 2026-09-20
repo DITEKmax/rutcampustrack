@@ -211,7 +211,9 @@ export type AttendanceRecord = Strict<
 export type CreateExcuseRequest = AttendanceSchemas['CreateExcuseRequest']
 export type ExcuseType = CreateExcuseRequest['excuseType']
 export type ExcuseTicketStatus = 'submitted' | 'approved' | 'rejected' | 'draft'
-export type LateCheckinRequestStatus = 'pending' | 'approved' | 'rejected'
+export type LateCheckinRequestStatus = NonNullable<
+  AttendanceSchemas['EntityModelLateCheckinRequestResponse']['status']
+>
 
 export type ExcuseTicket = Omit<
   Strict<

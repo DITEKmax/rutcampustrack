@@ -1,0 +1,15 @@
+{
+  "recordedAt": "2026-09-07T20:48:37.5978677Z",
+  "status": "ACCEPTED_SHARED_HOMEWORK_UI",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "sourceFiles": 25,
+  "sourceChecks": 25,
+  "copyChecks": 25,
+  "mismatches": 0,
+  "manifestSha256": "6F0293C15D1FB8481813181532A12C719290E8E19E93EA232F9D2E878F3151ED",
+  "review": "homework-presentation-recheck-result.md",
+  "gate": "two confirmed presentation findings closed after prior combined review; exact shared25 accepted",
+  "fullRole": "IN_PROGRESS",
+  "mainMerge": false,
+  "adapterCheckoutExists": false
+}

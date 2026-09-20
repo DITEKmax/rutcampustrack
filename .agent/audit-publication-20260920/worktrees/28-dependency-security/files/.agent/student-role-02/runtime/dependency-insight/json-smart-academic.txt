@@ -1,0 +1,30 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Task :services:academic-service:academic-app:dependencyInsight
+net.minidev:json-smart:2.5.2 (selected by rule)
+  Variant runtime:
+    | Attribute Name                 | Provided     | Requested    |
+    |--------------------------------|--------------|--------------|
+    | org.gradle.status              | release      |              |
+    | org.gradle.category            | library      | library      |
+    | org.gradle.libraryelements     | jar          | jar          |
+    | org.gradle.usage               | java-runtime | java-runtime |
+    | org.gradle.dependency.bundling |              | external     |
+    | org.gradle.jvm.environment     |              | standard-jvm |
+    | org.gradle.jvm.version         |              | 21           |
+
+net.minidev:json-smart:2.5.0 -> 2.5.2
+\--- com.jayway.jsonpath:json-path:2.9.0
+     \--- org.springframework.hateoas:spring-hateoas:2.5.3
+          +--- project :services:academic-service:academic-api-contract
+          |    \--- runtimeClasspath
+          \--- org.springframework.boot:spring-boot-starter-hateoas:3.5.16
+               \--- runtimeClasspath (requested org.springframework.boot:spring-boot-starter-hateoas)
+
+(*) - Indicates repeated occurrences of a transitive dependency subtree. Gradle expands transitive dependency subtrees only once per project; repeat occurrences only display the root of the subtree, followed by this annotation.
+
+A web-based, searchable dependency report is available by adding the --scan option.
+
+BUILD SUCCESSFUL in 11s
+1 actionable task: 1 executed

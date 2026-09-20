@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.session.ActiveRolePolicyTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-07T23:08:48" hostname="DITEK-PK" time="0.208">
+  <properties/>
+  <testcase name="suspendedGrantIsActualButCannotBeSelected()" classname="ru.rutcampustrack.auth.session.ActiveRolePolicyTest" time="0.178"/>
+  <testcase name="foreignAndDuplicateGrantsAreRejected()" classname="ru.rutcampustrack.auth.session.ActiveRolePolicyTest" time="0.001"/>
+  <testcase name="teacherIsFallbackAndAdminHeadmanOnlyStayNeutral()" classname="ru.rutcampustrack.auth.session.ActiveRolePolicyTest" time="0.021"/>
+  <testcase name="studentWinsDefaultEvenWhenTerminalAndRemainsReadOnly()" classname="ru.rutcampustrack.auth.session.ActiveRolePolicyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -133,6 +133,7 @@ import type { LateCheckinRequestView } from './late-checkin.types';
                     class="lcr-card__status"
                     [class.lcr-card__status--approved]="req.status === 'approved'"
                     [class.lcr-card__status--rejected]="req.status === 'rejected'"
+                    [class.lcr-card__status--cancelled]="req.status === 'cancelled'"
                   >
                     {{ statusLabel(req.status) }}
                   </span>
@@ -198,6 +199,11 @@ import type { LateCheckinRequestView } from './late-checkin.types';
         white-space: nowrap;
       }
       .lcr-card__status--approved {
+        color: var(--accent-primary);
+        background: color-mix(in oklab, var(--accent-primary) 14%, transparent);
+        border-color: color-mix(in oklab, var(--accent-primary) 30%, transparent);
+      }
+      .lcr-card__status--cancelled {
         color: var(--accent-primary);
         background: color-mix(in oklab, var(--accent-primary) 14%, transparent);
         border-color: color-mix(in oklab, var(--accent-primary) 30%, transparent);
@@ -429,6 +435,7 @@ export class HeadmanLateCheckinComponent implements OnInit, OnDestroy {
   statusLabel(status: LateCheckinRequestView['status']): string {
     if (status === 'approved') return 'Одобрено';
     if (status === 'rejected') return 'Отклонено';
+    if (status === 'cancelled') return 'Подтверждено геолокацией';
     return 'На рассмотрении';
   }
 

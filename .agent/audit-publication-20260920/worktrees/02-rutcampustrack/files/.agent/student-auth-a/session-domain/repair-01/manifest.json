@@ -1,0 +1,188 @@
+{
+  "repair": "repair-01",
+  "risk": "S3",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "packet": {
+    "path": ".agent/student-auth-a/session-domain/repair-01/packet.md",
+    "sha256": "B305EA899CBE42BF110587FC1404B4202AC2B15A1AC103A9622E86985F0E62EF",
+    "bytes": 3901
+  },
+  "frozenReviews": [
+    {
+      "path": ".agent/student-auth-a/session-domain/repair-01/review-result.md",
+      "sha256": "8DEEF183CB78106BEC45A9AA8D9435E77145E16F9899DC24BA5CE7C4C4662FAF",
+      "bytes": 5619
+    },
+    {
+      "path": ".agent/student-auth-a/session-domain/repair-01/review-addendum.md",
+      "sha256": "65F55E9623FFFDBB99F6E5FA0042CC4F0524B958670E3F5F0CEEC31F9B7B182E",
+      "bytes": 990
+    }
+  ],
+  "scope": "Final 16 domain source files; repair code writes limited to SessionSnapshot, SessionStatePort, ActiveRolePolicy, SessionLifecycleService Javadoc and three focused tests",
+  "sourceFiles": [
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthRole.java",
+      "sha256": "2232E8973B0804A43BBF84D51FBAF432F35C72A1C6A709A175B302DCE35857FD",
+      "bytes": 182
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleStatus.java",
+      "sha256": "89CF00BAE0BC524F8783BB860352DB2F40A31C5BDFEBB4352ECF0A879B002B57",
+      "bytes": 702
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/RoleGrant.java",
+      "sha256": "171B2644B245770368A865B7907942578EC12343B8A4282F7023F5824C940DCE",
+      "bytes": 1696
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionState.java",
+      "sha256": "F89E60C86A9E3A5CAE9E3790ECDA3D258E024B38969030E246DB26AE0360D32F",
+      "bytes": 5452
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionSnapshot.java",
+      "sha256": "615ACD1676E9E74AD34A1E73A48A45255269E7EF410CBD3BBBF5A70DAA34D61E",
+      "bytes": 3854
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SessionRevokeReason.java",
+      "sha256": "0C076E9BF5CF002542EF35931E0BAC26FB5F1F5558BD39C7FDFAF6E1C0C5857F",
+      "bytes": 162
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/AuthMethod.java",
+      "sha256": "60BEE3DC0D44DF2E3F3813E7FD67F0401678D6F4173AF32CAAD9F726DA5566A8",
+      "bytes": 105
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/model/SecurityEvent.java",
+      "sha256": "8FFDA7A8CC0019AA8D8D158219357D7AB550BD1B66881A58652DC873D5FB5963",
+      "bytes": 1185
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/SessionStatePort.java",
+      "sha256": "C88C575F7E4CA105C5E005993073F709E6BC6558FFCC65420EEAC3F4EEF27376",
+      "bytes": 14167
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/CredentialSessionTransactionPort.java",
+      "sha256": "0CFB943D94A7FBD702C37F7255D62B03E4B0C733DFCA7272D94B4ACA5758E7C2",
+      "bytes": 3946
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+      "sha256": "7F3F6D9B2F78BED99B22D89B8F943481CD4DB5FBD672EE977D39533418FABD13",
+      "bytes": 4573
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java",
+      "sha256": "F5F06EF05CC7D3F15C2941E407128DE63B4FF0A1C6D1300CB0E655B2D0FD8D1A",
+      "bytes": 4056
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionLifecycleService.java",
+      "sha256": "410FF98941CE148B0738AC55E5300C3B98FFE442D2F5BBAAF27FE0CC9E35A0CD",
+      "bytes": 15753
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+      "sha256": "91FC1DDDCE3910AAE09F4FCF862B94EF6A62C6F13923A18721865BCA4221A2D5",
+      "bytes": 3392
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "sha256": "E1BFD70821025BC673A75ACD0A8D1A96643A216C5911AF9D94502221B4B8530D",
+      "bytes": 3176
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+      "sha256": "0121159CBACFCA33A81B27D3B3F8D5BF34832894B65DE7AFA2B1FBBCECF2DA82",
+      "bytes": 38791
+    }
+  ],
+  "copiedJUnitXml": [
+    {
+      "sourcePath": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.session.ActiveRolePolicyTest.xml",
+      "copyPath": ".agent/student-auth-a/session-domain/repair-01/evidence/junit/TEST-ru.rutcampustrack.auth.session.ActiveRolePolicyTest.xml",
+      "sourceSha256": "BAE97CBC9E461E2F9E543D0000528032E2C44C7687C35D3C6EEC9B85FF0B3887",
+      "copySha256": "BAE97CBC9E461E2F9E543D0000528032E2C44C7687C35D3C6EEC9B85FF0B3887",
+      "sourceBytes": 920,
+      "copyBytes": 920,
+      "byteIdentical": true,
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "sourcePath": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.session.PasswordPolicyTest.xml",
+      "copyPath": ".agent/student-auth-a/session-domain/repair-01/evidence/junit/TEST-ru.rutcampustrack.auth.session.PasswordPolicyTest.xml",
+      "sourceSha256": "8D9A52344BFAD60BF50F6C9252B670871149AEE0449FE95328A3CCC7B139B4E1",
+      "copySha256": "8D9A52344BFAD60BF50F6C9252B670871149AEE0449FE95328A3CCC7B139B4E1",
+      "sourceBytes": 1258,
+      "copyBytes": 1258,
+      "byteIdentical": true,
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "sourcePath": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.session.SessionLifecycleServiceTest.xml",
+      "copyPath": ".agent/student-auth-a/session-domain/repair-01/evidence/junit/TEST-ru.rutcampustrack.auth.session.SessionLifecycleServiceTest.xml",
+      "sourceSha256": "F62F41270CC5EBDDCF690D25F2B1F80B3BF143CD5EABBAC2386350723EE94E76",
+      "copySha256": "F62F41270CC5EBDDCF690D25F2B1F80B3BF143CD5EABBAC2386350723EE94E76",
+      "sourceBytes": 2154,
+      "copyBytes": 2154,
+      "byteIdentical": true,
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "checks": [
+    {
+      "criterion": "Focused role, password and session boundary behavior passes",
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:test --tests ru.rutcampustrack.auth.session.ActiveRolePolicyTest --tests ru.rutcampustrack.auth.session.PasswordPolicyTest --tests ru.rutcampustrack.auth.session.SessionLifecycleServiceTest --no-daemon --max-workers=1",
+      "startedAt": "2026-09-08T00:13:42.109Z",
+      "endedAt": "2026-09-08T00:14:26.769Z",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "evidence/junit/*.xml; BUILD SUCCESSFUL in 42s; 21 tests, 0 failures, 0 errors, 0 skipped"
+    },
+    {
+      "criterion": "All 16 frozen domain source files remain byte and size identical to pretest manifest",
+      "command": "PowerShell SHA256 and byte comparison against pretest-source-manifest.json",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "evidence/source-drift.json; 16 entries; 0 mismatches"
+    },
+    {
+      "criterion": "Scoped whitespace check has no errors",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "No diff-check errors; warnings only pre-existing purpose4 LF/CRLF notices"
+    }
+  ],
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "java": "21.0.10",
+    "gradle": "8.12",
+    "runtime": "N/A: pure domain; no HTTP/SQL/Gateway launch"
+  },
+  "runtime": {
+    "status": "N/A",
+    "reason": "No product runtime in assigned pure domain scope"
+  },
+  "limitations": [
+    "Unit double checks do not prove PostgreSQL transaction isolation or SQL CAS.",
+    "No HTTP, Gateway, admission, Redis, JPA, migration, scanner or production runtime evidence is claimed.",
+    "No JWT minting, adapter wiring, generated contract or deployment was performed.",
+    "Fresh independent Sol recheck remains parent acceptance gate."
+  ]
+}

@@ -1,0 +1,9 @@
+revision: d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+environment: Windows PowerShell; nested requests-notification-authority worktree; 2026-09-08
+command: Get-FileHash -Algorithm SHA256 <four assigned paths>
+services/notification-bot/bot/grpc_client/attendance_client.py 8BF8A0BB9BBDD7A4C122F7406592052BC0F6088CB7920E92884256648C04C37A
+services/notification-bot/tests/test_attendance_request_grpc_client.py B79A43C0C56631FB439C166BD20F008B9A4FDEC84466306D8E5B456337318573
+services/notification-bot/bot/notifications/student_alerts.py E6DDE170C3D9E60EE826234CADC31C12AEB8984FB4897614965F2BE2BC8FF15C
+services/notification-bot/tests/test_excuse_decided.py F5AC10B6659FE4C3C88699BCA70E23351EA12BBE5F39EE82ED42338E935578C2
+
+pre-write target state: attendance_client.py and test_attendance_request_grpc_client.py were P1 released untracked files; student_alerts.py carried P1 working-tree changes; test_excuse_decided.py was unchanged. No r1 product write preceded this record.

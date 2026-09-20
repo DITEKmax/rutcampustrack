@@ -1,0 +1,11 @@
+# Login body filter — reproduced double downstream subscription
+
+07.09.2026. Root verification only; no product changes. Actual unchanged LoginBodyExtractionFilter from dependency-security BootJar (SHA in manifest.json), Java21.0.10, matching Spring6.2.19 mock classes and resolved BootJar dependencies. No Auth, network server, database, secrets or production user involved.
+
+Reproduction: `java --class-path <snapshot-classpath.txt contents> GatewayDispatchProbe.java`, from main workspace. Probe sends one mock POST /api/auth/login with dummy JSON login, invokes the real compiled filter and counts subscriptions in a deferred GatewayFilterChain. Expected one; observed2. Header sequence is `[probe-student, null]`. The assertion fails at probe line27, process exit1; exact runtime output in java-escalated-result.log. Copied immutable filter classes are under classes/, source/JAR/log SHA in manifest.json.
+
+Source: services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilter.java:67 returns chain.filter(mutated) as Mono<Void>; line69 applies switchIfEmpty(chain.filter(exchange)) to successful empty completion. This creates a second downstream subscription after a nonempty login body. Future correction must branch on body presence before composing the void-returning downstream operation, preserve body replay and login normalization, and retain a single downstream invocation for all paths.
+
+Scope of proof: filter-chain double subscription and differing headers are confirmed. This mock probe does not establish two real Auth HTTP calls: actual downstream routing guards and rate-limiter side effects require their own integrated check. Treat as a correctness/security-relevant gateway defect and include it in the separate XFF/forwarding repair, not as a dependency version defect.
+
+Earlier JShell/local Java attempts failed due sandbox classpath access (javac reported AccessDeniedException in Gradle cache). Their outputs in result.log/java-result.log are environment failures, not product evidence. Approved escalation ran the identical no-network probe and produced the actual assertion failure above. No product source was edited; compare vs d3c31 exit0. Future fresh developer owns the fix and a real regression; fresh independent review remains required.

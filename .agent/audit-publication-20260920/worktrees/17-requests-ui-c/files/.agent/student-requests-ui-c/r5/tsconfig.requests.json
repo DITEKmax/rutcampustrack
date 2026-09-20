@@ -1,0 +1,13 @@
+{
+  "extends": "../../../frontends/tsconfig.foundation.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "typeRoots": ["../../../frontends/node_modules/@types"],
+    "types": ["node"]
+  },
+  "include": [
+    "../../../frontends/mobile-core/src/features/requests/**/*.ts",
+    "../../../frontends/mobile-core/src/features/requests/**/*.vue",
+    "../../../frontends/mobile-core/src/vue.d.ts"
+  ]
+}

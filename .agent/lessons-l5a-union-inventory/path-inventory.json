@@ -1,0 +1,335 @@
+{
+  "created": "2026-09-20T00:54:22.2592195+03:00",
+  "source": "27860f24eb380c782311bbe0cbb65c3d2c75d85d",
+  "source_parent": "f59b3b9951c971bde42265ae67df8754dc594a58",
+  "common_base": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "target": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+  "target_parent": "d7ec16572db325d944f1a1fbd3b4960b827d09c3",
+  "source_unique_paths": 46,
+  "target_paths_since_common_base": 58,
+  "hash_semantics": "Git blob object IDs; no working-tree newline normalization inference",
+  "paths": [
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/AssignmentApi.java",
+      "base_blob": "fe8c5e58a6152eb9f34b37579d368f62d7b36181",
+      "source_blob": "2e24a1007104142966a9eefd4df34bb49842ea0f",
+      "target_blob": "fe8c5e58a6152eb9f34b37579d368f62d7b36181",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/SubjectApi.java",
+      "base_blob": "c51ebe7848334821209f2f7cf419b4d143d31147",
+      "source_blob": "5496eb865d5506efb4e94ced2f54b2afac183190",
+      "target_blob": "c51ebe7848334821209f2f7cf419b4d143d31147",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/assignment/AssignTeacherRequest.java",
+      "base_blob": "e673a0192454baa590e68294273c78150f8c60ad",
+      "source_blob": "e1a88ab62682ba35e229f2d8b24815a2711f4ce2",
+      "target_blob": "e673a0192454baa590e68294273c78150f8c60ad",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/assignment/AssignmentResponse.java",
+      "base_blob": "01f24422c5fd78a2cfbfb909a1db2fe15f65d01a",
+      "source_blob": "bde951227290f2d2e595a25e8ae0b22d8b734438",
+      "target_blob": "01f24422c5fd78a2cfbfb909a1db2fe15f65d01a",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/AddSubjectTeacherRequest.java",
+      "base_blob": null,
+      "source_blob": "0aac49505fc0a92cb4de69b2a7e2d5b772c3800b",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/AssignmentSummaryResponse.java",
+      "base_blob": null,
+      "source_blob": "34fb7ff4fac68074c21e7aaf833892d745965e46",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/CreateSubjectRequest.java",
+      "base_blob": "183c5be887974f0b98e3291260bc2f0cb41dd3fb",
+      "source_blob": "1efe55d83c325d106319dd50079debf333f73ef0",
+      "target_blob": "183c5be887974f0b98e3291260bc2f0cb41dd3fb",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/InitialAssignmentRequest.java",
+      "base_blob": null,
+      "source_blob": "19c7e7ac79144550b3b18460c03620a0ef262ead",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/SubjectResponse.java",
+      "base_blob": "fe97f5ca272ed9b8315bcd22249ce764e1acbf2c",
+      "source_blob": "f3882735c785e8134a1ab547b0832c3cd33fcaa9",
+      "target_blob": "fe97f5ca272ed9b8315bcd22249ce764e1acbf2c",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/UpdateSubjectRequest.java",
+      "base_blob": "e5116fcf958f744a6098db53eb2660770a010a4e",
+      "source_blob": "4c74f7e9477c1ece1ac4da0251a5e557800dbed6",
+      "target_blob": "e5116fcf958f744a6098db53eb2660770a010a4e",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/build.gradle.kts",
+      "base_blob": "1b38e001f6d8aaa7528c390fd1281823c3eae3ab",
+      "source_blob": "eb97819309fac5c3185d8b5d31e447e0387fdcb8",
+      "target_blob": "f2a2a92a1f08ae408a4c3a8219e52d2ab4323a72",
+      "classification": "independently-modified-overlap"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAssembler.java",
+      "base_blob": "175f26723fb3f61b1e0a79730708371ef38e67de",
+      "source_blob": "b8d1ddd66d278f1337fa46f68aa682dff64db9d1",
+      "target_blob": "175f26723fb3f61b1e0a79730708371ef38e67de",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAuthority.java",
+      "base_blob": null,
+      "source_blob": "1ca64870c8b1635ee9c308339107083db590d10c",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentController.java",
+      "base_blob": "2c89f04849d16c2bece3d2a56e6363c4dabde354",
+      "source_blob": "f5d47c07b982e820deff08a7401c94cfe106b264",
+      "target_blob": "2c89f04849d16c2bece3d2a56e6363c4dabde354",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentService.java",
+      "base_blob": "7c722dd52031e316ba0e07d1f3a0e8ff0a880e43",
+      "source_blob": "a88bf9d7a7089a0cd635e7a36959103b3206bc2d",
+      "target_blob": "7c722dd52031e316ba0e07d1f3a0e8ff0a880e43",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/SubjectTypeUserType.java",
+      "base_blob": null,
+      "source_blob": "912dbab87c31aaa3b818fcd80cd8639b99c5c3ba",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Assignment.java",
+      "base_blob": null,
+      "source_blob": "d44c58a44cb3e470e360877d3ab8e6ab3074247f",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/SubjectLessonType.java",
+      "base_blob": null,
+      "source_blob": "57ddb981a30f326af4aa03a480fc53f49e5f1232",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/SubjectLessonTypeId.java",
+      "base_blob": null,
+      "source_blob": "c2a7a6e1fe9e066e02e32ebaa86c7e6f7a74113f",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/UserRoleGrant.java",
+      "base_blob": null,
+      "source_blob": "e9b1adef13ec907f18ff114794f7158adc96afc0",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/AssignmentClosureNotReadyException.java",
+      "base_blob": null,
+      "source_blob": "cb355d2d1d61e743111650ed7514e94b5327bd27",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java",
+      "base_blob": "98cbc7802ba00e48f3d3d2df25e4dbc1de714925",
+      "source_blob": "37ff1122392f76a432ac816e1c72e1e1667a1238",
+      "target_blob": "98cbc7802ba00e48f3d3d2df25e4dbc1de714925",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "base_blob": "82b1a9417a9e28f248804cf6e1d69d2aaefa8812",
+      "source_blob": "1718bc0796954e471bf4da87a5e8913108148a2f",
+      "target_blob": "0201cfead4f946aa304d0e29dee2d5955eea2ec6",
+      "classification": "independently-modified-overlap"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AssignmentRepository.java",
+      "base_blob": null,
+      "source_blob": "7e08256089ab0e9a7fe93478e97e0c2b1809f31c",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java",
+      "base_blob": "cd54eed852ac6a140881360aeb3a98c72a059788",
+      "source_blob": "6eb3ecdd0141c51643ee8499291cc155b07cac31",
+      "target_blob": "cd54eed852ac6a140881360aeb3a98c72a059788",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectLessonTypeRepository.java",
+      "base_blob": null,
+      "source_blob": "4f46b90a6dc07de287a92cb6e21a80375604c4a8",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "base_blob": "ce2fca5a374491ff201a1ca300fdad210e1c4f01",
+      "source_blob": "102905cc5a1f167bb0a30ba4700fb7c55a42efe3",
+      "target_blob": "ce2fca5a374491ff201a1ca300fdad210e1c4f01",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRoleGrantRepository.java",
+      "base_blob": null,
+      "source_blob": "69bb2d389ac7c9c9c3a92754a6e1d3d5620c4d04",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+      "base_blob": "315a2875677ecf2b5fc18eec05c5a717e06a3e99",
+      "source_blob": "5f25978568f81944fbcb89dd0e5bcb28b9233a38",
+      "target_blob": "315a2875677ecf2b5fc18eec05c5a717e06a3e99",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectAssembler.java",
+      "base_blob": "57492b395373ed7e7633d676bc24407baf5cf337",
+      "source_blob": "9c5a94714b9523a3451a81e8a401d88e14da0e4e",
+      "target_blob": "57492b395373ed7e7633d676bc24407baf5cf337",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectController.java",
+      "base_blob": "9f5f499c4624f11afec33fb3ce62746b0ce7424b",
+      "source_blob": "bff1d1a895881221bb83e063f0aa3e38374b82ba",
+      "target_blob": "9f5f499c4624f11afec33fb3ce62746b0ce7424b",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+      "base_blob": "6fe0bb9e5fd826dbc7303b33f239b9901197adbb",
+      "source_blob": "daf5b911cc85bd24906e6ec1e67ca680d4b661c1",
+      "target_blob": "6fe0bb9e5fd826dbc7303b33f239b9901197adbb",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityContractTest.java",
+      "base_blob": null,
+      "source_blob": "7cb52c70ed3e6dc33b54956db9f4e1fbc8da2d9b",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java",
+      "base_blob": null,
+      "source_blob": "6198198f683c542f0672780372a605890b5b9461",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentClosureContractTest.java",
+      "base_blob": null,
+      "source_blob": "63ce1976ba3c5a951fd46899048c403ba6eeffb5",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/SubjectTypeUserTypeTest.java",
+      "base_blob": null,
+      "source_blob": "cfd045d08ed1ac915c20b1e6ba1f661f5f77b600",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcContractTest.java",
+      "base_blob": null,
+      "source_blob": "e10b7058326898d4ffdaebece175be7440020e14",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcIT.java",
+      "base_blob": null,
+      "source_blob": "2cfcbb95f21d6abf4fb0198359bb7432f414694f",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+      "base_blob": null,
+      "source_blob": "762192bef8c31af0241bf0608c56b2c765b7e6b8",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "base_blob": "0321ec7fd167d1fc954c5d5b77619338940b1a98",
+      "source_blob": "3f4d1e2571159fdbad0a4372b0efa2a1ef866f31",
+      "target_blob": "0321ec7fd167d1fc954c5d5b77619338940b1a98",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentAuthorityIT.java",
+      "base_blob": null,
+      "source_blob": "c7dcedf66e491b3db29c87615d35c05544d162de",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentLockContractTest.java",
+      "base_blob": null,
+      "source_blob": "a5718066ffedf24bc7652021a3ced55a554fce46",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityContractTest.java",
+      "base_blob": null,
+      "source_blob": "e8f56c7c617ada9bc17113b835ee51a111945119",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityIT.java",
+      "base_blob": null,
+      "source_blob": "140b43b85f7187a1af5e0fd67431d4688aa01ddd",
+      "target_blob": null,
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectServiceIT.java",
+      "base_blob": "f44ece832bfd3eaf5cefa997e13aed72f5f87eaa",
+      "source_blob": "3786ba2c77d884a779be124d7a5c580b9a37836c",
+      "target_blob": "f44ece832bfd3eaf5cefa997e13aed72f5f87eaa",
+      "classification": "source-only-importable"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+      "base_blob": "6bbf1f6c92a0aa7675dd4238e620ab1aec9c8dc4",
+      "source_blob": "8c1b441bba39442391568a68910313667a96dfe1",
+      "target_blob": "6bbf1f6c92a0aa7675dd4238e620ab1aec9c8dc4",
+      "classification": "source-only-importable"
+    }
+  ]
+}

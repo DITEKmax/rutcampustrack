@@ -1,0 +1,14 @@
+{
+  "recordedAt": "2026-09-07T21:00:42.6815926Z",
+  "sourceFilesChecked": 45,
+  "sourceMismatches": 0,
+  "sourceCopyMismatches": 0,
+  "testSuites": 253,
+  "tests": 1651.0,
+  "failures": 0.0,
+  "errors": 0.0,
+  "skipped": 4.0,
+  "reportCopyMismatches": 0,
+  "logSha256": "58FA82053E0E9D29BE565B59861DD2A3D9BACF8ED525D2B0D6EBEBC3AE8477B0",
+  "testReportManifestSha256": "D8D21428C4721DC0A9B142E9670310E6000BEE9F913DAE7CBC683D3CF62DFE28"
+}

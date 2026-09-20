@@ -1,0 +1,36 @@
+{
+  "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "manifest": "../homework-ui-source-manifest.json",
+  "capturedAt": "2026-09-07",
+  "frozenOriginalAssets": [
+    { "path": "frontends/mobile-core/src/assets/homework-check.svg", "expectedSha256": "4D07219CF9D1257201BBE71F2099C1E7BFF39BCDAD45A5EB040995FCF19E8574", "currentSha256": "4D07219CF9D1257201BBE71F2099C1E7BFF39BCDAD45A5EB040995FCF19E8574", "status": "MATCH" },
+    { "path": "frontends/mobile-core/src/assets/homework-direction.svg", "expectedSha256": "6DC517AD12797EE54C49F6AF5FB7E3B3779142B0F311D987130FFD31C1A95659", "currentSha256": "6DC517AD12797EE54C49F6AF5FB7E3B3779142B0F311D987130FFD31C1A95659", "status": "MATCH" },
+    { "path": "frontends/mobile-core/src/assets/homework-expand.svg", "expectedSha256": "6BEDC61327EADE0DCB64591C8E2887403028DC4CA451F3F084249DD9650653A4", "currentSha256": "6BEDC61327EADE0DCB64591C8E2887403028DC4CA451F3F084249DD9650653A4", "status": "MATCH" },
+    { "path": "frontends/mobile-core/src/assets/homework-external-link.svg", "expectedSha256": "E5AA676AC9B9E3F3F4B09FDFA9F59165E82DE77D5AE48165A0E98EAF32D1562C", "currentSha256": "E5AA676AC9B9E3F3F4B09FDFA9F59165E82DE77D5AE48165A0E98EAF32D1562C", "status": "MATCH" },
+    { "path": "frontends/mobile-core/src/assets/homework-handle-completed.svg", "expectedSha256": "9AAEBE81842869F51C78B79809B050E21D4C900B7FD3F0B372EE9433B6D30596", "currentSha256": "9AAEBE81842869F51C78B79809B050E21D4C900B7FD3F0B372EE9433B6D30596", "status": "MATCH" },
+    { "path": "frontends/mobile-core/src/assets/homework-handle.svg", "expectedSha256": "F608B1DF37C17DBF232A62F0F5187EFCC6CE91A97821164BAD6BD6CF8C653069", "currentSha256": "F608B1DF37C17DBF232A62F0F5187EFCC6CE91A97821164BAD6BD6CF8C653069", "status": "MATCH" },
+    { "path": "frontends/mobile-core/src/assets/homework-return-today.svg", "expectedSha256": "B63BCCB9B3A30CD426E1CB5C9D55A58A040F01B75EE2C845B95F56B0361062F6", "currentSha256": "B63BCCB9B3A30CD426E1CB5C9D55A58A040F01B75EE2C845B95F56B0361062F6", "status": "MATCH" }
+  ],
+  "newPathOnlyDerivatives": [
+    { "path": "frontends/mobile-core/src/assets/homework-expand-chevron.svg", "sha256": "F80A91942498382B9C7371556918947FDCD97DD27A26E6648AA659CF1B95A103", "source": "homework-expand.svg chevron-down path/viewBox", "opaqueBackground": false },
+    { "path": "frontends/mobile-core/src/assets/homework-return-today-chevron.svg", "sha256": "875A907178F83A0CDC08544D89DA3CFBE6C3B05762A49A7F1FDA15C15BE9C0DA", "source": "homework-return-today.svg chevron-up path/viewBox", "opaqueBackground": false }
+  ],
+  "mutableWithinContract": [
+    "frontends/mobile-core/src/styles/tokens.pcss",
+    "frontends/mobile-core/src/features/today/TodayScreen.vue",
+    "frontends/mobile-core/src/features/today/today-screen.pcss",
+    "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+    "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+    "frontends/mobile-core/src/index.ts",
+    "frontends/mobile-core/src/domain/homework.ts",
+    "frontends/mobile-core/src/domain/homework.test.ts",
+    "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+    "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+    "frontends/mobile-core/src/features/homework/use-homework.ts",
+    "frontends/mobile-core/src/features/homework/use-homework.test.ts",
+    "frontends/mobile-core/src/features/homework/homework-focus.ts",
+    "frontends/mobile-core/src/features/homework/homework-focus.test.ts",
+    "frontends/mobile-core/src/shared/theme.ts",
+    "frontends/mobile-core/src/shared/theme.test.ts"
+  ]
+}

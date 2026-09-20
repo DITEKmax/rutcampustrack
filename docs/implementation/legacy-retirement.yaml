@@ -1,0 +1,58 @@
+{
+  "schema": "rutcampustrack.legacy-retirement.v1",
+  "prepared_at": "2026-09-06",
+  "rule": "Ни один путь не удаляется этой партией. Retirement возможен только после replacement, coverage, consumer audit, rollback и отдельного reviewed diff.",
+  "items": [
+    {
+      "path": "frontends/pwa",
+      "current_stack": "React/Vite",
+      "replacement": "целевой Vue/PCSS PWA mobile-core — not-started",
+      "coverage": ["JS-SYSTEM-13", "JS-SYSTEM-14", "JS-STUDENT-12"],
+      "consumers": ["README.md:206,259,326", ".github/workflows/ci.yml", ".github/workflows/openapi-drift.yml", ".github/workflows/deploy.yml", "docker compose"],
+      "dependencies": ["generated API types", "PWA runtime/SW", "production /app/ routing"],
+      "status": "protected-current-client",
+      "archive": {"status": "planned-only; original is retained in Git and no archive copy is created before deletion", "checksum_sha256": "58cf8c5b24fc41500bea0be4ad2dbe3861290ba629284bbee43ef2a591a2027f", "checksum_target": "frontends/pwa/package.json"},
+      "rollback": "retain current image and route until replacement is independently verified"
+    },
+    {
+      "path": "frontends/mini-app",
+      "current_stack": "React/Vite Telegram Mini App",
+      "replacement": "целевой Vue/PCSS TMA adapter — not-started",
+      "coverage": ["JS-SYSTEM-03", "JS-STUDENT-01", "JS-STUDENT-02"],
+      "consumers": ["README.md:207", ".github/workflows/ci.yml", ".github/workflows/openapi-drift.yml", ".github/workflows/deploy.yml"],
+      "dependencies": ["server TMA init-data verification", "Telegram host runtime"],
+      "status": "protected-current-client",
+      "archive": {"status": "planned-only; original is retained in Git and no archive copy is created before deletion", "checksum_sha256": "007b0df230571337f2447dff8b748f70adb7b42b5a63ae51a919e4cf92003605", "checksum_target": "frontends/mini-app/package.json"},
+      "rollback": "retain current image and host URL until real Telegram verification of replacement"
+    },
+    {
+      "path": "frontends/web-panel",
+      "current_stack": "Angular",
+      "replacement": "web is later by owner sequence; no accepted Vue web replacement packet",
+      "coverage": ["JS-STUDENT-WEB-01", "JS-HEADMAN-WEB-01", "JS-ADMIN-01"],
+      "consumers": ["README.md:205,263,299-303,326", ".github/workflows/ci.yml", ".github/workflows/openapi-drift.yml", ".github/workflows/deploy.yml", "tests/e2e"],
+      "dependencies": ["/login", "/admin/*", "/teacher/*", "/student/*", "/headman/*"],
+      "status": "protected-current-client",
+      "archive": {"status": "planned-only; original is retained in Git and no archive copy is created before deletion", "checksum_sha256": "ac7156f13be55e110a382c51aa3e59fe326003062623ee6ffcc2fa2bd0f36c9c", "checksum_target": "frontends/web-panel/package.json"},
+      "rollback": "not applicable before a future separately accepted web replacement"
+    },
+    {
+      "path": "frontends/landing",
+      "current_stack": "static HTML/CSS/JS",
+      "replacement": null,
+      "coverage": [],
+      "consumers": ["README.md:208", ".github/workflows/deploy.yml", "production /presentation/"],
+      "dependencies": ["production reverse proxy"],
+      "status": "out-of-scope-protected",
+      "archive": {"status": "planned-only; original is retained in Git and no archive copy is created before deletion", "checksum_sha256": "21a276de7a2e27c07bb8c34f827da15b5eaf7b12497ded5df412f29b5e95f3f4", "checksum_target": "frontends/landing/package.json"},
+      "rollback": "no planned change"
+    }
+  ],
+  "separate_backend_candidate": {
+    "path": "POST /schedule/lessons/mass-cancel",
+    "source": "design:knowledge/job-stories.md:495-504",
+    "story_ids": ["JS-HEADMAN-09", "JS-HEADMAN-10"],
+    "status": "future-retire-candidate",
+    "prerequisites": ["route/import/build consumer audit", "replacement regression coverage", "contract and API-consumer review", "rollback and separate delete diff"]
+  }
+}

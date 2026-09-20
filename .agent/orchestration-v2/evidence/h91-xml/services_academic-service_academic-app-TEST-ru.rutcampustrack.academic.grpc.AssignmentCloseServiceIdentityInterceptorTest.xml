@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.grpc.AssignmentCloseServiceIdentityInterceptorTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-20T12:39:17" hostname="DITEK-PK" time="1.789">
+  <properties/>
+  <testcase name="validScheduleCredentialBindsSchedulePrincipal()" classname="ru.rutcampustrack.academic.grpc.AssignmentCloseServiceIdentityInterceptorTest" time="0.428"/>
+  <testcase name="explicitSpringRegistrationWorksWithoutStartingTheApplication()" classname="ru.rutcampustrack.academic.grpc.AssignmentCloseServiceIdentityInterceptorTest" time="1.304"/>
+  <testcase name="missingConfigurationDeniesOnlyReservedMethod()" classname="ru.rutcampustrack.academic.grpc.AssignmentCloseServiceIdentityInterceptorTest" time="0.022"/>
+  <testcase name="concurrentCallsKeepVerifiedContextBoundToEachCall()" classname="ru.rutcampustrack.academic.grpc.AssignmentCloseServiceIdentityInterceptorTest" time="0.021"/>
+  <testcase name="unrelatedMethodRetainsExistingAdmission()" classname="ru.rutcampustrack.academic.grpc.AssignmentCloseServiceIdentityInterceptorTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

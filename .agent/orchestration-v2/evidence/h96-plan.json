@@ -1,0 +1,18 @@
+{
+  "arguments": [
+    ":services:schedule-service:schedule-app:test",
+    "--tests",
+    "*RecurringDateCalculatorTest",
+    "--continue",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report",
+    "--rerun-tasks",
+    "--no-build-cache"
+  ],
+  "resultDirectories": [
+    "services/schedule-service/schedule-app/build/test-results/test"
+  ],
+  "meaning": "Same H95-03 command in approved host execution context to distinguish sandbox-related classpath failure; no product configuration change."
+}

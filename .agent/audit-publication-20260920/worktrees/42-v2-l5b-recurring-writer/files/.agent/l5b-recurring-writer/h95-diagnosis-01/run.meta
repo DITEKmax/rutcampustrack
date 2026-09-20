@@ -1,0 +1,13 @@
+attempt=h95-diagnosis-01
+command=.\gradlew.bat :services:schedule-service:schedule-app:compileJava --init-script .agent\l5b-recurring-writer\h95-diagnosis-01.init.gradle --info --no-daemon --no-parallel --max-workers=1 --no-problems-report
+start=
+2026-09-20T17:18:24.3593817+03:00
+end=
+2026-09-20T17:18:47.4928089+03:00
+exit=
+1
+worktree=C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-l5b-recurring-writer
+java-context=Java21
+login=false
+stdout=.agent\l5b-recurring-writer\h95-diagnosis-01\stdout.log
+stderr=.agent\l5b-recurring-writer\h95-diagnosis-01\stderr.log

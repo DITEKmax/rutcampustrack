@@ -1,0 +1,38 @@
+{
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "capturedAt": "2026-09-08",
+  "environment": "Windows PowerShell; worktree C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack",
+  "checks": [
+    {
+      "name": "git-diff-check",
+      "command": "git diff --check -- <seven target paths> .agent/student-academic-b/union/resume-sql",
+      "exitCode": 0,
+      "evidence": "No whitespace errors. Git emitted only the expected LF-to-CRLF working-copy warning for the existing schedule Flyway IT."
+    },
+    {
+      "name": "target-structure-scan",
+      "command": "rg -n '<required SQL table/trigger/constraint markers>' <four migration paths>",
+      "exitCode": 0,
+      "evidence": "Markers for V24 authority, V25 deferred parent/child checks, V26 intent expiry/retention and V17 stable occurrence/binding ownership were found."
+    },
+    {
+      "name": "java-bracket-balance",
+      "command": "PowerShell character-count check on StudentFoundationMigrationIT.java and StudentOccurrenceMigrationIT.java",
+      "exitCode": 0,
+      "evidence": "Both files have equal parentheses and braces (academic 400/400 and 32/32; schedule 275/275 and 16/16)."
+    },
+    {
+      "name": "wrapper-selector-discovery",
+      "command": "rg -n 'integrationTest|includeTestsMatching|excludeTestsMatching' build.gradle.kts",
+      "exitCode": 0,
+      "evidence": "Current build registers integrationTest for *IT with the test classpath; runtime selectors are recorded in packet.md."
+    }
+  ],
+  "runtime": {
+    "status": "BLOCKED_ON_ROOT_LEASE",
+    "gradle": "not run",
+    "postgres": "not run",
+    "testcontainers": "not run",
+    "reason": "Root has not granted the exclusive runtime lease; parent explicitly prohibited Gradle/containers/PG before exact GO."
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "schema_version": "1",
+  "task": "guarded-main-ff-merge-preparation",
+  "risk": "S2",
+  "revision": "87784165874e2da6fc261abc1c01584e24624289",
+  "branch": "codex/materials-transfer",
+  "environment": "Windows PowerShell 7 with Git worktree",
+  "scope": ".agent/js-student-01-main-merge",
+  "checks": [
+    {
+      "criterion": "PowerShell script parses without syntax errors",
+      "command": "pwsh -NoProfile -Command \"[System.Management.Automation.Language.Parser]::ParseFile(...)\"",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Parser returned errors=0 for guarded-main-ff-merge.ps1."
+    },
+    {
+      "criterion": "Frozen root and main preconditions plus exact collision survey pass in dry-run",
+      "command": "pwsh -NoProfile -File .agent/js-student-01-main-merge/guarded-main-ff-merge.ps1 -FinalSHA f85a4d27b9093bad6d60096552f306e8f3e2222b -ExpectedRootHEAD 87784165874e2da6fc261abc1c01584e24624289 -ExpectedBranch codex/materials-transfer",
+      "exit_code": 0,
+      "status": "PASS_WITH_INSTRUCTION_REVIEW",
+      "evidence": "Dry-run: root HEAD/branch and main base stable, staged=0, dirty incoming overlap=0, changed paths=287, collisions=76 (72 identical, 4 different), instruction conflicts=2."
+    },
+    {
+      "criterion": "Current active integration candidate is preflightable without mutation",
+      "command": "pwsh -NoProfile -File .agent/js-student-01-main-merge/guarded-main-ff-merge.ps1 -FinalSHA f383c10a6e0304c4f68aab794612d1bd89b509a8 -ExpectedRootHEAD 87784165874e2da6fc261abc1c01584e24624289 -ExpectedBranch codex/materials-transfer",
+      "exit_code": 0,
+      "status": "PASS_WITH_INSTRUCTION_REVIEW",
+      "evidence": "Dry-run: root HEAD/branch and main base stable, staged=0, dirty incoming overlap=0, changed paths=325, collisions=76 (72 identical, 4 different), instruction conflicts=2."
+    },
+    {
+      "criterion": "Existing tracked dirty files remain recorded and the index is not staged",
+      "command": "git diff --quiet --cached; git diff --name-only",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Cached diff exit=0; existing tracked dirty paths are docs/INDEX.md and skills-lock.json deletion. The expected worktree dirty state was not changed by preparation."
+    },
+    {
+      "criterion": "Target ref is local main and master is absent",
+      "command": "git show-ref --verify refs/heads/main; git show-ref --verify refs/heads/master",
+      "exit_code": 128,
+      "status": "PASS",
+      "evidence": "main resolves to 87784165874e2da6fc261abc1c01584e24624289; master lookup exits 128 as expected."
+    },
+    {
+      "criterion": "Preparation writes only the assigned artifact directory",
+      "command": "git status --short -- .agent/js-student-01-main-merge",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Only the assigned contract, script, evidence, checks, and summary artifacts are created; no tracked product or integration path is changed."
+    },
+    {
+      "criterion": "Product runtime",
+      "command": "N/A for Git preparation-only scope",
+      "exit_code": null,
+      "status": "SKIPPED",
+      "evidence": "No product behavior or runtime resource is in scope."
+    },
+    {
+      "criterion": "Actual guarded main switch and fast-forward",
+      "command": "Not executed in this preparation task",
+      "exit_code": null,
+      "status": "NOT_RUN",
+      "evidence": "Requires independent Sol PASS, root decision for instruction conflicts, and a separate explicit -Apply invocation."
+    }
+  ],
+  "collision_survey": {
+    "active_final_sha": "f383c10a6e0304c4f68aab794612d1bd89b509a8",
+    "requested_survey_sha": "f85a4d27b9093bad6d60096552f306e8f3e2222b",
+    "active_collision_total": 76,
+    "active_collision_identical": 72,
+    "active_collision_different": 4
+  },
+  "limitations": [
+    "The incoming integration final SHA can still advance; rerun dry-run with the new explicit SHA.",
+    "Root/integration AGENTS.md and docs/agent-workflow.md differ; root copies are newer and require explicit resolution.",
+    "No claim is made about product runtime or the unexecuted merge."
+  ]
+}

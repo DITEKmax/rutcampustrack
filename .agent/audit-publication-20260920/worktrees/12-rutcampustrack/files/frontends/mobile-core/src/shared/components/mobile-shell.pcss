@@ -1,0 +1,23 @@
+@import '../../styles/tokens.pcss';
+
+.mobile-shell {
+  position: relative;
+  min-block-size: 100%;
+  font-family: var(--rct-font-family-sans);
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.mobile-shell__back {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--rct-control-min-touch);
+  min-inline-size: var(--rct-control-min-touch);
+  border: 0;
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}

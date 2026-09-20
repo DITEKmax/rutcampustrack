@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.history.HistoricalMembershipServiceTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-20T14:47:46" hostname="DITEK-PK" time="0.212">
+  <properties/>
+  <testcase name="orphanOutsideRequestedDateStillFailsClosed()" classname="ru.rutcampustrack.academic.history.HistoricalMembershipServiceTest" time="0.188"/>
+  <testcase name="currentStudentWithoutOriginFailsEvenWhenHistoryHasOtherStudents()" classname="ru.rutcampustrack.academic.history.HistoricalMembershipServiceTest" time="0.007"/>
+  <testcase name="currentStudentWithOpenHistoryInTwoGroupsFailsClosed()" classname="ru.rutcampustrack.academic.history.HistoricalMembershipServiceTest" time="0.007"/>
+  <testcase name="currentStudentWithOnlyClosedHistoryFailsEvenWhenUserIdIsPresent()" classname="ru.rutcampustrack.academic.history.HistoricalMembershipServiceTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

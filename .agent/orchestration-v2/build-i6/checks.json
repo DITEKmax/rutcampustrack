@@ -1,0 +1,98 @@
+{
+  "schema": "rct.i6-build-producer.checks.v1",
+  "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "environment": {
+    "powershell": "7.6.5",
+    "node": "v24.14.0",
+    "java": "openjdk 21.0.10",
+    "gradleWrapperDistribution": "gradle-8.12-bin.zip",
+    "runtime": "NOT_RUN"
+  },
+  "checks": [
+    {
+      "name": "I6 exact58 manifest and empty index pre-stage",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "58 rows; canonical D3FF3DFDC7C093935CCE3DEF4B4C0A4151F876F1572C3A3851A4480A588FC204; missing/hash mismatches 0/0; index entries 0 before stage"
+    },
+    {
+      "name": "I6 explicit 58-path stage",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "stagedExactlyManifest=True; stagedCount=58; unstagedProductCount=0; staged diff check exit 0"
+    },
+    {
+      "name": "I6 local exact58 commit",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "commit d7ec16572db325d944f1a1fbd3b4960b827d09c3; parent b8220ac92125a8afa37598b270aa4fab7aa1f470; commitPathCount=58"
+    },
+    {
+      "name": "I6 new clean build worktree",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "branch codex/v2-runtime-build; HEAD d7ec16572db325d944f1a1fbd3b4960b827d09c3; status entries 0"
+    },
+    {
+      "name": "I6 source/new-worktree Git blob equivalence",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "manifestRows=58; newBuildMissing=0; gitBlobMismatches=0; newBuildStatusLines=0; raw source-vs-new bytes differ on 53 paths from checkout line-ending normalization"
+    },
+    {
+      "name": "I6 producer PowerShell AST",
+      "status": "PASS",
+      "exitCode": 0,
+      "command": "pwsh -NoProfile -NonInteractive -Command <PowerShell AST parser for producer.ps1>",
+      "evidence": "final source producer.ps1 SHA-256 DB8A4B84E4D042F72F5E0912C2F270CA063AB4735228CB9299A45748DFAC7A83; raw stdout ast-fix4-20260919.stdout.log SHA-256 629A31569D51119B57ECA5B967A4E91C6DC2D08512BF1E5FEBAA99BF76D829AD; raw stderr empty SHA-256 E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "name": "I6 producer pure serializer/stale-output check",
+      "status": "PASS",
+      "exitCode": 0,
+      "command": "pwsh -NoProfile -NonInteractive -File .agent/orchestration-v2/build-i6/producer-pure-check.ps1",
+      "evidence": "final source producer-pure-check.ps1 SHA-256 EDA74A40683D55F8CA561826F870217C5573504CBE596A63DC3C4538346BEE34; raw stdout pure-fix2-ownership-20260919-01.stdout.log SHA-256 E13DC278F5A26E743CB9607A9A635AFD1E73801464A8F1A87BFA3A32239AC189; raw stderr pure-fix2-ownership-20260919-01.stderr.log empty SHA-256 E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855; accepted R3 serializer/timestamp parity, canonical PWA digest, required flags, empty/stale output handling, ancestor/junction confinement, process-level publication matrix, run-owned fixture cleanup and no product build command executed"
+    },
+    {
+      "name": "I6 actual publication failure matrix",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "actual production child processes for manifestTempWrite, manifestTempRead, manifestHash, runreportWriteAllText and manifestRename each exited 1, preserved original error in raw stderr and FAIL report, left destination manifest absent and cleaned owned temp; final run-scoped raw logs are preserved under build-i6/pure-process-logs-2a4a6a07c0b94714a303b8758375b445 with unique no-overwrite names; foreign destination bytes stayed unchanged; post-commit diagnostic remained warning-only and committed PASS authoritative; production junction process exited 1 before runs/manifest and external sentinel stayed unchanged"
+    },
+    {
+      "name": "I6 pure fixture ownership and evidence preservation",
+      "status": "PASS",
+      "exitCode": 0,
+      "command": "pwsh -NoProfile -NonInteractive -File .agent/orchestration-v2/build-i6/producer-pure-check.ps1",
+      "evidence": "final run id 2a4a6a07c0b94714a303b8758375b445; fixture roots were unique directories under build-i6 with current-run owner markers; occupied process-case-manifestHash/union/foreign-sentinel remained byte-identical (sentinel SHA-256 100A94E0147FD818A9FAA30A07084693A980ED32C4FC8D5242590F53D9FCE498); occupied foreign-sentinel.log remained byte-identical (SHA-256 333749F79A3AD2FC60375A2C5743664F75E5CFFE67AF8BF4A0DE64E4DC6E76FA); resolved bounds and current ownership were verified before recursive cleanup; prior evidence/logs were not reused or overwritten"
+    },
+    {
+      "name": "I6 planned output ancestor confinement",
+      "status": "PASS",
+      "exitCode": 0,
+      "command": "pwsh -NoProfile -NonInteractive -File .agent/orchestration-v2/build-i6/producer-pure-check.ps1",
+      "evidence": "empty build/libs accepted; stale JAR rejected; missing build and missing pwa-vue junction ancestors rejected before output creation; historical ledger hash 55C537700F19E4612714B1B1B574005C44DEB7E215498696237FD806A3030EA2 is retained only as prior evidence; preserved prior raw process-junction.stderr.log SHA-256 D5EE3B0CC81521C0D7DCA1CC30311A4E1123254203E7196779E3ABE1AA7A5CAF; final run-scoped process-junction-2a4a6a07c0b94714a303b8758375b445.stderr.log SHA-256 9768CBD58B9E78CE8A5D80932043A76EE0D306E649D7889C87542E654FBEEFC9; no external sentinel write"
+    },
+    {
+      "name": "H42 locked offline dependency setup",
+      "status": "PASS",
+      "exitCode": 0,
+      "command": "npm ci --offline --no-audit --no-fund",
+      "evidence": "revision d7ec16572db325d944f1a1fbd3b4960b827d09c3; clean build worktree; 222 packages added; raw evidence .agent/orchestration-v2/evidence/h42-context.json, h42-exit.json, h42-stdout.log, h42-stderr.log"
+    },
+    {
+      "name": "I6 producer failure-path manifest gate",
+      "status": "PASS",
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "command": "pwsh -NoProfile -NonInteractive -File .agent/orchestration-v2/build-i6/producer.ps1 -UnionRepo .agent/worktrees/v2-runtime-build -ExpectedRevision 0000000000000000000000000000000000000000 -ManifestPath .agent/orchestration-v2/build-i6/negative-repair-20260919.json",
+      "evidence": "run 20260919T164749881Z-c35cd191f77d477c827f3a94bf17d88f; git rev-parse exit 0; producer exit 1 on exact revision mismatch before Gradle/npm; run-report status FAIL preserved original error and requested custom manifest path; manifest absent; raw stdout negative-repair-20260919.stdout.log empty SHA-256 E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855; raw stderr negative-repair-20260919.stderr.log SHA-256 B1144EEE5328319D4AEEF685CA7183239589F5BFDC88220B61F03BE710204AFE"
+    },
+    {
+      "name": "I6 actual producer/build/runtime",
+      "status": "NOT_RUN",
+      "exitCode": null,
+      "evidence": "H41 reserved; no Gradle bootJar, npm build, manifest, Docker, service, browser or Requests runtime was run"
+    }
+  ]
+}

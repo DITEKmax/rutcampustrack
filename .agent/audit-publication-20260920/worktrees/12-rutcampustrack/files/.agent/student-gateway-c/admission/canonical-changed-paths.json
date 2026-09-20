@@ -1,0 +1,162 @@
+{
+  "schema": "rct.gateway.changed-paths.v2",
+  "task": "Gateway C admission stage",
+  "risk": "S3",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "workingTree": "shared e31c; foreign changes preserved",
+  "stagePaths": [
+    {
+      "path": "services/api-gateway/build.gradle.kts",
+      "sha256": "6E4D7CACAE80198E7DD0B3E6E46F1D23AF8F577ACB17B5E72D430C35593A78A3",
+      "kind": "config",
+      "origin": "accepted-import"
+    },
+    {
+      "path": "services/api-gateway/src/main/resources/application.yml",
+      "sha256": "138DBD4F594D2A9CBE159B3445A912CA0A1B70273EFA4AC47AE1C873D11F3368",
+      "kind": "config",
+      "origin": "authored-Gateway-C"
+    },
+    {
+      "path": "services/api-gateway/src/main/resources/application-prod.yml",
+      "sha256": "44CBDD193D50F43CEBCA7C2E1B4FB315B546EEE8A77D5959C57A8A5ED375B696",
+      "kind": "config",
+      "origin": "authored-Gateway-C"
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilter.java",
+      "sha256": "600CC274B507EC8000DB9B33A570B98AAD5213E4F33535C7818C6892A465B858",
+      "kind": "source",
+      "origin": "authored-Gateway-C-correction"
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java",
+      "sha256": "AF88EC60BAED965B2764A405D912EFF9DCF122683DF5E2D26F1650AD56C8E110",
+      "kind": "source",
+      "origin": "authored-Gateway-C"
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java",
+      "sha256": "8E97507F01CBC137248AAD1A6B39396F423805EC874A9C33FF197577B377E40C",
+      "kind": "source",
+      "origin": "authored-Gateway-C-correction"
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalIssuerClientProperties.java",
+      "sha256": "4A58ABE115E1B5866C3CB19BB07A916EE75443D90B9C8C547F646AC4A25B0147",
+      "kind": "source",
+      "origin": "authored-Gateway-C"
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalAdmissionDeniedException.java",
+      "sha256": "393C58A8EC1EC11655EEE1A22A9FC5EEDEE6F387C8F7119BB246D066DF869D30",
+      "kind": "source",
+      "origin": "preexisting-shared-admission-change"
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfig.java",
+      "sha256": "30C11EC71E39E8CF8022CB693E03EBD8F47AEA86E2BDD25D689D16292C7B044F",
+      "kind": "source",
+      "origin": "authored-Gateway-C"
+    },
+    {
+      "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+      "sha256": "7978733D2D8918199CDB1C7E3FF9A7504F6C5E3C928B5E6BED43FCDBF5D5280F",
+      "kind": "test",
+      "origin": "authored-Gateway-C-correction"
+    },
+    {
+      "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClientTest.java",
+      "sha256": "8E3221FF07A5A3D1C763FE7F7BED6377C1282501EED8076EDB0C5FA13A642899",
+      "kind": "test",
+      "origin": "authored-Gateway-C"
+    },
+    {
+      "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+      "sha256": "BA3A62BBA723D2E7E4DDA7C2B014F3BEA7B0FD7DA5E7FF47600A71E6B0869131",
+      "kind": "test",
+      "origin": "authored-Gateway-C-correction"
+    },
+    {
+      "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalIssuerClientPropertiesTest.java",
+      "sha256": "4540E4736C79C8D32C684FCF4FB01E272071A633B21D4E582C0BFDAE6EF71D8F",
+      "kind": "test",
+      "origin": "authored-Gateway-C"
+    },
+    {
+      "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerIT.java",
+      "sha256": "E716952852CDC74714C1DCBC7812018ECBEEFCE2486C8642EC2797DAEA7A2A08",
+      "kind": "test",
+      "origin": "authored-Gateway-C-correction"
+    },
+    {
+      "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+      "sha256": "EBCA9709B9EDDA7672C4E944953ABDD65B4BA997F7CEED9C2F11D9EE7479F640",
+      "kind": "test",
+      "origin": "authored-Gateway-C"
+    }
+  ],
+  "acceptedImportedAuth13": [
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthSessionApi.java",
+      "sha256": "C0E33F5A93054B34DD9326E2CC865274384122D07B135457CCF1B2067954DEB2"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalSessionAdmissionApi.java",
+      "sha256": "DB14CD24EB3448A12059A8D968A618E79EFF2B7629BDCC57215E4D3F51A92DD3"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryEvent.java",
+      "sha256": "3A745E2B1270F07E1F0523678D93BAB911AF0EBD1DCF4B4CB2EC9B4D66FDCD0F"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryPage.java",
+      "sha256": "593D09DEDFFD0F6B279594350B70088B76BD669B836BC071020E45A3135B9F9D"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionRequest.java",
+      "sha256": "A874654D1E410590F43E59B11318F80C6C35A32AC9D0A32D940A53665A089452"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionResponse.java",
+      "sha256": "1841B46A85ADB96212A9D167A9253A9CB9002021C96C6CEB0954DAD8C3E45912"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionSummary.java",
+      "sha256": "38813017B0E10E4F6C9C1398EC8EB5D6546C0352151DA6E78362587B70BBD572"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionsPage.java",
+      "sha256": "02AEFD0580AD2F1B939D4C5EACE3CCE17F06B66B440FF7AFA7273AE61B9A6990"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/CurrentSessionResponse.java",
+      "sha256": "DA0899902573AB79D06C6713E44222322B96290F441DD7C4B913D809E965E9A1"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordPolicyResponse.java",
+      "sha256": "5124D523F20AE93C4C3404D8419D37C8FB1B7C18A9198885E177121C3483BF7D"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RoleGrantResponse.java",
+      "sha256": "216D5BCE545AB120EECA05E14FB22E58085B407EB4CA9DBBDAB83DF076DABA24"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleRequest.java",
+      "sha256": "B62255C419C0BAD4F2854E6FAC4C358DC9E59AB1F9EC84617A6673E47B82AD56"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleResponse.java",
+      "sha256": "613957796DCA67F271ECB876D45791CECB7719C5DDE07A96C7D06893553777F2"
+    }
+  ],
+  "evidencePaths": [
+    ".agent/student-gateway-c/admission/packet.md",
+    ".agent/student-gateway-c/admission/pre-copy.md",
+    ".agent/student-gateway-c/admission/post-copy-auth13.md",
+    ".agent/student-gateway-c/admission/changed-path-hashes.md",
+    ".agent/student-gateway-c/admission/static-guards.md"
+  ],
+  "manifestHash": "computed after final edits; this file is the review manifest",
+  "runtimeBoundary": "Root owns the focused Gradle selector, runtime lease, scanner, and independent review."
+}

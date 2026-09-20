@@ -1,0 +1,33 @@
+{
+  "created": "2026-09-19T23:50:56.6354849+03:00",
+  "scope": "L5B v2 design correction only",
+  "owner": "lessons lead",
+  "status": "STATIC_CHECKS_PASS; DESIGN_REVIEW_PENDING",
+  "baselines": {
+    "academic": "f59b3b9951c971bde42265ae67df8754dc594a58",
+    "schedule": "426a15b6b42e816deaa3ca5c50437e0964aaf85e"
+  },
+  "environment": "Windows PowerShell; no profile; workspace scoped filesystem",
+  "command": "PowerShell ConvertFrom-Json; foreach source Test-Path/Get-FileHash/Get-Content line bounds; regex nine contract headings/trailing whitespace/relative link Test-Path",
+  "exit_code": 0,
+  "source_count": 42,
+  "source_hash_mismatches_or_missing": [],
+  "contract_sections": 9,
+  "trailing_whitespace_lines": 0,
+  "artifact_sha256": {
+    "proposal": "04AF82B8086AD41AECB871E02F20837390ABC0350A4C250E4B0BF2AE07D7239D",
+    "sources": "FAEAAA26E084F819957AD76650EBC21F8D93D4BD4BBB4784CC0B9437131D8F6B"
+  },
+  "runtime": "N/A: design-only; no Gradle/Docker/browser/product test",
+  "implementation": "NOT AUTHORIZED / NOT STARTED",
+  "architecture_review": "v1 FULL FAIL2; v2 fresh root-owned FULL recheck PENDING",
+  "ownership": "Explicit root GO; no callable memory/ownership gateway found; only new .agent/lessons-l5b-design written",
+  "source_manifest_scope": "Own sources.json only; shared docs/sources manifest untouched",
+  "previous_check": "First v2 source validation exit1: root accepted-L5A document added separate current lock finding; reread original and refreshed exact hash, then full validation exit0",
+  "preserved_v1": {
+    "proposal": "D23AD9349E390F3A854C672592C53C43A7B62AE2F9C8CC84203E3220E8CFA57E",
+    "sources": "DA15836186DB2C4A4FF40D2B811540DCEA2E3A14B45E8540C643D9D6207CEFA7",
+    "checks": "1991DB7AACADD3A47D3545635FC78E1374132C252A572FF040F07118264DD707",
+    "root_review_request": "FA28B3E97FD149A354F981B9683728EB00F76FB69E9AA510C1DA195406779CF3"
+  }
+}

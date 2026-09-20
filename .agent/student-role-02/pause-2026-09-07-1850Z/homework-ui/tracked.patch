@@ -1,0 +1,383 @@
+diff --git a/frontends/mobile-core/src/features/today/TodayScreen.vue b/frontends/mobile-core/src/features/today/TodayScreen.vue
+index 909f4b4f..dda8857c 100644
+--- a/frontends/mobile-core/src/features/today/TodayScreen.vue
++++ b/frontends/mobile-core/src/features/today/TodayScreen.vue
+@@ -113,6 +113,10 @@ function heroKindIcon(lesson: TodayLesson): string {
+   return isConfirmed(lesson) ? lessonTypeLight : lessonTypeDark
+ }
+ 
++function iconStyle(icon: string): Record<string, string> {
++  return { '--rct-icon-mask': `url("${icon}")` }
++}
++
+ function semesterDate(date: string): string {
+   return new Date(`${date}T12:00:00Z`).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', day: 'numeric', month: 'long' })
+ }
+@@ -138,11 +142,11 @@ function semesterDate(date: string): string {
+           aria-label="Активная роль: студент"
+         >
+           Студент
+-          <img
+-            :src="chevronDown"
+-            alt=""
++          <span
++            class="today-icon today-icon--chevron"
++            :style="iconStyle(chevronDown)"
+             aria-hidden="true"
+-          >
++          />
+         </button>
+         <h1
+           id="today-title"
+@@ -197,19 +201,19 @@ function semesterDate(date: string): string {
+           <h2>{{ hero.schedule.subject.name }}</h2>
+           <div class="today-hero__metadata">
+             <p>
+-              <img
+-                :src="heroRoomIcon(hero)"
+-                alt=""
++              <span
++                class="today-icon today-icon--metadata"
++                :style="iconStyle(heroRoomIcon(hero))"
+                 aria-hidden="true"
+-              >
++              />
+               {{ hero.schedule.room.current ?? 'Аудитория уточняется' }}
+             </p>
+             <p>
+-              <img
+-                :src="heroKindIcon(hero)"
+-                alt=""
++              <span
++                class="today-icon today-icon--metadata"
++                :style="iconStyle(heroKindIcon(hero))"
+                 aria-hidden="true"
+-              >
++              />
+               {{ lessonKind(hero) }}
+             </p>
+           </div>
+@@ -255,30 +259,30 @@ function semesterDate(date: string): string {
+               <article class="today-card">
+                 <h3>{{ lesson.schedule.subject.name }}</h3>
+                 <p class="today-card__meta">
+-                  <img
+-                    :src="roomIcon(lesson)"
+-                    alt=""
++                  <span
++                    class="today-icon today-icon--metadata"
++                    :style="iconStyle(roomIcon(lesson))"
+                     aria-hidden="true"
+-                  >
++                  />
+                   <span :class="{ 'today-card__room--changed': lesson.schedule.room.changeState === 'CHANGED' }">{{ lesson.schedule.room.current ?? 'Аудитория уточняется' }}</span>
+                   <span
+                     v-if="lesson.schedule.room.previous"
+                     class="today-card__room-change"
+                   >
+-                    <img
+-                      :src="roomChangeStrike"
+-                      alt=""
++                    <span
++                      class="today-icon today-icon--room-change"
++                      :style="iconStyle(roomChangeStrike)"
+                       aria-hidden="true"
+-                    >
++                    />
+                     <s>{{ lesson.schedule.room.previous }}</s>
+                   </span>
+                 </p>
+                 <p class="today-card__meta">
+-                  <img
+-                    :src="kindIcon(lesson)"
+-                    alt=""
++                  <span
++                    class="today-icon today-icon--metadata"
++                    :style="iconStyle(kindIcon(lesson))"
+                     aria-hidden="true"
+-                  >
++                  />
+                   {{ lessonKind(lesson) }}
+                 </p>
+                 <span
+diff --git a/frontends/mobile-core/src/features/today/today-screen.pcss b/frontends/mobile-core/src/features/today/today-screen.pcss
+index 4e2a36f2..c7e195ad 100644
+--- a/frontends/mobile-core/src/features/today/today-screen.pcss
++++ b/frontends/mobile-core/src/features/today/today-screen.pcss
+@@ -42,7 +42,7 @@ body,
+   border: 0;
+   border-radius: var(--rct-radius-2xl);
+   padding: 0.5625rem var(--rct-space-3);
+-  color: var(--rct-color-text-primary);
++  color: var(--rct-color-text-on-fill-strong);
+   background: var(--rct-today-role-gradient);
+   font: inherit;
+   font-size: var(--rct-today-hero-meta-size);
+@@ -54,9 +54,23 @@ body,
+   opacity: 1;
+ }
+ 
+-.today-role img {
++.today-icon {
++  display: inline-block;
++  flex: 0 0 auto;
++  background-color: currentColor;
++  mask-image: var(--rct-icon-mask);
++  mask-position: center;
++  mask-repeat: no-repeat;
++  -webkit-mask-image: var(--rct-icon-mask);
++  -webkit-mask-position: center;
++  -webkit-mask-repeat: no-repeat;
++}
++
++.today-icon--chevron {
+   inline-size: 1rem;
+   block-size: 1rem;
++  mask-size: 1rem 1rem;
++  -webkit-mask-size: 1rem 1rem;
+ }
+ 
+ .today-offline {
+@@ -132,10 +146,19 @@ body,
+   line-height: var(--rct-today-hero-meta-leading);
+ }
+ 
+-.today-hero__metadata img,
+-.today-card__meta > img {
++.today-icon--metadata {
+   inline-size: 0.625rem;
+   block-size: 0.625rem;
++  mask-size: contain;
++  -webkit-mask-size: contain;
++}
++
++.today-icon--room-change {
++  position: absolute;
++  inline-size: 1.875rem;
++  block-size: 0.9375rem;
++  mask-size: contain;
++  -webkit-mask-size: contain;
+ }
+ 
+ .today-hero__action {
+@@ -147,7 +170,7 @@ body,
+   border: 0;
+   border-radius: var(--rct-radius-2xl);
+   padding: 0.8125rem var(--rct-space-4);
+-  color: var(--rct-color-text-primary);
++  color: var(--rct-color-text-on-fill-strong);
+   background: var(--rct-today-action-gradient);
+   font: inherit;
+   font-size: var(--rct-today-action-size);
+@@ -296,10 +319,7 @@ body,
+   opacity: 0.42;
+ }
+ 
+-.today-card__room-change img {
+-  position: absolute;
+-  inline-size: 1.875rem;
+-  block-size: 0.9375rem;
++.today-card__room-change .today-icon--room-change {
+   opacity: 0.72;
+ }
+ 
+diff --git a/frontends/mobile-core/src/index.ts b/frontends/mobile-core/src/index.ts
+index eb894094..82a6bd0c 100644
+--- a/frontends/mobile-core/src/index.ts
++++ b/frontends/mobile-core/src/index.ts
+@@ -15,13 +15,17 @@ export * from './api/student-client'
+ export * from './api/types'
+ export * from './domain/checkin'
+ export * from './domain/offline-today'
++export * from './domain/homework'
+ export * from './domain/recoverable-read'
+ export * from './offline/semester-snapshot'
+ export * from './test-adapter/fixture-transport'
+ export * from './features/today/use-today'
++export * from './features/homework/use-homework'
+ export { default as TodayScreen } from './features/today/TodayScreen.vue'
++export { default as HomeworkScreen } from './features/homework/HomeworkScreen.vue'
+ export { default as MobileBottomNav } from './shared/components/MobileBottomNav.vue'
+ export { default as MobileShell } from './shared/components/MobileShell.vue'
+ export * from './shared/navigation'
++export * from './shared/theme'
+ export * from './shared/shell-contract'
+ export type * from './shared/host'
+diff --git a/frontends/mobile-core/src/shared/components/MobileBottomNav.vue b/frontends/mobile-core/src/shared/components/MobileBottomNav.vue
+index 7014ba13..044c9ea1 100644
+--- a/frontends/mobile-core/src/shared/components/MobileBottomNav.vue
++++ b/frontends/mobile-core/src/shared/components/MobileBottomNav.vue
+@@ -25,6 +25,10 @@ function itemLabel(item: MobileBottomNavItem): string | undefined {
+   return item.disabledReason ? `${label}. ${item.disabledReason}` : item.accessibleLabel
+ }
+ 
++function iconStyle(icon: string): Record<string, string> {
++  return { '--rct-icon-mask': `url("${icon}")` }
++}
++
+ function navigate(item: MobileBottomNavItem): void {
+   if (!item.disabled) emit('navigate', item.route)
+ }
+@@ -48,13 +52,11 @@ function navigate(item: MobileBottomNavItem): void {
+       :aria-label="itemLabel(item)"
+       @click="navigate(item)"
+     >
+-      <span class="mobile-bottom-nav__icon">
+-        <img
+-          :src="item.icon"
+-          alt=""
+-          aria-hidden="true"
+-        >
+-      </span>
++      <span
++        class="mobile-bottom-nav__icon"
++        :style="iconStyle(item.icon)"
++        aria-hidden="true"
++      />
+       <span class="mobile-bottom-nav__label">{{ item.label }}</span>
+       <span
+         v-if="item.badge !== undefined"
+diff --git a/frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss b/frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss
+index 3ec935cd..a2a95284 100644
+--- a/frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss
++++ b/frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss
+@@ -16,7 +16,7 @@
+   border: 0;
+   border-radius: var(--rct-radius-2xl);
+   padding: var(--rct-space-2);
+-  background: color-mix(in srgb, var(--rct-color-surface-float) 78%, transparent);
++  background: color-mix(in srgb, var(--rct-color-surface-float) var(--rct-mobile-dock-opacity), transparent);
+   backdrop-filter: blur(var(--rct-mobile-blur));
+ }
+ 
+@@ -65,11 +65,15 @@
+   place-items: center;
+   inline-size: 1.75rem;
+   block-size: 1.25rem;
+-}
+-
+-.mobile-bottom-nav__icon img {
+-  inline-size: 1rem;
+-  block-size: 1rem;
++  background-color: currentColor;
++  mask-image: var(--rct-icon-mask);
++  mask-position: center;
++  mask-repeat: no-repeat;
++  mask-size: 1rem 1rem;
++  -webkit-mask-image: var(--rct-icon-mask);
++  -webkit-mask-position: center;
++  -webkit-mask-repeat: no-repeat;
++  -webkit-mask-size: 1rem 1rem;
+ }
+ 
+ .mobile-bottom-nav__label {
+diff --git a/frontends/mobile-core/src/styles/tokens.pcss b/frontends/mobile-core/src/styles/tokens.pcss
+index eba30057..6e09e333 100644
+--- a/frontends/mobile-core/src/styles/tokens.pcss
++++ b/frontends/mobile-core/src/styles/tokens.pcss
+@@ -1,4 +1,6 @@
+ :root {
++  color-scheme: dark;
++  /* Dark semantic aliases reference canonical primitives. */
+   --rct-color-surface-base: #0b0b0c;
+   --rct-color-surface-raised: #1c1922;
+   --rct-color-surface-float: #292531;
+@@ -8,11 +10,16 @@
+   --rct-color-border-default: #3d3846;
+   --rct-color-accent-now: #b79cfa;
+   --rct-color-accent-on-now: #0b0b0c;
++  --rct-color-text-on-fill-strong: #ffffff; /* canonical color/text/on-fill-strong, for fixed dark fills */
+   --rct-color-success-text: #61dfb8;
++  /* Homework aliases: canonical color/surface/success = #063429. */
++  --rct-color-success-surface: #063429;
+   --rct-color-warning-text: #f5b443;
+   --rct-color-danger-text: #f27f7f;
+   --rct-color-disabled-surface: #262626;
+   --rct-color-disabled-text: #6b6b6b;
++  --rct-mobile-dock-opacity: 78%; /* component/mobile-bottom-nav/glass-surface-opacity */
++  --rct-mobile-dock-blur: 1.5625rem; /* component/mobile-bottom-nav/glass-background-blur */
+   --rct-control-min-touch: 2.75rem; /* canonical control/min-touch: 44px */
+   --rct-font-family-sans: 'Onest Variable', Onest, sans-serif;
+   --rct-font-size-body: 1rem;
+@@ -20,6 +27,10 @@
+   --rct-font-size-caption: 0.8125rem;
+   --rct-font-size-micro: 0.75rem;
+   --rct-font-size-title: 1.125rem;
++  /* Homework aliases: canonical dimension/font/size/title-block = 1.125rem. */
++  --rct-font-size-title-block: var(--rct-font-size-title);
++  /* Homework alias: canonical dimension/font/size/title-screen = 1.5rem. */
++  --rct-font-size-title-screen: 1.5rem;
+   --rct-font-weight-regular: 400;
+   --rct-font-weight-medium: 500;
+   --rct-font-weight-bold: 600;
+@@ -46,7 +57,7 @@
+   --rct-mobile-time-column: 3.375rem;
+   --rct-mobile-dock-height: 4.75rem;
+   --rct-mobile-dock-bottom: 1rem;
+-  --rct-mobile-blur: 1.5625rem;
++  --rct-mobile-blur: var(--rct-mobile-dock-blur);
+   --rct-today-role-width: 7rem;
+   --rct-today-role-height: 2.75rem;
+   --rct-today-action-height: 2.8125rem;
+@@ -74,10 +85,61 @@
+   --rct-today-present-font-size: 1rem;
+   --rct-today-present-leading: 1.25;
+   --rct-today-dock-label-leading: 1.35;
++  /* Accepted Homework date heading: final source 4601-142.txt, lines 34/69 (17px). */
++  --rct-homework-date-heading-size: 1.0625rem;
+   --rct-today-role-gradient: linear-gradient(104.93deg, #3b1a7a -5.26%, #5729a1 49.47%, #2e1f4d 100%);
+   --rct-today-action-gradient: linear-gradient(90deg, #171229 0%, #29174d 55%, #3b146b 100%);
+ }
+ 
++/* Light semantic aliases reference canonical primitives. */
++:root[data-theme='light'] {
++  color-scheme: light;
++  --rct-color-surface-base: #fcfbfe;
++  --rct-color-surface-raised: #ffffff;
++  --rct-color-surface-float: #ffffff;
++  --rct-color-text-primary: #292531;
++  --rct-color-text-secondary: #565061;
++  --rct-color-text-muted: #6e6779;
++  --rct-color-border-default: #ded9e8;
++  --rct-color-accent-now: #6d28d9;
++  --rct-color-accent-on-now: #ffffff;
++  --rct-color-text-on-fill-strong: #ffffff;
++  --rct-color-success-text: #0c6a53;
++  --rct-color-success-surface: #e4f9f1;
++  --rct-color-warning-text: #764b09;
++  --rct-color-danger-text: #8e1d1d;
++  --rct-color-disabled-surface: #ededed;
++  --rct-color-disabled-text: #a3a3a3;
++  --rct-mobile-dock-opacity: 90%;
++  --rct-mobile-dock-blur: 1.5625rem;
++}
++
++/* System is the default when no explicit light/dark override is present. */
++@media (prefers-color-scheme: light) {
++  :root:not([data-theme]),
++  :root[data-theme='system'] {
++    color-scheme: light;
++    --rct-color-surface-base: #fcfbfe;
++    --rct-color-surface-raised: #ffffff;
++    --rct-color-surface-float: #ffffff;
++    --rct-color-text-primary: #292531;
++    --rct-color-text-secondary: #565061;
++    --rct-color-text-muted: #6e6779;
++    --rct-color-border-default: #ded9e8;
++    --rct-color-accent-now: #6d28d9;
++    --rct-color-accent-on-now: #ffffff;
++    --rct-color-text-on-fill-strong: #ffffff;
++    --rct-color-success-text: #0c6a53;
++    --rct-color-success-surface: #e4f9f1;
++    --rct-color-warning-text: #764b09;
++    --rct-color-danger-text: #8e1d1d;
++    --rct-color-disabled-surface: #ededed;
++    --rct-color-disabled-text: #a3a3a3;
++    --rct-mobile-dock-opacity: 90%;
++    --rct-mobile-dock-blur: 1.5625rem;
++  }
++}
++
+ @define-mixin rct-type-body {
+   font-size: var(--rct-font-size-body);
+   font-weight: var(--rct-font-weight-regular);

@@ -1,0 +1,28 @@
+{
+  "stage": "H96",
+  "start": "2026-09-20T14:26:27.7255756Z",
+  "baseRevision": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+  "freezeHash": "F6593295F550352A97793D0FC1EE34FACE5BE5DFC6BD24E5A0DA28D0918108C8",
+  "planHash": "7EC1028789F59AF0287618BBE24C2700547AAB36D69EBB5A715451BB64962E96",
+  "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-recurring-writer",
+  "command": [
+    ".\\gradlew.bat",
+    ":services:schedule-service:schedule-app:test",
+    "--tests",
+    "*RecurringDateCalculatorTest",
+    "--continue",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report",
+    "--rerun-tasks",
+    "--no-build-cache"
+  ],
+  "exitCode": 1,
+  "javaVersion": "openjdk version \"21.0.10\" 2026-01-20 LTS\r\nOpenJDK Runtime Environment Microsoft-13106404 (build 21.0.10+7-LTS)\r\nOpenJDK 64-Bit Server VM Microsoft-13106404 (build 21.0.10+7-LTS, mixed mode, sharing)",
+  "powershell": "7.6.5",
+  "testcontainersReuse": "false",
+  "end": "2026-09-20T14:27:09.5769184Z",
+  "sourceMismatches": [],
+  "freshTestClasses": 0
+}

@@ -1,0 +1,240 @@
+const imgIconAttendanceGraph = "https://www.figma.com/api/mcp/asset/2e3c161d-24be-466d-a20b-deeb92920eed.svg";
+const imgIcon = "https://www.figma.com/api/mcp/asset/2fd5cd7f-09d3-489d-8eb3-60061e9b99a1.svg";
+const imgIcon1 = "https://www.figma.com/api/mcp/asset/41713034-73c8-4f2b-8322-3a26f804aa51.svg";
+const imgIcon2 = "https://www.figma.com/api/mcp/asset/3da1f2a5-7da7-4998-b253-22b3db76e9a6.svg";
+const imgIcon3 = "https://www.figma.com/api/mcp/asset/0ce3a26f-8fd7-49f5-8bd4-6713c2a1ce4f.svg";
+const imgIcon4 = "https://www.figma.com/api/mcp/asset/0fd7c339-9c08-489b-b1d8-aadc7f7251aa.svg";
+
+function IconAttendanceGraph({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[16px]"} data-node-id="4570:155" data-name="icon/attendance-graph">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconAttendanceGraph} />
+    </div>
+  );
+}
+
+export default function Component12() {
+  return (
+    <div className="bg-[var(--color-surface-base,#0b0b0c)] overflow-clip relative rounded-[24px] size-full" data-node-id="4593:848365" data-name="12 · Посещаемость / пустой день">
+      <div className="absolute content-stretch flex flex-col gap-[12px] h-[768px] items-start left-[16px] overflow-clip pb-[16px] pt-[20px] top-0 w-[358px]" data-node-id="4593:848366" data-name="content">
+        <div className="content-stretch flex items-center overflow-clip relative shrink-0 w-[358px]" data-node-id="4593:848367" data-name="header">
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[24px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4593:848368">
+            Посещаемость
+          </p>
+        </div>
+        <div className="content-stretch flex gap-[12px] items-start overflow-clip relative shrink-0 w-[358px]" data-node-id="4593:848370" data-name="metrics">
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col items-start overflow-clip p-[10px] relative rounded-[16px] shrink-0 w-[111px]" data-node-id="4593:848371" data-name="metric-+">
+            <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-[91px]" data-node-id="4593:848372" data-name="metric-row">
+              <div className="bg-[var(--color-status-present-fill,#61dfb8)] content-stretch flex items-center justify-center overflow-clip relative rounded-[14px] shrink-0 size-[28px]" data-node-id="4593:848373" data-name="status-+">
+                <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[15px] text-[color:var(--color-status-present-on-fill,#0b0b0c)] whitespace-nowrap" data-node-id="4593:848374">
+                  +
+                </p>
+              </div>
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[18px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4593:848375">
+                72%
+              </p>
+            </div>
+          </div>
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col items-start overflow-clip p-[10px] relative rounded-[16px] shrink-0 w-[111px]" data-node-id="4593:848376" data-name="metric-н">
+            <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-[91px]" data-node-id="4593:848377" data-name="metric-row">
+              <div className="bg-[var(--color-status-absent-fill,#f27f7f)] content-stretch flex items-center justify-center overflow-clip relative rounded-[14px] shrink-0 size-[28px]" data-node-id="4593:848378" data-name="status-н">
+                <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[15px] text-[color:var(--color-status-absent-on-fill,#0b0b0c)] whitespace-nowrap" data-node-id="4593:848379">
+                  н
+                </p>
+              </div>
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[18px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4593:848380">
+                18%
+              </p>
+            </div>
+          </div>
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col items-start overflow-clip p-[10px] relative rounded-[16px] shrink-0 w-[111px]" data-node-id="4593:848381" data-name="metric-у">
+            <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-[91px]" data-node-id="4593:848382" data-name="metric-row">
+              <div className="bg-[var(--color-status-excused-fill,#f5b443)] content-stretch flex items-center justify-center overflow-clip relative rounded-[14px] shrink-0 size-[28px]" data-node-id="4593:848383" data-name="status-у">
+                <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[15px] text-[color:var(--color-status-excused-on-fill,#0b0b0c)] whitespace-nowrap" data-node-id="4593:848384">
+                  у
+                </p>
+              </div>
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[18px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4593:848385">
+                10%
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[8px] items-start overflow-clip relative shrink-0 w-[358px]" data-node-id="4593:848386" data-name="view-switch">
+          <div className="bg-[var(--color-accent-now,#b79cfa)] content-stretch flex h-[44px] items-center justify-center overflow-clip relative rounded-[22px] shrink-0 w-[139px]" data-node-id="4593:848387" data-name="tab-По дням">
+            <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-accent-on-now,#0b0b0c)] whitespace-nowrap" data-node-id="4593:848388">
+              По дням
+            </p>
+          </div>
+          <div className="bg-[var(--color-surface-float,#292531)] border border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex h-[44px] items-center justify-center overflow-clip relative rounded-[22px] shrink-0 w-[159px]" data-node-id="4593:848389" data-name="tab-По предметам">
+            <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4593:848390">
+              По предметам
+            </p>
+          </div>
+          <div className="bg-[var(--color-surface-float,#292531)] border border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex items-center justify-center overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4593:848391" data-name="graph-button">
+            <IconAttendanceGraph className="relative shrink-0 size-[16px]" />
+          </div>
+        </div>
+        <div className="[word-break:break-word] content-stretch flex gap-[6px] items-start leading-[normal] not-italic overflow-clip relative shrink-0 w-[358px] whitespace-nowrap" data-node-id="4593:848393" data-name="day-rail">
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[2px] h-[48px] items-center justify-center overflow-clip relative rounded-[16px] shrink-0 w-[54px]" data-node-id="4593:848394" data-name="day-Пн">
+            <p className="font-['Onest:Regular'] relative shrink-0 text-[11px] text-[color:var(--color-text-secondary,#c8c2d6)]" data-node-id="4593:848395">
+              Пн
+            </p>
+            <p className="font-['Onest:SemiBold'] relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)]" data-node-id="4593:848396">
+              31
+            </p>
+          </div>
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[2px] h-[48px] items-center justify-center overflow-clip relative rounded-[16px] shrink-0 w-[54px]" data-node-id="4593:848397" data-name="day-Вт">
+            <p className="font-['Onest:Regular'] relative shrink-0 text-[11px] text-[color:var(--color-text-secondary,#c8c2d6)]" data-node-id="4593:848398">
+              Вт
+            </p>
+            <p className="font-['Onest:SemiBold'] relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)]" data-node-id="4593:848399">
+              1
+            </p>
+          </div>
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[2px] h-[48px] items-center justify-center overflow-clip relative rounded-[16px] shrink-0 w-[54px]" data-node-id="4593:848400" data-name="day-Ср">
+            <p className="font-['Onest:Regular'] relative shrink-0 text-[11px] text-[color:var(--color-text-secondary,#c8c2d6)]" data-node-id="4593:848401">
+              Ср
+            </p>
+            <p className="font-['Onest:SemiBold'] relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)]" data-node-id="4593:848402">
+              2
+            </p>
+          </div>
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[2px] h-[48px] items-center justify-center overflow-clip relative rounded-[16px] shrink-0 w-[54px]" data-node-id="4593:848403" data-name="day-Чт">
+            <p className="font-['Onest:Regular'] relative shrink-0 text-[11px] text-[color:var(--color-text-secondary,#c8c2d6)]" data-node-id="4593:848404">
+              Чт
+            </p>
+            <p className="font-['Onest:SemiBold'] relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)]" data-node-id="4593:848405">
+              3
+            </p>
+          </div>
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[2px] h-[48px] items-center justify-center overflow-clip relative rounded-[16px] shrink-0 w-[54px]" data-node-id="4593:848406" data-name="day-Пт">
+            <p className="font-['Onest:Regular'] relative shrink-0 text-[11px] text-[color:var(--color-text-secondary,#c8c2d6)]" data-node-id="4593:848407">
+              Пт
+            </p>
+            <p className="font-['Onest:SemiBold'] relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)]" data-node-id="4593:848408">
+              4
+            </p>
+          </div>
+          <div className="bg-[var(--color-accent-now,#b79cfa)] content-stretch flex flex-col gap-[2px] h-[48px] items-center justify-center overflow-clip relative rounded-[16px] shrink-0 text-[color:var(--color-accent-on-now,#0b0b0c)] w-[54px]" data-node-id="4593:848409" data-name="day-Сб">
+            <p className="font-['Onest:Regular'] relative shrink-0 text-[11px]" data-node-id="4593:848410">
+              Сб
+            </p>
+            <p className="font-['Onest:SemiBold'] relative shrink-0 text-[13px]" data-node-id="4593:848411">
+              5
+            </p>
+          </div>
+        </div>
+        <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col h-[220px] items-center justify-center overflow-clip relative rounded-[24px] shrink-0 w-[358px]" data-node-id="4593:848493" data-name="empty-state">
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[22px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4593:848494">
+            Заслуженный отдых
+          </p>
+        </div>
+      </div>
+      <div className="absolute content-stretch flex gap-[var(--space-1,4px)] h-[76px] items-center justify-center left-[16px] p-[var(--space-2,8px)] rounded-[var(--radius\/2xl,24px)] top-[752px] w-[358px]" data-node-id="4593:848457" data-name="bottom-nav">
+        <div className="absolute backdrop-blur-[var(--component-mobile-bottom-nav-glass-background-blur,12.5px)] bg-[var(--color-surface-float,#292531)] inset-0 opacity-[var(--component-mobile-bottom-nav-glass-surface-opacity,0.78)] rounded-[var(--radius\/2xl,24px)]" data-node-id="I4593:848457;4355:321" data-name="glass-surface" />
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[var(--space-1,4px)] h-full items-center justify-center min-w-px px-[var(--space-0,0px)] py-[var(--space-1,4px)] relative rounded-[var(--radius-lg,12px)]" data-node-id="I4593:848457;4175:354" data-name="item-1">
+          <div className="h-[20px] relative shrink-0 w-[28px]" data-node-id="I4593:848457;4175:354;4170:143" data-name="icon-wrap">
+            <div className="absolute left-[6px] size-[16px] top-[2px]" data-node-id="I4593:848457;4175:354;4170:144" data-name="icon">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.35] min-w-full not-italic relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-micro,12px)] text-center tracking-[0.12px] w-[min-content]" data-node-id="I4593:848457;4175:354;4170:149" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+            Сегодня
+          </p>
+        </div>
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[var(--space-1,4px)] h-full items-center justify-center min-w-px px-[var(--space-0,0px)] py-[var(--space-1,4px)] relative rounded-[var(--radius-lg,12px)]" data-node-id="I4593:848457;4175:364" data-name="item-2">
+          <div className="h-[20px] relative shrink-0 w-[28px]" data-node-id="I4593:848457;4175:364;4170:143" data-name="icon-wrap">
+            <div className="absolute left-[6px] size-[16px] top-[2px]" data-node-id="I4593:848457;4175:364;4170:144" data-name="icon">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon1} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.35] min-w-full not-italic relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-micro,12px)] text-center tracking-[0.12px] w-[min-content]" data-node-id="I4593:848457;4175:364;4170:149" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+            Задания
+          </p>
+        </div>
+        <div className="bg-[var(--color-accent-now,#b79cfa)] content-stretch flex flex-[1_0_0] flex-col gap-[var(--space-1,4px)] h-full items-center justify-center min-w-px px-[var(--space-0,0px)] py-[var(--space-1,4px)] relative rounded-[var(--radius-xl,16px)]" data-node-id="I4593:848457;4175:374" data-name="item-3">
+          <div className="h-[20px] relative shrink-0 w-[28px]" data-node-id="I4593:848457;4175:374;4170:175" data-name="icon-wrap">
+            <div className="absolute left-[6px] size-[16px] top-[2px]" data-node-id="I4593:848457;4175:374;4170:176" data-name="icon">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon2} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.35] min-w-full not-italic relative shrink-0 text-[color:var(--color-accent-on-now,#0b0b0c)] text-[length:var(--font-size-micro,12px)] text-center tracking-[0.12px] w-[min-content]" data-node-id="I4593:848457;4175:374;4170:181" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+            Учёт
+          </p>
+        </div>
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[var(--space-1,4px)] h-full items-center justify-center min-w-px px-[var(--space-0,0px)] py-[var(--space-1,4px)] relative rounded-[var(--radius-lg,12px)]" data-node-id="I4593:848457;4175:384" data-name="item-4">
+          <div className="h-[20px] relative shrink-0 w-[28px]" data-node-id="I4593:848457;4175:384;4170:143" data-name="icon-wrap">
+            <div className="absolute left-[6px] size-[16px] top-[2px]" data-node-id="I4593:848457;4175:384;4170:144" data-name="icon">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon3} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.35] min-w-full not-italic relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-micro,12px)] text-center tracking-[0.12px] w-[min-content]" data-node-id="I4593:848457;4175:384;4170:149" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+            Ещё
+          </p>
+        </div>
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[var(--space-1,4px)] h-full items-center justify-center min-w-px px-[var(--space-0,0px)] py-[var(--space-1,4px)] relative rounded-[var(--radius-lg,12px)]" data-node-id="I4593:848457;4175:393" data-name="item-5">
+          <div className="h-[20px] relative shrink-0 w-[28px]" data-node-id="I4593:848457;4175:393;4170:143" data-name="icon-wrap">
+            <div className="absolute left-[6px] size-[16px] top-[2px]" data-node-id="I4593:848457;4175:393;4170:144" data-name="icon">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon4} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.35] min-w-full not-italic relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-micro,12px)] text-center tracking-[0.12px] w-[min-content]" data-node-id="I4593:848457;4175:393;4170:149" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+            Профиль
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+These styles are contained in the design: micro: Font(family: "var(--font-family-sans)", style: Medium, size: var(--font-size-micro), weight: var(--font-weight-medium), lineHeight: 1.350000023841858, letterSpacing: 1).
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## icon/attendance-graph
+**Node ID:** 4570:155
+
+Навигация: текущий день и экран «Сегодня».
+
+## shared/MobileBottomNav
+**Node ID:** 4175:403
+
+Нижняя навигация корневых мобильных маршрутов PWA и Telegram Mini App. Оси: slots=3|4|5. Роль, platform, theme, material, hidden и badge не являются осями; task/detail/editor/keyboard скрывают компонент в MobileShell. UI-label «Учёт» имеет доступное имя «Посещаемость».
+
+## __MobileBottomNavItem
+**Node ID:** 4170:206
+
+Приватный building block shared/MobileBottomNav. Не использовать отдельно. Состояние пункта кодируется selected и interaction; зона нажатия не меньше 44.
+
+## icon/today
+**Node ID:** 4161:143
+
+Навигация: текущий день и экран «Сегодня».
+
+## icon/homework
+**Node ID:** 4162:143
+
+Навигация: домашние задания и учебные задачи.
+
+## icon/attendance
+**Node ID:** 4163:143
+
+Навигация: отметки посещаемости; не означает массовое действие.
+
+## icon/more
+**Node ID:** 1298:7535
+
+Временный локальный плейсхолдер смысла «действия строки». Не равен icon/menu; заменить финальной иконкой через instance swap.
+
+## icon/profile
+**Node ID:** 4163:844554
+
+Навигация: профиль, настройки и смена доступной роли.
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

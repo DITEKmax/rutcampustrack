@@ -1,0 +1,93 @@
+{
+  "schema": "rct-verification",
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "cwd": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui",
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "vueTsc": "3.3.11 (CLI TypeScript 5.9.3)",
+    "eslint": "10.10.0",
+    "eslintPluginVue": "10.11.0",
+    "vitest": "4.1.4",
+    "vite": "7.3.6",
+    "dependencySource": "C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/frontends/node_modules (read-only)"
+  },
+  "checksOutput": ".agent/profile-ui/evidence/resume4-repair/checks-output.md",
+  "checks": [
+    {
+      "id": "pilot-vue-tsc",
+      "criterion": "Patched SecurityScreen compiles in the strict profile project.",
+      "status": "PASS",
+      "command": "node 'C:\\Users\\maksd\\.codex\\worktrees\\d650\\rutcampustrack\\frontends\\node_modules\\vue-tsc\\bin\\vue-tsc.js' --noEmit -p '.agent\\profile-ui\\vue-tsconfig.json'",
+      "startedUtc": "2026-09-08T20:19:01.7946441Z",
+      "endedUtc": "2026-09-08T20:19:05.4904865Z",
+      "exitCode": 0,
+      "outputSection": "checks-output.md#pilot-strict-vue-typecheck"
+    },
+    {
+      "id": "pilot-eslint-security",
+      "criterion": "Patched SecurityScreen has zero lint errors/warnings.",
+      "status": "PASS",
+      "command": "node 'C:\\Users\\maksd\\.codex\\worktrees\\d650\\rutcampustrack\\frontends\\node_modules\\eslint\\bin\\eslint.js' --config '.agent\\profile-ui\\eslint.config.mjs' --max-warnings=0 'frontends\\mobile-core\\src\\features\\profile\\SecurityScreen.vue'",
+      "startedUtc": "2026-09-08T20:19:09.1219325Z",
+      "endedUtc": "2026-09-08T20:19:14.3642864Z",
+      "exitCode": 0,
+      "outputSection": "checks-output.md#pilot-security-only-eslint"
+    },
+    {
+      "id": "full-vue-tsc",
+      "criterion": "Strict Vue typecheck covers the profile project.",
+      "status": "PASS",
+      "command": "node 'C:\\Users\\maksd\\.codex\\worktrees\\d650\\rutcampustrack\\frontends\\node_modules\\vue-tsc\\bin\\vue-tsc.js' --noEmit -p '.agent\\profile-ui\\vue-tsconfig.json'",
+      "startedUtc": "2026-09-08T20:20:07.6198923Z",
+      "endedUtc": "2026-09-08T20:20:12.1975782Z",
+      "exitCode": 0,
+      "outputSection": "checks-output.md#full-strict-vue-typecheck"
+    },
+    {
+      "id": "full-eslint",
+      "criterion": "Seven named profile SFCs have zero lint errors/warnings.",
+      "status": "PASS",
+      "command": "node 'C:\\Users\\maksd\\.codex\\worktrees\\d650\\rutcampustrack\\frontends\\node_modules\\eslint\\bin\\eslint.js' --config '.agent\\profile-ui\\eslint.config.mjs' --max-warnings=0 'frontends\\mobile-core\\src\\features\\profile\\MoreScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\ProfileScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\RoleSwitchScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\AppearanceScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\SecurityScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\SessionsScreen.vue' 'frontends\\mobile-core\\src\\features\\profile\\AccountHistoryScreen.vue'",
+      "startedUtc": "2026-09-08T20:21:02.7768731Z",
+      "endedUtc": "2026-09-08T20:21:06.5911551Z",
+      "exitCode": 0,
+      "outputSection": "checks-output.md#full-focused-eslint"
+    },
+    {
+      "id": "profile-state-vitest",
+      "criterion": "Existing profile-state regression suite remains 20/20.",
+      "status": "PASS",
+      "command": "node 'C:\\Users\\maksd\\.codex\\worktrees\\d650\\rutcampustrack\\frontends\\node_modules\\vitest\\vitest.mjs' run 'frontends\\mobile-core\\src\\features\\profile\\profile-state.test.ts'",
+      "startedUtc": "2026-09-08T20:21:10.5377221Z",
+      "endedUtc": "2026-09-08T20:21:13.9523276Z",
+      "exitCode": 0,
+      "result": "1 file passed; 20 tests passed",
+      "outputSection": "checks-output.md#focused-profile-state-vitest"
+    },
+    {
+      "id": "harness-vite-build",
+      "criterion": "Existing evidence harness imports and builds all seven profile SFCs.",
+      "status": "PASS",
+      "command": "node --input-type=module -e \"import { build } from 'file:///C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/frontends/node_modules/vite/dist/node/index.js'; import config from './.agent/profile-ui/evidence/resume-2026-09-08/harness/vite.config.mjs'; await build({ ...config, configFile: false, build: { ...(config.build ?? {}), write: false } });\"",
+      "startedUtc": "2026-09-08T20:21:17.6739430Z",
+      "endedUtc": "2026-09-08T20:21:20.8531363Z",
+      "exitCode": 0,
+      "result": "44 modules transformed; write:false",
+      "outputSection": "checks-output.md#existing-vite-harness-build"
+    }
+  ],
+  "runtime": {
+    "status": "NOT_RUN",
+    "owner": "root",
+    "url": "http://127.0.0.1:18110/",
+    "reason": "Leaf scope excludes runtime; root owns free-port proof, mounted QA and cleanup."
+  },
+  "limitations": [
+    "No mounted post-repair browser verdict is claimed by this leaf.",
+    "No backend/Auth integration, PWA service worker, TMA live behavior or full product acceptance is claimed.",
+    "No password values were entered, printed or stored in this evidence."
+  ]
+}

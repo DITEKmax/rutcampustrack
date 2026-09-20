@@ -1,0 +1,14 @@
+{
+  "status": "helper-returned",
+  "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+  "runnerSha256": "05c76b696bf987370c0597c3af76c9db94fb588aa3ac3087d6907110ebbb9716",
+  "nodeScriptSha256": "ad23be1ab2fd4582bc059326ed17d21cf16922694acabef1b183022c68df1ce3",
+  "helperExitCode": 0,
+  "helperElapsedMilliseconds": 140,
+  "helperOutputLength": 69,
+  "helperStdoutLength": 44,
+  "helperStderrLength": 23,
+  "helperOutputIsDrainTimeout": false,
+  "parentPid": 38640,
+  "descendantPid": 2344
+}

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "late_checkin.decided",
-  "description": "Староста одобрил или отклонил запрос студента на подтверждение присутствия. Генерируется Attendance Service после обработки решения.",
+  "description": "Запрос студента завершён решением старосты или успешной геоотметкой. Генерируется Attendance Service после терминального перехода.",
   "type": "object",
   "required": [
     "event_type",
@@ -53,7 +53,20 @@
         "status": {
           "enum": [
             "approved",
-            "rejected"
+            "rejected",
+            "cancelled"
+          ]
+        },
+        "resolution_reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "headman_approved",
+            "headman_rejected",
+            "geo_confirmed",
+            null
           ]
         },
         "decided_at": {

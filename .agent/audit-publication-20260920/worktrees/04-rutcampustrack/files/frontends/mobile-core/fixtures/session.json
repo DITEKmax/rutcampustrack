@@ -1,0 +1,35 @@
+{
+  "user": {
+    "id": "42",
+    "displayName": "Анна Смирнова"
+  },
+  "activeRole": "STUDENT",
+  "sessionId": "99999999-9999-4999-8999-999999999999",
+  "sessionVersion": "9007199254740993",
+  "rolesVersion": "7",
+  "readOnly": false,
+  "group": {
+    "id": "17",
+    "name": "ИВТ-21"
+  },
+  "semester": {
+    "id": "9",
+    "name": "Осень 2026",
+    "startsOn": "2026-09-01",
+    "endsOn": "2026-12-31"
+  },
+  "capabilities": [
+    "TODAY",
+    "GEO_CHECKIN",
+    "OFFLINE_SEMESTER_SCHEDULE"
+  ],
+  "serverNow": "2026-09-06T08:30:00Z",
+  "_links": {
+    "today": {
+      "href": "https://ruttrack.example/api/v1/student/today"
+    },
+    "schedule": {
+      "href": "https://ruttrack.example/api/v1/student/schedule?semesterId=9"
+    }
+  }
+}

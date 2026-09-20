@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" tests="9" skipped="0" failures="5" errors="0" timestamp="2026-09-11T09:27:49" hostname="DITEK-PK" time="7.021">
+  <properties/>
+  <testcase name="cookieLogoutDoesNotTurnAuthorityFailureIntoCookieSuccess()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="5.959">
+    <failure message="org.opentest4j.AssertionFailedError: &#13;&#10;Expecting value to be false but was true" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: 
+Expecting value to be false but was true
+	at app//ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.cookieLogoutDoesNotTurnAuthorityFailureIntoCookieSuccess(JwtAuthenticationFilterPurposeTest.java:217)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="refreshTokenIsNotAnAuthenticatedAccessRequest()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.254">
+    <failure message="com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default: add Module &quot;com.fasterxml.jackson.datatype:jackson-datatype-jsr310&quot; to enable handling (through reference chain: ru.rutcampustrack.shared.web.api.exception.ErrorResponse[&quot;timestamp&quot;])" type="com.fasterxml.jackson.databind.exc.InvalidDefinitionException">com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default: add Module &quot;com.fasterxml.jackson.datatype:jackson-datatype-jsr310&quot; to enable handling (through reference chain: ru.rutcampustrack.shared.web.api.exception.ErrorResponse[&quot;timestamp&quot;])
+	at com.fasterxml.jackson.databind.exc.InvalidDefinitionException.from(InvalidDefinitionException.java:77)
+	at com.fasterxml.jackson.databind.SerializerProvider.reportBadDefinition(SerializerProvider.java:1328)
+	at com.fasterxml.jackson.databind.ser.impl.UnsupportedTypeSerializer.serialize(UnsupportedTypeSerializer.java:35)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider._serialize(DefaultSerializerProvider.java:502)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:341)
+	at com.fasterxml.jackson.databind.ObjectMapper._writeValueAndClose(ObjectMapper.java:4811)
+	at com.fasterxml.jackson.databind.ObjectMapper.writeValueAsString(ObjectMapper.java:4052)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilter.writeSessionFailure(JwtAuthenticationFilter.java:210)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:132)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.runWithBearer(JwtAuthenticationFilterPurposeTest.java:226)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.refreshTokenIsNotAnAuthenticatedAccessRequest(JwtAuthenticationFilterPurposeTest.java:98)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="invalidBearerClearsPreexistingAuthentication()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.139">
+    <failure message="com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default: add Module &quot;com.fasterxml.jackson.datatype:jackson-datatype-jsr310&quot; to enable handling (through reference chain: ru.rutcampustrack.shared.web.api.exception.ErrorResponse[&quot;timestamp&quot;])" type="com.fasterxml.jackson.databind.exc.InvalidDefinitionException">com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default: add Module &quot;com.fasterxml.jackson.datatype:jackson-datatype-jsr310&quot; to enable handling (through reference chain: ru.rutcampustrack.shared.web.api.exception.ErrorResponse[&quot;timestamp&quot;])
+	at com.fasterxml.jackson.databind.exc.InvalidDefinitionException.from(InvalidDefinitionException.java:77)
+	at com.fasterxml.jackson.databind.SerializerProvider.reportBadDefinition(SerializerProvider.java:1328)
+	at com.fasterxml.jackson.databind.ser.impl.UnsupportedTypeSerializer.serialize(UnsupportedTypeSerializer.java:35)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider._serialize(DefaultSerializerProvider.java:502)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:341)
+	at com.fasterxml.jackson.databind.ObjectMapper._writeValueAndClose(ObjectMapper.java:4811)
+	at com.fasterxml.jackson.databind.ObjectMapper.writeValueAsString(ObjectMapper.java:4052)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilter.writeSessionFailure(JwtAuthenticationFilter.java:210)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:132)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.runWithBearer(JwtAuthenticationFilterPurposeTest.java:226)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.invalidBearerClearsPreexistingAuthentication(JwtAuthenticationFilterPurposeTest.java:124)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="cookieLogoutIgnoresExpiredOrStaleIncidentalBearer()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.148"/>
+  <testcase name="validAccessTokenAuthenticatesWithKnownRole()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.1"/>
+  <testcase name="internalTokenAndMalformedAccessClaimsAreRejected()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.137">
+    <failure message="com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default: add Module &quot;com.fasterxml.jackson.datatype:jackson-datatype-jsr310&quot; to enable handling (through reference chain: ru.rutcampustrack.shared.web.api.exception.ErrorResponse[&quot;timestamp&quot;])" type="com.fasterxml.jackson.databind.exc.InvalidDefinitionException">com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default: add Module &quot;com.fasterxml.jackson.datatype:jackson-datatype-jsr310&quot; to enable handling (through reference chain: ru.rutcampustrack.shared.web.api.exception.ErrorResponse[&quot;timestamp&quot;])
+	at com.fasterxml.jackson.databind.exc.InvalidDefinitionException.from(InvalidDefinitionException.java:77)
+	at com.fasterxml.jackson.databind.SerializerProvider.reportBadDefinition(SerializerProvider.java:1328)
+	at com.fasterxml.jackson.databind.ser.impl.UnsupportedTypeSerializer.serialize(UnsupportedTypeSerializer.java:35)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider._serialize(DefaultSerializerProvider.java:502)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:341)
+	at com.fasterxml.jackson.databind.ObjectMapper._writeValueAndClose(ObjectMapper.java:4811)
+	at com.fasterxml.jackson.databind.ObjectMapper.writeValueAsString(ObjectMapper.java:4052)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilter.writeSessionFailure(JwtAuthenticationFilter.java:210)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:132)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.runWithBearer(JwtAuthenticationFilterPurposeTest.java:226)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.internalTokenAndMalformedAccessClaimsAreRejected(JwtAuthenticationFilterPurposeTest.java:106)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="missingBearerLeavesRequestUnauthenticated()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.029"/>
+  <testcase name="bootstrapBearerIsAcceptedOnlyOnTheExactFiveSessionRoutes()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.125"/>
+  <testcase name="bootstrapBearerIsDeniedForHistoryPasswordAndLookalikeRoutes()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.113">
+    <failure message="com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default: add Module &quot;com.fasterxml.jackson.datatype:jackson-datatype-jsr310&quot; to enable handling (through reference chain: ru.rutcampustrack.shared.web.api.exception.ErrorResponse[&quot;timestamp&quot;])" type="com.fasterxml.jackson.databind.exc.InvalidDefinitionException">com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default: add Module &quot;com.fasterxml.jackson.datatype:jackson-datatype-jsr310&quot; to enable handling (through reference chain: ru.rutcampustrack.shared.web.api.exception.ErrorResponse[&quot;timestamp&quot;])
+	at com.fasterxml.jackson.databind.exc.InvalidDefinitionException.from(InvalidDefinitionException.java:77)
+	at com.fasterxml.jackson.databind.SerializerProvider.reportBadDefinition(SerializerProvider.java:1328)
+	at com.fasterxml.jackson.databind.ser.impl.UnsupportedTypeSerializer.serialize(UnsupportedTypeSerializer.java:35)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider._serialize(DefaultSerializerProvider.java:502)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:341)
+	at com.fasterxml.jackson.databind.ObjectMapper._writeValueAndClose(ObjectMapper.java:4811)
+	at com.fasterxml.jackson.databind.ObjectMapper.writeValueAsString(ObjectMapper.java:4052)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilter.writeSessionFailure(JwtAuthenticationFilter.java:210)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:132)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.runToken(JwtAuthenticationFilterPurposeTest.java:262)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.runBootstrap(JwtAuthenticationFilterPurposeTest.java:237)
+	at ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.bootstrapBearerIsDeniedForHistoryPasswordAndLookalikeRoutes(JwtAuthenticationFilterPurposeTest.java:165)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.15.11\a38b16385e867f59a641330f0362ebe742788ed8\byte-buddy-agent-1.15.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

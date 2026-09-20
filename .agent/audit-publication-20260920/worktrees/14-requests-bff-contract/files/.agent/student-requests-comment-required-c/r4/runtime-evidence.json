@@ -1,0 +1,104 @@
+{
+  "date": "2026-09-09",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "environment": "Windows; Gradle 8.12 wrapper; Java; isolated Testcontainers for attendance integration; no production resources",
+  "commands": [
+    {
+      "index": 1,
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.grpc.StudentRequestGrpcMapperTest --tests ru.rutcampustrack.attendance.studentrequest.StudentRequestServiceAuthorizationTest --no-daemon --no-parallel --max-workers=1 --console=plain --rerun-tasks",
+      "exitCode": 0,
+      "result": "BUILD SUCCESSFUL",
+      "duration": "1m44s",
+      "tests": 19
+    },
+    {
+      "index": 2,
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT --no-daemon --no-parallel --max-workers=1 --console=plain --rerun-tasks",
+      "exitCode": 0,
+      "result": "BUILD SUCCESSFUL",
+      "duration": "3m48s",
+      "tests": 20
+    },
+    {
+      "index": 3,
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:test --tests ru.rutcampustrack.mobilebff.grpc.MobileAttendanceClientErrorTest --tests ru.rutcampustrack.mobilebff.contract.StudentRequestDetailJsonTest --tests ru.rutcampustrack.mobilebff.student.StudentRequestFacadeOptionsTest --tests ru.rutcampustrack.mobilebff.contract.StudentRequestOptionsJsonTest --no-daemon --no-parallel --max-workers=1 --console=plain --rerun-tasks",
+      "exitCode": 0,
+      "result": "BUILD SUCCESSFUL",
+      "duration": "1m56s",
+      "tests": 28
+    }
+  ],
+  "totals": {
+    "tests": 67,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "xml": [
+    {
+      "path": "services/attendance-service/attendance-app/build/test-results/test/TEST-ru.rutcampustrack.attendance.grpc.StudentRequestGrpcMapperTest.xml",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": "2026-09-09T16:04:41",
+      "sha256": "C73A0204AADD73B1337E7C1F8423D671B049C7C5CE7EB946ED7391C9C156BFDB"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/build/test-results/test/TEST-ru.rutcampustrack.attendance.studentrequest.StudentRequestServiceAuthorizationTest.xml",
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": "2026-09-09T16:04:49",
+      "sha256": "FFDE29855693C264328B1271507B943E5D2A16541E1F6EFF8849688363E29FBE"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT.xml",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": "2026-09-09T16:40:11",
+      "sha256": "2CDC7909FAF29BE5EF4B1D5ECE70A6A53635E0C857B0E39CA49441F3E8535661"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/build/test-results/test/TEST-ru.rutcampustrack.mobilebff.contract.StudentRequestDetailJsonTest.xml",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": "2026-09-09T16:42:40",
+      "sha256": "D7FFD8215A46ECA8CCEAA0AF85DD6F424FC7E8F5CBFA496AB1E71E098E6948EF"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/build/test-results/test/TEST-ru.rutcampustrack.mobilebff.contract.StudentRequestOptionsJsonTest.xml",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": "2026-09-09T16:42:40",
+      "sha256": "B5296F0DD3E30801892CFF9BE35641E2EC4F0065D6D0E4D0BCAC8814D3018323"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/build/test-results/test/TEST-ru.rutcampustrack.mobilebff.grpc.MobileAttendanceClientErrorTest.xml",
+      "tests": 23,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": "2026-09-09T16:42:41",
+      "sha256": "C14086A80C6FBF54AF68CC7F0FACDC94CE81BFDEB0BA3A02A831A52E27AD4A31"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/build/test-results/test/TEST-ru.rutcampustrack.mobilebff.student.StudentRequestFacadeOptionsTest.xml",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timestamp": "2026-09-09T16:42:45",
+      "sha256": "DF5653CA237C60B6067A59053ABD1C5B4FA1B32D22D7782F7FE9D0065F37EB0E"
+    }
+  ],
+  "lease": "RELEASED",
+  "caveat": "Focused Gradle unit, serialization and integration tests only; no live HTTP/gRPC runtime claim."
+}

@@ -27,10 +27,13 @@ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,6 +70,9 @@ class MarkingServiceTest {
 
     @Mock
     private RequestContext requestContext;
+
+    @Mock
+    private PairWriteCoordinator pairWriteCoordinator;
 
     private MarkingService markingService;
 
@@ -122,6 +128,7 @@ class MarkingServiceTest {
         markingService = new MarkingService(
                 scheduleGrpcClient, academicGrpcClient, mongoTemplate,
                 eventPublisher, semesterCacheService, requestContext,
+                pairWriteCoordinator, Clock.fixed(Instant.parse("2026-04-01T09:00:00Z"), ZoneOffset.UTC),
                 new SyncTaskExecutor());
         // Default: headman context
         lenient().when(requestContext.isHeadman()).thenReturn(true);

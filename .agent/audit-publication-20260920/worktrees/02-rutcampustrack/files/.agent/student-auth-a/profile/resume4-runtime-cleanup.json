@@ -1,0 +1,20 @@
+{
+  "schema": "rct-runtime-cleanup",
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "runtime": {
+    "host": "127.0.0.1",
+    "port": 18110,
+    "serverPid": 46404,
+    "serverChildPid": 15756,
+    "command": "node .\\serve.mjs"
+  },
+  "cleanup": {
+    "browserTabClosed": true,
+    "viewportOverrideReset": true,
+    "serverProcessStopped": true,
+    "verifiedUtc": "2026-09-08T19:30:33.2379761Z",
+    "pid46404Alive": false,
+    "port18110Free": true,
+    "listeners": []
+  }
+}

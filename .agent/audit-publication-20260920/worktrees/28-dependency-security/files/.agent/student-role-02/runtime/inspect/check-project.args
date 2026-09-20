@@ -1,0 +1,5 @@
+-classpath
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\student-role-02\dependency-security\services\shared\shared-events\build\classes\java\main;C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\student-role-02\dependency-security\services\shared\shared-observability\build\classes\java\main
+-d
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\student-role-02\dependency-security\.agent\student-role-02\runtime\inspect
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\student-role-02\dependency-security\.agent\student-role-02\runtime\inspect\CheckProjectOutput.java

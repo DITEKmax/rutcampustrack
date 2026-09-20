@@ -1,0 +1,5 @@
+start=2026-09-20T17:08:37.6462861+03:00
+command=.\gradlew.bat :services:schedule-service:schedule-app:test --tests *RecurringDateCalculatorTest --continue --no-daemon --no-parallel --max-workers=1 --no-problems-report
+environment=OpenJDK21.0.10;PowerShell7.6.5;login=false;testcontainersReuse=false
+exit=1
+end=2026-09-20T17:09:32.5101548+03:00

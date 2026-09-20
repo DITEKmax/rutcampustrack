@@ -1,0 +1,7 @@
+{
+  "StartedUtc": "2026-09-10T20:26:39.5997284Z",
+  "EndedUtc": "2026-09-10T20:27:44.7090736Z",
+  "ExitCode": 1,
+  "Log": ".agent\\student-auth-a\\admission-producer\\review-correction-01\\runtime-final\\command-03-escalated-postgres-it.log",
+  "PermissionEvidence": "sandbox javac AccessDenied on existing Gradle dependency-cache jar"
+}

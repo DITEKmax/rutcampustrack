@@ -1,0 +1,48 @@
+{
+  "schema": "admission-timestamp-fixture-correction-v1",
+  "status": "SOURCE_READY",
+  "release": "RELEASE",
+  "risk": "S3",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "target": {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+    "beforeSha256": "FA8FB0AA20074D494CCCC5B89D014275C3EB9582C723E3DE086EF665F5B162F9",
+    "beforeBytes": 27566,
+    "afterSha256": "FB13C6300FB7EDB776135BCE4C3FE7276E8FCB220411C75B277A9EAEB6621389",
+    "afterBytes": 28120,
+    "byteDelta": 554,
+    "preconditionExitCode": 0,
+    "postHashExitCode": 0,
+    "headMembershipExitCode": 1,
+    "headMembershipNote": "Target was already an untracked dirty file at HEAD; exact pre-edit hash was checked before editing."
+  },
+  "sourceLocations": {
+    "helperCallSites": [139, 168, 279, 284],
+    "updateGrantStatus": [460, 478],
+    "grantLookup": [480, 485],
+    "grantIdDelegate": [487, 488],
+    "safeTimestamp": 462,
+    "booleanInvariantSql": [469, 473]
+  },
+  "immutableFailure": {
+    "path": "../runtime-final/failure-05-postgres-it.md",
+    "junitXmlSha256": "E6942C019856054243E3CF1064DD5BDC9AD17AAD514A62CD5A6A70D4B1FF64C2",
+    "junitXmlBytes": 12590,
+    "exitCode": 1,
+    "tests": 6,
+    "passed": 5,
+    "failed": 1,
+    "failure": "Suspended HTTP fixture expected 403 and got 503 due to updated_at before created_at."
+  },
+  "checks": {
+    "helperCallCount": {"command": "rg -c '^\\s*updateGrantStatus\\('", "observed": 4, "exitCode": 0},
+    "singleGrantWriter": {"command": "rg -c 'UPDATE user_role_grants SET status = \\?, updated_at = \\? WHERE id = \\? AND user_id = \\?'", "observed": 1, "exitCode": 0},
+    "timestampSource": {"command": "rg -c 'grant\\.createdAt\\(\\)\\.plusSeconds\\(1\\)'", "observed": 1, "exitCode": 0},
+    "booleanInvariant": {"command": "rg -c 'SELECT updated_at >= created_at'", "observed": 1, "exitCode": 0},
+    "staleGrantTimestampAbsence": {"command": "rg -c 'Timestamp\\.from\\(now\\.plusSeconds\\(1\\)\\)'", "observed": 0, "exitCode": 1, "expectedAbsence": true},
+    "scopedDiffCheck": {"command": "git diff --check -- <target>", "exitCode": 0},
+    "whitespaceAbsence": {"command": "rg -n '[ \\t]+$' <target>", "exitCode": 1, "expectedAbsence": true}
+  },
+  "runtime": "NOT RUN / root-owned by explicit no-Gradle/no-Docker/no-runtime instruction",
+  "ownership": "Only the target source and this evidence directory belong to this leaf; all foreign dirty state was preserved."
+}

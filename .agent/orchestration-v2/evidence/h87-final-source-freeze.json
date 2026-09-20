@@ -1,0 +1,26 @@
+{
+  "runtime": "H87",
+  "runtimeStatus": "RUNNING",
+  "files": [
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+      "sha256": "033236B56EBFB8193A86D67B033F8CF23F5CC18F4132A2FAC5F525B756FD540C"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\probe.mjs",
+      "sha256": "52A2834F17F0840A815BE221A6579D075BCF35A5AC338EC3DADFB21430BE1120"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\r8-mongo-projection-check.ps1",
+      "sha256": "46AB5ECC5BAC08B1293B0EDCF23BE627DAB486E9929C9B9B58B30A56E9D34C23"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-probe-diagnosis\\h68-probe-check.ps1",
+      "sha256": "8C153535CE62EFEF1C34B2434682CA27873035DFDAF7F444168C5890F7C29B44"
+    },
+    {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h82-actuator-counter-diagnosis\\h82-counter-check.ps1",
+      "sha256": "2E4AC7B8154B6084A98FCB6964CBAD5F62A678389EACE09E3B0BC02E32784CD2"
+    }
+  ]
+}

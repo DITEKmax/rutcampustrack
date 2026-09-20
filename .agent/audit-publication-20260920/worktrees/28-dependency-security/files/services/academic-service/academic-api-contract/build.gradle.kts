@@ -1,0 +1,29 @@
+plugins {
+    `java-library`
+}
+
+group = "ru.rutcampustrack"
+version = "0.1.0"
+
+dependencies {
+    // M11 G0.3: единый источник ErrorResponse/FieldError для всех контрактов
+    api(project(":services:shared:shared-web-api"))
+
+    // Validation API (без Spring — чистый контракт)
+    api("jakarta.validation:jakarta.validation-api:3.1.0")
+
+    // Spring Web annotations (для @RequestMapping, @GetMapping и т.д.)
+    api("org.springframework:spring-web:6.2.19")
+
+    // Spring Data Commons (для Pageable, PagedResourcesAssembler)
+    api("org.springframework.data:spring-data-commons:3.5.13")
+
+    // Spring HATEOAS (для RepresentationModel, EntityModel)
+    api("org.springframework.hateoas:spring-hateoas:2.5.3")
+
+    // OpenAPI / Swagger annotations
+    api("io.swagger.core.v3:swagger-annotations-jakarta:2.2.22")
+
+    // Jackson annotations (для @JsonInclude и т.д.)
+    api("com.fasterxml.jackson.core:jackson-annotations:2.21")
+}

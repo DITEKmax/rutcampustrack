@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-09-20T09:01:13" hostname="DITEK-PK" time="0.546">
+  <properties/>
+  <testcase name="manifest" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.318"/>
+  <testcase name="floor" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.008"/>
+  <testcase name="asset" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.01"/>
+  <testcase name="invalidReturnedContentFailsBeforeFirstChunk()" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.013"/>
+  <testcase name="manifest" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.014"/>
+  <testcase name="floor" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.005"/>
+  <testcase name="asset" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.007"/>
+  <testcase name="assetChunksUse64KiBBoundAndMonotonicOffsets()" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.036"/>
+  <testcase name="manifest" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.007"/>
+  <testcase name="floor" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.006"/>
+  <testcase name="asset" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.007"/>
+  <testcase name="cancelledServerStreamStopsBeforeCompletion()" classname="ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest" time="0.092"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

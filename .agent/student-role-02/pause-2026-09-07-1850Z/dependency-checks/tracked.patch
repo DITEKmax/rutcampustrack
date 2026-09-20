@@ -1,0 +1,4214 @@
+diff --git a/build.gradle.kts b/build.gradle.kts
+index c5545540..bbe29ee9 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -1,8 +1,9 @@
++import java.io.File
+ import java.time.OffsetDateTime
+ 
+ plugins {
+     java
+-    id("org.springframework.boot") version "3.4.1" apply false
++    id("org.springframework.boot") version "3.5.16" apply false
+     id("io.spring.dependency-management") version "1.1.7" apply false
+ }
+ 
+@@ -19,6 +20,15 @@ allprojects {
+ 
+ subprojects {
+     apply(plugin = "java")
++
++    // Dependency security repair — keep patch overrides in one root policy.
++    // Spring Boot's dependency-management plugin consumes these properties
++    // for every Boot application and shared module that imports its BOM.
++    extra["netty.version"] = "4.1.137.Final"
++    extra["tomcat.version"] = "10.1.59"
++    extra["rabbit-amqp-client.version"] = "5.33.1"
++    extra["postgresql.version"] = "42.7.12"
++
+     // M08 Группа 10 (QD2) — JaCoCo per-module 60% line gate.
+     // Применяется только к Java-подпроектам. Frontend/Python coverage
+     // — через vitest + pytest-cov (см. frontends/*/vitest.config.ts и
+@@ -102,15 +112,49 @@ subprojects {
+     // "cannot be executed in the current context" при tasks.withType {}.
+     val jacocoExcludes = listOf(
+         "**/generated/**",
+-        "**/grpc/proto/**",
+-        "ru/rutcampustrack/**/grpc/**/*OuterClass*.class",
+-        "ru/rutcampustrack/**/grpc/**/*Grpc*.class",
+         "ru/rutcampustrack/**/*Application.class",
+         "ru/rutcampustrack/**/*Dto.class",
+         "ru/rutcampustrack/**/dto/**",
+         "ru/rutcampustrack/**/config/**",
+     )
+ 
++    // Generated protobuf/gRPC classes are identified from the Java source
++    // roots produced by the protobuf plugin. This keeps handwritten gRPC
++    // implementations (for example DocumentRendererGrpcServiceImpl) in the
++    // report while excluding their generated outer/nested classes.
++    val generatedProtoSourceRoots = listOf(
++        layout.buildDirectory.dir("generated/source/proto/main/java"),
++        layout.buildDirectory.dir("generated/source/proto/main/grpc"),
++    )
++
++    fun generatedProtoClassExcludes(): List<String> = generatedProtoSourceRoots.flatMap { rootProvider ->
++        val root = rootProvider.get().asFile
++        if (!root.isDirectory) {
++            return@flatMap emptyList()
++        }
++        root.walkTopDown()
++            .filter { it.isFile && it.extension == "java" }
++            .flatMap { sourceFile ->
++                val classPath = sourceFile.relativeTo(root)
++                    .invariantSeparatorsPath
++                    .removeSuffix(".java")
++                sequenceOf(
++                    "$classPath.class",
++                    classPath + '$' + "*.class",
++                )
++            }
++            .toList()
++    }
++
++    fun filteredJacocoClassDirectories(original: Set<File>) = project.files(project.provider {
++        val generatedExcludes = generatedProtoClassExcludes()
++        original.map { directory ->
++            project.fileTree(directory) {
++                exclude(jacocoExcludes + generatedExcludes)
++            }
++        }
++    })
++
+     afterEvaluate {
+         // jacocoTestReport / jacocoTestCoverageVerification создаются JaCoCo-плагином
+         // при первой же evaluation. tasks.findByName вместо named — не все модули
+@@ -128,11 +172,7 @@ subprojects {
+                     html.required.set(true)
+                     csv.required.set(false)
+                 }
+-                classDirectories.setFrom(
+-                    classDirectories.files.map {
+-                        fileTree(it) { exclude(jacocoExcludes) }
+-                    }
+-                )
++                classDirectories.setFrom(filteredJacocoClassDirectories(classDirectories.files))
+             }
+         }
+ 
+@@ -142,11 +182,7 @@ subprojects {
+                 executionData.setFrom(
+                     fileTree(layout.buildDirectory.dir("jacoco")).include("*.exec")
+                 )
+-                classDirectories.setFrom(
+-                    classDirectories.files.map {
+-                        fileTree(it) { exclude(jacocoExcludes) }
+-                    }
+-                )
++                classDirectories.setFrom(filteredJacocoClassDirectories(classDirectories.files))
+                 // M08 G12 — ratchet baseline (OWNER-ANSWERS QD2 + D3).
+                 // Global target: 60% LINE per-module. Baseline-модули ниже
+                 // 60% получают module-level override (floor = current - 2%
+diff --git a/docs/openapi/attendance.json b/docs/openapi/attendance.json
+index 84de7700..00743f7d 100644
+--- a/docs/openapi/attendance.json
++++ b/docs/openapi/attendance.json
+@@ -2439,9 +2439,7 @@
+           },
+           "extras" : {
+             "type" : "object",
+-            "additionalProperties" : {
+-              "type" : "object"
+-            },
++            "additionalProperties" : { },
+             "description" : "Дополнительные данные для клиента (счётчики каскадного удаления, retry-after, и т.п.)",
+             "example" : {
+               "scheduleItemsCount" : 3
+@@ -2459,7 +2457,6 @@
+             "example" : "displayName"
+           },
+           "rejectedValue" : {
+-            "type" : "object",
+             "description" : "Отклонённое значение"
+           },
+           "message" : {
+diff --git a/docs/openapi/auth.json b/docs/openapi/auth.json
+index 1f78b376..73cdc606 100644
+--- a/docs/openapi/auth.json
++++ b/docs/openapi/auth.json
+@@ -995,7 +995,8 @@
+             "type" : "string",
+             "minLength" : 1
+           }
+-        }
++        },
++        "required" : [ "initData" ]
+       },
+       "TokenResponse" : {
+         "type" : "object",
+@@ -1025,7 +1026,7 @@
+             "minLength" : 6
+           }
+         },
+-        "required" : [ "telegramId" ]
++        "required" : [ "code", "telegramId" ]
+       },
+       "OtpVerifyByCodeRequest" : {
+         "type" : "object",
+@@ -1035,7 +1036,8 @@
+             "maxLength" : 6,
+             "minLength" : 6
+           }
+-        }
++        },
++        "required" : [ "code" ]
+       },
+       "OtpRequest" : {
+         "type" : "object",
+@@ -1054,7 +1056,8 @@
+             "type" : "string",
+             "minLength" : 1
+           }
+-        }
++        },
++        "required" : [ "refreshToken" ]
+       },
+       "LoginRequest" : {
+         "type" : "object",
+@@ -1067,7 +1070,8 @@
+             "type" : "string",
+             "minLength" : 1
+           }
+-        }
++        },
++        "required" : [ "login", "password" ]
+       },
+       "ChangePasswordRequest" : {
+         "type" : "object",
+@@ -1082,7 +1086,8 @@
+             "minLength" : 8,
+             "pattern" : "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$"
+           }
+-        }
++        },
++        "required" : [ "currentPassword", "newPassword" ]
+       },
+       "PublicKeyResponse" : {
+         "type" : "object",
+diff --git a/docs/openapi/mobile-bff.json b/docs/openapi/mobile-bff.json
+index 45a974c2..37bf6e9e 100644
+--- a/docs/openapi/mobile-bff.json
++++ b/docs/openapi/mobile-bff.json
+@@ -1,1203 +1,1201 @@
+-{
+-  "openapi" : "3.0.1",
+-  "info" : {
+-    "title" : "RutCampusTrack Student Mobile BFF",
+-    "description" : "Canonical PWA/TMA student contract. Domain handlers land after contract freeze.",
+-    "version" : "JS-STUDENT-01-r1"
+-  },
+-  "tags" : [ {
+-    "name" : "Student mobile",
+-    "description" : "PWA/TMA student read model and geo check-in"
+-  } ],
+-  "paths" : {
+-    "/api/v1/student/homework/{id}/completion" : {
+-      "put" : {
+-        "tags" : [ "Student mobile" ],
+-        "summary" : "Set homework completion state",
+-        "description" : "Desired-state mutation for the authenticated student; repeated requests are safe.",
+-        "operationId" : "setHomeworkCompletion",
+-        "parameters" : [ {
+-          "name" : "id",
+-          "in" : "path",
+-          "required" : true,
+-          "schema" : {
+-            "pattern" : "^[1-9][0-9]*$",
+-            "type" : "string"
+-          }
+-        } ],
+-        "requestBody" : {
+-          "content" : {
+-            "application/json" : {
+-              "schema" : {
+-                "$ref" : "#/components/schemas/StudentHomeworkCompletionCommand"
+-              }
+-            }
+-          },
+-          "required" : true
+-        },
+-        "responses" : {
+-          "200" : {
+-            "description" : "Completion state",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentHomeworkCompletion"
+-                }
+-              }
+-            }
+-          },
+-          "400" : {
+-            "description" : "Invalid request",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "401" : {
+-            "description" : "Invalid or expired session",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "403" : {
+-            "description" : "Wrong role, group or semester scope",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "404" : {
+-            "description" : "Homework not found",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "503" : {
+-            "description" : "Academic dependency unavailable",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          }
+-        },
+-        "security" : [ {
+-          "bearerAuth" : [ ]
+-        } ]
+-      }
+-    },
+-    "/api/v1/student/lessons/{lessonId}/checkin" : {
+-      "post" : {
+-        "tags" : [ "Student mobile" ],
+-        "summary" : "Attempt student geo check-in",
+-        "description" : "The attendance domain owns the window, geofence, cooldown, idempotency and automatic request.",
+-        "operationId" : "checkin",
+-        "parameters" : [ {
+-          "name" : "lessonId",
+-          "in" : "path",
+-          "required" : true,
+-          "schema" : {
+-            "pattern" : "^[1-9][0-9]*$",
+-            "type" : "string"
+-          }
+-        }, {
+-          "name" : "Idempotency-Key",
+-          "in" : "header",
+-          "description" : "Opaque 16-128 ASCII character command key",
+-          "required" : true,
+-          "schema" : {
+-            "maxLength" : 128,
+-            "minLength" : 16,
+-            "pattern" : "^[\\x21-\\x7E]+$",
+-            "type" : "string"
+-          }
+-        } ],
+-        "requestBody" : {
+-          "content" : {
+-            "application/json" : {
+-              "schema" : {
+-                "$ref" : "#/components/schemas/StudentCheckinCommand"
+-              }
+-            }
+-          },
+-          "required" : true
+-        },
+-        "responses" : {
+-          "200" : {
+-            "description" : "PRESENT or atomically persisted PENDING_CONFIRMATION",
+-            "content" : {
+-              "application/json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentCheckinAck"
+-                }
+-              }
+-            }
+-          },
+-          "400" : {
+-            "description" : "Invalid input or idempotency key",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "401" : {
+-            "description" : "Invalid or expired session",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "403" : {
+-            "description" : "Wrong role or group scope",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "404" : {
+-            "description" : "Lesson not found",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "409" : {
+-            "description" : "Manual absence, ineligible state or idempotency payload mismatch",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "429" : {
+-            "description" : "Durable 300-second pair cooldown",
+-            "headers" : {
+-              "Retry-After" : {
+-                "description" : "Whole seconds until retry",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "503" : {
+-            "description" : "Mandatory dependency unavailable",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          }
+-        },
+-        "security" : [ {
+-          "bearerAuth" : [ ]
+-        } ]
+-      }
+-    },
+-    "/api/v1/student/today" : {
+-      "get" : {
+-        "tags" : [ "Student mobile" ],
+-        "summary" : "Today projection with current or nearest lesson",
+-        "operationId" : "getToday",
+-        "responses" : {
+-          "200" : {
+-            "description" : "Live Today projection",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentToday"
+-                }
+-              }
+-            }
+-          },
+-          "401" : {
+-            "description" : "Invalid or expired session",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "403" : {
+-            "description" : "Wrong role or group scope",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "503" : {
+-            "description" : "Mandatory dependency unavailable; eligibility fails closed",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          }
+-        },
+-        "security" : [ {
+-          "bearerAuth" : [ ]
+-        } ]
+-      }
+-    },
+-    "/api/v1/student/session" : {
+-      "get" : {
+-        "tags" : [ "Student mobile" ],
+-        "summary" : "Current student session projection",
+-        "operationId" : "getSession",
+-        "responses" : {
+-          "200" : {
+-            "description" : "Session projection",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentSession"
+-                }
+-              }
+-            }
+-          },
+-          "401" : {
+-            "description" : "Invalid or expired session",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "403" : {
+-            "description" : "Active role is not STUDENT",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "503" : {
+-            "description" : "Mandatory dependency unavailable",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          }
+-        },
+-        "security" : [ {
+-          "bearerAuth" : [ ]
+-        } ]
+-      }
+-    },
+-    "/api/v1/student/schedule" : {
+-      "get" : {
+-        "tags" : [ "Student mobile" ],
+-        "summary" : "Server-scoped semester schedule for PWA offline reads",
+-        "operationId" : "getSchedule",
+-        "parameters" : [ {
+-          "name" : "semesterId",
+-          "in" : "query",
+-          "required" : true,
+-          "schema" : {
+-            "pattern" : "^[1-9][0-9]*$",
+-            "type" : "string"
+-          }
+-        }, {
+-          "name" : "If-None-Match",
+-          "in" : "header",
+-          "required" : false,
+-          "schema" : {
+-            "type" : "string"
+-          }
+-        } ],
+-        "responses" : {
+-          "200" : {
+-            "description" : "Materialized lessons in one authorized semester",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "private, no-cache",
+-                "style" : "simple"
+-              },
+-              "ETag" : {
+-                "description" : "Authorized stable representation validator",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentSemesterSchedule"
+-                }
+-              }
+-            }
+-          },
+-          "304" : {
+-            "description" : "Authorized representation unchanged",
+-            "content" : {
+-              "*/*" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentSemesterSchedule"
+-                }
+-              }
+-            }
+-          },
+-          "401" : {
+-            "description" : "Invalid or expired session",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "403" : {
+-            "description" : "Semester is outside the student's group scope",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "503" : {
+-            "description" : "Mandatory dependency unavailable",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          }
+-        },
+-        "security" : [ {
+-          "bearerAuth" : [ ]
+-        } ]
+-      }
+-    },
+-    "/api/v1/student/homework" : {
+-      "get" : {
+-        "tags" : [ "Student mobile" ],
+-        "summary" : "Student homework feed",
+-        "description" : "Active-semester homework for the authenticated student's own group. Missing bounds default to Moscow today through semester end.",
+-        "operationId" : "getHomework",
+-        "parameters" : [ {
+-          "name" : "from",
+-          "in" : "query",
+-          "required" : false,
+-          "schema" : {
+-            "pattern" : "^\\d{4}-\\d{2}-\\d{2}$",
+-            "type" : "string"
+-          }
+-        }, {
+-          "name" : "to",
+-          "in" : "query",
+-          "required" : false,
+-          "schema" : {
+-            "pattern" : "^\\d{4}-\\d{2}-\\d{2}$",
+-            "type" : "string"
+-          }
+-        } ],
+-        "responses" : {
+-          "200" : {
+-            "description" : "Homework feed",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentHomework"
+-                }
+-              }
+-            }
+-          },
+-          "400" : {
+-            "description" : "Invalid or out-of-semester date range",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "401" : {
+-            "description" : "Invalid or expired session",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "403" : {
+-            "description" : "Wrong role or group scope",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "404" : {
+-            "description" : "Homework scope was not found",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "503" : {
+-            "description" : "Academic dependency unavailable",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          }
+-        },
+-        "security" : [ {
+-          "bearerAuth" : [ ]
+-        } ]
+-      }
+-    }
+-  },
+-  "components" : {
+-    "schemas" : {
+-      "StudentHomeworkCompletionCommand" : {
+-        "required" : [ "completed" ],
+-        "type" : "object",
+-        "properties" : {
+-          "completed" : {
+-            "type" : "boolean"
+-          }
+-        }
+-      },
+-      "StudentHomeworkCompletion" : {
+-        "required" : [ "completed", "completedAt", "id" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "completed" : {
+-            "type" : "boolean"
+-          },
+-          "completedAt" : {
+-            "type" : "string",
+-            "format" : "date-time",
+-            "nullable" : true
+-          }
+-        }
+-      },
+-      "MobileProblemDetails" : {
+-        "required" : [ "code", "detail", "instance", "status", "timestamp", "title", "type" ],
+-        "type" : "object",
+-        "properties" : {
+-          "status" : {
+-            "type" : "integer",
+-            "format" : "int32"
+-          },
+-          "type" : {
+-            "type" : "string",
+-            "format" : "uri"
+-          },
+-          "title" : {
+-            "type" : "string"
+-          },
+-          "detail" : {
+-            "type" : "string"
+-          },
+-          "instance" : {
+-            "type" : "string",
+-            "format" : "uri"
+-          },
+-          "timestamp" : {
+-            "type" : "string",
+-            "format" : "date-time"
+-          },
+-          "traceId" : {
+-            "type" : "string",
+-            "nullable" : true
+-          },
+-          "code" : {
+-            "type" : "string",
+-            "enum" : [ "INVALID_REQUEST", "INVALID_IDEMPOTENCY_KEY", "INVALID_SESSION", "WRONG_ROLE", "OUT_OF_SCOPE", "HOMEWORK_NOT_FOUND", "LESSON_NOT_FOUND", "CHECKIN_COOLDOWN", "MANUAL_ABSENCE_REQUIRES_APPEAL", "IDEMPOTENCY_PAYLOAD_MISMATCH", "CHECKIN_NOT_ELIGIBLE", "DEPENDENCY_UNAVAILABLE" ]
+-          },
+-          "retryAt" : {
+-            "type" : "string",
+-            "format" : "date-time",
+-            "nullable" : true
+-          },
+-          "extras" : {
+-            "type" : "object",
+-            "additionalProperties" : {
+-              "type" : "string",
+-              "nullable" : true
+-            },
+-            "nullable" : true
+-          }
+-        },
+-        "description" : "RFC 9457 Problem Details with a stable machine code"
+-      },
+-      "CoordinatesGeo" : {
+-        "required" : [ "kind", "latitude", "longitude" ],
+-        "type" : "object",
+-        "properties" : {
+-          "kind" : {
+-            "type" : "string",
+-            "enum" : [ "COORDINATES" ]
+-          },
+-          "latitude" : {
+-            "maximum" : 90.0,
+-            "exclusiveMaximum" : false,
+-            "minimum" : -90.0,
+-            "exclusiveMinimum" : false,
+-            "type" : "number",
+-            "format" : "double"
+-          },
+-          "longitude" : {
+-            "maximum" : 180.0,
+-            "exclusiveMaximum" : false,
+-            "minimum" : -180.0,
+-            "exclusiveMinimum" : false,
+-            "type" : "number",
+-            "format" : "double"
+-          }
+-        }
+-      },
+-      "GeoInput" : {
+-        "type" : "object",
+-        "discriminator" : {
+-          "propertyName" : "kind",
+-          "mapping" : {
+-            "COORDINATES" : "#/components/schemas/CoordinatesGeo",
+-            "UNAVAILABLE" : "#/components/schemas/UnavailableGeo"
+-          }
+-        },
+-        "oneOf" : [ {
+-          "$ref" : "#/components/schemas/CoordinatesGeo"
+-        }, {
+-          "$ref" : "#/components/schemas/UnavailableGeo"
+-        } ]
+-      },
+-      "StudentCheckinCommand" : {
+-        "required" : [ "geo" ],
+-        "type" : "object",
+-        "properties" : {
+-          "geo" : {
+-            "$ref" : "#/components/schemas/GeoInput"
+-          }
+-        }
+-      },
+-      "UnavailableGeo" : {
+-        "required" : [ "kind", "reason" ],
+-        "type" : "object",
+-        "properties" : {
+-          "kind" : {
+-            "type" : "string",
+-            "enum" : [ "UNAVAILABLE" ]
+-          },
+-          "reason" : {
+-            "type" : "string",
+-            "enum" : [ "PERMISSION_DENIED", "POSITION_UNAVAILABLE", "TIMEOUT" ]
+-          }
+-        }
+-      },
+-      "Attendance" : {
+-        "required" : [ "markedAt", "source", "status" ],
+-        "type" : "object",
+-        "properties" : {
+-          "status" : {
+-            "type" : "string",
+-            "enum" : [ "PRESENT", "ABSENT", "EXCUSED" ]
+-          },
+-          "source" : {
+-            "type" : "string",
+-            "enum" : [ "STUDENT_GEO", "LATE_CHECKIN", "HEADMAN", "TEACHER", "SYSTEM" ]
+-          },
+-          "markedAt" : {
+-            "type" : "string",
+-            "format" : "date-time",
+-            "nullable" : true
+-          }
+-        },
+-        "nullable" : true
+-      },
+-      "AutomaticCheckinRequest" : {
+-        "required" : [ "id", "origin", "resolutionReason", "status" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "status" : {
+-            "type" : "string",
+-            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
+-          },
+-          "origin" : {
+-            "type" : "string",
+-            "enum" : [ "AUTO_GEO_FAILURE" ]
+-          },
+-          "resolutionReason" : {
+-            "type" : "string",
+-            "nullable" : true,
+-            "enum" : [ "GEO_CONFIRMED", "HEADMAN_APPROVED", "HEADMAN_REJECTED", "STUDENT_CANCELLED" ]
+-          }
+-        },
+-        "nullable" : true
+-      },
+-      "Link" : {
+-        "required" : [ "href" ],
+-        "type" : "object",
+-        "properties" : {
+-          "href" : {
+-            "type" : "string",
+-            "format" : "uri"
+-          }
+-        }
+-      },
+-      "StudentCheckinAck" : {
+-        "required" : [ "_links", "attendance", "lessonId", "outcome", "request", "retryAt", "serverNow" ],
+-        "type" : "object",
+-        "properties" : {
+-          "outcome" : {
+-            "type" : "string",
+-            "enum" : [ "PRESENT", "PENDING_CONFIRMATION" ]
+-          },
+-          "lessonId" : {
+-            "type" : "string"
+-          },
+-          "attendance" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/Attendance"
+-            } ]
+-          },
+-          "request" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/AutomaticCheckinRequest"
+-            } ]
+-          },
+-          "retryAt" : {
+-            "type" : "string",
+-            "format" : "date-time",
+-            "nullable" : true
+-          },
+-          "serverNow" : {
+-            "type" : "string",
+-            "format" : "date-time"
+-          },
+-          "_links" : {
+-            "type" : "object",
+-            "additionalProperties" : {
+-              "$ref" : "#/components/schemas/Link"
+-            }
+-          }
+-        }
+-      },
+-      "CheckinEligibility" : {
+-        "required" : [ "allowed", "reason", "retryAt" ],
+-        "type" : "object",
+-        "properties" : {
+-          "allowed" : {
+-            "type" : "boolean"
+-          },
+-          "reason" : {
+-            "type" : "string",
+-            "enum" : [ "ELIGIBLE", "ALREADY_PRESENT", "LESSON_CANCELLED", "TOO_EARLY", "WINDOW_CLOSED", "GEO_BLOCKED", "PENDING_CONFIRMATION", "COOLDOWN", "HEADMAN_ABSENT_REQUIRES_APPEAL", "HEADMAN_USES_JOURNAL", "DEPENDENCY_UNAVAILABLE" ]
+-          },
+-          "retryAt" : {
+-            "type" : "string",
+-            "format" : "date-time",
+-            "nullable" : true
+-          }
+-        }
+-      },
+-      "LessonSchedule" : {
+-        "required" : [ "date", "endsAt", "id", "lessonNumber", "room", "startsAt", "status", "subject" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "date" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "lessonNumber" : {
+-            "type" : "integer",
+-            "format" : "int32"
+-          },
+-          "startsAt" : {
+-            "type" : "string",
+-            "example" : "14:30:00"
+-          },
+-          "endsAt" : {
+-            "type" : "string",
+-            "example" : "14:30:00"
+-          },
+-          "status" : {
+-            "type" : "string",
+-            "enum" : [ "PLANNED", "ACTIVE", "CLOSED", "CANCELLED" ]
+-          },
+-          "subject" : {
+-            "$ref" : "#/components/schemas/Subject"
+-          },
+-          "room" : {
+-            "$ref" : "#/components/schemas/Room"
+-          }
+-        }
+-      },
+-      "Room" : {
+-        "required" : [ "changeState", "current", "previous" ],
+-        "type" : "object",
+-        "properties" : {
+-          "current" : {
+-            "type" : "string",
+-            "nullable" : true
+-          },
+-          "previous" : {
+-            "type" : "string",
+-            "nullable" : true
+-          },
+-          "changeState" : {
+-            "type" : "string",
+-            "enum" : [ "UNCHANGED", "CHANGED", "UNKNOWN" ]
+-          }
+-        }
+-      },
+-      "StudentToday" : {
+-        "required" : [ "_links", "date", "lessons", "serverNow", "timeZone" ],
+-        "type" : "object",
+-        "properties" : {
+-          "date" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "timeZone" : {
+-            "type" : "string"
+-          },
+-          "serverNow" : {
+-            "type" : "string",
+-            "format" : "date-time"
+-          },
+-          "lessons" : {
+-            "type" : "array",
+-            "items" : {
+-              "$ref" : "#/components/schemas/TodayLesson"
+-            }
+-          },
+-          "_links" : {
+-            "type" : "object",
+-            "additionalProperties" : {
+-              "$ref" : "#/components/schemas/Link"
+-            }
+-          }
+-        }
+-      },
+-      "Subject" : {
+-        "required" : [ "id", "name", "type" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "name" : {
+-            "type" : "string"
+-          },
+-          "type" : {
+-            "type" : "string",
+-            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+-          }
+-        }
+-      },
+-      "TodayLesson" : {
+-        "required" : [ "attendance", "checkinEligibility", "request", "schedule" ],
+-        "type" : "object",
+-        "properties" : {
+-          "schedule" : {
+-            "$ref" : "#/components/schemas/LessonSchedule"
+-          },
+-          "attendance" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/Attendance"
+-            } ]
+-          },
+-          "checkinEligibility" : {
+-            "$ref" : "#/components/schemas/CheckinEligibility"
+-          },
+-          "request" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/AutomaticCheckinRequest"
+-            } ]
+-          }
+-        }
+-      },
+-      "GroupSummary" : {
+-        "required" : [ "id", "name" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "name" : {
+-            "type" : "string"
+-          }
+-        },
+-        "nullable" : true
+-      },
+-      "SemesterSummary" : {
+-        "required" : [ "endsOn", "id", "name", "startsOn" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "name" : {
+-            "type" : "string"
+-          },
+-          "startsOn" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "endsOn" : {
+-            "type" : "string",
+-            "format" : "date"
+-          }
+-        }
+-      },
+-      "StudentSession" : {
+-        "required" : [ "_links", "activeRole", "capabilities", "group", "semester", "serverNow", "user" ],
+-        "type" : "object",
+-        "properties" : {
+-          "user" : {
+-            "$ref" : "#/components/schemas/StudentUser"
+-          },
+-          "activeRole" : {
+-            "type" : "string",
+-            "enum" : [ "STUDENT" ]
+-          },
+-          "group" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/GroupSummary"
+-            } ]
+-          },
+-          "semester" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/SemesterSummary"
+-            } ]
+-          },
+-          "capabilities" : {
+-            "type" : "array",
+-            "items" : {
+-              "type" : "string",
+-              "enum" : [ "TODAY", "GEO_CHECKIN", "OFFLINE_SEMESTER_SCHEDULE" ]
+-            }
+-          },
+-          "serverNow" : {
+-            "type" : "string",
+-            "format" : "date-time"
+-          },
+-          "_links" : {
+-            "type" : "object",
+-            "additionalProperties" : {
+-              "$ref" : "#/components/schemas/Link"
+-            }
+-          }
+-        }
+-      },
+-      "StudentUser" : {
+-        "required" : [ "displayName", "id" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "displayName" : {
+-            "type" : "string"
+-          }
+-        }
+-      },
+-      "StudentSemesterSchedule" : {
+-        "required" : [ "_links", "dateFrom", "dateTo", "lessons", "semester", "updatedAt" ],
+-        "type" : "object",
+-        "properties" : {
+-          "semester" : {
+-            "$ref" : "#/components/schemas/SemesterSummary"
+-          },
+-          "dateFrom" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "dateTo" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "updatedAt" : {
+-            "type" : "string",
+-            "format" : "date-time"
+-          },
+-          "lessons" : {
+-            "type" : "array",
+-            "items" : {
+-              "$ref" : "#/components/schemas/LessonSchedule"
+-            }
+-          },
+-          "_links" : {
+-            "type" : "object",
+-            "additionalProperties" : {
+-              "$ref" : "#/components/schemas/Link"
+-            }
+-          }
+-        }
+-      },
+-      "StudentHomework" : {
+-        "required" : [ "from", "items", "semester", "serverNow", "to" ],
+-        "type" : "object",
+-        "properties" : {
+-          "semester" : {
+-            "$ref" : "#/components/schemas/StudentHomeworkSemester"
+-          },
+-          "from" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "to" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "serverNow" : {
+-            "type" : "string",
+-            "format" : "date-time"
+-          },
+-          "items" : {
+-            "type" : "array",
+-            "items" : {
+-              "$ref" : "#/components/schemas/StudentHomeworkItem"
+-            }
+-          }
+-        }
+-      },
+-      "StudentHomeworkItem" : {
+-        "required" : [ "completed", "completedAt", "description", "id", "lessonDate", "lessonNumber", "link", "subject", "title" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "subject" : {
+-            "$ref" : "#/components/schemas/StudentHomeworkSubject"
+-          },
+-          "title" : {
+-            "type" : "string"
+-          },
+-          "description" : {
+-            "type" : "string"
+-          },
+-          "link" : {
+-            "type" : "string",
+-            "nullable" : true
+-          },
+-          "lessonDate" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "lessonNumber" : {
+-            "type" : "integer",
+-            "format" : "int32"
+-          },
+-          "completed" : {
+-            "type" : "boolean"
+-          },
+-          "completedAt" : {
+-            "type" : "string",
+-            "format" : "date-time",
+-            "nullable" : true
+-          }
+-        }
+-      },
+-      "StudentHomeworkSemester" : {
+-        "required" : [ "dateFrom", "dateTo", "id", "name" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "name" : {
+-            "type" : "string"
+-          },
+-          "dateFrom" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "dateTo" : {
+-            "type" : "string",
+-            "format" : "date"
+-          }
+-        }
+-      },
+-      "StudentHomeworkSubject" : {
+-        "required" : [ "id", "name" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "name" : {
+-            "type" : "string"
+-          }
+-        }
+-      }
+-    },
+-    "securitySchemes" : {
+-      "bearerAuth" : {
+-        "type" : "http",
+-        "description" : "Validated access JWT; client X-User-* headers are never identity",
+-        "scheme" : "bearer",
+-        "bearerFormat" : "JWT"
+-      }
+-    }
+-  }
++{
++  "openapi" : "3.0.1",
++  "info" : {
++    "title" : "RutCampusTrack Student Mobile BFF",
++    "description" : "Canonical PWA/TMA student contract. Domain handlers land after contract freeze.",
++    "version" : "JS-STUDENT-01-r1"
++  },
++  "tags" : [ {
++    "name" : "Student mobile",
++    "description" : "PWA/TMA student read model and geo check-in"
++  } ],
++  "paths" : {
++    "/api/v1/student/homework/{id}/completion" : {
++      "put" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Set homework completion state",
++        "description" : "Desired-state mutation for the authenticated student; repeated requests are safe.",
++        "operationId" : "setHomeworkCompletion",
++        "parameters" : [ {
++          "name" : "id",
++          "in" : "path",
++          "required" : true,
++          "schema" : {
++            "pattern" : "^[1-9][0-9]*$",
++            "type" : "string"
++          }
++        } ],
++        "requestBody" : {
++          "content" : {
++            "application/json" : {
++              "schema" : {
++                "$ref" : "#/components/schemas/StudentHomeworkCompletionCommand"
++              }
++            }
++          },
++          "required" : true
++        },
++        "responses" : {
++          "200" : {
++            "description" : "Completion state",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentHomeworkCompletion"
++                }
++              }
++            }
++          },
++          "400" : {
++            "description" : "Invalid request",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Wrong role, group or semester scope",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "404" : {
++            "description" : "Homework not found",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Academic dependency unavailable",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/lessons/{lessonId}/checkin" : {
++      "post" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Attempt student geo check-in",
++        "description" : "The attendance domain owns the window, geofence, cooldown, idempotency and automatic request.",
++        "operationId" : "checkin",
++        "parameters" : [ {
++          "name" : "lessonId",
++          "in" : "path",
++          "required" : true,
++          "schema" : {
++            "pattern" : "^[1-9][0-9]*$",
++            "type" : "string"
++          }
++        }, {
++          "name" : "Idempotency-Key",
++          "in" : "header",
++          "description" : "Opaque 16-128 ASCII character command key",
++          "required" : true,
++          "schema" : {
++            "maxLength" : 128,
++            "minLength" : 16,
++            "pattern" : "^[\\x21-\\x7E]+$",
++            "type" : "string"
++          }
++        } ],
++        "requestBody" : {
++          "content" : {
++            "application/json" : {
++              "schema" : {
++                "$ref" : "#/components/schemas/StudentCheckinCommand"
++              }
++            }
++          },
++          "required" : true
++        },
++        "responses" : {
++          "200" : {
++            "description" : "PRESENT or atomically persisted PENDING_CONFIRMATION",
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentCheckinAck"
++                }
++              }
++            }
++          },
++          "400" : {
++            "description" : "Invalid input or idempotency key",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Wrong role or group scope",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "404" : {
++            "description" : "Lesson not found",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "409" : {
++            "description" : "Manual absence, ineligible state or idempotency payload mismatch",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "429" : {
++            "description" : "Durable 300-second pair cooldown",
++            "headers" : {
++              "Retry-After" : {
++                "description" : "Whole seconds until retry",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Mandatory dependency unavailable",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/today" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Today projection with current or nearest lesson",
++        "operationId" : "getToday",
++        "responses" : {
++          "200" : {
++            "description" : "Live Today projection",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentToday"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Wrong role or group scope",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Mandatory dependency unavailable; eligibility fails closed",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/session" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Current student session projection",
++        "operationId" : "getSession",
++        "responses" : {
++          "200" : {
++            "description" : "Session projection",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentSession"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Active role is not STUDENT",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Mandatory dependency unavailable",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/schedule" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Server-scoped semester schedule for PWA offline reads",
++        "operationId" : "getSchedule",
++        "parameters" : [ {
++          "name" : "semesterId",
++          "in" : "query",
++          "required" : true,
++          "schema" : {
++            "pattern" : "^[1-9][0-9]*$",
++            "type" : "string"
++          }
++        }, {
++          "name" : "If-None-Match",
++          "in" : "header",
++          "required" : false,
++          "schema" : {
++            "type" : "string"
++          }
++        } ],
++        "responses" : {
++          "200" : {
++            "description" : "Materialized lessons in one authorized semester",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "private, no-cache",
++                "style" : "simple"
++              },
++              "ETag" : {
++                "description" : "Authorized stable representation validator",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentSemesterSchedule"
++                }
++              }
++            }
++          },
++          "304" : {
++            "description" : "Authorized representation unchanged",
++            "content" : {
++              "*/*" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentSemesterSchedule"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Semester is outside the student's group scope",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Mandatory dependency unavailable",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/homework" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Student homework feed",
++        "description" : "Active-semester homework for the authenticated student's own group. Missing bounds default to Moscow today through semester end.",
++        "operationId" : "getHomework",
++        "parameters" : [ {
++          "name" : "from",
++          "in" : "query",
++          "required" : false,
++          "schema" : {
++            "pattern" : "^\\d{4}-\\d{2}-\\d{2}$",
++            "type" : "string"
++          }
++        }, {
++          "name" : "to",
++          "in" : "query",
++          "required" : false,
++          "schema" : {
++            "pattern" : "^\\d{4}-\\d{2}-\\d{2}$",
++            "type" : "string"
++          }
++        } ],
++        "responses" : {
++          "200" : {
++            "description" : "Homework feed",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentHomework"
++                }
++              }
++            }
++          },
++          "400" : {
++            "description" : "Invalid or out-of-semester date range",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Wrong role or group scope",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "404" : {
++            "description" : "Homework scope was not found",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Academic dependency unavailable",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    }
++  },
++  "components" : {
++    "schemas" : {
++      "StudentHomeworkCompletionCommand" : {
++        "required" : [ "completed" ],
++        "type" : "object",
++        "properties" : {
++          "completed" : {
++            "type" : "boolean"
++          }
++        }
++      },
++      "StudentHomeworkCompletion" : {
++        "required" : [ "completed", "completedAt", "id" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "completed" : {
++            "type" : "boolean"
++          },
++          "completedAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          }
++        }
++      },
++      "MobileProblemDetails" : {
++        "required" : [ "code", "detail", "instance", "status", "timestamp", "title", "type" ],
++        "type" : "object",
++        "properties" : {
++          "status" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "type" : {
++            "type" : "string",
++            "format" : "uri"
++          },
++          "title" : {
++            "type" : "string"
++          },
++          "detail" : {
++            "type" : "string"
++          },
++          "instance" : {
++            "type" : "string",
++            "format" : "uri"
++          },
++          "timestamp" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "traceId" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "code" : {
++            "type" : "string",
++            "enum" : [ "INVALID_REQUEST", "INVALID_IDEMPOTENCY_KEY", "INVALID_SESSION", "WRONG_ROLE", "OUT_OF_SCOPE", "HOMEWORK_NOT_FOUND", "LESSON_NOT_FOUND", "CHECKIN_COOLDOWN", "MANUAL_ABSENCE_REQUIRES_APPEAL", "IDEMPOTENCY_PAYLOAD_MISMATCH", "CHECKIN_NOT_ELIGIBLE", "DEPENDENCY_UNAVAILABLE" ]
++          },
++          "retryAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          },
++          "extras" : {
++            "type" : "object",
++            "additionalProperties" : {
++              "type" : "string",
++              "nullable" : true
++            },
++            "nullable" : true
++          }
++        },
++        "description" : "RFC 9457 Problem Details with a stable machine code"
++      },
++      "CoordinatesGeo" : {
++        "required" : [ "kind", "latitude", "longitude" ],
++        "type" : "object",
++        "properties" : {
++          "kind" : {
++            "type" : "string",
++            "enum" : [ "COORDINATES" ]
++          },
++          "latitude" : {
++            "maximum" : 90.0,
++            "exclusiveMaximum" : false,
++            "minimum" : -90.0,
++            "exclusiveMinimum" : false,
++            "type" : "number",
++            "format" : "double"
++          },
++          "longitude" : {
++            "maximum" : 180.0,
++            "exclusiveMaximum" : false,
++            "minimum" : -180.0,
++            "exclusiveMinimum" : false,
++            "type" : "number",
++            "format" : "double"
++          }
++        }
++      },
++      "GeoInput" : {
++        "type" : "object",
++        "discriminator" : {
++          "propertyName" : "kind",
++          "mapping" : {
++            "COORDINATES" : "#/components/schemas/CoordinatesGeo",
++            "UNAVAILABLE" : "#/components/schemas/UnavailableGeo"
++          }
++        },
++        "oneOf" : [ {
++          "$ref" : "#/components/schemas/CoordinatesGeo"
++        }, {
++          "$ref" : "#/components/schemas/UnavailableGeo"
++        } ]
++      },
++      "StudentCheckinCommand" : {
++        "required" : [ "geo" ],
++        "type" : "object",
++        "properties" : {
++          "geo" : {
++            "$ref" : "#/components/schemas/GeoInput"
++          }
++        }
++      },
++      "UnavailableGeo" : {
++        "required" : [ "kind", "reason" ],
++        "type" : "object",
++        "properties" : {
++          "kind" : {
++            "type" : "string",
++            "enum" : [ "UNAVAILABLE" ]
++          },
++          "reason" : {
++            "type" : "string",
++            "enum" : [ "PERMISSION_DENIED", "POSITION_UNAVAILABLE", "TIMEOUT" ]
++          }
++        }
++      },
++      "Attendance" : {
++        "required" : [ "markedAt", "source", "status" ],
++        "type" : "object",
++        "properties" : {
++          "status" : {
++            "type" : "string",
++            "enum" : [ "PRESENT", "ABSENT", "EXCUSED" ]
++          },
++          "source" : {
++            "type" : "string",
++            "enum" : [ "STUDENT_GEO", "LATE_CHECKIN", "HEADMAN", "TEACHER", "SYSTEM" ]
++          },
++          "markedAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          }
++        },
++        "nullable" : true
++      },
++      "AutomaticCheckinRequest" : {
++        "required" : [ "id", "origin", "resolutionReason", "status" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "status" : {
++            "type" : "string",
++            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
++          },
++          "origin" : {
++            "type" : "string",
++            "enum" : [ "AUTO_GEO_FAILURE" ]
++          },
++          "resolutionReason" : {
++            "type" : "string",
++            "nullable" : true,
++            "enum" : [ "GEO_CONFIRMED", "HEADMAN_APPROVED", "HEADMAN_REJECTED", "STUDENT_CANCELLED" ]
++          }
++        },
++        "nullable" : true
++      },
++      "Link" : {
++        "required" : [ "href" ],
++        "type" : "object",
++        "properties" : {
++          "href" : {
++            "type" : "string",
++            "format" : "uri"
++          }
++        }
++      },
++      "StudentCheckinAck" : {
++        "required" : [ "_links", "attendance", "lessonId", "outcome", "request", "retryAt", "serverNow" ],
++        "type" : "object",
++        "properties" : {
++          "outcome" : {
++            "type" : "string",
++            "enum" : [ "PRESENT", "PENDING_CONFIRMATION" ]
++          },
++          "lessonId" : {
++            "type" : "string"
++          },
++          "attendance" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/Attendance"
++            } ]
++          },
++          "request" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/AutomaticCheckinRequest"
++            } ]
++          },
++          "retryAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          },
++          "serverNow" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "_links" : {
++            "type" : "object",
++            "additionalProperties" : {
++              "$ref" : "#/components/schemas/Link"
++            }
++          }
++        }
++      },
++      "CheckinEligibility" : {
++        "required" : [ "allowed", "reason", "retryAt" ],
++        "type" : "object",
++        "properties" : {
++          "allowed" : {
++            "type" : "boolean"
++          },
++          "reason" : {
++            "type" : "string",
++            "enum" : [ "ELIGIBLE", "ALREADY_PRESENT", "LESSON_CANCELLED", "TOO_EARLY", "WINDOW_CLOSED", "GEO_BLOCKED", "PENDING_CONFIRMATION", "COOLDOWN", "HEADMAN_ABSENT_REQUIRES_APPEAL", "HEADMAN_USES_JOURNAL", "DEPENDENCY_UNAVAILABLE" ]
++          },
++          "retryAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          }
++        }
++      },
++      "LessonSchedule" : {
++        "required" : [ "date", "endsAt", "id", "lessonNumber", "room", "startsAt", "status", "subject" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "date" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "lessonNumber" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "startsAt" : {
++            "type" : "string"
++          },
++          "endsAt" : {
++            "type" : "string"
++          },
++          "status" : {
++            "type" : "string",
++            "enum" : [ "PLANNED", "ACTIVE", "CLOSED", "CANCELLED" ]
++          },
++          "subject" : {
++            "$ref" : "#/components/schemas/Subject"
++          },
++          "room" : {
++            "$ref" : "#/components/schemas/Room"
++          }
++        }
++      },
++      "Room" : {
++        "required" : [ "changeState", "current", "previous" ],
++        "type" : "object",
++        "properties" : {
++          "current" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "previous" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "changeState" : {
++            "type" : "string",
++            "enum" : [ "UNCHANGED", "CHANGED", "UNKNOWN" ]
++          }
++        }
++      },
++      "StudentToday" : {
++        "required" : [ "_links", "date", "lessons", "serverNow", "timeZone" ],
++        "type" : "object",
++        "properties" : {
++          "date" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "timeZone" : {
++            "type" : "string"
++          },
++          "serverNow" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "lessons" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/TodayLesson"
++            }
++          },
++          "_links" : {
++            "type" : "object",
++            "additionalProperties" : {
++              "$ref" : "#/components/schemas/Link"
++            }
++          }
++        }
++      },
++      "Subject" : {
++        "required" : [ "id", "name", "type" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "name" : {
++            "type" : "string"
++          },
++          "type" : {
++            "type" : "string",
++            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
++          }
++        }
++      },
++      "TodayLesson" : {
++        "required" : [ "attendance", "checkinEligibility", "request", "schedule" ],
++        "type" : "object",
++        "properties" : {
++          "schedule" : {
++            "$ref" : "#/components/schemas/LessonSchedule"
++          },
++          "attendance" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/Attendance"
++            } ]
++          },
++          "checkinEligibility" : {
++            "$ref" : "#/components/schemas/CheckinEligibility"
++          },
++          "request" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/AutomaticCheckinRequest"
++            } ]
++          }
++        }
++      },
++      "GroupSummary" : {
++        "required" : [ "id", "name" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "name" : {
++            "type" : "string"
++          }
++        },
++        "nullable" : true
++      },
++      "SemesterSummary" : {
++        "required" : [ "endsOn", "id", "name", "startsOn" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "name" : {
++            "type" : "string"
++          },
++          "startsOn" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "endsOn" : {
++            "type" : "string",
++            "format" : "date"
++          }
++        }
++      },
++      "StudentSession" : {
++        "required" : [ "_links", "activeRole", "capabilities", "group", "semester", "serverNow", "user" ],
++        "type" : "object",
++        "properties" : {
++          "user" : {
++            "$ref" : "#/components/schemas/StudentUser"
++          },
++          "activeRole" : {
++            "type" : "string",
++            "enum" : [ "STUDENT" ]
++          },
++          "group" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/GroupSummary"
++            } ]
++          },
++          "semester" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/SemesterSummary"
++            } ]
++          },
++          "capabilities" : {
++            "type" : "array",
++            "items" : {
++              "type" : "string",
++              "enum" : [ "TODAY", "GEO_CHECKIN", "OFFLINE_SEMESTER_SCHEDULE" ]
++            }
++          },
++          "serverNow" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "_links" : {
++            "type" : "object",
++            "additionalProperties" : {
++              "$ref" : "#/components/schemas/Link"
++            }
++          }
++        }
++      },
++      "StudentUser" : {
++        "required" : [ "displayName", "id" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "displayName" : {
++            "type" : "string"
++          }
++        }
++      },
++      "StudentSemesterSchedule" : {
++        "required" : [ "_links", "dateFrom", "dateTo", "lessons", "semester", "updatedAt" ],
++        "type" : "object",
++        "properties" : {
++          "semester" : {
++            "$ref" : "#/components/schemas/SemesterSummary"
++          },
++          "dateFrom" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "dateTo" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "updatedAt" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "lessons" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/LessonSchedule"
++            }
++          },
++          "_links" : {
++            "type" : "object",
++            "additionalProperties" : {
++              "$ref" : "#/components/schemas/Link"
++            }
++          }
++        }
++      },
++      "StudentHomework" : {
++        "required" : [ "from", "items", "semester", "serverNow", "to" ],
++        "type" : "object",
++        "properties" : {
++          "semester" : {
++            "$ref" : "#/components/schemas/StudentHomeworkSemester"
++          },
++          "from" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "to" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "serverNow" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "items" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/StudentHomeworkItem"
++            }
++          }
++        }
++      },
++      "StudentHomeworkItem" : {
++        "required" : [ "completed", "completedAt", "description", "id", "lessonDate", "lessonNumber", "link", "subject", "title" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "subject" : {
++            "$ref" : "#/components/schemas/StudentHomeworkSubject"
++          },
++          "title" : {
++            "type" : "string"
++          },
++          "description" : {
++            "type" : "string"
++          },
++          "link" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "lessonDate" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "lessonNumber" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "completed" : {
++            "type" : "boolean"
++          },
++          "completedAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          }
++        }
++      },
++      "StudentHomeworkSemester" : {
++        "required" : [ "dateFrom", "dateTo", "id", "name" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "name" : {
++            "type" : "string"
++          },
++          "dateFrom" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "dateTo" : {
++            "type" : "string",
++            "format" : "date"
++          }
++        }
++      },
++      "StudentHomeworkSubject" : {
++        "required" : [ "id", "name" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "name" : {
++            "type" : "string"
++          }
++        }
++      }
++    },
++    "securitySchemes" : {
++      "bearerAuth" : {
++        "type" : "http",
++        "description" : "Validated access JWT; client X-User-* headers are never identity",
++        "scheme" : "bearer",
++        "bearerFormat" : "JWT"
++      }
++    }
++  }
+ }
+diff --git a/docs/openapi/notification.json b/docs/openapi/notification.json
+index 30fd7310..18e7df1b 100644
+--- a/docs/openapi/notification.json
++++ b/docs/openapi/notification.json
+@@ -482,9 +482,7 @@
+             "application/json" : {
+               "schema" : {
+                 "type" : "object",
+-                "additionalProperties" : {
+-                  "type" : "object"
+-                }
++                "additionalProperties" : { }
+               }
+             }
+           },
+@@ -1088,9 +1086,7 @@
+           },
+           "payload" : {
+             "type" : "object",
+-            "additionalProperties" : {
+-              "type" : "object"
+-            }
++            "additionalProperties" : { }
+           },
+           "sentAt" : {
+             "type" : "string",
+diff --git a/docs/openapi/schedule.json b/docs/openapi/schedule.json
+index cff0cba6..ff9feb0e 100644
+--- a/docs/openapi/schedule.json
++++ b/docs/openapi/schedule.json
+@@ -1817,12 +1817,10 @@
+             "format" : "int32"
+           },
+           "startTime" : {
+-            "type" : "string",
+-            "example" : "14:30:00"
++            "type" : "string"
+           },
+           "endTime" : {
+-            "type" : "string",
+-            "example" : "14:30:00"
++            "type" : "string"
+           },
+           "weekType" : {
+             "type" : "string",
+@@ -1962,12 +1960,10 @@
+             "format" : "int32"
+           },
+           "startTime" : {
+-            "type" : "string",
+-            "example" : "14:30:00"
++            "type" : "string"
+           },
+           "endTime" : {
+-            "type" : "string",
+-            "example" : "14:30:00"
++            "type" : "string"
+           },
+           "weekType" : {
+             "type" : "string",
+diff --git a/frontends/mobile-core/src/api/generated/mobile-bff.ts b/frontends/mobile-core/src/api/generated/mobile-bff.ts
+index 5467eb17..e33efe0f 100644
+--- a/frontends/mobile-core/src/api/generated/mobile-bff.ts
++++ b/frontends/mobile-core/src/api/generated/mobile-bff.ts
+@@ -1,6 +1,6 @@
+ /* eslint-disable */
+ // Generated from docs/openapi/mobile-bff.json. Do not edit.
+-// Contract: JS-STUDENT-01-r1; SHA-256: cc22aaf4518392cb0aa792166d4bdd8d4071958bd82d0c2bcc990b6d6924d363
++// Contract: JS-STUDENT-01-r1; SHA-256: e991067b2f7b5fecda5bb1542f34586537e12771a83444733fb5d8f841b62b43
+ 
+ export interface paths {
+     "/api/v1/student/homework": {
+@@ -161,13 +161,11 @@ export interface components {
+         LessonSchedule: {
+             /** Format: date */
+             date: string;
+-            /** @example 14:30:00 */
+             endsAt: string;
+             id: string;
+             /** Format: int32 */
+             lessonNumber: number;
+             room: components["schemas"]["Room"];
+-            /** @example 14:30:00 */
+             startsAt: string;
+             /** @enum {string} */
+             status: "PLANNED" | "ACTIVE" | "CLOSED" | "CANCELLED";
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+index 04c0cc5a..e0104f2c 100644
+--- a/gradle/libs.versions.toml
++++ b/gradle/libs.versions.toml
+@@ -2,13 +2,14 @@
+ # M01 — shared modules foundations
+ # Добавляем минимальный набор версий, используемых shared-* модулями.
+ # Остальные сервисы мигрируют на catalog постепенно (не scope M01).
+-springBoot = "3.4.1"
++springBoot = "3.5.16"
+ springDependencyManagement = "1.1.7"
+ logstashLogback = "7.4"
+ testcontainersBom = "1.20.4"
+-grpc = "1.63.0"
++grpc = "1.82.4"
++protobuf = "3.25.8"
+ wiremock = "3.9.1"
+-springdocOpenapi = "2.8.6"
++springdocOpenapi = "2.8.9"
+ 
+ # M02 — reliable eventing (ShedLock + outbox + contract-тесты)
+ shedlock = "5.16.0"
+diff --git a/services/academic-service/academic-api-contract/build.gradle.kts b/services/academic-service/academic-api-contract/build.gradle.kts
+index b011888a..f96d5c70 100644
+--- a/services/academic-service/academic-api-contract/build.gradle.kts
++++ b/services/academic-service/academic-api-contract/build.gradle.kts
+@@ -13,17 +13,17 @@ dependencies {
+     api("jakarta.validation:jakarta.validation-api:3.1.0")
+ 
+     // Spring Web annotations (для @RequestMapping, @GetMapping и т.д.)
+-    api("org.springframework:spring-web:6.2.1")
++    api("org.springframework:spring-web:6.2.19")
+ 
+     // Spring Data Commons (для Pageable, PagedResourcesAssembler)
+-    api("org.springframework.data:spring-data-commons:3.4.1")
++    api("org.springframework.data:spring-data-commons:3.5.13")
+ 
+     // Spring HATEOAS (для RepresentationModel, EntityModel)
+-    api("org.springframework.hateoas:spring-hateoas:2.4.1")
++    api("org.springframework.hateoas:spring-hateoas:2.5.3")
+ 
+     // OpenAPI / Swagger annotations
+     api("io.swagger.core.v3:swagger-annotations-jakarta:2.2.22")
+ 
+     // Jackson annotations (для @JsonInclude и т.д.)
+-    api("com.fasterxml.jackson.core:jackson-annotations:2.18.2")
++    api("com.fasterxml.jackson.core:jackson-annotations:2.21")
+ }
+diff --git a/services/academic-service/academic-app/build.gradle.kts b/services/academic-service/academic-app/build.gradle.kts
+index 336b9bcc..1b38e001 100644
+--- a/services/academic-service/academic-app/build.gradle.kts
++++ b/services/academic-service/academic-app/build.gradle.kts
+@@ -11,6 +11,8 @@ version = "0.1.0"
+ dependencyManagement {
+     imports {
+         mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
++        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
++        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
+     }
+ }
+ 
+@@ -54,7 +56,7 @@ dependencies {
+     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+ 
+     // OpenAPI / Swagger UI
+-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
++    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+ 
+     // Spring Security Crypto (BCrypt password encoding)
+     implementation("org.springframework.security:spring-security-crypto")
+@@ -70,16 +72,22 @@ dependencies {
+     implementation("org.flywaydb:flyway-database-postgresql")
+ 
+     // gRPC server
+-    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
++    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
++        exclude(group = "io.grpc", module = "grpc-netty-shaded")
++    }
+ 
+     // gRPC client (Phase 61 D-04: academic→schedule ResolveLesson)
+-    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
++    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
++        exclude(group = "io.grpc", module = "grpc-netty-shaded")
++    }
++    implementation("io.grpc:grpc-netty")
++    implementation("com.google.protobuf:protobuf-java")
+ 
+     // Required for generated gRPC stubs (javax.annotation.Generated removed in Java 9+)
+     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
+ 
+     // Jackson Hibernate6 module — normalizes Hibernate proxy class names during Redis serialization
+-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6:2.18.2")
++    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6")
+ 
+     // Lombok (только для entity и внутренних классов, НЕ для DTO контракта)
+     compileOnly("org.projectlombok:lombok")
+@@ -110,11 +118,11 @@ sourceSets {
+ 
+ protobuf {
+     protoc {
+-        artifact = "com.google.protobuf:protoc:3.25.3"
++        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
+     }
+     plugins {
+         create("grpc") {
+-            artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
++            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
+         }
+     }
+     generateProtoTasks {
+diff --git a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java
+index 1422cc70..257fc52c 100644
+--- a/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java
++++ b/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java
+@@ -46,7 +46,7 @@ class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
+     @Test
+     @DisplayName("M11 G3: /api-docs matches committed snapshot")
+     void apiDocsMatchesSnapshot() throws IOException {
+-        String actual = fetchAndNormalize();
++        String actual = normalizeLineEndings(fetchAndNormalize());
+ 
+         if (Boolean.getBoolean("openapi.snapshot.update")) {
+             Files.createDirectories(SNAPSHOT_PATH.getParent());
+@@ -60,7 +60,7 @@ class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
+                         SNAPSHOT_PATH)
+                 .exists();
+ 
+-        String expected = Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8);
++        String expected = normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8));
+         assertThat(actual)
+                 .as("OpenAPI spec drifted from committed snapshot. " +
+                         "To regenerate: ./gradlew :services:academic-service:academic-app:integrationTest " +
+@@ -83,4 +83,8 @@ class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
+                 .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+         return writer.writeValueAsString(root) + "\n";
+     }
++
++    private static String normalizeLineEndings(String value) {
++        return value.replace("\r\n", "\n");
++    }
+ }
+diff --git a/services/api-gateway/build.gradle.kts b/services/api-gateway/build.gradle.kts
+index fa64f93d..f45be363 100644
+--- a/services/api-gateway/build.gradle.kts
++++ b/services/api-gateway/build.gradle.kts
+@@ -8,7 +8,7 @@ group = "ru.rutcampustrack"
+ version = "0.1.0"
+ 
+ dependencies {
+-    implementation("org.springframework.cloud:spring-cloud-starter-gateway")
++    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
+     implementation("org.springframework.boot:spring-boot-starter-actuator")
+     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+ 
+@@ -29,7 +29,7 @@ dependencies {
+     // M04 QA2 — distributed tracing OTel + OTLP exporter → grafana/tempo
+     implementation("io.micrometer:micrometer-tracing-bridge-otel")
+     implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+-    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.6")
++    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.9")
+ 
+     // JWT validation (публичный ключ)
+     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+@@ -52,7 +52,7 @@ dependencies {
+     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+ }
+ 
+-extra["springCloudVersion"] = "2024.0.0"
++extra["springCloudVersion"] = "2025.0.3"
+ 
+ dependencyManagement {
+     imports {
+diff --git a/services/api-gateway/src/main/resources/application-prod.yml b/services/api-gateway/src/main/resources/application-prod.yml
+index 70f79097..31fbd225 100644
+--- a/services/api-gateway/src/main/resources/application-prod.yml
++++ b/services/api-gateway/src/main/resources/application-prod.yml
+@@ -1,24 +1,26 @@
+ spring:
+   cloud:
+     gateway:
+-      globalcors:
+-        cors-configurations:
+-          '[/**]':
+-            allowed-origins:
+-              - ${CORS_ALLOWED_ORIGIN:https://rutcampustrack.ru}
+-            allowed-methods:
+-              - GET
+-              - POST
+-              - PUT
+-              - PATCH
+-              - DELETE
+-              - OPTIONS
+-            allowed-headers:
+-              - Authorization
+-              - Content-Type
+-              - X-Requested-With
+-            allow-credentials: true
+-            max-age: 3600
++      server:
++        webflux:
++          globalcors:
++            cors-configurations:
++              '[/**]':
++                allowed-origins:
++                  - ${CORS_ALLOWED_ORIGIN:https://rutcampustrack.ru}
++                allowed-methods:
++                  - GET
++                  - POST
++                  - PUT
++                  - PATCH
++                  - DELETE
++                  - OPTIONS
++                allowed-headers:
++                  - Authorization
++                  - Content-Type
++                  - X-Requested-With
++                allow-credentials: true
++                max-age: 3600
+ 
+ management:
+   endpoints:
+diff --git a/services/api-gateway/src/main/resources/application.yml b/services/api-gateway/src/main/resources/application.yml
+index 4aad0bfc..f32f36f8 100644
+--- a/services/api-gateway/src/main/resources/application.yml
++++ b/services/api-gateway/src/main/resources/application.yml
+@@ -17,350 +17,352 @@ spring:
+ 
+   cloud:
+     gateway:
+-      globalcors:
+-        add-to-simple-url-handler-mapping: true
+-        cors-configurations:
+-          '[/**]':
+-            allowed-origins:
+-              - "${CORS_ALLOWED_ORIGIN:http://localhost:5173}"
+-              - "http://localhost:5173"
+-              - "http://localhost:80"
+-              - "http://localhost:5174"
+-              - "http://localhost:5175"
+-              - "http://localhost:5176"
+-              - "http://localhost:3000"
+-              - "http://localhost:4200"
+-            allowed-methods:
+-              - GET
+-              - POST
+-              - PUT
+-              - PATCH
+-              - DELETE
+-              - OPTIONS
+-            allowed-headers: "*"
+-            allow-credentials: true
+-            max-age: 3600
+-      # M13 G25.22 — убран `default-filters: DedupeResponseHeader` (CORS dedup).
+-      # Spring Cloud Gateway 4.x bug: DedupeResponseHeader пытается mutate
+-      # response headers ПОСЛЕ того как RequestRateLimiter уже committed
+-      # X-RateLimit-* + downstream service committed status+body. Второй mutator
+-      # упирается в ReadOnlyHttpHeaders.add → UnsupportedOperationException →
+-      # `Error finishing response. Closing connection` → клиент получает 200
+-      # headers + part body, но TCP оборван прежде завершения chunked encoding.
+-      # CORS дубликатов нет (только globalcors source), filter не нужен.
+-      # default-filters:
+-      #   - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+-      routes:
+-        # === Rate-limited routes (specific first, wins over generic auth-service) ===
++      server:
++        webflux:
++          globalcors:
++            add-to-simple-url-handler-mapping: true
++            cors-configurations:
++              '[/**]':
++                allowed-origins:
++                  - "${CORS_ALLOWED_ORIGIN:http://localhost:5173}"
++                  - "http://localhost:5173"
++                  - "http://localhost:80"
++                  - "http://localhost:5174"
++                  - "http://localhost:5175"
++                  - "http://localhost:5176"
++                  - "http://localhost:3000"
++                  - "http://localhost:4200"
++                allowed-methods:
++                  - GET
++                  - POST
++                  - PUT
++                  - PATCH
++                  - DELETE
++                  - OPTIONS
++                allowed-headers: "*"
++                allow-credentials: true
++                max-age: 3600
++          # M13 G25.22 — убран `default-filters: DedupeResponseHeader` (CORS dedup).
++          # Spring Cloud Gateway 4.x bug: DedupeResponseHeader пытается mutate
++          # response headers ПОСЛЕ того как RequestRateLimiter уже committed
++          # X-RateLimit-* + downstream service committed status+body. Второй mutator
++          # упирается в ReadOnlyHttpHeaders.add → UnsupportedOperationException →
++          # `Error finishing response. Closing connection` → клиент получает 200
++          # headers + part body, но TCP оборван прежде завершения chunked encoding.
++          # CORS дубликатов нет (только globalcors source), filter не нужен.
++          # default-filters:
++          #   - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
++          routes:
++            # === Rate-limited routes (specific first, wins over generic auth-service) ===
+ 
+-        # M13 G2: real X/min semantics via token bucket.
+-        # Формула (universal): replenishRate=1 tok/sec, burstCapacity=60 tok (= 1 min запас),
+-        # requestedTokens = 60/X. Тогда steady-state = 60/60*X = X req/min.
+-        # При первом запросе bucket полон (60 tok), даёт burst = X запросов залпом.
+-        # Далее каждые 60/X секунд восполняется 1 слот.
+-        # UX: после всплеска из X запросов → 60/X сек ожидания до следующего запроса.
+-        # См. docs/api/api-rate-limits.md и docs/milestones/M13-pre-deploy-hardening/NOTES.md.
++            # M13 G2: real X/min semantics via token bucket.
++            # Формула (universal): replenishRate=1 tok/sec, burstCapacity=60 tok (= 1 min запас),
++            # requestedTokens = 60/X. Тогда steady-state = 60/60*X = X req/min.
++            # При первом запросе bucket полон (60 tok), даёт burst = X запросов залпом.
++            # Далее каждые 60/X секунд восполняется 1 слот.
++            # UX: после всплеска из X запросов → 60/X сек ожидания до следующего запроса.
++            # См. docs/api/api-rate-limits.md и docs/milestones/M13-pre-deploy-hardening/NOTES.md.
+ 
+-        # /api/auth/otp/request — 1 req/min per IP (жёсткий SMS-cost guard)
+-        - id: auth-otp-request
+-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+-          predicates:
+-            - Path=/api/auth/otp/request
+-            - Method=POST
+-          filters:
+-            - StripPrefix=1
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 1
+-                redis-rate-limiter.burstCapacity: 60
+-                redis-rate-limiter.requestedTokens: 60
+-                key-resolver: "#{@ipKeyResolver}"
++            # /api/auth/otp/request — 1 req/min per IP (жёсткий SMS-cost guard)
++            - id: auth-otp-request
++              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
++              predicates:
++                - Path=/api/auth/otp/request
++                - Method=POST
++              filters:
++                - StripPrefix=1
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 1
++                    redis-rate-limiter.burstCapacity: 60
++                    redis-rate-limiter.requestedTokens: 60
++                    key-resolver: "#{@ipKeyResolver}"
+ 
+-        # /api/auth/otp/verify-by-code — 5 req/min per IP
+-        - id: auth-otp-verify
+-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+-          predicates:
+-            - Path=/api/auth/otp/verify-by-code
+-            - Method=POST
+-          filters:
+-            - StripPrefix=1
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 1
+-                redis-rate-limiter.burstCapacity: 60
+-                redis-rate-limiter.requestedTokens: 12
+-                key-resolver: "#{@ipKeyResolver}"
++            # /api/auth/otp/verify-by-code — 5 req/min per IP
++            - id: auth-otp-verify
++              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
++              predicates:
++                - Path=/api/auth/otp/verify-by-code
++                - Method=POST
++              filters:
++                - StripPrefix=1
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 1
++                    redis-rate-limiter.burstCapacity: 60
++                    redis-rate-limiter.requestedTokens: 12
++                    key-resolver: "#{@ipKeyResolver}"
+ 
+-        # /api/auth/login — 5 req/min per IP (single rate limiter).
+-        #
+-        # M13 G25.21 — убран второй RequestRateLimiter (ip+login composite key).
+-        # Spring Cloud Gateway 4.x bug: при двух последовательных RL-фильтрах
+-        # второй пытается добавить X-RateLimit-* headers после того как
+-        # ServerHttpResponse уже committed (status+body отправлены downstream)
+-        # → ReadOnlyHttpHeaders.add() throws UnsupportedOperationException →
+-        # `Error finishing response. Closing connection` → клиент получает 200
+-        # headers + part body, но TCP оборван прежде чем `Content-Length`
+-        # завершён. Browser fetch / Playwright apiRequest aborted →
+-        # login.component.error callback не получает clean 200.
+-        #
+-        # IP-only RL уже останавливает distributed brute force (5/min/IP).
+-        # ip+login композитный планируется вернуть через custom filter
+-        # (NEW-XXX) после G25 закрытия — НЕ блокер для v0.0.0-alpha.15 deploy.
+-        - id: auth-login
+-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+-          predicates:
+-            - Path=/api/auth/login
+-            - Method=POST
+-          filters:
+-            - StripPrefix=1
+-            - name: RequestRateLimiter
+-              args:
+-                # M14 G8 (G26 F01): production default — burstCapacity=60.
+-                # Формула: 60 / requestedTokens=12 = 5 запросов залпом, что
+-                # точно совпадает с brute-force window 5/мин/IP per CSO threat
+-                # model. M13 G25.22 поднял до 600 как CI workaround для
+-                # параллельных smoke (8 specs × 2 workers × 2 retries = до
+-                # 32 запросов). Workaround нельзя оставлять в production —
+-                # ослабляет brute-force защиту в 10×.
+-                #
+-                # Override для e2e: docker-compose.e2e.yml выставляет
+-                # AUTH_LOGIN_BURST_CAPACITY=600 (env var). Production остаётся
+-                # на 60 без явного override.
+-                redis-rate-limiter.replenishRate: 1
+-                redis-rate-limiter.burstCapacity: ${AUTH_LOGIN_BURST_CAPACITY:60}
+-                redis-rate-limiter.requestedTokens: 12
+-                key-resolver: "#{@ipKeyResolver}"
++            # /api/auth/login — 5 req/min per IP (single rate limiter).
++            #
++            # M13 G25.21 — убран второй RequestRateLimiter (ip+login composite key).
++            # Spring Cloud Gateway 4.x bug: при двух последовательных RL-фильтрах
++            # второй пытается добавить X-RateLimit-* headers после того как
++            # ServerHttpResponse уже committed (status+body отправлены downstream)
++            # → ReadOnlyHttpHeaders.add() throws UnsupportedOperationException →
++            # `Error finishing response. Closing connection` → клиент получает 200
++            # headers + part body, но TCP оборван прежде чем `Content-Length`
++            # завершён. Browser fetch / Playwright apiRequest aborted →
++            # login.component.error callback не получает clean 200.
++            #
++            # IP-only RL уже останавливает distributed brute force (5/min/IP).
++            # ip+login композитный планируется вернуть через custom filter
++            # (NEW-XXX) после G25 закрытия — НЕ блокер для v0.0.0-alpha.15 deploy.
++            - id: auth-login
++              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
++              predicates:
++                - Path=/api/auth/login
++                - Method=POST
++              filters:
++                - StripPrefix=1
++                - name: RequestRateLimiter
++                  args:
++                    # M14 G8 (G26 F01): production default — burstCapacity=60.
++                    # Формула: 60 / requestedTokens=12 = 5 запросов залпом, что
++                    # точно совпадает с brute-force window 5/мин/IP per CSO threat
++                    # model. M13 G25.22 поднял до 600 как CI workaround для
++                    # параллельных smoke (8 specs × 2 workers × 2 retries = до
++                    # 32 запросов). Workaround нельзя оставлять в production —
++                    # ослабляет brute-force защиту в 10×.
++                    #
++                    # Override для e2e: docker-compose.e2e.yml выставляет
++                    # AUTH_LOGIN_BURST_CAPACITY=600 (env var). Production остаётся
++                    # на 60 без явного override.
++                    redis-rate-limiter.replenishRate: 1
++                    redis-rate-limiter.burstCapacity: ${AUTH_LOGIN_BURST_CAPACITY:60}
++                    redis-rate-limiter.requestedTokens: 12
++                    key-resolver: "#{@ipKeyResolver}"
+ 
+-        # /api/auth/refresh — 30 req/min per user (из X-User-Id после JwtAuthenticationFilter)
+-        - id: auth-refresh
+-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+-          predicates:
+-            - Path=/api/auth/refresh
+-            - Method=POST
+-          filters:
+-            - StripPrefix=1
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 1
+-                redis-rate-limiter.burstCapacity: 60
+-                redis-rate-limiter.requestedTokens: 2
+-                key-resolver: "#{@userIdKeyResolver}"
++            # /api/auth/refresh — 30 req/min per user (из X-User-Id после JwtAuthenticationFilter)
++            - id: auth-refresh
++              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
++              predicates:
++                - Path=/api/auth/refresh
++                - Method=POST
++              filters:
++                - StripPrefix=1
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 1
++                    redis-rate-limiter.burstCapacity: 60
++                    redis-rate-limiter.requestedTokens: 2
++                    key-resolver: "#{@userIdKeyResolver}"
+ 
+-        # /api/attendance/check-in — 10 req/min per user (предотвращает multi-mark)
+-        - id: attendance-checkin
+-          uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
+-          predicates:
+-            - Path=/api/attendance/check-in
+-            - Method=POST
+-          filters:
+-            - StripPrefix=1
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 1
+-                redis-rate-limiter.burstCapacity: 60
+-                redis-rate-limiter.requestedTokens: 6
+-                key-resolver: "#{@userIdKeyResolver}"
++            # /api/attendance/check-in — 10 req/min per user (предотвращает multi-mark)
++            - id: attendance-checkin
++              uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
++              predicates:
++                - Path=/api/attendance/check-in
++                - Method=POST
++              filters:
++                - StripPrefix=1
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 1
++                    redis-rate-limiter.burstCapacity: 60
++                    redis-rate-limiter.requestedTokens: 6
++                    key-resolver: "#{@userIdKeyResolver}"
+ 
+-        # === Regular routes (unchanged) ===
++            # === Regular routes (unchanged) ===
+ 
+-        - id: mobile-bff-checkin
+-          uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+-          predicates:
+-            - Path=/api/v1/student/lessons/*/checkin
+-            - Method=POST
+-          filters:
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 1
+-                redis-rate-limiter.burstCapacity: 60
+-                redis-rate-limiter.requestedTokens: 6
+-                key-resolver: "#{@userIdKeyResolver}"
++            - id: mobile-bff-checkin
++              uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
++              predicates:
++                - Path=/api/v1/student/lessons/*/checkin
++                - Method=POST
++              filters:
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 1
++                    redis-rate-limiter.burstCapacity: 60
++                    redis-rate-limiter.requestedTokens: 6
++                    key-resolver: "#{@userIdKeyResolver}"
+ 
+-        - id: mobile-bff
+-          uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+-          predicates:
+-            - Path=/api/v1/student/**
+-          filters:
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 600
+-                redis-rate-limiter.burstCapacity: 600
+-                redis-rate-limiter.requestedTokens: 1
+-                key-resolver: "#{@ipKeyResolver}"
++            - id: mobile-bff
++              uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
++              predicates:
++                - Path=/api/v1/student/**
++              filters:
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 600
++                    redis-rate-limiter.burstCapacity: 600
++                    redis-rate-limiter.requestedTokens: 1
++                    key-resolver: "#{@ipKeyResolver}"
+ 
+-        - id: auth-service
+-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+-          predicates:
+-            - Path=/api/auth/**
+-          filters:
+-            - StripPrefix=1
++            - id: auth-service
++              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
++              predicates:
++                - Path=/api/auth/**
++              filters:
++                - StripPrefix=1
+ 
+-        - id: academic-service
+-          uri: ${ACADEMIC_SERVICE_URL:http://academic-service:9091}
+-          predicates:
+-            - Path=/api/academic/**
+-          filters:
+-            - StripPrefix=1
+-            # Глобальный DDoS-guard: 600 req/min per IP для academic endpoint'ов
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 600
+-                redis-rate-limiter.burstCapacity: 600
+-                redis-rate-limiter.requestedTokens: 1
+-                key-resolver: "#{@ipKeyResolver}"
++            - id: academic-service
++              uri: ${ACADEMIC_SERVICE_URL:http://academic-service:9091}
++              predicates:
++                - Path=/api/academic/**
++              filters:
++                - StripPrefix=1
++                # Глобальный DDoS-guard: 600 req/min per IP для academic endpoint'ов
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 600
++                    redis-rate-limiter.burstCapacity: 600
++                    redis-rate-limiter.requestedTokens: 1
++                    key-resolver: "#{@ipKeyResolver}"
+ 
+-        - id: schedule-service
+-          uri: ${SCHEDULE_SERVICE_URL:http://schedule-service:9092}
+-          predicates:
+-            - Path=/api/schedule/**
+-          filters:
+-            - StripPrefix=1
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 600
+-                redis-rate-limiter.burstCapacity: 600
+-                redis-rate-limiter.requestedTokens: 1
+-                key-resolver: "#{@ipKeyResolver}"
++            - id: schedule-service
++              uri: ${SCHEDULE_SERVICE_URL:http://schedule-service:9092}
++              predicates:
++                - Path=/api/schedule/**
++              filters:
++                - StripPrefix=1
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 600
++                    redis-rate-limiter.burstCapacity: 600
++                    redis-rate-limiter.requestedTokens: 1
++                    key-resolver: "#{@ipKeyResolver}"
+ 
+-        # M07 G12 MED-1: tight RL для multipart-upload excuse tickets.
+-        # 25 MB body × 600 rpm (generic attendance RL) = 15 GB/мин amplification.
+-        # Ставим 5 req/min per-user, чтобы честный студент (1-2 excuse/неделю)
+-        # не чувствовал ограничение, а abuse-сценарий блокировался при 6-й попытке.
+-        # Должен объявляться ДО generic `/api/attendance/**` — Spring Cloud Gateway
+-        # matcher выбирает первый совпавший.
+-        - id: attendance-excuse-upload
+-          uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
+-          predicates:
+-            - Path=/api/attendance/excuses/with-file
+-            - Method=POST
+-          filters:
+-            - StripPrefix=1
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 1
+-                redis-rate-limiter.burstCapacity: 60
+-                redis-rate-limiter.requestedTokens: 12
+-                key-resolver: "#{@userIdKeyResolver}"
++            # M07 G12 MED-1: tight RL для multipart-upload excuse tickets.
++            # 25 MB body × 600 rpm (generic attendance RL) = 15 GB/мин amplification.
++            # Ставим 5 req/min per-user, чтобы честный студент (1-2 excuse/неделю)
++            # не чувствовал ограничение, а abuse-сценарий блокировался при 6-й попытке.
++            # Должен объявляться ДО generic `/api/attendance/**` — Spring Cloud Gateway
++            # matcher выбирает первый совпавший.
++            - id: attendance-excuse-upload
++              uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
++              predicates:
++                - Path=/api/attendance/excuses/with-file
++                - Method=POST
++              filters:
++                - StripPrefix=1
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 1
++                    redis-rate-limiter.burstCapacity: 60
++                    redis-rate-limiter.requestedTokens: 12
++                    key-resolver: "#{@userIdKeyResolver}"
+ 
+-        - id: attendance-service
+-          uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
+-          predicates:
+-            - Path=/api/attendance/**
+-          filters:
+-            - StripPrefix=1
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 600
+-                redis-rate-limiter.burstCapacity: 600
+-                redis-rate-limiter.requestedTokens: 1
+-                key-resolver: "#{@ipKeyResolver}"
++            - id: attendance-service
++              uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
++              predicates:
++                - Path=/api/attendance/**
++              filters:
++                - StripPrefix=1
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 600
++                    redis-rate-limiter.burstCapacity: 600
++                    redis-rate-limiter.requestedTokens: 1
++                    key-resolver: "#{@ipKeyResolver}"
+ 
+-        - id: notification-web
+-          uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
+-          predicates:
+-            - Path=/api/ws/**
+-          filters:
+-            - StripPrefix=1
++            - id: notification-web
++              uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
++              predicates:
++                - Path=/api/ws/**
++              filters:
++                - StripPrefix=1
+ 
+-        - id: notification-push
+-          uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
+-          predicates:
+-            - Path=/api/push/**
+-          filters:
+-            - StripPrefix=1
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 600
+-                redis-rate-limiter.burstCapacity: 600
+-                redis-rate-limiter.requestedTokens: 1
+-                key-resolver: "#{@ipKeyResolver}"
++            - id: notification-push
++              uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
++              predicates:
++                - Path=/api/push/**
++              filters:
++                - StripPrefix=1
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 600
++                    redis-rate-limiter.burstCapacity: 600
++                    redis-rate-limiter.requestedTokens: 1
++                    key-resolver: "#{@ipKeyResolver}"
+ 
+-        # M10 G5 — notification history (list / unread-count / mark-read).
+-        - id: notification-history
+-          uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
+-          predicates:
+-            - Path=/api/notifications/**
+-          filters:
+-            - StripPrefix=1
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 600
+-                redis-rate-limiter.burstCapacity: 600
+-                redis-rate-limiter.requestedTokens: 1
+-                key-resolver: "#{@ipKeyResolver}"
++            # M10 G5 — notification history (list / unread-count / mark-read).
++            - id: notification-history
++              uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
++              predicates:
++                - Path=/api/notifications/**
++              filters:
++                - StripPrefix=1
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 600
++                    redis-rate-limiter.burstCapacity: 600
++                    redis-rate-limiter.requestedTokens: 1
++                    key-resolver: "#{@ipKeyResolver}"
+ 
+-        # M13 G16 — CSP violation reports от браузеров.
+-        # Публичный endpoint (no auth); rate-limit агрессивный per-IP
+-        # (flood защита — malicious сайт с iframe может спамить).
+-        # 60 req/min per IP = 1 req/sec bucket, burstCapacity 60.
+-        - id: notification-csp-report
+-          uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
+-          predicates:
+-            - Path=/api/csp-report
+-            - Method=POST
+-          filters:
+-            - StripPrefix=1
+-            - name: RequestRateLimiter
+-              args:
+-                redis-rate-limiter.replenishRate: 1
+-                redis-rate-limiter.burstCapacity: 60
+-                redis-rate-limiter.requestedTokens: 1
+-                key-resolver: "#{@ipKeyResolver}"
++            # M13 G16 — CSP violation reports от браузеров.
++            # Публичный endpoint (no auth); rate-limit агрессивный per-IP
++            # (flood защита — malicious сайт с iframe может спамить).
++            # 60 req/min per IP = 1 req/sec bucket, burstCapacity 60.
++            - id: notification-csp-report
++              uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
++              predicates:
++                - Path=/api/csp-report
++                - Method=POST
++              filters:
++                - StripPrefix=1
++                - name: RequestRateLimiter
++                  args:
++                    redis-rate-limiter.replenishRate: 1
++                    redis-rate-limiter.burstCapacity: 60
++                    redis-rate-limiter.requestedTokens: 1
++                    key-resolver: "#{@ipKeyResolver}"
+ 
+-        - id: auth-service-openapi
+-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+-          predicates:
+-            - Path=/openapi/auth-service
+-          filters:
+-            - RewritePath=/openapi/auth-service, /api-docs
++            - id: auth-service-openapi
++              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
++              predicates:
++                - Path=/openapi/auth-service
++              filters:
++                - RewritePath=/openapi/auth-service, /api-docs
+ 
+-        - id: academic-service-openapi
+-          uri: ${ACADEMIC_SERVICE_URL:http://academic-service:9091}
+-          predicates:
+-            - Path=/openapi/academic-service
+-          filters:
+-            - RewritePath=/openapi/academic-service, /api-docs
++            - id: academic-service-openapi
++              uri: ${ACADEMIC_SERVICE_URL:http://academic-service:9091}
++              predicates:
++                - Path=/openapi/academic-service
++              filters:
++                - RewritePath=/openapi/academic-service, /api-docs
+ 
+-        - id: schedule-service-openapi
+-          uri: ${SCHEDULE_SERVICE_URL:http://schedule-service:9092}
+-          predicates:
+-            - Path=/openapi/schedule-service
+-          filters:
+-            - RewritePath=/openapi/schedule-service, /api-docs
++            - id: schedule-service-openapi
++              uri: ${SCHEDULE_SERVICE_URL:http://schedule-service:9092}
++              predicates:
++                - Path=/openapi/schedule-service
++              filters:
++                - RewritePath=/openapi/schedule-service, /api-docs
+ 
+-        - id: attendance-service-openapi
+-          uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
+-          predicates:
+-            - Path=/openapi/attendance-service
+-          filters:
+-            - RewritePath=/openapi/attendance-service, /api-docs
++            - id: attendance-service-openapi
++              uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
++              predicates:
++                - Path=/openapi/attendance-service
++              filters:
++                - RewritePath=/openapi/attendance-service, /api-docs
+ 
+-        - id: mobile-bff-openapi
+-          uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+-          predicates:
+-            - Path=/openapi/mobile-bff
+-          filters:
+-            - RewritePath=/openapi/mobile-bff, /api-docs
++            - id: mobile-bff-openapi
++              uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
++              predicates:
++                - Path=/openapi/mobile-bff
++              filters:
++                - RewritePath=/openapi/mobile-bff, /api-docs
+ 
+-springdoc:
+-  enable-native-support: true
+-  api-docs:
+-    enabled: true
+-  swagger-ui:
+-    enabled: true
+-    path: /swagger-ui.html
+-    config-url: /v3/api-docs/swagger-config
+-    urls:
+-      - url: /openapi/auth-service
+-        name: Auth Service
+-      - url: /openapi/academic-service
+-        name: Academic Service
+-      - url: /openapi/schedule-service
+-        name: Schedule Service
+-      - url: /openapi/attendance-service
+-        name: Attendance Service
+-      - url: /openapi/mobile-bff
+-        name: Mobile BFF
++    springdoc:
++      enable-native-support: true
++      api-docs:
++        enabled: true
++      swagger-ui:
++        enabled: true
++        path: /swagger-ui.html
++        config-url: /v3/api-docs/swagger-config
++        urls:
++          - url: /openapi/auth-service
++            name: Auth Service
++          - url: /openapi/academic-service
++            name: Academic Service
++          - url: /openapi/schedule-service
++            name: Schedule Service
++          - url: /openapi/attendance-service
++            name: Attendance Service
++          - url: /openapi/mobile-bff
++            name: Mobile BFF
+ 
+ gateway:
+   auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
+diff --git a/services/attendance-service/attendance-api-contract/build.gradle.kts b/services/attendance-service/attendance-api-contract/build.gradle.kts
+index 1747695f..09fd24f0 100644
+--- a/services/attendance-service/attendance-api-contract/build.gradle.kts
++++ b/services/attendance-service/attendance-api-contract/build.gradle.kts
+@@ -10,9 +10,9 @@ dependencies {
+     api(project(":services:shared:shared-web-api"))
+ 
+     api("jakarta.validation:jakarta.validation-api:3.1.0")
+-    api("org.springframework:spring-web:6.2.1")
+-    api("org.springframework.data:spring-data-commons:3.4.1")
+-    api("org.springframework.hateoas:spring-hateoas:2.4.1")
++    api("org.springframework:spring-web:6.2.19")
++    api("org.springframework.data:spring-data-commons:3.5.13")
++    api("org.springframework.hateoas:spring-hateoas:2.5.3")
+     api("io.swagger.core.v3:swagger-annotations-jakarta:2.2.22")
+-    api("com.fasterxml.jackson.core:jackson-annotations:2.18.2")
++    api("com.fasterxml.jackson.core:jackson-annotations:2.21")
+ }
+diff --git a/services/attendance-service/attendance-app/build.gradle.kts b/services/attendance-service/attendance-app/build.gradle.kts
+index bc22de1a..5f5a0ad9 100644
+--- a/services/attendance-service/attendance-app/build.gradle.kts
++++ b/services/attendance-service/attendance-app/build.gradle.kts
+@@ -11,6 +11,8 @@ version = "0.1.0"
+ dependencyManagement {
+     imports {
+         mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
++        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
++        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
+     }
+ }
+ 
+@@ -50,14 +52,20 @@ dependencies {
+     implementation("org.springframework.boot:spring-boot-starter-aop")
+     implementation("org.springframework.boot:spring-boot-starter-actuator")
+     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
++    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+ 
+     // M17 — headman weekly .docx export template renderer spike.
+     implementation("pro.verron:docx-stamper:1.6.9")
+-    runtimeOnly("org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.11")
++    runtimeOnly("org.docx4j:docx4j-JAXB-ReferenceImpl:11.5.14")
+ 
+-    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
+-    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
++    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
++        exclude(group = "io.grpc", module = "grpc-netty-shaded")
++    }
++    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
++        exclude(group = "io.grpc", module = "grpc-netty-shaded")
++    }
++    implementation("io.grpc:grpc-netty")
++    implementation("com.google.protobuf:protobuf-java")
+     implementation("com.google.api.grpc:proto-google-common-protos:2.29.0")
+     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
+ 
+@@ -89,11 +97,11 @@ sourceSets {
+ 
+ protobuf {
+     protoc {
+-        artifact = "com.google.protobuf:protoc:3.25.3"
++        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
+     }
+     plugins {
+         create("grpc") {
+-            artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
++            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
+         }
+     }
+     generateProtoTasks {
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java
+index 529e93ff..e7e70133 100644
+--- a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java
+@@ -33,7 +33,7 @@ class OpenApiSnapshotIT extends AbstractAttendanceIntegrationTest {
+     @Test
+     @DisplayName("M11 G3: /api-docs matches committed snapshot")
+     void apiDocsMatchesSnapshot() throws Exception {
+-        String actual = fetchAndNormalize();
++        String actual = normalizeLineEndings(fetchAndNormalize());
+ 
+         if (Boolean.getBoolean("openapi.snapshot.update")) {
+             Files.createDirectories(SNAPSHOT_PATH.getParent());
+@@ -47,7 +47,7 @@ class OpenApiSnapshotIT extends AbstractAttendanceIntegrationTest {
+                         SNAPSHOT_PATH)
+                 .exists();
+ 
+-        String expected = Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8);
++        String expected = normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8));
+         assertThat(actual)
+                 .as("OpenAPI spec drifted from committed snapshot. " +
+                         "To regenerate: ./gradlew :services:attendance-service:attendance-app:integrationTest " +
+@@ -69,4 +69,8 @@ class OpenApiSnapshotIT extends AbstractAttendanceIntegrationTest {
+                 .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+         return writer.writeValueAsString(root).replace("\r\n", "\n") + "\n";
+     }
++
++    private static String normalizeLineEndings(String value) {
++        return value.replace("\r\n", "\n");
++    }
+ }
+diff --git a/services/auth-service/auth-api-contract/build.gradle.kts b/services/auth-service/auth-api-contract/build.gradle.kts
+index 6486c619..a71f6e2d 100644
+--- a/services/auth-service/auth-api-contract/build.gradle.kts
++++ b/services/auth-service/auth-api-contract/build.gradle.kts
+@@ -13,17 +13,17 @@ dependencies {
+     api("jakarta.validation:jakarta.validation-api:3.1.0")
+ 
+     // Spring Web annotations (для @RequestMapping, @GetMapping и т.д.)
+-    api("org.springframework:spring-web:6.2.1")
++    api("org.springframework:spring-web:6.2.19")
+ 
+     // M12 G3: auth-service controllers принимают Authentication + HttpServletRequest
+     // в interface signatures. Поэтому контракту нужны spring-security-core + servlet-api.
+     // Не прокачиваем до Spring Boot starter — контракт остаётся java-library.
+-    api("org.springframework.security:spring-security-core:6.4.2")
++    api("org.springframework.security:spring-security-core:6.5.11")
+     api("jakarta.servlet:jakarta.servlet-api:6.1.0")
+ 
+     // OpenAPI / Swagger annotations
+     api("io.swagger.core.v3:swagger-annotations-jakarta:2.2.22")
+ 
+     // Jackson annotations (для @JsonInclude и т.д.)
+-    api("com.fasterxml.jackson.core:jackson-annotations:2.18.2")
++    api("com.fasterxml.jackson.core:jackson-annotations:2.21")
+ }
+diff --git a/services/auth-service/auth-app/build.gradle.kts b/services/auth-service/auth-app/build.gradle.kts
+index 3c7bab17..d7138c4e 100644
+--- a/services/auth-service/auth-app/build.gradle.kts
++++ b/services/auth-service/auth-app/build.gradle.kts
+@@ -40,7 +40,7 @@ dependencies {
+     // M04 QA2 — distributed tracing OTel + OTLP exporter → grafana/tempo
+     implementation("io.micrometer:micrometer-tracing-bridge-otel")
+     implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
++    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+     runtimeOnly("org.postgresql:postgresql")
+ 
+diff --git a/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java b/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java
+index de1eeca4..444c6e37 100644
+--- a/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java
++++ b/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java
+@@ -46,7 +46,7 @@ class OpenApiSnapshotIT extends AbstractIntegrationTest {
+     @Test
+     @DisplayName("M12 G5: /api-docs matches committed snapshot")
+     void apiDocsMatchesSnapshot() throws IOException {
+-        String actual = fetchAndNormalize();
++        String actual = normalizeLineEndings(fetchAndNormalize());
+ 
+         if (Boolean.getBoolean("openapi.snapshot.update")) {
+             Files.createDirectories(SNAPSHOT_PATH.getParent());
+@@ -60,7 +60,7 @@ class OpenApiSnapshotIT extends AbstractIntegrationTest {
+                         SNAPSHOT_PATH)
+                 .exists();
+ 
+-        String expected = Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8);
++        String expected = normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8));
+         assertThat(actual)
+                 .as("OpenAPI spec drifted from committed snapshot. " +
+                         "To regenerate: ./gradlew :services:auth-service:auth-app:integrationTest " +
+@@ -83,4 +83,8 @@ class OpenApiSnapshotIT extends AbstractIntegrationTest {
+                 .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+         return writer.writeValueAsString(root) + "\n";
+     }
++
++    private static String normalizeLineEndings(String value) {
++        return value.replace("\r\n", "\n");
++    }
+ }
+diff --git a/services/document-renderer-service/document-renderer-app/build.gradle.kts b/services/document-renderer-service/document-renderer-app/build.gradle.kts
+index e278730e..47d47912 100644
+--- a/services/document-renderer-service/document-renderer-app/build.gradle.kts
++++ b/services/document-renderer-service/document-renderer-app/build.gradle.kts
+@@ -8,6 +8,13 @@ plugins {
+ group = "ru.rutcampustrack"
+ version = "0.1.0"
+ 
++dependencyManagement {
++    imports {
++        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
++        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
++    }
++}
++
+ dependencies {
+     implementation(project(":services:shared:shared-web"))
+     implementation(project(":services:shared:shared-logback"))
+@@ -17,7 +24,11 @@ dependencies {
+     implementation("org.springframework.boot:spring-boot-starter-actuator")
+     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+ 
+-    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
++    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
++        exclude(group = "io.grpc", module = "grpc-netty-shaded")
++    }
++    implementation("io.grpc:grpc-netty")
++    implementation("com.google.protobuf:protobuf-java")
+     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
+ 
+     testImplementation("org.springframework.boot:spring-boot-starter-test")
+@@ -34,11 +45,11 @@ sourceSets {
+ 
+ protobuf {
+     protoc {
+-        artifact = "com.google.protobuf:protoc:3.25.3"
++        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
+     }
+     plugins {
+         create("grpc") {
+-            artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
++            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
+         }
+     }
+     generateProtoTasks {
+diff --git a/services/mobile-bff/mobile-bff-api-contract/build.gradle.kts b/services/mobile-bff/mobile-bff-api-contract/build.gradle.kts
+index 43c968d4..70ae5f66 100644
+--- a/services/mobile-bff/mobile-bff-api-contract/build.gradle.kts
++++ b/services/mobile-bff/mobile-bff-api-contract/build.gradle.kts
+@@ -7,7 +7,7 @@ version = "0.1.0"
+ 
+ dependencies {
+     api("jakarta.validation:jakarta.validation-api:3.1.0")
+-    api("org.springframework:spring-web:6.2.1")
++    api("org.springframework:spring-web:6.2.19")
+     api("io.swagger.core.v3:swagger-annotations-jakarta:2.2.22")
+-    api("com.fasterxml.jackson.core:jackson-annotations:2.18.2")
++    api("com.fasterxml.jackson.core:jackson-annotations:2.21")
+ }
+diff --git a/services/mobile-bff/mobile-bff-app/build.gradle.kts b/services/mobile-bff/mobile-bff-app/build.gradle.kts
+index e7dc5b88..e66a657b 100644
+--- a/services/mobile-bff/mobile-bff-app/build.gradle.kts
++++ b/services/mobile-bff/mobile-bff-app/build.gradle.kts
+@@ -8,6 +8,13 @@ plugins {
+ group = "ru.rutcampustrack"
+ version = "0.1.0"
+ 
++dependencyManagement {
++    imports {
++        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
++        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
++    }
++}
++
+ dependencies {
+     implementation(project(":services:mobile-bff:mobile-bff-api-contract"))
+     implementation(project(":services:shared:shared-security"))
+@@ -15,8 +22,12 @@ dependencies {
+     implementation("org.springframework.boot:spring-boot-starter-web")
+     implementation("org.springframework.boot:spring-boot-starter-validation")
+     implementation("org.springframework.boot:spring-boot-starter-actuator")
+-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+-    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
++    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
++    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
++        exclude(group = "io.grpc", module = "grpc-netty-shaded")
++    }
++    implementation("io.grpc:grpc-netty")
++    implementation("com.google.protobuf:protobuf-java")
+     implementation("com.google.api.grpc:proto-google-common-protos:2.29.0")
+     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
+ 
+@@ -37,11 +48,11 @@ sourceSets {
+ 
+ protobuf {
+     protoc {
+-        artifact = "com.google.protobuf:protoc:3.25.3"
++        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
+     }
+     plugins {
+         create("grpc") {
+-            artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
++            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
+         }
+     }
+     generateProtoTasks {
+diff --git a/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java b/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java
+index 5c9a3baa..43c2ae54 100644
+--- a/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java
++++ b/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java
+@@ -104,7 +104,7 @@ class OpenApiSnapshotIT {
+         ObjectWriter writer = mapper.writer()
+                 .with(SerializationFeature.INDENT_OUTPUT)
+                 .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+-        String actual = writer.writeValueAsString(root) + "\n";
++        String actual = normalizeLineEndings(writer.writeValueAsString(root) + "\n");
+ 
+         if (Boolean.getBoolean("openapi.snapshot.update")) {
+             Files.createDirectories(SNAPSHOT_PATH.getParent());
+@@ -113,7 +113,11 @@ class OpenApiSnapshotIT {
+         }
+ 
+         assertThat(SNAPSHOT_PATH).exists();
+-        assertThat(actual).isEqualTo(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8));
++        assertThat(actual).isEqualTo(normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8)));
++    }
++
++    private static String normalizeLineEndings(String value) {
++        return value.replace("\r\n", "\n");
+     }
+ 
+     @Test
+diff --git a/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java b/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java
+index 493c30a7..c8335041 100644
+--- a/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java
++++ b/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java
+@@ -114,6 +114,7 @@ class StudentHomeworkHttpGrpcIT {
+         registry.add("grpc.client.academic-service.address",
+                 () -> "static://127.0.0.1:" + grpcServer.getPort());
+         registry.add("grpc.client.academic-service.negotiation-type", () -> "plaintext");
++        registry.add("grpc.server.port", () -> 0);
+         registry.add("grpc.auth.secret", () -> "");
+         registry.add("rutcampustrack.security.internal-jwt.clock-skew-seconds", () -> "0");
+     }
+diff --git a/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java b/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java
+index 9946146e..70d8764f 100644
+--- a/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java
++++ b/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java
+@@ -96,6 +96,7 @@ class StudentHttpGrpcAuthIT {
+         registry.add("grpc.client.attendance-service.address",
+                 () -> "static://127.0.0.1:" + grpcServer.getPort());
+         registry.add("grpc.client.attendance-service.negotiation-type", () -> "plaintext");
++        registry.add("grpc.server.port", () -> 0);
+         registry.add("rutcampustrack.security.internal-jwt.clock-skew-seconds", () -> "0");
+     }
+ 
+diff --git a/services/notification-service/notification-api-contract/build.gradle.kts b/services/notification-service/notification-api-contract/build.gradle.kts
+index e5d7ef5e..8b04eed0 100644
+--- a/services/notification-service/notification-api-contract/build.gradle.kts
++++ b/services/notification-service/notification-api-contract/build.gradle.kts
+@@ -5,10 +5,10 @@ version = "0.1.0"
+ 
+ dependencies {
+     api("jakarta.validation:jakarta.validation-api:3.1.0")
+-    api("org.springframework:spring-web:6.2.1")
++    api("org.springframework:spring-web:6.2.19")
+     // M10 G2 — Pageable / PagedResourcesAssembler для NotificationApi.
+-    api("org.springframework.data:spring-data-commons:3.4.1")
+-    api("org.springframework.hateoas:spring-hateoas:2.4.1")
++    api("org.springframework.data:spring-data-commons:3.5.13")
++    api("org.springframework.hateoas:spring-hateoas:2.5.3")
+     api("io.swagger.core.v3:swagger-annotations-jakarta:2.2.22")
+-    api("com.fasterxml.jackson.core:jackson-annotations:2.18.2")
++    api("com.fasterxml.jackson.core:jackson-annotations:2.21")
+ }
+diff --git a/services/notification-service/notification-app/build.gradle.kts b/services/notification-service/notification-app/build.gradle.kts
+index a64363d2..feb3b4b6 100644
+--- a/services/notification-service/notification-app/build.gradle.kts
++++ b/services/notification-service/notification-app/build.gradle.kts
+@@ -52,7 +52,14 @@ dependencies {
+     // needed at compile time because WebPushDeliveryService catches HttpResponseException (410)
+     // and PushService.send() throws JoseException as a checked exception
+     implementation("org.apache.httpcomponents:httpclient:4.5.13")
+-    implementation("org.bitbucket.b_c:jose4j:0.7.9")
++    implementation("org.bitbucket.b_c:jose4j:0.9.6")
++
++    // Security repair: web-push 5.1.2 brings the vulnerable 2.12.4 client family.
++    // Keep the transitive client and its Netty utility module on one fixed release.
++    constraints {
++        implementation("org.asynchttpclient:async-http-client:2.15.0")
++        implementation("org.asynchttpclient:async-http-client-netty-utils:2.15.0")
++    }
+ 
+     // NEW: MongoDB for push_subscriptions
+     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+@@ -78,7 +85,7 @@ dependencies {
+     implementation("org.springframework.boot:spring-boot-starter-validation")
+ 
+     // NEW: OpenAPI
+-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
++    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+ 
+     compileOnly("org.projectlombok:lombok")
+     annotationProcessor("org.projectlombok:lombok")
+diff --git a/services/schedule-service/schedule-api-contract/build.gradle.kts b/services/schedule-service/schedule-api-contract/build.gradle.kts
+index a7eefd82..cb1d93ed 100644
+--- a/services/schedule-service/schedule-api-contract/build.gradle.kts
++++ b/services/schedule-service/schedule-api-contract/build.gradle.kts
+@@ -10,10 +10,10 @@ dependencies {
+     api(project(":services:shared:shared-web-api"))
+ 
+     api("jakarta.validation:jakarta.validation-api:3.1.0")
+-    api("org.springframework:spring-web:6.2.1")
++    api("org.springframework:spring-web:6.2.19")
+     // Spring Data Commons (for Pageable, PagedResourcesAssembler)
+-    api("org.springframework.data:spring-data-commons:3.4.1")
+-    api("org.springframework.hateoas:spring-hateoas:2.4.1")
++    api("org.springframework.data:spring-data-commons:3.5.13")
++    api("org.springframework.hateoas:spring-hateoas:2.5.3")
+     api("io.swagger.core.v3:swagger-annotations-jakarta:2.2.22")
+-    api("com.fasterxml.jackson.core:jackson-annotations:2.18.2")
++    api("com.fasterxml.jackson.core:jackson-annotations:2.21")
+ }
+diff --git a/services/schedule-service/schedule-app/build.gradle.kts b/services/schedule-service/schedule-app/build.gradle.kts
+index 2153ad98..9165f684 100644
+--- a/services/schedule-service/schedule-app/build.gradle.kts
++++ b/services/schedule-service/schedule-app/build.gradle.kts
+@@ -11,6 +11,8 @@ version = "0.1.0"
+ dependencyManagement {
+     imports {
+         mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
++        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
++        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
+     }
+ }
+ 
+@@ -47,7 +49,7 @@ dependencies {
+     implementation("org.springframework.boot:spring-boot-starter-actuator")
+     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+     implementation("org.springframework.boot:spring-boot-starter-aop")
+-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
++    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+ 
+     runtimeOnly("org.postgresql:postgresql")
+     implementation("org.flywaydb:flyway-core")
+@@ -72,8 +74,14 @@ dependencies {
+     testImplementation(testFixtures(project(":services:shared:shared-test-containers")))
+     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+ 
+-    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
+-    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
++    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
++        exclude(group = "io.grpc", module = "grpc-netty-shaded")
++    }
++    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
++        exclude(group = "io.grpc", module = "grpc-netty-shaded")
++    }
++    implementation("io.grpc:grpc-netty")
++    implementation("com.google.protobuf:protobuf-java")
+     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
+ }
+ 
+@@ -87,11 +95,11 @@ sourceSets {
+ 
+ protobuf {
+     protoc {
+-        artifact = "com.google.protobuf:protoc:3.25.3"
++        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
+     }
+     plugins {
+         create("grpc") {
+-            artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
++            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
+         }
+     }
+     generateProtoTasks {
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java
+index ecfdd03e..c1b87ecb 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java
+@@ -34,7 +34,7 @@ class OpenApiSnapshotIT extends AbstractScheduleIntegrationTest {
+     @Test
+     @DisplayName("M11 G3: /api-docs matches committed snapshot")
+     void apiDocsMatchesSnapshot() throws IOException {
+-        String actual = fetchAndNormalize();
++        String actual = normalizeLineEndings(fetchAndNormalize());
+ 
+         if (Boolean.getBoolean("openapi.snapshot.update")) {
+             Files.createDirectories(SNAPSHOT_PATH.getParent());
+@@ -48,7 +48,7 @@ class OpenApiSnapshotIT extends AbstractScheduleIntegrationTest {
+                         SNAPSHOT_PATH)
+                 .exists();
+ 
+-        String expected = Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8);
++        String expected = normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8));
+         assertThat(actual)
+                 .as("OpenAPI spec drifted from committed snapshot. " +
+                         "To regenerate: ./gradlew :services:schedule-service:schedule-app:integrationTest " +
+@@ -69,4 +69,8 @@ class OpenApiSnapshotIT extends AbstractScheduleIntegrationTest {
+                 .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+         return writer.writeValueAsString(root) + "\n";
+     }
++
++    private static String normalizeLineEndings(String value) {
++        return value.replace("\r\n", "\n");
++    }
+ }
+diff --git a/services/shared/shared-events/build.gradle.kts b/services/shared/shared-events/build.gradle.kts
+index ba870dcd..8c170ff6 100644
+--- a/services/shared/shared-events/build.gradle.kts
++++ b/services/shared/shared-events/build.gradle.kts
+@@ -8,7 +8,7 @@ version = "0.1.0"
+ 
+ dependencyManagement {
+     imports {
+-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
++        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
+     }
+ }
+ 
+diff --git a/services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java b/services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java
+index 28d6c4de..9089630d 100644
+--- a/services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java
++++ b/services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java
+@@ -76,8 +76,10 @@ class EventSchemaCoverageTest {
+             "group.archived",
+             "group.renamed",
+             "group.updated",
++            "homework.due_reminder",
+             "homework.published",
+             "homework.updated",
++            "homework.weekly_digest",
+             "late_checkin.decided",
+             "late_checkin.decision",
+             "late_checkin.requested",
+diff --git a/services/shared/shared-logback/build.gradle.kts b/services/shared/shared-logback/build.gradle.kts
+index 72ce5e62..e93bd370 100644
+--- a/services/shared/shared-logback/build.gradle.kts
++++ b/services/shared/shared-logback/build.gradle.kts
+@@ -8,7 +8,7 @@ version = "0.1.0"
+ 
+ dependencyManagement {
+     imports {
+-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
++        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
+     }
+ }
+ 
+diff --git a/services/shared/shared-observability/build.gradle.kts b/services/shared/shared-observability/build.gradle.kts
+index 6f5207ad..9a001648 100644
+--- a/services/shared/shared-observability/build.gradle.kts
++++ b/services/shared/shared-observability/build.gradle.kts
+@@ -9,7 +9,9 @@ version = "0.1.0"
+ 
+ dependencyManagement {
+     imports {
+-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
++        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
++        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
++        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
+     }
+ }
+ 
+@@ -36,19 +38,18 @@ dependencies {
+     compileOnly("org.springframework.boot:spring-boot-autoconfigure")
+     compileOnly("org.springframework:spring-context")
+     compileOnly("org.slf4j:slf4j-api")
+-    compileOnly("io.grpc:grpc-api:1.63.0")
++    compileOnly("io.grpc:grpc-api")
+     // M13 G10 — SpanExportingPredicate / FinishedSpan interface для
+-    // ActuatorTracingExcludeFilter. micrometer-tracing 1.4.1 совпадает с
+-    // транзитивной версией bridge-otel 1.4.1 в *-app модулях.
+-    compileOnly("io.micrometer:micrometer-tracing:1.4.1")
++    // ActuatorTracingExcludeFilter. Version is supplied by the Boot BOM.
++    compileOnly("io.micrometer:micrometer-tracing")
+ 
+     testImplementation("org.springframework.boot:spring-boot-starter-test")
+     testImplementation("org.springframework.boot:spring-boot-starter-actuator")
+     testImplementation("io.micrometer:micrometer-registry-prometheus")
+-    testImplementation("io.grpc:grpc-api:1.63.0")
+-    testImplementation("io.grpc:grpc-inprocess:1.63.0")
++    testImplementation("io.grpc:grpc-api")
++    testImplementation("io.grpc:grpc-inprocess")
+     // M13 G10 — для unit-тестов фильтра (FinishedSpan через Mockito).
+-    testImplementation("io.micrometer:micrometer-tracing:1.4.1")
++    testImplementation("io.micrometer:micrometer-tracing")
+     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+ 
+     testFixturesApi("io.micrometer:micrometer-core")
+diff --git a/services/shared/shared-outbox/build.gradle.kts b/services/shared/shared-outbox/build.gradle.kts
+index 8892a5f9..9b02a020 100644
+--- a/services/shared/shared-outbox/build.gradle.kts
++++ b/services/shared/shared-outbox/build.gradle.kts
+@@ -8,7 +8,7 @@ version = "0.1.0"
+ 
+ dependencyManagement {
+     imports {
+-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
++        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
+     }
+ }
+ 
+diff --git a/services/shared/shared-security/build.gradle.kts b/services/shared/shared-security/build.gradle.kts
+index 1785138b..13906f17 100644
+--- a/services/shared/shared-security/build.gradle.kts
++++ b/services/shared/shared-security/build.gradle.kts
+@@ -9,7 +9,7 @@ version = "0.1.0"
+ 
+ dependencyManagement {
+     imports {
+-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
++        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
+     }
+ }
+ 
+diff --git a/services/shared/shared-test-containers/build.gradle.kts b/services/shared/shared-test-containers/build.gradle.kts
+index f7b4c515..df0b4f2b 100644
+--- a/services/shared/shared-test-containers/build.gradle.kts
++++ b/services/shared/shared-test-containers/build.gradle.kts
+@@ -9,7 +9,9 @@ version = "0.1.0"
+ 
+ dependencyManagement {
+     imports {
+-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
++        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
++        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
++        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
+         mavenBom("org.testcontainers:testcontainers-bom:${libs.versions.testcontainersBom.get()}")
+     }
+ }
+diff --git a/services/shared/shared-web-api/build.gradle.kts b/services/shared/shared-web-api/build.gradle.kts
+index 5e6c511c..9d80fc05 100644
+--- a/services/shared/shared-web-api/build.gradle.kts
++++ b/services/shared/shared-web-api/build.gradle.kts
+@@ -8,7 +8,7 @@ version = "0.1.0"
+ 
+ dependencyManagement {
+     imports {
+-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
++        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
+     }
+ }
+ 
+diff --git a/services/shared/shared-web/build.gradle.kts b/services/shared/shared-web/build.gradle.kts
+index 1f5467ce..0a921f67 100644
+--- a/services/shared/shared-web/build.gradle.kts
++++ b/services/shared/shared-web/build.gradle.kts
+@@ -8,7 +8,7 @@ version = "0.1.0"
+ 
+ dependencyManagement {
+     imports {
+-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
++        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
+     }
+ }
+ 

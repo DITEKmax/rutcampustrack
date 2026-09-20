@@ -1,0 +1,1151 @@
+﻿{
+    "schema":  "rutcampustrack.story-backend-map.v1",
+    "generated_at":  "2026-09-06",
+    "generated_by":  ".agent/migration/generate-story-backend-map.ps1",
+    "source_policy":  "Links distinguish literal request-row citations from reconciliation semantic candidates. Every edge cites both its request row and story definition. Adjacent prose never carries a prior request ID; service or role alone never creates a link.",
+    "links":  [
+                  {
+                      "request_id":  "X-01",
+                      "story_id":  "JS-HEADMAN-19",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "342"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "630"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "X-01",
+                      "story_id":  "JS-TEACHER-07",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "342"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "374"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "X-01",
+                      "story_id":  "JS-ADMIN-13",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "342"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "253"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "X-01",
+                      "story_id":  "JS-STUDENT-16",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "342"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "751"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-05",
+                      "story_id":  "JS-HEADMAN-12",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "126"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "545"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-41",
+                      "story_id":  "JS-STUDENT-WEB-07",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "286"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "955"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-41",
+                      "story_id":  "JS-STUDENT-02",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "286"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "704"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-13",
+                      "story_id":  "JS-HEADMAN-23",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "139"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "656"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-42",
+                      "story_id":  "JS-SYSTEM-16",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "287"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "894"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AU-16",
+                      "story_id":  "JS-ADMIN-20",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "106"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "292"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AU-16",
+                      "story_id":  "JS-HEADMAN-23",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "106"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "656"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-42",
+                      "story_id":  "JS-HEADMAN-19",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "287"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "630"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-25",
+                      "story_id":  "JS-STUDENT-12",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "270"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "710"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-25",
+                      "story_id":  "JS-STUDENT-02",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "270"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "704"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-15",
+                      "story_id":  "JS-STUDENT-27",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "255"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "808"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-05",
+                      "story_id":  "JS-TEACHER-14",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "126"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "411"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "SC-16",
+                      "story_id":  "JS-STUDENT-12",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "220"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "710"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AU-10",
+                      "story_id":  "JS-ADMIN-26",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "100"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "325"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AU-10",
+                      "story_id":  "JS-ADMIN-19",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "100"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "286"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "SC-16",
+                      "story_id":  "JS-HEADMAN-02",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "220"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "440"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-50",
+                      "story_id":  "JS-HEADMAN-44",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "300"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "482"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-50",
+                      "story_id":  "JS-HEADMAN-43",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "300"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "476"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-50",
+                      "story_id":  "JS-STUDENT-23",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "300"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "795"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "MAP-07",
+                      "story_id":  "JS-ADMIN-25",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "329"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "320"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-07",
+                      "story_id":  "JS-TEACHER-09",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "128"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "387"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-07",
+                      "story_id":  "JS-HEADMAN-12",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "128"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "545"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-16",
+                      "story_id":  "JS-ADMIN-15",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "142"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "264"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-07",
+                      "story_id":  "JS-TEACHER-10",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "128"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "391"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "MAP-07",
+                      "story_id":  "JS-ADMIN-24",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "329"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "315"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "MAP-07",
+                      "story_id":  "JS-ADMIN-23",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "329"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "309"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "MAP-07",
+                      "story_id":  "JS-STUDENT-24",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "329"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "815"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "X-02",
+                      "story_id":  "JS-TEACHER-13",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "343"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "407"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "X-02",
+                      "story_id":  "JS-HEADMAN-30",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "343"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "640"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "SC-08",
+                      "story_id":  "JS-STUDENT-12",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "207"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "710"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "SC-01",
+                      "story_id":  "JS-HEADMAN-21",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "195"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "506"
+                                         },
+                      "evidence_kind":  "closed-decision-R-25",
+                      "association_basis":  "closed R-25 decision; request and story scopes are explicitly connected"
+                  },
+                  {
+                      "request_id":  "AT-26",
+                      "story_id":  "JS-STUDENT-06",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "271"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "727"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-26",
+                      "story_id":  "JS-STUDENT-02",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "271"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "704"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "SC-01",
+                      "story_id":  "JS-HEADMAN-16",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "195"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "585"
+                                         },
+                      "evidence_kind":  "closed-decision-R-25",
+                      "association_basis":  "closed R-25 decision; request and story scopes are explicitly connected"
+                  },
+                  {
+                      "request_id":  "SC-08",
+                      "story_id":  "JS-STUDENT-02",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "207"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "704"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-51",
+                      "story_id":  "JS-HEADMAN-12",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "182"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "545"
+                                         },
+                      "evidence_kind":  "direct-request-row",
+                      "association_basis":  "literal stable-story citation in the request row"
+                  },
+                  {
+                      "request_id":  "AU-14",
+                      "story_id":  "JS-ADMIN-10",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "104"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "225"
+                                         },
+                      "evidence_kind":  "direct-request-row",
+                      "association_basis":  "literal stable-story citation in the request row"
+                  },
+                  {
+                      "request_id":  "AU-10",
+                      "story_id":  "JS-SYSTEM-14",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "100"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "874"
+                                         },
+                      "evidence_kind":  "direct-request-row",
+                      "association_basis":  "literal stable-story citation in the request row"
+                  },
+                  {
+                      "request_id":  "SC-10",
+                      "story_id":  "JS-SYSTEM-05",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "209"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "880"
+                                         },
+                      "evidence_kind":  "direct-request-row",
+                      "association_basis":  "literal stable-story citation in the request row"
+                  },
+                  {
+                      "request_id":  "NT-03",
+                      "story_id":  "JS-SYSTEM-10",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "312"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "905"
+                                         },
+                      "evidence_kind":  "direct-request-row",
+                      "association_basis":  "literal stable-story citation in the request row"
+                  },
+                  {
+                      "request_id":  "AT-22",
+                      "story_id":  "JS-SYSTEM-07",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "267"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "886"
+                                         },
+                      "evidence_kind":  "direct-request-row",
+                      "association_basis":  "literal stable-story citation in the request row"
+                  },
+                  {
+                      "request_id":  "AT-15",
+                      "story_id":  "JS-STUDENT-WEB-07",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "255"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "955"
+                                         },
+                      "evidence_kind":  "direct-request-row",
+                      "association_basis":  "literal stable-story citation in the request row"
+                  },
+                  {
+                      "request_id":  "AT-26",
+                      "story_id":  "JS-HEADMAN-05",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "271"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "466"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-12",
+                      "story_id":  "JS-HEADMAN-05",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "252"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "466"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-12",
+                      "story_id":  "JS-STUDENT-06",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "252"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "727"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-12",
+                      "story_id":  "JS-STUDENT-02",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "252"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "704"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-31",
+                      "story_id":  "JS-HEADMAN-24",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "276"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "666"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-11",
+                      "story_id":  "JS-STUDENT-02",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "251"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "704"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-11",
+                      "story_id":  "JS-HEADMAN-24",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "251"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "666"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-31",
+                      "story_id":  "JS-STUDENT-23",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "276"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "795"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-35",
+                      "story_id":  "JS-ADMIN-15",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "161"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "264"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-09",
+                      "story_id":  "JS-SYSTEM-14",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "135"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "874"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-09",
+                      "story_id":  "JS-ADMIN-26",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "135"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "325"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-09",
+                      "story_id":  "JS-ADMIN-19",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "135"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "286"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-09",
+                      "story_id":  "JS-HEADMAN-01",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "249"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "425"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-35",
+                      "story_id":  "JS-ADMIN-07",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "161"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "203"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AC-35",
+                      "story_id":  "JS-ADMIN-06",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "161"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "201"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  },
+                  {
+                      "request_id":  "AT-09",
+                      "story_id":  "JS-HEADMAN-WEB-05",
+                      "request_evidence":  {
+                                               "source":  "docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+                                               "line":  "249"
+                                           },
+                      "story_evidence":  {
+                                             "source":  "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+                                             "line":  "1001"
+                                         },
+                      "evidence_kind":  "reconciliation-semantic-candidate",
+                      "association_basis":  "reconciliation candidate; request row and story definition are cited, but a contract packet must preserve any remaining semantic gap"
+                  }
+              ],
+    "closed_request_trace":  [
+                                 {
+                                     "request_id":  "SC-08",
+                                     "story_ids":  [
+                                                       "JS-STUDENT-02",
+                                                       "JS-STUDENT-12"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "SC-16",
+                                     "story_ids":  [
+                                                       "JS-STUDENT-12",
+                                                       "JS-HEADMAN-02"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "X-01",
+                                     "story_ids":  [
+                                                       "JS-ADMIN-13",
+                                                       "JS-TEACHER-07",
+                                                       "JS-HEADMAN-19",
+                                                       "JS-STUDENT-16"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AC-35",
+                                     "story_ids":  [
+                                                       "JS-ADMIN-06",
+                                                       "JS-ADMIN-07",
+                                                       "JS-ADMIN-15"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AC-09",
+                                     "story_ids":  [
+                                                       "JS-ADMIN-19",
+                                                       "JS-ADMIN-26",
+                                                       "JS-SYSTEM-14"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AC-13",
+                                     "story_ids":  [
+                                                       "JS-HEADMAN-23"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AC-16",
+                                     "story_ids":  [
+                                                       "JS-ADMIN-15"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "X-02",
+                                     "story_ids":  [
+                                                       "JS-HEADMAN-30",
+                                                       "JS-TEACHER-13"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AT-18",
+                                     "story_ids":  [
+
+                                                   ],
+                                     "trace_status":  "no-explicit-story-link",
+                                     "reason":  "Closed source decision is retained in backend-delta; no stable story association is asserted without evidence."
+                                 },
+                                 {
+                                     "request_id":  "MAP-01",
+                                     "story_ids":  [
+
+                                                   ],
+                                     "trace_status":  "no-explicit-story-link",
+                                     "reason":  "Closed source decision is retained in backend-delta; no stable story association is asserted without evidence."
+                                 },
+                                 {
+                                     "request_id":  "X-07",
+                                     "story_ids":  [
+
+                                                   ],
+                                     "trace_status":  "no-explicit-story-link",
+                                     "reason":  "Closed source decision is retained in backend-delta; no stable story association is asserted without evidence."
+                                 },
+                                 {
+                                     "request_id":  "SC-03",
+                                     "story_ids":  [
+
+                                                   ],
+                                     "trace_status":  "no-explicit-story-link",
+                                     "reason":  "Closed source decision is retained in backend-delta; no stable story association is asserted without evidence."
+                                 },
+                                 {
+                                     "request_id":  "AC-07",
+                                     "story_ids":  [
+                                                       "JS-HEADMAN-12",
+                                                       "JS-TEACHER-09",
+                                                       "JS-TEACHER-10"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "SC-01",
+                                     "story_ids":  [
+                                                       "JS-HEADMAN-21",
+                                                       "JS-HEADMAN-16"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AC-38",
+                                     "story_ids":  [
+
+                                                   ],
+                                     "trace_status":  "no-explicit-story-link",
+                                     "reason":  "Closed source decision is retained in backend-delta; no stable story association is asserted without evidence."
+                                 },
+                                 {
+                                     "request_id":  "AT-11",
+                                     "story_ids":  [
+                                                       "JS-HEADMAN-24",
+                                                       "JS-STUDENT-02"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AT-12",
+                                     "story_ids":  [
+                                                       "JS-STUDENT-02",
+                                                       "JS-STUDENT-06",
+                                                       "JS-HEADMAN-05"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AT-15",
+                                     "story_ids":  [
+                                                       "JS-STUDENT-WEB-07",
+                                                       "JS-STUDENT-27"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AT-09",
+                                     "story_ids":  [
+                                                       "JS-HEADMAN-01",
+                                                       "JS-HEADMAN-WEB-05"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AC-05",
+                                     "story_ids":  [
+                                                       "JS-HEADMAN-12",
+                                                       "JS-TEACHER-14"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AC-06",
+                                     "story_ids":  [
+
+                                                   ],
+                                     "trace_status":  "no-explicit-story-link",
+                                     "reason":  "Closed source decision is retained in backend-delta; no stable story association is asserted without evidence."
+                                 },
+                                 {
+                                     "request_id":  "MAP-07",
+                                     "story_ids":  [
+                                                       "JS-STUDENT-24",
+                                                       "JS-ADMIN-23",
+                                                       "JS-ADMIN-24",
+                                                       "JS-ADMIN-25"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AT-25",
+                                     "story_ids":  [
+                                                       "JS-STUDENT-02",
+                                                       "JS-STUDENT-12"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AT-50",
+                                     "story_ids":  [
+                                                       "JS-STUDENT-23",
+                                                       "JS-HEADMAN-43",
+                                                       "JS-HEADMAN-44"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AU-10",
+                                     "story_ids":  [
+                                                       "JS-SYSTEM-14",
+                                                       "JS-ADMIN-19",
+                                                       "JS-ADMIN-26"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AU-16",
+                                     "story_ids":  [
+                                                       "JS-HEADMAN-23",
+                                                       "JS-ADMIN-20"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AT-42",
+                                     "story_ids":  [
+                                                       "JS-SYSTEM-16",
+                                                       "JS-HEADMAN-19"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AT-26",
+                                     "story_ids":  [
+                                                       "JS-STUDENT-02",
+                                                       "JS-STUDENT-06",
+                                                       "JS-HEADMAN-05"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AT-31",
+                                     "story_ids":  [
+                                                       "JS-HEADMAN-24",
+                                                       "JS-STUDENT-23"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 },
+                                 {
+                                     "request_id":  "AT-41",
+                                     "story_ids":  [
+                                                       "JS-STUDENT-02",
+                                                       "JS-STUDENT-WEB-07"
+                                                   ],
+                                     "trace_status":  "linked",
+                                     "reason":  "See links for direct or semantic-candidate evidence."
+                                 }
+                             ]
+}

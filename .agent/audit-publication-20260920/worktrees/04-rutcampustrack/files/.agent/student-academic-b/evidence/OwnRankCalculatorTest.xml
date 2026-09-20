@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-07T22:41:39" hostname="DITEK-PK" time="0.098">
+  <properties/>
+  <testcase name="crossMultiplicationUsesBigIntegerBeyondLongRange()" classname="ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest" time="0.029"/>
+  <testcase name="exactFractionsAreComparedBeforePublicRounding()" classname="ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest" time="0.003"/>
+  <testcase name="competitionRankProducesOneTwoTwoFour()" classname="ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest" time="0.002"/>
+  <testcase name="duplicateOrMalformedRosterInputFailsWithTypedErrors()" classname="ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest" time="0.005"/>
+  <testcase name="absentOwnFromAuthoritativeRosterIsUnavailableWithoutImplicitInjection()" classname="ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest" time="0.0"/>
+  <testcase name="rankSummaryHasNoPeerPayloadFields()" classname="ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest" time="0.047"/>
+  <testcase name="noRecordParticipantRemainsInParticipantCount()" classname="ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest" time="0.002"/>
+  <testcase name="projectedAbsentOwnWithHeldLessonsIsRankableButH0OwnIsUnavailable()" classname="ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" tests="8" skipped="0" failures="1" errors="0" timestamp="2026-09-10T18:43:50" hostname="DITEK-PK" time="2.469">
+  <properties/>
+  <testcase name="malformedInternalTimeClaim_returns503WithoutDownstreamCall()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.43"/>
+  <testcase name="filterOrder_isAfterJwtAuth()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.355"/>
+  <testcase name="validAdmission_forwardsSignedInternalTokenAndSanitizesLegacyIdentity()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.364">
+    <failure message="org.mockito.exceptions.misusing.NotAMockException: &#10;Argument passed to verify() is of type InternalJwtIssuerFilterTest$$Lambda/0x00000205d28498b8 and is not a mock!&#10;Make sure you place the parenthesis correctly!&#10;See the examples of correct verifications:&#10;    verify(mock).someMethod();&#10;    verify(mock, times(10)).someMethod();&#10;    verify(mock, atLeastOnce()).someMethod();" type="org.mockito.exceptions.misusing.NotAMockException">org.mockito.exceptions.misusing.NotAMockException: 
+Argument passed to verify() is of type InternalJwtIssuerFilterTest$$Lambda/0x00000205d28498b8 and is not a mock!
+Make sure you place the parenthesis correctly!
+See the examples of correct verifications:
+    verify(mock).someMethod();
+    verify(mock, times(10)).someMethod();
+    verify(mock, atLeastOnce()).someMethod();
+	at app//ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest.validAdmission_forwardsSignedInternalTokenAndSanitizesLegacyIdentity(InternalJwtIssuerFilterTest.java:69)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="authorityDenial_returnsTypedPublicResponseWithoutDownstreamCall()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.302"/>
+  <testcase name="noAccessTokenAttribute_passesThroughWithoutAuthorityCall()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.063"/>
+  <testcase name="fractionalInternalExpiration_returns503WithoutDownstreamCall()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.128"/>
+  <testcase name="missingAccessExpectations_returns503WithoutAuthorityCall()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.302"/>
+  <testcase name="downstreamFailure_isPropagatedWithOriginalIdentity()" classname="ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest" time="0.518"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

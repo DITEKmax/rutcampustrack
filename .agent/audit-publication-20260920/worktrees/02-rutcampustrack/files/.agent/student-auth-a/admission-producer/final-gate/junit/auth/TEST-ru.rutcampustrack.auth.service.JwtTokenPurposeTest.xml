@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-09-10T21:26:43" hostname="DITEK-PK" time="3.48">
+  <properties/>
+  <testcase name="accessTokenCannotBeUsedByRefreshParser()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.135"/>
+  <testcase name="sessionAccessTokenCarriesFrozenWireAndLegacyAccessIsNotAdmitted()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.356"/>
+  <testcase name="sessionAccessParserAcceptsSignedTokenWithoutOptionalGroupId()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.366"/>
+  <testcase name="accessParserRejectsMalformedRequiredClaims()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.318"/>
+  <testcase name="sessionAccessParserRejectsFutureAndNonNumberTimes()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.131"/>
+  <testcase name="internalTokenCarriesInternalPurposeAndCannotBeParsedAsAccess()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.163"/>
+  <testcase name="sessionAccessParserRejectsMissingRequiredClaims()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.234"/>
+  <testcase name="parserStillRejectsWrongIssuerAudienceAndSignature()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.288"/>
+  <testcase name="refreshParserRejectsMissingPurposeSubjectExpirationOrJti()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.082"/>
+  <testcase name="sessionAccessParserRejectsSemanticIdentityMismatches()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.276"/>
+  <testcase name="generatedAccessTokenIsStrictlyAcceptedAndParseTokenIsAccessAlias()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.308"/>
+  <testcase name="sessionAccessParserRejectsUnknownRolesStatusesAndInvalidDecimalStrings()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.142"/>
+  <testcase name="sessionAccessParserRejectsRawTypeCoercionAndFractionalOrExponentTimes()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.207"/>
+  <testcase name="accessParserRejectsMissingOrWrongPurpose()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.351"/>
+  <testcase name="generatedRefreshTokenIsAcceptedOnlyByRefreshParserAndExtractors()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.105"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

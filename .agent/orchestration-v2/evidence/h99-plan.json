@@ -1,0 +1,30 @@
+{
+  "arguments": [
+    ":services:attendance-service:attendance-app:test",
+    "--tests",
+    "ru.rutcampustrack.attendance.report.ReportServiceTest",
+    ":services:academic-service:academic-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+    "--tests",
+    "ru.rutcampustrack.academic.integration.EventIT",
+    "--tests",
+    "ru.rutcampustrack.academic.integration.CacheIT",
+    ":services:attendance-service:attendance-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+    "--tests",
+    "ru.rutcampustrack.attendance.integration.ReportIT",
+    "--continue",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report"
+  ],
+  "resultDirectories": [
+    "services/attendance-service/attendance-app/build/test-results/test",
+    "services/academic-service/academic-app/build/test-results/integrationTest",
+    "services/attendance-service/attendance-app/build/test-results/integrationTest"
+  ],
+  "meaning": "Corrected report units and real PostgreSQL/Mongo historical membership, event/cancellation and statistics integration in one serial batch. Remote counterparts mocked at existing harness boundaries; combined producer runtime remains separate."
+}

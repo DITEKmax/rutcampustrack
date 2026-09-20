@@ -1,0 +1,40 @@
+{
+  "schema": "admission-fixture-correction-v1",
+  "status": "SOURCE_READY",
+  "release": "RELEASE",
+  "risk": "S3",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "failureEvidence": {
+    "path": "../runtime-failure-01/manifest.json",
+    "sha256": "21E86F90299A5348BC0199EEDAA6FC8EA5CED568AF8C58E6E88649FFB0369916",
+    "bytes": 4590
+  },
+  "sourceGuard": {
+    "path": "../source-hashes.json",
+    "sha256": "DF8896D704B015E75C7266BCC0E6AAB1F56BDCC98D03276E75878C1342DCDA98",
+    "bytes": 5613,
+    "entries": 17,
+    "postCorrection": "2 expected drifts; 13 other existing entries unchanged; 2 deleted entries absent"
+  },
+  "files": [
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "beforeSha256": "19AFD43685CBB5C50A2E807E651308540BE0FCA18A560E286758F9B0C41C3644",
+      "beforeBytes": 15469,
+      "afterSha256": "097B05FF70E8B3A80357D3C5E61F1A9AEE12ACE1079A2AF4345EC959F2DA49A3",
+      "afterBytes": 15485,
+      "byteDelta": 16,
+      "correction": "two positive signed-token issuedAt values use current whole-second Instant"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "beforeSha256": "95ED8A2215CE17EF64B9E87D839F38CFA4A61940F75FFB4C847DBFB7933AB6F6",
+      "beforeBytes": 9807,
+      "afterSha256": "2C68897A1550FCC30B4D295E3E596F67416A22AFBE7D00F342A921AB8BB121BE",
+      "afterBytes": 9917,
+      "byteDelta": 110,
+      "correction": "default group_id is string 10; terminal read-only fixture overrides group_id to null"
+    }
+  ],
+  "runtime": "N/A; static/diff-only correction gate"
+}

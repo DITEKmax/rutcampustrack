@@ -1,0 +1,40 @@
+{
+  "startedAt": "2026-09-19T23:07:46.8964072+03:00",
+  "identity": "ditek-pk\\maksd",
+  "runId": "h67-05947db832a64be9b4e2a7e1d4483552",
+  "sourceHashes": {
+    "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/h62-edge-diagnosis/fixture/nginx/nginx.conf": "BC18F838FAE0D8AA9E99C2EC5D99C2669EFE8A9DFF47068BAB6B34985184BE20",
+    "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/h62-edge-diagnosis/fixture/nginx/default.conf": "D0CCFAE3573BC6A233354288C47D1B0EB3601CE6EF9F7CB2887FA5690F0E1B17",
+    "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/runner.ps1": "9A2D703548110A142597B02196F5483F0F61D7329DFBFED313E38F1AFC0B4B9D"
+  },
+  "diagnosticExit": 0,
+  "cleanupVerified": true,
+  "createArguments": [
+    "create",
+    "--pull=never",
+    "--name",
+    "rct-h67-05947db832a64be9b4e2a7e1d4483552",
+    "--label",
+    "rct.runtime-owner=student-requests-edge-diagnostic",
+    "--label",
+    "rct.runtime-run=h67-05947db832a64be9b4e2a7e1d4483552",
+    "--network",
+    "none",
+    "--add-host",
+    "api-gateway:127.0.0.1",
+    "--mount",
+    "type=bind,source=C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/h62-edge-diagnosis/fixture/nginx/nginx.conf,target=/etc/nginx/nginx.conf,readonly",
+    "--mount",
+    "type=bind,source=C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/h62-edge-diagnosis/fixture/nginx/default.conf,target=/etc/nginx/conf.d/default.conf,readonly",
+    "--mount",
+    "type=bind,source=C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/h62-edge-diagnosis/fixture/keys/server.crt,target=/etc/nginx/certs/server.crt,readonly",
+    "--mount",
+    "type=bind,source=C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/h62-edge-diagnosis/fixture/keys/server.key,target=/etc/nginx/certs/server.key,readonly",
+    "--entrypoint",
+    "nginx",
+    "nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+    "-t"
+  ],
+  "containerId": "6d24f42571f8d25407278f56aabf35ae675ed54825d5512d6d5634a4b70e259c",
+  "finishedAt": "2026-09-19T23:07:48.9885019+03:00"
+}

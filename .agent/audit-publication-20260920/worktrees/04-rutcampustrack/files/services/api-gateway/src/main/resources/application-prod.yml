@@ -1,0 +1,40 @@
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins:
+                  - ${CORS_ALLOWED_ORIGIN:https://rutcampustrack.ru}
+                allowed-methods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
+                allowed-headers:
+                  - Authorization
+                  - Content-Type
+                  - X-Requested-With
+                allow-credentials: true
+                max-age: 3600
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      # M04 QA6: prod не переопределяет — default уже always.
+      probes:
+        enabled: true
+
+# M04 QA1: prod не переопределяет ru.rutcampustrack — default уже INFO.
+# Здесь только prod-специфичный override для шумного gateway-логгера.
+logging:
+  level:
+    org.springframework.cloud.gateway: WARN

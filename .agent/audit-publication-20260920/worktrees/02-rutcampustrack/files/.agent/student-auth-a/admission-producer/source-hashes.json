@@ -1,0 +1,134 @@
+{
+  "schema": "stage1-source-hashes-v1",
+  "generatedAt": "2026-09-10T18:33:33.6046240Z",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "owner": "admission-producer",
+  "productAndTests": [
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+      "category": "producer-product",
+      "exists": true,
+      "bytes": 36543,
+      "sha256": "BB6782EF19448995CB9D3F06538EFBD90F58605AB0E14B28868A0FDC0B7B2E28"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionService.java",
+      "category": "producer-product",
+      "exists": true,
+      "bytes": 12002,
+      "sha256": "C27CE2D1B095FB677634C5FF53F518B7AC95F7ABC1220A1DA03082DF51D07805"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionException.java",
+      "category": "producer-product",
+      "exists": true,
+      "bytes": 928,
+      "sha256": "0C50ED738589F8EE064ADCE4AA81001F4A212362621F8DADA46BF713A55BFDA2"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalSessionAdmissionController.java",
+      "category": "producer-product",
+      "exists": true,
+      "bytes": 1265,
+      "sha256": "516A07387DAD8F172A1D002D24B21D2BEF6B59E9BED321B2C9C10748C0C5E991"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java",
+      "category": "producer-product",
+      "exists": true,
+      "bytes": 6010,
+      "sha256": "96B9C7852165DA2EDED662F0B1F3EDA990964D836C1A9A636076112C453CED79"
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtClaims.java",
+      "category": "shared-product",
+      "exists": true,
+      "bytes": 559,
+      "sha256": "91F3605EB1FC14075F81D285F11BB0F678ED650B228F17DD63D2710EF042E961"
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java",
+      "category": "shared-product",
+      "exists": true,
+      "bytes": 19220,
+      "sha256": "E97A2F67C9FD4D2ABACB7D6592280A7C1CF4E1DAEB6CC23BA9D5C9A872802BA7"
+    },
+    {
+      "path": "services/shared/shared-security/src/testFixtures/java/ru/rutcampustrack/shared/security/InternalJwtTestFactory.java",
+      "category": "shared-test-fixture",
+      "exists": true,
+      "bytes": 3257,
+      "sha256": "DF85909E461FDAB4EAF0559202711C663737E2909106E8786A7B365635304A4B"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "category": "producer-test",
+      "exists": true,
+      "bytes": 9807,
+      "sha256": "95ED8A2215CE17EF64B9E87D839F38CFA4A61940F75FFB4C847DBFB7933AB6F6"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+      "category": "producer-test",
+      "exists": true,
+      "bytes": 20270,
+      "sha256": "A8799DE7C76BD2324621C89DDE56D57658440CFB0DEFDD1730257588DED06E6A"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "category": "producer-test",
+      "exists": true,
+      "bytes": 15469,
+      "sha256": "19AFD43685CBB5C50A2E807E651308540BE0FCA18A560E286758F9B0C41C3644"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "category": "producer-test",
+      "exists": true,
+      "bytes": 7055,
+      "sha256": "BE7E984D5A10C16A32A10181234DA68B8A28F43AE5AAA17994AD5D4037E3D903"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java",
+      "category": "producer-test",
+      "exists": true,
+      "bytes": 3650,
+      "sha256": "3CBE3BA2C8E5F3514F0705CD86C89D0303970E420725834EA0F0073643DFD373"
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtValidatorTest.java",
+      "category": "shared-test",
+      "exists": true,
+      "bytes": 9552,
+      "sha256": "75AF48B58D02D3206F54C8011D27A0DBD2645B554998A8D5E7A69038393E1FFE"
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/DualModeUserContextFilterTest.java",
+      "category": "shared-test",
+      "exists": true,
+      "bytes": 7916,
+      "sha256": "5B168C29A741215755A530B069B274D4081767C95FB492BD0C6A668AF43B8295"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalIssuerController.java",
+      "category": "deleted-old-issuer",
+      "exists": false,
+      "bytes": null,
+      "sha256": null
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalIssuerIT.java",
+      "category": "deleted-old-issuer-test",
+      "exists": false,
+      "bytes": null,
+      "sha256": null
+    }
+  ],
+  "auth13": {
+    "reference": "manifest.json",
+    "manifestSha256": "5DDABFE8EB55046DF5BB9F6D0EC0245B7D47E6CE2909D789415DC2D823A5D18B",
+    "manifestBytes": 2958,
+    "entries": 13,
+    "audit": "See current manifest; no 13-file re-audit performed in this follow-up."
+  }
+}

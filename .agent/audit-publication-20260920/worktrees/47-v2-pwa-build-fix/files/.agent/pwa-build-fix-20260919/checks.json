@@ -1,0 +1,93 @@
+{
+  "base_revision": "d7ec16572db325d944f1a1fbd3b4960b827d09c3",
+  "head_revision": "d7ec16572db325d944f1a1fbd3b4960b827d09c3",
+  "rules_sha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "root_decision": "2026-09-19 approved explicit | undefined on attachmentStates props, ordinary undefined defaults, and direct parent binding",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-pwa-build-fix",
+  "environment": {
+    "os": "Windows",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "mode": "workspace-write; locked offline dependencies"
+  },
+  "checks": [
+    {
+      "name": "offline dependency preparation",
+      "criterion": "locked dependencies available without upgrades or network",
+      "command": "npm ci --offline --ignore-scripts --no-audit --no-fund",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "logs/npm-ci-offline.log"
+    },
+    {
+      "name": "baseline PWA build reproduction",
+      "criterion": "record confirmed TS2379 before correction",
+      "command": "npm run build --workspace @rct/pwa-vue",
+      "exit_code": 1,
+      "inner_npm_code": 2,
+      "status": "EXPECTED_FAIL_REPRODUCED",
+      "evidence": "logs/build-baseline.log"
+    },
+    {
+      "name": "intermediate parent binding reproduction",
+      "criterion": "record strict optional parent-to-child boundary before scoped correction",
+      "command": "npm run build --workspace @rct/pwa-vue",
+      "exit_code": 1,
+      "inner_npm_code": 2,
+      "status": "CORRECTED_IN_SCOPE",
+      "evidence": "logs/build-parent-binding.log"
+    },
+    {
+      "name": "PWA build",
+      "criterion": "vue-tsc and Vite production build pass",
+      "command": "npm run build --workspace @rct/pwa-vue",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "logs/build-approved-final.log"
+    },
+    {
+      "name": "Requests feature tests",
+      "criterion": "existing Requests component/controller/state/attachment tests pass",
+      "command": "npx --no-install vitest run --config pwa-vue/vite.config.ts mobile-core/src/features/requests/RequestsScreen.test.ts mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/state.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts",
+      "exit_code": 0,
+      "status": "PASS",
+      "result": "5 test files, 54 tests",
+      "evidence": "logs/requests-tests-approved-final.log"
+    },
+    {
+      "name": "intermediate lint variant",
+      "criterion": "preserve recorded failure before root-approved correction",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exit_code": 1,
+      "status": "CORRECTED",
+      "result": "vue/require-default-prop warnings on default-less optional props",
+      "evidence": "logs/lint-final.log"
+    },
+    {
+      "name": "mobile-core lint",
+      "criterion": "applicable changed-area lint",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exit_code": 0,
+      "status": "PASS",
+      "result": "no warnings or errors",
+      "evidence": "logs/lint-approved-final.log"
+    },
+    {
+      "name": "scoped diff check",
+      "criterion": "no whitespace errors and exact two-file product diff",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "REPORT.md and final git diff"
+    }
+  ],
+  "runtime": {
+    "pwa_build": "PASS",
+    "requests_ssr_tests": "PASS",
+    "browser_or_deployed_product": "N/A by contract"
+  },
+  "review": {
+    "status": "READY_FOR_FRESH_INDEPENDENT_SOL_REVIEW",
+    "commit": "NOT_CREATED_BEFORE_REVIEW"
+  }
+}

@@ -1,0 +1,20 @@
+# Owner GO — 2026-09-15 19:38 MSK
+
+## Goal
+Resume from the 03:24 STOP checkpoint. S3 product work; close I4 combined acceptance, R4 real component regression, and R3 final reliability checks without overlapping writers/resources. Present core logic snippets in the main chat for owner review as work progresses.
+## Context/evidence
+Root read CURRENT, RULES, STOP-ACKS and I4 contract. All236 saved SHA256 entries across8 worktrees match; checkpoint JSON SHA45B080FA64A63BC880FF2BABAC78A860313B8BCC83139887E70239CBC9ECD5D4. No snapshot changes observed. Historical Lessons3pending_init status needs read-only reconciliation, no child notifications that recreate old records. Other current authors explicitly completed STOP_ACK.
+## Relevant scope
+Three allocations only: Access same integration author v2-integration-a2-l3 I4; Attendance same R4 author v2-requests-ui and same R3 author v2-requests-harness. Sole writer per worktree. Main owns shared contracts/status; source worktrees and E remain read-only. Old absent author may be replaced by one fresh assigned Luna max/fork none only after ownership check; no duplicate execution.
+## Required behavior
+I4: verify44manifest28447CAB436CE49C2AADEC9103A4293E358D5BCBE569C9B61C85F7C655FABDA9, finish concise provenance accuracy (8 exact new copies+1 constructor-adapted,3 composed overlaps and existing projection test adaptation), current checks ledger and exact combined selectors; no product widening. R4: repair current test mount undefined.modules using existing Vue harness, real owner route/newRequest options transportcount1, exact known mutation must fail then product restored by finally/hash; final focused+rendered/type/lint. R3: final33finding bundle/source assertions were WIP; reconcile strict new-I1 lifecycle, ownership-safe create/register/start, immutable revision/edgebytes, proofheader; complete pure tests/sourcefreeze and propose new bounded actual-start-failure Docker proof. Do not reuse old H32 as proof of modified launcher.
+## Constraints
+Main Astra medium; all leads Astra low; code Luna max; fresh important review Sol high; Terra NEVER. Max3 allocated leaves, one heavy queue. No children of leaves/reviewers, E/original edits, secrets, full access/global ACL/config/push/deploy/main merge. Preserve others. Owner code edits take precedence: pause affected writer when user identifies a file/patch, verify new source hashes and incorporate rather than overwrite. No mandatory approval stop for routine implementation.
+## Existing patterns
+Read scoped contracts, relevant AGENTS and verification/source-resolution skills already in use. Existing toolchains/dependencies and owned local caches only. Same scoped Gradle context as H30; no repeat known failing CodexSandboxOffline invocation then broad workaround. Exact narrow escalation only when actually needed, no broad prefixes. R4 one-worker existing Vue config, no install/build/browser yet.
+## Acceptance criteria
+Current-source tests with nonzero XML counts, actual logs/exits/hashes/cleanup, full independent stable-scope review. No invented clean source or historical PASS labelled current. Main opens critical logic before acceptance and shows concise real snippets or labelled proposed code, explains decisions/test evidence and limitations.
+## Verification
+236/236 checkpoint integrity PASS read-only. I4 SOURCE ONLY until freeze and explicit H36 GO for combined Academic units+two PGIT; H36 reserved, not active. R3 pure only, new Docker proof separately allocated after source/command review. R4 scoped local unit/rendered/type/lint allowed; mutation narrowly controlled sole writer with immediate source restoration. Previous H34/H35 cancelled and never revived implicitly.
+## Do not
+No starting all paused domains, no waking historical completed children for notifications, no new task threads, no overlapping test resources, no accepted-source retests solely for reporting, no lengthy metadata-only loops, no final answer that abandons a completed-result handoff without assigning the next authorized stage.

@@ -1,0 +1,107 @@
+{
+  "packet": "routing-20260906-v2",
+  "revision": "87784165874e2da6fc261abc1c01584e24624289",
+  "environment": "Windows PowerShell/pwsh; Python 3.12; documentation/config-only scope; product runtime N/A",
+  "results": [
+    {
+      "criterion": "Active and staged TOML plus manifest syntax",
+      "command": "python -c <tomllib parse active/staged TOML and json parse docs/sources/manifest.yaml>",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "8 TOML files parsed; manifest JSON-compatible YAML parsed; staged effort is max and manifest v2 is staged."
+    },
+    {
+      "criterion": "PowerShell apply script syntax",
+      "command": "[System.Management.Automation.Language.Parser]::ParseFile(apply-protected-routing.ps1)",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "PowerShell AST syntax PASS."
+    },
+    {
+      "criterion": "Canonical-link and no-conflicting-active-routing text",
+      "command": "python -c <routing text assertions over AGENTS.md, docs/agent-workflow.md, parallel-development.md and staged global AGENTS.md>",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Local docs contain no duplicate model/risk table; staged canonical includes S0-S4, coordinator layer, leaf, Terra gate, review and one shared checkout."
+    },
+    {
+      "criterion": "Staged payload hashes and nine live preconditions",
+      "command": "python -c <hash staged payloads and validate staged/preconditions.json>",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Five staged payload hashes match; nine target preconditions are present."
+    },
+    {
+      "criterion": "No protected mutation without explicit apply",
+      "command": "pwsh.exe -NoProfile -File .agent/routing-20260906-v2/apply-protected-routing.ps1",
+      "exit_code": 1,
+      "status": "PASS_EXPECTED_GUARD",
+      "evidence": "Script stopped at staged-only guard; no target was read or written."
+    },
+    {
+      "criterion": "Isolated fixture success preserves unrelated config and creates backup",
+      "command": "pwsh apply-protected-routing.ps1 -Apply -Scope Project against unique temp fixture",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Inner apply exited 0 for 4 project targets; config preserved schema/comment/unrelated values, default leaf effort became max, and backup files were created."
+    },
+    {
+      "criterion": "Changed live target is rejected before write",
+      "command": "pwsh apply-protected-routing.ps1 -Apply -Scope Project against stale temp fixture",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Wrapper exited 0 after expected inner exit 1; stale project-config hash was refused, target remained mutated fixture input, and no backup directory was created."
+    },
+    {
+      "criterion": "Mid-commit failure rolls back changed targets",
+      "command": "pwsh apply-protected-routing.ps1 -Apply -Scope Project with second fixture target read-only",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Wrapper exited 0 after expected inner exit 1; simulated ACL failure occurred after first target, all project targets returned to baseline hashes."
+    },
+    {
+      "criterion": "Protected global/live hash inventory",
+      "command": "Get-FileHash -Algorithm SHA256 on exact global targets (hashes only)",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Five global target hashes matched staged preconditions; protected contents were not printed."
+    },
+    {
+      "criterion": "Reviewed protected apply",
+      "command": "pwsh -NoProfile -File .agent/routing-20260906-v2/apply-protected-routing.ps1 -Scope All -Apply",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Root applied all 9 exact targets through require_escalated; output was Protected routing apply PASS for 9 targets. Backup: C:\\Users\\maksd\\.codex\\backups\\routing-20260906-v2-b9f66a2807d2466fa4c23ee8f9a495dd."
+    },
+    {
+      "criterion": "Observed capacity/spawn boundary",
+      "command": "Root runtime spawn attempt after TMA completion with root+BE+PWA and finishing nested leaf",
+      "exit_code": 1,
+      "status": "PASS_EXPECTED_LIMIT",
+      "evidence": "Actual spawn returned agent thread limit reached; interrupting the completed leaf did not free a slot. Running count alone is insufficient availability evidence."
+    },
+    {
+      "criterion": "Scope whitespace check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS_WITH_LIMITATION",
+      "evidence": "No tracked diff errors; active routing files are pre-existing untracked transfer material, so Git cannot provide a tracked baseline for their full diff."
+    },
+    {
+      "criterion": "Owner future-batch workflow paragraph",
+      "command": "rg -n <dated local workflow decision phrases in docs/agent-workflow.md>",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "The project-only paragraph records API/shared-components freeze, parallel fresh Luna max screen tasks, separate role E2E tasks with negative cases, optional Docker runtime, Sol important review, no legacy compatibility layer, and accepted flow/authz/data-invariant checks."
+    },
+    {
+      "criterion": "Fresh whole-file manifest parse after shared-checkout edit",
+      "command": "python -c <json.loads docs/sources/manifest.yaml>",
+      "exit_code": 1,
+      "status": "BLOCKED_PREEXISTING_SHARED_EDIT",
+      "evidence": "Parse stops at docs/sources/manifest.yaml:31196 on malformed fragment \"decision]cate\" without a colon. This writer did not rewrite the shared 3.95 MB manifest; the earlier v2 record parse and status check passed before that edit."
+    }
+  ],
+  "runtime_evidence": "No product application/service applies. Runtime evidence includes the observed four-slot overlap, the successful 9-target protected apply, isolated fixture behavior, and a later actual spawn rejection while a finishing child remained listed; configuration does not prove effective model selection or free capacity.",
+  "pending": "Fresh independent Sol review and final root acceptance remain pending. Protected apply is complete and backup is recorded; no claim is made that an already running session reloaded config."
+}

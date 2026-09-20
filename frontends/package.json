@@ -1,0 +1,43 @@
+{
+  "name": "@rct/mobile-vue-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "mobile-core",
+    "pwa-vue",
+    "tma-vue"
+  ],
+  "engines": {
+    "node": ">=24.14.0",
+    "npm": ">=11.9.0"
+  },
+  "scripts": {
+    "generate:types": "node mobile-core/scripts/generate-types.mjs",
+    "generate:types:check": "node mobile-core/scripts/generate-types.mjs --check",
+    "validate:fixtures": "node mobile-core/scripts/validate-fixtures.mjs",
+    "test:contract": "node --test mobile-core/tests/*.test.mjs",
+    "typecheck:foundation": "tsc -p tsconfig.foundation.json --noEmit",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "build": "npm run build --workspace @rct/pwa-vue && npm run build --workspace @rct/tma-vue",
+    "dev:pwa": "npm run dev --workspace @rct/pwa-vue",
+    "dev:tma": "npm run dev --workspace @rct/tma-vue"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "25.5.2",
+    "@vitejs/plugin-vue": "6.0.8",
+    "eslint": "10.10.0",
+    "eslint-plugin-vue": "10.11.0",
+    "globals": "17.12.0",
+    "openapi-typescript": "7.13.0",
+    "postcss": "8.5.26",
+    "postcss-mixins": "12.1.2",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.69.0",
+    "vite": "7.3.6",
+    "vitest": "4.1.4",
+    "vue-tsc": "3.3.11"
+  }
+}

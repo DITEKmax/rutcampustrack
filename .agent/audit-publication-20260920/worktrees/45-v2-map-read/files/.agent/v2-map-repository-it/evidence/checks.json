@@ -1,0 +1,391 @@
+{
+  "status": "H30_FOCUSED_RUNTIME_VERIFIED",
+  "risk": "S3",
+  "revision": {
+    "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-map-read",
+    "branch": "codex/v2-map-read",
+    "baseRevision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+    "headRevision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+    "workingTree": "uncommitted bounded source/evidence diff; no commit or push"
+  },
+  "contract": {
+    "path": ".agent/v2-map-repository-it/contract.md",
+    "rulesPath": ".agent/orchestration-v2/RULES.md",
+    "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+    "currentAndResumeRead": true,
+    "safeStopCheckpointRead": true,
+    "leaseDecision": "source-only main GO; separate root heavy GO required after freeze; H27 reserved, not active"
+  },
+  "scope": {
+    "newProductFile": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+    "localArtifacts": [
+      ".agent/v2-map-repository-it/contract.md",
+      ".agent/v2-map-repository-it/summary.md",
+      ".agent/v2-map-repository-it/evidence/checks.json",
+      ".agent/v2-map-read/source-manifest.json"
+    ],
+    "productionChanges": false,
+    "schemaMigrationChanges": false,
+    "sharedHarnessChanges": false,
+    "dependenciesOrBuildChanges": false,
+    "realMapDataAdded": false,
+    "childrenOrTerra": false
+  },
+  "environment": {
+    "os": "Windows PowerShell",
+    "jdkCommand": "javac -version",
+    "jdkExitCode": 0,
+    "jdkOutput": "javac 21.0.10",
+    "container": "not started",
+    "gradle": "H28 shared-outbox compileJava exit 0; H29 focused unit selector stopped at compileTestJava exit 1; H30 focused unit and integration selectors exit 0",
+    "docker": "H30 cleanup inventory exit 0; no Testcontainers/Ryuk rows retained",
+    "applicationRuntime": "not run",
+    "warnings": [
+      "PowerShell profile virtual-terminal messages appeared on shell commands.",
+      "Git could not access C:/Users/maksd/.config/git/ignore (permission denied); source scope was still inspected."
+    ]
+  },
+  "checks": [
+    {
+      "name": "revision-and-worktree",
+      "command": "git rev-parse HEAD; git branch --show-current; git rev-parse --show-toplevel",
+      "exitCode": 0,
+      "output": [
+        "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+        "codex/v2-map-read",
+        "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-map-read"
+      ],
+      "result": "PASS_SOURCE_INVENTORY"
+    },
+    {
+      "name": "git-diff-check",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "PASS_SOURCE_ONLY",
+      "warnings": [
+        "Git reported LF-to-CRLF working-copy warnings for pre-existing tracked M2 edits."
+      ]
+    },
+    {
+      "name": "m3-trailing-whitespace",
+      "command": "$m3Paths = @('.agent/v2-map-repository-it/contract.md', '.agent/v2-map-repository-it/summary.md', '.agent/v2-map-read/source-manifest.json', 'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java')\n$m3Hits = foreach ($m3Path in $m3Paths) { Select-String -LiteralPath $m3Path -Pattern '[ \\t]+$' -ErrorAction Stop }\nif ($m3Hits) { $m3Hits | ForEach-Object { $_.ToString() }; exit 1 }\nWrite-Output 'trailingWhitespace=none'\nexit 0",
+      "exitCode": 0,
+      "output": "trailingWhitespace=none",
+      "result": "PASS_SOURCE_ONLY"
+    },
+    {
+      "name": "accepted-m2-and-m3-hash-inventory",
+      "command": "Get-Content -Raw .agent/v2-map-read/source-manifest.json | ConvertFrom-Json; Get-FileHash -Algorithm SHA256 for every candidate destination and every manifest file, comparing expected hashes",
+      "exitCode": 0,
+      "output": [
+        "preservedAcceptedHashes=11",
+        "m3TestHash=513C784FB21994DDB215F4EFC546774CDC4D37C626150CCEF6BC1586595DB077"
+      ],
+      "result": "PASS_SOURCE_HASHES"
+    },
+    {
+      "name": "m3-source-markers",
+      "command": "$m3Source = Get-Content -Raw services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java; assert required PostgreSQL/Flyway/JDBC/transaction/observer/R1-R2/non-ready markers",
+      "exitCode": 0,
+      "output": "requiredSourceMarkers=24",
+      "result": "PASS_SOURCE_STRUCTURE"
+    },
+    {
+      "name": "forbidden-scope-scan",
+      "command": "$m3Files = @((git diff --name-only) + (git ls-files --others --exclude-standard)); filter forbidden proto/generated/config/dependency/schema/build paths",
+      "exitCode": 0,
+      "output": "forbiddenScopeMatches=0",
+      "result": "PASS_SCOPE",
+      "expectedNoMatch": true,
+      "warnings": [
+        "Git ignore permission warning appeared while listing untracked files."
+      ]
+    },
+    {
+      "name": "contract-lease-wording",
+      "command": "$m3Contract = Get-Content -Raw .agent/v2-map-repository-it/contract.md; assert H13 absent and H27 reserved wording present",
+      "exitCode": 0,
+      "output": "lease-wording-check=pass",
+      "result": "PASS_CONTRACT_SOURCE"
+    },
+    {
+      "name": "source-manifest-json",
+      "command": "Get-Content -Raw .agent/v2-map-read/source-manifest.json | ConvertFrom-Json",
+      "exitCode": 0,
+      "output": "source-manifest.json=parse-ok",
+      "result": "PASS_EVIDENCE_SYNTAX"
+    },
+    {
+      "name": "javac-environment",
+      "command": "javac -version",
+      "exitCode": 0,
+      "output": "javac 21.0.10",
+      "result": "PASS_ENVIRONMENT_ONLY"
+    }
+  ],
+  "previousUnusableAttempt": {
+    "command": "javac -proc:none -XDshouldStopPolicy=PARSE -XDrawDiagnostics services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+    "exitCode": 1,
+    "reason": "Standalone classpath had no Flyway/JUnit/Spring/Testcontainers/project classes; this was not a compilation result and was not repeated."
+  },
+  "h27Execution": {
+    "lease": "H27 EXCLUSIVE",
+    "status": "STOPPED_AT_FIRST_FAILURE",
+    "unit": {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.map.CampusMapReadServiceTest --tests ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest --tests ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 1,
+      "elapsed": "42s",
+      "failedTask": ":services:shared:shared-outbox:compileJava",
+      "errors": 13,
+      "warnings": 4,
+      "testsReached": false,
+      "defectClass": "shared/baseline compile-classpath blocker; no M3 source finding established",
+      "compilerErrors": [
+        "IdempotencyCleanupJob.java cannot resolve ru.rutcampustrack.shared.events.IdempotencyStore (import, field, constructor)",
+        "JpaIdempotencyStore.java cannot resolve IdempotencyStore (import, implements type, override methods)",
+        "MongoIdempotencyStore.java cannot resolve IdempotencyStore (import, implements type, override methods)",
+        "OutboxMetrics.java cannot resolve ru.rutcampustrack.shared.observability.MetricNames (import and OUTBOX_LAG_SECONDS reference)"
+      ],
+      "rawLog": {
+        "path": ".agent/v2-map-repository-it/evidence/h27-unit.log",
+        "sha256": "70B80556F7E0AFF4CB9AAFD3F89CCF59295B00971D2768EA881495015A5C738B",
+        "capture": "PowerShell Start-Transcript; local file is partial/tail-only and is not a complete stdout/stderr capture",
+        "start": "2026-09-15T01:02:29",
+        "end": "2026-09-15T01:03:13"
+      },
+      "xml": {
+        "path": "services/academic-service/academic-app/build/test-results/test",
+        "status": "ABSENT_IN_ATTEMPT",
+        "count": 0,
+        "reason": "Compilation failed before focused test execution; no PASS inferred."
+      }
+    },
+    "integration": {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "status": "NOT_STARTED_AFTER_FIRST_FAILURE",
+      "exitCode": null,
+      "xml": {
+        "path": "services/academic-service/academic-app/build/test-results/integrationTest",
+        "status": "ABSENT_NOT_RUN",
+        "count": 0
+      }
+    },
+    "cleanup": {
+      "status": "RELEASED",
+      "ownedJavaProcesses": [],
+      "ownedPostgresOrRyukContainers": [],
+      "resourcesHeld": [],
+      "evidence": [
+        "Get-Process -Name java,javaw -ErrorAction SilentlyContinue returned no rows after Gradle exit.",
+        "docker ps -a --filter label=org.testcontainers=true returned no rows; integration never reached Testcontainers."
+      ]
+    },
+    "sourceState": "unchanged after source freeze; no correction/retry authorized",
+    "nextGate": "H28 completed exit 0; H29 stopped at compileTestJava. Root must authorize a new focused-selector GO after the bounded test-source correction."
+  },
+  "h28Execution": {
+    "lease": "H28 CONDITIONAL EXCLUSIVE",
+    "status": "RELEASED_SUCCESS",
+    "command": ".\\gradlew.bat :services:shared:shared-outbox:compileJava --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+    "exitCode": 0,
+    "elapsed": "23s",
+    "comparison": "The missing IdempotencyStore/MetricNames pattern matched the prior H20 shared-outbox boundary; this confirms the narrow compile succeeds without asserting a sole cause for H27.",
+    "rawLog": {
+      "path": ".agent/v2-map-repository-it/evidence/h28-shared-outbox.log",
+      "sha256": "32E3964DE7387F6AE2837591C78476EE7AAF4B0B5F9A8AFFE2839F53B2E4C42B",
+      "capture": "Complete merged stdout/stderr with stream files and pre-command context",
+      "stdoutPath": ".agent/v2-map-repository-it/evidence/h28-shared-outbox.stdout.log",
+      "stdoutSha256": "18B3C4975F008D9E3A723F3D03F7AD93FF1D8D30042C47A328C50D3C3DF8BE4E",
+      "stderrPath": ".agent/v2-map-repository-it/evidence/h28-shared-outbox.stderr.log",
+      "stderrSha256": "84FB997188D5FABA11F906E26CA0206BE2B3C21C8DDC7C5524EC2B1F8F48F497",
+      "contextPath": ".agent/v2-map-repository-it/evidence/h28-shared-outbox.context.log",
+      "contextSha256": "4A1446D2872B1DB53D6A82492A57C46CE196973AD6C7765F1CAAF99CA0C989DC"
+    },
+    "warnings": 4,
+    "tasks": "3 shared compile tasks; 1 executed, 2 up-to-date",
+    "containersStarted": false,
+    "resourcesHeldAfter": []
+  },
+  "h29Execution": {
+    "lease": "H29 EXCLUSIVE",
+    "status": "STOPPED_AT_FIRST_FAILURE",
+    "unit": {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.map.CampusMapReadServiceTest --tests ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest --tests ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 1,
+      "elapsed": "1m",
+      "failedTask": ":services:academic-service:academic-app:compileTestJava",
+      "testsReached": false,
+      "errors": 1,
+      "warnings": 2,
+      "compilerError": "CampusMapReadServiceTest.java:754 assertThatThrownBy(Runnable) is incompatible with AssertJ ThrowingCallable; the frozen helper now passes action::run under root-authorized bounded correction.",
+      "rawLog": {
+        "path": ".agent/v2-map-repository-it/evidence/h29-unit.log",
+        "sha256": "463574506861EE8A6157D11D93DCBB8F829819C1FCC248B4EF44A73968D90771",
+        "capture": "Complete merged stdout/stderr with stream files and pre-command context",
+        "stdoutPath": ".agent/v2-map-repository-it/evidence/h29-unit.stdout.log",
+        "stdoutSha256": "544E0D4882B0ACE4F19EBD60939D2E23139478B7BE2DEA6242613F854855CA95",
+        "stderrPath": ".agent/v2-map-repository-it/evidence/h29-unit.stderr.log",
+        "stderrSha256": "652C0977AD7047A307E0C77E52380A192876A096B96C6548401DA872468E0684",
+        "contextPath": ".agent/v2-map-repository-it/evidence/h29-unit.context.log",
+        "contextSha256": "2CAFF1B9D3CCFD9A9C062AFE43EA55C3A0ECCE7D79F147310B0311061F009F44"
+      },
+      "xml": {
+        "path": "services/academic-service/academic-app/build/test-results/test",
+        "status": "ABSENT_IN_ATTEMPT",
+        "count": 0,
+        "reason": "compileTestJava failed before focused test execution"
+      }
+    },
+    "integration": {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "status": "NOT_STARTED_AFTER_FIRST_FAILURE",
+      "exitCode": null,
+      "xml": {
+        "path": "services/academic-service/academic-app/build/test-results/integrationTest",
+        "status": "ABSENT_NOT_RUN",
+        "count": 0
+      }
+    },
+    "sourceCorrection": {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+      "change": "assertThatThrownBy(action) -> assertThatThrownBy(action::run) in assertCode helper only",
+      "sha256": "39D7AD63EB5D807FA7A869AC4FCC8FEFAABAF55C84DBD7570A077159284191FB",
+      "productionChanged": false
+    },
+    "cleanup": {
+      "status": "RELEASED",
+      "ownedJavaProcesses": [],
+      "ownedPostgresOrRyukContainers": [],
+      "resourcesHeld": [],
+      "dockerInventory": "access warning under scoped user; no container rows returned"
+    },
+    "nextGate": "H30 exclusive focused selectors only after this correction; stop at first actual failure."
+  },
+  "h30Execution": {
+    "lease": "H30 EXCLUSIVE",
+    "status": "RELEASED_SUCCESS",
+    "unit": {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.map.CampusMapReadServiceTest --tests ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest --tests ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 0,
+      "elapsed": "1m 2s",
+      "testsReached": true,
+      "xml": [
+        {
+          "path": "services/academic-service/academic-app/build/test-results/test/TEST-ru.rutcampustrack.academic.map.CampusMapReadServiceTest.xml",
+          "tests": 69,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "path": "services/academic-service/academic-app/build/test-results/test/TEST-ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest.xml",
+          "tests": 12,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "path": "services/academic-service/academic-app/build/test-results/test/TEST-ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest.xml",
+          "tests": 17,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ],
+      "totalTests": 98,
+      "rawLog": {
+        "path": ".agent/v2-map-repository-it/evidence/h30-unit.log",
+        "sha256": "2B6452A61E036BE0AAD745AC0C66E0178B130047A79A9DD81D0B2572B7706AC5",
+        "capture": "Complete merged stdout/stderr with stream files and pre-command context",
+        "stdoutPath": ".agent/v2-map-repository-it/evidence/h30-unit.stdout.log",
+        "stdoutSha256": "B7AC4BCB3FECF447AB4D206AA329120FFF618EE15571B3CD255CBAD6C9D438D8",
+        "stderrPath": ".agent/v2-map-repository-it/evidence/h30-unit.stderr.log",
+        "stderrSha256": "1C3030CF1583998006064AFE5C7C1CBAB64D432C2C83BD9FEF953FDFFEC0581E",
+        "contextPath": ".agent/v2-map-repository-it/evidence/h30-unit.context.log",
+        "contextSha256": "EA82FC7CD0DF5A8F1A700297C7486BC07CF3E9A32047B42FBE244EB558A24CD5"
+      }
+    },
+    "integration": {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 0,
+      "elapsed": "51s",
+      "testsReached": true,
+      "xml": {
+        "path": "services/academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT.xml",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "actualNonzero": true
+      },
+      "rawLog": {
+        "path": ".agent/v2-map-repository-it/evidence/h30-integration.log",
+        "sha256": "ABC59CFC3CD954B9CF11F099B34711ED5ACF40A51E75059DB6F116E3A49518F6",
+        "capture": "Complete merged stdout/stderr with stream files and pre-command context",
+        "stdoutPath": ".agent/v2-map-repository-it/evidence/h30-integration.stdout.log",
+        "stdoutSha256": "69F21864DCC4FB92292993B754FA263318CDCA9B4E5F25A1723E67554662E1C7",
+        "stderrPath": ".agent/v2-map-repository-it/evidence/h30-integration.stderr.log",
+        "stderrSha256": "364D59CA1637F55C0BE5086C111C5E342B53AD019E73009647FB96EF813A0051",
+        "contextPath": ".agent/v2-map-repository-it/evidence/h30-integration.context.log",
+        "contextSha256": "BD192D29C8DB4BB5ECFEFE3DC20A86D5CD96479C7DF1954290A930182853BA6F"
+      },
+      "testcontainers": {
+        "image": "postgres:16",
+        "runtimeExercised": true,
+        "transientIds": "not emitted in captured Gradle output",
+        "postRunInventory": "exit 0; no Java process, Testcontainers, or Ryuk rows retained"
+      }
+    },
+    "sourceState": "only root-authorized CampusMapReadServiceTest assertCode action::run correction preceded H30; no source changes during H30",
+    "cleanup": {
+      "status": "RELEASED",
+      "inventoryExitCode": 0,
+      "ownedJavaProcesses": [],
+      "ownedPostgresOrRyukContainers": [],
+      "resourcesHeld": []
+    },
+    "nextGate": "Fresh independent Sol review and root integration/recheck; no automatic further heavy run."
+  },
+  "runtime": {
+    "status": "H30_FOCUSED_TESTS_VERIFIED",
+    "containerStarted": false,
+    "processesOwned": [],
+    "resourcesHeld": [],
+    "reason": "H30 executed only the focused M2 unit selectors and M3 repository IT; no application runtime outside those tests was used."
+  },
+  "queuedChecks": [
+    {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.map.CampusMapReadServiceTest --tests ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest --tests ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest",
+      "status": "QUEUED",
+      "reason": "M2 focused unit batch; test excludes *IT"
+    },
+    {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT --max-workers=1",
+      "status": "QUEUED",
+      "reason": "M3 real PostgreSQL integration proof; requires separate root heavy GO"
+    }
+  ],
+  "expectedIntegrationEvidence": {
+    "xml": "services/academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT.xml",
+    "required": "After runtime, assert the class/test count is nonzero; no-match or absent XML is not PASS."
+  },
+  "artifactHashes": {
+    "CampusMapReadRepositoryIT.java": "513C784FB21994DDB215F4EFC546774CDC4D37C626150CCEF6BC1586595DB077",
+    "CampusMapReadServiceTest.java": "39D7AD63EB5D807FA7A869AC4FCC8FEFAABAF55C84DBD7570A077159284191FB",
+    "contract.md": "21659DDD96ACF98FADF17DB4A07B3A8838572C5E52F73BF05AF7081CE404A930",
+    "summary.md": "71C107997535AB0F88D11D5DACB2B48844CD8A4AFD781934AA920620F7DE2F70",
+    "source-manifest.json": "E16EEBA8BA3FBF0260E1BEE755D0CC45C859358CDFBE4F097CB8CB687371324C"
+  },
+  "openGates": [
+    "fresh independent Sol high review of the stable full changed scope",
+    "root-owned heavy focused unit and integration execution",
+    "nonzero integration XML and actual container cleanup evidence",
+    "root integration and any targeted recheck after review/runtime"
+  ],
+  "limitations": [
+    "The four IT scenarios are authored but not executed and are not claimed PASS.",
+    "The test uses valid SQL fixtures to prove repository/service reads; it does not prove publication producers or real inventory acceptance.",
+    "The UserRepository existence check is a test-local mock seam permitted by the contract; map JDBC/repository/service/transaction paths remain real.",
+    "No production endpoint, gRPC interceptor, or full user/session chain is claimed by this M3 proof."
+  ]
+}

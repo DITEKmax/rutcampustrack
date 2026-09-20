@@ -1,0 +1,332 @@
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+primitive=null
+resolved=class Schema {
+    type: object
+    format: null
+    $ref: null
+    description: null
+    title: null
+    multipleOf: null
+    maximum: null
+    exclusiveMaximum: null
+    minimum: null
+    exclusiveMinimum: null
+    maxLength: null
+    minLength: null
+    pattern: null
+    maxItems: null
+    minItems: null
+    uniqueItems: null
+    maxProperties: null
+    minProperties: null
+    required: null
+    not: null
+    properties: {hour=class IntegerSchema {
+        class Schema {
+            type: integer
+            format: int32
+            $ref: null
+            description: null
+            title: null
+            multipleOf: null
+            maximum: null
+            exclusiveMaximum: null
+            minimum: null
+            exclusiveMinimum: null
+            maxLength: null
+            minLength: null
+            pattern: null
+            maxItems: null
+            minItems: null
+            uniqueItems: null
+            maxProperties: null
+            minProperties: null
+            required: null
+            not: null
+            properties: null
+            additionalProperties: null
+            nullable: null
+            readOnly: null
+            writeOnly: null
+            example: null
+            externalDocs: null
+            deprecated: null
+            discriminator: null
+            xml: null
+        }
+    }, minute=class IntegerSchema {
+        class Schema {
+            type: integer
+            format: int32
+            $ref: null
+            description: null
+            title: null
+            multipleOf: null
+            maximum: null
+            exclusiveMaximum: null
+            minimum: null
+            exclusiveMinimum: null
+            maxLength: null
+            minLength: null
+            pattern: null
+            maxItems: null
+            minItems: null
+            uniqueItems: null
+            maxProperties: null
+            minProperties: null
+            required: null
+            not: null
+            properties: null
+            additionalProperties: null
+            nullable: null
+            readOnly: null
+            writeOnly: null
+            example: null
+            externalDocs: null
+            deprecated: null
+            discriminator: null
+            xml: null
+        }
+    }, second=class IntegerSchema {
+        class Schema {
+            type: integer
+            format: int32
+            $ref: null
+            description: null
+            title: null
+            multipleOf: null
+            maximum: null
+            exclusiveMaximum: null
+            minimum: null
+            exclusiveMinimum: null
+            maxLength: null
+            minLength: null
+            pattern: null
+            maxItems: null
+            minItems: null
+            uniqueItems: null
+            maxProperties: null
+            minProperties: null
+            required: null
+            not: null
+            properties: null
+            additionalProperties: null
+            nullable: null
+            readOnly: null
+            writeOnly: null
+            example: null
+            externalDocs: null
+            deprecated: null
+            discriminator: null
+            xml: null
+        }
+    }, nano=class IntegerSchema {
+        class Schema {
+            type: integer
+            format: int32
+            $ref: null
+            description: null
+            title: null
+            multipleOf: null
+            maximum: null
+            exclusiveMaximum: null
+            minimum: null
+            exclusiveMinimum: null
+            maxLength: null
+            minLength: null
+            pattern: null
+            maxItems: null
+            minItems: null
+            uniqueItems: null
+            maxProperties: null
+            minProperties: null
+            required: null
+            not: null
+            properties: null
+            additionalProperties: null
+            nullable: null
+            readOnly: null
+            writeOnly: null
+            example: null
+            externalDocs: null
+            deprecated: null
+            discriminator: null
+            xml: null
+        }
+    }}
+    additionalProperties: null
+    nullable: null
+    readOnly: null
+    writeOnly: null
+    example: null
+    externalDocs: null
+    deprecated: null
+    discriminator: null
+    xml: null
+}
+referenced={LocalTime=class Schema {
+    type: object
+    format: null
+    $ref: null
+    description: null
+    title: null
+    multipleOf: null
+    maximum: null
+    exclusiveMaximum: null
+    minimum: null
+    exclusiveMinimum: null
+    maxLength: null
+    minLength: null
+    pattern: null
+    maxItems: null
+    minItems: null
+    uniqueItems: null
+    maxProperties: null
+    minProperties: null
+    required: null
+    not: null
+    properties: {hour=class IntegerSchema {
+        class Schema {
+            type: integer
+            format: int32
+            $ref: null
+            description: null
+            title: null
+            multipleOf: null
+            maximum: null
+            exclusiveMaximum: null
+            minimum: null
+            exclusiveMinimum: null
+            maxLength: null
+            minLength: null
+            pattern: null
+            maxItems: null
+            minItems: null
+            uniqueItems: null
+            maxProperties: null
+            minProperties: null
+            required: null
+            not: null
+            properties: null
+            additionalProperties: null
+            nullable: null
+            readOnly: null
+            writeOnly: null
+            example: null
+            externalDocs: null
+            deprecated: null
+            discriminator: null
+            xml: null
+        }
+    }, minute=class IntegerSchema {
+        class Schema {
+            type: integer
+            format: int32
+            $ref: null
+            description: null
+            title: null
+            multipleOf: null
+            maximum: null
+            exclusiveMaximum: null
+            minimum: null
+            exclusiveMinimum: null
+            maxLength: null
+            minLength: null
+            pattern: null
+            maxItems: null
+            minItems: null
+            uniqueItems: null
+            maxProperties: null
+            minProperties: null
+            required: null
+            not: null
+            properties: null
+            additionalProperties: null
+            nullable: null
+            readOnly: null
+            writeOnly: null
+            example: null
+            externalDocs: null
+            deprecated: null
+            discriminator: null
+            xml: null
+        }
+    }, second=class IntegerSchema {
+        class Schema {
+            type: integer
+            format: int32
+            $ref: null
+            description: null
+            title: null
+            multipleOf: null
+            maximum: null
+            exclusiveMaximum: null
+            minimum: null
+            exclusiveMinimum: null
+            maxLength: null
+            minLength: null
+            pattern: null
+            maxItems: null
+            minItems: null
+            uniqueItems: null
+            maxProperties: null
+            minProperties: null
+            required: null
+            not: null
+            properties: null
+            additionalProperties: null
+            nullable: null
+            readOnly: null
+            writeOnly: null
+            example: null
+            externalDocs: null
+            deprecated: null
+            discriminator: null
+            xml: null
+        }
+    }, nano=class IntegerSchema {
+        class Schema {
+            type: integer
+            format: int32
+            $ref: null
+            description: null
+            title: null
+            multipleOf: null
+            maximum: null
+            exclusiveMaximum: null
+            minimum: null
+            exclusiveMinimum: null
+            maxLength: null
+            minLength: null
+            pattern: null
+            maxItems: null
+            minItems: null
+            uniqueItems: null
+            maxProperties: null
+            minProperties: null
+            required: null
+            not: null
+            properties: null
+            additionalProperties: null
+            nullable: null
+            readOnly: null
+            writeOnly: null
+            example: null
+            externalDocs: null
+            deprecated: null
+            discriminator: null
+            xml: null
+        }
+    }}
+    additionalProperties: null
+    nullable: null
+    readOnly: null
+    writeOnly: null
+    example: null
+    externalDocs: null
+    deprecated: null
+    discriminator: null
+    xml: null
+}}

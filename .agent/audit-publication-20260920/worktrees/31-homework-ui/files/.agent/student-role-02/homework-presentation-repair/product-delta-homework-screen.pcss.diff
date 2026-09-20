@@ -1,0 +1,74 @@
+diff --git "a/C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\student-role-02\\homework-combined-review-source\\frontends\\mobile-core\\src\\features\\homework\\homework-screen.pcss" "b/frontends\\mobile-core\\src\\features\\homework\\homework-screen.pcss"
+index aede7add..6b3929da 100644
+--- "a/C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\student-role-02\\homework-combined-review-source\\frontends\\mobile-core\\src\\features\\homework\\homework-screen.pcss"
++++ "b/frontends\\mobile-core\\src\\features\\homework\\homework-screen.pcss"
+@@ -133,12 +133,12 @@ body,
+   color: var(--rct-color-text-primary);
+   background: var(--rct-color-surface-raised);
+ }
+ 
+ .homework-card h3,
++.homework-card__title,
+ .homework-card__description,
+-.homework-card__disclosure,
+ .homework-card__error,
+ .homework-material-error {
+   margin: 0;
+ }
+ 
+@@ -147,34 +147,25 @@ body,
+   font-size: var(--rct-font-size-body);
+   font-weight: var(--rct-font-weight-bold);
+   line-height: 1.35;
+ }
+ 
+-.homework-card__description,
+-.homework-card__disclosure {
++.homework-card__title,
++.homework-card__description {
+   overflow-wrap: anywhere;
+   color: var(--rct-color-text-secondary);
+-  font-size: var(--rct-font-size-caption);
+   font-weight: var(--rct-font-weight-regular);
+   line-height: 1.45;
+   white-space: pre-line;
+ }
+ 
+-.homework-card__description {
+-  display: -webkit-box;
+-  min-block-size: 2.375rem;
+-  overflow: hidden;
+-  -webkit-box-orient: vertical;
+-  -webkit-line-clamp: 2;
+-}
+-
+-.homework-card__description--expanded {
+-  display: block;
+-  overflow: visible;
++.homework-card__title {
++  font-size: var(--rct-font-size-caption);
+ }
+ 
+-.homework-card__disclosure {
++.homework-card__description {
++  font-size: var(--rct-font-size-micro);
+   padding-block-start: var(--rct-space-1);
+ }
+ 
+ .homework-card__actions {
+   display: flex;
+@@ -182,10 +173,14 @@ body,
+   justify-content: space-between;
+   min-block-size: var(--rct-control-min-touch);
+   gap: var(--rct-space-2);
+ }
+ 
++.homework-card__actions--no-material {
++  justify-content: flex-end;
++}
++
+ .homework-material {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: var(--rct-space-2);

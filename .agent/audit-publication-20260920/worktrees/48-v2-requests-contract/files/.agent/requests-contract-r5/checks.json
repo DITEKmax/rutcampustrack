@@ -1,0 +1,206 @@
+{
+  "schema": "rct-verification",
+  "status": "PASS_BUNDLED4_SOURCE_PURE_PENDING_SOL_REVIEW",
+  "baseRevision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-contract",
+  "branch": "codex/v2-requests-contract",
+  "environment": {
+    "host": "Windows",
+    "shell": "PowerShell",
+    "runtime": "not started",
+    "secrets": "not read"
+  },
+  "preparationChecks": [
+    {
+      "criterion": "Isolated worktree created from frozen E",
+      "command": "git worktree add -b codex/v2-requests-contract .agent/worktrees/v2-requests-contract b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Worktree HEAD is b8220ac92125a8afa37598b270aa4fab7aa1f470."
+    },
+    {
+      "criterion": "Initial isolated worktree state",
+      "command": "git status --short --branch",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Initial status contained only ## codex/v2-requests-contract."
+    },
+    {
+      "criterion": "Rules source integrity",
+      "command": "Get-FileHash .agent/orchestration-v2/RULES.md -Algorithm SHA256",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "SHA-256 B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A."
+    },
+    {
+      "criterion": "Source diff whitespace hygiene",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "No whitespace errors reported in the bounded source diff; this does not replace the pending main acceptance checks."
+    },
+    {
+      "criterion": "Stage bounded source diff",
+      "command": "git add -- <R5 source paths> .agent/requests-contract-r5",
+      "exitCode": 128,
+      "status": "BLOCKED_PERMISSION",
+      "evidence": "Git could not create .git/worktrees/v2-requests-contract/index.lock (Permission denied); no escalation or bypass."
+    }
+  ],
+  "checks": [
+    {
+      "criterion": "Validator shell syntax",
+      "command": "& 'C:\\Program Files\\Git\\bin\\bash.exe' -n scripts/validate-env-prod.sh",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Git for Windows Bash syntax check passed. The system32 WSL bash shim was also probed but is unavailable in this environment."
+    },
+    {
+      "criterion": "Validator warnings",
+      "command": "shellcheck --severity=warning scripts/validate-env-prod.sh",
+      "exitCode": 1,
+      "status": "NOT_AVAILABLE",
+      "evidence": "PowerShell reported that shellcheck is not recognized; no installation or network access was attempted."
+    },
+    {
+      "criterion": "Let's Encrypt Compose bootstrap script syntax",
+      "command": "& 'C:\\Program Files\\Git\\bin\\bash.exe' -n nginx/scripts/init-letsencrypt.sh",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Git for Windows Bash syntax check passed; the script itself, certbot, openssl and nginx were not executed."
+    },
+    {
+      "criterion": "Let's Encrypt Compose caller wiring (initial probe)",
+      "command": "PowerShell regex count probe over nginx/scripts/init-letsencrypt.sh",
+      "exitCode": 1,
+      "status": "CHECK_HARNESS_CORRECTED",
+      "evidence": "Initial regex probe did not match the literal array syntax; no source conclusion was drawn. A literal static assertion immediately followed."
+    },
+    {
+      "criterion": "Let's Encrypt Compose caller wiring (corrected static assertion)",
+      "command": "PowerShell literal assertion over nginx/scripts/init-letsencrypt.sh: declaration=1, quoted array invocations=4, unquoted invocations=0, docker compose call sites=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "All four actual Compose calls use the quoted COMPOSE array, whose declaration contains --env-file .env.prod -f docker-compose.prod.yml."
+    },
+    {
+      "criterion": "Gradle --no-problems-report support probe",
+      "command": "$gradleArgs=@('--no-problems-report','help','--no-daemon','--no-parallel','--max-workers=1'); & '.\\gradlew.bat' @gradleArgs",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Local Gradle 8.12 help completed successfully with the supported flag in the narrow escalated context."
+    },
+    {
+      "criterion": "Frontend offline dependencies",
+      "command": "cd frontends && npm ci --offline --ignore-scripts --no-audit --no-fund",
+      "exitCode": 0,
+      "status": "PASS_OFFLINE_NO_LOCKFILE_CHANGE",
+      "evidence": "Installed 222 packages from the existing local cache; no network, upgrade or script execution."
+    },
+    {
+      "criterion": "Synthetic validator accepted documented private pair",
+      "command": "& 'C:\\Program Files\\Git\\bin\\bash.exe' scripts/validate-env-prod.sh .agent/requests-contract-r5/validator-fixture.env",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Synthetic fixture only: 172.30.0.0/24 with 172.30.0.10; all 27 required variables were synthetic and no production env was read."
+    },
+    {
+      "criterion": "Synthetic validator rejected malformed/private gateway inputs",
+      "command": "Git Bash validator runs for validator-malformed-subnet.env, validator-unaligned-subnet.env, validator-public-subnet.env, validator-malformed-ip.env, validator-out-of-subnet.env, validator-network-address.env and validator-broadcast-address.env",
+      "exitCode": 3,
+      "status": "PASS_NEGATIVE_CASES",
+      "evidence": "Each child validator exit was captured as SCRIPT_EXIT=3: malformed/unaligned CIDR, public subnet, malformed IPv4, out-of-subnet, network and broadcast gateway addresses were rejected."
+    },
+    {
+      "criterion": "Clean tracked E2E Compose interpolation",
+      "command": "docker compose --env-file tests/e2e/.env.ci -f docker-compose.e2e.yml config --quiet",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Synthetic config completed with exit 0 using tracked tests/e2e/.env.ci directly via --env-file; no service was started and no production env/secrets were read."
+    },
+    {
+      "criterion": "Runtime OpenAPI required multipart body",
+      "command": "./gradlew :services:mobile-bff:mobile-bff-app:integrationTest --tests \"*OpenApiSnapshotIT\" -Popenapi.snapshot.update=true --no-daemon --no-parallel --max-workers=1",
+      "exitCode": 1,
+      "status": "FAILED_COMMAND_SYNTAX_RELEASED",
+      "evidence": "Windows Gradle wrapper reported Task '.snapshot.update=true' not found; the unquoted dotted -P property was parsed incorrectly. H3 was released without retry."
+    },
+    {
+      "criterion": "Runtime OpenAPI required multipart body (H4 native argument array)",
+      "command": "$gradleArgs=@(':services:mobile-bff:mobile-bff-app:integrationTest','--tests','*OpenApiSnapshotIT','-Popenapi.snapshot.update=true','--no-daemon','--no-parallel','--max-workers=1'); & '.\\gradlew.bat' @gradleArgs",
+      "exitCode": 1,
+      "status": "FAILED_UNRELATED_COMPILE_RELEASED",
+      "evidence": "Native argument array fixed property parsing, but compilation stopped in attendance-service attendance-api-contract: ErrorResponse package/class is missing from the source classpath (49 errors). H4 released before generation, Docker or retry."
+    },
+    {
+      "criterion": "Runtime OpenAPI required multipart body (H10 escalated native argument array)",
+      "command": "$gradleArgs=@(':services:mobile-bff:mobile-bff-app:integrationTest','--tests','*OpenApiSnapshotIT','-Popenapi.snapshot.update=true','--no-daemon','--no-parallel','--max-workers=1'); & '.\\gradlew.bat' @gradleArgs",
+      "exitCode": 1,
+      "status": "FAILED_GRADLE_ENVIRONMENT_RELEASED",
+      "evidence": "Compile boundary passed in the narrow escalated context, but Gradle failed after integrationTest task with FileAlreadyExistsException moving problems-report.html from C:\\Users\\maksd\\.gradle\\.tmp into worktree build/reports/problems. Generated OpenAPI JSON was written (SHA-256 D4F97E0476CD681A9460247D9F904C7901241269B73221A097EC6BE45132CDA0); H10 released before frontend, Compose or retry."
+    },
+    {
+      "criterion": "Runtime OpenAPI required multipart body (H11 canonical update)",
+      "command": "$gradleArgs=@('--no-problems-report',':services:mobile-bff:mobile-bff-app:integrationTest','--tests','*OpenApiSnapshotIT','-Popenapi.snapshot.update=true','--no-daemon','--no-parallel','--max-workers=1'); & '.\\gradlew.bat' @gradleArgs",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Historical H11 canonical update completed with --no-problems-report; generated OpenAPI SHA-256 D4F97E0476CD681A9460247D9F904C7901241269B73221A097EC6BE45132CDA0. Not rerun during bundled4."
+    },
+    {
+      "criterion": "Runtime OpenAPI required multipart body (H11 normal assertion)",
+      "command": "$gradleArgs=@('--no-problems-report',':services:mobile-bff:mobile-bff-app:integrationTest','--tests','*OpenApiSnapshotIT','--no-daemon','--no-parallel','--max-workers=1'); & '.\\gradlew.bat' @gradleArgs",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Historical H11 focused OpenApiSnapshotIT normal assertion process completed with exit 0 and --no-problems-report. Parent independently observed H11 XML: 4 tests executed, 4 passed, 0 skipped, 0 failures, 0 errors. Source location: services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java (requestBody assertion at line 88). Leaf evidence retains redacted summary .agent/requests-contract-r5/gradle-h11.log; raw XML is not claimed. Not rerun during bundled4."
+    },
+    {
+      "criterion": "Mobile-core generated artifact",
+      "command": "cd frontends && npm run generate:types",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Canonical generator completed; spec hash d4f97e0476cd681a9460247d9f904c7901241269b73221a097ec6be45132cda0 and generated TS SHA-256 5D697D0D0615BB5BB93F0C4735B090D3420112B7B97F4FA6C3598CC31B2CA66E."
+    },
+    {
+      "criterion": "OpenAPI drift guard",
+      "command": "cd frontends && npm run generate:types:check",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Generator guard completed successfully and reported types match JS-STUDENT-01-r1."
+    },
+    {
+      "criterion": "Resume source manifest coherence",
+      "command": "PowerShell SHA-256 replay for source-manifest.json entries (excluding sensitive tests/e2e/.env.ci and manifest self-hash)",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Replay matched 55 hashed entries across 56 manifest entries with zero byte/hash mismatches; one tests/e2e/.env.ci entry remained sensitive-name-not-read and no environment value was read or printed. The manifest covers 17 product files and 39 evidence files."
+    },
+    {
+      "criterion": "Bundled4 preflight Bash syntax and exit propagation",
+      "command": "& 'C:\\Program Files\\Git\\bin\\bash.exe' -n scripts/preflight-deploy.sh; isolated mock runs with MOCK_COMPOSE_EXIT=0 and 17",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Final preflight syntax returned 0. In an isolated mock tree, Compose exit 0 produced preflight exit 0 and explicit config OK; Compose exit 17 with no error/invalid keyword produced preflight exit 4 and preserved exit 17 in the failure line. Logs: preflight-mock/mock-exit0.log and preflight-mock/mock-exit17.log."
+    },
+    {
+      "criterion": "Bundled4 explicit production Compose caller inventory",
+      "command": "PowerShell Select-String over the exact seven scoped script/doc paths, asserting every docker compose occurrence contains --env-file",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Static assertion found 35 occurrences across scripts/preflight-deploy.sh, scripts/validate-env-prod.sh, four production runbook/checklist files and docs/testing/M16-vps-verify.md; all carry an explicit relative .env.prod tuple or the absolute /opt/rutcampustrack tuple. No archive or unrelated docs sweep."
+    },
+    {
+      "criterion": "Bundled4 validator canonical IPv4 and gateway matrix",
+      "command": "& 'C:\\Program Files\\Git\\bin\\bash.exe' -n scripts/validate-env-prod.sh; validator fixture matrix over one positive and nine synthetic negative env files",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Validator syntax returned 0. Documented private pair returned 0; malformed/unaligned/public CIDR, malformed IP, out-of-subnet, network, broadcast and trailing-dot IPv4/CIDR fixtures each returned 3. No production env or secrets were read."
+    },
+    {
+      "criterion": "H16 synthetic production Compose config (historical accepted)",
+      "command": "docker compose --env-file .agent/requests-contract-r5/isolated-synthetic.env.prod -f docker-compose.prod.yml config --quiet",
+      "exitCode": 0,
+      "status": "PASS_HISTORICAL",
+      "evidence": "H16 recorded exit 0 using the isolated synthetic fixture SHA-256 1B5EC4E173079019AB38A6ADFD4185FD8EA4B1255B851160E5055C5A7206525E; config-only, no services/containers, bootstrap, TLS or deploy. The earlier H12 pending label is resolved in this record; raw historical logs remain unchanged."
+    }
+  ]
+}

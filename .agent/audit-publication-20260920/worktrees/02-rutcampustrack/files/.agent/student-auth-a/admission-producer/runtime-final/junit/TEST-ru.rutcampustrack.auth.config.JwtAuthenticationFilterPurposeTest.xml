@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-10T19:04:09" hostname="DITEK-PK" time="1.25">
+  <properties/>
+  <testcase name="refreshTokenIsNotAnAuthenticatedAccessRequest()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.363"/>
+  <testcase name="invalidBearerClearsPreexistingAuthentication()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.229"/>
+  <testcase name="validAccessTokenAuthenticatesWithKnownRole()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.443"/>
+  <testcase name="internalTokenAndMalformedAccessClaimsAreRejected()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.102"/>
+  <testcase name="missingBearerLeavesRequestUnauthenticated()" classname="ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest" time="0.106"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

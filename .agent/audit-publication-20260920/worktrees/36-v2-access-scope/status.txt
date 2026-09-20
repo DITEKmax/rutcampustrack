@@ -1,0 +1,10 @@
+ M AGENTS.md
+ M proto/academic.proto
+ M services/academic-service/academic-app/build.gradle.kts
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java
+ M services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java
+ M services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java
+?? .agent/access-a2/
+?? services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/
+?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentProjectionGrpcServiceTest.java
+?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/

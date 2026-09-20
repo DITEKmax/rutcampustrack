@@ -1,0 +1,15 @@
+<!-- Архив старого routing-блока из docs/implementation/parallel-development.md.
+     Файл не активен; полный документ сохранён в рабочем дереве. -->
+
+## 6. Два исполнителя без расхождения контрактов
+
+| Участник | Назначение | Область |
+|---|---|---|
+| Root Astra low | Scope, модель/риск, зависимости, решения и приёмка | Общий план; не основной код |
+| FE developer Terra medium/high | PWA/TMA UI, adapter, states, mocks, tests | Свой frontend worktree |
+| BE developer Terra high / Sol high по риску | BFF, domain delta, tests и измерения | Свой backend worktree |
+| Reviewer Terra high / Sol high по риску | Стабильный объединённый diff и runtime evidence | Без правок |
+
+Explorer/architect нужны до записи по неопределённости. FE и BE — два экземпляра
+одной роли developer с разными packets, не новые постоянные TOML. Третий слот
+остаётся для необходимой независимой проверки. Судья только при реальном споре.

@@ -1,0 +1,78 @@
+{
+  "schema": "rct.checks.v1",
+  "task": "JS-STUDENT-01-fix-be",
+  "revision": "FIX-r2",
+  "baseline": "cedce8c60aee04261ca87a18b898b148719bee89",
+  "branch": "codex/js-student-01-fix-be",
+  "risk": "S2",
+  "model": "gpt-5.6-luna",
+  "effort": "max",
+  "environment": {
+    "os": "Windows",
+    "java": "21.0.10",
+    "gradle": "8.12",
+    "docker": "Testcontainers available",
+    "sandbox": "workspace-write; Gradle test reruns used elevated ACL after sandbox project-classpath failure"
+  },
+  "checks": [
+    {
+      "name": "F4/F5 targeted unit tests",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:test --tests \"ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceTest\" --tests \"ru.rutcampustrack.attendance.checkin.CheckinServiceTest\" --no-daemon --console=plain",
+      "exitCode": 0,
+      "evidence": "5 tests passed: 4 effective block/geo combinations and 1 legacy fail-closed guard."
+    },
+    {
+      "name": "F5 endpoint integration",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"ru.rutcampustrack.attendance.integration.CheckinIT\" --no-daemon --console=plain",
+      "exitCode": 0,
+      "evidence": "1 test passed on real Spring HTTP with Mongo, Redis and Rabbit Testcontainers; seeded HEADMAN/ABSENT unchanged and no receipt/pair/outbox/Redis mutation."
+    },
+    {
+      "name": "canonical student check-in transaction suite",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT\" --rerun-tasks --no-daemon --console=plain",
+      "exitCode": 0,
+      "evidence": "17 tests passed with elevated Docker ACL; includes the real attendance.marked outbox payload validation added to the canonical path."
+    },
+    {
+      "name": "full attendance unit suite",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:test --no-daemon --console=plain",
+      "exitCode": 1,
+      "evidence": "165 tests completed, 1 pre-existing LateCheckinServiceTest failure at line 302; no latecheckin file changed."
+    },
+    {
+      "name": "independent LateCheckin reproduction",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:test --tests \"ru.rutcampustrack.attendance.latecheckin.LateCheckinServiceTest\" --no-daemon --console=plain",
+      "exitCode": 1,
+      "evidence": "19 tests completed, same 1 WantedButNotInvoked failure at LateCheckinServiceTest.java:302."
+    },
+    {
+      "name": "diff whitespace",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "evidence": "No whitespace errors."
+    },
+    {
+      "name": "OpenAPI JSON syntax",
+      "command": "python -c \"import json; json.load(open('docs/openapi/attendance.json', encoding='utf-8'))\"",
+      "exitCode": 0,
+      "evidence": "Committed attendance OpenAPI snapshot parses successfully."
+    },
+    {
+      "name": "OpenAPI generated attendance types drift",
+      "command": "frontends/{mini-app,pwa,web-panel}: npm run generate:types:offline",
+      "status": "NOT_RUN",
+      "exitCode": null,
+      "evidence": "Not run because frontend node_modules are absent. Read-only comparison shows all three committed attendance.types.ts files still expose the old /attendance/checkin 201/403/404/409/422/429 responses and description; parent contract/FE owner must regenerate them."
+    }
+  ],
+  "runtime": {
+    "status": "PASS",
+    "evidence": "F5 CheckinIT ran the attendance HTTP app with task-owned Testcontainers and observed 410 plus no state/event mutation.",
+    "full_stack": "NOT_RUN; parent integration owner owns combined runtime"
+  },
+  "limitations": [
+    "Full attendance unit gate remains blocked by unrelated existing LateCheckinServiceTest failure.",
+    "Generated frontend attendance types are stale relative to the retired 410 snapshot; regeneration is outside this backend packet and remains parent-owned.",
+    "Combined gateway/BFF/full-stack runtime was not run in this lane by contract."
+  ]
+}

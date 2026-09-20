@@ -1,0 +1,791 @@
+{
+  "schema_version": "1",
+  "created_at_utc": "2026-09-06T20:24:13.0557269Z",
+  "repo": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack",
+  "source_branch": "codex/materials-transfer",
+  "expected_root_head": "87784165874e2da6fc261abc1c01584e24624289",
+  "final_sha": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "target_branch": "main",
+  "tracked_dirty_snapshot": [
+    {
+      "path": "docs/INDEX.md",
+      "state": "present",
+      "size_bytes": 9428,
+      "sha256": "74dc54af438a6160d90c9cf5b94f91a501658cddb5b07e03bc9ceb30ff4074b9",
+      "git_blob": "9bc71da202d41cd62cba676660e72f0d5081014d",
+      "last_write_utc": "2026-09-05T21:27:34.6927474Z"
+    },
+    {
+      "path": "skills-lock.json",
+      "state": "absent",
+      "size_bytes": null,
+      "sha256": null,
+      "git_blob": null,
+      "last_write_utc": null
+    }
+  ],
+  "collisions": [
+    {
+      "relative_path": ".agent/vertical-js-student-01/baseline.json",
+      "owner_sha256": "b5b789f60b7ac4f3b001b1d69703ad6e28292c8c06c6a7eed859635baa820cdf",
+      "owner_size_bytes": 2510,
+      "owner_git_blob": "8eb29471d52e1af361fd3d0e58214c0c12f58c81",
+      "incoming_git_blob": "8eb29471d52e1af361fd3d0e58214c0c12f58c81",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\.agent\\vertical-js-student-01\\baseline.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\.agent\\vertical-js-student-01\\baseline.json"
+    },
+    {
+      "relative_path": ".agent/vertical-js-student-01/be-packet-r1.md",
+      "owner_sha256": "af972cbb1622b9441e1a481181bd3ed6921f4f9368d0448d120c15529fdd421e",
+      "owner_size_bytes": 2328,
+      "owner_git_blob": "d7eeb1baf7e62b6abff6568dba8a444929f09705",
+      "incoming_git_blob": "d7eeb1baf7e62b6abff6568dba8a444929f09705",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\.agent\\vertical-js-student-01\\be-packet-r1.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\.agent\\vertical-js-student-01\\be-packet-r1.md"
+    },
+    {
+      "relative_path": ".agent/vertical-js-student-01/be-progress.json",
+      "owner_sha256": "143dc698ab6a28c4a82c63a8fbfc121c2975361241c38d85ba564d7610886183",
+      "owner_size_bytes": 1683,
+      "owner_git_blob": "c212bb54b4a5deb49e500b892772205e1003329d",
+      "incoming_git_blob": "41de52cfc64bc4a38dbedfe89d61471b597264e1",
+      "classification": "different",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\.agent\\vertical-js-student-01\\be-progress.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\.agent\\vertical-js-student-01\\be-progress.json"
+    },
+    {
+      "relative_path": ".agent/vertical-js-student-01/checks.json",
+      "owner_sha256": "d311418d3a39d32efe805877a4988d8d7334811b331ca09f4dd48b62b4a8b62a",
+      "owner_size_bytes": 6619,
+      "owner_git_blob": "b492829a4ec7b2a9114ef68c488011444c58326e",
+      "incoming_git_blob": "b492829a4ec7b2a9114ef68c488011444c58326e",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\.agent\\vertical-js-student-01\\checks.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\.agent\\vertical-js-student-01\\checks.json"
+    },
+    {
+      "relative_path": ".agent/vertical-js-student-01/contract-r1.md",
+      "owner_sha256": "7785d3a07dc5ea37d48db6ccad357495c8104c1850b735fe18f39f9d861df59f",
+      "owner_size_bytes": 11004,
+      "owner_git_blob": "db2ea504417ede75d188f8815c3e2a5122fe6047",
+      "incoming_git_blob": "db2ea504417ede75d188f8815c3e2a5122fe6047",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\.agent\\vertical-js-student-01\\contract-r1.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\.agent\\vertical-js-student-01\\contract-r1.md"
+    },
+    {
+      "relative_path": ".agent/vertical-js-student-01/decisions.md",
+      "owner_sha256": "7e87afd92b51b92527b349860aa13588135b19b2c55a7a2cb38ef4b0421e23f9",
+      "owner_size_bytes": 3955,
+      "owner_git_blob": "eebd389efe035a77eeb12c45114006b04251ba1d",
+      "incoming_git_blob": "eebd389efe035a77eeb12c45114006b04251ba1d",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\.agent\\vertical-js-student-01\\decisions.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\.agent\\vertical-js-student-01\\decisions.md"
+    },
+    {
+      "relative_path": ".agent/vertical-js-student-01/fe-packet-r1.md",
+      "owner_sha256": "52033b733d612a9dc47ef37b1ec96abdeb51fd678aebfa66236289f519fd4227",
+      "owner_size_bytes": 1774,
+      "owner_git_blob": "5d26af5eeaf16b06e28fb814c75a89bd70ca7fae",
+      "incoming_git_blob": "5d26af5eeaf16b06e28fb814c75a89bd70ca7fae",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\.agent\\vertical-js-student-01\\fe-packet-r1.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\.agent\\vertical-js-student-01\\fe-packet-r1.md"
+    },
+    {
+      "relative_path": ".agent/vertical-js-student-01/freeze-plan.md",
+      "owner_sha256": "b7cdcf9dbb35884666ef6cd2b94ab91fdfed4e259172078ce8f7e9a21a5d4133",
+      "owner_size_bytes": 1832,
+      "owner_git_blob": "3501f0ae2e157674a687e59ffc7bfe01b4a41c3f",
+      "incoming_git_blob": "3501f0ae2e157674a687e59ffc7bfe01b4a41c3f",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\.agent\\vertical-js-student-01\\freeze-plan.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\.agent\\vertical-js-student-01\\freeze-plan.md"
+    },
+    {
+      "relative_path": ".agent/vertical-js-student-01/freeze-ready.json",
+      "owner_sha256": "351def81922da2ad4f048b4ec0f63025fe12600d3960bbcd3f92f71eaf46be45",
+      "owner_size_bytes": 10271,
+      "owner_git_blob": "22e64eca1d541709c7d88115ff3074338459cd85",
+      "incoming_git_blob": "22e64eca1d541709c7d88115ff3074338459cd85",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\.agent\\vertical-js-student-01\\freeze-ready.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\.agent\\vertical-js-student-01\\freeze-ready.json"
+    },
+    {
+      "relative_path": ".agent/vertical-js-student-01/summary.md",
+      "owner_sha256": "a66ee0ad7f802414ecdf1e22326b437fbadb7ec9d5b5bec9e2ad1906efb5ce24",
+      "owner_size_bytes": 1643,
+      "owner_git_blob": "79be9822b25afdad09350c942d1043ba0ea8e05c",
+      "incoming_git_blob": "79be9822b25afdad09350c942d1043ba0ea8e05c",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\.agent\\vertical-js-student-01\\summary.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\.agent\\vertical-js-student-01\\summary.md"
+    },
+    {
+      "relative_path": ".agent/vertical-js-student-01/task-state.json",
+      "owner_sha256": "899c7e6d860145f5496ec62a8b4e8c2630e759e65756a460df53e50aff5ef961",
+      "owner_size_bytes": 1637,
+      "owner_git_blob": "1b7241aa6aec833b901b999d0dbeebda1ed91417",
+      "incoming_git_blob": "1b7241aa6aec833b901b999d0dbeebda1ed91417",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\.agent\\vertical-js-student-01\\task-state.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\.agent\\vertical-js-student-01\\task-state.json"
+    },
+    {
+      "relative_path": "AGENTS.md",
+      "owner_sha256": "df68ad6ee6a15eaa3dce3e7d624c35dad837acc7e1d9dc7afc23db51f23577e0",
+      "owner_size_bytes": 5053,
+      "owner_git_blob": "e0a9487776e740d5b2204f7cc05dd1fa76039a8f",
+      "incoming_git_blob": "e0a9487776e740d5b2204f7cc05dd1fa76039a8f",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\AGENTS.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\AGENTS.md"
+    },
+    {
+      "relative_path": "docs/agent-workflow.md",
+      "owner_sha256": "315fbbfcbb3f141bed520eee40dd8caaaf72c46710140e6be694dd2d85037c2a",
+      "owner_size_bytes": 7943,
+      "owner_git_blob": "f6acad78212eac0930de0a74f7d370813d3e3b3b",
+      "incoming_git_blob": "f6acad78212eac0930de0a74f7d370813d3e3b3b",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\agent-workflow.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\agent-workflow.md"
+    },
+    {
+      "relative_path": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+      "owner_sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+      "owner_size_bytes": 61912,
+      "owner_git_blob": "29f8a914d4fcb5bb7c3a216ac43f8bf4190f439b",
+      "incoming_git_blob": "29f8a914d4fcb5bb7c3a216ac43f8bf4190f439b",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\architecture\\reference-rutcampustrack-design\\backend-conflicts.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\architecture\\reference-rutcampustrack-design\\backend-conflicts.md"
+    },
+    {
+      "relative_path": "docs/design/COMPONENT_REGISTRY.md",
+      "owner_sha256": "9bd46cf132d72ad0c8ee8ea40ead38f3fa7eda3f44c2f094c6567acaf1b0aede",
+      "owner_size_bytes": 335979,
+      "owner_git_blob": "373d70b093671e579a86fe9c1a854f6e16a35cfd",
+      "incoming_git_blob": "373d70b093671e579a86fe9c1a854f6e16a35cfd",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\COMPONENT_REGISTRY.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\COMPONENT_REGISTRY.md"
+    },
+    {
+      "relative_path": "docs/design/brandbook-v2.md",
+      "owner_sha256": "38b1046c0537fde3f4673932180af09799faf8ce4904e4bea8753fe6a03ad170",
+      "owner_size_bytes": 84636,
+      "owner_git_blob": "f176d1beb6293713fb02f7d6c8438b64d4a5b609",
+      "incoming_git_blob": "f176d1beb6293713fb02f7d6c8438b64d4a5b609",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\brandbook-v2.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\brandbook-v2.md"
+    },
+    {
+      "relative_path": "docs/design/figma-spec-mobile.md",
+      "owner_sha256": "5441988a30d7d211140a06cb010731a59564a1e90fc87ad3ba4c9d8f082c51d1",
+      "owner_size_bytes": 51261,
+      "owner_git_blob": "8b24e96b3a10963b2c18deeeecd9a499565a538b",
+      "incoming_git_blob": "8b24e96b3a10963b2c18deeeecd9a499565a538b",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\figma-spec-mobile.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\figma-spec-mobile.md"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/README.md",
+      "owner_sha256": "b994ef9b1a80b8b4bd418fcefe9127cf8ac28172e131ba4a6d54883481249367",
+      "owner_size_bytes": 709,
+      "owner_git_blob": "142ea72011ef6edb3a9cb8240e0d31fc585dbd42",
+      "incoming_git_blob": "142ea72011ef6edb3a9cb8240e0d31fc585dbd42",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\README.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\README.md"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/asset-download-diagnostics.json",
+      "owner_sha256": "ed672fb1b2df69f49b42fc83a5565cd231a99bdc2e6122db39548ac50250635b",
+      "owner_size_bytes": 492,
+      "owner_git_blob": "d8a3ee9d8aa6d4c58cd83438c681868df5d7eeac",
+      "incoming_git_blob": "d8a3ee9d8aa6d4c58cd83438c681868df5d7eeac",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\asset-download-diagnostics.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\asset-download-diagnostics.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/asset-index.json",
+      "owner_sha256": "a2ac81af1a4c7667eedfbd8d58fd2b3c87631aed8585e1ba08648adb7894f247",
+      "owner_size_bytes": 12325,
+      "owner_git_blob": "e537694c51adbff263818cb997562fd8631fb604",
+      "incoming_git_blob": "e537694c51adbff263818cb997562fd8631fb604",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\asset-index.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\asset-index.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/assets-r002.json",
+      "owner_sha256": "57027013503b052b012350c033ee817340d817f293f959422bef573ee423c407",
+      "owner_size_bytes": 6582,
+      "owner_git_blob": "fc51ae89e111f4cbb1c861ecc1f62a6c2bcf5a5e",
+      "incoming_git_blob": "fc51ae89e111f4cbb1c861ecc1f62a6c2bcf5a5e",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r002.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r002.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/assets-r003.json",
+      "owner_sha256": "e8bf8c824f56169256fc0612b41777e95962682e26cca8fc020c22b81c6adc63",
+      "owner_size_bytes": 6120,
+      "owner_git_blob": "bfdb5636dea1d949b1890ba14b317997fe4fd9de",
+      "incoming_git_blob": "bfdb5636dea1d949b1890ba14b317997fe4fd9de",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r003.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r003.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/assets-r004.json",
+      "owner_sha256": "0fe409b0afd571413b796f2b7df35b9c96fee737d929ba30d774cd10361594ae",
+      "owner_size_bytes": 3528,
+      "owner_git_blob": "eaf5246e7b40dfddde229ad5fd4522ea20db94ac",
+      "incoming_git_blob": "eaf5246e7b40dfddde229ad5fd4522ea20db94ac",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r004.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r004.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/assets-r008.json",
+      "owner_sha256": "58e010cbcba1af266bb2b7b78f55f88365868cc9e2ce6200fc7aaf1b948fd648",
+      "owner_size_bytes": 4392,
+      "owner_git_blob": "2e15bc7eea2bbf85cea16823c1f6602e6f185fc6",
+      "incoming_git_blob": "2e15bc7eea2bbf85cea16823c1f6602e6f185fc6",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r008.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r008.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/assets-r009.json",
+      "owner_sha256": "b587b0ed1c64bed67c6d125cb818632c736793f3506c73b06c93ed73654a2b87",
+      "owner_size_bytes": 1800,
+      "owner_git_blob": "380d3f5f592387716ea92d4a786f5393682afffa",
+      "incoming_git_blob": "380d3f5f592387716ea92d4a786f5393682afffa",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r009.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r009.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/assets-r010.json",
+      "owner_sha256": "8a853ffc044b18e38818326be82ac3b585b001a8b439c09507903db61da83676",
+      "owner_size_bytes": 3096,
+      "owner_git_blob": "6c27a8f6f59c902cea064ed7f3a8ec7a061258ec",
+      "incoming_git_blob": "6c27a8f6f59c902cea064ed7f3a8ec7a061258ec",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r010.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\assets-r010.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/064bf682c6d4a398fa792a41d9ef2dcb175e5b83e95bd2b5b08871fd0fc527fe.svg",
+      "owner_sha256": "064bf682c6d4a398fa792a41d9ef2dcb175e5b83e95bd2b5b08871fd0fc527fe",
+      "owner_size_bytes": 551,
+      "owner_git_blob": "f9e36769f3e8f8ae0a7e7f0880fb8ef44f4d1e0c",
+      "incoming_git_blob": "f9e36769f3e8f8ae0a7e7f0880fb8ef44f4d1e0c",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\064bf682c6d4a398fa792a41d9ef2dcb175e5b83e95bd2b5b08871fd0fc527fe.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\064bf682c6d4a398fa792a41d9ef2dcb175e5b83e95bd2b5b08871fd0fc527fe.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/080f62678853575d8e666de6485debadc448110067fcee8ab4b0dc4b219d50c2.svg",
+      "owner_sha256": "080f62678853575d8e666de6485debadc448110067fcee8ab4b0dc4b219d50c2",
+      "owner_size_bytes": 316,
+      "owner_git_blob": "ef3bbe3b0dcaa18210eb8cc6f8e95960382942eb",
+      "incoming_git_blob": "ef3bbe3b0dcaa18210eb8cc6f8e95960382942eb",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\080f62678853575d8e666de6485debadc448110067fcee8ab4b0dc4b219d50c2.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\080f62678853575d8e666de6485debadc448110067fcee8ab4b0dc4b219d50c2.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/3196548642ea3ee3c910cf379d1240564628568e56a01185485edb85233b5ad5.svg",
+      "owner_sha256": "3196548642ea3ee3c910cf379d1240564628568e56a01185485edb85233b5ad5",
+      "owner_size_bytes": 409,
+      "owner_git_blob": "f18eaf9f4a42bbb4fbdf481796ef41e3bb73b350",
+      "incoming_git_blob": "f18eaf9f4a42bbb4fbdf481796ef41e3bb73b350",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\3196548642ea3ee3c910cf379d1240564628568e56a01185485edb85233b5ad5.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\3196548642ea3ee3c910cf379d1240564628568e56a01185485edb85233b5ad5.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/3f8cad39fb38b3afaf33e6cb2869f69ebd54d51edf9735a27203f6c32d179241.svg",
+      "owner_sha256": "3f8cad39fb38b3afaf33e6cb2869f69ebd54d51edf9735a27203f6c32d179241",
+      "owner_size_bytes": 515,
+      "owner_git_blob": "573aa103ba48a6e35ff5f5c852001ee1bad7497c",
+      "incoming_git_blob": "573aa103ba48a6e35ff5f5c852001ee1bad7497c",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\3f8cad39fb38b3afaf33e6cb2869f69ebd54d51edf9735a27203f6c32d179241.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\3f8cad39fb38b3afaf33e6cb2869f69ebd54d51edf9735a27203f6c32d179241.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/3fefe2b0549c487653f0192bc99ddfaa1c2bce820dccd8390fff232ae9d256de.svg",
+      "owner_sha256": "3fefe2b0549c487653f0192bc99ddfaa1c2bce820dccd8390fff232ae9d256de",
+      "owner_size_bytes": 324,
+      "owner_git_blob": "2677e86a41ed64405fdc892954449409549ffc0a",
+      "incoming_git_blob": "2677e86a41ed64405fdc892954449409549ffc0a",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\3fefe2b0549c487653f0192bc99ddfaa1c2bce820dccd8390fff232ae9d256de.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\3fefe2b0549c487653f0192bc99ddfaa1c2bce820dccd8390fff232ae9d256de.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/40e6aa0e1f0fdd340c51284f51e047b075c07c664cf7e8a620b3995bd1e53239.svg",
+      "owner_sha256": "40e6aa0e1f0fdd340c51284f51e047b075c07c664cf7e8a620b3995bd1e53239",
+      "owner_size_bytes": 409,
+      "owner_git_blob": "67e42fd2205f568da8648faa8995ccaf3b2cc59c",
+      "incoming_git_blob": "67e42fd2205f568da8648faa8995ccaf3b2cc59c",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\40e6aa0e1f0fdd340c51284f51e047b075c07c664cf7e8a620b3995bd1e53239.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\40e6aa0e1f0fdd340c51284f51e047b075c07c664cf7e8a620b3995bd1e53239.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/46c2a4c1221ee48d754fab1b1d5d32769cc04327bc6f41657a38f602217c159e.svg",
+      "owner_sha256": "46c2a4c1221ee48d754fab1b1d5d32769cc04327bc6f41657a38f602217c159e",
+      "owner_size_bytes": 320,
+      "owner_git_blob": "4b58abe861b17b9f38ba548a53ad541ea9590e60",
+      "incoming_git_blob": "4b58abe861b17b9f38ba548a53ad541ea9590e60",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\46c2a4c1221ee48d754fab1b1d5d32769cc04327bc6f41657a38f602217c159e.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\46c2a4c1221ee48d754fab1b1d5d32769cc04327bc6f41657a38f602217c159e.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/560c88d0f74c2fabd63ebecc0e14ae03322744e7deb65ab346a025902aa2a5fa.svg",
+      "owner_sha256": "560c88d0f74c2fabd63ebecc0e14ae03322744e7deb65ab346a025902aa2a5fa",
+      "owner_size_bytes": 482,
+      "owner_git_blob": "b1350f24e7fd07c4481e137bb4eecafb9eb0aaf2",
+      "incoming_git_blob": "b1350f24e7fd07c4481e137bb4eecafb9eb0aaf2",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\560c88d0f74c2fabd63ebecc0e14ae03322744e7deb65ab346a025902aa2a5fa.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\560c88d0f74c2fabd63ebecc0e14ae03322744e7deb65ab346a025902aa2a5fa.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/5a3b118f77f1aab8e280ae8de36b8c711f649dc4f5eb504561e08bcbf29b42b2.svg",
+      "owner_sha256": "5a3b118f77f1aab8e280ae8de36b8c711f649dc4f5eb504561e08bcbf29b42b2",
+      "owner_size_bytes": 308,
+      "owner_git_blob": "95be7757c971b27ea471eb49f2269f5d9c0059d7",
+      "incoming_git_blob": "95be7757c971b27ea471eb49f2269f5d9c0059d7",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\5a3b118f77f1aab8e280ae8de36b8c711f649dc4f5eb504561e08bcbf29b42b2.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\5a3b118f77f1aab8e280ae8de36b8c711f649dc4f5eb504561e08bcbf29b42b2.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/5cb7c9c00bf1ced773d094dcd4cc78bc79abc10c6dce08e1c44b3971310ed40f.svg",
+      "owner_sha256": "5cb7c9c00bf1ced773d094dcd4cc78bc79abc10c6dce08e1c44b3971310ed40f",
+      "owner_size_bytes": 428,
+      "owner_git_blob": "4a114bc19dd7ac3f06dc8b4b933e8e2bd81665b2",
+      "incoming_git_blob": "4a114bc19dd7ac3f06dc8b4b933e8e2bd81665b2",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\5cb7c9c00bf1ced773d094dcd4cc78bc79abc10c6dce08e1c44b3971310ed40f.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\5cb7c9c00bf1ced773d094dcd4cc78bc79abc10c6dce08e1c44b3971310ed40f.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/5fe054606397e33574ad8faff8cb3ec1f0dc1a7e4af3e97bd54877a248c4f229.svg",
+      "owner_sha256": "5fe054606397e33574ad8faff8cb3ec1f0dc1a7e4af3e97bd54877a248c4f229",
+      "owner_size_bytes": 255,
+      "owner_git_blob": "8ed6b425dbd57a12b83f694ab511a1c0182e2b5f",
+      "incoming_git_blob": "8ed6b425dbd57a12b83f694ab511a1c0182e2b5f",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\5fe054606397e33574ad8faff8cb3ec1f0dc1a7e4af3e97bd54877a248c4f229.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\5fe054606397e33574ad8faff8cb3ec1f0dc1a7e4af3e97bd54877a248c4f229.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/6d989522355cff05e1e36a4bef18168cbb6cccb1534724e6457c07a9704ed00f.svg",
+      "owner_sha256": "6d989522355cff05e1e36a4bef18168cbb6cccb1534724e6457c07a9704ed00f",
+      "owner_size_bytes": 494,
+      "owner_git_blob": "3a6a7298efdd4fac3c3416a4609d78df6a886827",
+      "incoming_git_blob": "3a6a7298efdd4fac3c3416a4609d78df6a886827",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\6d989522355cff05e1e36a4bef18168cbb6cccb1534724e6457c07a9704ed00f.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\6d989522355cff05e1e36a4bef18168cbb6cccb1534724e6457c07a9704ed00f.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/72887ca171fd0e68eaa2cd3c636f0e6ff8b990d02e023277891bd92568e6e7c4.svg",
+      "owner_sha256": "72887ca171fd0e68eaa2cd3c636f0e6ff8b990d02e023277891bd92568e6e7c4",
+      "owner_size_bytes": 326,
+      "owner_git_blob": "bd743cb7f7355cf8fe37e0f6edfee66c65eac71d",
+      "incoming_git_blob": "bd743cb7f7355cf8fe37e0f6edfee66c65eac71d",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\72887ca171fd0e68eaa2cd3c636f0e6ff8b990d02e023277891bd92568e6e7c4.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\72887ca171fd0e68eaa2cd3c636f0e6ff8b990d02e023277891bd92568e6e7c4.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/897e2c20c9f290adbe37668011fe6f38b3bc94c101324cc084c57bd429a91bff.svg",
+      "owner_sha256": "897e2c20c9f290adbe37668011fe6f38b3bc94c101324cc084c57bd429a91bff",
+      "owner_size_bytes": 384,
+      "owner_git_blob": "5db4d46c5e72280d2a2c80fcb168341af47701be",
+      "incoming_git_blob": "5db4d46c5e72280d2a2c80fcb168341af47701be",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\897e2c20c9f290adbe37668011fe6f38b3bc94c101324cc084c57bd429a91bff.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\897e2c20c9f290adbe37668011fe6f38b3bc94c101324cc084c57bd429a91bff.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/978d0d109b523854ee07b8ad87a1eedb338b992454d4038323799b2f6dd8e485.svg",
+      "owner_sha256": "978d0d109b523854ee07b8ad87a1eedb338b992454d4038323799b2f6dd8e485",
+      "owner_size_bytes": 281,
+      "owner_git_blob": "3fd5050dc9b7ca9e1d6c568ee0c10f6ad39c6170",
+      "incoming_git_blob": "3fd5050dc9b7ca9e1d6c568ee0c10f6ad39c6170",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\978d0d109b523854ee07b8ad87a1eedb338b992454d4038323799b2f6dd8e485.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\978d0d109b523854ee07b8ad87a1eedb338b992454d4038323799b2f6dd8e485.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/assets/sha256/ed4461d521924a71eb3cc6953188a4ca86bcdc767f4025e6adca18652c148063.svg",
+      "owner_sha256": "ed4461d521924a71eb3cc6953188a4ca86bcdc767f4025e6adca18652c148063",
+      "owner_size_bytes": 384,
+      "owner_git_blob": "f179676574ef7504a515c14f582e4059bb43b292",
+      "incoming_git_blob": "f179676574ef7504a515c14f582e4059bb43b292",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\ed4461d521924a71eb3cc6953188a4ca86bcdc767f4025e6adca18652c148063.svg",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\assets\\sha256\\ed4461d521924a71eb3cc6953188a4ca86bcdc767f4025e6adca18652c148063.svg"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/call-log.json",
+      "owner_sha256": "48205853ff60a59e4d8ae81bec2d7c0f38597bf7aeafd1036f971365270f217c",
+      "owner_size_bytes": 6095,
+      "owner_git_blob": "e4c18dcfadbb15c3996e0e334017ef92225c8de3",
+      "incoming_git_blob": "e4c18dcfadbb15c3996e0e334017ef92225c8de3",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\call-log.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\call-log.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/context/R002-today-default.raw.json",
+      "owner_sha256": "24b732ab0c68dfecb126577f4282013180221ae32eefc612d674443df7d88461",
+      "owner_size_bytes": 91883,
+      "owner_git_blob": "0580a13d4c3dc4248eedc18266e3a1202e8c4412",
+      "incoming_git_blob": "0580a13d4c3dc4248eedc18266e3a1202e8c4412",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\context\\R002-today-default.raw.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\context\\R002-today-default.raw.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/context/R003-geo-unconfirmed.raw.json",
+      "owner_sha256": "7e7bc47ee264919279809a46a832fd9e7d3cceab449caf5edbadcb1645447505",
+      "owner_size_bytes": 90117,
+      "owner_git_blob": "6767538bfcda1643b35702876da9482b679e53e6",
+      "incoming_git_blob": "6767538bfcda1643b35702876da9482b679e53e6",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\context\\R003-geo-unconfirmed.raw.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\context\\R003-geo-unconfirmed.raw.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/context/R004-attendance-confirmed.raw.json",
+      "owner_sha256": "cf49441ab5e0c62b1cfa16037509d7ac0bf41cd97cee658e43f0352d48baf3c2",
+      "owner_size_bytes": 87134,
+      "owner_git_blob": "4d1445b6957df8f73d2a55d089ea3649d9bd399c",
+      "incoming_git_blob": "4d1445b6957df8f73d2a55d089ea3649d9bd399c",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\context\\R004-attendance-confirmed.raw.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\context\\R004-attendance-confirmed.raw.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/context/R005-screen-family-metadata.raw.json",
+      "owner_sha256": "d01b165b05116012db0e386e27d543a0f5d8c59e9d7eaba89fa082cbbb120816",
+      "owner_size_bytes": 37246,
+      "owner_git_blob": "f7bf34129bfe8973e37c19906ccc51cb98870f0d",
+      "incoming_git_blob": "f7bf34129bfe8973e37c19906ccc51cb98870f0d",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\context\\R005-screen-family-metadata.raw.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\context\\R005-screen-family-metadata.raw.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/context/R006-variable-definitions.raw.json",
+      "owner_sha256": "6cdd2726249f41a140c1bcd381a47980b40791f2c0ddac5c9810b93954d8d5eb",
+      "owner_size_bytes": 1171,
+      "owner_git_blob": "609942408374303d356857bb050a5da4b6774d10",
+      "incoming_git_blob": "609942408374303d356857bb050a5da4b6774d10",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\context\\R006-variable-definitions.raw.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\context\\R006-variable-definitions.raw.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/context/R007-download-assets.raw.json",
+      "owner_sha256": "17f1ee3846153a5b1a23bc3c58c9c87d7280fc099be1cb57011c82620b2ce4d3",
+      "owner_size_bytes": 4099,
+      "owner_git_blob": "a4b2132ab15c8176b22313838be5fc8d1bbc5c4e",
+      "incoming_git_blob": "a4b2132ab15c8176b22313838be5fc8d1bbc5c4e",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\context\\R007-download-assets.raw.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\context\\R007-download-assets.raw.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/context/R008-absent-actions.raw.json",
+      "owner_sha256": "ab27952550d650b584bf8cda84006743399255d9d08adf4e82ad93be371460be",
+      "owner_size_bytes": 87932,
+      "owner_git_blob": "ef2bf5a7707703c8bb3ea778f8cbc058ccbb1d10",
+      "incoming_git_blob": "ef2bf5a7707703c8bb3ea778f8cbc058ccbb1d10",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\context\\R008-absent-actions.raw.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\context\\R008-absent-actions.raw.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/context/R009-reason-form.raw.json",
+      "owner_sha256": "07373f353e0fd1ee77ab886b3cab27a644a92c45c5caa887b717a0b4805fd180",
+      "owner_size_bytes": 72447,
+      "owner_git_blob": "986b3b66e3e1315dca006d747dbb37272464d053",
+      "incoming_git_blob": "986b3b66e3e1315dca006d747dbb37272464d053",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\context\\R009-reason-form.raw.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\context\\R009-reason-form.raw.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/context/R010-pending-request.raw.json",
+      "owner_sha256": "51607fba16224795ce8e9a928316cf6649020263c91df090af1c004fbcabd95b",
+      "owner_size_bytes": 62488,
+      "owner_git_blob": "e2fd0e61906afc81a5badb64a6080807e10b1fd5",
+      "incoming_git_blob": "e2fd0e61906afc81a5badb64a6080807e10b1fd5",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\context\\R010-pending-request.raw.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\context\\R010-pending-request.raw.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/context/R011-family-variable-definitions.raw.json",
+      "owner_sha256": "09a48343a27853c898d92d8d26c72d1d59962a4c0f6980f40508c42a91d61ba5",
+      "owner_size_bytes": 2007,
+      "owner_git_blob": "cbd0eef47c2462eac2410aec282e0e1108ad967b",
+      "incoming_git_blob": "cbd0eef47c2462eac2410aec282e0e1108ad967b",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\context\\R011-family-variable-definitions.raw.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\context\\R011-family-variable-definitions.raw.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/context/README.md",
+      "owner_sha256": "69e8d454ebc853ecdf223e9250fa89286a5082bca7639b20f5113b4d6195aa84",
+      "owner_size_bytes": 288,
+      "owner_git_blob": "ddc7912e03b4ae8aa2fea1c37c2c5e50e4094e49",
+      "incoming_git_blob": "ddc7912e03b4ae8aa2fea1c37c2c5e50e4094e49",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\context\\README.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\context\\README.md"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/decisions.md",
+      "owner_sha256": "5a42db39698f5217f795b39bb5edabfab83a4cd9bfd21d6b0676686163ec6048",
+      "owner_size_bytes": 1195,
+      "owner_git_blob": "683ed4c37a8b5cfdcd4c611d00cd823875d83887",
+      "incoming_git_blob": "683ed4c37a8b5cfdcd4c611d00cd823875d83887",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\decisions.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\decisions.md"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/gaps.md",
+      "owner_sha256": "7bd1867bed305166d27ac8ef41d193abd1cfd68bad91ccc5933947a3463692d2",
+      "owner_size_bytes": 2427,
+      "owner_git_blob": "a82dc3c6fefcbb05ecfc3ddc342d9ca8c054405b",
+      "incoming_git_blob": "a82dc3c6fefcbb05ecfc3ddc342d9ca8c054405b",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\gaps.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\gaps.md"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/manifest.json",
+      "owner_sha256": "532a4420a4ff85be69378bca3829cba5d28d08859bb0c35a0256edddce5e98b4",
+      "owner_size_bytes": 11988,
+      "owner_git_blob": "f42be385164b67a5a376cb23e127e9cf4795b58f",
+      "incoming_git_blob": "f42be385164b67a5a376cb23e127e9cf4795b58f",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\manifest.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\manifest.json"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/screenshots/R002-today-default.png",
+      "owner_sha256": "f883138e67a47fe0d2a8bba23a3bfea857efa27902ec9979633f09550d2bc629",
+      "owner_size_bytes": 48268,
+      "owner_git_blob": "a14d65c0cf070c66ded444673a39e79d7ded00ea",
+      "incoming_git_blob": "a14d65c0cf070c66ded444673a39e79d7ded00ea",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R002-today-default.png",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R002-today-default.png"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/screenshots/R003-geo-unconfirmed.png",
+      "owner_sha256": "c5ccde4975163787458dd447c11160a8307afda3fff59ffffa3bbdd2c86122c7",
+      "owner_size_bytes": 47618,
+      "owner_git_blob": "29b6a15f8307c8087acf1c2f748ac1947e4bf8f4",
+      "incoming_git_blob": "29b6a15f8307c8087acf1c2f748ac1947e4bf8f4",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R003-geo-unconfirmed.png",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R003-geo-unconfirmed.png"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/screenshots/R004-attendance-confirmed.png",
+      "owner_sha256": "704fc00af9bbdf57712ee659ae2decc066d94ca48b68637024945c68367077fc",
+      "owner_size_bytes": 45586,
+      "owner_git_blob": "7397ea7bc6a6bd14ce5bcadabd49fe8d09a8d812",
+      "incoming_git_blob": "7397ea7bc6a6bd14ce5bcadabd49fe8d09a8d812",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R004-attendance-confirmed.png",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R004-attendance-confirmed.png"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/screenshots/R008-absent-actions.png",
+      "owner_sha256": "6edfa20bc00aca50348fd697829a07be7c42053832e28abf29e7edf6d51cd77c",
+      "owner_size_bytes": 47627,
+      "owner_git_blob": "f64dc13381f03125d672bae206884db59e9f3a5e",
+      "incoming_git_blob": "f64dc13381f03125d672bae206884db59e9f3a5e",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R008-absent-actions.png",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R008-absent-actions.png"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/screenshots/R009-reason-form.png",
+      "owner_sha256": "45854370bd7cbd3a18429a112d02193009b5363e5b6d6e7399bec2928de06b2b",
+      "owner_size_bytes": 42524,
+      "owner_git_blob": "637997320cb3812e23008c02285b09b44e08009e",
+      "incoming_git_blob": "637997320cb3812e23008c02285b09b44e08009e",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R009-reason-form.png",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R009-reason-form.png"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/screenshots/R010-pending-request.png",
+      "owner_sha256": "5f29ad8105d5aa842c03a0fcc44de11e6bf077bb2e9c725c14b72305c2f9c079",
+      "owner_size_bytes": 35246,
+      "owner_git_blob": "5509884067ad1eed61c9421290785a76eca999e3",
+      "incoming_git_blob": "5509884067ad1eed61c9421290785a76eca999e3",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R010-pending-request.png",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\R010-pending-request.png"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/screenshots/README.md",
+      "owner_sha256": "d18a8881110e4741cc698828d580538ae1a25d6d4f310d556bc3219594aaa35b",
+      "owner_size_bytes": 300,
+      "owner_git_blob": "36d9e1529c29990563dd2e4c405f23124955a7d4",
+      "incoming_git_blob": "36d9e1529c29990563dd2e4c405f23124955a7d4",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\README.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\screenshots\\README.md"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/source-links.md",
+      "owner_sha256": "0c7f3fa2a4f38cb599a14e763b166ec3ea0782c7e366f9183291629c12bd89a9",
+      "owner_size_bytes": 2792,
+      "owner_git_blob": "6674960e7400c91384d7e7fd138135caca91d57a",
+      "incoming_git_blob": "6674960e7400c91384d7e7fd138135caca91d57a",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\source-links.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\source-links.md"
+    },
+    {
+      "relative_path": "docs/design/packets/JS-STUDENT-01/token-mapping.json",
+      "owner_sha256": "68a873dac5c178fa71390cbd79413b80848016ce103e7f0d92116ba7bc5bccb6",
+      "owner_size_bytes": 59693,
+      "owner_git_blob": "cd2499e8672b939d7f101e36c42a42f78649408d",
+      "incoming_git_blob": "cd2499e8672b939d7f101e36c42a42f78649408d",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\packets\\JS-STUDENT-01\\token-mapping.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\packets\\JS-STUDENT-01\\token-mapping.json"
+    },
+    {
+      "relative_path": "docs/design/tokens-v2.json",
+      "owner_sha256": "53c5f074e398cc045538df0f3a119e58ab0173b8923f93d70a8546c04ca6a779",
+      "owner_size_bytes": 38962,
+      "owner_git_blob": "c120a47a29c7172725e687d514e66f753c3470ec",
+      "incoming_git_blob": "c120a47a29c7172725e687d514e66f753c3470ec",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\design\\tokens-v2.json",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\design\\tokens-v2.json"
+    },
+    {
+      "relative_path": "docs/implementation/backend-delta.yaml",
+      "owner_sha256": "b32d0cbf83da5ec8b478b132e08302e7f88379905052d7290ff38d95237b4e6a",
+      "owner_size_bytes": 726798,
+      "owner_git_blob": "1ba547d63137dbf7fdc8df2cbc11717c56830743",
+      "incoming_git_blob": "1ba547d63137dbf7fdc8df2cbc11717c56830743",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\implementation\\backend-delta.yaml",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\implementation\\backend-delta.yaml"
+    },
+    {
+      "relative_path": "docs/implementation/backlog.md",
+      "owner_sha256": "65164956e4506c2df68bf072f47a372e1203385ce33889344cd094a023e39269",
+      "owner_size_bytes": 1608,
+      "owner_git_blob": "dfbbb6691b6b190a998a13e5878de15e3f25e13a",
+      "incoming_git_blob": "dfbbb6691b6b190a998a13e5878de15e3f25e13a",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\implementation\\backlog.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\implementation\\backlog.md"
+    },
+    {
+      "relative_path": "docs/implementation/parallel-development.md",
+      "owner_sha256": "9752c819f99db5cc337ca4e0008d816ad2e7dc2013f8917c02e30bdcdb3d1570",
+      "owner_size_bytes": 27885,
+      "owner_git_blob": "577a3b6cace5c741d4e7f01d310191b4f0640877",
+      "incoming_git_blob": "54c485ccafb5ebedfe1b43503fce08b145c17d6d",
+      "classification": "different",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\implementation\\parallel-development.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\implementation\\parallel-development.md"
+    },
+    {
+      "relative_path": "docs/implementation/readiness.md",
+      "owner_sha256": "1b9b3a8b01ce2b1c8a9ee1662b35dd83086155936937d075c89b5647ea2e72ba",
+      "owner_size_bytes": 3429,
+      "owner_git_blob": "6c448ef971fbbae5a86980c56ac4aa2f3924e3ce",
+      "incoming_git_blob": "6c448ef971fbbae5a86980c56ac4aa2f3924e3ce",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\implementation\\readiness.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\implementation\\readiness.md"
+    },
+    {
+      "relative_path": "docs/product/job-stories.yaml",
+      "owner_sha256": "c4f05ec37bada25a3c8b9f8cc4f680a9efda08680893f638d851e813b0a4c243",
+      "owner_size_bytes": 2351328,
+      "owner_git_blob": "52e784c960890f0b1eb01081fe02af44f87f1ec2",
+      "incoming_git_blob": "52e784c960890f0b1eb01081fe02af44f87f1ec2",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\product\\job-stories.yaml",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\product\\job-stories.yaml"
+    },
+    {
+      "relative_path": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "owner_sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "owner_size_bytes": 198036,
+      "owner_git_blob": "2e3ea35317bf49460788db3daa42d5d4cec148a9",
+      "incoming_git_blob": "2e3ea35317bf49460788db3daa42d5d4cec148a9",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\docs\\research\\reference-rutcampustrack-design\\knowledge\\job-stories.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\docs\\research\\reference-rutcampustrack-design\\knowledge\\job-stories.md"
+    },
+    {
+      "relative_path": "frontends/AGENTS.md",
+      "owner_sha256": "4ff6effd59e9eb3afc3245b4f0c28cdd6b4d53178870d01c8edb1eb1201a3b50",
+      "owner_size_bytes": 2771,
+      "owner_git_blob": "575cc7ebb280db361e6ab172677716cfc3abcbf7",
+      "incoming_git_blob": "575cc7ebb280db361e6ab172677716cfc3abcbf7",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\frontends\\AGENTS.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\frontends\\AGENTS.md"
+    },
+    {
+      "relative_path": "services/AGENTS.md",
+      "owner_sha256": "dadad5fed3f707c52a3c5824198b75a564f3f2d5918d4da172bdd6b9db50d476",
+      "owner_size_bytes": 1890,
+      "owner_git_blob": "34254e3e4d26f657a43fde0c3f85f6cf58b19451",
+      "incoming_git_blob": "34254e3e4d26f657a43fde0c3f85f6cf58b19451",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\services\\AGENTS.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\services\\AGENTS.md"
+    },
+    {
+      "relative_path": "tests/AGENTS.md",
+      "owner_sha256": "58c78156ebabc076dc482a6f1ac90d6e813598920abd2cc33b974b051346d867",
+      "owner_size_bytes": 1804,
+      "owner_git_blob": "0596e3be3eb16d47306d57c9c4937e9324c61503",
+      "incoming_git_blob": "0596e3be3eb16d47306d57c9c4937e9324c61503",
+      "classification": "identical",
+      "backup_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\owner-copy\\tests\\AGENTS.md",
+      "quarantine_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\js-student-01-main-merge\\backup-20260906-232407-835-f1c23092afbd4b6db0329090d3d8b0f4\\quarantine\\tests\\AGENTS.md"
+    }
+  ],
+  "instruction_conflicts": [],
+  "policy": "Each owner file is copied and SHA-256 verified before any owner path is moved. No recursive move/delete is used."
+}

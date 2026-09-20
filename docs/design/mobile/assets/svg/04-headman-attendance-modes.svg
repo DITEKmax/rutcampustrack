@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+
+    <defs>
+      <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#9E7AFF"/>
+        <stop offset="1" stop-color="#6D28D9"/>
+      </linearGradient>
+      <linearGradient id="accentSoft" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#6D28D9" stop-opacity=".72"/>
+        <stop offset="1" stop-color="#9E7AFF" stop-opacity=".16"/>
+      </linearGradient>
+      <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1.5" fill="#9E7AFF" opacity=".18"/>
+      </pattern>
+      <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#000" flood-opacity=".42"/>
+      </filter>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="24" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#9E7AFF"/>
+      </marker>
+      <style>
+        text { font-family: Onest, 'DejaVu Sans', Arial, sans-serif; }
+      </style>
+    </defs>
+    
+<rect width="1600" height="1000" fill="#0B0B0C"/>
+<circle cx="1500" cy="40" r="250" fill="#6D28D9" opacity=".06"/>
+<rect x="0" y="0" width="1600" height="1000" fill="url(#dots)" opacity=".45"/>
+<text x="64" y="76" fill="#F6F4FA" font-size="32" font-weight="650">Староста: журнал превращается в рабочие режимы</text>
+<text x="64" y="112" fill="#C8C2D6" font-size="17">Не одна “мобильная таблица”, а три представления одной пары</text>
+<rect x="60" y="160" width="430" height="730" rx="32" fill="#1C1922" stroke="#565061" stroke-width="1" opacity="1" filter="url(#shadow)"/>
+<text x="88" y="208" text-anchor="start" fill="#F6F4FA" font-size="23" font-weight="700"><tspan x="88" dy="0">1 · Список</tspan></text>
+<text x="88" y="240" text-anchor="start" fill="#34C79C" font-size="14" font-weight="650"><tspan x="88" dy="0">Основной режим</tspan></text>
+<rect x="88" y="275" width="116" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="146.0" y="299.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="146.0" dy="0">09:00</tspan></text>
+<rect x="212" y="275" width="116" height="38" rx="19.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="270.0" y="299.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="270.0" dy="0">10:40</tspan></text>
+<rect x="336" y="275" width="116" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="394.0" y="299.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="394.0" dy="0">12:20</tspan></text>
+<text x="88" y="346" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="430"><tspan x="88" dy="0">Имя + текущий статус + три явных варианта.</tspan><tspan x="88" dy="22">Быстро найти человека и проверить всю</tspan><tspan x="88" dy="22">группу.</tspan></text>
+<rect x="84" y="472" width="382" height="70" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="104" y="502" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="104" dy="0">Анна Волкова</tspan></text>
+<text x="104" y="524" text-anchor="start" fill="#8A8299" font-size="11" font-weight="400"><tspan x="104" dy="0">источник раскрывается</tspan></text>
+<circle cx="408" cy="507" r="19" fill="#34C79C" opacity="1"/>
+<text x="408" y="513" text-anchor="middle" fill="#fff" font-size="15" font-weight="700"><tspan x="408" dy="0">+</tspan></text>
+<rect x="84" y="554" width="382" height="70" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="104" y="584" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="104" dy="0">Иван Петров</tspan></text>
+<text x="104" y="606" text-anchor="start" fill="#8A8299" font-size="11" font-weight="400"><tspan x="104" dy="0">источник раскрывается</tspan></text>
+<circle cx="408" cy="589" r="19" fill="#8A8299" opacity="0.35"/>
+<text x="408" y="595" text-anchor="middle" fill="#fff" font-size="15" font-weight="700"><tspan x="408" dy="0">—</tspan></text>
+<rect x="84" y="636" width="382" height="70" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="104" y="666" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="104" dy="0">Мария Соколова</tspan></text>
+<text x="104" y="688" text-anchor="start" fill="#8A8299" font-size="11" font-weight="400"><tspan x="104" dy="0">источник раскрывается</tspan></text>
+<circle cx="408" cy="671" r="19" fill="#F5B443" opacity="1"/>
+<text x="408" y="677" text-anchor="middle" fill="#fff" font-size="15" font-weight="700"><tspan x="408" dy="0">у</tspan></text>
+<rect x="84" y="718" width="382" height="70" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="104" y="748" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="104" dy="0">Алексей Смирнов</tspan></text>
+<text x="104" y="770" text-anchor="start" fill="#8A8299" font-size="11" font-weight="400"><tspan x="104" dy="0">источник раскрывается</tspan></text>
+<circle cx="408" cy="753" r="19" fill="#E24A4A" opacity="1"/>
+<text x="408" y="759" text-anchor="middle" fill="#fff" font-size="15" font-weight="700"><tspan x="408" dy="0">н</tspan></text>
+<rect x="555" y="160" width="430" height="730" rx="32" fill="#1C1922" stroke="#565061" stroke-width="1" opacity="1" filter="url(#shadow)"/>
+<text x="583" y="208" text-anchor="start" fill="#F6F4FA" font-size="23" font-weight="700"><tspan x="583" dy="0">2 · По одному</tspan></text>
+<text x="583" y="240" text-anchor="start" fill="#9E7AFF" font-size="14" font-weight="650"><tspan x="583" dy="0">Ускоритель переклички</tspan></text>
+<rect x="583" y="275" width="116" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="641.0" y="299.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="641.0" dy="0">09:00</tspan></text>
+<rect x="707" y="275" width="116" height="38" rx="19.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="765.0" y="299.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="765.0" dy="0">10:40</tspan></text>
+<rect x="831" y="275" width="116" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="889.0" y="299.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="889.0" dy="0">12:20</tspan></text>
+<text x="583" y="346" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="430"><tspan x="583" dy="0">Один студент на карточке, большие зоны</tspan><tspan x="583" dy="22">статуса, авто-переход.</tspan><tspan x="583" dy="22">Включается осознанно; свайп не ставит</tspan><tspan x="583" dy="22">отметку.</tspan></text>
+<rect x="605" y="485" width="330" height="260" rx="30" fill="url(#accentSoft)" stroke="#9E7AFF" stroke-width="1" opacity="1" />
+<text x="770" y="535" text-anchor="middle" fill="#C8C2D6" font-size="13" font-weight="600"><tspan x="770" dy="0">08 / 27</tspan></text>
+<text x="770" y="590" text-anchor="middle" fill="#F6F4FA" font-size="24" font-weight="700"><tspan x="770" dy="0">Иван Петров</tspan></text>
+<circle cx="675" cy="675" r="33" fill="#34C79C"/>
+<text x="675" y="683" text-anchor="middle" fill="#fff" font-size="22" font-weight="700"><tspan x="675" dy="0">+</tspan></text>
+<circle cx="770" cy="675" r="33" fill="#F5B443"/>
+<text x="770" y="683" text-anchor="middle" fill="#fff" font-size="22" font-weight="700"><tspan x="770" dy="0">у</tspan></text>
+<circle cx="865" cy="675" r="33" fill="#E24A4A"/>
+<text x="865" y="683" text-anchor="middle" fill="#fff" font-size="22" font-weight="700"><tspan x="865" dy="0">н</tspan></text>
+<rect x="650" y="770" width="240" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="770.0" y="794.0" text-anchor="middle" fill="#F6F4FA" font-size="12" font-weight="600"><tspan x="770.0" dy="0">Пропустить без отметки</tspan></text>
+<rect x="1050" y="160" width="430" height="730" rx="32" fill="#1C1922" stroke="#565061" stroke-width="1" opacity="1" filter="url(#shadow)"/>
+<text x="1078" y="208" text-anchor="start" fill="#F6F4FA" font-size="23" font-weight="700"><tspan x="1078" dy="0">3 · Сводка</tspan></text>
+<text x="1078" y="240" text-anchor="start" fill="#F5B443" font-size="14" font-weight="650"><tspan x="1078" dy="0">Проверка перед закрытием</tspan></text>
+<rect x="1078" y="275" width="116" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1136.0" y="299.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="1136.0" dy="0">09:00</tspan></text>
+<rect x="1202" y="275" width="116" height="38" rx="19.0" fill="url(#accent)" stroke="none" stroke-width="1" opacity="1" /><text x="1260.0" y="299.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="1260.0" dy="0">10:40</tspan></text>
+<rect x="1326" y="275" width="116" height="38" rx="19.0" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" /><text x="1384.0" y="299.0" text-anchor="middle" fill="#F6F4FA" font-size="13" font-weight="600"><tspan x="1384.0" dy="0">12:20</tspan></text>
+<text x="1078" y="346" text-anchor="start" fill="#C8C2D6" font-size="15" font-weight="430"><tspan x="1078" dy="0">Без отметки / + / у / н как стабильные</tspan><tspan x="1078" dy="22">секции.</tspan><tspan x="1078" dy="22">Группировка только для проверки, не</tspan><tspan x="1078" dy="22">drag-and-drop.</tspan></text>
+<rect x="1078" y="470" width="374" height="70" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="1108" cy="505" r="9" fill="#8A8299"/>
+<text x="1130" y="512" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="1130" dy="0">Без отметки</tspan></text>
+<text x="1420" y="512" text-anchor="middle" fill="#F6F4FA" font-size="17" font-weight="700"><tspan x="1420" dy="0">4</tspan></text>
+<rect x="1078" y="552" width="374" height="70" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="1108" cy="587" r="9" fill="#34C79C"/>
+<text x="1130" y="594" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="1130" dy="0">Присутствуют</tspan></text>
+<text x="1420" y="594" text-anchor="middle" fill="#F6F4FA" font-size="17" font-weight="700"><tspan x="1420" dy="0">18</tspan></text>
+<rect x="1078" y="634" width="374" height="70" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="1108" cy="669" r="9" fill="#F5B443"/>
+<text x="1130" y="676" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="1130" dy="0">Уважительно</tspan></text>
+<text x="1420" y="676" text-anchor="middle" fill="#F6F4FA" font-size="17" font-weight="700"><tspan x="1420" dy="0">3</tspan></text>
+<rect x="1078" y="716" width="374" height="70" rx="18" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="1108" cy="751" r="9" fill="#E24A4A"/>
+<text x="1130" y="758" text-anchor="start" fill="#F6F4FA" font-size="15" font-weight="600"><tspan x="1130" dy="0">Отсутствуют</tspan></text>
+<text x="1420" y="758" text-anchor="middle" fill="#F6F4FA" font-size="17" font-weight="700"><tspan x="1420" dy="0">2</tspan></text>
+<text x="800" y="947" text-anchor="middle" fill="#C8C2D6" font-size="16" font-weight="500"><tspan x="800" dy="0">Общий sticky-контекст: пара, прогресс, версия данных и состояние отправки. Все режимы меняют одно доменное состояние.</tspan></text>
+</svg>

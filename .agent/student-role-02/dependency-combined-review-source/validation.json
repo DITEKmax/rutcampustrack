@@ -1,0 +1,10 @@
+{
+  "recordedAt": "2026-09-07T20:40:22.9056409Z",
+  "sourceFiles": 45,
+  "knownExpectedChecks": 36,
+  "sourceChecks": 45,
+  "copyChecks": 45,
+  "mismatches": 0,
+  "initialDiagnostic": "Initial script assumed an array rather than input.files and checked only11 reported hashes; initial manifest preserved. Corrected terminating validation checks all36 known reported hashes and45 source/copy pairs.",
+  "manifestSha256": "3E795CB3F0CB8E95944BCBF1DC623E197554FAC24C5F5D2F5BB65ADFDDEF1D6A"
+}

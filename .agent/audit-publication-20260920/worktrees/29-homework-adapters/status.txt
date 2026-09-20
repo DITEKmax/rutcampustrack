@@ -1,0 +1,29 @@
+ M frontends/mobile-core/src/features/today/TodayScreen.vue
+ M frontends/mobile-core/src/features/today/today-screen.pcss
+ M frontends/mobile-core/src/features/today/use-today.ts
+ M frontends/mobile-core/src/index.ts
+ M frontends/mobile-core/src/offline/semester-snapshot.ts
+ M frontends/mobile-core/src/shared/components/MobileBottomNav.vue
+ M frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss
+ M frontends/mobile-core/src/styles/tokens.pcss
+ M frontends/mobile-core/src/test-adapter/fixture-transport.ts
+ M frontends/pwa-vue/src/auth.ts
+?? .agent/student-role-02/
+?? frontends/mobile-core/src/assets/homework-check.svg
+?? frontends/mobile-core/src/assets/homework-direction.svg
+?? frontends/mobile-core/src/assets/homework-expand-chevron.svg
+?? frontends/mobile-core/src/assets/homework-expand.svg
+?? frontends/mobile-core/src/assets/homework-external-link.svg
+?? frontends/mobile-core/src/assets/homework-handle-completed.svg
+?? frontends/mobile-core/src/assets/homework-handle.svg
+?? frontends/mobile-core/src/assets/homework-return-today-chevron.svg
+?? frontends/mobile-core/src/assets/homework-return-today.svg
+?? frontends/mobile-core/src/domain/homework.test.ts
+?? frontends/mobile-core/src/domain/homework.ts
+?? frontends/mobile-core/src/features/homework/
+?? frontends/mobile-core/src/shared/mobile-navigation-items.ts
+?? frontends/mobile-core/src/shared/session-owner.ts
+?? frontends/mobile-core/src/shared/theme.test.ts
+?? frontends/mobile-core/src/shared/theme.ts
+?? frontends/pwa-vue/src/pwa-host.ts
+?? frontends/tma-vue/src/tma-session.ts

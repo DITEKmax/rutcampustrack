@@ -1,0 +1,32 @@
+[
+  {
+    "source": ".agent/student-role-02/mobile-theme/screenshots/explicit-dark-16.png",
+    "snapshot": "explicit-dark-16.png",
+    "sha256": "D71C09D98C1C3690B342B810EE53DED95B89955C092D8E1F450B5B5458C921B4",
+    "sourceStillSame": true
+  },
+  {
+    "source": ".agent/student-role-02/mobile-theme/screenshots/explicit-light-16.png",
+    "snapshot": "explicit-light-16.png",
+    "sha256": "58DB757DE7E8DE0DB8516ABD15A2C7F1A1AAA68FF095B904ED22D1279FEE6761",
+    "sourceStillSame": true
+  },
+  {
+    "source": "frontends/mobile-core/src/assets/homework-expand.svg",
+    "snapshot": "homework-expand.svg",
+    "sha256": "6BEDC61327EADE0DCB64591C8E2887403028DC4CA451F3F084249DD9650653A4",
+    "sourceStillSame": true
+  },
+  {
+    "source": "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+    "snapshot": "homework-screen.pcss",
+    "sha256": "D89869D14DDB012FAD7A0EEE5D667C563A385E7B42B694D0FE19DB92F20CE628",
+    "sourceStillSame": true
+  },
+  {
+    "source": "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+    "snapshot": "HomeworkScreen.vue",
+    "sha256": "0B47695E421176E44EEE05E37FD3F7966D815A687D7C0E044198D83D1FDD2724",
+    "sourceStillSame": true
+  }
+]

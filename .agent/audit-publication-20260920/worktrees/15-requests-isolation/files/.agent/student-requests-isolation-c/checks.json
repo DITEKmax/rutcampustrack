@@ -1,0 +1,109 @@
+{
+  "schema": "rct.checks.v1",
+  "recordedAt": "2026-09-08",
+  "status": "PASS_BOUNDED_SCOPE",
+  "risk": "S3",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "environment": "Windows PowerShell; OpenJDK 21.0.10; Docker Desktop 28.5.2; Testcontainers 1.20.4; TESTCONTAINERS_REUSE_ENABLE=false command scope",
+  "checks": [
+    {
+      "name": "Assigned worktree revision",
+      "command": "git status --short --branch; git rev-parse --show-toplevel; git rev-parse HEAD",
+      "exitCode": 0,
+      "evidence": "Detached HEAD d3c31acb8cce53791a4981e5858a37d44fdc9a0e in nested requests-isolation worktree; imported scope is intentionally dirty and foreign changes were preserved."
+    },
+    {
+      "name": "Frozen source manifest hash",
+      "command": "Get-FileHash -LiteralPath .agent/student-role-02/diff.json -Algorithm SHA256",
+      "exitCode": 0,
+      "evidence": "4725C54BF3F6300557697C4A756ED1565D5CCD8005F229C6C60AE3250744B2C4."
+    },
+    {
+      "name": "Source product hash guard",
+      "command": "Manifest-driven SHA256 check for all non-.agent entries",
+      "exitCode": 0,
+      "evidence": "82 entries, source_bad=0."
+    },
+    {
+      "name": "Product import and destination hash guard",
+      "command": "Copy exactly manifest non-.agent entries; manifest-driven SHA256 check at destination",
+      "exitCode": 0,
+      "evidence": "imported_product_entries=82; destination_entries=82; destination_bad=0 before the two owned IT edits."
+    },
+    {
+      "name": "Initial sandbox Gradle attempt",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"*EventConsumerIT\" --tests \"*RabbitDecisionRetryIT\" --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 1,
+      "status": "INFRA_BLOCKED",
+      "evidence": "Gradle could not create nested .gradle/8.12/fileHashes/fileHashes.lock before test configuration; the same exact command was rerun with required scoped escalation."
+    },
+    {
+      "name": "Combined pre-fix integration reproduction",
+      "command": "$env:TESTCONTAINERS_REUSE_ENABLE='false'; .\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"*EventConsumerIT\" --tests \"*RabbitDecisionRetryIT\" --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 1,
+      "status": "EXPECTED_DEFECT_REPRODUCED",
+      "evidence": "11 tests completed, one RabbitDecisionRetryIT transient decision failure at source line 93; immutable XMLs under evidence/pre-fix/ show ResourceNotFoundException in the wrong cached listener and zero calls on the intended mock."
+    },
+    {
+      "name": "Combined post-fix integration runtime",
+      "command": "$env:TESTCONTAINERS_REUSE_ENABLE='false'; .\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"*EventConsumerIT\" --tests \"*RabbitDecisionRetryIT\" --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Session 78933; BUILD SUCCESSFUL in 1m 29s; 37 actionable tasks (2 executed, 35 up-to-date). Six XML reports contain 11 tests, 0 failures, 0 errors and 0 skipped; target classes contain 7 tests."
+    },
+    {
+      "name": "Post-fix report and vhost evidence",
+      "command": "Parse build/test-results/integrationTest XMLs; inspect post-fix class system-out and connection logs",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Rabbit XML shows event-consumer vhost and rabbit-decision-retry vhost on the same container/port, consumerQueue=attendance-service.events in each, simulated dependency outage, retry exhaustion and passed three-call/event-ID assertions. EventConsumer XML shows all five lesson/cancelled cases green."
+    },
+    {
+      "name": "Post-fix report artifact hashes",
+      "command": "Get-FileHash -LiteralPath .agent/student-requests-isolation-c/evidence/post-fix/*.xml -Algorithm SHA256",
+      "exitCode": 0,
+      "evidence": "EventConsumerIT.xml=6D9338EB32BAB2C546B74459AF96F5F7E207FE6E38725A427C103E82D27D38FB; RabbitDecisionRetryIT.xml=B91811DE49E07DB89BE137B48D20361C898BD238688109969A53DEE579CD5104."
+    },
+    {
+      "name": "Scoped source whitespace check",
+      "command": "git diff --check -- <EventConsumerIT.java>; scan <RabbitDecisionRetryIT.java> for trailing whitespace",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Owned Java sources contain no trailing whitespace; repository-wide diff warnings belong to foreign imported files and were not modified."
+    },
+    {
+      "name": "Docker post-run inventory",
+      "command": "docker ps --no-trunc --format \"{{.ID}}|{{.Names}}|{{.Image}}|{{.Ports}}\"",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "No running containers after Testcontainers teardown; unrelated historical stopped/created containers were preserved."
+    },
+    {
+      "name": "Independent bounded review",
+      "command": "Fresh Sol reviewer: /root/requests_transport_review",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Reviewer confirmed 5+2 test bodies unchanged, inherited dynamic properties preserved, vhost set before startup, and production queue/exchange/listener/factory retained."
+    }
+  ],
+  "runtime": {
+    "status": "PASS_POST_FIX",
+    "ownedGradleSession": "78933, released after exit 0",
+    "ownedTestcontainers": "Ryuk-managed and stopped/removed after non-reuse run; Rabbit 766a38d464472141744eebb934507339d53d6926966e38d87f5944551ab308b8, mapped AMQP port 58806",
+    "rabbitVhosts": [
+      "rct_requests_isolation_event_consumer",
+      "rct_requests_isolation_rabbit_decision_retry"
+    ],
+    "foreignResources": "preserved",
+    "containerInventoryLimitation": "Docker labels/live container metadata were unavailable after teardown; getLabels() logged {} and is not treated as ownership proof"
+  },
+  "scope": {
+    "ownedProductFiles": [
+      "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java"
+    ],
+    "foreignProductChanges": "preserved and excluded from this repair-only diff",
+    "fullTransportAcceptance": "out of scope"
+  },
+  "next": "Root may integrate the finite two-file repair and .agent evidence after the bounded review; no further runtime or product changes are required in this leaf."
+}

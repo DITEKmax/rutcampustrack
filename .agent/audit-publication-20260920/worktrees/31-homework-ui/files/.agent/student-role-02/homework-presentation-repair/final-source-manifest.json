@@ -1,0 +1,190 @@
+{
+  "generatedAt": "2026-09-07T20:29:24.343Z",
+  "baselineRevision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "manifestPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\student-role-02\\homework-combined-review-source\\manifest.json",
+  "manifestEntries": 25,
+  "ownedPaths": [
+    "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+    "frontends/mobile-core/src/features/homework/homework-screen.pcss"
+  ],
+  "changedCount": 2,
+  "unchangedCount": 23,
+  "unexpectedCount": 0,
+  "paths": [
+    {
+      "path": "frontends/mobile-core/src/assets/homework-check.svg",
+      "owned": false,
+      "snapshotSha256": "4D07219CF9D1257201BBE71F2099C1E7BFF39BCDAD45A5EB040995FCF19E8574",
+      "currentSha256": "4D07219CF9D1257201BBE71F2099C1E7BFF39BCDAD45A5EB040995FCF19E8574",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-direction.svg",
+      "owned": false,
+      "snapshotSha256": "6DC517AD12797EE54C49F6AF5FB7E3B3779142B0F311D987130FFD31C1A95659",
+      "currentSha256": "6DC517AD12797EE54C49F6AF5FB7E3B3779142B0F311D987130FFD31C1A95659",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-expand-chevron.svg",
+      "owned": false,
+      "snapshotSha256": "F80A91942498382B9C7371556918947FDCD97DD27A26E6648AA659CF1B95A103",
+      "currentSha256": "F80A91942498382B9C7371556918947FDCD97DD27A26E6648AA659CF1B95A103",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-expand.svg",
+      "owned": false,
+      "snapshotSha256": "6BEDC61327EADE0DCB64591C8E2887403028DC4CA451F3F084249DD9650653A4",
+      "currentSha256": "6BEDC61327EADE0DCB64591C8E2887403028DC4CA451F3F084249DD9650653A4",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-external-link.svg",
+      "owned": false,
+      "snapshotSha256": "E5AA676AC9B9E3F3F4B09FDFA9F59165E82DE77D5AE48165A0E98EAF32D1562C",
+      "currentSha256": "E5AA676AC9B9E3F3F4B09FDFA9F59165E82DE77D5AE48165A0E98EAF32D1562C",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-handle-completed.svg",
+      "owned": false,
+      "snapshotSha256": "9AAEBE81842869F51C78B79809B050E21D4C900B7FD3F0B372EE9433B6D30596",
+      "currentSha256": "9AAEBE81842869F51C78B79809B050E21D4C900B7FD3F0B372EE9433B6D30596",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-handle.svg",
+      "owned": false,
+      "snapshotSha256": "F608B1DF37C17DBF232A62F0F5187EFCC6CE91A97821164BAD6BD6CF8C653069",
+      "currentSha256": "F608B1DF37C17DBF232A62F0F5187EFCC6CE91A97821164BAD6BD6CF8C653069",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-return-today-chevron.svg",
+      "owned": false,
+      "snapshotSha256": "875A907178F83A0CDC08544D89DA3CFBE6C3B05762A49A7F1FDA15C15BE9C0DA",
+      "currentSha256": "875A907178F83A0CDC08544D89DA3CFBE6C3B05762A49A7F1FDA15C15BE9C0DA",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/assets/homework-return-today.svg",
+      "owned": false,
+      "snapshotSha256": "B63BCCB9B3A30CD426E1CB5C9D55A58A040F01B75EE2C845B95F56B0361062F6",
+      "currentSha256": "B63BCCB9B3A30CD426E1CB5C9D55A58A040F01B75EE2C845B95F56B0361062F6",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/domain/homework.test.ts",
+      "owned": false,
+      "snapshotSha256": "80F72B1B17166C72144AC605ACAB4ECD8FF0ECEF610B7CEE9640E9A8C3E282DC",
+      "currentSha256": "80F72B1B17166C72144AC605ACAB4ECD8FF0ECEF610B7CEE9640E9A8C3E282DC",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/domain/homework.ts",
+      "owned": false,
+      "snapshotSha256": "F3E0D2C338403D7AAC91B0993F455CB8C2175A212C385F23CD8F3905CEE57F89",
+      "currentSha256": "F3E0D2C338403D7AAC91B0993F455CB8C2175A212C385F23CD8F3905CEE57F89",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/homework/homework-focus.test.ts",
+      "owned": false,
+      "snapshotSha256": "368E0C6ADA746982E73C334A29C61DCF96235E0807B0EA6A01934D8CEA7662A6",
+      "currentSha256": "368E0C6ADA746982E73C334A29C61DCF96235E0807B0EA6A01934D8CEA7662A6",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/homework/homework-focus.ts",
+      "owned": false,
+      "snapshotSha256": "BD4D6DA67685797538B647BAC2C62900EDD9068D761095ECA3B810D5C0A77D68",
+      "currentSha256": "BD4D6DA67685797538B647BAC2C62900EDD9068D761095ECA3B810D5C0A77D68",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/homework/homework-screen.pcss",
+      "owned": true,
+      "snapshotSha256": "06E832DC5B731D780DA2FE31BC56B841BD7638BCB4D32349A28BE96B5A0030D4",
+      "currentSha256": "870171CDD058D9223E7B20A3AB6D30815723D851666FB53D23FABB1DF61EC9ED",
+      "status": "CHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/homework/HomeworkScreen.vue",
+      "owned": true,
+      "snapshotSha256": "A3E4CEACC0EC255D440CE2EA8361B0E7B0618C433E7E644C53542DD6924369D2",
+      "currentSha256": "E11B919E80EE7B2EB3420BAE52175A959A9CD5B48C8C854E6B8429C393115DE5",
+      "status": "CHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/homework/use-homework.test.ts",
+      "owned": false,
+      "snapshotSha256": "90771B83548B60A1C9DCD0114ED2AFA69CF65DA6447C741FB170B5B9051522A9",
+      "currentSha256": "90771B83548B60A1C9DCD0114ED2AFA69CF65DA6447C741FB170B5B9051522A9",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/homework/use-homework.ts",
+      "owned": false,
+      "snapshotSha256": "9F98E959D690659611C7F62BD87401DB2DC7A357C9E66E9AACF1ED14ED860329",
+      "currentSha256": "9F98E959D690659611C7F62BD87401DB2DC7A357C9E66E9AACF1ED14ED860329",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/today/today-screen.pcss",
+      "owned": false,
+      "snapshotSha256": "60AE83BFD7552FBA27C51FD102B99B61FE954C9CFB50E07C8691D495D6FB5DF1",
+      "currentSha256": "60AE83BFD7552FBA27C51FD102B99B61FE954C9CFB50E07C8691D495D6FB5DF1",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/today/TodayScreen.vue",
+      "owned": false,
+      "snapshotSha256": "70E4013495D20154AEBBFAEA7105B269BDD283C4221EF957FD62B8DC366BCA47",
+      "currentSha256": "70E4013495D20154AEBBFAEA7105B269BDD283C4221EF957FD62B8DC366BCA47",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/index.ts",
+      "owned": false,
+      "snapshotSha256": "EFE153DB8DEE743F37DDAD41E446FB4F97B3733A565D13176879A2C80D4AFE4E",
+      "currentSha256": "EFE153DB8DEE743F37DDAD41E446FB4F97B3733A565D13176879A2C80D4AFE4E",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+      "owned": false,
+      "snapshotSha256": "6783200B72A5D1FE3EB91327A8D1A06AC0357B7A63D63199253F542890189A7D",
+      "currentSha256": "6783200B72A5D1FE3EB91327A8D1A06AC0357B7A63D63199253F542890189A7D",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+      "owned": false,
+      "snapshotSha256": "A278BE55B251142B9799E24793AC319F76D1C5C308125C912CBBFA8AF7964BDC",
+      "currentSha256": "A278BE55B251142B9799E24793AC319F76D1C5C308125C912CBBFA8AF7964BDC",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/theme.test.ts",
+      "owned": false,
+      "snapshotSha256": "13749ED961B179D215588B427F21940E1B6E5CC6B6A25A554B08C3A5EB09BF88",
+      "currentSha256": "13749ED961B179D215588B427F21940E1B6E5CC6B6A25A554B08C3A5EB09BF88",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/theme.ts",
+      "owned": false,
+      "snapshotSha256": "18A7849A2D1299ADDA0659889A1F97A66EB3A5BA54EE754BDBB6A9B376AB39B3",
+      "currentSha256": "18A7849A2D1299ADDA0659889A1F97A66EB3A5BA54EE754BDBB6A9B376AB39B3",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": "frontends/mobile-core/src/styles/tokens.pcss",
+      "owned": false,
+      "snapshotSha256": "1FF851ABB57898465952F7B30BFAF2627A71577BF63C4474201032CFAF231974",
+      "currentSha256": "1FF851ABB57898465952F7B30BFAF2627A71577BF63C4474201032CFAF231974",
+      "status": "UNCHANGED"
+    }
+  ]
+}

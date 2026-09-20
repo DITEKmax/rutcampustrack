@@ -1,0 +1,23 @@
+{
+  "start": "2026-09-20T11:00:47.2332575Z",
+  "end": "2026-09-20T11:00:48.7016415Z",
+  "command": [
+    "node",
+    "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\frontends\\node_modules\\typescript\\bin\\tsc",
+    "--noEmit",
+    "--strict",
+    "--skipLibCheck",
+    "--target",
+    "ES2022",
+    "--module",
+    "ESNext",
+    "--moduleResolution",
+    "Bundler",
+    "frontends/mini-app/src/api/generated/schedule.types.ts",
+    "frontends/pwa/src/api/generated/schedule.types.ts",
+    "frontends/web-panel/src/app/api/generated/schedule.types.ts",
+    "frontends/web-panel/src/app/api/schema.ts"
+  ],
+  "exitCode": 0,
+  "scope": "Three changed Schedule generated contracts plus web-panel type aliases; not whole frontend typecheck"
+}

@@ -1,0 +1,140 @@
+{
+  "schema": "rct.checks.v1",
+  "task": "student-role-02-homework-api",
+  "revision": "working-tree-on-8002b9ea",
+  "baseline": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "branch": "codex/student-role-02-homework-api",
+  "risk": "S3",
+  "model": "gpt-5.6-luna",
+  "effort": "max",
+  "environment": {
+    "os": "Windows",
+    "java": "21.0.10",
+    "gradle": "8.12",
+    "node": "24.14.0",
+    "npm": "11.9.0",
+    "docker": "not run",
+    "sandbox": "workspace-write; Gradle/npm verification used require_escalated after recorded classpath sandbox reproduction"
+  },
+  "checks": [
+    {
+      "name": "Scoped whitespace check",
+      "command": "git -c core.whitespace=cr-at-eol diff --check",
+      "exitCode": 0,
+      "evidence": "No whitespace errors; only expected LF-to-CRLF normalization warnings were emitted."
+    },
+    {
+      "name": "Academic and BFF contract/proto generation",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:academic-service:academic-api-contract:compileJava :services:mobile-bff:mobile-bff-api-contract:compileJava :services:mobile-bff:mobile-bff-app:generateProto",
+      "exitCode": 0,
+      "evidence": "Academic API contract, Mobile BFF API contract and protobuf generation completed successfully."
+    },
+    {
+      "name": "Mobile BFF Java compile",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:mobile-bff:mobile-bff-app:compileJava",
+      "exitCode": 0,
+      "evidence": "Full mobile-bff-app Java compilation passed after the required HOMEWORK_NOT_FOUND exhaustive-switch mapping."
+    },
+    {
+      "name": "Focused Academic homework/auth tests",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:academic-service:academic-app:test --tests \"ru.rutcampustrack.academic.homework.HomeworkStudentServiceTest\" --tests \"ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest\"",
+      "exitCode": 0,
+      "evidence": "8 focused tests passed, covering signed identity, wrong role/scope, inactive student/semester, foreign group and idempotent desired state."
+    },
+    {
+      "name": "Focused Mobile BFF homework query test",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:mobile-bff:mobile-bff-app:test --tests \"ru.rutcampustrack.mobilebff.student.StudentQueryHomeworkTest\"",
+      "exitCode": 0,
+      "evidence": "3 tests passed for Moscow/default range, semester clamping, deterministic ordering, null links and invalid explicit range."
+    },
+    {
+      "name": "Canonical Java-first OpenAPI export",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:mobile-bff:mobile-bff-app:integrationTest --tests \"*OpenApiSnapshotIT\" '-Popenapi.snapshot.update=true' --rerun-tasks",
+      "exitCode": 0,
+      "evidence": "OpenApiSnapshotIT exported docs/openapi/mobile-bff.json from StudentApi annotations; the in-process integration context shut down cleanly."
+    },
+    {
+      "name": "Generated mobile-core types",
+      "command": "npm run generate:types",
+      "exitCode": 0,
+      "evidence": "Generated frontends/mobile-core/src/api/generated/mobile-bff.ts from the canonical snapshot."
+    },
+    {
+      "name": "Generated type drift check",
+      "command": "npm run generate:types:check",
+      "exitCode": 0,
+      "evidence": "Generated mobile-core types match JS-STUDENT-01-r1 snapshot hash 5c7161832192dfc72dfea6c4fa7fb1285da71bda5df7a848bf6ce2ed1b69bc75."
+    },
+    {
+      "name": "Mobile-core typecheck",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "evidence": "TypeScript compilation completed with --noEmit."
+    },
+    {
+      "name": "Mobile-core lint",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "evidence": "ESLint completed with --max-warnings=0, including fixture-transport.test.ts."
+    },
+    {
+      "name": "Frontend contract tests",
+      "command": "npm run test:contract",
+      "exitCode": 0,
+      "evidence": "3 contract suites passed; all 9 committed fixtures validated against JS-STUDENT-01-r1."
+    },
+    {
+      "name": "Frontend fixture validation",
+      "command": "npm run validate:fixtures",
+      "exitCode": 0,
+      "evidence": "Fixture validator completed successfully."
+    }
+  ],
+  "runtime": {
+    "status": "PENDING_PARENT_RUNTIME",
+    "evidence": "OpenApiSnapshotIT exercised the in-process BFF Spring context. No product port, deployment or external runtime was started; real PostgreSQL concurrency remains the parent integration gate."
+  },
+  "diagnostics": [
+    {
+      "check": "Environment classpath reproduction",
+      "severity": "ENV_SANDBOX",
+      "request": "Root requested a truthful rerun after absolute classpath reads were isolated as the sandbox cause.",
+      "reproduction": "Initial sandbox Gradle commands could not resolve existing shared-module classes even though the exact absolute classpath was present.",
+      "newEvidence": "Root ClasspathProbe showed relative classpath exit 0; exact absolute classpath exited 1 in sandbox and exit 0 with require_escalated.",
+      "correction": "Reran Gradle with --no-daemon and require_escalated; all final gates passed.",
+      "decision": "No shared-module source or build file was changed."
+    },
+    {
+      "check": "HOMEWORK_NOT_FOUND exhaustive switch",
+      "severity": "S2",
+      "request": "Adding the scoped ProblemCode required all existing BFF status mappings to remain exhaustive.",
+      "reproduction": "Mobile BFF compile reported MobileAttendanceClient.java:68 switch expression does not cover all possible input values.",
+      "newEvidence": "The only missing enum branch was HOMEWORK_NOT_FOUND.",
+      "correction": "Mapped HOMEWORK_NOT_FOUND alongside LESSON_NOT_FOUND to HTTP 404.",
+      "decision": "Minimal BFF compatibility correction; final compile exit 0."
+    },
+    {
+      "check": "Focused Academic test fixture strict stubbing",
+      "severity": "S2",
+      "request": "Negative authz tests must fail before downstream repository/entity reads without masking strict Mockito diagnostics.",
+      "reproduction": "Four negative HomeworkStudentServiceTest cases failed with UnnecessaryStubbingException from common setup stubs.",
+      "newEvidence": "The failing paths intentionally stop before semester/homework stubs; positive paths still verify calls.",
+      "correction": "Marked only the shared branch-dependent setup stubs lenient; no production behavior changed.",
+      "decision": "Final focused Academic test command exit 0 with 8 tests passed."
+    },
+    {
+      "check": "OpenAPI shell quoting",
+      "severity": "ENV_COMMAND",
+      "request": "Run the canonical exporter with the update property.",
+      "reproduction": "PowerShell interpreted an unquoted -Popenapi.snapshot.update=true as a task name.",
+      "newEvidence": "The corrected quoted property reached OpenApiSnapshotIT and exited 0.",
+      "correction": "Used the quoted Gradle property and disabled only the unrelated problems-report collision.",
+      "decision": "No manual OpenAPI or generated-type edits were made."
+    }
+  ],
+  "limitations": [
+    "No real PostgreSQL concurrency evidence was captured; atomic INSERT ... ON CONFLICT plus idempotent delete requires the parent runtime gate.",
+    "No full product runtime, deployment, migration or external service was started.",
+    "Independent Sol review and parent integration across the full service graph remain outstanding gates."
+  ]
+}

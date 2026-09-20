@@ -111,6 +111,7 @@ export const LATE_CHECKIN_STATUS_LABELS: Record<LateCheckinRequestStatus, string
   pending: 'На проверке',
   approved: 'Одобрено',
   rejected: 'Отклонено',
+  cancelled: 'Подтверждено геолокацией',
 }
 
 export const ASSISTANT_PERMISSION_LABELS: Record<AssistantPermission, string> = {

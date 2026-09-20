@@ -1,0 +1,70 @@
+{
+  "revision": "87784165874e2da6fc261abc1c01584e24624289",
+  "environment": "Windows PowerShell; Python 3.12 local runtime; no product process applies to documentation/config routing",
+  "results": [
+    {
+      "criterion": "Local, staged TOML and manifest syntax; frozen staged payload preflight",
+      "command": "python -m py_compile apply-global-routing.py; Python tomllib/JSON parse and staged_payloads()",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Preflight stage and syntax PASS; TOML files: 7"
+    },
+    {
+      "criterion": "Global-only policy and local handoff include routing S0-S4 and compact contract",
+      "command": "Python assertion over global policy matrix and local workflow/contract headings; obsolete-routing rg assertion",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Policy and handoff assertions PASS; No active obsolete routing assertions"
+    },
+    {
+      "criterion": "Task packet preserves the repaired global routing and apply acceptance criteria",
+      "command": "Python assertion over task-contract model tiers, S0-S4, critical originals, frozen-stage and atomic apply criteria",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Task-contract repair assertions PASS"
+    },
+    {
+      "criterion": "Rendered config preserves unrelated CRLF text",
+      "command": "isolated CRLF fixture calling rendered_config()",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "CRLF preservation fixture PASS"
+    },
+    {
+      "criterion": "Global apply has all-or-rollback behavior and guarded reviewed payload",
+      "command": "isolated fixture covering success/readback, changed/missing/malformed staged role, tampered live target, preexisting backup, injected mid-commit failure, and reparse guards",
+      "exit_code": 0,
+      "status": "PASS_WITH_ENVIRONMENT_LIMIT",
+      "evidence": "Global apply fixture PASS: CRLF/readback, stage/live/backup guards, rollback, simulated reparse refusal. Real Windows symlink creation was unavailable (WinError 1314), so reparse guard was injected at its boundary."
+    },
+    {
+      "criterion": "Explicit global apply completed with the reviewed payload",
+      "command": "python .agent\\routing-20260906\\apply-global-routing.py --apply",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Applied after fresh Sol PASS and escalated runtime permission; no script output and no rollback."
+    },
+    {
+      "criterion": "Global apply readback matches the reviewed payload and preserves unrelated configuration semantics",
+      "command": "allowlisted Python verification of six routing values, TOML semantics versus backup, staged byte equality and backup hashes",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Global apply verification PASS: six values, unrelated TOML semantics, staged bytes, and backups."
+    },
+    {
+      "criterion": "Script cannot mutate global configuration without explicit apply",
+      "command": "python .agent\\routing-20260906\\apply-global-routing.py",
+      "exit_code": 1,
+      "status": "PASS_EXPECTED_GUARD",
+      "evidence": "Pre-apply guard evidence: Staged only. Re-run with --apply after review."
+    },
+    {
+      "criterion": "Whitespace validation",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS_WITH_LIMITATION",
+      "evidence": "No diff errors. Scoped files are pre-existing untracked material, so Git has no tracked baseline for their contents."
+    }
+  ],
+  "runtime_evidence": "The staged global apply first executed in temporary fixtures and then successfully applied five global routing files. Readback confirms only the six intended config values changed semantically and all staged instruction bytes match. No product application or service was modified or run."
+}

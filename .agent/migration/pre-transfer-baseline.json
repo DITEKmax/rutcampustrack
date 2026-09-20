@@ -1,0 +1,44 @@
+﻿{
+    "recorded_at":  "2026-09-05T23:50:59.7907511+03:00",
+    "git_revision":  "87784165874e2da6fc261abc1c01584e24624289",
+    "branch":  "codex/materials-transfer",
+    "inventory_sha256":  "433ed5f21b37769cc35a569b22f031ca65e5c62afd7aed27c217ac38fc3bacd1",
+    "protected_files":  [
+                            {
+                                "path":  "AGENTS.md",
+                                "sha256":  "82e6ce5ca3eabd088afbd7e7fc89544ec1b5e78f5a63876dee0463dd97acd759",
+                                "size_bytes":  4884
+                            },
+                            {
+                                "path":  "frontends/AGENTS.md",
+                                "sha256":  "4ff6effd59e9eb3afc3245b4f0c28cdd6b4d53178870d01c8edb1eb1201a3b50",
+                                "size_bytes":  2771
+                            },
+                            {
+                                "path":  "services/AGENTS.md",
+                                "sha256":  "dadad5fed3f707c52a3c5824198b75a564f3f2d5918d4da172bdd6b9db50d476",
+                                "size_bytes":  1890
+                            },
+                            {
+                                "path":  "tests/AGENTS.md",
+                                "sha256":  "58c78156ebabc076dc482a6f1ac90d6e813598920abd2cc33b974b051346d867",
+                                "size_bytes":  1804
+                            },
+                            {
+                                "path":  "docs/agent-workflow.md",
+                                "sha256":  "daa588fc331cc5b4042b2f2d6c8e4d1a78e90bda79cdab60006dbb8dadfcb3d4",
+                                "size_bytes":  10408
+                            },
+                            {
+                                "path":  "DATABASES_OVERVIEW.md",
+                                "sha256":  "985f14cae75bc7b30afb2489e95b507a4ed2b52c05a45c2bd441db0f183b035a",
+                                "size_bytes":  15934
+                            },
+                            {
+                                "path":  "docs/INDEX.md",
+                                "sha256":  "084d57fc0747d9810e5f5b18c71f6f000865d2a36c128cf0223db706f6e8d0f3",
+                                "size_bytes":  7228
+                            }
+                        ],
+    "note":  "Hashes exclude secret/config files. Branch is intentionally unchanged because this shared checkout has pre-existing user work."
+}

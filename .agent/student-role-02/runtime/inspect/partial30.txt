@@ -1,0 +1,33 @@
+Compiled from "PrimitiveType.java"
+final class io.swagger.v3.core.util.PrimitiveType$18 extends io.swagger.v3.core.util.PrimitiveType {
+  io.swagger.v3.core.util.PrimitiveType$18(java.lang.String, int, java.lang.Class, java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iload_2
+       3: aload_3
+       4: aload         4
+       6: aconst_null
+       7: invokespecial #1                  // Method io/swagger/v3/core/util/PrimitiveType."<init>":(Ljava/lang/String;ILjava/lang/Class;Ljava/lang/String;Lio/swagger/v3/core/util/PrimitiveType$1;)V
+      10: return
+
+  public io.swagger.v3.oas.models.media.Schema createProperty();
+    Code:
+       0: new           #2                  // class io/swagger/v3/oas/models/media/StringSchema
+       3: dup
+       4: invokespecial #3                  // Method io/swagger/v3/oas/models/media/StringSchema."<init>":()V
+       7: ldc           #4                  // String partial-time
+       9: invokevirtual #5                  // Method io/swagger/v3/oas/models/media/StringSchema.format:(Ljava/lang/String;)Lio/swagger/v3/oas/models/media/Schema;
+      12: areturn
+
+  public io.swagger.v3.oas.models.media.Schema createProperty31();
+    Code:
+       0: new           #6                  // class io/swagger/v3/oas/models/media/JsonSchema
+       3: dup
+       4: invokespecial #7                  // Method io/swagger/v3/oas/models/media/JsonSchema."<init>":()V
+       7: ldc           #8                  // String string
+       9: invokevirtual #9                  // Method io/swagger/v3/oas/models/media/JsonSchema.typesItem:(Ljava/lang/String;)Lio/swagger/v3/oas/models/media/Schema;
+      12: ldc           #4                  // String partial-time
+      14: invokevirtual #10                 // Method io/swagger/v3/oas/models/media/Schema.format:(Ljava/lang/String;)Lio/swagger/v3/oas/models/media/Schema;
+      17: areturn
+}

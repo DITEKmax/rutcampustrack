@@ -151,7 +151,8 @@ export interface paths {
         put?: never;
         /**
          * Геоотметка студента
-         * @description Студент отправляет координаты. Система проверяет геофенс, активную пару и временное окно.
+         * @deprecated
+         * @description Устаревший путь отключён. Используйте канонический student check-in API.
          */
         post: operations["checkin"];
         delete?: never;
@@ -328,7 +329,7 @@ export interface paths {
         };
         /**
          * Group late-checkin requests
-         * @description Headman sees PENDING/APPROVED/REJECTED late-checkin requests for their group updated during the last 30 days.
+         * @description Headman sees PENDING/APPROVED/REJECTED/CANCELLED late-checkin requests for their group updated during the last 30 days.
          */
         get: operations["listGroupRequests"];
         put?: never;
@@ -586,7 +587,8 @@ export interface components {
             /** Format: int64 */
             lessonId?: number;
             studentName?: string;
-            status?: string;
+            /** @enum {string} */
+            status?: "pending" | "approved" | "rejected" | "cancelled";
             /** Format: int64 */
             decisionBy?: number;
             /** Format: date-time */
@@ -656,15 +658,6 @@ export interface components {
              * @example 37.617
              */
             lng: number;
-        };
-        EntityModelCheckinResponse: {
-            /** @enum {string} */
-            status?: "PRESENT" | "ABSENT" | "EXCUSED" | "FREE_ATTENDANCE" | "CANCELLED";
-            /** Format: int64 */
-            lessonId?: number;
-            /** Format: date-time */
-            timestamp?: string;
-            _links?: components["schemas"]["Links"];
         };
         /** @description Запрос на обновление статуса excuse-тикета (решение старосты) */
         UpdateExcuseStatusRequest: {
@@ -1584,15 +1577,6 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Отметка успешно поставлена */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["EntityModelCheckinResponse"];
-                };
-            };
             /** @description Ошибка валидации запроса */
             400: {
                 headers: {
@@ -1611,35 +1595,35 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Геоотметка заблокирована для данной пары */
+            /** @description Доступ запрещён */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ErrorResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Активная пара не найдена */
+            /** @description Ресурс не найден */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ErrorResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Отметка уже существует */
+            /** @description Конфликт данных */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ErrorResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Координаты вне зоны геофенса */
-            422: {
+            /** @description Устаревший путь отключён */
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1653,7 +1637,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ErrorResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Внутренняя ошибка сервера */
@@ -2467,7 +2451,7 @@ export interface operations {
         parameters: {
             query: {
                 pageable: components["schemas"]["Pageable"];
-                status?: "PENDING" | "APPROVED" | "REJECTED";
+                status?: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
             };
             header?: never;
             path: {

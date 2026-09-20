@@ -1,0 +1,12 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+# Root. Права, trust, MCP и пользовательские плагины задаёт среда, не этот пакет.
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"
+project_doc_fallback_filenames = []
+
+[agents]
+enabled = true
+# Это предел детей без root, а не число обязательных запусков.
+max_concurrent_threads_per_session = 3
+default_subagent_model = "gpt-5.6-luna"
+default_subagent_reasoning_effort = "high"

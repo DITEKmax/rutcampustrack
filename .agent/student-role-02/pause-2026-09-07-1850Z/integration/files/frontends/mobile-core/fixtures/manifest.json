@@ -1,0 +1,53 @@
+{
+  "contract": "JS-STUDENT-01-r1",
+  "fixtures": [
+    {
+      "file": "session.json",
+      "schema": "StudentSession"
+    },
+    {
+      "file": "today-present.json",
+      "schema": "StudentToday"
+    },
+    {
+      "file": "today-pending.json",
+      "schema": "StudentToday"
+    },
+    {
+      "file": "semester-schedule.json",
+      "schema": "StudentSemesterSchedule"
+    },
+    {
+      "file": "checkin-coordinates.json",
+      "schema": "StudentCheckinCommand"
+    },
+    {
+      "file": "checkin-unavailable.json",
+      "schema": "StudentCheckinCommand"
+    },
+    {
+      "file": "checkin-present-ack.json",
+      "schema": "StudentCheckinAck"
+    },
+    {
+      "file": "checkin-pending-ack.json",
+      "schema": "StudentCheckinAck"
+    },
+    {
+      "file": "problem-cooldown.json",
+      "schema": "MobileProblemDetails"
+    },
+    {
+      "file": "homework-feed.json",
+      "schema": "StudentHomework"
+    },
+    {
+      "file": "homework-completion-completed.json",
+      "schema": "StudentHomeworkCompletion"
+    },
+    {
+      "file": "homework-completion-undone.json",
+      "schema": "StudentHomeworkCompletion"
+    }
+  ]
+}

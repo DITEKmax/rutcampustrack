@@ -1,0 +1,14 @@
+[
+  {
+    "path": "/components/schemas/LessonSchedule/properties/endsAt/example",
+    "kind": "missing-actual",
+    "expected": "14:30:00",
+    "actual": null
+  },
+  {
+    "path": "/components/schemas/LessonSchedule/properties/startsAt/example",
+    "kind": "missing-actual",
+    "expected": "14:30:00",
+    "actual": null
+  }
+]

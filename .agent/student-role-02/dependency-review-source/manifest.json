@@ -1,0 +1,139 @@
+{
+  "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "currentHead": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "branch": "codex/student-role-02-dependency-security",
+  "generatedAt": "2026-09-07T17:23:00.0768129Z",
+  "changedFileCount": 26,
+  "files": [
+    {
+      "path": "build.gradle.kts",
+      "bytes": 16355,
+      "sha256": "71F5BE0EB48124AF4CAE576E437FDD82EA216DA6D79BFF716AB34B5A935761C6"
+    },
+    {
+      "path": "gradle/libs.versions.toml",
+      "bytes": 2219,
+      "sha256": "D8900AD47ED968F0A831D7227B10067A0065ABEBC604255A09E6281DE88BA83A"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/build.gradle.kts",
+      "bytes": 1027,
+      "sha256": "45D1DC9C8531DB1C2AE539629DC8919E2950F3067BAD1CFBD20BEED04F68471F"
+    },
+    {
+      "path": "services/academic-service/academic-app/build.gradle.kts",
+      "bytes": 5588,
+      "sha256": "20F4D9564CA08556481DDC2B6D411647DA7077C85887469D80B3E1F42AAF32CF"
+    },
+    {
+      "path": "services/api-gateway/build.gradle.kts",
+      "bytes": 3042,
+      "sha256": "F22D83CEA3A18D420BE810541064AEA26FE42F6DB5B807CE6804C6AD3C268A18"
+    },
+    {
+      "path": "services/api-gateway/src/main/resources/application-prod.yml",
+      "bytes": 1142,
+      "sha256": "FF0142AB2339C02265C09D98AB2645601B4169D648DE2F418C737DD3AA987449"
+    },
+    {
+      "path": "services/api-gateway/src/main/resources/application.yml",
+      "bytes": 19018,
+      "sha256": "6815A39ECF1F63B2094138B7171262744654B16CC13E1C8F7D77B044AB5CCB74"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/build.gradle.kts",
+      "bytes": 631,
+      "sha256": "21C4DE9115E93AAFB93D75A8AC7B4C081BF1E308430264A28DDF8FC394C1F37B"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/build.gradle.kts",
+      "bytes": 5880,
+      "sha256": "6C040BB7FDE9936287EE91609809E1281C04016C6C58C05E6595E553E293376C"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/build.gradle.kts",
+      "bytes": 1211,
+      "sha256": "D4EFDEF2383741841191E23AC01D0C8FCED32C7DA354D38C12D09C6FFE65AA62"
+    },
+    {
+      "path": "services/auth-service/auth-app/build.gradle.kts",
+      "bytes": 3569,
+      "sha256": "EB21A7B6B99CE9926E3D5E4D8A6A53DC78EC4FB9A43AA53A2EAC0625F2DA83A7"
+    },
+    {
+      "path": "services/document-renderer-service/document-renderer-app/build.gradle.kts",
+      "bytes": 1814,
+      "sha256": "A0F107EAD238D5B2D9C2E7D1ED7089C96E342B16F0AF585A368F77782CD92306"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-api-contract/build.gradle.kts",
+      "bytes": 343,
+      "sha256": "7FAA27265B65A0DF257B912FF76A5B0D49C648F5577911556491980F60F902C4"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/build.gradle.kts",
+      "bytes": 2177,
+      "sha256": "694EF2C3664F68F7FC1130250E01E250DCB30B1ADFBB9F25CB4DD85197CFD9EA"
+    },
+    {
+      "path": "services/notification-service/notification-api-contract/build.gradle.kts",
+      "bytes": 538,
+      "sha256": "9FC584E7EDBBE1DEAEB0A8BCB8F2217004DD3F09EF3187674D28C3FA7D795A12"
+    },
+    {
+      "path": "services/notification-service/notification-app/build.gradle.kts",
+      "bytes": 5213,
+      "sha256": "76140B801EAE7679D45EDAF1D2E1797BB0CB6C25C9A43AFB4C1A9EFD472D3734"
+    },
+    {
+      "path": "services/schedule-service/schedule-api-contract/build.gradle.kts",
+      "bytes": 699,
+      "sha256": "7AEDB5B3803EF2B6E9E969046EA57AE5C131600DE79C61F669977CE84C7E86EF"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/build.gradle.kts",
+      "bytes": 4631,
+      "sha256": "5E0736DF4D0EB6AD5A0D2C6B95C1F0E0FF4360CB7DB7D2691C08E0A9BDC55368"
+    },
+    {
+      "path": "services/shared/shared-events/build.gradle.kts",
+      "bytes": 1456,
+      "sha256": "2735DEF6AED78E8F229EECCB7D850FF4BC761FE3DB0F74641F392652BEFB3CF9"
+    },
+    {
+      "path": "services/shared/shared-logback/build.gradle.kts",
+      "bytes": 991,
+      "sha256": "775B239EC1764085EC2802A023BDBC88E82A81E466733DF5DD08B7165E42B7CB"
+    },
+    {
+      "path": "services/shared/shared-observability/build.gradle.kts",
+      "bytes": 3165,
+      "sha256": "A41CAF0CE9D18F139EEA1950F2C3D22D1136B6EF3DC42AAF05B47EE13CA6D33E"
+    },
+    {
+      "path": "services/shared/shared-outbox/build.gradle.kts",
+      "bytes": 2986,
+      "sha256": "1EA28921B809D4FD4BA93FF388E2B1559EE8DECE9E85B71AB334A0EFD7F143BA"
+    },
+    {
+      "path": "services/shared/shared-security/build.gradle.kts",
+      "bytes": 2588,
+      "sha256": "974805D75C9ADAF181E0F0C6731EDA5C5A5E11DEE570BB74CC6D2275A76EA1E8"
+    },
+    {
+      "path": "services/shared/shared-test-containers/build.gradle.kts",
+      "bytes": 2323,
+      "sha256": "9BDEBAE64F6BF9FCC9F4E3FDE997F9C7C9D3DFFBCBF01F6E08F56A141D931D5A"
+    },
+    {
+      "path": "services/shared/shared-web-api/build.gradle.kts",
+      "bytes": 1132,
+      "sha256": "6CE0CFE6393939A9B744767C0B734E61AEA288C1E11B35594884BCD0DD932DA9"
+    },
+    {
+      "path": "services/shared/shared-web/build.gradle.kts",
+      "bytes": 3707,
+      "sha256": "044E1EBF395F0259910FCFED61796359D4C3B308D0034B1500260A602A496995"
+    }
+  ]
+}

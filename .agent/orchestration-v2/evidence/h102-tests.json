@@ -1,0 +1,29 @@
+[
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+    "tests": 15,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:32:27.9005690Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:32:27.9046563Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:32:27.8928096Z"
+  }
+]

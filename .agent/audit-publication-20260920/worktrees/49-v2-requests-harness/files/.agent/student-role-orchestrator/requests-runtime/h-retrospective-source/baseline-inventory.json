@@ -1,0 +1,46 @@
+{
+  "capturedAt": "2026-09-20",
+  "worktree": ".agent/worktrees/v2-requests-harness",
+  "branch": "codex/v2-requests-harness",
+  "head": "71bcc27572ed72c18e49f63c512ae5e4e5790b8d",
+  "scope": ".agent/student-role-orchestrator/requests-runtime",
+  "preexistingTrackedDirtyFiles": [
+    "R3-EVIDENCE.md",
+    "r10-docker-network-proof.ps1",
+    "r10-network-proof-source-check.ps1",
+    "r3-cleanup-failure-injection.ps1",
+    "r6-source-contract-check.ps1",
+    "r8-edge-reservation-check.ps1",
+    "r8-probe-callsite-check.ps1"
+  ],
+  "preservedFiles": {
+    "runner.ps1": { "bytes": 192329, "sha256": "033236B56EBFB8193A86D67B033F8CF23F5CC18F4132A2FAC5F525B756FD540C" },
+    "probe.mjs": { "bytes": 49597, "sha256": "52A2834F17F0840A815BE221A6579D075BCF35A5AC338EC3DADFB21430BE1120" },
+    "../runtime-live/seed-academic.sql": { "bytes": 5438, "sha256": "DE44EDD7E8A6FF2382F69DE61396454F6561D3EA9F722A831266E62FDBF31ADC" },
+    "../browser-runtime/seed-schedule.sql": { "bytes": 9383, "sha256": "CF8F55E2FBC2FBB5FFD3D8073CBA3B7136B4FAE84F9123F012B9DA7995C705AE" }
+  },
+  "preexistingDirtyHashes": {
+    "R3-EVIDENCE.md": "F13F80A7499D139F1F31E6B2D354871C659FD1E7BD34D448E22A94D10ECAAAA8",
+    "r10-docker-network-proof.ps1": "0918C18D7C6915CC1C8F06EC94E4B86D7EBACC390F7E29F4DFF8255E49D2E2C8",
+    "r10-network-proof-source-check.ps1": "E6F0F92C641DBB5FB56D1190F10B8501498631B23C228F2F28B6CDE5355717B5",
+    "r3-cleanup-failure-injection.ps1": "BAF03194D0EEEA59013E05A54832AC89946B071DB9F445468D95F3E7D7FA7E78",
+    "r6-source-contract-check.ps1": "3C36387AD3CDC33E3A26F16CD928CF2E295252E4FF43F3B694C600B375226E94",
+    "r8-edge-reservation-check.ps1": "63BD96B2C0DA42A1E7680ECEE679E1AD5A48D08E3A41271760C11E62B109E5D3",
+    "r8-probe-callsite-check.ps1": "AEC6FAB3128C6533C43E403EFE58780C67A502CCA7F3E48C4017F607B0F71CC0"
+  },
+  "sourceRules": {
+    "rulesPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md",
+    "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+    "packet": "L5B-RETROSPECTIVE-RUNTIME-IMPLEMENT.md",
+    "model": "gpt-5.6-luna",
+    "effort": "max",
+    "terra": "NEVER",
+    "children": "NONE"
+  },
+  "apiBlockerEvidence": {
+    "path": "authoritative v2-l5b-retrospective-union/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java",
+    "behavior": "patchUser(isHeadman=true) changes users.is_headman only",
+    "authorityPath": "authoritative v2-l5b-retrospective-union/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapter.java",
+    "behavior2": "login authority reads user_role_grants; no headman grant sync is present"
+  }
+}

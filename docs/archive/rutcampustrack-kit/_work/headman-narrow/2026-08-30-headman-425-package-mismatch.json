@@ -1,0 +1,59 @@
+{
+  "date": "2026-08-30",
+  "status": "rolled-back-stop",
+  "baselineRestored": {
+    "documentA": 46859,
+    "page18A": 760,
+    "lessonCountersVariantCount": 5,
+    "width425Variants": 0,
+    "screen111_425": { "id": "3505:173548", "height": 4261, "mainComponent": "3411:156462" }
+  },
+  "failedPersistentAttempt": {
+    "createdComponent": "3518:187563",
+    "result": {
+      "parent": "1902:253474",
+      "parentType": "PAGE",
+      "variantHeight": 240,
+      "rowHeight": 108,
+      "cardHeights": [42, 42]
+    },
+    "expected": {
+      "parent": "1073:354",
+      "parentType": "COMPONENT_SET",
+      "variantHeight": 372,
+      "rowHeight": 240,
+      "cardHeights": [108, 108]
+    },
+    "cause": [
+      "ComponentNode.clone() created a page-level sibling; explicit ComponentSet.appendChild() was missing",
+      "counters-row retained primaryAxisSizingMode=FIXED while layoutMode changed HORIZONTAL to VERTICAL, so the old fixed width became a fixed 108px height and compressed both cards"
+    ],
+    "rollback": {
+      "deletedNodeIds": ["3518:187563", "3518:187564", "3518:187565", "3518:187566", "3518:187567", "3518:187568", "3518:187569"],
+      "screenRestored": true
+    }
+  },
+  "disposableProof": {
+    "persistentDeltaA": 0,
+    "correctedGeometry": {
+      "variant": { "width": 393, "height": 372 },
+      "row": { "width": 393, "height": 240, "primaryAxisSizingMode": "AUTO", "counterAxisSizingMode": "FIXED" },
+      "cards": [
+        { "width": 393, "height": 108, "maxWidth": null },
+        { "width": 393, "height": 108, "maxWidth": null }
+      ]
+    },
+    "componentSetMembership": {
+      "parent": "1073:354",
+      "parentType": "COMPONENT_SET",
+      "variantProperties": { "width": "425" },
+      "variantCountDuringProbe": 6
+    }
+  },
+  "notApplied": [
+    "LessonCounters width=425 persistent variant",
+    "WeekJournalPanel pager FIXED to FILL",
+    "SubjectJournalPanel filters WRAP",
+    "headman 300 dark"
+  ]
+}

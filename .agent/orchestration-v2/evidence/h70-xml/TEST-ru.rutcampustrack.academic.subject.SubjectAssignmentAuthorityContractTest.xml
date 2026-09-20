@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-19T20:02:09" hostname="DITEK-PK" time="0.185">
+  <properties/>
+  <testcase name="addTeacherUsesHeadmanGroupAndFullEffectiveTuple()" classname="ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest" time="0.144"/>
+  <testcase name="createLocksEveryReferencedSemesterBeforeSubjectWriteAndCarriesFullTuple()" classname="ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest" time="0.017"/>
+  <testcase name="tupleDeleteValidatesExactPathThenReturnsSameClosureFence()" classname="ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest" time="0.006"/>
+  <testcase name="subjectWithAssignmentHitsClosureFenceWithoutScheduleOrDeleteWrites()" classname="ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest" time="0.006"/>
+  <testcase name="nonEmptyLegacyTeacherIdsAreRejectedBeforeAnyWrite()" classname="ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

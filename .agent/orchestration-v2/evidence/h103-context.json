@@ -1,0 +1,31 @@
+{
+  "stage": "H103",
+  "start": "2026-09-20T15:55:24.4559668Z",
+  "baseRevision": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+  "freezeHash": "8B66B8E846CB4509FC4D6E16CEBD2443104FD5CA56502D58CE20A0EB3853F5AA",
+  "planHash": "8CCBE8C920395E99D90AC7A3BD9377791F076F6D73431D2DF9BECAF31C847779",
+  "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-historical-attendance",
+  "command": [
+    ".\\gradlew.bat",
+    ":services:academic-service:academic-app:test",
+    "--tests",
+    "ru.rutcampustrack.academic.history.HistoricalMembershipServiceTest",
+    ":services:academic-service:academic-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.academic.integration.EventIT",
+    "--tests",
+    "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+    "--continue",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report"
+  ],
+  "exitCode": 1,
+  "javaVersion": "openjdk version \"21.0.10\" 2026-01-20 LTS\r\nOpenJDK Runtime Environment Microsoft-13106404 (build 21.0.10+7-LTS)\r\nOpenJDK 64-Bit Server VM Microsoft-13106404 (build 21.0.10+7-LTS, mixed mode, sharing)",
+  "powershell": "7.6.5",
+  "testcontainersReuse": "false",
+  "end": "2026-09-20T15:55:51.8192014Z",
+  "sourceMismatches": [],
+  "freshTestClasses": 0
+}

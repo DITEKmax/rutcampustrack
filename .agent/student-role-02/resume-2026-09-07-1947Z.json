@@ -1,0 +1,17 @@
+{
+  "status": "IN_PROGRESS",
+  "resumedAt": "2026-09-07T19:47:58.9142093Z",
+  "checkpoint": "pause-2026-09-07-1850Z/CHECKPOINT.md",
+  "sourceFilesChecked": 195,
+  "sourceMismatches": 0,
+  "ownerFilesChecked": 47,
+  "ownerMismatches": 0,
+  "mainHead": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "configOriginal": true,
+  "ownershipGateway": "UNAVAILABLE: no callable tool exposed",
+  "agents": [
+    "homework_combined_review_fresh",
+    "dependency_checks_fresh",
+    "requests_transport_fresh"
+  ]
+}

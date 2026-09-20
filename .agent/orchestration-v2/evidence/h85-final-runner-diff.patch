@@ -1,0 +1,419 @@
+diff --git a/.agent/orchestration-v2/evidence/h81-runner-before-diagnostics.ps1 b/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/runner.ps1
+index 8da4e758..9457f987 100644
+--- a/.agent/orchestration-v2/evidence/h81-runner-before-diagnostics.ps1
++++ b/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/runner.ps1
+@@ -1603,21 +1603,302 @@ function Invoke-PsqlFile {
+     return Invoke-DockerSafe -DockerArgs $args -Purpose $Purpose
+ }
+ 
++function New-DeterministicScheduleSeed {
++    param(
++        [Parameter(Mandatory = $true)][string]$AcademicContainerId,
++        [Parameter(Mandatory = $true)][long]$GroupId,
++        [Parameter(Mandatory = $true)][long]$SemesterId,
++        [Parameter(Mandatory = $true)][long]$SubjectId,
++        [Parameter(Mandatory = $true)][long]$AssignmentId
++    )
++
++    Assert-That (Test-Path -LiteralPath $script:seedSchedulePath -PathType Leaf) 'accepted Schedule seed is missing before derivation'
++    Assert-That (-not [string]::IsNullOrWhiteSpace($script:runDir)) 'owned run directory is missing before seed derivation'
++    Assert-That (Test-Path -LiteralPath $script:runDir -PathType Container) 'owned run directory does not exist before seed derivation'
++
++    $acceptedSeedHash = Get-Sha256Hex -Path $script:seedSchedulePath
++    $expectedSeedHash = 'cf8f55e2fbc2fbb5ffd3d8073cba3b7136b4fae84f9123f012b9da7995c705ae'
++    Assert-That ($acceptedSeedHash -ceq $expectedSeedHash) 'accepted Schedule seed is not the frozen deterministic fixture source'
++    Assert-That ([string]$script:report.source.acceptedScheduleSeed.sha256 -ceq $expectedSeedHash) 'source validation reported an unexpected accepted Schedule seed digest'
++
++    # The Academic seed owns the date window. Capture tomorrow exactly once
++    # before deriving the disposable Schedule seed.
++    $academicWindowSql = @"
++SET TIME ZONE 'Europe/Moscow';
++SELECT
++    CASE WHEN EXISTS (
++        SELECT 1
++        FROM semesters semester
++        JOIN assignments assignment ON assignment.semester_id = semester.id
++        WHERE semester.id = $SemesterId
++          AND assignment.id = $AssignmentId
++          AND assignment.group_id = $GroupId
++          AND assignment.subject_id = $SubjectId
++          AND semester.is_active
++          AND (CURRENT_DATE + 1) BETWEEN semester.date_from AND semester.date_to
++          AND assignment.valid_from <= CURRENT_DATE + 1
++          AND (assignment.valid_until_exclusive IS NULL OR CURRENT_DATE + 1 < assignment.valid_until_exclusive)
++    ) THEN 'true' ELSE 'false' END
++    || '|' || (CURRENT_DATE + 1)::text
++    || '|' || COALESCE((SELECT date_from::text FROM semesters WHERE id = $SemesterId), '')
++    || '|' || COALESCE((SELECT date_to::text FROM semesters WHERE id = $SemesterId), '')
++    || '|' || COALESCE((SELECT valid_from::text FROM assignments WHERE id = $AssignmentId), '')
++    || '|' || COALESCE((SELECT valid_until_exclusive::text FROM assignments WHERE id = $AssignmentId), '');
++"@
++    $academicWindow = Read-PsqlScalar -ContainerId $AcademicContainerId -Database academic_db -Purpose 'verify deterministic seed date window' -Sql $academicWindowSql
++    $windowParts = $academicWindow.Split('|')
++    Assert-That ($windowParts.Count -eq 6 -and $windowParts[0] -eq 'true') 'tomorrow Moscow is outside the owned Academic semester or assignment interval'
++    $targetDate = $windowParts[1]
++    Assert-That ($targetDate -match '^[0-9]{4}-[0-9]{2}-[0-9]{2}$') 'Academic seed target date is malformed'
++
++    $acceptedSeedText = [IO.File]::ReadAllText($script:seedSchedulePath)
++    $currentDateCount = [regex]::Matches($acceptedSeedText, '\bCURRENT_DATE\b').Count
++    $activeLiteralCount = [regex]::Matches($acceptedSeedText, "'active'").Count
++    Assert-That ($currentDateCount -eq 9) "accepted Schedule seed CURRENT_DATE token count changed: expected 9, got $currentDateCount"
++    Assert-That ($activeLiteralCount -eq 2) "accepted Schedule seed active literal count changed: expected 2, got $activeLiteralCount"
++
++    $targetDateSql = "DATE '$targetDate'"
++    $derivedSeedText = $acceptedSeedText.Replace('CURRENT_DATE', $targetDateSql).Replace("'active'", "'planned'")
++    Assert-That ([regex]::Matches($derivedSeedText, '\bCURRENT_DATE\b').Count -eq 0) 'derived Schedule seed retained an untransformed CURRENT_DATE dependency'
++    Assert-That ([regex]::Matches($derivedSeedText, [regex]::Escape($targetDateSql)).Count -eq $currentDateCount) 'derived Schedule seed date substitution count is incomplete'
++    Assert-That ([regex]::Matches($derivedSeedText, "'planned'").Count -eq $activeLiteralCount) 'derived Schedule seed active-to-planned substitution count is incomplete'
++
++    $derivedSeedPath = Join-Path $script:runDir 'seed-schedule-deterministic.sql'
++    if (Test-Path -LiteralPath $derivedSeedPath -PathType Leaf) {
++        throw "refusing to overwrite existing derived Schedule seed: $derivedSeedPath"
++    }
++    [IO.File]::WriteAllText($derivedSeedPath, $derivedSeedText, [Text.UTF8Encoding]::new($false))
++    $writtenSeedText = [IO.File]::ReadAllText($derivedSeedPath)
++    Assert-That ([regex]::Matches($writtenSeedText, '\bCURRENT_DATE\b').Count -eq 0) 'written derived Schedule seed retained an untransformed CURRENT_DATE dependency'
++    Assert-That ([regex]::Matches($writtenSeedText, [regex]::Escape($targetDateSql)).Count -eq $currentDateCount) 'written derived Schedule seed date substitution count changed'
++    Assert-That ([regex]::Matches($writtenSeedText, "'planned'").Count -eq $activeLiteralCount) 'written derived Schedule seed active-to-planned count changed'
++
++    $targetDateValue = [DateTime]::ParseExact($targetDate, 'yyyy-MM-dd', [Globalization.CultureInfo]::InvariantCulture)
++    $targetDayOfWeek = [int]$targetDateValue.DayOfWeek
++    if ($targetDayOfWeek -eq 0) { $targetDayOfWeek = 7 }
++    return [ordered]@{
++        path = $derivedSeedPath
++        acceptedPath = $script:seedSchedulePath
++        acceptedSha256 = $acceptedSeedHash
++        derivedSha256 = Get-Sha256Hex -Path $derivedSeedPath
++        targetDate = $targetDate
++        targetDayOfWeek = $targetDayOfWeek
++        timezone = 'Europe/Moscow'
++        academicSemesterDateFrom = $windowParts[2]
++        academicSemesterDateTo = $windowParts[3]
++        assignmentValidFrom = $windowParts[4]
++        assignmentValidUntilExclusive = if ([string]::IsNullOrWhiteSpace($windowParts[5])) { $null } else { $windowParts[5] }
++        currentDateSubstitutions = $currentDateCount
++        activeToPlannedSubstitutions = $activeLiteralCount
++        academicDateGuard = 'PASS'
++    }
++}
++
+ function Read-MongoJson {
+     param([Parameter(Mandatory = $true)][string]$ContainerId, [Parameter(Mandatory = $true)][string]$JavaScript, [string]$Purpose = 'read Mongo fixture')
+     $result = Invoke-OwnedDockerExec -ContainerId $ContainerId -Command @('mongosh', '--quiet', '--host', 'mongo:27017', '--eval', $JavaScript) -Purpose $Purpose
+     return (($result.Output -split '\r?\n' | Where-Object { $_ -match '^\s*\{' } | Select-Object -Last 1).Trim())
+ }
+ 
++function ConvertTo-ActuatorDiagnosticRecord {
++    param(
++        [Parameter(Mandatory = $true)][int]$Port,
++        [Parameter(Mandatory = $true)][string]$Metric,
++        [Parameter(Mandatory = $true)][int]$StatusCode,
++        [AllowNull()][string]$Content,
++        [string]$TagQuery = '',
++        [string]$ContentType = '',
++        [string]$ContentRuntimeType = '',
++        [string]$Transport = 'NONE',
++        [string]$TransportErrorCategory = ''
++    )
++    $record = [ordered]@{
++        schema = 'rct.actuator-counter-diagnostic.v1'
++        port = $Port
++        metric = Limit-EdgeDiagnosticText -Text $Metric -MaxCharacters 256
++        tagQuery = Limit-EdgeDiagnosticText -Text $TagQuery -MaxCharacters 256
++        statusCode = $StatusCode
++        contentType = Limit-EdgeDiagnosticText -Text $ContentType -MaxCharacters 128
++        contentRuntimeType = Limit-EdgeDiagnosticText -Text $ContentRuntimeType -MaxCharacters 128
++        transport = Limit-EdgeDiagnosticText -Text $Transport -MaxCharacters 64
++        errorCategory = Limit-EdgeDiagnosticText -Text $TransportErrorCategory -MaxCharacters 64
++        metricName = $null
++        measurements = @()
++        availableTags = @()
++        parseStatus = 'NOT_RUN'
++    }
++    if (-not [string]::IsNullOrWhiteSpace($TransportErrorCategory)) {
++        return $record
++    }
++    try {
++        if ([string]::IsNullOrWhiteSpace($Content)) { throw 'empty actuator content' }
++        $payload = $Content | ConvertFrom-Json -Depth 12
++        $record.metricName = Limit-EdgeDiagnosticText -Text ([string]$payload.name) -MaxCharacters 256
++        $record.measurements = @($payload.measurements | ForEach-Object {
++                $numericValue = $null
++                if ($_.value -is [sbyte] -or $_.value -is [byte] -or $_.value -is [int16] -or $_.value -is [uint16] -or $_.value -is [int32] -or $_.value -is [uint32] -or $_.value -is [int64] -or $_.value -is [uint64] -or $_.value -is [single] -or $_.value -is [double] -or $_.value -is [decimal]) {
++                    $numericValue = $_.value
++                }
++                [ordered]@{ statistic = Limit-EdgeDiagnosticText -Text ([string]$_.statistic) -MaxCharacters 64; value = $numericValue }
++            } | Select-Object -First 16)
++        $record.availableTags = @($payload.availableTags | ForEach-Object {
++                [ordered]@{ tag = Limit-EdgeDiagnosticText -Text ([string]$_.tag) -MaxCharacters 256; values = @($_.values | ForEach-Object { Limit-EdgeDiagnosticText -Text ([string]$_) -MaxCharacters 256 } | Select-Object -First 16) }
++            } | Select-Object -First 16)
++        $record.parseStatus = 'PASS'
++    } catch {
++        $record.parseStatus = 'INVALID_JSON'
++        if ([string]::IsNullOrWhiteSpace([string]$record.errorCategory)) {
++            $record.errorCategory = 'INVALID_JSON'
++        }
++    }
++    return $record
++}
++
++function Invoke-ActuatorDiagnosticQuery {
++    param(
++        [Parameter(Mandatory = $true)][int]$Port,
++        [Parameter(Mandatory = $true)][string]$Metric,
++        [string]$TagQuery = ''
++    )
++    $uri = "http://127.0.0.1:$Port/actuator/metrics/$Metric"
++    if (-not [string]::IsNullOrWhiteSpace($TagQuery)) {
++        $uri += "?tag=$([Uri]::EscapeDataString($TagQuery))"
++    }
++    try {
++        $response = Invoke-WebRequest -Method Get -Uri $uri -TimeoutSec 10 -SkipHttpErrorCheck
++        $rawContent = $response.Content
++        $contentType = ''
++        try {
++            if ($null -ne $response.Headers) { $contentType = [string]$response.Headers['Content-Type'] }
++        } catch { $contentType = '' }
++        $contentRuntimeType = if ($null -eq $rawContent) { 'NULL' } else { [string]$rawContent.GetType().FullName }
++        $normalizedContent = $null
++        $transport = 'NONE'
++        $transportErrorCategory = ''
++        if ($rawContent -is [byte[]]) {
++            $mediaType = (($contentType -split ';', 2)[0]).Trim().ToLowerInvariant()
++            if ($mediaType -ne 'application/json' -and -not $mediaType.EndsWith('+json')) {
++                $transportErrorCategory = 'NON_JSON_MEDIA_TYPE'
++            } else {
++                try {
++                    $normalizedContent = [Text.UTF8Encoding]::new($false, $true).GetString([byte[]]$rawContent)
++                    $transport = 'UTF8_BYTES'
++                } catch {
++                    $transportErrorCategory = 'INVALID_UTF8'
++                }
++            }
++        } elseif ($rawContent -is [string]) {
++            $normalizedContent = [string]$rawContent
++            $transport = 'STRING'
++        } elseif ($null -eq $rawContent) {
++            $transportErrorCategory = 'MISSING_CONTENT'
++        } else {
++            $transportErrorCategory = 'UNSUPPORTED_CONTENT_TYPE'
++        }
++        return ConvertTo-ActuatorDiagnosticRecord -Port $Port -Metric $Metric -StatusCode ([int]$response.StatusCode) -Content $normalizedContent -TagQuery $TagQuery -ContentType $contentType -ContentRuntimeType $contentRuntimeType -Transport $transport -TransportErrorCategory $transportErrorCategory
++    } catch {
++        return [ordered]@{
++            schema = 'rct.actuator-counter-diagnostic.v1'
++            port = $Port
++            metric = Limit-EdgeDiagnosticText -Text $Metric -MaxCharacters 256
++            tagQuery = Limit-EdgeDiagnosticText -Text $TagQuery -MaxCharacters 256
++            statusCode = $null
++            contentType = ''
++            contentRuntimeType = ''
++            transport = 'NONE'
++            errorCategory = 'REQUEST_FAILED'
++            metricName = $null
++            measurements = @()
++            availableTags = @()
++            parseStatus = 'UNAVAILABLE'
++        }
++    }
++}
++
++function Get-ActuatorDiagnosticSnapshot {
++    param(
++        [Parameter(Mandatory = $true)][int]$FailedPort,
++        [string]$FailedMetric = 'http.server.requests',
++        [string]$FailedTagQuery = 'uri:/api/v1/student/requests/excuse'
++    )
++    $records = [System.Collections.Generic.List[object]]::new()
++    $records.Add((Invoke-ActuatorDiagnosticQuery -Port $FailedPort -Metric $FailedMetric -TagQuery $FailedTagQuery))
++    foreach ($port in @(18515, 18516)) {
++        $records.Add((Invoke-ActuatorDiagnosticQuery -Port $port -Metric 'http.server.requests'))
++    }
++    $gatewayUnfiltered = Invoke-ActuatorDiagnosticQuery -Port 18515 -Metric 'spring.cloud.gateway.requests'
++    $records.Add($gatewayUnfiltered)
++    $routeIds = @($gatewayUnfiltered.availableTags | Where-Object { [string]$_.tag -ceq 'routeId' } | ForEach-Object { @($_.values) })
++    if ($routeIds -contains 'mobile-bff-student-requests-excuse') {
++        $records.Add((Invoke-ActuatorDiagnosticQuery -Port 18515 -Metric 'spring.cloud.gateway.requests' -TagQuery 'routeId:mobile-bff-student-requests-excuse'))
++    }
++    return [ordered]@{
++        schema = 'rct.actuator-counter-diagnostic.v1'
++        failedPort = $FailedPort
++        records = @($records)
++    }
++}
++
++function ConvertTo-StrictActuatorCount {
++    param(
++        [AllowNull()][object]$Value,
++        [Parameter(Mandatory = $true)][string]$Context
++    )
++    Assert-That ($null -ne $Value) "$Context COUNT value is missing"
++    Assert-That (-not ($Value -is [bool])) "$Context COUNT value is not numeric"
++    $numeric = $null
++    if ($Value -is [sbyte] -or $Value -is [byte] -or $Value -is [int16] -or $Value -is [uint16] -or $Value -is [int32] -or $Value -is [uint32] -or $Value -is [int64] -or $Value -is [uint64] -or $Value -is [decimal]) {
++        $numeric = [decimal]$Value
++    } elseif ($Value -is [single] -or $Value -is [double]) {
++        $doubleValue = [double]$Value
++        Assert-That (-not [double]::IsNaN($doubleValue) -and -not [double]::IsInfinity($doubleValue)) "$Context COUNT value is not finite"
++        Assert-That ($doubleValue -eq [Math]::Truncate($doubleValue)) "$Context COUNT value is not an exact integer"
++        Assert-That ($doubleValue -le 9007199254740991) "$Context COUNT floating value exceeds the exact safe integer range"
++        $numeric = [decimal]$doubleValue
++    } else {
++        throw "$Context COUNT value has an unsupported type"
++    }
++    Assert-That ($numeric -ge 0 -and $numeric -eq [decimal]::Truncate($numeric)) "$Context COUNT value is not a non-negative exact integer"
++    Assert-That ($numeric -le [decimal][long]::MaxValue) "$Context COUNT value exceeds Int64"
++    return [int64]$numeric
++}
++
+ function Get-ActuatorRequestCount {
+     param([Parameter(Mandatory = $true)][int]$Port)
+-    $tag = [Uri]::EscapeDataString('uri:/api/v1/student/requests/excuse')
++    if ($Port -eq 18515) {
++        $metric = 'spring.cloud.gateway.requests'
++        $tagQuery = 'routeId:mobile-bff-student-requests-excuse'
++    } elseif ($Port -eq 18516) {
++        $metric = 'http.server.requests'
++        $tagQuery = 'uri:/api/v1/student/requests/excuse'
++    } else {
++        throw "unsupported actuator counter port $Port"
++    }
+     try {
+-        $response = Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:$Port/actuator/metrics/http.server.requests?tag=$tag" -TimeoutSec 10
+-        $measurement = @($response.measurements | Where-Object { $_.statistic -eq 'COUNT' } | Select-Object -First 1)
++        $record = Invoke-ActuatorDiagnosticQuery -Port $Port -Metric $metric -TagQuery $tagQuery
++        Assert-That ([string]$record.schema -ceq 'rct.actuator-counter-diagnostic.v1') "actuator diagnostic schema is invalid on port $Port"
++        Assert-That ([int]$record.statusCode -eq 200) "actuator counter returned HTTP $($record.statusCode) on port $Port"
++        Assert-That ([string]$record.parseStatus -ceq 'PASS') "actuator counter JSON parse failed on port $Port"
++        Assert-That ([string]$record.errorCategory -eq '') "actuator counter transport failed on port $Port"
++        Assert-That ([string]$record.metricName -ceq $metric) "actuator counter metric name mismatch on port $Port"
++        $measurement = @($record.measurements | Where-Object { [string]$_.statistic -ceq 'COUNT' })
+         Assert-That ($measurement.Count -eq 1) "actuator counter is missing on port $Port"
+-        return [int64]$measurement[0].value
++        $count = ConvertTo-StrictActuatorCount -Value $measurement[0].value -Context "actuator counter on port $Port"
++        Assert-That ($count -gt 0) "actuator counter is not positive after I1 on port $Port"
++        if (-not ($script:report -is [System.Collections.IDictionary] -and @($script:report.Keys) -contains 'actuatorCounterQueries')) {
++            $script:report.actuatorCounterQueries = [System.Collections.Generic.List[object]]::new()
++        }
++        $script:report.actuatorCounterQueries.Add([ordered]@{
++                port = $Port
++                metric = $metric
++                tagQuery = $tagQuery
++                statusCode = [int]$record.statusCode
++                metricName = [string]$record.metricName
++                count = $count
++            })
++        return $count
+     } catch {
++        $script:report.actuatorDiagnostics = Get-ActuatorDiagnosticSnapshot -FailedPort $Port -FailedMetric $metric -FailedTagQuery $tagQuery
+         throw "actuator request counter unavailable on port $Port"
+     }
+ }
+@@ -1779,9 +2060,36 @@ WHERE NOT EXISTS (SELECT 1 FROM assignments WHERE teacher_id = $studentId AND su
+ 
+     $script:services.schedule = Start-JavaService -Name 'schedule' -Jar $jars.schedule.path -Aliases @('schedule-service') -Publish @('127.0.0.1:18519:9092') -Environment ($common + @{
+             POSTGRES_SCHEDULE_PASSWORD = $Secrets.dbSchedule; SPRING_DATASOURCE_URL = 'jdbc:postgresql://postgres-schedule:5432/schedule_db'; SPRING_DATASOURCE_USERNAME = 'rct_user'; RABBITMQ_USER = 'rct_user'; RABBITMQ_PASSWORD = $Secrets.rabbit; SPRING_RABBITMQ_USERNAME = 'rct_user'; SPRING_RABBITMQ_PASSWORD = $Secrets.rabbit; GRPC_SECRET = $Secrets.grpc
+-        }) -Arguments @('--server.port=9092', '--server.address=0.0.0.0', '--grpc.server.port=19092', '--grpc.server.address=0.0.0.0')
++    }) -Arguments @('--server.port=9092', '--server.address=0.0.0.0', '--grpc.server.port=19092', '--grpc.server.address=0.0.0.0')
+     Wait-HostHttp -Port 18519 -Path '/actuator/health'
+-    $null = Invoke-PsqlFile -ContainerId $script:infra.pgSchedule.Id -Database schedule_db -SourcePath $script:seedSchedulePath -Variables @{ student_id = $studentId; group_id = $groupId; semester_id = $semesterId; subject_id = $subjectId; homework_id = $homeworkId; teacher_id = $studentId; assignment_id = $assignmentId; binding_id = $bindingId } -Purpose 'apply accepted Schedule V17 dynamic seed'
++    $derivedScheduleSeed = New-DeterministicScheduleSeed -AcademicContainerId $script:infra.pgAcademic.Id -GroupId $groupId -SemesterId $semesterId -SubjectId $subjectId -AssignmentId $assignmentId
++    $null = Invoke-PsqlFile -ContainerId $script:infra.pgSchedule.Id -Database schedule_db -SourcePath $derivedScheduleSeed.path -Variables @{ student_id = $studentId; group_id = $groupId; semester_id = $semesterId; subject_id = $subjectId; homework_id = $homeworkId; teacher_id = $studentId; assignment_id = $assignmentId; binding_id = $bindingId } -Purpose 'apply owned deterministic Schedule V17 seed'
++    $script:report.fixture.deterministicSchedule = [ordered]@{
++        source = 'owned runner derived seed'
++        targetDate = $derivedScheduleSeed.targetDate
++        targetDayOfWeek = $derivedScheduleSeed.targetDayOfWeek
++        timezone = $derivedScheduleSeed.timezone
++        academicSemesterDateFrom = $derivedScheduleSeed.academicSemesterDateFrom
++        academicSemesterDateTo = $derivedScheduleSeed.academicSemesterDateTo
++        assignmentValidFrom = $derivedScheduleSeed.assignmentValidFrom
++        assignmentValidUntilExclusive = $derivedScheduleSeed.assignmentValidUntilExclusive
++        scheduleSeed = [ordered]@{
++            acceptedSha256 = $derivedScheduleSeed.acceptedSha256
++            derivedSha256 = $derivedScheduleSeed.derivedSha256
++            currentDateSubstitutions = $derivedScheduleSeed.currentDateSubstitutions
++            activeToPlannedSubstitutions = $derivedScheduleSeed.activeToPlannedSubstitutions
++            academicDateGuard = $derivedScheduleSeed.academicDateGuard
++        }
++        expectedRows = [ordered]@{
++            scheduleItems = 2
++            occurrences = 2
++            lessons = 2
++            lessonStatus = 'planned'
++            closedAt = $null
++            bindingState = 'ACTIVE'
++            idsPreserved = $true
++        }
++    }
+ 
+     $script:services.auth = Start-JavaService -Name 'auth' -Jar $jars.auth.path -Aliases @('auth-service') -Publish @('127.0.0.1:18518:9090') -ExtraMounts @(@{ Source = $script:keysDir; Target = '/keys'; ReadOnly = $false }) -Environment ($common + @{
+             POSTGRES_ACADEMIC_PASSWORD = $Secrets.dbAcademic; REDIS_PASSWORD = $Secrets.redis; SPRING_RABBITMQ_HOST = 'rabbitmq'; SPRING_RABBITMQ_PORT = '5672'; SPRING_RABBITMQ_USERNAME = 'rct_user'; SPRING_RABBITMQ_PASSWORD = $Secrets.rabbit; JWT_KEY_DIR = '/keys'; INTERNAL_ISSUER_SECRET = $Secrets.internalIssuer; TMA_BOT_TOKEN = $Secrets.tma
+@@ -2182,14 +2490,44 @@ function Invoke-RequestsProbe {
+         exitCode = $result.ExitCode
+         stderr = Limit-EdgeDiagnosticText -Text $typedStderr -MaxCharacters 12000
+     }
++    $safeOutput = Protect-ReportText $typedStdout
++    $genericProbeFailure = 'Requests Node HTTPS probe failed; raw probe output was withheld'
++    if ($result.ExitCode -ne 0) {
++        $failureError = $genericProbeFailure
++        try {
++            $failurePayload = $safeOutput | ConvertFrom-Json -Depth 12
++            $failureProperties = @($failurePayload.PSObject.Properties)
++            $failureNames = @($failureProperties | ForEach-Object { [string]$_.Name })
++            $errorProperty = $failurePayload.PSObject.Properties['error']
++            $exactFailureShape = $null -ne $failurePayload -and
++                $failureNames.Count -eq 3 -and
++                $failureNames -ccontains 'schema' -and
++                $failureNames -ccontains 'status' -and
++                $failureNames -ccontains 'error' -and
++                [string]$failurePayload.schema -ceq 'rct.student-requests-probe.v1' -and
++                [string]$failurePayload.status -ceq 'FAIL' -and
++                $null -ne $errorProperty -and
++                $errorProperty.Value -is [string] -and
++                -not [string]::IsNullOrWhiteSpace([string]$errorProperty.Value)
++            if ($exactFailureShape) {
++                $failureError = Limit-EdgeDiagnosticText -Text ([string]$errorProperty.Value) -MaxCharacters 1200
++                if ([string]::IsNullOrWhiteSpace($failureError)) { $failureError = $genericProbeFailure }
++            }
++        } catch {
++            $failureError = $genericProbeFailure
++        }
++        $probeDiagnostic.error = $failureError
++    }
+     $script:report.probeDiagnostics = $probeDiagnostic
+     if (-not ($script:report -is [System.Collections.IDictionary] -and @($script:report.Keys) -contains 'probeDiagnosticsHistory')) {
+         $script:report.probeDiagnosticsHistory = [System.Collections.Generic.List[object]]::new()
+     }
+     while ($script:report.probeDiagnosticsHistory.Count -ge 8) { $script:report.probeDiagnosticsHistory.RemoveAt(0) }
+     $script:report.probeDiagnosticsHistory.Add($probeDiagnostic)
+-    $safeOutput = Protect-ReportText $typedStdout
+-    Assert-That ($result.ExitCode -eq 0) 'Requests Node HTTPS probe failed; raw probe output was withheld'
++    if ($result.ExitCode -ne 0) {
++        if ([string]$probeDiagnostic.error -ceq $genericProbeFailure) { throw $genericProbeFailure }
++        throw "Requests Node HTTPS probe failed: $($probeDiagnostic.error)"
++    }
+     try { $probe = ($safeOutput | ConvertFrom-Json -Depth 12) } catch { throw 'Requests probe did not return valid redacted JSON' }
+     if ($null -ne $pacingRecord) {
+         $probe | Add-Member -NotePropertyName authPacingWaitMilliseconds -NotePropertyValue $pacingWaitMilliseconds
+@@ -2569,7 +2907,7 @@ function Invoke-FullRuntime {
+     Assert-That ($probeI2.status -eq 'PASS' -and $probeI2.i2.status -eq 'PASS') 'I2 probe did not pass'
+     $gatewayAfter = Get-ActuatorRequestCount -Port 18515
+     $bffAfter = Get-ActuatorRequestCount -Port 18516
+-    Assert-That ($gatewayAfter -eq $gatewayBefore) 'I2 changed the Gateway exact URI request counter'
++    Assert-That ($gatewayAfter -eq $gatewayBefore) 'I2 changed the Gateway routeId request counter'
+     Assert-That ($bffAfter -eq $bffBefore) 'I2 changed the BFF exact URI request counter'
+     $afterI2 = Get-MongoSnapshot -StudentId $studentId -RequestId $probeI1.i1.requestId
+     Assert-I2MongoUnchanged -Before $afterI1 -After $afterI2
+@@ -2585,7 +2923,11 @@ function Invoke-FullRuntime {
+     }
+     $script:report.assertions.i2 = [ordered]@{
+         status = 'PASS'; session = $probeI2.i2.session; authPacingWaitMilliseconds = $probeI2.authPacingWaitMilliseconds; authPacing = $probeI2.authPacing; fixed = $probeI2.i2.fixed; chunked = $probeI2.i2.chunked; bodyBytes = $probeI2.i2.bodyBytes
+-        noStore = $true; gatewayUriCounterBefore = $gatewayBefore; gatewayUriCounterAfter = $gatewayAfter; bffUriCounterBefore = $bffBefore; bffUriCounterAfter = $bffAfter
++        noStore = $true
++        gatewayRouteCounterBefore = $gatewayBefore; gatewayRouteCounterAfter = $gatewayAfter
++        gatewayCounterMetric = 'spring.cloud.gateway.requests'; gatewayCounterTag = 'routeId:mobile-bff-student-requests-excuse'
++        bffUriCounterBefore = $bffBefore; bffUriCounterAfter = $bffAfter
++        bffCounterMetric = 'http.server.requests'; bffCounterTag = 'uri:/api/v1/student/requests/excuse'
+         mongoUnchanged = $true; nginx = $nginxEvidence
+     }
+ }

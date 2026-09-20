@@ -1,0 +1,39 @@
+{
+  "schema": "rct.runtime-evidence.v1",
+  "task": "JS-STUDENT-01-r1",
+  "runId": "20260906-181218",
+  "startedAt": "2026-09-06T18:12:18.4370702+03:00",
+  "status": "FAIL",
+  "stage": "infrastructure",
+  "resources": {
+    "network": "rct-js-student-01",
+    "containers": [
+      "rct-js-student-01-pg-academic",
+      "rct-js-student-01-pg-schedule",
+      "rct-js-student-01-mongo",
+      "rct-js-student-01-redis",
+      "rct-js-student-01-rabbit"
+    ],
+    "ports": [
+      25431,
+      25432,
+      27027,
+      26379,
+      25672,
+      35672,
+      29090,
+      29091,
+      29191,
+      29092,
+      29192,
+      29093,
+      29193,
+      29080,
+      28080
+    ]
+  },
+  "services": {},
+  "assertions": [],
+  "error": "create task network failed (docker exit 1): WARNING: Error loading config file: open C:\\Users\\maksd\\.docker\\config.json: Access is denied.\r\nerror during connect: in the default daemon configuration on Windows, the docker client must be run with elevated privileges to connect: Head \"http://%2F%2F.%2Fpipe%2Fdocker_engine/_ping\": open //./pipe/docker_engine: Access is denied.",
+  "completedAt": "2026-09-06T18:12:19.5119509+03:00"
+}

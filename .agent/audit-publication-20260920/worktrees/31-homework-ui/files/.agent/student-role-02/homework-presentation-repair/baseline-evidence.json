@@ -1,0 +1,181 @@
+{
+  "generatedAt": "2026-09-07T20:05:01.512Z",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "environment": {
+    "browser": "Microsoft Edge headless",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "locale": "ru-RU",
+    "timezoneId": "Europe/Moscow"
+  },
+  "fixture": {
+    "source": "copied homework-ui-visual actual component fixture",
+    "expectedTitle": "Собери консольное приложение и добавь тесты.",
+    "expectedDescription": "Добавь короткое README и приложи ссылку на репозиторий. Репозиторий должен быть доступен преподавателю.",
+    "emptyDescriptionItem": "source-networks"
+  },
+  "findings": {
+    "materialsNoneAlignment": {
+      "status": "REPRODUCED",
+      "card": {
+        "heading": "Основы программирования",
+        "description": "Добавь короткое README и приложи ссылку на репозиторий. Репозиторий должен быть доступен преподавателю.",
+        "descriptionPresent": true,
+        "disclosure": null,
+        "material": "none",
+        "children": [
+          "",
+          "homework-card__description",
+          "homework-card__actions",
+          "homework-completion"
+        ],
+        "actions": {
+          "x": 32,
+          "y": 275.375,
+          "width": 326,
+          "height": 44,
+          "top": 275.375,
+          "right": 358,
+          "bottom": 319.375,
+          "left": 32
+        },
+        "expand": {
+          "x": 32,
+          "y": 275.375,
+          "width": 44,
+          "height": 44,
+          "top": 275.375,
+          "right": 76,
+          "bottom": 319.375,
+          "left": 32
+        },
+        "expandCount": 1,
+        "descriptionFontPx": 13,
+        "disclosureFontPx": null
+      }
+    },
+    "titleDescriptionOrder": {
+      "status": "REPRODUCED",
+      "before": {
+        "heading": "Основы программирования",
+        "description": "Добавь короткое README и приложи ссылку на репозиторий. Репозиторий должен быть доступен преподавателю.",
+        "descriptionPresent": true,
+        "disclosure": null,
+        "material": "available",
+        "children": [
+          "",
+          "homework-card__description",
+          "homework-card__actions",
+          "homework-completion"
+        ],
+        "actions": {
+          "x": 32,
+          "y": 275.375,
+          "width": 326,
+          "height": 44,
+          "top": 275.375,
+          "right": 358,
+          "bottom": 319.375,
+          "left": 32
+        },
+        "expand": {
+          "x": 314,
+          "y": 275.375,
+          "width": 44,
+          "height": 44,
+          "top": 275.375,
+          "right": 358,
+          "bottom": 319.375,
+          "left": 314
+        },
+        "expandCount": 1,
+        "descriptionFontPx": 13,
+        "disclosureFontPx": null
+      },
+      "expanded": {
+        "heading": "Основы программирования",
+        "description": "Добавь короткое README и приложи ссылку на репозиторий. Репозиторий должен быть доступен преподавателю.",
+        "descriptionPresent": true,
+        "disclosure": "Собери консольное приложение и добавь тесты.",
+        "material": "available",
+        "children": [
+          "",
+          "homework-card__description homework-card__description--expanded",
+          "homework-card__actions",
+          "homework-card__disclosure",
+          "homework-completion"
+        ],
+        "actions": {
+          "x": 32,
+          "y": 293.90625,
+          "width": 326,
+          "height": 44,
+          "top": 293.90625,
+          "right": 358,
+          "bottom": 337.90625,
+          "left": 32
+        },
+        "expand": {
+          "x": 314,
+          "y": 293.90625,
+          "width": 44,
+          "height": 44,
+          "top": 293.90625,
+          "right": 358,
+          "bottom": 337.90625,
+          "left": 314
+        },
+        "expandCount": 1,
+        "descriptionFontPx": 13,
+        "disclosureFontPx": 13
+      },
+      "emptyCard": {
+        "heading": "Компьютерные сети",
+        "description": "",
+        "descriptionPresent": true,
+        "disclosure": null,
+        "material": "available",
+        "children": [
+          "",
+          "homework-card__description",
+          "homework-card__actions",
+          "homework-completion"
+        ],
+        "actions": {
+          "x": 32,
+          "y": 539.90625,
+          "width": 326,
+          "height": 44,
+          "top": 539.90625,
+          "right": 358,
+          "bottom": 583.90625,
+          "left": 32
+        },
+        "expand": {
+          "x": 314,
+          "y": 539.90625,
+          "width": 44,
+          "height": 44,
+          "top": 539.90625,
+          "right": 358,
+          "bottom": 583.90625,
+          "left": 314
+        },
+        "expandCount": 1,
+        "descriptionFontPx": 13,
+        "disclosureFontPx": null
+      }
+    }
+  },
+  "screenshots": {
+    "open": "screenshots-baseline\\baseline-open.png",
+    "expanded": "screenshots-baseline\\baseline-expanded.png",
+    "noMaterials": "screenshots-baseline\\baseline-no-materials.png"
+  },
+  "accessibilityViolations": {
+    "open": [],
+    "noMaterials": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "scope": "L5A null-element validation correction",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "rules_sha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "source_hashes": {
+    "CreateSubjectRequest.java": "CEAEC78F499110A56C684302DF90B97EEDC7BAD35E7F8952D2B0C6F189CD96F2",
+    "SubjectAssignmentAuthorityIT.java": "64BAB23B0AD5333D1B6F607EC9ECE541392284D55FE2440EF8157B7B6AE9E0A6"
+  },
+  "source_change": "List<@NotNull @Valid InitialAssignmentRequest> plus real authorized HTTP null-element zero-row regression",
+  "h64_xml_labels_match_actual": true,
+  "h64_xml_sha256": {
+    "SubjectAssignmentAuthorityIT": "CDD6582377AE0FBC699A38E0C95D81E2DC6C55C0BDF4662C9F50D0677985F888",
+    "AssignmentAuthorityIT": "1E058CBC025E3456E5D51B81DD4BACF2E462326458746621543E651A70009ABF",
+    "AcademicAssignmentGrpcIT": "C3C5FE05E76F542E4CFCD7A8842637A323F8B463FAE328DB334015741D747A53",
+    "SemesterAssignmentAuthorityIT": "5E31020B723C20D8DAF1294C002F4EEF2A03F8190CB73D8D397D11030CB23BFF",
+    "SubjectServiceIT": "D32311452D247446052D0CC4E4B33B4E5D56E650673EBB49BEF3A6B2940BD80E",
+    "AcademicGrpcIT": "1D0FE99857D339B92E93A6508C1D7E31A7B205CA5FB8F5C32CD356E7878592C0"
+  },
+  "h64_raw_sha256": {
+    "stdout": "9A9FC585F286D6E194984CE46ECAADAFFE3ABFCDB741489F719728CD35AE72D3",
+    "stderr": "89CD290BAE90624C6D6A43E0534CC808570E65E4E397CA540EF5F4416E2FE900",
+    "context": "B6AEE052130997AEB5F8C632B8FA087FC34BDA731ED8648E5B63B34A16544B3E"
+  },
+  "immutable_h64_artifacts": true,
+  "static_checks": {
+    "git_diff_check": {"status": "PASS", "exit_code": 0},
+    "gradle": {"status": "NOTRUN", "exit_code": null},
+    "docker": {"status": "NOTRUN", "exit_code": null}
+  },
+  "later_targeted_command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+  "runtime_status": "Awaiting separate root heavy lease; no runtime claim for the null regression"
+}

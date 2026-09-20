@@ -1,0 +1,39 @@
+ M .agent/student-role-orchestrator/requests-runtime/R3-EVIDENCE.md
+ M .agent/student-role-orchestrator/requests-runtime/r10-docker-network-proof.ps1
+ M .agent/student-role-orchestrator/requests-runtime/r10-network-proof-source-check.ps1
+ M .agent/student-role-orchestrator/requests-runtime/r3-cleanup-failure-injection.ps1
+ M .agent/student-role-orchestrator/requests-runtime/r6-source-contract-check.ps1
+ M .agent/student-role-orchestrator/requests-runtime/r8-edge-reservation-check.ps1
+ M .agent/student-role-orchestrator/requests-runtime/r8-probe-callsite-check.ps1
+ M .agent/student-role-orchestrator/requests-runtime/runner.ps1
+?? .agent/student-role-orchestrator/requests-runtime/h-retrospective-source/
+?? .agent/student-role-orchestrator/requests-runtime/h59-metrics-fix/
+?? .agent/student-role-orchestrator/requests-runtime/h62-edge-diagnosis/
+?? .agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/H68-PROBE-DIAGNOSIS.md
+?? .agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/h68-probe-check.prefixed.ps1
+?? .agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/h68-probe-correction-evidence-20260920T110422993Z-67c8971eb46b499abbe1c2f5e72b8ea7.json
+?? .agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/h68-probe-correction-evidence-20260920T110436364Z-89c8bbcac7bc4af498469c66607953ab.json
+?? .agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/h68-probe-correction-evidence.json
+?? .agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/h68-probe-evidence.json
+?? .agent/student-role-orchestrator/requests-runtime/h68-probe-secrets-fix/
+?? .agent/student-role-orchestrator/requests-runtime/h68-process-drain-fix/
+?? .agent/student-role-orchestrator/requests-runtime/h71-mongo-projection-fix/
+?? .agent/student-role-orchestrator/requests-runtime/h78-bson-descriptor-boundary/
+?? .agent/student-role-orchestrator/requests-runtime/h81-probe-diagnostics/
+?? .agent/student-role-orchestrator/requests-runtime/h82-actuator-counter-diagnosis/h82-counter-check-evidence-20260920T102716008Z-e31589172a5e499a89ea43ebf11f9111.json
+?? .agent/student-role-orchestrator/requests-runtime/h82-actuator-counter-diagnosis/h82-counter-check-evidence-20260920T102836482Z-5c673f05bab44c528eedabfd89ab892c.json
+?? .agent/student-role-orchestrator/requests-runtime/h82-actuator-counter-diagnosis/h82-counter-check-evidence-20260920T104509947Z-1cb01179084b4ec2b03920b9b3fcd07e.json
+?? .agent/student-role-orchestrator/requests-runtime/h82-actuator-counter-diagnosis/h82-counter-check-evidence-20260920T104551177Z-363d50070cdb47a1b0c54ac5e298e391.json
+?? .agent/student-role-orchestrator/requests-runtime/h82-actuator-counter-diagnosis/h82-counter-check-evidence.json
+?? .agent/student-role-orchestrator/requests-runtime/r11-docker-network-proof.json
+?? .agent/student-role-orchestrator/requests-runtime/r11-source-stability-check.ps1
+?? .agent/student-role-orchestrator/requests-runtime/r12-artifact-snapshot-check.ps1
+?? .agent/student-role-orchestrator/requests-runtime/r13-network-create-recovery-check.ps1
+?? .agent/student-role-orchestrator/requests-runtime/r13-network-recovery-pass.stderr.log
+?? .agent/student-role-orchestrator/requests-runtime/r13-network-recovery-pass.stdout.log
+?? .agent/student-role-orchestrator/requests-runtime/r13-network-recovery-regression.stderr.log
+?? .agent/student-role-orchestrator/requests-runtime/r13-network-recovery-regression.stdout.log
+?? .agent/student-role-orchestrator/requests-runtime/retrospective-probe.mjs
+?? .agent/student-role-orchestrator/requests-runtime/retrospective-source-check.ps1
+?? .agent/student-role-orchestrator/requests-runtime/runs/
+?? .agent/student-role-orchestrator/requests-runtime/source-validation.json

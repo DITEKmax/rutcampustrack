@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "trivyVersion": "0.74.0",
+  "reportId": "01a07cdd-6c7e-7ef6-bea2-593bfd9cc9e3",
+  "createdAt": "2026-09-07T17:14:41.150983673Z",
+  "artifact": "/scope",
+  "artifactType": "filesystem",
+  "dbUpdatedAt": null,
+  "javaDbUpdatedAt": null,
+  "targetRows": [
+    {
+      "target": "Java",
+      "type": "jar",
+      "class": "lang-pkgs",
+      "packageCount": 1141,
+      "vulnerabilityCount": 57
+    }
+  ],
+  "packageRecords": 1141,
+  "vulnerabilityRecords": 57,
+  "critical": 0,
+  "high": 0,
+  "medium": 57,
+  "reportSha256": "3586F66859BBFBC6BA7C05213725D3B8ACA6A5BEF3B567B645D9CCBBA2620373"
+}

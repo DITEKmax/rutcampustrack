@@ -1,0 +1,48 @@
+{
+  "scope": "L5A source-stage coverage H63 runtime",
+  "revision": "codex/v2-assignment-authority",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "command_context": ".agent/v2-assignment-authority/evidence/h63-academic-context-2026-09-19.txt",
+  "stdout": ".agent/v2-assignment-authority/evidence/h63-academic-stdout-2026-09-19.log",
+  "stderr": ".agent/v2-assignment-authority/evidence/h63-academic-stderr-2026-09-19.log",
+  "start": "2026-09-19T19:01:11.3017242Z",
+  "end": "2026-09-19T19:02:23.4090207Z",
+  "exit_code": 1,
+  "process_identity": "ditek-pk\\maksd",
+  "java": "OpenJDK 21.0.10",
+  "testcontainers_reuse_enable": false,
+  "selectors": [
+    "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT",
+    "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+    "ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT",
+    "ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT",
+    "ru.rutcampustrack.academic.subject.SubjectServiceIT",
+    "ru.rutcampustrack.academic.integration.AcademicGrpcIT"
+  ],
+  "xml": [
+    {"class": "SubjectAssignmentAuthorityIT", "tests": 8, "failures": 0, "errors": 0, "skipped": 0, "sha256": "8BEC0DB9EA36616B713CEE85349BF2C27470FF10B0A329860E7A1E787A805242"},
+    {"class": "AssignmentAuthorityIT", "tests": 6, "failures": 0, "errors": 0, "skipped": 0, "sha256": "C2D02E2800AB73649D696E922D557665BED2E8B9665531FAFD31A790F7FA72E8"},
+    {"class": "AcademicAssignmentGrpcIT", "tests": 6, "failures": 0, "errors": 0, "skipped": 0, "sha256": "9A996F0BC8174558DE602FB0801F1CBC6C1DEEB754CB29B2AFA13405F6E0AF84"},
+    {"class": "SemesterAssignmentAuthorityIT", "tests": 3, "failures": 0, "errors": 0, "skipped": 0, "sha256": "3C0E77174A496A894295155B7A6A88A45179F1E7010B84DD4F8B341452D9E323"},
+    {"class": "SubjectServiceIT", "tests": 5, "failures": 1, "errors": 0, "skipped": 0, "sha256": "BB8B3BD8D131119607CC53D7E6BE342BB02AE3ADE52E15C714D87F2A45623120"},
+    {"class": "AcademicGrpcIT", "tests": 19, "failures": 0, "errors": 0, "skipped": 0, "sha256": "D029E900B483DFA85C4AB01814519F9FBF26E855AD41C9B87600CCE8C6AD6F17"}
+  ],
+  "total": {"tests": 47, "failures": 1, "errors": 0, "skipped": 0},
+  "first_failure": {
+    "class": "ru.rutcampustrack.academic.subject.SubjectServiceIT",
+    "method": "listSubjects_filteredByGroup()",
+    "location": "SubjectServiceIT.java:153",
+    "cause": "Admin assertion read only page 0 while response reported totalPages=3; own subject was on a later page."
+  },
+  "docker": {
+    "before": ".agent/v2-assignment-authority/evidence/h63-docker-before-2026-09-19.txt",
+    "after": ".agent/v2-assignment-authority/evidence/h63-docker-after-2026-09-19.txt",
+    "owned_resources": ".agent/v2-assignment-authority/evidence/h63-owned-cleanup-2026-09-19.log",
+    "ryuk_id": "ae47898cf4f018d0bef01eecbf3ad82eb4a55e940dd761cb2e7aceb7998c3c24",
+    "postgres_id": "788bb15ae17c4ee27e9354c36595ace51897449d037488e103081d37d20b8fdb",
+    "post_run_absent": true,
+    "inventory_delta": {"added": 0, "removed": 0},
+    "foreign_cleanup": false
+  },
+  "source_status": "unchanged during H63; pagination correction applied only after release"
+}

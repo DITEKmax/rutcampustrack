@@ -333,7 +333,9 @@ export type ExcuseTicket = Omit<
 
 export type CreateExcuseRequest = AttendanceSchemas['CreateExcuseRequest'];
 
-export type LateCheckinRequestStatus = 'pending' | 'approved' | 'rejected';
+export type LateCheckinRequestStatus = NonNullable<
+  AttendanceSchemas['EntityModelLateCheckinRequestResponse']['status']
+>;
 
 export type LateCheckinRequest = Omit<
   Strict<

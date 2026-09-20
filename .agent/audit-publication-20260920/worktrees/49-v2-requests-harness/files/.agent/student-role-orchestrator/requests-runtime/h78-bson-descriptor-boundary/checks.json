@@ -1,0 +1,66 @@
+{
+  "schema": "rct.h78-bson-descriptor-boundary.checks.v1",
+  "status": "PASS_TARGETED_NATIVE_PENDING_ROOT",
+  "baseRevision": "73fd5f27ceb429ad0692b073189f8a527c550830",
+  "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "environment": {
+    "os": "Windows",
+    "powershell": "7.6.5",
+    "node": "v24.14.0",
+    "git": "2.55.0.windows.5",
+    "runtimeMode": "pure harness only; no Docker, services, ports or network"
+  },
+  "checks": [
+    {
+      "name": "PowerShell runner parser",
+      "command": "pwsh -NoProfile -Command '$tokens=$null;$errors=$null;[System.Management.Automation.Language.Parser]::ParseFile((Join-Path (Get-Location) \"runner.ps1\"),[ref]$tokens,[ref]$errors)|Out-Null;if($errors.Count -ne 0){throw \"runner parser errors: $($errors.Count)\"};Write-Output \"runner.ps1 parser: PASS\"'",
+      "exitCode": 0,
+      "evidence": "runner.ps1 parser: PASS"
+    },
+    {
+      "name": "R8 emitted Mongo projection and I1 assertion",
+      "command": "pwsh -NoProfile -File .\\r8-mongo-projection-check.ps1",
+      "exitCode": 0,
+      "evidence": "native BSON Long companion and JSON outbox sizes; complete descriptors; wrong/unsafe/invalid values rejected"
+    },
+    {
+      "name": "Probe JavaScript syntax",
+      "command": "node --check .\\probe.mjs",
+      "exitCode": 0,
+      "evidence": "no syntax output"
+    },
+    {
+      "name": "Scoped diff whitespace",
+      "command": "git -c core.excludesfile=NUL diff --check -- .agent/student-role-orchestrator/requests-runtime/runner.ps1 .agent/student-role-orchestrator/requests-runtime/r8-mongo-projection-check.ps1",
+      "exitCode": 0,
+      "evidence": "no diff-check errors; Git emitted line-ending warnings only"
+    },
+    {
+      "name": "Root native BSON sample provenance",
+      "command": "pinned Mongo 7 mongosh --nodb --quiet --eval controlled BSON sample",
+      "exitCode": 0,
+      "evidence": "root-owned h79-bson-sample.json and h79-context.json; network none; owned cleanup empty"
+    },
+    {
+      "name": "Root native boundary proof",
+      "command": "root-owned h80-native-boundary.ps1 against the frozen emitted Get-MongoSnapshot",
+      "exitCode": null,
+      "evidence": "PENDING root single native mongosh run"
+    }
+  ],
+  "runtime": {
+    "status": "PENDING_ROOT_NATIVE_BOUNDARY",
+    "productRuntime": "N/A for harness-only conversion; no Docker or full Requests runtime",
+    "rootEvidence": ".agent/orchestration-v2/evidence/h80-native-boundary.ps1"
+  },
+  "sourceHashes": {
+    "runner.ps1": "DB4BE98017B14840A30E4CEBEDF3992B58561B7827ABB6B7EAD95A4385BE4BFD",
+    "r8-mongo-projection-check.ps1": "46AB5ECC5BAC08B1293B0EDCF23BE627DAB486E9929C9B9B58B30A56E9D34C23",
+    "probe.mjs": "1093B32778D8A7AF7CBC3E8F691073597257EB3091AC6A51DF8B12DE8E8731D6"
+  },
+  "limitations": [
+    "The native mongosh proof is root-owned and must not be relabeled PASS until its frozen-source run exits 0.",
+    "Local R8 uses a native-Long-shaped companion to catch the emitted conversion; it is not a substitute for the root native BSON observation.",
+    "No product source or persistence mapping changed."
+  ]
+}

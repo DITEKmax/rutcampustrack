@@ -1,0 +1,64 @@
+{
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "server": {
+    "command": "programmatic Vite server with @vitejs/plugin-vue",
+    "bind": "127.0.0.1",
+    "port": 18540,
+    "url": "http://127.0.0.1:18540/.requests-harness/",
+    "readyEvidence": "VITE_HARNESS_READY_18540",
+    "stopped": true,
+    "portsFreeAfterRun": [18540, 18541]
+  },
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "deviceScaleFactor": "browser default"
+  },
+  "screenshots": [
+    {
+      "state": "open",
+      "url": "http://127.0.0.1:18540/.requests-harness/?state=open",
+      "captured": true,
+      "observation": "Open tab, pending excuse card, lesson metadata, cancel action and five-item host dock are visible; no decision text is shown."
+    },
+    {
+      "state": "archive",
+      "url": "http://127.0.0.1:18540/.requests-harness/?state=archive",
+      "captured": true,
+      "observation": "Archive tab shows approved late-checkin card with lesson metadata and 'Решение принято 2 сентября · Заявка одобрена'."
+    },
+    {
+      "state": "type",
+      "url": "http://127.0.0.1:18540/.requests-harness/?state=type",
+      "captured": true,
+      "observation": "New request screen shows excuse choice and late-checkin Н → + pair symbol with readable labels."
+    },
+    {
+      "state": "excuse",
+      "url": "http://127.0.0.1:18540/.requests-harness/?state=excuse",
+      "captured": true,
+      "observation": "Excuse screen shows grouped lessons, disabled unavailable lesson with supplied reason, selected checkboxes, native reason select, comment, attachment control and submit action; vertical page scroll is available for content below 844px."
+    },
+    {
+      "state": "late",
+      "url": "http://127.0.0.1:18540/.requests-harness/?state=late",
+      "captured": true,
+      "observation": "Late-checkin screen shows one Пара selector, unavailable lesson explanations, selected lesson card with lowercase н, budget and confirmation actions."
+    }
+  ],
+  "accessibility": {
+    "open": "AX tree exposed heading Заявки, tab buttons Открытые/Архив, submit and cancel controls, lesson headings and host navigation.",
+    "archive": "AX tree exposed selected Архив tab, approved status, lesson metadata and decision status text.",
+    "type": "AX tree exposed back button, heading Новая заявка and two labelled choice buttons.",
+    "excuse": "AX tree exposed labelled back button, grouped lesson checkboxes including disabled reason, native reason select, textarea, attachment button and submit button.",
+    "late": "AX tree exposed labelled back button, native lesson select with disabled options, unavailable explanations, selected lesson card, budget and confirmation buttons."
+  },
+  "observations": {
+    "horizontalOverflow": "No horizontal clipping or second horizontal scrollbar was visible in the 390px screenshots; long labels wrap within cards and selects.",
+    "focus": "All actionable controls use visible rct-focus-ring styles in owned PCSS; native select, checkbox, textarea and buttons remain keyboard-addressable in AX.",
+    "theme": "Harness rendered the guarded dark palette; owned PCSS also retains the prefers-color-scheme light branch.",
+    "reducedMotion": "Owned PCSS retains prefers-reduced-motion rules that disable control transitions and skeleton animation.",
+    "contrast": "Status, warning, danger and accent text use semantic tokens/guarded fills; disabled controls retain explicit disabled text/surface tokens."
+  },
+  "cleanup": "After Ctrl-C to the owned Vite session, Get-NetTCPConnection reported NO_LISTENERS_18540_18541."
+}

@@ -1,0 +1,18 @@
+{
+  "outcome": "PENDING_CONFIRMATION",
+  "lessonId": "77",
+  "attendance": null,
+  "request": {
+    "id": "request-501",
+    "status": "PENDING",
+    "origin": "AUTO_GEO_FAILURE",
+    "resolutionReason": null
+  },
+  "retryAt": "2026-09-06T08:35:00Z",
+  "serverNow": "2026-09-06T08:30:00Z",
+  "_links": {
+    "today": {
+      "href": "https://ruttrack.example/api/v1/student/today"
+    }
+  }
+}

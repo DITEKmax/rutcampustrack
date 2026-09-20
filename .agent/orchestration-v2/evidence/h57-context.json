@@ -1,0 +1,12 @@
+{
+  "startedAt": "2026-09-19T21:28:51.6290523+03:00",
+  "identity": "ditek-pk\\maksd",
+  "javaHome": "C:\\Users\\maksd\\.jdks\\ms-21.0.10",
+  "java": "openjdk version \"21.0.10\" 2026-01-20 LTS\r\nOpenJDK Runtime Environment Microsoft-13106404 (build 21.0.10+7-LTS)\r\nOpenJDK 64-Bit Server VM Microsoft-13106404 (build 21.0.10+7-LTS, mixed mode, sharing)\r\n",
+  "producerSha256": "DB8A4B84E4D042F72F5E0912C2F270CA063AB4735228CB9299A45748DFAC7A83",
+  "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+  "publicationHarness": false,
+  "faultInjection": false,
+  "sandboxContext": "require_escalated",
+  "manifestPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/build-i6/h57-build/requests-build-manifest.v1.json"
+}

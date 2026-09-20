@@ -58,6 +58,18 @@ describe('HeadmanLateCheckinPage', () => {
           createdAt: '2026-05-01T10:00:00Z',
           updatedAt: '2026-05-02T10:00:00Z',
         },
+        {
+          id: 'lcr-3',
+          studentId: 12,
+          groupId: 5,
+          lessonId: 103,
+          studentName: 'Анна Соколова',
+          status: 'cancelled',
+          decisionBy: null,
+          decisionAt: '2026-05-02T10:05:00Z',
+          createdAt: '2026-05-01T10:00:00Z',
+          updatedAt: '2026-05-02T10:05:00Z',
+        },
       ],
       isLoading: false,
       isError: false,
@@ -87,5 +99,7 @@ describe('HeadmanLateCheckinPage', () => {
     await user.click(screen.getByRole('tab', { name: /решенные/i }))
 
     expect(screen.getByText('Мария Петрова')).toBeInTheDocument()
+    expect(screen.getByText('Анна Соколова')).toBeInTheDocument()
+    expect(screen.getByText('Подтверждено геолокацией')).toBeInTheDocument()
   })
 })

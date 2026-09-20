@@ -1,0 +1,9 @@
+allprojects {
+    afterEvaluate { p ->
+        if (p.path == ':services:mobile-bff:mobile-bff-app') {
+            tasks.register('printTestRuntimeClasspath') {
+                doLast { println p.sourceSets.test.runtimeClasspath.asPath }
+            }
+        }
+    }
+}

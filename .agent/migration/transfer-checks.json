@@ -1,0 +1,53 @@
+﻿{
+    "revision":  "87784165874e2da6fc261abc1c01584e24624289",
+    "branch":  "codex/materials-transfer",
+    "environment":  "Windows PowerShell; documentation-only transfer; application/service runtime is not applicable.",
+    "performed_at":  "2026-09-06T00:01:29.8177895+03:00",
+    "inventory_sha256":  "433ed5f21b37769cc35a569b22f031ca65e5c62afd7aed27c217ac38fc3bacd1",
+    "checks":  [
+                   {
+                       "criterion":  "pre-copy source hash and metadata agree with inventory for every safe copy/duplicate",
+                       "command":  "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .agent/migration/perform-transfer.ps1 -Phase Preflight",
+                       "exit_code":  0,
+                       "result":  "PASS",
+                       "evidence":  ".agent/migration/transfer-preflight.json"
+                   },
+                   {
+                       "criterion":  "all mapped records verify target or stated exclusion/adaptation; exact targets and duplicates hash-match; source drift check",
+                       "command":  "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .agent/migration/verify-transfer.ps1",
+                       "exit_code":  0,
+                       "result":  "PASS",
+                       "evidence":  ".agent/migration/post-transfer-verification.json"
+                   },
+                   {
+                       "criterion":  "protected non-index files are unchanged and original INDEX.md is exact in archive",
+                       "command":  "SHA-256 pre/post comparison in verify-transfer.ps1",
+                       "exit_code":  0,
+                       "result":  "PASS",
+                       "evidence":  ".agent/migration/pre-transfer-baseline.json; docs/archive/transfer-20260905/INDEX.md"
+                   },
+                   {
+                       "criterion":  "independent stable-diff review",
+                       "command":  "independent reviewer /root/transfer_review, Terra high",
+                       "exit_code":  0,
+                       "result":  "PASS",
+                       "evidence":  ".agent/migration/review.md"
+                   },
+                   {
+                       "criterion":  "application/service runtime",
+                       "command":  "not applicable: documentation-only transfer (tests/AGENTS.md)",
+                       "exit_code":  null,
+                       "result":  "SKIPPED",
+                       "evidence":  "No frontend/backend/runtime behavior changed."
+                   }
+               ],
+    "source_inventory_counts":  {
+                                    "exact_canonical":  129,
+                                    "exact_archive":  1017,
+                                    "exact_total":  1146,
+                                    "adapted":  1,
+                                    "duplicates":  1049,
+                                    "exclusions":  34,
+                                    "blocked":  0
+                                }
+}

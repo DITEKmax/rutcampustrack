@@ -255,6 +255,7 @@ tasks.register("verifyLogbackJsonInAllServices") {
         "services/academic-service/academic-app/src/main/resources",
         "services/schedule-service/schedule-app/src/main/resources",
         "services/attendance-service/attendance-app/src/main/resources",
+        "services/mobile-bff/mobile-bff-app/src/main/resources",
         "services/notification-service/notification-app/src/main/resources",
     )
     val expectedInclude = "shared/logback-base.xml"
@@ -294,6 +295,7 @@ val springBootApps = listOf(
     "services/academic-service/academic-app",
     "services/schedule-service/schedule-app",
     "services/attendance-service/attendance-app",
+    "services/mobile-bff/mobile-bff-app",
     "services/notification-service/notification-app",
 )
 

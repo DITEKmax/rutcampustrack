@@ -1,0 +1,21 @@
+import org.gradle.api.tasks.compile.JavaCompile
+
+// H37 diagnostic: target only the Academic app compile task. No source,
+// dependency, cache, global configuration, or other task is changed.
+gradle.projectsEvaluated {
+    def targetProject = gradle.rootProject.findProject(':services:academic-service:academic-app')
+    if (targetProject == null) {
+        throw new GradleException('[H37] target Academic app project is missing')
+    }
+    targetProject.tasks.named('compileJava', JavaCompile).configure { targetJavaCompile ->
+        targetJavaCompile.options.incremental = false
+        targetJavaCompile.doFirst {
+            def sourceFiles = targetJavaCompile.source.files
+            def classpathFiles = targetJavaCompile.classpath.files
+            def missingClasspath = classpathFiles.count { !it.exists() }
+            def languageVersion = targetJavaCompile.javaCompiler.orNull?.metadata?.languageVersion
+            def compiler = targetJavaCompile.javaCompiler.orNull?.metadata?.installationPath?.asFile?.absolutePath
+            logger.lifecycle("[H37] target=${targetProject.path} incremental=${targetJavaCompile.options.incremental} sourceCount=${sourceFiles.size()} classpathEntries=${classpathFiles.size()} classpathMissing=${missingClasspath} toolchainLanguage=${languageVersion ?: 'unknown'} compilerPresent=${compiler != null && !compiler.isEmpty()}")
+        }
+    }
+}

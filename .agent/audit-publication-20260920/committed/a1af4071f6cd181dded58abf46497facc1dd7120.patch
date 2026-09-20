@@ -1,0 +1,3409 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index d3da70d1..e0a94877 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,19 +1,3 @@
+-## Решение владельца 2026-09-13 — orchestration v2
+-
+-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
+-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
+-`CURRENT.md` и свой пакет из той же директории до работы.
+-Это явное project-only решение заменяет несовместимые старые routing-пункты
+-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
+-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
+-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
+-не полагайся на память/наследование. Код только assigned developer, один writer
+-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
+-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
+-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
+-сохраняются; другие проекты/global config не изменяются.
+-
+----
+ # RutCampusTrack — агентная разработка
+ 
+ Это project-specific инструкция Vue/PCSS и BFF. Общий канон Codex для моделей,
+diff --git a/docs/agent-workflow.md b/docs/agent-workflow.md
+index eb62068a..7717f14e 100644
+--- a/docs/agent-workflow.md
++++ b/docs/agent-workflow.md
+@@ -1,19 +1,3 @@
+-## Решение владельца 2026-09-13 — orchestration v2
+-
+-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
+-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
+-`CURRENT.md` и свой пакет из той же директории до работы.
+-Это явное project-only решение заменяет несовместимые старые routing-пункты
+-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
+-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
+-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
+-не полагайся на память/наследование. Код только assigned developer, один writer
+-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
+-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
+-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
+-сохраняются; другие проекты/global config не изменяются.
+-
+----
+ # Агентный workflow RutCampusTrack
+ 
+ ✏️ 06.09.2026, решение владельца. Общий model/risk routing, coordinator layer,
+@@ -38,6 +22,37 @@ baseline/revision; parallel writers используют независимые
+ configs, docs и общий status имеют одного writer. Worktree не изолирует ports, DB
+ и volumes: интегратор выделяет runtime resources и проверяет объединённый diff.
+ 
++## Owner decision — accelerated resume, 09.09.2026
++
++Свежий contract из `.agent/student-role-orchestrator/accelerated-resume-2026-09-09.md`
++и `.agent/student-role-orchestrator/docker-verified-resume-2026-09-09.md`
++отменяет старую паузу для этой партии. Сначала B принимает SQL7 и базовые
++контракты; затем A ждёт принятый B0, C запускает тяжёлый producer после release
++B, а независимые UI/evidence задачи C и D и лёгкий pointer/delete scope E могут
++продолжаться в своих границах. E в worktree `6a61` — единственный владелец
++сквозной интеграции после принятия зависимостей.
++
++`current.md` — единственный статусный источник, которым владеет main. Каждый
++lane публикует короткие сообщения только на milestones `START`, `PASS`, `FAIL`
++и `RELEASE`; task packet остаётся компактным и содержит девять разделов
++contract: Goal, Context/evidence, Relevant scope, Required behavior,
++Constraints, Existing patterns, Acceptance criteria, Verification и Do not.
++Один coherent набор применимых checks выполняется перед независимым review.
++После correction повторяются только затронутые checks; принятые evidence и
++замороженные selectors не перезапускаются ради формата.
++
++Light theme PWA/TMA отложена решением владельца: существующие code и tokens
++сохраняются, новые light-theme изменения и отдельный light-theme QA gate не
++добавляются. Тяжёлые Gradle/Docker операции идут через одну очередь с
++проверкой ownership и release. Выделенные диапазоны: A `18100–18119`, B
++`18210–18211`, C `18540–18541`, D `18300–18319`, E `18401–18402`.
++
++Если Docker named pipe недоступен внутри sandbox, повторяется тот же read-only
++`docker version --format '{{.Server.Version}}'` через обычный `require_escalated`.
++Успешный ответ означает ограничение доступа sandbox, а не outage daemon; отказ
++approval фиксируется как отказ и не обходится. Docker config, credentials и
++secrets не читаются.
++
+ ✏️ 06.09.2026, решение владельца для будущих партий. После freeze API и shared
+ components независимые экраны можно выполнять параллельными fresh Luna max
+ заданиями; затем для каждой роли в партии создаются отдельные задания на
+diff --git a/docs/local-verification.md b/docs/local-verification.md
+new file mode 100644
+index 00000000..ee5e51a9
+--- /dev/null
++++ b/docs/local-verification.md
+@@ -0,0 +1,89 @@
++# Локальная проверка RutCampusTrack
++
++Датировано 09.09.2026. Этот runbook описывает запуск уже установленного набора
++инструментов. Он не устанавливает зависимости и не скачивает их. Сначала
++проверь `git status --short --branch`, сохрани чужой dirty state и открой
++назначенный packet. `.agent/student-role-orchestrator/current.md` — read-only
++статус main; frozen selectors из конкретного task packet имеют приоритет над
++примерами ниже.
++
++## Frontend
++
++Команды запускаются из `frontends`. Используй `.\node_modules\.bin\*.cmd` из
++уже установленного workspace; не используй `npm exec` или `npx`. Если
++`frontends/node_modules/.bin` отсутствует, это BLOCKED prerequisite: зафиксируй
++его и остановись в пределах этого runbook, не устанавливая зависимости.
++
++Vue typecheck всегда получает явный tsconfig:
++
++```powershell
++.\node_modules\.bin\vue-tsc.cmd -p pwa-vue/tsconfig.json --noEmit
++.\node_modules\.bin\vue-tsc.cmd -p tma-vue/tsconfig.json --noEmit
++.\node_modules\.bin\tsc.cmd -p tsconfig.foundation.json --noEmit
++```
++
++Vitest получает явный config соответствующего приложения. Selector берётся из
++замороженного packet, а не расширяется до полной батареи без решения владельца:
++
++```powershell
++.\node_modules\.bin\vitest.cmd run --config pwa/vitest.config.ts <frozen-selector>
++.\node_modules\.bin\vitest.cmd run --config mini-app/vitest.config.ts <frozen-selector>
++.\node_modules\.bin\vitest.cmd run --config web-panel/vitest.config.ts <frozen-selector>
++.\node_modules\.bin\vitest.cmd run --config tma-vue/vite.config.ts tma-vue/src/tma-auth.test.ts
++node --test tma-vue/tests/tma-entry.test.mjs
++```
++
++Пути подтверждены текущими `frontends/package.json`, workspace manifests,
++`pwa-vue/tsconfig.json`, `tma-vue/tsconfig.json`, `pwa/vitest.config.ts`,
++`mini-app/vitest.config.ts` и `web-panel/vitest.config.ts`. Скрипты package.json
++остаются источником состава задачи; явные config/tsconfig в команде не дают
++тест runner-у случайно выбрать соседнее приложение.
++
++## Backend и runtime ownership
++
++Для Gradle используй только wrapper из корня и точный selector frozen packet:
++
++```powershell
++.\gradlew.bat <frozen-task-selector> --no-daemon --no-parallel --max-workers=1 --console=plain
++```
++
++В каждый момент времени активен один тяжёлый Gradle/Docker lease. Сначала
++проверь свободны ли порты и ресурсы lane, затем публикуй `START`; по завершении
++сохрани exit code, XML/лог и хэши, опубликуй `PASS` или `FAIL`, освободи lease и
++публикуй `RELEASE`. Worktree не изолирует ports, DB и volumes. Используй
++диапазоны A `18100–18119`, B `18210–18211`, C `18540–18541`, D `18300–18319`,
++E `18401–18402`; E/`6a61` сохраняет единственное право итоговой интеграции.
++
++Не применяй ad-hoc `javac` classpath, не добавляй selectors и не запускай
++полную батарею вместо frozen command. SQL/base-contracts идут первыми; C
++producer ждёт B release, а итоговый E flow ждёт принятые зависимости.
++
++## Docker access
++
++Read-only preflight:
++
++```powershell
++docker version --format '{{.Server.Version}}'
++```
++
++Если sandbox возвращает Access denied для `//./pipe/docker_engine`, повтори
++ровно эту команду через обычный `require_escalated`. `exit 0` и версия сервера
++доказывают доступ к daemon после разрешения sandbox. Это не повод объявлять
++daemon недоступным и не разрешает читать `C:\Users\...\.docker\config.json`,
++credentials или secrets. Отклонённый approval не обходится; его сохраняют как
++фактический отказ и останавливают зависящий runtime.
++
++## Evidence и границы
++
++Каждый check связывай с criterion и сохраняй revision, cwd, точную command,
++exit code, среду и наблюдаемое evidence. Для integration/runtime добавляй
++свежий XML, лог или browser artifact; оценка количества unit-тестов не закрывает
++end-to-end acceptance. После FAIL сначала запиши reproduction, defect,
++correction и scope, потом запускай ближайший применимый check и независимую
++recheck. WARN/ERROR меняет код только после такой связи с запросом.
++
++Для изменения только workflow-документации runtime продукта не применяется:
++не выполняются build, Gradle, Docker, browser или network checks. Достаточны
++проверка ссылок/путей и `git diff --check`; их exit codes фиксируются в
++`.agent/student-role-orchestrator/workflow-update/`. Light theme остаётся
++DEFERRED: существующие code/tokens не редактируются и новый QA gate не создаётся.
+diff --git a/docs/openapi/mobile-bff.json b/docs/openapi/mobile-bff.json
+index e9e6d025..03c1fec9 100644
+--- a/docs/openapi/mobile-bff.json
++++ b/docs/openapi/mobile-bff.json
+@@ -1,826 +1,1203 @@
+-{
+-  "openapi" : "3.0.1",
+-  "info" : {
+-    "title" : "RutCampusTrack Student Mobile BFF",
+-    "description" : "Canonical PWA/TMA student contract. Domain handlers land after contract freeze.",
+-    "version" : "JS-STUDENT-01-r1"
+-  },
+-  "tags" : [ {
+-    "name" : "Student mobile",
+-    "description" : "PWA/TMA student read model and geo check-in"
+-  } ],
+-  "paths" : {
+-    "/api/v1/student/lessons/{lessonId}/checkin" : {
+-      "post" : {
+-        "tags" : [ "Student mobile" ],
+-        "summary" : "Attempt student geo check-in",
+-        "description" : "The attendance domain owns the window, geofence, cooldown, idempotency and automatic request.",
+-        "operationId" : "checkin",
+-        "parameters" : [ {
+-          "name" : "lessonId",
+-          "in" : "path",
+-          "required" : true,
+-          "schema" : {
+-            "pattern" : "^[1-9][0-9]*$",
+-            "type" : "string"
+-          }
+-        }, {
+-          "name" : "Idempotency-Key",
+-          "in" : "header",
+-          "description" : "Opaque 16-128 ASCII character command key",
+-          "required" : true,
+-          "schema" : {
+-            "maxLength" : 128,
+-            "minLength" : 16,
+-            "pattern" : "^[\\x21-\\x7E]+$",
+-            "type" : "string"
+-          }
+-        } ],
+-        "requestBody" : {
+-          "content" : {
+-            "application/json" : {
+-              "schema" : {
+-                "$ref" : "#/components/schemas/StudentCheckinCommand"
+-              }
+-            }
+-          },
+-          "required" : true
+-        },
+-        "responses" : {
+-          "200" : {
+-            "description" : "PRESENT or atomically persisted PENDING_CONFIRMATION",
+-            "content" : {
+-              "application/json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentCheckinAck"
+-                }
+-              }
+-            }
+-          },
+-          "400" : {
+-            "description" : "Invalid input or idempotency key",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "401" : {
+-            "description" : "Invalid or expired session",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "403" : {
+-            "description" : "Wrong role or group scope",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "404" : {
+-            "description" : "Lesson not found",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "409" : {
+-            "description" : "Manual absence, ineligible state or idempotency payload mismatch",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "429" : {
+-            "description" : "Durable 300-second pair cooldown",
+-            "headers" : {
+-              "Retry-After" : {
+-                "description" : "Whole seconds until retry",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "503" : {
+-            "description" : "Mandatory dependency unavailable",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          }
+-        },
+-        "security" : [ {
+-          "bearerAuth" : [ ]
+-        } ]
+-      }
+-    },
+-    "/api/v1/student/today" : {
+-      "get" : {
+-        "tags" : [ "Student mobile" ],
+-        "summary" : "Today projection with current or nearest lesson",
+-        "operationId" : "getToday",
+-        "responses" : {
+-          "200" : {
+-            "description" : "Live Today projection",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentToday"
+-                }
+-              }
+-            }
+-          },
+-          "401" : {
+-            "description" : "Invalid or expired session",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "403" : {
+-            "description" : "Wrong role or group scope",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "503" : {
+-            "description" : "Mandatory dependency unavailable; eligibility fails closed",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          }
+-        },
+-        "security" : [ {
+-          "bearerAuth" : [ ]
+-        } ]
+-      }
+-    },
+-    "/api/v1/student/session" : {
+-      "get" : {
+-        "tags" : [ "Student mobile" ],
+-        "summary" : "Current student session projection",
+-        "operationId" : "getSession",
+-        "responses" : {
+-          "200" : {
+-            "description" : "Session projection",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "Always no-store",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentSession"
+-                }
+-              }
+-            }
+-          },
+-          "401" : {
+-            "description" : "Invalid or expired session",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "403" : {
+-            "description" : "Active role is not STUDENT",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "503" : {
+-            "description" : "Mandatory dependency unavailable",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          }
+-        },
+-        "security" : [ {
+-          "bearerAuth" : [ ]
+-        } ]
+-      }
+-    },
+-    "/api/v1/student/schedule" : {
+-      "get" : {
+-        "tags" : [ "Student mobile" ],
+-        "summary" : "Server-scoped semester schedule for PWA offline reads",
+-        "operationId" : "getSchedule",
+-        "parameters" : [ {
+-          "name" : "semesterId",
+-          "in" : "query",
+-          "required" : true,
+-          "schema" : {
+-            "pattern" : "^[1-9][0-9]*$",
+-            "type" : "string"
+-          }
+-        }, {
+-          "name" : "If-None-Match",
+-          "in" : "header",
+-          "required" : false,
+-          "schema" : {
+-            "type" : "string"
+-          }
+-        } ],
+-        "responses" : {
+-          "200" : {
+-            "description" : "Materialized lessons in one authorized semester",
+-            "headers" : {
+-              "Cache-Control" : {
+-                "description" : "private, no-cache",
+-                "style" : "simple"
+-              },
+-              "ETag" : {
+-                "description" : "Authorized stable representation validator",
+-                "style" : "simple"
+-              }
+-            },
+-            "content" : {
+-              "application/json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentSemesterSchedule"
+-                }
+-              }
+-            }
+-          },
+-          "304" : {
+-            "description" : "Authorized representation unchanged",
+-            "content" : {
+-              "*/*" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/StudentSemesterSchedule"
+-                }
+-              }
+-            }
+-          },
+-          "401" : {
+-            "description" : "Invalid or expired session",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "403" : {
+-            "description" : "Semester is outside the student's group scope",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          },
+-          "503" : {
+-            "description" : "Mandatory dependency unavailable",
+-            "content" : {
+-              "application/problem+json" : {
+-                "schema" : {
+-                  "$ref" : "#/components/schemas/MobileProblemDetails"
+-                }
+-              }
+-            }
+-          }
+-        },
+-        "security" : [ {
+-          "bearerAuth" : [ ]
+-        } ]
+-      }
+-    }
+-  },
+-  "components" : {
+-    "schemas" : {
+-      "CoordinatesGeo" : {
+-        "required" : [ "kind", "latitude", "longitude" ],
+-        "type" : "object",
+-        "properties" : {
+-          "kind" : {
+-            "type" : "string",
+-            "enum" : [ "COORDINATES" ]
+-          },
+-          "latitude" : {
+-            "maximum" : 90.0,
+-            "exclusiveMaximum" : false,
+-            "minimum" : -90.0,
+-            "exclusiveMinimum" : false,
+-            "type" : "number",
+-            "format" : "double"
+-          },
+-          "longitude" : {
+-            "maximum" : 180.0,
+-            "exclusiveMaximum" : false,
+-            "minimum" : -180.0,
+-            "exclusiveMinimum" : false,
+-            "type" : "number",
+-            "format" : "double"
+-          }
+-        }
+-      },
+-      "GeoInput" : {
+-        "type" : "object",
+-        "discriminator" : {
+-          "propertyName" : "kind",
+-          "mapping" : {
+-            "COORDINATES" : "#/components/schemas/CoordinatesGeo",
+-            "UNAVAILABLE" : "#/components/schemas/UnavailableGeo"
+-          }
+-        },
+-        "oneOf" : [ {
+-          "$ref" : "#/components/schemas/CoordinatesGeo"
+-        }, {
+-          "$ref" : "#/components/schemas/UnavailableGeo"
+-        } ]
+-      },
+-      "StudentCheckinCommand" : {
+-        "required" : [ "geo" ],
+-        "type" : "object",
+-        "properties" : {
+-          "geo" : {
+-            "$ref" : "#/components/schemas/GeoInput"
+-          }
+-        }
+-      },
+-      "UnavailableGeo" : {
+-        "required" : [ "kind", "reason" ],
+-        "type" : "object",
+-        "properties" : {
+-          "kind" : {
+-            "type" : "string",
+-            "enum" : [ "UNAVAILABLE" ]
+-          },
+-          "reason" : {
+-            "type" : "string",
+-            "enum" : [ "PERMISSION_DENIED", "POSITION_UNAVAILABLE", "TIMEOUT" ]
+-          }
+-        }
+-      },
+-      "Attendance" : {
+-        "required" : [ "markedAt", "source", "status" ],
+-        "type" : "object",
+-        "properties" : {
+-          "status" : {
+-            "type" : "string",
+-            "enum" : [ "PRESENT", "ABSENT", "EXCUSED" ]
+-          },
+-          "source" : {
+-            "type" : "string",
+-            "enum" : [ "STUDENT_GEO", "LATE_CHECKIN", "HEADMAN", "TEACHER", "SYSTEM" ]
+-          },
+-          "markedAt" : {
+-            "type" : "string",
+-            "format" : "date-time",
+-            "nullable" : true
+-          }
+-        },
+-        "nullable" : true
+-      },
+-      "AutomaticCheckinRequest" : {
+-        "required" : [ "id", "origin", "resolutionReason", "status" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "status" : {
+-            "type" : "string",
+-            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
+-          },
+-          "origin" : {
+-            "type" : "string",
+-            "enum" : [ "AUTO_GEO_FAILURE" ]
+-          },
+-          "resolutionReason" : {
+-            "type" : "string",
+-            "nullable" : true,
+-            "enum" : [ "GEO_CONFIRMED", "HEADMAN_APPROVED", "HEADMAN_REJECTED", "STUDENT_CANCELLED" ]
+-          }
+-        },
+-        "nullable" : true
+-      },
+-      "Link" : {
+-        "required" : [ "href" ],
+-        "type" : "object",
+-        "properties" : {
+-          "href" : {
+-            "type" : "string",
+-            "format" : "uri"
+-          }
+-        }
+-      },
+-      "StudentCheckinAck" : {
+-        "required" : [ "_links", "attendance", "lessonId", "outcome", "request", "retryAt", "serverNow" ],
+-        "type" : "object",
+-        "properties" : {
+-          "outcome" : {
+-            "type" : "string",
+-            "enum" : [ "PRESENT", "PENDING_CONFIRMATION" ]
+-          },
+-          "lessonId" : {
+-            "type" : "string"
+-          },
+-          "attendance" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/Attendance"
+-            } ]
+-          },
+-          "request" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/AutomaticCheckinRequest"
+-            } ]
+-          },
+-          "retryAt" : {
+-            "type" : "string",
+-            "format" : "date-time",
+-            "nullable" : true
+-          },
+-          "serverNow" : {
+-            "type" : "string",
+-            "format" : "date-time"
+-          },
+-          "_links" : {
+-            "type" : "object",
+-            "additionalProperties" : {
+-              "$ref" : "#/components/schemas/Link"
+-            }
+-          }
+-        }
+-      },
+-      "MobileProblemDetails" : {
+-        "required" : [ "code", "detail", "instance", "status", "timestamp", "title", "type" ],
+-        "type" : "object",
+-        "properties" : {
+-          "status" : {
+-            "type" : "integer",
+-            "format" : "int32"
+-          },
+-          "type" : {
+-            "type" : "string",
+-            "format" : "uri"
+-          },
+-          "title" : {
+-            "type" : "string"
+-          },
+-          "detail" : {
+-            "type" : "string"
+-          },
+-          "instance" : {
+-            "type" : "string",
+-            "format" : "uri"
+-          },
+-          "timestamp" : {
+-            "type" : "string",
+-            "format" : "date-time"
+-          },
+-          "traceId" : {
+-            "type" : "string",
+-            "nullable" : true
+-          },
+-          "code" : {
+-            "type" : "string",
+-            "enum" : [ "INVALID_REQUEST", "INVALID_IDEMPOTENCY_KEY", "INVALID_SESSION", "WRONG_ROLE", "OUT_OF_SCOPE", "LESSON_NOT_FOUND", "CHECKIN_COOLDOWN", "MANUAL_ABSENCE_REQUIRES_APPEAL", "IDEMPOTENCY_PAYLOAD_MISMATCH", "CHECKIN_NOT_ELIGIBLE", "DEPENDENCY_UNAVAILABLE" ]
+-          },
+-          "retryAt" : {
+-            "type" : "string",
+-            "format" : "date-time",
+-            "nullable" : true
+-          },
+-          "extras" : {
+-            "type" : "object",
+-            "additionalProperties" : {
+-              "type" : "string",
+-              "nullable" : true
+-            },
+-            "nullable" : true
+-          }
+-        },
+-        "description" : "RFC 9457 Problem Details with a stable machine code"
+-      },
+-      "CheckinEligibility" : {
+-        "required" : [ "allowed", "reason", "retryAt" ],
+-        "type" : "object",
+-        "properties" : {
+-          "allowed" : {
+-            "type" : "boolean"
+-          },
+-          "reason" : {
+-            "type" : "string",
+-            "enum" : [ "ELIGIBLE", "ALREADY_PRESENT", "LESSON_CANCELLED", "TOO_EARLY", "WINDOW_CLOSED", "GEO_BLOCKED", "PENDING_CONFIRMATION", "COOLDOWN", "HEADMAN_ABSENT_REQUIRES_APPEAL", "HEADMAN_USES_JOURNAL", "DEPENDENCY_UNAVAILABLE" ]
+-          },
+-          "retryAt" : {
+-            "type" : "string",
+-            "format" : "date-time",
+-            "nullable" : true
+-          }
+-        }
+-      },
+-      "LessonSchedule" : {
+-        "required" : [ "date", "endsAt", "id", "lessonNumber", "room", "startsAt", "status", "subject" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "date" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "lessonNumber" : {
+-            "type" : "integer",
+-            "format" : "int32"
+-          },
+-          "startsAt" : {
+-            "type" : "string",
+-            "example" : "14:30:00"
+-          },
+-          "endsAt" : {
+-            "type" : "string",
+-            "example" : "14:30:00"
+-          },
+-          "status" : {
+-            "type" : "string",
+-            "enum" : [ "PLANNED", "ACTIVE", "CLOSED", "CANCELLED" ]
+-          },
+-          "subject" : {
+-            "$ref" : "#/components/schemas/Subject"
+-          },
+-          "room" : {
+-            "$ref" : "#/components/schemas/Room"
+-          }
+-        }
+-      },
+-      "Room" : {
+-        "required" : [ "changeState", "current", "previous" ],
+-        "type" : "object",
+-        "properties" : {
+-          "current" : {
+-            "type" : "string",
+-            "nullable" : true
+-          },
+-          "previous" : {
+-            "type" : "string",
+-            "nullable" : true
+-          },
+-          "changeState" : {
+-            "type" : "string",
+-            "enum" : [ "UNCHANGED", "CHANGED", "UNKNOWN" ]
+-          }
+-        }
+-      },
+-      "StudentToday" : {
+-        "required" : [ "_links", "date", "lessons", "serverNow", "timeZone" ],
+-        "type" : "object",
+-        "properties" : {
+-          "date" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "timeZone" : {
+-            "type" : "string"
+-          },
+-          "serverNow" : {
+-            "type" : "string",
+-            "format" : "date-time"
+-          },
+-          "lessons" : {
+-            "type" : "array",
+-            "items" : {
+-              "$ref" : "#/components/schemas/TodayLesson"
+-            }
+-          },
+-          "_links" : {
+-            "type" : "object",
+-            "additionalProperties" : {
+-              "$ref" : "#/components/schemas/Link"
+-            }
+-          }
+-        }
+-      },
+-      "Subject" : {
+-        "required" : [ "id", "name", "type" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "name" : {
+-            "type" : "string"
+-          },
+-          "type" : {
+-            "type" : "string",
+-            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+-          }
+-        }
+-      },
+-      "TodayLesson" : {
+-        "required" : [ "attendance", "checkinEligibility", "request", "schedule" ],
+-        "type" : "object",
+-        "properties" : {
+-          "schedule" : {
+-            "$ref" : "#/components/schemas/LessonSchedule"
+-          },
+-          "attendance" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/Attendance"
+-            } ]
+-          },
+-          "checkinEligibility" : {
+-            "$ref" : "#/components/schemas/CheckinEligibility"
+-          },
+-          "request" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/AutomaticCheckinRequest"
+-            } ]
+-          }
+-        }
+-      },
+-      "GroupSummary" : {
+-        "required" : [ "id", "name" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "name" : {
+-            "type" : "string"
+-          }
+-        },
+-        "nullable" : true
+-      },
+-      "SemesterSummary" : {
+-        "required" : [ "endsOn", "id", "name", "startsOn" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "name" : {
+-            "type" : "string"
+-          },
+-          "startsOn" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "endsOn" : {
+-            "type" : "string",
+-            "format" : "date"
+-          }
+-        }
+-      },
+-      "StudentSession" : {
+-        "required" : [ "_links", "activeRole", "capabilities", "group", "semester", "serverNow", "user" ],
+-        "type" : "object",
+-        "properties" : {
+-          "user" : {
+-            "$ref" : "#/components/schemas/StudentUser"
+-          },
+-          "activeRole" : {
+-            "type" : "string",
+-            "enum" : [ "STUDENT" ]
+-          },
+-          "group" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/GroupSummary"
+-            } ]
+-          },
+-          "semester" : {
+-            "nullable" : true,
+-            "allOf" : [ {
+-              "$ref" : "#/components/schemas/SemesterSummary"
+-            } ]
+-          },
+-          "capabilities" : {
+-            "type" : "array",
+-            "items" : {
+-              "type" : "string",
+-              "enum" : [ "TODAY", "GEO_CHECKIN", "OFFLINE_SEMESTER_SCHEDULE" ]
+-            }
+-          },
+-          "serverNow" : {
+-            "type" : "string",
+-            "format" : "date-time"
+-          },
+-          "_links" : {
+-            "type" : "object",
+-            "additionalProperties" : {
+-              "$ref" : "#/components/schemas/Link"
+-            }
+-          }
+-        }
+-      },
+-      "StudentUser" : {
+-        "required" : [ "displayName", "id" ],
+-        "type" : "object",
+-        "properties" : {
+-          "id" : {
+-            "type" : "string"
+-          },
+-          "displayName" : {
+-            "type" : "string"
+-          }
+-        }
+-      },
+-      "StudentSemesterSchedule" : {
+-        "required" : [ "_links", "dateFrom", "dateTo", "lessons", "semester", "updatedAt" ],
+-        "type" : "object",
+-        "properties" : {
+-          "semester" : {
+-            "$ref" : "#/components/schemas/SemesterSummary"
+-          },
+-          "dateFrom" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "dateTo" : {
+-            "type" : "string",
+-            "format" : "date"
+-          },
+-          "updatedAt" : {
+-            "type" : "string",
+-            "format" : "date-time"
+-          },
+-          "lessons" : {
+-            "type" : "array",
+-            "items" : {
+-              "$ref" : "#/components/schemas/LessonSchedule"
+-            }
+-          },
+-          "_links" : {
+-            "type" : "object",
+-            "additionalProperties" : {
+-              "$ref" : "#/components/schemas/Link"
+-            }
+-          }
+-        }
+-      }
+-    },
+-    "securitySchemes" : {
+-      "bearerAuth" : {
+-        "type" : "http",
+-        "description" : "Validated access JWT; client X-User-* headers are never identity",
+-        "scheme" : "bearer",
+-        "bearerFormat" : "JWT"
+-      }
+-    }
+-  }
++{
++  "openapi" : "3.0.1",
++  "info" : {
++    "title" : "RutCampusTrack Student Mobile BFF",
++    "description" : "Canonical PWA/TMA student contract. Domain handlers land after contract freeze.",
++    "version" : "JS-STUDENT-01-r1"
++  },
++  "tags" : [ {
++    "name" : "Student mobile",
++    "description" : "PWA/TMA student read model and geo check-in"
++  } ],
++  "paths" : {
++    "/api/v1/student/homework/{id}/completion" : {
++      "put" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Set homework completion state",
++        "description" : "Desired-state mutation for the authenticated student; repeated requests are safe.",
++        "operationId" : "setHomeworkCompletion",
++        "parameters" : [ {
++          "name" : "id",
++          "in" : "path",
++          "required" : true,
++          "schema" : {
++            "pattern" : "^[1-9][0-9]*$",
++            "type" : "string"
++          }
++        } ],
++        "requestBody" : {
++          "content" : {
++            "application/json" : {
++              "schema" : {
++                "$ref" : "#/components/schemas/StudentHomeworkCompletionCommand"
++              }
++            }
++          },
++          "required" : true
++        },
++        "responses" : {
++          "200" : {
++            "description" : "Completion state",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentHomeworkCompletion"
++                }
++              }
++            }
++          },
++          "400" : {
++            "description" : "Invalid request",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Wrong role, group or semester scope",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "404" : {
++            "description" : "Homework not found",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Academic dependency unavailable",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/lessons/{lessonId}/checkin" : {
++      "post" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Attempt student geo check-in",
++        "description" : "The attendance domain owns the window, geofence, cooldown, idempotency and automatic request.",
++        "operationId" : "checkin",
++        "parameters" : [ {
++          "name" : "lessonId",
++          "in" : "path",
++          "required" : true,
++          "schema" : {
++            "pattern" : "^[1-9][0-9]*$",
++            "type" : "string"
++          }
++        }, {
++          "name" : "Idempotency-Key",
++          "in" : "header",
++          "description" : "Opaque 16-128 ASCII character command key",
++          "required" : true,
++          "schema" : {
++            "maxLength" : 128,
++            "minLength" : 16,
++            "pattern" : "^[\\x21-\\x7E]+$",
++            "type" : "string"
++          }
++        } ],
++        "requestBody" : {
++          "content" : {
++            "application/json" : {
++              "schema" : {
++                "$ref" : "#/components/schemas/StudentCheckinCommand"
++              }
++            }
++          },
++          "required" : true
++        },
++        "responses" : {
++          "200" : {
++            "description" : "PRESENT or atomically persisted PENDING_CONFIRMATION",
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentCheckinAck"
++                }
++              }
++            }
++          },
++          "400" : {
++            "description" : "Invalid input or idempotency key",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Wrong role or group scope",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "404" : {
++            "description" : "Lesson not found",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "409" : {
++            "description" : "Manual absence, ineligible state or idempotency payload mismatch",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "429" : {
++            "description" : "Durable 300-second pair cooldown",
++            "headers" : {
++              "Retry-After" : {
++                "description" : "Whole seconds until retry",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Mandatory dependency unavailable",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/today" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Today projection with current or nearest lesson",
++        "operationId" : "getToday",
++        "responses" : {
++          "200" : {
++            "description" : "Live Today projection",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentToday"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Wrong role or group scope",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Mandatory dependency unavailable; eligibility fails closed",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/session" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Current student session projection",
++        "operationId" : "getSession",
++        "responses" : {
++          "200" : {
++            "description" : "Session projection",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentSession"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Active role is not STUDENT",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Mandatory dependency unavailable",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/schedule" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Server-scoped semester schedule for PWA offline reads",
++        "operationId" : "getSchedule",
++        "parameters" : [ {
++          "name" : "semesterId",
++          "in" : "query",
++          "required" : true,
++          "schema" : {
++            "pattern" : "^[1-9][0-9]*$",
++            "type" : "string"
++          }
++        }, {
++          "name" : "If-None-Match",
++          "in" : "header",
++          "required" : false,
++          "schema" : {
++            "type" : "string"
++          }
++        } ],
++        "responses" : {
++          "200" : {
++            "description" : "Materialized lessons in one authorized semester",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "private, no-cache",
++                "style" : "simple"
++              },
++              "ETag" : {
++                "description" : "Authorized stable representation validator",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentSemesterSchedule"
++                }
++              }
++            }
++          },
++          "304" : {
++            "description" : "Authorized representation unchanged",
++            "content" : {
++              "*/*" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentSemesterSchedule"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Semester is outside the student's group scope",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Mandatory dependency unavailable",
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    },
++    "/api/v1/student/homework" : {
++      "get" : {
++        "tags" : [ "Student mobile" ],
++        "summary" : "Student homework feed",
++        "description" : "Active-semester homework for the authenticated student's own group. Missing bounds default to Moscow today through semester end.",
++        "operationId" : "getHomework",
++        "parameters" : [ {
++          "name" : "from",
++          "in" : "query",
++          "required" : false,
++          "schema" : {
++            "pattern" : "^\\d{4}-\\d{2}-\\d{2}$",
++            "type" : "string"
++          }
++        }, {
++          "name" : "to",
++          "in" : "query",
++          "required" : false,
++          "schema" : {
++            "pattern" : "^\\d{4}-\\d{2}-\\d{2}$",
++            "type" : "string"
++          }
++        } ],
++        "responses" : {
++          "200" : {
++            "description" : "Homework feed",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/StudentHomework"
++                }
++              }
++            }
++          },
++          "400" : {
++            "description" : "Invalid or out-of-semester date range",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "401" : {
++            "description" : "Invalid or expired session",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "403" : {
++            "description" : "Wrong role or group scope",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "404" : {
++            "description" : "Homework scope was not found",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          },
++          "503" : {
++            "description" : "Academic dependency unavailable",
++            "headers" : {
++              "Cache-Control" : {
++                "description" : "Always no-store",
++                "style" : "simple"
++              }
++            },
++            "content" : {
++              "application/problem+json" : {
++                "schema" : {
++                  "$ref" : "#/components/schemas/MobileProblemDetails"
++                }
++              }
++            }
++          }
++        },
++        "security" : [ {
++          "bearerAuth" : [ ]
++        } ]
++      }
++    }
++  },
++  "components" : {
++    "schemas" : {
++      "StudentHomeworkCompletionCommand" : {
++        "required" : [ "completed" ],
++        "type" : "object",
++        "properties" : {
++          "completed" : {
++            "type" : "boolean"
++          }
++        }
++      },
++      "StudentHomeworkCompletion" : {
++        "required" : [ "completed", "completedAt", "id" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "completed" : {
++            "type" : "boolean"
++          },
++          "completedAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          }
++        }
++      },
++      "MobileProblemDetails" : {
++        "required" : [ "code", "detail", "instance", "status", "timestamp", "title", "type" ],
++        "type" : "object",
++        "properties" : {
++          "status" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "type" : {
++            "type" : "string",
++            "format" : "uri"
++          },
++          "title" : {
++            "type" : "string"
++          },
++          "detail" : {
++            "type" : "string"
++          },
++          "instance" : {
++            "type" : "string",
++            "format" : "uri"
++          },
++          "timestamp" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "traceId" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "code" : {
++            "type" : "string",
++            "enum" : [ "INVALID_REQUEST", "INVALID_IDEMPOTENCY_KEY", "INVALID_SESSION", "WRONG_ROLE", "OUT_OF_SCOPE", "HOMEWORK_NOT_FOUND", "LESSON_NOT_FOUND", "CHECKIN_COOLDOWN", "MANUAL_ABSENCE_REQUIRES_APPEAL", "IDEMPOTENCY_PAYLOAD_MISMATCH", "CHECKIN_NOT_ELIGIBLE", "DEPENDENCY_UNAVAILABLE" ]
++          },
++          "retryAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          },
++          "extras" : {
++            "type" : "object",
++            "additionalProperties" : {
++              "type" : "string",
++              "nullable" : true
++            },
++            "nullable" : true
++          }
++        },
++        "description" : "RFC 9457 Problem Details with a stable machine code"
++      },
++      "CoordinatesGeo" : {
++        "required" : [ "kind", "latitude", "longitude" ],
++        "type" : "object",
++        "properties" : {
++          "kind" : {
++            "type" : "string",
++            "enum" : [ "COORDINATES" ]
++          },
++          "latitude" : {
++            "maximum" : 90.0,
++            "exclusiveMaximum" : false,
++            "minimum" : -90.0,
++            "exclusiveMinimum" : false,
++            "type" : "number",
++            "format" : "double"
++          },
++          "longitude" : {
++            "maximum" : 180.0,
++            "exclusiveMaximum" : false,
++            "minimum" : -180.0,
++            "exclusiveMinimum" : false,
++            "type" : "number",
++            "format" : "double"
++          }
++        }
++      },
++      "GeoInput" : {
++        "type" : "object",
++        "discriminator" : {
++          "propertyName" : "kind",
++          "mapping" : {
++            "COORDINATES" : "#/components/schemas/CoordinatesGeo",
++            "UNAVAILABLE" : "#/components/schemas/UnavailableGeo"
++          }
++        },
++        "oneOf" : [ {
++          "$ref" : "#/components/schemas/CoordinatesGeo"
++        }, {
++          "$ref" : "#/components/schemas/UnavailableGeo"
++        } ]
++      },
++      "StudentCheckinCommand" : {
++        "required" : [ "geo" ],
++        "type" : "object",
++        "properties" : {
++          "geo" : {
++            "$ref" : "#/components/schemas/GeoInput"
++          }
++        }
++      },
++      "UnavailableGeo" : {
++        "required" : [ "kind", "reason" ],
++        "type" : "object",
++        "properties" : {
++          "kind" : {
++            "type" : "string",
++            "enum" : [ "UNAVAILABLE" ]
++          },
++          "reason" : {
++            "type" : "string",
++            "enum" : [ "PERMISSION_DENIED", "POSITION_UNAVAILABLE", "TIMEOUT" ]
++          }
++        }
++      },
++      "Attendance" : {
++        "required" : [ "markedAt", "source", "status" ],
++        "type" : "object",
++        "properties" : {
++          "status" : {
++            "type" : "string",
++            "enum" : [ "PRESENT", "ABSENT", "EXCUSED" ]
++          },
++          "source" : {
++            "type" : "string",
++            "enum" : [ "STUDENT_GEO", "LATE_CHECKIN", "HEADMAN", "TEACHER", "SYSTEM" ]
++          },
++          "markedAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          }
++        },
++        "nullable" : true
++      },
++      "AutomaticCheckinRequest" : {
++        "required" : [ "id", "origin", "resolutionReason", "status" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "status" : {
++            "type" : "string",
++            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
++          },
++          "origin" : {
++            "type" : "string",
++            "enum" : [ "AUTO_GEO_FAILURE" ]
++          },
++          "resolutionReason" : {
++            "type" : "string",
++            "nullable" : true,
++            "enum" : [ "GEO_CONFIRMED", "HEADMAN_APPROVED", "HEADMAN_REJECTED", "STUDENT_CANCELLED" ]
++          }
++        },
++        "nullable" : true
++      },
++      "Link" : {
++        "required" : [ "href" ],
++        "type" : "object",
++        "properties" : {
++          "href" : {
++            "type" : "string",
++            "format" : "uri"
++          }
++        }
++      },
++      "StudentCheckinAck" : {
++        "required" : [ "_links", "attendance", "lessonId", "outcome", "request", "retryAt", "serverNow" ],
++        "type" : "object",
++        "properties" : {
++          "outcome" : {
++            "type" : "string",
++            "enum" : [ "PRESENT", "PENDING_CONFIRMATION" ]
++          },
++          "lessonId" : {
++            "type" : "string"
++          },
++          "attendance" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/Attendance"
++            } ]
++          },
++          "request" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/AutomaticCheckinRequest"
++            } ]
++          },
++          "retryAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          },
++          "serverNow" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "_links" : {
++            "type" : "object",
++            "additionalProperties" : {
++              "$ref" : "#/components/schemas/Link"
++            }
++          }
++        }
++      },
++      "CheckinEligibility" : {
++        "required" : [ "allowed", "reason", "retryAt" ],
++        "type" : "object",
++        "properties" : {
++          "allowed" : {
++            "type" : "boolean"
++          },
++          "reason" : {
++            "type" : "string",
++            "enum" : [ "ELIGIBLE", "ALREADY_PRESENT", "LESSON_CANCELLED", "TOO_EARLY", "WINDOW_CLOSED", "GEO_BLOCKED", "PENDING_CONFIRMATION", "COOLDOWN", "HEADMAN_ABSENT_REQUIRES_APPEAL", "HEADMAN_USES_JOURNAL", "DEPENDENCY_UNAVAILABLE" ]
++          },
++          "retryAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          }
++        }
++      },
++      "LessonSchedule" : {
++        "required" : [ "date", "endsAt", "id", "lessonNumber", "room", "startsAt", "status", "subject" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "date" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "lessonNumber" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "startsAt" : {
++            "type" : "string",
++            "example" : "14:30:00"
++          },
++          "endsAt" : {
++            "type" : "string",
++            "example" : "14:30:00"
++          },
++          "status" : {
++            "type" : "string",
++            "enum" : [ "PLANNED", "ACTIVE", "CLOSED", "CANCELLED" ]
++          },
++          "subject" : {
++            "$ref" : "#/components/schemas/Subject"
++          },
++          "room" : {
++            "$ref" : "#/components/schemas/Room"
++          }
++        }
++      },
++      "Room" : {
++        "required" : [ "changeState", "current", "previous" ],
++        "type" : "object",
++        "properties" : {
++          "current" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "previous" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "changeState" : {
++            "type" : "string",
++            "enum" : [ "UNCHANGED", "CHANGED", "UNKNOWN" ]
++          }
++        }
++      },
++      "StudentToday" : {
++        "required" : [ "_links", "date", "lessons", "serverNow", "timeZone" ],
++        "type" : "object",
++        "properties" : {
++          "date" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "timeZone" : {
++            "type" : "string"
++          },
++          "serverNow" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "lessons" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/TodayLesson"
++            }
++          },
++          "_links" : {
++            "type" : "object",
++            "additionalProperties" : {
++              "$ref" : "#/components/schemas/Link"
++            }
++          }
++        }
++      },
++      "Subject" : {
++        "required" : [ "id", "name", "type" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "name" : {
++            "type" : "string"
++          },
++          "type" : {
++            "type" : "string",
++            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
++          }
++        }
++      },
++      "TodayLesson" : {
++        "required" : [ "attendance", "checkinEligibility", "request", "schedule" ],
++        "type" : "object",
++        "properties" : {
++          "schedule" : {
++            "$ref" : "#/components/schemas/LessonSchedule"
++          },
++          "attendance" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/Attendance"
++            } ]
++          },
++          "checkinEligibility" : {
++            "$ref" : "#/components/schemas/CheckinEligibility"
++          },
++          "request" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/AutomaticCheckinRequest"
++            } ]
++          }
++        }
++      },
++      "GroupSummary" : {
++        "required" : [ "id", "name" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "name" : {
++            "type" : "string"
++          }
++        },
++        "nullable" : true
++      },
++      "SemesterSummary" : {
++        "required" : [ "endsOn", "id", "name", "startsOn" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "name" : {
++            "type" : "string"
++          },
++          "startsOn" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "endsOn" : {
++            "type" : "string",
++            "format" : "date"
++          }
++        }
++      },
++      "StudentSession" : {
++        "required" : [ "_links", "activeRole", "capabilities", "group", "semester", "serverNow", "user" ],
++        "type" : "object",
++        "properties" : {
++          "user" : {
++            "$ref" : "#/components/schemas/StudentUser"
++          },
++          "activeRole" : {
++            "type" : "string",
++            "enum" : [ "STUDENT" ]
++          },
++          "group" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/GroupSummary"
++            } ]
++          },
++          "semester" : {
++            "nullable" : true,
++            "allOf" : [ {
++              "$ref" : "#/components/schemas/SemesterSummary"
++            } ]
++          },
++          "capabilities" : {
++            "type" : "array",
++            "items" : {
++              "type" : "string",
++              "enum" : [ "TODAY", "GEO_CHECKIN", "OFFLINE_SEMESTER_SCHEDULE" ]
++            }
++          },
++          "serverNow" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "_links" : {
++            "type" : "object",
++            "additionalProperties" : {
++              "$ref" : "#/components/schemas/Link"
++            }
++          }
++        }
++      },
++      "StudentUser" : {
++        "required" : [ "displayName", "id" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "displayName" : {
++            "type" : "string"
++          }
++        }
++      },
++      "StudentSemesterSchedule" : {
++        "required" : [ "_links", "dateFrom", "dateTo", "lessons", "semester", "updatedAt" ],
++        "type" : "object",
++        "properties" : {
++          "semester" : {
++            "$ref" : "#/components/schemas/SemesterSummary"
++          },
++          "dateFrom" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "dateTo" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "updatedAt" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "lessons" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/LessonSchedule"
++            }
++          },
++          "_links" : {
++            "type" : "object",
++            "additionalProperties" : {
++              "$ref" : "#/components/schemas/Link"
++            }
++          }
++        }
++      },
++      "StudentHomework" : {
++        "required" : [ "from", "items", "semester", "serverNow", "to" ],
++        "type" : "object",
++        "properties" : {
++          "semester" : {
++            "$ref" : "#/components/schemas/StudentHomeworkSemester"
++          },
++          "from" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "to" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "serverNow" : {
++            "type" : "string",
++            "format" : "date-time"
++          },
++          "items" : {
++            "type" : "array",
++            "items" : {
++              "$ref" : "#/components/schemas/StudentHomeworkItem"
++            }
++          }
++        }
++      },
++      "StudentHomeworkItem" : {
++        "required" : [ "completed", "completedAt", "description", "id", "lessonDate", "lessonNumber", "link", "subject", "title" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "subject" : {
++            "$ref" : "#/components/schemas/StudentHomeworkSubject"
++          },
++          "title" : {
++            "type" : "string"
++          },
++          "description" : {
++            "type" : "string"
++          },
++          "link" : {
++            "type" : "string",
++            "nullable" : true
++          },
++          "lessonDate" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "lessonNumber" : {
++            "type" : "integer",
++            "format" : "int32"
++          },
++          "completed" : {
++            "type" : "boolean"
++          },
++          "completedAt" : {
++            "type" : "string",
++            "format" : "date-time",
++            "nullable" : true
++          }
++        }
++      },
++      "StudentHomeworkSemester" : {
++        "required" : [ "dateFrom", "dateTo", "id", "name" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "name" : {
++            "type" : "string"
++          },
++          "dateFrom" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "dateTo" : {
++            "type" : "string",
++            "format" : "date"
++          }
++        }
++      },
++      "StudentHomeworkSubject" : {
++        "required" : [ "id", "name" ],
++        "type" : "object",
++        "properties" : {
++          "id" : {
++            "type" : "string"
++          },
++          "name" : {
++            "type" : "string"
++          }
++        }
++      }
++    },
++    "securitySchemes" : {
++      "bearerAuth" : {
++        "type" : "http",
++        "description" : "Validated access JWT; client X-User-* headers are never identity",
++        "scheme" : "bearer",
++        "bearerFormat" : "JWT"
++      }
++    }
++  }
+ }
+diff --git a/frontends/AGENTS.md b/frontends/AGENTS.md
+index f0b2065a..575cc7eb 100644
+--- a/frontends/AGENTS.md
++++ b/frontends/AGENTS.md
+@@ -1,19 +1,3 @@
+-## Решение владельца 2026-09-13 — orchestration v2
+-
+-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
+-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
+-`CURRENT.md` и свой пакет из той же директории до работы.
+-Это явное project-only решение заменяет несовместимые старые routing-пункты
+-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
+-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
+-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
+-не полагайся на память/наследование. Код только assigned developer, один writer
+-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
+-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
+-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
+-сохраняются; другие проекты/global config не изменяются.
+-
+----
+ # Vue / PCSS
+ 
+ - Vue и strict TypeScript: страницы компонуют features; transport, состояние и
+diff --git a/frontends/mobile-core/fixtures/homework-completion-completed.json b/frontends/mobile-core/fixtures/homework-completion-completed.json
+new file mode 100644
+index 00000000..01366911
+--- /dev/null
++++ b/frontends/mobile-core/fixtures/homework-completion-completed.json
+@@ -0,0 +1,5 @@
++{
++  "id": "142",
++  "completed": true,
++  "completedAt": "2026-09-07T09:30:00Z"
++}
+diff --git a/frontends/mobile-core/fixtures/homework-completion-undone.json b/frontends/mobile-core/fixtures/homework-completion-undone.json
+new file mode 100644
+index 00000000..96d5d176
+--- /dev/null
++++ b/frontends/mobile-core/fixtures/homework-completion-undone.json
+@@ -0,0 +1,5 @@
++{
++  "id": "848636",
++  "completed": false,
++  "completedAt": null
++}
+diff --git a/frontends/mobile-core/fixtures/homework-feed.json b/frontends/mobile-core/fixtures/homework-feed.json
+new file mode 100644
+index 00000000..d67280ed
+--- /dev/null
++++ b/frontends/mobile-core/fixtures/homework-feed.json
+@@ -0,0 +1,41 @@
++{
++  "semester": {
++    "id": "9",
++    "name": "Осень 2026",
++    "dateFrom": "2026-09-01",
++    "dateTo": "2026-12-31"
++  },
++  "from": "2026-09-01",
++  "to": "2026-09-30",
++  "serverNow": "2026-09-07T09:30:00Z",
++  "items": [
++    {
++      "id": "142",
++      "subject": {
++        "id": "101",
++        "name": "Основы программирования"
++      },
++      "title": "Практика по алгоритмам",
++      "description": "Решить задачи из методички.",
++      "link": "https://ruttrack.example/homework/142",
++      "lessonDate": "2026-09-01",
++      "lessonNumber": 1,
++      "completed": true,
++      "completedAt": "2026-09-07T09:30:00Z"
++    },
++    {
++      "id": "848636",
++      "subject": {
++        "id": "102",
++        "name": "Компьютерные сети"
++      },
++      "title": "Отчёт по лабораторной",
++      "description": "Оформить результаты эксперимента.",
++      "link": null,
++      "lessonDate": "2026-09-02",
++      "lessonNumber": 2,
++      "completed": false,
++      "completedAt": null
++    }
++  ]
++}
+diff --git a/frontends/mobile-core/fixtures/manifest.json b/frontends/mobile-core/fixtures/manifest.json
+index 8ef9cee2..f1caee72 100644
+--- a/frontends/mobile-core/fixtures/manifest.json
++++ b/frontends/mobile-core/fixtures/manifest.json
+@@ -36,6 +36,18 @@
+     {
+       "file": "problem-cooldown.json",
+       "schema": "MobileProblemDetails"
++    },
++    {
++      "file": "homework-feed.json",
++      "schema": "StudentHomework"
++    },
++    {
++      "file": "homework-completion-completed.json",
++      "schema": "StudentHomeworkCompletion"
++    },
++    {
++      "file": "homework-completion-undone.json",
++      "schema": "StudentHomeworkCompletion"
+     }
+   ]
+ }
+diff --git a/frontends/mobile-core/src/api/generated/mobile-bff.ts b/frontends/mobile-core/src/api/generated/mobile-bff.ts
+index d8128944..5467eb17 100644
+--- a/frontends/mobile-core/src/api/generated/mobile-bff.ts
++++ b/frontends/mobile-core/src/api/generated/mobile-bff.ts
+@@ -1,8 +1,48 @@
+ /* eslint-disable */
+ // Generated from docs/openapi/mobile-bff.json. Do not edit.
+-// Contract: JS-STUDENT-01-r1; SHA-256: c89b30f7fb9ee652e5c38e1bbffdab7e8c152aa994b4c4f9b273263ad5efd508
++// Contract: JS-STUDENT-01-r1; SHA-256: cc22aaf4518392cb0aa792166d4bdd8d4071958bd82d0c2bcc990b6d6924d363
+ 
+ export interface paths {
++    "/api/v1/student/homework": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /**
++         * Student homework feed
++         * @description Active-semester homework for the authenticated student's own group. Missing bounds default to Moscow today through semester end.
++         */
++        get: operations["getHomework"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
++    [path: `/api/v1/student/homework/${string}/completion`]: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        get?: never;
++        /**
++         * Set homework completion state
++         * @description Desired-state mutation for the authenticated student; repeated requests are safe.
++         */
++        put: operations["setHomeworkCompletion"];
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+     [path: `/api/v1/student/lessons/${string}/checkin`]: {
+         parameters: {
+             query?: never;
+@@ -140,7 +180,7 @@ export interface components {
+         /** @description RFC 9457 Problem Details with a stable machine code */
+         MobileProblemDetails: {
+             /** @enum {string} */
+-            code: "INVALID_REQUEST" | "INVALID_IDEMPOTENCY_KEY" | "INVALID_SESSION" | "WRONG_ROLE" | "OUT_OF_SCOPE" | "LESSON_NOT_FOUND" | "CHECKIN_COOLDOWN" | "MANUAL_ABSENCE_REQUIRES_APPEAL" | "IDEMPOTENCY_PAYLOAD_MISMATCH" | "CHECKIN_NOT_ELIGIBLE" | "DEPENDENCY_UNAVAILABLE";
++            code: "INVALID_REQUEST" | "INVALID_IDEMPOTENCY_KEY" | "INVALID_SESSION" | "WRONG_ROLE" | "OUT_OF_SCOPE" | "HOMEWORK_NOT_FOUND" | "LESSON_NOT_FOUND" | "CHECKIN_COOLDOWN" | "MANUAL_ABSENCE_REQUIRES_APPEAL" | "IDEMPOTENCY_PAYLOAD_MISMATCH" | "CHECKIN_NOT_ELIGIBLE" | "DEPENDENCY_UNAVAILABLE";
+             detail: string;
+             extras?: {
+                 [key: string]: string | null;
+@@ -189,6 +229,51 @@ export interface components {
+         StudentCheckinCommand: {
+             geo: components["schemas"]["GeoInput"];
+         };
++        StudentHomework: {
++            /** Format: date */
++            from: string;
++            items: components["schemas"]["StudentHomeworkItem"][];
++            semester: components["schemas"]["StudentHomeworkSemester"];
++            /** Format: date-time */
++            serverNow: string;
++            /** Format: date */
++            to: string;
++        };
++        StudentHomeworkCompletion: {
++            completed: boolean;
++            /** Format: date-time */
++            completedAt: string | null;
++            id: string;
++        };
++        StudentHomeworkCompletionCommand: {
++            completed: boolean;
++        };
++        StudentHomeworkItem: {
++            completed: boolean;
++            /** Format: date-time */
++            completedAt: string | null;
++            description: string;
++            id: string;
++            /** Format: date */
++            lessonDate: string;
++            /** Format: int32 */
++            lessonNumber: number;
++            link: string | null;
++            subject: components["schemas"]["StudentHomeworkSubject"];
++            title: string;
++        };
++        StudentHomeworkSemester: {
++            /** Format: date */
++            dateFrom: string;
++            /** Format: date */
++            dateTo: string;
++            id: string;
++            name: string;
++        };
++        StudentHomeworkSubject: {
++            id: string;
++            name: string;
++        };
+         StudentSemesterSchedule: {
+             _links: {
+                 [key: string]: components["schemas"]["Link"];
+@@ -260,6 +345,169 @@ export interface components {
+ }
+ export type $defs = Record<string, never>;
+ export interface operations {
++    getHomework: {
++        parameters: {
++            query?: {
++                from?: string;
++                to?: string;
++            };
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Homework feed */
++            200: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["StudentHomework"];
++                };
++            };
++            /** @description Invalid or out-of-semester date range */
++            400: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Invalid or expired session */
++            401: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Wrong role or group scope */
++            403: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Homework scope was not found */
++            404: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Academic dependency unavailable */
++            503: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++        };
++    };
++    setHomeworkCompletion: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path: {
++                id: string;
++            };
++            cookie?: never;
++        };
++        requestBody: {
++            content: {
++                "application/json": components["schemas"]["StudentHomeworkCompletionCommand"];
++            };
++        };
++        responses: {
++            /** @description Completion state */
++            200: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["StudentHomeworkCompletion"];
++                };
++            };
++            /** @description Invalid request */
++            400: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Invalid or expired session */
++            401: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Wrong role, group or semester scope */
++            403: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Homework not found */
++            404: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++            /** @description Academic dependency unavailable */
++            503: {
++                headers: {
++                    /** @description Always no-store */
++                    "Cache-Control"?: unknown;
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
++                };
++            };
++        };
++    };
+     checkin: {
+         parameters: {
+             query?: never;
+diff --git a/frontends/mobile-core/src/api/student-client.ts b/frontends/mobile-core/src/api/student-client.ts
+index 45fdeeab..32e8b5c4 100644
+--- a/frontends/mobile-core/src/api/student-client.ts
++++ b/frontends/mobile-core/src/api/student-client.ts
+@@ -2,6 +2,9 @@ import type {
+   MobileProblemDetails,
+   StudentCheckinAck,
+   StudentCheckinCommand,
++  StudentHomework,
++  StudentHomeworkCompletion,
++  StudentHomeworkCompletionCommand,
+   StudentSemesterSchedule,
+   StudentSession,
+   StudentToday,
+@@ -47,6 +50,21 @@ export class StudentApi {
+       }))
+   }
+ 
++  getHomework(from?: string, to?: string): Promise<StudentHomework> {
++    const params = new URLSearchParams()
++    if (from) params.set('from', from)
++    if (to) params.set('to', to)
++    const query = params.toString()
++    return this.request(`/api/v1/student/homework${query ? `?${query}` : ''}`)
++  }
++
++  setHomeworkCompletion(id: string, command: StudentHomeworkCompletionCommand): Promise<StudentHomeworkCompletion> {
++    return this.request(`/api/v1/student/homework/${encodeURIComponent(id)}/completion`, {
++      method: 'PUT',
++      body: JSON.stringify(command),
++    })
++  }
++
+   checkin(lessonId: string, command: StudentCheckinCommand, idempotencyKey: string): Promise<StudentCheckinAck> {
+     return this.request(`/api/v1/student/lessons/${encodeURIComponent(lessonId)}/checkin`, {
+       method: 'POST',
+diff --git a/frontends/mobile-core/src/api/types.ts b/frontends/mobile-core/src/api/types.ts
+index 7c6fbc42..4e7e7244 100644
+--- a/frontends/mobile-core/src/api/types.ts
++++ b/frontends/mobile-core/src/api/types.ts
+@@ -5,6 +5,10 @@ export type StudentToday = components['schemas']['StudentToday']
+ export type TodayLesson = components['schemas']['TodayLesson']
+ export type LessonSchedule = components['schemas']['LessonSchedule']
+ export type StudentSemesterSchedule = components['schemas']['StudentSemesterSchedule']
++export type StudentHomework = components['schemas']['StudentHomework']
++export type StudentHomeworkItem = components['schemas']['StudentHomeworkItem']
++export type StudentHomeworkCompletionCommand = components['schemas']['StudentHomeworkCompletionCommand']
++export type StudentHomeworkCompletion = components['schemas']['StudentHomeworkCompletion']
+ export type StudentCheckinAck = components['schemas']['StudentCheckinAck']
+ export type StudentCheckinCommand = components['schemas']['StudentCheckinCommand']
+ export type MobileProblemDetails = components['schemas']['MobileProblemDetails']
+diff --git a/frontends/mobile-core/src/features/today/TodayScreen.vue b/frontends/mobile-core/src/features/today/TodayScreen.vue
+index 000a25e4..909f4b4f 100644
+--- a/frontends/mobile-core/src/features/today/TodayScreen.vue
++++ b/frontends/mobile-core/src/features/today/TodayScreen.vue
+@@ -2,15 +2,17 @@
+ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+ import { countdownLabel, eligibilityLabel, remainingSeconds } from '../../domain/checkin'
+ import type { StudentSemesterSchedule, StudentToday, TodayLesson } from '../../api/types'
+-import attendanceTab from '../../assets/attendance-tab.svg'
+ import chevronDown from '../../assets/chevron-down.svg'
+ import lessonTypeDark from '../../assets/lesson-type-dark.svg'
+ import lessonTypeLight from '../../assets/lesson-type-light.svg'
+-import moreTab from '../../assets/more-tab.svg'
+-import profileTab from '../../assets/profile-tab.svg'
+ import roomChangeStrike from '../../assets/room-change-strike.svg'
+ import roomDark from '../../assets/room-dark.svg'
+ import roomLight from '../../assets/room-light.svg'
++import MobileShell from '../../shared/components/MobileShell.vue'
++import { rootRoute, type MobileBottomNavItems, type MobileRootRouteId } from '../../shared/navigation'
++import attendanceTab from '../../assets/attendance-tab.svg'
++import moreTab from '../../assets/more-tab.svg'
++import profileTab from '../../assets/profile-tab.svg'
+ import scheduleTab from '../../assets/schedule-tab.svg'
+ import todayTabActive from '../../assets/today-tab-active.svg'
+ import './today-screen.pcss'
+@@ -24,9 +26,24 @@ const props = defineProps<{
+   submittingLessonId: string | null
+   semesterSchedule: StudentSemesterSchedule | null
+   selectedDate: string
++  keyboardVisible?: boolean
++}>()
++
++const emit = defineEmits<{
++  checkin: [lesson: TodayLesson]
++  selectDate: [date: string]
++  navigate: [route: MobileRootRouteId]
+ }>()
+ 
+-const emit = defineEmits<{ checkin: [lesson: TodayLesson]; selectDate: [date: string] }>()
++const todayRoute = rootRoute('today')
++const todayNavigationItems = [
++  { id: 'today', label: 'Сегодня', icon: todayTabActive, route: 'today' },
++  { id: 'homework', label: 'Задания', icon: scheduleTab, route: 'homework', disabled: true, disabledReason: 'Раздел пока недоступен' },
++  { id: 'attendance', label: 'Учёт', accessibleLabel: 'Посещаемость', icon: attendanceTab, route: 'attendance', disabled: true, disabledReason: 'Раздел пока недоступен' },
++  { id: 'more', label: 'Ещё', icon: moreTab, route: 'more', disabled: true, disabledReason: 'Раздел пока недоступен' },
++  { id: 'profile', label: 'Профиль', icon: profileTab, route: 'profile', disabled: true, disabledReason: 'Раздел пока недоступен' },
++] as const satisfies MobileBottomNavItems
++
+ const now = ref(Date.now())
+ let timer: number | null = null
+ 
+@@ -102,270 +119,212 @@ function semesterDate(date: string): string {
+ </script>
+ 
+ <template>
+-  <main
+-    class="today-shell"
+-    aria-labelledby="today-title"
++  <MobileShell
++    :route="todayRoute"
++    :nav-items="todayNavigationItems"
++    active-id="today"
++    :keyboard-visible="keyboardVisible"
++    @navigate="emit('navigate', $event)"
+   >
+-    <header class="today-topbar">
+-      <button
+-        class="today-role"
+-        type="button"
+-        disabled
+-        aria-label="Активная роль: студент"
+-      >
+-        Студент
+-        <img
+-          :src="chevronDown"
+-          alt=""
+-          aria-hidden="true"
+-        >
+-      </button>
+-      <h1
+-        id="today-title"
+-        class="today-visually-hidden"
+-      >
+-        Сегодня
+-      </h1>
+-      <p
+-        v-if="offline"
+-        class="today-offline"
+-        role="status"
+-      >
+-        Офлайн · данные обновлены {{ updatedAt ? new Date(updatedAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : 'ранее' }}
+-      </p>
+-    </header>
+-
+-    <section
+-      v-if="loading"
+-      class="today-state"
+-      aria-live="polite"
++    <main
++      class="today-shell"
++      aria-labelledby="today-title"
+     >
+-      <span
+-        class="today-state__spinner"
+-        aria-hidden="true"
+-      />
+-      Загружаем сегодняшнее расписание…
+-    </section>
+-    <section
+-      v-else-if="error"
+-      class="today-state today-state--error"
+-      role="alert"
+-    >
+-      <h2>Не удалось получить данные</h2>
+-      <p>{{ error }}</p>
+-    </section>
+-    <section
+-      v-else-if="!hero"
+-      class="today-state"
+-    >
+-      <h2>На сегодня пар нет</h2>
+-      <p>Следи за расписанием, когда появится следующая пара.</p>
+-    </section>
+-    <template v-else>
+-      <section
+-        class="today-hero"
+-        :data-state="isPending(hero) ? 'pending' : isConfirmed(hero) ? 'confirmed' : 'default'"
+-        aria-label="Текущая или ближайшая пара"
+-      >
+-        <p class="today-hero__time">
+-          {{ lessonTime(hero) }}
+-        </p>
+-        <h2>{{ hero.schedule.subject.name }}</h2>
+-        <div class="today-hero__metadata">
+-          <p>
+-            <img
+-              :src="heroRoomIcon(hero)"
+-              alt=""
+-              aria-hidden="true"
+-            >
+-            {{ hero.schedule.room.current ?? 'Аудитория уточняется' }}
+-          </p>
+-          <p>
+-            <img
+-              :src="heroKindIcon(hero)"
+-              alt=""
+-              aria-hidden="true"
+-            >
+-            {{ lessonKind(hero) }}
+-          </p>
+-        </div>
++      <header class="today-topbar">
+         <button
+-          class="today-hero__action"
++          class="today-role"
+           type="button"
+-          :disabled="!canCheckin(hero)"
+-          @click="emit('checkin', hero)"
++          disabled
++          aria-label="Активная роль: студент"
+         >
+-          <span
+-            v-if="submittingLessonId === hero.schedule.id"
+-            class="today-state__spinner"
++          Студент
++          <img
++            :src="chevronDown"
++            alt=""
+             aria-hidden="true"
+-          />
+-          {{ heroActionLabel(hero) }}
++          >
+         </button>
++        <h1
++          id="today-title"
++          class="today-visually-hidden"
++        >
++          Сегодня
++        </h1>
+         <p
+-          v-if="isPending(hero)"
+-          class="today-hero__retry"
++          v-if="offline"
++          class="today-offline"
+           role="status"
+         >
+-          Отметиться повторно через: {{ countdownLabel(countdown(hero)) }}
++          Офлайн · данные обновлены {{ updatedAt ? new Date(updatedAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : 'ранее' }}
+         </p>
+-      </section>
++      </header>
+ 
+       <section
+-        class="today-list"
+-        aria-label="Пары на сегодня"
++        v-if="loading"
++        class="today-state"
++        aria-live="polite"
+       >
+-        <h2>Пары на сегодня</h2>
+-        <ol>
+-          <li
+-            v-for="lesson in today?.lessons"
+-            :key="lesson.schedule.id"
+-            class="today-row"
+-            :data-current="isAccentCurrent(lesson)"
+-            :aria-label="`${lessonTime(lesson)}. ${lesson.schedule.subject.name}. ${stateLabel(lesson)}`"
+-          >
+-            <p class="today-row__time">
+-              <span>{{ lesson.schedule.startsAt.slice(0, 5) }}</span>
+-              <span>{{ lesson.schedule.endsAt.slice(0, 5) }}</span>
++        <span
++          class="today-state__spinner"
++          aria-hidden="true"
++        />
++        Загружаем сегодняшнее расписание…
++      </section>
++      <section
++        v-else-if="error"
++        class="today-state today-state--error"
++        role="alert"
++      >
++        <h2>Не удалось получить данные</h2>
++        <p>{{ error }}</p>
++      </section>
++      <section
++        v-else-if="!hero"
++        class="today-state"
++      >
++        <h2>На сегодня пар нет</h2>
++        <p>Следи за расписанием, когда появится следующая пара.</p>
++      </section>
++      <template v-else>
++        <section
++          class="today-hero"
++          :data-state="isPending(hero) ? 'pending' : isConfirmed(hero) ? 'confirmed' : 'default'"
++          aria-label="Текущая или ближайшая пара"
++        >
++          <p class="today-hero__time">
++            {{ lessonTime(hero) }}
++          </p>
++          <h2>{{ hero.schedule.subject.name }}</h2>
++          <div class="today-hero__metadata">
++            <p>
++              <img
++                :src="heroRoomIcon(hero)"
++                alt=""
++                aria-hidden="true"
++              >
++              {{ hero.schedule.room.current ?? 'Аудитория уточняется' }}
+             </p>
+-            <article class="today-card">
+-              <h3>{{ lesson.schedule.subject.name }}</h3>
+-              <p class="today-card__meta">
+-                <img
+-                  :src="roomIcon(lesson)"
+-                  alt=""
+-                  aria-hidden="true"
+-                >
+-                <span :class="{ 'today-card__room--changed': lesson.schedule.room.changeState === 'CHANGED' }">{{ lesson.schedule.room.current ?? 'Аудитория уточняется' }}</span>
+-                <span
+-                  v-if="lesson.schedule.room.previous"
+-                  class="today-card__room-change"
+-                >
++            <p>
++              <img
++                :src="heroKindIcon(hero)"
++                alt=""
++                aria-hidden="true"
++              >
++              {{ lessonKind(hero) }}
++            </p>
++          </div>
++          <button
++            class="today-hero__action"
++            type="button"
++            :disabled="!canCheckin(hero)"
++            @click="emit('checkin', hero)"
++          >
++            <span
++              v-if="submittingLessonId === hero.schedule.id"
++              class="today-state__spinner"
++              aria-hidden="true"
++            />
++            {{ heroActionLabel(hero) }}
++          </button>
++          <p
++            v-if="isPending(hero)"
++            class="today-hero__retry"
++            role="status"
++          >
++            Отметиться повторно через: {{ countdownLabel(countdown(hero)) }}
++          </p>
++        </section>
++
++        <section
++          class="today-list"
++          aria-label="Пары на сегодня"
++        >
++          <h2>Пары на сегодня</h2>
++          <ol>
++            <li
++              v-for="lesson in today?.lessons"
++              :key="lesson.schedule.id"
++              class="today-row"
++              :data-current="isAccentCurrent(lesson)"
++              :aria-label="`${lessonTime(lesson)}. ${lesson.schedule.subject.name}. ${stateLabel(lesson)}`"
++            >
++              <p class="today-row__time">
++                <span>{{ lesson.schedule.startsAt.slice(0, 5) }}</span>
++                <span>{{ lesson.schedule.endsAt.slice(0, 5) }}</span>
++              </p>
++              <article class="today-card">
++                <h3>{{ lesson.schedule.subject.name }}</h3>
++                <p class="today-card__meta">
+                   <img
+-                    :src="roomChangeStrike"
++                    :src="roomIcon(lesson)"
+                     alt=""
+                     aria-hidden="true"
+                   >
+-                  <s>{{ lesson.schedule.room.previous }}</s>
+-                </span>
+-              </p>
+-              <p class="today-card__meta">
+-                <img
+-                  :src="kindIcon(lesson)"
+-                  alt=""
+-                  aria-hidden="true"
+-                >
+-                {{ lessonKind(lesson) }}
+-              </p>
+-              <span
+-                v-if="isConfirmed(lesson)"
+-                class="today-card__present"
+-                aria-label="Отметка подтверждена"
+-              >+</span>
+-            </article>
+-          </li>
+-        </ol>
+-      </section>
++                  <span :class="{ 'today-card__room--changed': lesson.schedule.room.changeState === 'CHANGED' }">{{ lesson.schedule.room.current ?? 'Аудитория уточняется' }}</span>
++                  <span
++                    v-if="lesson.schedule.room.previous"
++                    class="today-card__room-change"
++                  >
++                    <img
++                      :src="roomChangeStrike"
++                      alt=""
++                      aria-hidden="true"
++                    >
++                    <s>{{ lesson.schedule.room.previous }}</s>
++                  </span>
++                </p>
++                <p class="today-card__meta">
++                  <img
++                    :src="kindIcon(lesson)"
++                    alt=""
++                    aria-hidden="true"
++                  >
++                  {{ lessonKind(lesson) }}
++                </p>
++                <span
++                  v-if="isConfirmed(lesson)"
++                  class="today-card__present"
++                  aria-label="Отметка подтверждена"
++                >+</span>
++              </article>
++            </li>
++          </ol>
++        </section>
+ 
+-      <details
+-        v-if="semesterSchedule"
+-        class="today-semester"
+-      >
+-        <summary>Расписание семестра</summary>
+-        <label>
+-          Дата
+-          <select
+-            :value="selectedDate"
+-            @change="emit('selectDate', ($event.target as HTMLSelectElement).value)"
+-          >
+-            <option
+-              v-for="date in semesterDates"
+-              :key="date"
+-              :value="date"
+-            >{{ semesterDate(date) }}</option>
+-          </select>
+-        </label>
+-        <p
+-          v-if="selectedLessons.length === 0"
+-          class="today-semester__empty"
++        <details
++          v-if="semesterSchedule"
++          class="today-semester"
+         >
+-          На выбранную дату пар нет.
+-        </p>
+-        <ul v-else>
+-          <li
+-            v-for="lesson in selectedLessons"
+-            :key="lesson.id"
++          <summary>Расписание семестра</summary>
++          <label>
++            Дата
++            <select
++              :value="selectedDate"
++              @change="emit('selectDate', ($event.target as HTMLSelectElement).value)"
++            >
++              <option
++                v-for="date in semesterDates"
++                :key="date"
++                :value="date"
++              >{{ semesterDate(date) }}</option>
++            </select>
++          </label>
++          <p
++            v-if="selectedLessons.length === 0"
++            class="today-semester__empty"
+           >
+-            {{ lesson.startsAt.slice(0, 5) }}–{{ lesson.endsAt.slice(0, 5) }} · {{ lesson.subject.name }}
+-          </li>
+-        </ul>
+-      </details>
+-    </template>
+-
+-    <nav
+-      class="today-dock"
+-      aria-label="Основная навигация"
+-    >
+-      <span
+-        class="today-dock__item today-dock__item--active"
+-        aria-current="page"
+-      >
+-        <span class="today-dock__icon"><img
+-          :src="todayTabActive"
+-          alt=""
+-          aria-hidden="true"
+-        ></span>
+-        <span class="today-dock__label">Сегодня</span>
+-      </span>
+-      <button
+-        class="today-dock__item"
+-        type="button"
+-        disabled
+-      >
+-        <span class="today-dock__icon"><img
+-          :src="scheduleTab"
+-          alt=""
+-          aria-hidden="true"
+-        ></span>
+-        <span class="today-dock__label">Задания</span>
+-      </button>
+-      <button
+-        class="today-dock__item"
+-        type="button"
+-        disabled
+-        aria-label="Посещаемость"
+-      >
+-        <span class="today-dock__icon"><img
+-          :src="attendanceTab"
+-          alt=""
+-          aria-hidden="true"
+-        ></span>
+-        <span class="today-dock__label">Учёт</span>
+-      </button>
+-      <button
+-        class="today-dock__item"
+-        type="button"
+-        disabled
+-      >
+-        <span class="today-dock__icon"><img
+-          :src="moreTab"
+-          alt=""
+-          aria-hidden="true"
+-        ></span>
+-        <span class="today-dock__label">Ещё</span>
+-      </button>
+-      <button
+-        class="today-dock__item"
+-        type="button"
+-        disabled
+-      >
+-        <span class="today-dock__icon"><img
+-          :src="profileTab"
+-          alt=""
+-          aria-hidden="true"
+-        ></span>
+-        <span class="today-dock__label">Профиль</span>
+-      </button>
+-    </nav>
+-  </main>
++            На выбранную дату пар нет.
++          </p>
++          <ul v-else>
++            <li
++              v-for="lesson in selectedLessons"
++              :key="lesson.id"
++            >
++              {{ lesson.startsAt.slice(0, 5) }}–{{ lesson.endsAt.slice(0, 5) }} · {{ lesson.subject.name }}
++            </li>
++          </ul>
++        </details>
++      </template>
++    </main>
++  </MobileShell>
+ </template>
+diff --git a/frontends/mobile-core/src/features/today/today-screen.pcss b/frontends/mobile-core/src/features/today/today-screen.pcss
+index 7545e42e..4e2a36f2 100644
+--- a/frontends/mobile-core/src/features/today/today-screen.pcss
++++ b/frontends/mobile-core/src/features/today/today-screen.pcss
+@@ -50,8 +50,7 @@ body,
+   line-height: var(--rct-today-hero-meta-leading);
+ }
+ 
+-.today-role:disabled,
+-.today-dock__item:disabled {
++.today-role:disabled {
+   opacity: 1;
+ }
+ 
+@@ -256,13 +255,10 @@ body,
+ }
+ 
+ .today-card h3 {
+-  overflow: hidden;
+-  padding-inline-end: 2.5rem;
++  inline-size: 100%;
+   font-size: var(--rct-today-card-title-size);
+   font-weight: var(--rct-font-weight-bold);
+   line-height: var(--rct-today-card-title-leading);
+-  text-overflow: ellipsis;
+-  white-space: nowrap;
+ }
+ 
+ .today-card__meta {
+@@ -372,72 +368,6 @@ body,
+   margin: var(--rct-space-3) 0 0;
+ }
+ 
+-.today-dock {
+-  position: fixed;
+-  inset-inline: var(--rct-space-4);
+-  inset-block-end: calc(env(safe-area-inset-bottom) + var(--rct-mobile-dock-bottom));
+-  display: grid;
+-  grid-template-columns: repeat(5, minmax(0, 1fr));
+-  align-items: center;
+-  gap: var(--rct-space-1);
+-  max-inline-size: var(--rct-mobile-content-width);
+-  min-block-size: var(--rct-mobile-dock-height);
+-  margin-inline: auto;
+-  border: 0;
+-  border-radius: var(--rct-radius-2xl);
+-  padding: var(--rct-space-2);
+-  background: color-mix(in srgb, var(--rct-color-surface-float) 78%, transparent);
+-  backdrop-filter: blur(var(--rct-mobile-blur));
+-}
+-
+-.today-dock__item {
+-  display: grid;
+-  grid-template-rows: 1.25rem auto;
+-  gap: var(--rct-space-1);
+-  justify-items: center;
+-  align-content: center;
+-  inline-size: 100%;
+-  min-block-size: var(--rct-today-dock-item-height);
+-  min-inline-size: 0;
+-  border: 0;
+-  border-radius: var(--rct-radius-lg);
+-  padding: 0;
+-  color: var(--rct-color-text-primary);
+-  background: transparent;
+-  font: inherit;
+-  font-size: var(--rct-font-size-micro);
+-  font-weight: var(--rct-font-weight-medium);
+-  letter-spacing: 0.01em;
+-  line-height: var(--rct-today-dock-label-leading);
+-  text-align: center;
+-}
+-
+-.today-dock__item--active {
+-  border-radius: var(--rct-radius-xl);
+-  color: var(--rct-color-accent-on-now);
+-  background: var(--rct-color-accent-now);
+-}
+-
+-.today-dock__icon {
+-  display: grid;
+-  place-items: center;
+-  inline-size: 1.75rem;
+-  block-size: 1.25rem;
+-}
+-
+-.today-dock__icon img {
+-  inline-size: 1rem;
+-  block-size: 1rem;
+-}
+-
+-.today-dock__label {
+-  min-inline-size: 0;
+-  max-inline-size: 100%;
+-  overflow-wrap: anywhere;
+-  hyphens: auto;
+-  white-space: normal;
+-}
+-
+ .today-state {
+   display: grid;
+   place-items: center;
+diff --git a/frontends/mobile-core/src/index.ts b/frontends/mobile-core/src/index.ts
+index b23072ec..eb894094 100644
+--- a/frontends/mobile-core/src/index.ts
++++ b/frontends/mobile-core/src/index.ts
+@@ -20,3 +20,8 @@ export * from './offline/semester-snapshot'
+ export * from './test-adapter/fixture-transport'
+ export * from './features/today/use-today'
+ export { default as TodayScreen } from './features/today/TodayScreen.vue'
++export { default as MobileBottomNav } from './shared/components/MobileBottomNav.vue'
++export { default as MobileShell } from './shared/components/MobileShell.vue'
++export * from './shared/navigation'
++export * from './shared/shell-contract'
++export type * from './shared/host'
+diff --git a/frontends/mobile-core/src/shared/components/MobileBottomNav.vue b/frontends/mobile-core/src/shared/components/MobileBottomNav.vue
+new file mode 100644
+index 00000000..7014ba13
+--- /dev/null
++++ b/frontends/mobile-core/src/shared/components/MobileBottomNav.vue
+@@ -0,0 +1,66 @@
++<script setup lang="ts">
++import { computed } from 'vue'
++import type { MobileBottomNavItem, MobileBottomNavItems, MobileRootRouteId } from '../navigation'
++import './mobile-bottom-nav.pcss'
++
++const props = withDefaults(defineProps<{
++  items: MobileBottomNavItems
++  activeId: MobileRootRouteId
++  ariaLabel?: string
++}>(), {
++  ariaLabel: 'Основная навигация',
++})
++
++const emit = defineEmits<{ navigate: [route: MobileRootRouteId] }>()
++
++const slots = computed(() => props.items.length)
++const slotsClass = computed(() => `mobile-bottom-nav--slots-${slots.value}`)
++
++function isActive(item: MobileBottomNavItem): boolean {
++  return item.id === props.activeId
++}
++
++function itemLabel(item: MobileBottomNavItem): string | undefined {
++  const label = item.accessibleLabel ?? item.label
++  return item.disabledReason ? `${label}. ${item.disabledReason}` : item.accessibleLabel
++}
++
++function navigate(item: MobileBottomNavItem): void {
++  if (!item.disabled) emit('navigate', item.route)
++}
++</script>
++
++<template>
++  <nav
++    class="mobile-bottom-nav"
++    :class="slotsClass"
++    :data-slots="slots"
++    :aria-label="ariaLabel"
++  >
++    <button
++      v-for="item in items"
++      :key="item.id"
++      class="mobile-bottom-nav__item"
++      :class="{ 'mobile-bottom-nav__item--active': isActive(item) }"
++      type="button"
++      :disabled="item.disabled"
++      :aria-current="isActive(item) ? 'page' : undefined"
++      :aria-label="itemLabel(item)"
++      @click="navigate(item)"
++    >
++      <span class="mobile-bottom-nav__icon">
++        <img
++          :src="item.icon"
++          alt=""
++          aria-hidden="true"
++        >
++      </span>
++      <span class="mobile-bottom-nav__label">{{ item.label }}</span>
++      <span
++        v-if="item.badge !== undefined"
++        class="mobile-bottom-nav__badge"
++        aria-hidden="true"
++      >{{ item.badge }}</span>
++    </button>
++  </nav>
++</template>
+diff --git a/services/AGENTS.md b/services/AGENTS.md
+index c0f1d41d..34254e3e 100644
+--- a/services/AGENTS.md
++++ b/services/AGENTS.md
+@@ -1,19 +1,3 @@
+-## Решение владельца 2026-09-13 — orchestration v2
+-
+-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
+-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
+-`CURRENT.md` и свой пакет из той же директории до работы.
+-Это явное project-only решение заменяет несовместимые старые routing-пункты
+-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
+-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
+-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
+-не полагайся на память/наследование. Код только assigned developer, один writer
+-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
+-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
+-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
+-сохраняются; другие проекты/global config не изменяются.
+-
+----
+ # Backend / BFF
+ 
+ - Java 21, Spring Boot, Gradle wrapper; версии/команды — из build и CI. Сверяй
+diff --git a/tests/AGENTS.md b/tests/AGENTS.md
+index ffba8704..0596e3be 100644
+--- a/tests/AGENTS.md
++++ b/tests/AGENTS.md
+@@ -1,19 +1,3 @@
+-## Решение владельца 2026-09-13 — orchestration v2
+-
+-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
+-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
+-`CURRENT.md` и свой пакет из той же директории до работы.
+-Это явное project-only решение заменяет несовместимые старые routing-пункты
+-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
+-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
+-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
+-не полагайся на память/наследование. Код только assigned developer, один writer
+-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
+-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
+-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
+-сохраняются; другие проекты/global config не изменяются.
+-
+----
+ # Проверки
+ 
+ - Команды — из scripts, Gradle wrapper и CI текущего checkout; подготовительная партия

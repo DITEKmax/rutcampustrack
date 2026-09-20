@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" tests="15" skipped="0" failures="1" errors="0" timestamp="2026-09-20T15:18:54" hostname="DITEK-PK" time="0.817">
+  <properties/>
+  <testcase name="existingV17TemplateBootstrapsFenceWithoutChangingItsProvenance()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.083"/>
+  <testcase name="physicalInsertCommitIsFreshBeforeCapNarrowingChecksRetainedRow()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.07"/>
+  <testcase name="activeMismatchedGroupAuthorityHasZeroLocalEffects()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.028"/>
+  <testcase name="capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.046"/>
+  <testcase name="sameActorKeyAcrossAssignmentsConflictsBeforeSecondFence()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.048"/>
+  <testcase name="contradictoryV17TemplateBootstrapRollsBackFenceAtomically()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.029"/>
+  <testcase name="retainedCancelledRowsBlockCapNarrowingAndDirectOutOfFenceInsert()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.048"/>
+  <testcase name="slotConflictRollsBackSecondFenceAndSeries()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.057"/>
+  <testcase name="remoteEarlierEndCannotShrinkRetainedFence()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.046"/>
+  <testcase name="missingAssignmentAuthorityHasZeroLocalEffects()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.026"/>
+  <testcase name="endpointReplaysWithoutDuplicateAndRejectsDifferentPayload()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.08"/>
+  <testcase name="concurrentIdenticalWriterCallsReturnOneSeriesWithBoundedWait()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.057"/>
+  <testcase name="populatedV17CancelledPhysicalAndOccurrenceBootstrapFence()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.036">
+    <failure message="org.springframework.jdbc.UncategorizedSQLException: StatementCallback; uncategorized SQLException for SQL [ALTER TABLE lessons ENABLE TRIGGER lessons_physical_insert_fence_guard_trg]; SQL state [55006]; error code [0]; ERROR: cannot ALTER TABLE &quot;lessons&quot; because it has pending trigger events" type="org.springframework.jdbc.UncategorizedSQLException">org.springframework.jdbc.UncategorizedSQLException: StatementCallback; uncategorized SQLException for SQL [ALTER TABLE lessons ENABLE TRIGGER lessons_physical_insert_fence_guard_trg]; SQL state [55006]; error code [0]; ERROR: cannot ALTER TABLE &quot;lessons&quot; because it has pending trigger events
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1557)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:408)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:444)
+	at app//ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT.lambda$populatedV17CancelledPhysicalAndOccurrenceBootstrapFence$1(RecurringScheduleItemIT.java:240)
+	at app//org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68)
+	at app//org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:140)
+	at app//org.springframework.transaction.support.TransactionOperations.executeWithoutResult(TransactionOperations.java:67)
+	at app//ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT.populatedV17CancelledPhysicalAndOccurrenceBootstrapFence(RecurringScheduleItemIT.java:210)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: cannot ALTER TABLE &quot;lessons&quot; because it has pending trigger events
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:359)
+	at app//org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:344)
+	at app//org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:320)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:315)
+	at app//com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:95)
+	at app//com.zaxxer.hikari.pool.HikariProxyStatement.execute(HikariProxyStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1ExecuteStatementCallback.doInStatement(JdbcTemplate.java:435)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:393)
+	... 9 more
+</failure>
+  </testcase>
+  <testcase name="endpointPersistsSnapshotsAndPastSemesterDates()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.087"/>
+  <testcase name="staleRemoteLaterEndDoesNotWidenLocalFence()" classname="ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT" time="0.058"/>
+  <system-out><![CDATA[{"ts":"2026-09-20T18:18:54.815+03:00","v":"1","level":"INFO","logger":"org.springframework.test.context.support.AnnotationConfigContextLoaderUtils","thread":"Test worker","msg":"Could not detect default configuration classes for test class [ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT]: RecurringScheduleItemIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.","service":"schedule-service"}
+{"ts":"2026-09-20T18:18:54.827+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.test.context.SpringBootTestContextBootstrapper","thread":"Test worker","msg":"Found @SpringBootConfiguration ru.rutcampustrack.schedule.ScheduleApplication for test class ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT","service":"schedule-service"}
+{"ts":"2026-09-20T18:18:55.371+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select si1_0.id,si1_0.assignment_id,si1_0.created_at,si1_0.day_of_week,si1_0.end_time,si1_0.generated_count,si1_0.generated_from,si1_0.generated_until,si1_0.group_id,si1_0.is_active,si1_0.lesson_number,si1_0.room,si1_0.semester_id,si1_0.start_time,si1_0.subject_id,si1_0.week_type from schedule_items si1_0 where si1_0.id=?","traceId":"eeb8b82c48b30a98e6ac2e8fd46e63f2","service":"schedule-service"}
+{"ts":"2026-09-20T18:18:55.385+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select si1_0.id,si1_0.assignment_id,si1_0.created_at,si1_0.day_of_week,si1_0.end_time,si1_0.generated_count,si1_0.generated_from,si1_0.generated_until,si1_0.group_id,si1_0.is_active,si1_0.lesson_number,si1_0.room,si1_0.semester_id,si1_0.start_time,si1_0.subject_id,si1_0.week_type from schedule_items si1_0 where si1_0.id=?","traceId":"2feef6829690bcad4e29eb019728539e","service":"schedule-service"}
+{"ts":"2026-09-20T18:18:55.394+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select count(*) from lessons l1_0","service":"schedule-service"}
+{"ts":"2026-09-20T18:18:55.573+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select si1_0.id,si1_0.assignment_id,si1_0.created_at,si1_0.day_of_week,si1_0.end_time,si1_0.generated_count,si1_0.generated_from,si1_0.generated_until,si1_0.group_id,si1_0.is_active,si1_0.lesson_number,si1_0.room,si1_0.semester_id,si1_0.start_time,si1_0.subject_id,si1_0.week_type from schedule_items si1_0 where si1_0.id=?","traceId":"83b4ec31ea3eb14ac951e39f0b58e885","service":"schedule-service"}
+{"ts":"2026-09-20T18:18:55.585+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select l1_0.id,l1_0.assigned_teacher_id,l1_0.assignment_id,l1_0.blocked_at,l1_0.blocked_by_user_id,l1_0.cancel_reason,l1_0.cancelled_at,l1_0.cancelled_by,l1_0.closed_at,l1_0.created_at,l1_0.date,l1_0.day_of_week,l1_0.end_time,l1_0.generation,l1_0.group_id,l1_0.is_blocked_by_headman,l1_0.is_geo_blocked,l1_0.lesson_number,l1_0.lesson_type,l1_0.occurrence_id,l1_0.one_off_lesson_id,l1_0.reminder_midpoint_sent_at,l1_0.reminder_near_end_sent_at,l1_0.revision,l1_0.room_snapshot,l1_0.schedule_item_id,l1_0.semester_id,l1_0.start_time,l1_0.status,l1_0.subject_id,l1_0.week_type_snapshot from lessons l1_0","service":"schedule-service"}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

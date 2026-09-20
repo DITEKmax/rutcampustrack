@@ -1,0 +1,59 @@
+{
+  "schema": "rct.h71-mongo-projection-fix.checks.v1",
+  "status": "PASS_TARGETED",
+  "revision": "73fd5f27ceb429ad0692b073189f8a527c550830",
+  "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "environment": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "powershell": "7.6.5",
+    "node": "v24.14.0"
+  },
+  "checks": [
+    {
+      "name": "PowerShell parser",
+      "command": "pwsh -NoProfile -Command '$ErrorActionPreference=\"Stop\"; $paths=@(\".agent\\student-role-orchestrator\\requests-runtime\\runner.ps1\",\".agent\\student-role-orchestrator\\requests-runtime\\r8-mongo-projection-check.ps1\"); foreach($p in $paths){$t=$null; $e=$null; [System.Management.Automation.Language.Parser]::ParseFile((Join-Path (Get-Location) $p),[ref]$t,[ref]$e) | Out-Null; if($e.Count -ne 0){throw \"parser errors in ${p}: $($e.Count)\"}}; Write-Output \"PowerShell parser: PASS\"'",
+      "exitCode": 0,
+      "evidence": "PowerShell parser: PASS"
+    },
+    {
+      "name": "R8 generated Mongo projection and I1 assertion",
+      "command": "pwsh -NoProfile -File .agent\\student-role-orchestrator\\requests-runtime\\r8-mongo-projection-check.ps1",
+      "exitCode": 0,
+      "evidence": "R8 Mongo projection check: PASS; raw submitted, API PENDING, attachment ACTIVE, negative approved and uppercase SUBMITTED checks"
+    },
+    {
+      "name": "Probe JavaScript syntax",
+      "command": "node --check .agent\\student-role-orchestrator\\requests-runtime\\probe.mjs",
+      "exitCode": 0,
+      "evidence": "no syntax output"
+    },
+    {
+      "name": "Scoped diff whitespace",
+      "command": "git -c core.excludesfile=NUL diff --check -- .agent/student-role-orchestrator/requests-runtime/runner.ps1 .agent/student-role-orchestrator/requests-runtime/r8-mongo-projection-check.ps1",
+      "exitCode": 0,
+      "evidence": "no diff-check errors; Git emitted line-ending warnings only"
+    },
+    {
+      "name": "Evidence JSON syntax",
+      "command": "pwsh -NoProfile -Command '$j=Get-Content -Raw .agent\\student-role-orchestrator\\requests-runtime\\h71-mongo-projection-fix\\checks.json | ConvertFrom-Json -Depth 20; if($j.status -ne \"PASS_TARGETED\"){throw \"checks status mismatch\"}; Write-Output \"checks.json parse: PASS\"'",
+      "exitCode": 0,
+      "evidence": "checks.json parse: PASS"
+    }
+  ],
+  "runtime": {
+    "status": "TARGETED_PURE_ONLY",
+    "productRuntime": "N/A for harness-only repair; no Docker, services, ports, network, or full H71 invocation",
+    "evidence": "post-fix-evidence.md"
+  },
+  "hashes": {
+    "runnerSha256": "133053A662E52521BCEBDBF17FA060DEBCFDDEAEF4C302C4CC9769B813507291",
+    "r8Sha256": "C11520F764281141285EEDB7A1CCE9E85E03D86D183718867D3B973E6F4E1323",
+    "probeSha256": "1093B32778D8A7AF7CBC3E8F691073597257EB3091AC6A51DF8B12DE8E8731D6"
+  },
+  "limitations": [
+    "The original h71-report.json saved the assertion failure but not the post-I1 raw snapshot value.",
+    "This evidence proves the emitted helper and guard against the registered converter model; it does not claim a full product runtime PASS.",
+    "Existing foreign changes in runner.ps1 and r8-mongo-projection-check.ps1 were preserved; no broad diff cleanup was performed.",
+    "Independent Sol review and any full runtime rerun remain root-owned and pending."
+  ]
+}

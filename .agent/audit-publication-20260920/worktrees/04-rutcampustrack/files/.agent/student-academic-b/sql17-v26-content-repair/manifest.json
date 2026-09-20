@@ -1,0 +1,65 @@
+{
+  "agent": "/root/sql17_26_content_repair",
+  "date": "2026-09-10",
+  "baseRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "environment": "Windows PowerShell; C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack",
+  "risk": "S3",
+  "runtime": {
+    "status": "FAILED_ACADEMIC_LEASE",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.migration.StudentFoundationMigrationIT --no-daemon --no-parallel --max-workers=1 --console=plain --continue",
+    "sessionId": "81124",
+    "startedAt": "2026-09-10T18:23:12.0321344Z",
+    "endedAt": "2026-09-10T18:25:24.3765572Z",
+    "exitCode": 1,
+    "result": "BUILD FAILED after 1m52s; 37 tasks, 5 executed; 15 tests, 7 failures, 0 errors, 0 skipped",
+    "xml": "services/academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.migration.StudentFoundationMigrationIT.xml",
+    "xmlSha256": "D474F46C3F2976D4119BB590B3FB75C19C9E4AE9EA1CCB0D9264651F56044C2C",
+    "xmlBytes": 133618,
+    "schedule": "intentionally not run",
+    "javaJavaw": "none",
+    "dockerPs": "empty",
+    "heavyLease": "RELEASED",
+    "evidence": "runtime-fail-2026-09-10.md"
+  },
+  "products": [
+    {
+      "path": "services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql",
+      "preSha256": "098E21966A3BB5999D8B38CC71587AFBE3C74CA70808F44CBE65256BA35CF009",
+      "preBytes": 18592,
+      "postSha256": "8D02720F48B67E21C78373B214ADB414A2F435A8016C35987839D330B6042FCC",
+      "postBytes": 18760
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "preSha256": "8348290F0440C713E144FC28BD998A65BDA38D368ABEA0D560646DF65FF8ECF5",
+      "preBytes": 20416,
+      "postSha256": "29433B97247AE23E8BFF9EA83AD94768DC80A329276E565AE3E3C5063F5928D2",
+      "postBytes": 23649
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/StudentFoundationMigrationIT.java",
+      "preSha256": "27FAE6FD189C1B13F7C192D4C7641FE6EB95BBEE0F5DA6E00BCD81B9F6FAA5F1",
+      "preBytes": 24922,
+      "postSha256": "FCF37A0EA283CB159FC9BEF638B5FD2366775B8F519AF7399A85A97866095F5B",
+      "postBytes": 47643
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V26__campus_map.sql",
+      "preSha256": "315E3F72392404622901E0EA88B24C3F9FBF6E49FAFBDE646377B23AD06BB01B",
+      "preBytes": 15099,
+      "postSha256": "51AF63A7A591E278353B66816A01294E4823A705269D88C16BFABF007A3F13B8",
+      "postBytes": 17050,
+      "rootScopeExpansion": "authorized V26 content correction after independent Sol FAIL"
+    }
+  ],
+  "changedTests": [
+    "crossTemplateRecurringOriginIsRejectedEvenWhenSnapshotsMatch",
+    "crossOneOffOriginIsRejectedEvenWhenSnapshotsMatch",
+    "readyMapAssetsRequireExactMetadataAndRemainImmutable",
+    "publishedCampusMapFreezesPlanIdentityAndGraphButDraftTransitionsRemainAllowed",
+    "publicationSerializesAgainstConcurrentDraftFormatEdit",
+    "openIntentIdentityAndConflictingPayloadAreRejected",
+    "demandDedupeIsExactlyOnceAndIncrementsFloorDayAggregateOnce",
+    "intentAndDailyRetentionUseIndependentDeadlines"
+  ]
+}

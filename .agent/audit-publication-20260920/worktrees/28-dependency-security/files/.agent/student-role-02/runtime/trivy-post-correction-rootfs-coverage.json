@@ -1,0 +1,204 @@
+{
+  "uniqueRootJars": [
+    "academic-app-0.1.0.jar",
+    "api-gateway-0.1.0.jar",
+    "attendance-app-0.1.0.jar",
+    "auth-app-0.1.0.jar",
+    "document-renderer-app-0.1.0.jar",
+    "mobile-bff-app-0.1.0.jar",
+    "notification-app-0.1.0.jar",
+    "schedule-app-0.1.0.jar"
+  ],
+  "packageRecordsByJar": [
+    {
+      "jar": "academic-app-0.1.0.jar",
+      "packageRecords": 177
+    },
+    {
+      "jar": "api-gateway-0.1.0.jar",
+      "packageRecords": 133
+    },
+    {
+      "jar": "attendance-app-0.1.0.jar",
+      "packageRecords": 191
+    },
+    {
+      "jar": "auth-app-0.1.0.jar",
+      "packageRecords": 137
+    },
+    {
+      "jar": "document-renderer-app-0.1.0.jar",
+      "packageRecords": 90
+    },
+    {
+      "jar": "mobile-bff-app-0.1.0.jar",
+      "packageRecords": 91
+    },
+    {
+      "jar": "notification-app-0.1.0.jar",
+      "packageRecords": 154
+    },
+    {
+      "jar": "schedule-app-0.1.0.jar",
+      "packageRecords": 168
+    }
+  ],
+  "uniquePackages": 257,
+  "vulnerabilitiesById": [
+    {
+      "id": "CVE-2023-33201",
+      "count": 1,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "org.bouncycastle:bcprov-jdk15on"
+      ],
+      "fixedVersions": []
+    },
+    {
+      "id": "CVE-2024-29857",
+      "count": 1,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "org.bouncycastle:bcprov-jdk15on"
+      ],
+      "fixedVersions": [
+        "1.78"
+      ]
+    },
+    {
+      "id": "CVE-2024-30171",
+      "count": 1,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "org.bouncycastle:bcprov-jdk15on"
+      ],
+      "fixedVersions": [
+        "1.78"
+      ]
+    },
+    {
+      "id": "CVE-2024-34447",
+      "count": 1,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "org.bouncycastle:bcprov-jdk15on"
+      ],
+      "fixedVersions": [
+        "1.78"
+      ]
+    },
+    {
+      "id": "CVE-2025-48924",
+      "count": 7,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "org.apache.commons:commons-lang3"
+      ],
+      "fixedVersions": [
+        "3.18.0"
+      ]
+    },
+    {
+      "id": "CVE-2026-0636",
+      "count": 1,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "org.bouncycastle:bcprov-jdk18on"
+      ],
+      "fixedVersions": [
+        "1.84"
+      ]
+    },
+    {
+      "id": "CVE-2026-45292",
+      "count": 12,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "io.opentelemetry:opentelemetry-api",
+        "io.opentelemetry:opentelemetry-extension-trace-propagators"
+      ],
+      "fixedVersions": [
+        "1.62.0"
+      ]
+    },
+    {
+      "id": "CVE-2026-49844",
+      "count": 8,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "org.apache.logging.log4j:log4j-api"
+      ],
+      "fixedVersions": [
+        "2.25.5, 2.26.1"
+      ]
+    },
+    {
+      "id": "CVE-2026-54515",
+      "count": 8,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "com.fasterxml.jackson.core:jackson-databind"
+      ],
+      "fixedVersions": [
+        "3.1.4, 2.18.9, 2.21.5, 2.22.1"
+      ]
+    },
+    {
+      "id": "CVE-2026-55688",
+      "count": 1,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "org.asynchttpclient:async-http-client"
+      ],
+      "fixedVersions": [
+        "3.0.11, 2.16.0"
+      ]
+    },
+    {
+      "id": "CVE-2026-59889",
+      "count": 8,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "com.fasterxml.jackson.core:jackson-databind"
+      ],
+      "fixedVersions": [
+        "2.21.5, 2.18.9, 2.22.1"
+      ]
+    },
+    {
+      "id": "GHSA-mhm7-754m-9p8w",
+      "count": 8,
+      "severities": [
+        "MEDIUM"
+      ],
+      "packages": [
+        "com.fasterxml.jackson.core:jackson-databind"
+      ],
+      "fixedVersions": [
+        "2.18.9, 2.21.5"
+      ]
+    }
+  ]
+}

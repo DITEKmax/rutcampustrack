@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" tests="10" skipped="0" failures="2" errors="0" timestamp="2026-09-10T18:39:34" hostname="DITEK-PK" time="2.815">
+  <properties/>
+  <testcase name="accessTokenCannotBeUsedByRefreshParser()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.338"/>
+  <testcase name="sessionAccessTokenCarriesFrozenWireAndLegacyAccessIsNotAdmitted()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.269">
+    <failure message="io.jsonwebtoken.ExpiredJwtException: JWT expired 34715301 milliseconds ago at 2026-09-10T09:01:00.000Z. Current time: 2026-09-10T18:39:35.301Z. Allowed clock skew: 0 milliseconds." type="io.jsonwebtoken.ExpiredJwtException">io.jsonwebtoken.ExpiredJwtException: JWT expired 34715301 milliseconds ago at 2026-09-10T09:01:00.000Z. Current time: 2026-09-10T18:39:35.301Z. Allowed clock skew: 0 milliseconds.
+	at app//io.jsonwebtoken.impl.DefaultJwtParser.parse(DefaultJwtParser.java:691)
+	at app//io.jsonwebtoken.impl.DefaultJwtParser.parse(DefaultJwtParser.java:364)
+	at app//io.jsonwebtoken.impl.DefaultJwtParser.parse(DefaultJwtParser.java:94)
+	at app//io.jsonwebtoken.impl.io.AbstractParser.parse(AbstractParser.java:36)
+	at app//io.jsonwebtoken.impl.io.AbstractParser.parse(AbstractParser.java:29)
+	at app//io.jsonwebtoken.impl.DefaultJwtParser.parseSignedClaims(DefaultJwtParser.java:830)
+	at app//ru.rutcampustrack.auth.service.JwtService.parseSignedToken(JwtService.java:319)
+	at app//ru.rutcampustrack.auth.service.JwtService.parseSessionAccessToken(JwtService.java:245)
+	at app//ru.rutcampustrack.auth.service.JwtTokenPurposeTest.sessionAccessTokenCarriesFrozenWireAndLegacyAccessIsNotAdmitted(JwtTokenPurposeTest.java:140)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="accessParserRejectsMalformedRequiredClaims()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.35"/>
+  <testcase name="internalTokenCarriesInternalPurposeAndCannotBeParsedAsAccess()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.222">
+    <failure message="io.jsonwebtoken.ExpiredJwtException: JWT expired 34715894 milliseconds ago at 2026-09-10T09:01:00.000Z. Current time: 2026-09-10T18:39:35.894Z. Allowed clock skew: 0 milliseconds." type="io.jsonwebtoken.ExpiredJwtException">io.jsonwebtoken.ExpiredJwtException: JWT expired 34715894 milliseconds ago at 2026-09-10T09:01:00.000Z. Current time: 2026-09-10T18:39:35.894Z. Allowed clock skew: 0 milliseconds.
+	at app//io.jsonwebtoken.impl.DefaultJwtParser.parse(DefaultJwtParser.java:691)
+	at app//io.jsonwebtoken.impl.DefaultJwtParser.parse(DefaultJwtParser.java:364)
+	at app//io.jsonwebtoken.impl.DefaultJwtParser.parse(DefaultJwtParser.java:94)
+	at app//io.jsonwebtoken.impl.io.AbstractParser.parse(AbstractParser.java:36)
+	at app//io.jsonwebtoken.impl.io.AbstractParser.parse(AbstractParser.java:29)
+	at app//io.jsonwebtoken.impl.DefaultJwtParser.parseSignedClaims(DefaultJwtParser.java:830)
+	at app//ru.rutcampustrack.auth.service.JwtTokenPurposeTest.internalTokenCarriesInternalPurposeAndCannotBeParsedAsAccess(JwtTokenPurposeTest.java:119)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="parserStillRejectsWrongIssuerAudienceAndSignature()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.387"/>
+  <testcase name="refreshParserRejectsMissingPurposeSubjectExpirationOrJti()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.233"/>
+  <testcase name="generatedAccessTokenIsStrictlyAcceptedAndParseTokenIsAccessAlias()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.255"/>
+  <testcase name="sessionAccessParserRejectsRawTypeCoercionAndFractionalOrExponentTimes()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.184"/>
+  <testcase name="accessParserRejectsMissingOrWrongPurpose()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.154"/>
+  <testcase name="generatedRefreshTokenIsAcceptedOnlyByRefreshParserAndExtractors()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.408"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,102 @@
+{
+  "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "worktree": ".agent/worktrees/student-role-02/dependency-security",
+  "files": [
+    {
+      "path": "build.gradle.kts",
+      "sha256": "7B7929DF22CA3B646373DF77A2071CAC697B4445435874B1AB53D11E70A889A3"
+    },
+    {
+      "path": "gradle/libs.versions.toml",
+      "sha256": "5FE939002471120AE8C1912F1E7623F5A7A095304FC7F6F8356907552922DD79"
+    },
+    {
+      "path": "services/shared/shared-events/build.gradle.kts",
+      "sha256": "302C782E0E411B389E1CCADCB2173DA4E405BC235E44EE28E1193E1E0B72B8BE"
+    },
+    {
+      "path": "services/shared/shared-logback/build.gradle.kts",
+      "sha256": "2BDFD30CE45499032DA5ED290330CCA7BAE113ACDA053504ED8D3788E5965AA8"
+    },
+    {
+      "path": "services/shared/shared-observability/build.gradle.kts",
+      "sha256": "7A7E0694A72B33C8DC01AA7D18E96224B1A90202E2A5945B0F55CA7295CFE5FD"
+    },
+    {
+      "path": "services/shared/shared-outbox/build.gradle.kts",
+      "sha256": "4B58658EFA0BE737565403EE7553C61CC010F781B7FE7B1C0C9003778BE16F7C"
+    },
+    {
+      "path": "services/shared/shared-security/build.gradle.kts",
+      "sha256": "2698016BD399E4AEEAA611EB3887A03E5782E9CF89305FAC508E398C7AE0BCD5"
+    },
+    {
+      "path": "services/shared/shared-test-containers/build.gradle.kts",
+      "sha256": "30356AC210273D28E8A2FBF0317C593EB5702C14AE2DCA247476EFA3CA599F03"
+    },
+    {
+      "path": "services/shared/shared-web/build.gradle.kts",
+      "sha256": "748A2556F6E67803BE0507F7A081DB7239FA76AEEEA8BD47486F76451CA0444E"
+    },
+    {
+      "path": "services/shared/shared-web-api/build.gradle.kts",
+      "sha256": "EB039A6BEA0B7A702ACD657782F5771A8B2318F8119C800D73E99446EF491F66"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/build.gradle.kts",
+      "sha256": "BFACBFE56A928ED5514DC6E1D987F43E6AD1C4EA427A1DF51E7F098CCBF6097C"
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/build.gradle.kts",
+      "sha256": "1B4CEE323517E25B80B65F3C6B076D0077CD2E3EB1D7C3FB5F9F4796FD4FBC44"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/build.gradle.kts",
+      "sha256": "61B034ACA56B5FAB4759577E8F8CB76A001704150D37D99B14CB17CC2857756E"
+    },
+    {
+      "path": "services/notification-service/notification-api-contract/build.gradle.kts",
+      "sha256": "D6FF960AEE0EBE344BB5F5CC13F484EA7581EADAEA9F761FB6DE2A7593259FA5"
+    },
+    {
+      "path": "services/schedule-service/schedule-api-contract/build.gradle.kts",
+      "sha256": "84F92F146E38290213B60451561EDCBB5C656D91C22D1A54BEB2A7FB99DF48FB"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-api-contract/build.gradle.kts",
+      "sha256": "9B908B31D6524D78F5364606BCBFCCF48CB7DD47F2D3FCABF86AD975D18F945D"
+    },
+    {
+      "path": "services/academic-service/academic-app/build.gradle.kts",
+      "sha256": "BE5F21DD90E1694B160F8B88FF9626FD131E3AEEED6E969A0C0FB2B97995B7B8"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/build.gradle.kts",
+      "sha256": "737F1745D8ECAA54BFD81070F194888B5CF6D51332C7EBC4E5FE4F5C77CCAE1E"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/build.gradle.kts",
+      "sha256": "245D29990C51085C9455911134E25AB6629250C1585F4B41C8C0ECD3F5A83AFF"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/build.gradle.kts",
+      "sha256": "B77FABDCAE769629797269BE6425F08882E8A5EB58366123F1667389CFB7D28B"
+    },
+    {
+      "path": "services/document-renderer-service/document-renderer-app/build.gradle.kts",
+      "sha256": "12FAEE8A7A2E92F3C3FED2005D3C70E61117E6CC3C946B76F22006C5E9C91397"
+    },
+    {
+      "path": "services/api-gateway/build.gradle.kts",
+      "sha256": "AC06421CBA1D9B8C3D5D59A1DB53B0E79D87576030C3CF4D5F2B40CC38226AED"
+    },
+    {
+      "path": "services/api-gateway/src/main/resources/application.yml",
+      "sha256": "3AFC27A6CB65571E243BA7A9F1424580DDC407689EC4070BEF381C14DE93CC46"
+    },
+    {
+      "path": "services/api-gateway/src/main/resources/application-prod.yml",
+      "sha256": "C40497206976E6602E39FD864121A0128CB4D4A74C5D3D0483E6C6979A143F79"
+    }
+  ]
+}

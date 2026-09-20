@@ -55,7 +55,8 @@ export interface LateCheckinDecidedEvent {
     group_id: number;
     lesson_id: number;
     decision_by: number | null;
-    status: 'approved' | 'rejected';
+    status: 'approved' | 'rejected' | 'cancelled';
+    resolution_reason?: 'headman_approved' | 'headman_rejected' | 'geo_confirmed' | null;
     decided_at: string | null;
     lesson_date: string | null;
     lesson_number: number | null;

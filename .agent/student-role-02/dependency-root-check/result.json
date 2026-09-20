@@ -1,0 +1,8 @@
+{
+  "command": ".\\gradlew.bat check --no-parallel --console=plain",
+  "exitCode": 0,
+  "completedAt": "2026-09-07T20:58:13.8154685Z",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "sourceManifestSha256": "3E795CB3F0CB8E95944BCBF1DC623E197554FAC24C5F5D2F5BB65ADFDDEF1D6A",
+  "environment": "Windows Java21 Gradle8.12 DockerDesktop Testcontainers, dependency-checks isolated checkout"
+}

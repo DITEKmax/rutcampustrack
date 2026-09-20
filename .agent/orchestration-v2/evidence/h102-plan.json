@@ -1,0 +1,19 @@
+{
+  "arguments": [
+    ":services:schedule-service:schedule-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+    "--tests",
+    "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+    "--tests",
+    "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report"
+  ],
+  "resultDirectories": [
+    "services/schedule-service/schedule-app/build/test-results/integrationTest"
+  ],
+  "meaning": "H101 three corrected fixture classes only; retain prior unit and other PG evidence"
+}

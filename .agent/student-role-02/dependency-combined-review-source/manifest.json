@@ -1,0 +1,272 @@
+[
+  {
+    "path": "build.gradle.kts",
+    "sourceSha256": "C3A3E9BA5DDD96069877F5D4EF70FCC73F012D1E53D30D0B84D731EBA09BEE72",
+    "snapshotSha256": "C3A3E9BA5DDD96069877F5D4EF70FCC73F012D1E53D30D0B84D731EBA09BEE72",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "docs/openapi/academic.json",
+    "sourceSha256": "44BAFCCAEB77EE671605285B470739F5046205C86447F48B8FA85062FD990D0C",
+    "snapshotSha256": "44BAFCCAEB77EE671605285B470739F5046205C86447F48B8FA85062FD990D0C",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "docs/openapi/attendance.json",
+    "sourceSha256": "DF11209CC3234AC0310CD082F86A0E5F10953D77AC4726B96D81FFCD4C12AA3C",
+    "snapshotSha256": "DF11209CC3234AC0310CD082F86A0E5F10953D77AC4726B96D81FFCD4C12AA3C",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "docs/openapi/auth.json",
+    "sourceSha256": "AD8EEB87B1AEA632E232A0687812D5489CA7AC8057A5A591E77515B8B7826532",
+    "snapshotSha256": "AD8EEB87B1AEA632E232A0687812D5489CA7AC8057A5A591E77515B8B7826532",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "docs/openapi/mobile-bff.json",
+    "sourceSha256": "E991067B2F7B5FECDA5BB1542F34586537E12771A83444733FB5D8F841B62B43",
+    "snapshotSha256": "E991067B2F7B5FECDA5BB1542F34586537E12771A83444733FB5D8F841B62B43",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "docs/openapi/notification.json",
+    "sourceSha256": "6BF02EC71AE915206467982FD0A44F3354F3FA3CA61BF44346E0014A43879152",
+    "snapshotSha256": "6BF02EC71AE915206467982FD0A44F3354F3FA3CA61BF44346E0014A43879152",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "docs/openapi/schedule.json",
+    "sourceSha256": "B6ED18E882FB6AC82A62D4C3F693BB288F36DFD15CD7328E8462276D545E6D61",
+    "snapshotSha256": "B6ED18E882FB6AC82A62D4C3F693BB288F36DFD15CD7328E8462276D545E6D61",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+    "sourceSha256": "3219B05A681F84191D8C882BC30C2076354EC7B7693512C844AD70BE0726B86D",
+    "snapshotSha256": "3219B05A681F84191D8C882BC30C2076354EC7B7693512C844AD70BE0726B86D",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "gradle/libs.versions.toml",
+    "sourceSha256": "D8900AD47ED968F0A831D7227B10067A0065ABEBC604255A09E6281DE88BA83A",
+    "snapshotSha256": "D8900AD47ED968F0A831D7227B10067A0065ABEBC604255A09E6281DE88BA83A",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/academic-service/academic-api-contract/build.gradle.kts",
+    "sourceSha256": "45D1DC9C8531DB1C2AE539629DC8919E2950F3067BAD1CFBD20BEED04F68471F",
+    "snapshotSha256": "45D1DC9C8531DB1C2AE539629DC8919E2950F3067BAD1CFBD20BEED04F68471F",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/academic-service/academic-app/build.gradle.kts",
+    "sourceSha256": "20F4D9564CA08556481DDC2B6D411647DA7077C85887469D80B3E1F42AAF32CF",
+    "snapshotSha256": "20F4D9564CA08556481DDC2B6D411647DA7077C85887469D80B3E1F42AAF32CF",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java",
+    "sourceSha256": "E034CE3333BC3DE17AFD6149B7581C2A9DC7BA6921EF178458C2BE84BF7E6AFB",
+    "snapshotSha256": "E034CE3333BC3DE17AFD6149B7581C2A9DC7BA6921EF178458C2BE84BF7E6AFB",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java",
+    "sourceSha256": "3AEA5E66BD3981A39708AF93916303CE9BB7906D4008EC7487589C252CC2BAFE",
+    "snapshotSha256": "3AEA5E66BD3981A39708AF93916303CE9BB7906D4008EC7487589C252CC2BAFE",
+    "matchedReportedHash": false
+  },
+  {
+    "path": "services/api-gateway/build.gradle.kts",
+    "sourceSha256": "F22D83CEA3A18D420BE810541064AEA26FE42F6DB5B807CE6804C6AD3C268A18",
+    "snapshotSha256": "F22D83CEA3A18D420BE810541064AEA26FE42F6DB5B807CE6804C6AD3C268A18",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/api-gateway/src/main/resources/application-prod.yml",
+    "sourceSha256": "FF0142AB2339C02265C09D98AB2645601B4169D648DE2F418C737DD3AA987449",
+    "snapshotSha256": "FF0142AB2339C02265C09D98AB2645601B4169D648DE2F418C737DD3AA987449",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/api-gateway/src/main/resources/application.yml",
+    "sourceSha256": "6815A39ECF1F63B2094138B7171262744654B16CC13E1C8F7D77B044AB5CCB74",
+    "snapshotSha256": "6815A39ECF1F63B2094138B7171262744654B16CC13E1C8F7D77B044AB5CCB74",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/attendance-service/attendance-api-contract/build.gradle.kts",
+    "sourceSha256": "21C4DE9115E93AAFB93D75A8AC7B4C081BF1E308430264A28DDF8FC394C1F37B",
+    "snapshotSha256": "21C4DE9115E93AAFB93D75A8AC7B4C081BF1E308430264A28DDF8FC394C1F37B",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/build.gradle.kts",
+    "sourceSha256": "6C040BB7FDE9936287EE91609809E1281C04016C6C58C05E6595E553E293376C",
+    "snapshotSha256": "6C040BB7FDE9936287EE91609809E1281C04016C6C58C05E6595E553E293376C",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+    "sourceSha256": "4DB3F4FDF66CAA14CBF48D2C6FE539A566076B043CE724EE80C2DDE96536808D",
+    "snapshotSha256": "4DB3F4FDF66CAA14CBF48D2C6FE539A566076B043CE724EE80C2DDE96536808D",
+    "matchedReportedHash": false
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/build.gradle.kts",
+    "sourceSha256": "D4EFDEF2383741841191E23AC01D0C8FCED32C7DA354D38C12D09C6FFE65AA62",
+    "snapshotSha256": "D4EFDEF2383741841191E23AC01D0C8FCED32C7DA354D38C12D09C6FFE65AA62",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/auth-service/auth-app/build.gradle.kts",
+    "sourceSha256": "EB21A7B6B99CE9926E3D5E4D8A6A53DC78EC4FB9A43AA53A2EAC0625F2DA83A7",
+    "snapshotSha256": "EB21A7B6B99CE9926E3D5E4D8A6A53DC78EC4FB9A43AA53A2EAC0625F2DA83A7",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+    "sourceSha256": "968232F3AC9B1AE3CED60E58120B6BF60B1A05F9D1DA5C0F4293AF63960B59C9",
+    "snapshotSha256": "968232F3AC9B1AE3CED60E58120B6BF60B1A05F9D1DA5C0F4293AF63960B59C9",
+    "matchedReportedHash": false
+  },
+  {
+    "path": "services/document-renderer-service/document-renderer-app/build.gradle.kts",
+    "sourceSha256": "A0F107EAD238D5B2D9C2E7D1ED7089C96E342B16F0AF585A368F77782CD92306",
+    "snapshotSha256": "A0F107EAD238D5B2D9C2E7D1ED7089C96E342B16F0AF585A368F77782CD92306",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterTest.java",
+    "sourceSha256": "1AE1DF61678AD4E588DEEB33BC7663DE1B1A04BE643E2CDA3E5644D48AC25165",
+    "snapshotSha256": "1AE1DF61678AD4E588DEEB33BC7663DE1B1A04BE643E2CDA3E5644D48AC25165",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-api-contract/build.gradle.kts",
+    "sourceSha256": "7FAA27265B65A0DF257B912FF76A5B0D49C648F5577911556491980F60F902C4",
+    "snapshotSha256": "7FAA27265B65A0DF257B912FF76A5B0D49C648F5577911556491980F60F902C4",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/build.gradle.kts",
+    "sourceSha256": "694EF2C3664F68F7FC1130250E01E250DCB30B1ADFBB9F25CB4DD85197CFD9EA",
+    "snapshotSha256": "694EF2C3664F68F7FC1130250E01E250DCB30B1ADFBB9F25CB4DD85197CFD9EA",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+    "sourceSha256": "1BEC56EA17CC141A7815B8AA2A455BFDB009D5D17EB85793198B58F28FA0B518",
+    "snapshotSha256": "1BEC56EA17CC141A7815B8AA2A455BFDB009D5D17EB85793198B58F28FA0B518",
+    "matchedReportedHash": false
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+    "sourceSha256": "01BF3A9CFA02BD050ECE2E66F250E56333F1B626F1E6B7B6E647D38E78A8B1AA",
+    "snapshotSha256": "01BF3A9CFA02BD050ECE2E66F250E56333F1B626F1E6B7B6E647D38E78A8B1AA",
+    "matchedReportedHash": false
+  },
+  {
+    "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java",
+    "sourceSha256": "8F631E24C0E68603FC65383479FF431D79E169B0563644880E205F0FD242C56A",
+    "snapshotSha256": "8F631E24C0E68603FC65383479FF431D79E169B0563644880E205F0FD242C56A",
+    "matchedReportedHash": false
+  },
+  {
+    "path": "services/notification-service/notification-api-contract/build.gradle.kts",
+    "sourceSha256": "9FC584E7EDBBE1DEAEB0A8BCB8F2217004DD3F09EF3187674D28C3FA7D795A12",
+    "snapshotSha256": "9FC584E7EDBBE1DEAEB0A8BCB8F2217004DD3F09EF3187674D28C3FA7D795A12",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/notification-service/notification-app/build.gradle.kts",
+    "sourceSha256": "76140B801EAE7679D45EDAF1D2E1797BB0CB6C25C9A43AFB4C1A9EFD472D3734",
+    "snapshotSha256": "76140B801EAE7679D45EDAF1D2E1797BB0CB6C25C9A43AFB4C1A9EFD472D3734",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java",
+    "sourceSha256": "479FCD2D8DDB547BD3F12F1877886A80188BFABF0645DDEA8E7332CF5541A2FC",
+    "snapshotSha256": "479FCD2D8DDB547BD3F12F1877886A80188BFABF0645DDEA8E7332CF5541A2FC",
+    "matchedReportedHash": false
+  },
+  {
+    "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java",
+    "sourceSha256": "4A5FAD1B8887A1709FDDE9484C4BFBBC5E927AFBCF9EEE7AB0039DF2A91FEF49",
+    "snapshotSha256": "4A5FAD1B8887A1709FDDE9484C4BFBBC5E927AFBCF9EEE7AB0039DF2A91FEF49",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/schedule-service/schedule-api-contract/build.gradle.kts",
+    "sourceSha256": "7AEDB5B3803EF2B6E9E969046EA57AE5C131600DE79C61F669977CE84C7E86EF",
+    "snapshotSha256": "7AEDB5B3803EF2B6E9E969046EA57AE5C131600DE79C61F669977CE84C7E86EF",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/build.gradle.kts",
+    "sourceSha256": "5E0736DF4D0EB6AD5A0D2C6B95C1F0E0FF4360CB7DB7D2691C08E0A9BDC55368",
+    "snapshotSha256": "5E0736DF4D0EB6AD5A0D2C6B95C1F0E0FF4360CB7DB7D2691C08E0A9BDC55368",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java",
+    "sourceSha256": "CCE161A34896C03BF1BD1D560EDE10030DC27645205CB45AD4AD40135BC720A6",
+    "snapshotSha256": "CCE161A34896C03BF1BD1D560EDE10030DC27645205CB45AD4AD40135BC720A6",
+    "matchedReportedHash": false
+  },
+  {
+    "path": "services/shared/shared-events/build.gradle.kts",
+    "sourceSha256": "2735DEF6AED78E8F229EECCB7D850FF4BC761FE3DB0F74641F392652BEFB3CF9",
+    "snapshotSha256": "2735DEF6AED78E8F229EECCB7D850FF4BC761FE3DB0F74641F392652BEFB3CF9",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java",
+    "sourceSha256": "5B95A560C28FB81FFDF8ED16C59114988C7DCCAA7FA669612F78ABE294BEAFF2",
+    "snapshotSha256": "5B95A560C28FB81FFDF8ED16C59114988C7DCCAA7FA669612F78ABE294BEAFF2",
+    "matchedReportedHash": false
+  },
+  {
+    "path": "services/shared/shared-logback/build.gradle.kts",
+    "sourceSha256": "775B239EC1764085EC2802A023BDBC88E82A81E466733DF5DD08B7165E42B7CB",
+    "snapshotSha256": "775B239EC1764085EC2802A023BDBC88E82A81E466733DF5DD08B7165E42B7CB",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/shared/shared-observability/build.gradle.kts",
+    "sourceSha256": "A41CAF0CE9D18F139EEA1950F2C3D22D1136B6EF3DC42AAF05B47EE13CA6D33E",
+    "snapshotSha256": "A41CAF0CE9D18F139EEA1950F2C3D22D1136B6EF3DC42AAF05B47EE13CA6D33E",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/shared/shared-outbox/build.gradle.kts",
+    "sourceSha256": "1EA28921B809D4FD4BA93FF388E2B1559EE8DECE9E85B71AB334A0EFD7F143BA",
+    "snapshotSha256": "1EA28921B809D4FD4BA93FF388E2B1559EE8DECE9E85B71AB334A0EFD7F143BA",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/shared/shared-security/build.gradle.kts",
+    "sourceSha256": "974805D75C9ADAF181E0F0C6731EDA5C5A5E11DEE570BB74CC6D2275A76EA1E8",
+    "snapshotSha256": "974805D75C9ADAF181E0F0C6731EDA5C5A5E11DEE570BB74CC6D2275A76EA1E8",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/shared/shared-test-containers/build.gradle.kts",
+    "sourceSha256": "9BDEBAE64F6BF9FCC9F4E3FDE997F9C7C9D3DFFBCBF01F6E08F56A141D931D5A",
+    "snapshotSha256": "9BDEBAE64F6BF9FCC9F4E3FDE997F9C7C9D3DFFBCBF01F6E08F56A141D931D5A",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/shared/shared-web-api/build.gradle.kts",
+    "sourceSha256": "6CE0CFE6393939A9B744767C0B734E61AEA288C1E11B35594884BCD0DD932DA9",
+    "snapshotSha256": "6CE0CFE6393939A9B744767C0B734E61AEA288C1E11B35594884BCD0DD932DA9",
+    "matchedReportedHash": true
+  },
+  {
+    "path": "services/shared/shared-web/build.gradle.kts",
+    "sourceSha256": "044E1EBF395F0259910FCFED61796359D4C3B308D0034B1500260A602A496995",
+    "snapshotSha256": "044E1EBF395F0259910FCFED61796359D4C3B308D0034B1500260A602A496995",
+    "matchedReportedHash": true
+  }
+]

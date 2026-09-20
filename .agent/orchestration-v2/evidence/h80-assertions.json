@@ -1,0 +1,58 @@
+[
+  {
+    "case": "nativeLong",
+    "expectedAccept": true,
+    "accepted": true,
+    "pass": true,
+    "error": null
+  },
+  {
+    "case": "number",
+    "expectedAccept": true,
+    "accepted": true,
+    "pass": true,
+    "error": null
+  },
+  {
+    "case": "unsafeLong",
+    "expectedAccept": false,
+    "accepted": false,
+    "pass": true,
+    "error": "request_attachments.size BSON Long is outside the safe JSON integer range"
+  },
+  {
+    "case": "negativeLong",
+    "expectedAccept": false,
+    "accepted": false,
+    "pass": true,
+    "error": "request_attachments.size must be non-negative"
+  },
+  {
+    "case": "fraction",
+    "expectedAccept": false,
+    "accepted": false,
+    "pass": true,
+    "error": "request_attachments.size must be an exact safe JSON integer"
+  },
+  {
+    "case": "numericString",
+    "expectedAccept": false,
+    "accepted": false,
+    "pass": true,
+    "error": "request_attachments.size must be a native BSON Long or safe JSON integer"
+  },
+  {
+    "case": "missing",
+    "expectedAccept": false,
+    "accepted": false,
+    "pass": true,
+    "error": "request_attachments.size must be a native BSON Long or safe JSON integer"
+  },
+  {
+    "case": "null",
+    "expectedAccept": false,
+    "accepted": false,
+    "pass": true,
+    "error": "request_attachments.size must be a native BSON Long or safe JSON integer"
+  }
+]

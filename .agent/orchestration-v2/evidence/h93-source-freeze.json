@@ -1,0 +1,71 @@
+{
+  "baseRevision": "13e5fd1985b798bbb61bcc85969e6a74b1fc6837",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-service-identity",
+  "authorManifestHash": "28165F826C9E223C9FA5241E056826B87FA0C43FCBF0276E2AFAAA72EDF0C71F",
+  "files": [
+    {
+      "path": "services/shared/shared-security/build.gradle.kts",
+      "sha256": "844675404FC3077DEAFE82FB0833078DE01ED25709D46E8F230B01AB91D7320A"
+    },
+    {
+      "path": "docs/security/L5B-SERVICE-IDENTITY.md",
+      "sha256": "426DC47433C3C2E5438EB673653E48F303F60954E1B34579DDBDDA314F248114"
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/DirectedServiceCredential.java",
+      "sha256": "645713827DFAC15D58871E8C0256ABF8E76CEB166A152673128F299738E8346D"
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java",
+      "sha256": "C3A521F8158BBEACC75E30E6C13E2921359A8D8E06E1FF1CF4A5314A6867608F"
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServicePrincipal.java",
+      "sha256": "9CC0ADA0FDD7650EC2A3858662B1FC127319C339A595A9A858784925FBA07643"
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentials.java",
+      "sha256": "75F8F9DCEBA3169BB577F1815BFFECB7B3490DF6257F4B59EA91376AE60EC7FB"
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenClientInterceptor.java",
+      "sha256": "7A308AD6546D9B1771FB4116FBC7CE82B2D07FD7543D83B13FDB1E706D30EEBB"
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptorTest.java",
+      "sha256": "21FE80098D4C51EA5CCDF4B1C45A5C8FDA3B7BF48975328FA854A36A816884D9"
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityTlsTransportTest.java",
+      "sha256": "512937D08D9A7A2BE74ADC971E9458D6558D6C6BBA78D580979B361271AE7F73"
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentialsTest.java",
+      "sha256": "32911123E47C4D82931290BEC3289235E1BA1F282244AF6B5498B5E334E9BF04"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceAuthConfiguration.java",
+      "sha256": "9A3CBAB741AE3E86CF7A2721A4B7CCDF2AC62EA34F3DBEC10546FAD478BB6B1A"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+      "sha256": "4DCF0A7BF21820A61FA06A0EC863E1B05C2CA9B59D3A94084CB76A5D862C9803"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+      "sha256": "BA6D2EFF9590D2055080162163B8F678D7F6583D739F53F3D36F40B6A788B1CE"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceAuthConfiguration.java",
+      "sha256": "6841667978022451BE4740521289BBC42B49BA22403A7977A3A426858FF561AB"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+      "sha256": "1B782947E568845B0438241BE857877493960E2538E85A598F3B1927ABB2C9EA"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+      "sha256": "2A5BFB7B2A761A3854FC6339FE8236546828B13484819A50F81233C4A8FE8E57"
+    }
+  ]
+}

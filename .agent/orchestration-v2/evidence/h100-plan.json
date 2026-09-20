@@ -1,0 +1,17 @@
+{
+  "arguments": [
+    ":services:academic-service:academic-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.academic.integration.CacheIT",
+    "--tests",
+    "ru.rutcampustrack.academic.integration.EventIT",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report"
+  ],
+  "resultDirectories": [
+    "services/academic-service/academic-app/build/test-results/integrationTest"
+  ],
+  "meaning": "Only H99 failed Academic fixture classes; preserve prior passes"
+}

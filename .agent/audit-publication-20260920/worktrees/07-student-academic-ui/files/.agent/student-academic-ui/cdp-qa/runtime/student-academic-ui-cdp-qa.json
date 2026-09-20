@@ -1,0 +1,1534 @@
+{
+  "schema": "rct.fe13-cdp-qa.v1",
+  "startedAt": "2026-09-08T22:14:06.679Z",
+  "finishedAt": "2026-09-08T22:14:27.894Z",
+  "durationMs": 21215,
+  "environment": {
+    "node": "v24.14.0",
+    "platform": "win32",
+    "arch": "x64",
+    "cwd": "C:\\Users\\maksd\\.codex\\worktrees\\34a5\\rutcampustrack",
+    "script": "C:\\Users\\maksd\\.codex\\worktrees\\34a5\\rutcampustrack\\.agent\\worktrees\\student-academic-ui\\.agent\\student-academic-ui\\cdp-qa\\student-academic-ui-cdp-qa.mjs",
+    "cdpEndpoint": "http://127.0.0.1:9223",
+    "baseUrl": "http://127.0.0.1:18210",
+    "outputDirectory": "C:\\Users\\maksd\\.codex\\worktrees\\34a5\\rutcampustrack\\.agent\\worktrees\\student-academic-ui\\.agent\\student-academic-ui\\cdp-qa\\runtime",
+    "policy": "localhost-only; one created target; no runtime start; no external network"
+  },
+  "runtimeEvidence": {
+    "cdpDomains": [
+      "Page",
+      "Runtime",
+      "Emulation",
+      "Accessibility",
+      "Input"
+    ],
+    "targetCreated": true,
+    "targetId": "3354C87D30BF9984C6011D714B7D19A5",
+    "targetType": "page",
+    "browser": {
+      "browser": "Chrome/152.0.7977.76",
+      "protocolVersion": "1.3",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+    },
+    "close": {
+      "status": 200,
+      "ok": true,
+      "body": "Target is closing"
+    }
+  },
+  "fixtures": {
+    "baseIds": [
+      "4593-142",
+      "4593-848365",
+      "4593-848496",
+      "4595-293",
+      "4595-848430",
+      "4596-365",
+      "4710-232",
+      "4768-228",
+      "4603-142",
+      "4603-848696",
+      "4798-142",
+      "4798-200",
+      "4798-285"
+    ],
+    "baseViewport": {
+      "width": 390,
+      "height": 844,
+      "rootFont": 16,
+      "theme": "dark"
+    },
+    "base": [
+      {
+        "key": "base-4593-142",
+        "fixture": "4593-142",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4593-142&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [
+            {
+              "source": "Log.entryAdded",
+              "level": "error",
+              "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+              "timestamp": 1788905647360.057
+            }
+          ],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": false
+        }
+      },
+      {
+        "key": "base-4593-848365",
+        "fixture": "4593-848365",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4593-848365&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "base-4593-848496",
+        "fixture": "4593-848496",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4593-848496&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "base-4595-293",
+        "fixture": "4595-293",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4595-293&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "base-4595-848430",
+        "fixture": "4595-848430",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4595-848430&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "base-4596-365",
+        "fixture": "4596-365",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4596-365&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "base-4710-232",
+        "fixture": "4710-232",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4710-232&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "base-4768-228",
+        "fixture": "4768-228",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4768-228&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "base-4603-142",
+        "fixture": "4603-142",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4603-142&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "base-4603-848696",
+        "fixture": "4603-848696",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4603-848696&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:142:26\n    at Array.every (<anonymous>)\n    at <anonymous>:140:65\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "base-4798-142",
+        "fixture": "4798-142",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4798-142&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:142:26\n    at Array.every (<anonymous>)\n    at <anonymous>:140:65\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "base-4798-200",
+        "fixture": "4798-200",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4798-200&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:142:26\n    at Array.every (<anonymous>)\n    at <anonymous>:140:65\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "base-4798-285",
+        "fixture": "4798-285",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4798-285&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:142:26\n    at Array.every (<anonymous>)\n    at <anonymous>:140:65\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      }
+    ]
+  },
+  "matrices": {
+    "fixtureIds": [
+      "4593-142",
+      "4603-142",
+      "4603-848696"
+    ],
+    "variants": [
+      {
+        "width": 390,
+        "height": 844,
+        "rootFont": 16,
+        "theme": "light"
+      },
+      {
+        "width": 320,
+        "height": 844,
+        "rootFont": 16,
+        "theme": "dark"
+      },
+      {
+        "width": 320,
+        "height": 844,
+        "rootFont": 24,
+        "theme": "dark"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "rootFont": 24,
+        "theme": "light"
+      }
+    ],
+    "results": [
+      {
+        "key": "responsive-4593-142-390x844-root16-light",
+        "fixture": "4593-142",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "light"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4593-142&theme=light&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "responsive-4593-142-320x844-root16-dark",
+        "fixture": "4593-142",
+        "viewport": {
+          "width": 320,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4593-142&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "responsive-4593-142-320x844-root24-dark",
+        "fixture": "4593-142",
+        "viewport": {
+          "width": 320,
+          "height": 844,
+          "rootFont": 24,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4593-142&theme=dark&rootFont=24&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "responsive-4593-142-390x844-root24-light",
+        "fixture": "4593-142",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 24,
+          "theme": "light"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4593-142&theme=light&rootFont=24&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "responsive-4603-142-390x844-root16-light",
+        "fixture": "4603-142",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "light"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4603-142&theme=light&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "responsive-4603-142-320x844-root16-dark",
+        "fixture": "4603-142",
+        "viewport": {
+          "width": 320,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4603-142&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "responsive-4603-142-320x844-root24-dark",
+        "fixture": "4603-142",
+        "viewport": {
+          "width": 320,
+          "height": 844,
+          "rootFont": 24,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4603-142&theme=dark&rootFont=24&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "responsive-4603-142-390x844-root24-light",
+        "fixture": "4603-142",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 24,
+          "theme": "light"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4603-142&theme=light&rootFont=24&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "responsive-4603-848696-390x844-root16-light",
+        "fixture": "4603-848696",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "light"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4603-848696&theme=light&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:142:26\n    at Array.every (<anonymous>)\n    at <anonymous>:140:65\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "responsive-4603-848696-320x844-root16-dark",
+        "fixture": "4603-848696",
+        "viewport": {
+          "width": 320,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4603-848696&theme=dark&rootFont=16&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:142:26\n    at Array.every (<anonymous>)\n    at <anonymous>:140:65\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "responsive-4603-848696-320x844-root24-dark",
+        "fixture": "4603-848696",
+        "viewport": {
+          "width": 320,
+          "height": 844,
+          "rootFont": 24,
+          "theme": "dark"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4603-848696&theme=dark&rootFont=24&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:142:26\n    at Array.every (<anonymous>)\n    at <anonymous>:140:65\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      },
+      {
+        "key": "responsive-4603-848696-390x844-root24-light",
+        "fixture": "4603-848696",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 24,
+          "theme": "light"
+        },
+        "terminal": true,
+        "url": "http://127.0.0.1:18210/?fixture=4603-848696&theme=light&rootFont=24&terminal=true",
+        "status": "FAIL",
+        "snapshot": null,
+        "accessibility": null,
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "screenshot": null,
+        "error": {
+          "name": "Error",
+          "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:142:26\n    at Array.every (<anonymous>)\n    at <anonymous>:140:65\n    at <anonymous>:224:3"
+        },
+        "assertions": {
+          "root": false,
+          "globalOverflow": false,
+          "consoleErrors": true
+        }
+      }
+    ]
+  },
+  "interactions": {
+    "attendanceHistory": {
+      "fixture": "4596-365",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "rootFont": 16,
+        "theme": "dark"
+      },
+      "url": "http://127.0.0.1:18210/?fixture=4596-365&theme=dark&rootFont=16&terminal=true",
+      "status": "FAIL",
+      "snapshot": null,
+      "geometry": [],
+      "console": {
+        "errors": [],
+        "warnings": []
+      },
+      "error": {
+        "name": "Error",
+        "message": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+      },
+      "expansion": null
+    },
+    "statistics": {
+      "fixture": "4603-848696",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "rootFont": 16,
+        "theme": "dark"
+      },
+      "url": "http://127.0.0.1:18210/?fixture=4603-848696&theme=dark&rootFont=16&terminal=true",
+      "status": "PASS",
+      "initial": {
+        "selected": [
+          "Лекция",
+          "Лабораторная"
+        ],
+        "types": [
+          {
+            "text": "Лекция",
+            "selected": true,
+            "disabled": false
+          },
+          {
+            "text": "Лабораторная",
+            "selected": true,
+            "disabled": false
+          }
+        ],
+        "cards": [
+          "LECTURE",
+          "LAB"
+        ],
+        "aggregateText": "Посещаемость65%Пар закрыто20/20",
+        "pathSignature": "M 17.75,0.00 L 53.25,0.00 L 88.75,0.00 L 124.25,0.00 L 124.25,46.36 L 88.75,15.45 L 53.25,30.91 L 17.75,30.91 Z|M 17.75,30.91 L 53.25,30.91 L 88.75,15.45 L 124.25,46.36 L 124.25,77.27 L 88.75,30.91 L 53.25,61.82 L 17.75,46.36 Z|M 17.75,46.36 L 53.25,61.82 L 88.75,30.91 L 124.25,77.27 L 124.25,170.00 L 88.75,170.00 L 53.25,170.00 L 17.75,170.00 Z",
+        "legendSignature": "Период 1, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 73%, 8 пар; присутствие или уважительная причина 82%, 9 пар; уважительная причина 9%, 1 пар; отсутствие 18%, 2 пар. Закрыто 11 из 12 пар. Период 2, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 64%, 7 пар; присутствие или уважительная причина 82%, 9 пар; уважительная причина 18%, 2 пар; отсутствие 18%, 2 пар. Закрыто 11 из 12 пар. Период 3, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 82%, 9 пар; присутствие или уважительная причина 91%, 10 пар; уважительная причина 9%, 1 пар; отсутствие 9%, 1 пар. Закрыто 11 из 12 пар. Период 4, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 55%, 6 пар; присутствие или уважительная причина 73%, 8 пар; уважительная причина 18%, 2 пар; отсутствие 27%, 3 пар. Закрыто 11 из 12 пар. Период 5, 2026-09-01 — 2026-09-07: Будущий период. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 12 пар. Период 6, 2026-09-01 — 2026-09-07: Будущий период. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 12 пар. Период 7, 2026-09-01 — 2026-09-07: Будущий период. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 12 пар. Период 8, 2026-09-01 — 2026-09-07: Будущий период. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 12 пар.",
+        "range": "Недели"
+      },
+      "afterType": {
+        "selected": [
+          "Лабораторная"
+        ],
+        "types": [
+          {
+            "text": "Лекция",
+            "selected": false,
+            "disabled": false
+          },
+          {
+            "text": "Лабораторная",
+            "selected": true,
+            "disabled": true
+          }
+        ],
+        "cards": [
+          "LECTURE",
+          "LAB"
+        ],
+        "aggregateText": "Посещаемость63%Пар закрыто8/8",
+        "pathSignature": "M 23.67,0.00 L 71.00,0.00 L 118.33,0.00 L 165.67,0.00 L 165.67,0.00 L 118.33,85.00 L 71.00,0.00 L 23.67,56.67 Z|M 23.67,56.67 L 71.00,0.00 L 118.33,85.00 L 165.67,0.00 L 165.67,0.00 L 118.33,85.00 L 71.00,42.50 L 23.67,56.67 Z|M 23.67,56.67 L 71.00,42.50 L 118.33,85.00 L 165.67,0.00 L 165.67,170.00 L 118.33,170.00 L 71.00,170.00 L 23.67,170.00 Z",
+        "legendSignature": "Период 1, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 67%, 2 пар; присутствие или уважительная причина 67%, 2 пар; уважительная причина 0%, 0 пар; отсутствие 33%, 1 пар. Закрыто 3 из 4 пар. Период 2, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 75%, 3 пар; присутствие или уважительная причина 100%, 4 пар; уважительная причина 25%, 1 пар; отсутствие 0%, 0 пар. Закрыто 4 из 4 пар. Период 3, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 50%, 1 пар; присутствие или уважительная причина 50%, 1 пар; уважительная причина 0%, 0 пар; отсутствие 50%, 1 пар. Закрыто 2 из 2 пар. Период 4, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 100%, 2 пар; присутствие или уважительная причина 100%, 2 пар; уважительная причина 0%, 0 пар; отсутствие 0%, 0 пар. Закрыто 2 из 2 пар. Период 5, 2026-09-01 — 2026-09-07: Будущий период. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 2 пар. Период 6, 2026-09-01 — 2026-09-07: Нет данных. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 0 пар.",
+        "range": "Недели"
+      },
+      "afterLast": {
+        "selected": [
+          "Лабораторная"
+        ],
+        "types": [
+          {
+            "text": "Лекция",
+            "selected": false,
+            "disabled": false
+          },
+          {
+            "text": "Лабораторная",
+            "selected": true,
+            "disabled": true
+          }
+        ],
+        "cards": [
+          "LECTURE",
+          "LAB"
+        ],
+        "aggregateText": "Посещаемость63%Пар закрыто8/8",
+        "pathSignature": "M 23.67,0.00 L 71.00,0.00 L 118.33,0.00 L 165.67,0.00 L 165.67,0.00 L 118.33,85.00 L 71.00,0.00 L 23.67,56.67 Z|M 23.67,56.67 L 71.00,0.00 L 118.33,85.00 L 165.67,0.00 L 165.67,0.00 L 118.33,85.00 L 71.00,42.50 L 23.67,56.67 Z|M 23.67,56.67 L 71.00,42.50 L 118.33,85.00 L 165.67,0.00 L 165.67,170.00 L 118.33,170.00 L 71.00,170.00 L 23.67,170.00 Z",
+        "legendSignature": "Период 1, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 67%, 2 пар; присутствие или уважительная причина 67%, 2 пар; уважительная причина 0%, 0 пар; отсутствие 33%, 1 пар. Закрыто 3 из 4 пар. Период 2, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 75%, 3 пар; присутствие или уважительная причина 100%, 4 пар; уважительная причина 25%, 1 пар; отсутствие 0%, 0 пар. Закрыто 4 из 4 пар. Период 3, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 50%, 1 пар; присутствие или уважительная причина 50%, 1 пар; уважительная причина 0%, 0 пар; отсутствие 50%, 1 пар. Закрыто 2 из 2 пар. Период 4, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 100%, 2 пар; присутствие или уважительная причина 100%, 2 пар; уважительная причина 0%, 0 пар; отсутствие 0%, 0 пар. Закрыто 2 из 2 пар. Период 5, 2026-09-01 — 2026-09-07: Будущий период. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 2 пар. Период 6, 2026-09-01 — 2026-09-07: Нет данных. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 0 пар.",
+        "range": "Недели"
+      },
+      "afterRange": {
+        "selected": [
+          "Лабораторная"
+        ],
+        "types": [
+          {
+            "text": "Лекция",
+            "selected": false,
+            "disabled": false
+          },
+          {
+            "text": "Лабораторная",
+            "selected": true,
+            "disabled": true
+          }
+        ],
+        "cards": [
+          "LECTURE",
+          "LAB"
+        ],
+        "aggregateText": "Посещаемость63%Пар закрыто8/8",
+        "pathSignature": "M 23.67,0.00 L 71.00,0.00 L 118.33,0.00 L 165.67,0.00 L 165.67,85.00 L 118.33,0.00 L 71.00,56.67 L 23.67,0.00 Z|M 23.67,0.00 L 71.00,56.67 L 118.33,0.00 L 165.67,85.00 L 165.67,85.00 L 118.33,85.00 L 71.00,56.67 L 23.67,0.00 Z|M 23.67,0.00 L 71.00,56.67 L 118.33,85.00 L 165.67,85.00 L 165.67,170.00 L 118.33,170.00 L 71.00,170.00 L 23.67,170.00 Z",
+        "legendSignature": "Период 1, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 100%, 1 пар; присутствие или уважительная причина 100%, 1 пар; уважительная причина 0%, 0 пар; отсутствие 0%, 0 пар. Закрыто 1 из 1 пар. Период 2, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 67%, 2 пар; присутствие или уважительная причина 67%, 2 пар; уважительная причина 0%, 0 пар; отсутствие 33%, 1 пар. Закрыто 3 из 3 пар. Период 3, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 50%, 1 пар; присутствие или уважительная причина 100%, 2 пар; уважительная причина 50%, 1 пар; отсутствие 0%, 0 пар. Закрыто 2 из 2 пар. Период 4, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 50%, 1 пар; присутствие или уважительная причина 50%, 1 пар; уважительная причина 0%, 0 пар; отсутствие 50%, 1 пар. Закрыто 2 из 2 пар. Период 5, 2026-09-01 — 2026-09-07: Будущий период. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 2 пар. Период 6, 2026-09-01 — 2026-09-07: Нет данных. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 0 пар.",
+        "range": "Дни"
+      },
+      "afterRestore": {
+        "selected": [
+          "Лабораторная"
+        ],
+        "types": [
+          {
+            "text": "Лекция",
+            "selected": false,
+            "disabled": false
+          },
+          {
+            "text": "Лабораторная",
+            "selected": true,
+            "disabled": true
+          }
+        ],
+        "cards": [
+          "LECTURE",
+          "LAB"
+        ],
+        "aggregateText": "Посещаемость63%Пар закрыто8/8",
+        "pathSignature": "M 23.67,0.00 L 71.00,0.00 L 118.33,0.00 L 165.67,0.00 L 165.67,0.00 L 118.33,85.00 L 71.00,0.00 L 23.67,56.67 Z|M 23.67,56.67 L 71.00,0.00 L 118.33,85.00 L 165.67,0.00 L 165.67,0.00 L 118.33,85.00 L 71.00,42.50 L 23.67,56.67 Z|M 23.67,56.67 L 71.00,42.50 L 118.33,85.00 L 165.67,0.00 L 165.67,170.00 L 118.33,170.00 L 71.00,170.00 L 23.67,170.00 Z",
+        "legendSignature": "Период 1, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 67%, 2 пар; присутствие или уважительная причина 67%, 2 пар; уважительная причина 0%, 0 пар; отсутствие 33%, 1 пар. Закрыто 3 из 4 пар. Период 2, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 75%, 3 пар; присутствие или уважительная причина 100%, 4 пар; уважительная причина 25%, 1 пар; отсутствие 0%, 0 пар. Закрыто 4 из 4 пар. Период 3, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 50%, 1 пар; присутствие или уважительная причина 50%, 1 пар; уважительная причина 0%, 0 пар; отсутствие 50%, 1 пар. Закрыто 2 из 2 пар. Период 4, 2026-09-01 — 2026-09-07: Данные доступны. Присутствие 100%, 2 пар; присутствие или уважительная причина 100%, 2 пар; уважительная причина 0%, 0 пар; отсутствие 0%, 0 пар. Закрыто 2 из 2 пар. Период 5, 2026-09-01 — 2026-09-07: Будущий период. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 2 пар. Период 6, 2026-09-01 — 2026-09-07: Нет данных. Присутствие —, 0 пар; присутствие или уважительная причина —, 0 пар; уважительная причина —, 0 пар; отсутствие —, 0 пар. Закрыто 0 из 0 пар.",
+        "range": "Недели"
+      },
+      "actions": [
+        {
+          "id": "deselect-one-type",
+          "observed": {
+            "ok": true,
+            "text": "Лекция"
+          }
+        },
+        {
+          "id": "attempt-last-type",
+          "observed": {
+            "ok": true,
+            "before": {
+              "text": "Лабораторная",
+              "disabled": true
+            }
+          }
+        },
+        {
+          "id": "change-range",
+          "target": "Дни",
+          "observed": {
+            "ok": true,
+            "label": "Дни"
+          }
+        },
+        {
+          "id": "restore-range",
+          "target": "Недели",
+          "observed": {
+            "ok": true,
+            "label": "Недели"
+          }
+        }
+      ],
+      "assertions": {
+        "projectionChanged": true,
+        "rangeChanged": true,
+        "rangeRestored": true,
+        "cardsRetained": true,
+        "lastSelectedDisabled": true
+      },
+      "console": {
+        "errors": [],
+        "warnings": []
+      },
+      "error": null
+    },
+    "keyboardInline": {
+      "fixture": "4593-848496",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "rootFont": 16,
+        "theme": "dark"
+      },
+      "url": "http://127.0.0.1:18210/?fixture=4593-848496&theme=dark&rootFont=16&terminal=false",
+      "status": "FAIL",
+      "blocked": false,
+      "steps": [
+        {
+          "id": "actions-preopened",
+          "observed": {
+            "trigger": true,
+            "triggerValue": "lesson.opaque.absent",
+            "triggerExpanded": "true",
+            "enabledAction": true,
+            "actionText": "Пропускаю по уважительной причине",
+            "inline": false
+          }
+        },
+        {
+          "id": "focus-enabled-action",
+          "observed": {
+            "ok": true,
+            "text": "Пропускаю по уважительной причине",
+            "activeClass": "attendance-lesson-row__action"
+          }
+        }
+      ],
+      "console": {
+        "errors": [],
+        "warnings": []
+      },
+      "error": {
+        "name": "Error",
+        "message": "Timed out waiting for page condition; last state: {\"trigger\":true,\"triggerValue\":\"lesson.opaque.absent\",\"triggerExpanded\":\"true\",\"enabledAction\":true,\"actionText\":\"Пропускаю по уважительной причине\",\"inline\":false}"
+      }
+    }
+  },
+  "screenshots": [
+    {
+      "id": "detail390dark",
+      "path": "C:\\Users\\maksd\\.codex\\worktrees\\34a5\\rutcampustrack\\.agent\\worktrees\\student-academic-ui\\.agent\\student-academic-ui\\cdp-qa\\runtime\\student-academic-ui-detail-390x844-root16-dark.png",
+      "ok": false,
+      "bytes": null,
+      "error": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:142:26\n    at Array.every (<anonymous>)\n    at <anonymous>:140:65\n    at <anonymous>:224:3"
+    },
+    {
+      "id": "overview320root24",
+      "path": "C:\\Users\\maksd\\.codex\\worktrees\\34a5\\rutcampustrack\\.agent\\worktrees\\student-academic-ui\\.agent\\student-academic-ui\\cdp-qa\\runtime\\student-academic-ui-overview-320x844-root24-dark.png",
+      "ok": false,
+      "bytes": null,
+      "error": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+    }
+  ],
+  "assertions": {
+    "missing13Roots": {
+      "status": "FAIL",
+      "criteria": "All 13 base fixtures render exactly one harness and screen root",
+      "observed": [
+        {
+          "fixture": "4593-142",
+          "root": false
+        },
+        {
+          "fixture": "4593-848365",
+          "root": false
+        },
+        {
+          "fixture": "4593-848496",
+          "root": false
+        },
+        {
+          "fixture": "4595-293",
+          "root": false
+        },
+        {
+          "fixture": "4595-848430",
+          "root": false
+        },
+        {
+          "fixture": "4596-365",
+          "root": false
+        },
+        {
+          "fixture": "4710-232",
+          "root": false
+        },
+        {
+          "fixture": "4768-228",
+          "root": false
+        },
+        {
+          "fixture": "4603-142",
+          "root": false
+        },
+        {
+          "fixture": "4603-848696",
+          "root": false
+        },
+        {
+          "fixture": "4798-142",
+          "root": false
+        },
+        {
+          "fixture": "4798-200",
+          "root": false
+        },
+        {
+          "fixture": "4798-285",
+          "root": false
+        }
+      ]
+    },
+    "globalOverflow": {
+      "status": "FAIL",
+      "criteria": "Document/body scrollWidth does not exceed document clientWidth",
+      "observed": [
+        {
+          "key": "base-4593-142",
+          "fixture": "4593-142",
+          "overflow": null
+        },
+        {
+          "key": "base-4593-848365",
+          "fixture": "4593-848365",
+          "overflow": null
+        },
+        {
+          "key": "base-4593-848496",
+          "fixture": "4593-848496",
+          "overflow": null
+        },
+        {
+          "key": "base-4595-293",
+          "fixture": "4595-293",
+          "overflow": null
+        },
+        {
+          "key": "base-4595-848430",
+          "fixture": "4595-848430",
+          "overflow": null
+        },
+        {
+          "key": "base-4596-365",
+          "fixture": "4596-365",
+          "overflow": null
+        },
+        {
+          "key": "base-4710-232",
+          "fixture": "4710-232",
+          "overflow": null
+        },
+        {
+          "key": "base-4768-228",
+          "fixture": "4768-228",
+          "overflow": null
+        },
+        {
+          "key": "base-4603-142",
+          "fixture": "4603-142",
+          "overflow": null
+        },
+        {
+          "key": "base-4603-848696",
+          "fixture": "4603-848696",
+          "overflow": null
+        },
+        {
+          "key": "base-4798-142",
+          "fixture": "4798-142",
+          "overflow": null
+        },
+        {
+          "key": "base-4798-200",
+          "fixture": "4798-200",
+          "overflow": null
+        },
+        {
+          "key": "base-4798-285",
+          "fixture": "4798-285",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4593-142-390x844-root16-light",
+          "fixture": "4593-142",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4593-142-320x844-root16-dark",
+          "fixture": "4593-142",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4593-142-320x844-root24-dark",
+          "fixture": "4593-142",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4593-142-390x844-root24-light",
+          "fixture": "4593-142",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4603-142-390x844-root16-light",
+          "fixture": "4603-142",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4603-142-320x844-root16-dark",
+          "fixture": "4603-142",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4603-142-320x844-root24-dark",
+          "fixture": "4603-142",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4603-142-390x844-root24-light",
+          "fixture": "4603-142",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4603-848696-390x844-root16-light",
+          "fixture": "4603-848696",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4603-848696-320x844-root16-dark",
+          "fixture": "4603-848696",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4603-848696-320x844-root24-dark",
+          "fixture": "4603-848696",
+          "overflow": null
+        },
+        {
+          "key": "responsive-4603-848696-390x844-root24-light",
+          "fixture": "4603-848696",
+          "overflow": null
+        }
+      ]
+    },
+    "consoleErrors": {
+      "status": "FAIL",
+      "criteria": "No Runtime/Log/window console errors in captured scenarios",
+      "observed": [
+        {
+          "key": "base-4593-142",
+          "errors": [
+            {
+              "source": "Log.entryAdded",
+              "level": "error",
+              "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+              "timestamp": 1788905647360.057
+            }
+          ]
+        },
+        {
+          "key": "base-4593-848365",
+          "errors": []
+        },
+        {
+          "key": "base-4593-848496",
+          "errors": []
+        },
+        {
+          "key": "base-4595-293",
+          "errors": []
+        },
+        {
+          "key": "base-4595-848430",
+          "errors": []
+        },
+        {
+          "key": "base-4596-365",
+          "errors": []
+        },
+        {
+          "key": "base-4710-232",
+          "errors": []
+        },
+        {
+          "key": "base-4768-228",
+          "errors": []
+        },
+        {
+          "key": "base-4603-142",
+          "errors": []
+        },
+        {
+          "key": "base-4603-848696",
+          "errors": []
+        },
+        {
+          "key": "base-4798-142",
+          "errors": []
+        },
+        {
+          "key": "base-4798-200",
+          "errors": []
+        },
+        {
+          "key": "base-4798-285",
+          "errors": []
+        },
+        {
+          "key": "responsive-4593-142-390x844-root16-light",
+          "errors": []
+        },
+        {
+          "key": "responsive-4593-142-320x844-root16-dark",
+          "errors": []
+        },
+        {
+          "key": "responsive-4593-142-320x844-root24-dark",
+          "errors": []
+        },
+        {
+          "key": "responsive-4593-142-390x844-root24-light",
+          "errors": []
+        },
+        {
+          "key": "responsive-4603-142-390x844-root16-light",
+          "errors": []
+        },
+        {
+          "key": "responsive-4603-142-320x844-root16-dark",
+          "errors": []
+        },
+        {
+          "key": "responsive-4603-142-320x844-root24-dark",
+          "errors": []
+        },
+        {
+          "key": "responsive-4603-142-390x844-root24-light",
+          "errors": []
+        },
+        {
+          "key": "responsive-4603-848696-390x844-root16-light",
+          "errors": []
+        },
+        {
+          "key": "responsive-4603-848696-320x844-root16-dark",
+          "errors": []
+        },
+        {
+          "key": "responsive-4603-848696-320x844-root24-dark",
+          "errors": []
+        },
+        {
+          "key": "responsive-4603-848696-390x844-root24-light",
+          "errors": []
+        },
+        {
+          "key": "4596-365",
+          "errors": []
+        },
+        {
+          "key": "4603-848696",
+          "errors": []
+        },
+        {
+          "key": "4593-848496",
+          "errors": []
+        }
+      ]
+    },
+    "detailCardsWithin844": {
+      "status": "FAIL",
+      "criteria": "Both detail statistics type cards are fully inside 390x844 base viewport",
+      "observed": []
+    },
+    "axMeaningfulRussianPointData": {
+      "status": "FAIL",
+      "criteria": "Hidden chart point details are present and represented by meaningful Russian AX names",
+      "observed": null
+    },
+    "attendanceHistoryOneRowFullWidth": {
+      "status": "FAIL",
+      "criteria": "4596-365 attendance history uses equal-width cells in one full-width row",
+      "observed": []
+    },
+    "statisticsProjection": {
+      "status": "PASS",
+      "criteria": "Type/range controls change supplied aggregate/path, retain cards, and disable last type",
+      "observed": {
+        "projectionChanged": true,
+        "rangeChanged": true,
+        "rangeRestored": true,
+        "cardsRetained": true,
+        "lastSelectedDisabled": true
+      }
+    },
+    "screenshots": {
+      "status": "FAIL",
+      "criteria": "Detail 390 dark and overview 320/root24 PNGs are written",
+      "observed": [
+        {
+          "id": "detail390dark",
+          "path": "C:\\Users\\maksd\\.codex\\worktrees\\34a5\\rutcampustrack\\.agent\\worktrees\\student-academic-ui\\.agent\\student-academic-ui\\cdp-qa\\runtime\\student-academic-ui-detail-390x844-root16-dark.png",
+          "ok": false,
+          "bytes": null,
+          "error": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:142:26\n    at Array.every (<anonymous>)\n    at <anonymous>:140:65\n    at <anonymous>:224:3"
+        },
+        {
+          "id": "overview320root24",
+          "path": "C:\\Users\\maksd\\.codex\\worktrees\\34a5\\rutcampustrack\\.agent\\worktrees\\student-academic-ui\\.agent\\student-academic-ui\\cdp-qa\\runtime\\student-academic-ui-overview-320x844-root24-dark.png",
+          "ok": false,
+          "bytes": null,
+          "error": "Runtime.evaluate: ReferenceError: GEOMETRY_EPSILON is not defined\n    at <anonymous>:188:54\n    at <anonymous>:224:3"
+        }
+      ]
+    },
+    "keyboardInline": {
+      "status": "FAIL",
+      "criteria": "Keyboard request focus returns to Back and then request trigger; explicit BLOCKED is allowed when selectors cannot be derived",
+      "observed": {
+        "fixture": "4593-848496",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "rootFont": 16,
+          "theme": "dark"
+        },
+        "url": "http://127.0.0.1:18210/?fixture=4593-848496&theme=dark&rootFont=16&terminal=false",
+        "status": "FAIL",
+        "blocked": false,
+        "steps": [
+          {
+            "id": "actions-preopened",
+            "observed": {
+              "trigger": true,
+              "triggerValue": "lesson.opaque.absent",
+              "triggerExpanded": "true",
+              "enabledAction": true,
+              "actionText": "Пропускаю по уважительной причине",
+              "inline": false
+            }
+          },
+          {
+            "id": "focus-enabled-action",
+            "observed": {
+              "ok": true,
+              "text": "Пропускаю по уважительной причине",
+              "activeClass": "attendance-lesson-row__action"
+            }
+          }
+        ],
+        "console": {
+          "errors": [],
+          "warnings": []
+        },
+        "error": {
+          "name": "Error",
+          "message": "Timed out waiting for page condition; last state: {\"trigger\":true,\"triggerValue\":\"lesson.opaque.absent\",\"triggerExpanded\":\"true\",\"enabledAction\":true,\"actionText\":\"Пропускаю по уважительной причине\",\"inline\":false}"
+        }
+      }
+    },
+    "overall": {
+      "status": "FAIL",
+      "failures": [
+        "missing13Roots",
+        "globalOverflow",
+        "consoleErrors",
+        "detailCardsWithin844",
+        "axMeaningfulRussianPointData",
+        "attendanceHistoryOneRowFullWidth",
+        "screenshots",
+        "keyboardInline"
+      ]
+    }
+  },
+  "checks": {
+    "runtime": {
+      "command": "node student-academic-ui-cdp-qa.mjs",
+      "exitCode": 1,
+      "status": "FAIL"
+    },
+    "syntax": {
+      "command": "node --check student-academic-ui-cdp-qa.mjs",
+      "exitCode": null,
+      "status": "ROOT_REQUIRED"
+    }
+  },
+  "limitations": [
+    "This runner does not start Vite, Chrome, or any product runtime.",
+    "No CUA, Playwright, Puppeteer, shell spawning, external network, or data transmission is used.",
+    "Keyboard subcheck may be explicitly BLOCKED only when robust DOM selectors are absent."
+  ],
+  "fatalError": null
+}

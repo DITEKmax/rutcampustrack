@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-09-10T20:25:34" hostname="DITEK-PK" time="13.216">
+  <properties/>
+  <testcase name="accessTokenCannotBeUsedByRefreshParser()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="8.416"/>
+  <testcase name="sessionAccessTokenCarriesFrozenWireAndLegacyAccessIsNotAdmitted()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.714"/>
+  <testcase name="sessionAccessParserAcceptsSignedTokenWithoutOptionalGroupId()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.406"/>
+  <testcase name="accessParserRejectsMalformedRequiredClaims()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.568"/>
+  <testcase name="sessionAccessParserRejectsFutureAndNonNumberTimes()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.157"/>
+  <testcase name="internalTokenCarriesInternalPurposeAndCannotBeParsedAsAccess()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.491"/>
+  <testcase name="sessionAccessParserRejectsMissingRequiredClaims()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.192"/>
+  <testcase name="parserStillRejectsWrongIssuerAudienceAndSignature()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.422"/>
+  <testcase name="refreshParserRejectsMissingPurposeSubjectExpirationOrJti()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.239"/>
+  <testcase name="sessionAccessParserRejectsSemanticIdentityMismatches()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.301"/>
+  <testcase name="generatedAccessTokenIsStrictlyAcceptedAndParseTokenIsAccessAlias()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.363"/>
+  <testcase name="sessionAccessParserRejectsUnknownRolesStatusesAndInvalidDecimalStrings()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.305"/>
+  <testcase name="sessionAccessParserRejectsRawTypeCoercionAndFractionalOrExponentTimes()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.294"/>
+  <testcase name="accessParserRejectsMissingOrWrongPurpose()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.113"/>
+  <testcase name="generatedRefreshTokenIsAcceptedOnlyByRefreshParserAndExtractors()" classname="ru.rutcampustrack.auth.service.JwtTokenPurposeTest" time="0.193"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.15.11\a38b16385e867f59a641330f0362ebe742788ed8\byte-buddy-agent-1.15.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

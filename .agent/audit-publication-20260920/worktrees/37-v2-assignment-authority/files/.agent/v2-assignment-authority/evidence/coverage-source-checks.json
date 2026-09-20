@@ -1,0 +1,35 @@
+{
+  "scope": "L5A source-stage coverage continuation",
+  "revision": "codex/v2-assignment-authority",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-assignment-authority",
+  "checks": [
+    {
+      "name": "git diff --check",
+      "status": "PASS",
+      "exit_code": 0,
+      "environment": "PowerShell, assigned worktree",
+      "runtime": false,
+      "evidence": "Static source check; LF/CRLF conversion notices only."
+    },
+    {
+      "name": "academic coverage integration selectors",
+      "status": "NOTRUN",
+      "exit_code": null,
+      "runtime": true,
+      "evidence": "Requires a later numbered heavy lease; exact selectors are frozen in coverage-source-2026-09-19.md."
+    },
+    {
+      "name": "attendance ReportServiceTest selector",
+      "status": "NOTRUN",
+      "exit_code": null,
+      "runtime": true,
+      "evidence": "Requires a later numbered heavy lease; consumer-boundary tests are source-frozen."
+    }
+  ],
+  "limitations": [
+    "No Gradle, Docker, integration test, or unit test was run in this source phase.",
+    "The existing H56 runtime evidence remains the latest verified four-IT result and is not a pass claim for these additions.",
+    "Attendance tests do not provide cross-service producer evidence."
+  ]
+}

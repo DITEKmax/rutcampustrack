@@ -1,0 +1,40 @@
+Подготовь локальный design packet выбранной PWA/TMA истории в
+C:/Users/maksd/IntelliJIDEA/rutcampustrack. Прочитай
+docs/implementation/parallel-development.md, story registry, актуальные
+mobile/design решения и figma-design-to-code skill. Код и Figma не меняй.
+
+Найди точные node links истории в backlog/источниках. Если их нет, запроси
+ссылку, не угадывай ID. Назначь одного reader explorer Terra medium; writer
+сохраняет результат и не дублирует Figma-чтение. Root владеет общей очередью.
+
+Проверь whoami/plan/seat и принадлежность файла. Сверь текущий лимит с
+https://developers.figma.com/docs/figma-mcp-server/rate-limits-access/ .
+Не переноси квоту другой команды на этот файл и не считай whoami доказательством
+остатка дневного бюджета. Покажи нужные узлы и estimate обращений до выгрузки.
+
+Используй cache; заранее прочитай всё недостающее для выбранной истории:
+общий foundation/components один раз, screens, необходимые states/variants,
+tokens и assets. Design context обязателен до будущей реализации; уже полученный
+screenshot не запрашивай снова. Тяжёлые узлы разбивай логически. Batch применяй
+только когда его поддерживает реальная схема инструмента, без выдуманных полей.
+
+Чтения последовательные, с запасом к лимиту и журналом time/tool/status/retry.
+Не выдавай каждому ребёнку свой бюджет. На 429 соблюдай Retry-After, при его
+отсутствии используй bounded backoff. Дневная квота означает checkpoint,
+не бесконечный повтор. Не меняй connector/account для обхода ограничения.
+
+Сохрани docs/design/packets/<story-id>/manifest.json и локальные context,
+screenshots/assets, token mapping, source links и gaps. Фиксируй capturedAt,
+revision если доступна, state/theme/width и полноту. Без pinned revision не
+обещай атомарный snapshot. Временные assets URLs не оставляй единственным
+источником production UI; сохрани исходные bytes/hash, не рисуй glyph по памяти.
+
+React/Tailwind из MCP — reference для Vue/PCSS/rem. Если владелец явно выбрал
+ручную выгрузку, принимай CSS со screenshot, assets, states, tokens и node link,
+обозначая недостающий контекст. Один CSS не доказывает responsive/поведение.
+Не делай молчаливую замену работающего MCP одним screenshot.
+
+Проверь packet локально: изображения открываются, файлы существуют, ответы
+не усечены, варианты учтены либо gaps названы. Финал: расход вызовов партии,
+что кешировано/готово для FE и что ещё требуется. Не начинай реализацию и
+не выполняй Figma write, публикацию или повторный аудит всей библиотеки.

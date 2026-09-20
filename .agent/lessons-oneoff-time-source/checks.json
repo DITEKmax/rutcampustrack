@@ -1,0 +1,10 @@
+{
+  "created": "2026-09-20T00:29:26.8754659+03:00",
+  "command": "PowerShell Test-Path/Get-FileHash/Get-Content line bounds; JSON source inventory",
+  "exit_code": 0,
+  "source_count": 15,
+  "runtime": "N/A read-only source lookup",
+  "result_sha256": "8D5C7F8F9A3A5835BBDE90B06A8E6F895443DCA3FF3364080D67D1BF80343A41",
+  "sources_sha256": "CE907015A48B6CAE19E342BF6D6D5F1DFD0A284B9B56F053FD2578D6793197A1",
+  "limitations": "scout omitted accepted API/kit docs; lead checked3 explicitly named critical originals; archive kit not inspected"
+}

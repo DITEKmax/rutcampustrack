@@ -1,0 +1,15 @@
+{
+  "schema": "rct.requests-bff.exact5.v1",
+  "recordedAt": "2026-09-08",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "worktree": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract",
+  "runtimeMetadata": {"model": "gpt-5.6-luna", "effort": "max"},
+  "files": [
+    {"path": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java", "relativePath": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java", "kind": "product", "sha256": "E7CF94B0229F3D86909917288F4BA5BC97F6D9754D04DF7673A10BE4BEC1D28F"},
+    {"path": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java", "relativePath": "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentRequestApiModels.java", "kind": "product", "sha256": "651B83E0E7B629F2750EE51231915B9A55D072E3F04FB31EDD6C0D4864198286"},
+    {"path": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java", "relativePath": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java", "kind": "product", "sha256": "2947BA32E53A618E2E638CB6CCC26A8CE406D42613C7DB9ADB5684FD9ACF4D3C"},
+    {"path": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClientErrorTest.java", "relativePath": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClientErrorTest.java", "kind": "test", "sha256": "2064F18E775A72FDEF9EF6A4BFD27642D9AFC647C8F28FFFFDFA3680B6E6ECA9"},
+    {"path": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contract/StudentRequestDetailJsonTest.java", "relativePath": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contract/StudentRequestDetailJsonTest.java", "kind": "test", "sha256": "A1E9C55E819706852B2A4D51BA502E1344C42C4C746BBFB2A06D116624733CE9"}
+  ],
+  "counts": {"bff": 5}
+}

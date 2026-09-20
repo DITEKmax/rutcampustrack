@@ -1,0 +1,167 @@
+:root {
+  color-scheme: dark;
+  /* Dark semantic aliases reference canonical primitives. */
+  --rct-color-surface-base: #0b0b0c;
+  --rct-color-surface-raised: #1c1922;
+  --rct-color-surface-float: #292531;
+  --rct-color-text-primary: #edeaf3;
+  --rct-color-text-secondary: #c8c2d6;
+  --rct-color-text-muted: #8a8299;
+  --rct-color-border-default: #3d3846;
+  --rct-color-accent-now: #b79cfa;
+  --rct-color-accent-on-now: #0b0b0c;
+  --rct-color-text-on-fill-strong: #ffffff; /* canonical color/text/on-fill-strong, for fixed dark fills */
+  --rct-color-success-text: #61dfb8;
+  /* Homework aliases: canonical color/surface/success = #063429. */
+  --rct-color-success-surface: #063429;
+  --rct-color-warning-text: #f5b443;
+  --rct-color-danger-text: #f27f7f;
+  --rct-color-disabled-surface: #262626;
+  --rct-color-disabled-text: #6b6b6b;
+  --rct-mobile-dock-opacity: 78%; /* component/mobile-bottom-nav/glass-surface-opacity */
+  --rct-mobile-dock-blur: 1.5625rem; /* component/mobile-bottom-nav/glass-background-blur */
+  --rct-control-min-touch: 2.75rem; /* canonical control/min-touch: 44px */
+  --rct-font-family-sans: 'Onest Variable', Onest, sans-serif;
+  --rct-font-size-body: 1rem;
+  --rct-font-size-dense: 0.875rem;
+  --rct-font-size-caption: 0.8125rem;
+  --rct-font-size-micro: 0.75rem;
+  --rct-font-size-title: 1.125rem;
+  /* Homework aliases: canonical dimension/font/size/title-block = 1.125rem. */
+  --rct-font-size-title-block: var(--rct-font-size-title);
+  /* Homework alias: canonical dimension/font/size/title-screen = 1.5rem. */
+  --rct-font-size-title-screen: 1.5rem;
+  --rct-font-weight-regular: 400;
+  --rct-font-weight-medium: 500;
+  --rct-font-weight-bold: 600;
+  --rct-leading-tight: 1.15;
+  --rct-leading-snug: 1.35;
+  --rct-leading-caption: 1.4;
+  --rct-space-1: 0.25rem;
+  --rct-space-2: 0.5rem;
+  --rct-space-3: 0.75rem;
+  --rct-space-4: 1rem;
+  --rct-space-5: 1.25rem;
+  --rct-space-6: 1.5rem;
+  --rct-radius-lg: 0.75rem;
+  --rct-radius-xl: 1rem;
+  --rct-radius-2xl: 1.5rem;
+  --rct-radius-full: 62.4375rem;
+  --rct-border-hairline: 0.0625rem;
+  --rct-focus-width: 0.125rem;
+  --rct-focus-offset: 0.125rem;
+  --rct-mobile-content-width: 22.375rem;
+  --rct-mobile-hero-height: 10.6875rem;
+  --rct-mobile-hero-pending-height: 12.5625rem;
+  --rct-mobile-row-height: 5.875rem;
+  --rct-mobile-time-column: 3.375rem;
+  --rct-mobile-dock-height: 4.75rem;
+  --rct-mobile-dock-bottom: 1rem;
+  --rct-mobile-blur: var(--rct-mobile-dock-blur);
+  --rct-today-role-width: 7rem;
+  --rct-today-role-height: 2.75rem;
+  --rct-today-action-height: 2.8125rem;
+  --rct-today-present-size: 2rem;
+  --rct-today-dock-item-width: 4.075rem;
+  --rct-today-dock-item-height: 3.75rem;
+  --rct-today-list-heading-size: 1.125rem;
+  --rct-today-list-heading-leading: 1.2777777778;
+  --rct-today-hero-time-size: 0.875rem;
+  --rct-today-hero-time-leading: 1.2857142857;
+  --rct-today-hero-title-size: 1.25rem;
+  --rct-today-hero-title-leading: 1.3;
+  --rct-today-hero-meta-size: 0.8125rem;
+  --rct-today-hero-meta-leading: 1.3076923077;
+  --rct-today-action-size: 0.9375rem;
+  --rct-today-action-leading: 1.2666666667;
+  --rct-today-row-end-size: 0.75rem;
+  --rct-today-row-end-leading: 1.25;
+  --rct-today-card-title-size: 0.875rem;
+  --rct-today-card-title-leading: 1.2857142857;
+  --rct-today-card-meta-size: 0.8125rem;
+  --rct-today-card-meta-leading: 1.3076923077;
+  --rct-today-room-old-size: 0.6875rem;
+  --rct-today-room-old-leading: 1.2727272727;
+  --rct-today-present-font-size: 1rem;
+  --rct-today-present-leading: 1.25;
+  --rct-today-dock-label-leading: 1.35;
+  /* Accepted Homework date heading: final source 4601-142.txt, lines 34/69 (17px). */
+  --rct-homework-date-heading-size: 1.0625rem;
+  --rct-today-role-gradient: linear-gradient(104.93deg, #3b1a7a -5.26%, #5729a1 49.47%, #2e1f4d 100%);
+  --rct-today-action-gradient: linear-gradient(90deg, #171229 0%, #29174d 55%, #3b146b 100%);
+}
+
+/* Light semantic aliases reference canonical primitives. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --rct-color-surface-base: #fcfbfe;
+  --rct-color-surface-raised: #ffffff;
+  --rct-color-surface-float: #ffffff;
+  --rct-color-text-primary: #292531;
+  --rct-color-text-secondary: #565061;
+  --rct-color-text-muted: #6e6779;
+  --rct-color-border-default: #ded9e8;
+  --rct-color-accent-now: #6d28d9;
+  --rct-color-accent-on-now: #ffffff;
+  --rct-color-text-on-fill-strong: #ffffff;
+  --rct-color-success-text: #0c6a53;
+  --rct-color-success-surface: #e4f9f1;
+  --rct-color-warning-text: #764b09;
+  --rct-color-danger-text: #8e1d1d;
+  --rct-color-disabled-surface: #ededed;
+  --rct-color-disabled-text: #a3a3a3;
+  --rct-mobile-dock-opacity: 90%;
+  --rct-mobile-dock-blur: 1.5625rem;
+}
+
+/* System is the default when no explicit light/dark override is present. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]),
+  :root[data-theme='system'] {
+    color-scheme: light;
+    --rct-color-surface-base: #fcfbfe;
+    --rct-color-surface-raised: #ffffff;
+    --rct-color-surface-float: #ffffff;
+    --rct-color-text-primary: #292531;
+    --rct-color-text-secondary: #565061;
+    --rct-color-text-muted: #6e6779;
+    --rct-color-border-default: #ded9e8;
+    --rct-color-accent-now: #6d28d9;
+    --rct-color-accent-on-now: #ffffff;
+    --rct-color-text-on-fill-strong: #ffffff;
+    --rct-color-success-text: #0c6a53;
+    --rct-color-success-surface: #e4f9f1;
+    --rct-color-warning-text: #764b09;
+    --rct-color-danger-text: #8e1d1d;
+    --rct-color-disabled-surface: #ededed;
+    --rct-color-disabled-text: #a3a3a3;
+    --rct-mobile-dock-opacity: 90%;
+    --rct-mobile-dock-blur: 1.5625rem;
+  }
+}
+
+@define-mixin rct-type-body {
+  font-size: var(--rct-font-size-body);
+  font-weight: var(--rct-font-weight-regular);
+  line-height: 1.5;
+}
+
+@define-mixin rct-type-dense {
+  font-size: var(--rct-font-size-dense);
+  font-weight: var(--rct-font-weight-regular);
+  line-height: var(--rct-leading-snug);
+}
+
+@define-mixin rct-type-micro {
+  font-size: var(--rct-font-size-micro);
+  font-weight: var(--rct-font-weight-medium);
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+}
+
+@define-mixin rct-focus-ring {
+  &:focus-visible {
+    outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+    outline-offset: var(--rct-focus-offset);
+  }
+}

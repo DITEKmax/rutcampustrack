@@ -1,0 +1,144 @@
+{
+  "scope": "student-auth-a/session-jdbc",
+  "risk": "S3",
+  "baseline": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "status": "SOURCE_READY",
+  "paths": [
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "sha256": "05B2FE5045CF8AA9CCAF90010D31726A311E85C5633892EAF1F233E6D8231B48"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+      "sha256": "0E02899F1467E284A318E96583B2B77F902F9DF98F98233EE09671997649A933"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+      "sha256": "1D15418FA4869D1288B3FA25F688A237087294F360AEA6729F524DE2F5B67F90",
+      "bytes": 7618
+    }
+  ],
+  "checks": [
+    {"name": "git diff --check", "exit": 0},
+    {"name": "forbidden authority/log scan", "exit": 0},
+    {"name": "required structural rg scan", "exit": 0},
+    {"name": "git status preservation guard", "exit": 0},
+    {"name": "parent pre-correction compile gate", "exit": 1, "corrected": true}
+  ],
+  "runtime": {
+    "status": "PASS",
+    "current_it_sha256": "0E02899F1467E284A318E96583B2B77F902F9DF98F98233EE09671997649A933",
+    "focused_command": ".\\gradlew.bat :services:auth-service:auth-app:integrationTest --tests 'ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT' --no-daemon --no-parallel --max-workers=1 --console=plain",
+    "exit": 0,
+    "session": "44942",
+    "start_guard": "2026-09-10T00:37:01.3073549+03:00",
+    "duration": "1m15s",
+    "tasks": {"total": 24, "executed": 2, "up_to_date": 22},
+    "environment": {
+      "image": "postgres:16",
+      "container": "012f219284c436b68196839c143d466e403bacf1ffb6123241af8b0dddaadfa3",
+      "postgres": "16.13",
+      "testcontainers": "1.20.4",
+      "flyway_validated": 24,
+      "database": "rct_student_auth",
+      "port": 55886,
+      "reuse": false
+    },
+    "junit": {
+      "source": "services/auth-service/auth-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml",
+      "copy": ".agent/student-auth-a/session-jdbc/final/junit/TEST-ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT.xml",
+      "sha256": "FBFD63D70E69BA91458CA14207E8987CD65A09384864B408EA23990CA31D6354",
+      "bytes": 10769,
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": "9.322",
+      "timestamp": "2026-09-09T21:38:27Z",
+      "byte_equal": true
+    },
+    "cleanup": {
+      "time": "2026-09-10T00:39:38.6298813+03:00",
+      "ports_free": true,
+      "java_gradle_container_removed": true,
+      "testcontainers_pg_ryuk_absent": true,
+      "status": "RELEASE"
+    },
+    "prior_pass_provenance": {
+      "it_sha256": "BC689BF4265EF4B3247559A88D8A417300EBF49EFDF2BCD80ACCCD2771362FA3",
+      "session": "40697",
+      "start_guard": "2026-09-09T19:43:59.485Z",
+      "exit": 0,
+      "duration": "1m44s",
+      "environment": {
+        "image": "postgres:16",
+        "container": "122d07ce340678e8e7ea6e2be6e78daac66aad5066c316361ccc2cb27df71063",
+        "postgres": "16.13",
+        "testcontainers": "1.20.4",
+        "flyway_validated": 24,
+        "database": "rct_student_auth",
+        "port": 59927
+      },
+      "junit": {
+        "metadata_only": true,
+        "artifact_retained": false,
+        "sha256": "4929D2EBC3DA7F829C422FB59A2A658F5C04D2C8460FD9DF3DC8AC1AA11937C1",
+        "bytes": 9731,
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "time": "5.611",
+        "timestamp": "2026-09-09T19:46:00Z",
+        "note": "old XML was overwritten by the accepted current 18-test report; no historical artifact is retained"
+      },
+      "cleanup": {
+        "time": "2026-09-09T19:47:22Z",
+        "ports_free": true,
+        "java_gradle_container_removed": true,
+        "status": "RELEASE"
+      }
+    },
+    "parent_pre_correction_exit": 1,
+    "parent_pre_correction_stage": ":services:auth-service:auth-app:compileJava"
+  },
+  "correction": {
+    "id": "P2-expired-password-session",
+    "reproduction": "current session at refresh_expires_at could enter password change when revoked_at was null",
+    "correction": "gate on !isLive(now) and preserve SESSION_REVOKED; add expired-state no-write assertion",
+    "verification": "static source review recorded; parent must rerun compile/integration command"
+  },
+  "correction_02": {
+    "request": "repair adapter compile errors in nearest Luna scope",
+    "reproduction": "focused command at 2026-09-09T19:00:05Z, session 58508, exit 1, BUILD FAILED at compileJava after 45s; 36 adapter errors",
+    "correction": "qualify session FailureCode with SessionStatePort and use class-qualified static RowMapper references",
+    "new_evidence": "adapter SHA256 05B2FE5045CF8AA9CCAF90010D31726A311E85C5633892EAF1F233E6D8231B48; no runtime started",
+    "decision": "SOURCE_READY; parent owns post-correction compile and runtime"
+  },
+  "correction_03": {
+    "request": "repair real-PG IT setup failure in nearest Luna scope",
+    "reproduction": "session 20704 exit 1 after compileJava/compileTestJava passed; PG16.13/Flyway24 ran; 12 tests had 1 pass, 11 failures, 0 errors, 0 skipped, all at cleanOwnData line 96 with P0001 append-only trigger rejection",
+    "correction": "remove destructive cleanOwnData method and unused BeforeEach import; do not truncate, disable trigger, or weaken migration",
+    "new_evidence": "IT SHA256 BC689BF4265EF4B3247559A88D8A417300EBF49EFDF2BCD80ACCCD2771362FA3; adapter/V24 hashes unchanged; cleanup-forbidden-pattern scan exit 0",
+    "decision": "SOURCE_READY; parent owns exact post-correction runtime"
+  },
+  "correction_04": {
+    "reviewer": "independent Sol high",
+    "findings": [
+      {"severity": "MEDIUM", "finding": "fault coverage stopped at password.credential; missing final-event rollback tests for revoke current, revoke all, password, and password.sessions"},
+      {"severity": "MEDIUM", "finding": "missing stale authoritative grant/version create rejection and deterministic snapshot-versus-grant-writer user-lock race"},
+      {"severity": "LOW", "finding": "runtime evidence remained current after the IT changed"}
+    ],
+    "correction": "add four real-PG rollback tests, stale grant/version test, and barrier-synchronized user-first-lock writer; relabel old PASS as provenance",
+    "new_evidence": "IT SHA256 C0322C7D3289717CA4E983CFB619F8233B07FBD820B2F5B8358662A399F69154; post-correction runtime pending",
+    "decision": "SOURCE_READY_REVIEW_FIX_PENDING_RUNTIME; parent owns exact rerun"
+  },
+  "correction_04b": {
+    "request": "close the review gate requiring deterministic real-PG overlap for snapshot versus grant-writer locking",
+    "reproduction": "the correction-04 barrier-only test could start both operations without proving the snapshot was blocked by the writer's user lock",
+    "new_evidence": "writer holds users FOR UPDATE and signals writerLockHeld; pg_stat_activity/pg_blocking_pids observes a distinct active Lock wait before release; snapshot returns the wholly-new tuple; IT SHA256 0E02899F1467E284A318E96583B2B77F902F9DF98F98233EE09671997649A933",
+    "correction": "poll the real PostgreSQL wait and retain the user-first-lock writer plus wholly-new tuple assertions",
+    "verification": "static structural guards and exact hash capture exit 0; parent owns post-correction compile/integration runtime",
+    "decision": "SOURCE_READY; parent owns exact post-correction runtime"
+  }
+}

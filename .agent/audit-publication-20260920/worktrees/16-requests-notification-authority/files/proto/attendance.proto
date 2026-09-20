@@ -1,0 +1,407 @@
+syntax = "proto3";
+
+package rutcampustrack.attendance;
+
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.attendance.grpc";
+
+// Internal JS-STUDENT-01-r1 boundary. Identity is a validated signed internal JWT
+// in gRPC metadata; client-supplied identity fields are deliberately absent.
+service AttendanceStudentGrpcService {
+  rpc GetStudentAttendanceSnapshot (StudentAttendanceSnapshotRequest)
+      returns (StudentAttendanceSnapshotResponse);
+  rpc Checkin (StudentCheckinCommand) returns (StudentCheckinResult);
+  rpc ListStudentRequests (StudentRequestListQuery) returns (StudentRequestPage);
+  rpc GetStudentRequest (StudentRequestId) returns (StudentRequestDetail);
+  rpc GetStudentRequestOptions (StudentRequestOptionsQuery) returns (StudentRequestOptions);
+  rpc SubmitStudentExcuse (SubmitStudentExcuseCommand) returns (StudentRequestDetail);
+  rpc SubmitStudentLateCheckin (SubmitStudentLateCheckinCommand) returns (StudentRequestDetail);
+  rpc CancelStudentRequest (StudentRequestId) returns (StudentRequestDetail);
+  rpc DownloadStudentRequestAttachment (StudentRequestAttachmentId)
+      returns (StudentRequestAttachmentDownload);
+}
+
+// Separate service for notification-bot attachment reads. It has its own
+// x-grpc-secret interceptor; public student JWT protection never applies here.
+service AttendanceRequestBotGrpcService {
+  rpc FetchExcuseAttachment (FetchExcuseAttachmentRequest)
+      returns (FetchExcuseAttachmentResponse);
+  rpc ResolveRequestNotification (ResolveRequestNotificationRequest)
+      returns (ResolveRequestNotificationResponse);
+}
+
+message StudentAttendanceSnapshotRequest {
+  // The RPC fails the whole request when any lesson is missing or outside the
+  // authenticated student's group; it never returns a partial foreign snapshot.
+  repeated int64 lesson_ids = 1;
+}
+
+message StudentAttendanceSnapshotResponse {
+  // One entry per requested lesson, including lessons without an attendance mark.
+  repeated StudentAttendanceEntry entries = 1;
+  string server_now = 2;
+}
+
+message StudentAttendanceEntry {
+  int64 lesson_id = 1;
+  AttendanceStatus status = 2;
+  AttendanceSource source = 3;
+  optional string marked_at = 4;
+  AutomaticCheckinRequest request = 5;
+  optional string retry_at = 6;
+  StudentCheckinEligibility eligibility = 7;
+}
+
+enum AttendanceStatus {
+  ATTENDANCE_STATUS_UNSPECIFIED = 0;
+  ATTENDANCE_STATUS_PRESENT = 1;
+  ATTENDANCE_STATUS_ABSENT = 2;
+  ATTENDANCE_STATUS_EXCUSED = 3;
+}
+
+enum AttendanceSource {
+  ATTENDANCE_SOURCE_UNSPECIFIED = 0;
+  ATTENDANCE_SOURCE_STUDENT_GEO = 1;
+  ATTENDANCE_SOURCE_LATE_CHECKIN = 2;
+  ATTENDANCE_SOURCE_HEADMAN = 3;
+  ATTENDANCE_SOURCE_TEACHER = 4;
+  ATTENDANCE_SOURCE_SYSTEM = 5;
+}
+
+message StudentCheckinCommand {
+  int64 lesson_id = 1;
+  string idempotency_key = 2;
+  oneof geo {
+    Coordinates coordinates = 3;
+    GeoUnavailable unavailable = 4;
+  }
+}
+
+message Coordinates {
+  // Presence and finite/range validation are mandatory at the RPC boundary.
+  optional double latitude = 1;
+  optional double longitude = 2;
+}
+
+message GeoUnavailable {
+  GeoUnavailableReason reason = 1;
+}
+
+enum GeoUnavailableReason {
+  GEO_UNAVAILABLE_REASON_UNSPECIFIED = 0;
+  GEO_UNAVAILABLE_REASON_PERMISSION_DENIED = 1;
+  GEO_UNAVAILABLE_REASON_POSITION_UNAVAILABLE = 2;
+  GEO_UNAVAILABLE_REASON_TIMEOUT = 3;
+}
+
+message StudentCheckinResult {
+  CheckinOutcome outcome = 1;
+  int64 lesson_id = 2;
+  StudentAttendanceEntry attendance = 3;
+  AutomaticCheckinRequest request = 4;
+  optional string retry_at = 5;
+  string server_now = 6;
+}
+
+enum CheckinOutcome {
+  CHECKIN_OUTCOME_UNSPECIFIED = 0;
+  CHECKIN_OUTCOME_PRESENT = 1;
+  CHECKIN_OUTCOME_PENDING_CONFIRMATION = 2;
+}
+
+message StudentCheckinEligibility {
+  bool allowed = 1;
+  StudentCheckinEligibilityReason reason = 2;
+  optional string retry_at = 3;
+}
+
+enum StudentCheckinEligibilityReason {
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_UNSPECIFIED = 0;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_ELIGIBLE = 1;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_ALREADY_PRESENT = 2;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_LESSON_CANCELLED = 3;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_TOO_EARLY = 4;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_WINDOW_CLOSED = 5;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_GEO_BLOCKED = 6;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_PENDING_CONFIRMATION = 7;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_COOLDOWN = 8;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_HEADMAN_ABSENT_REQUIRES_APPEAL = 9;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_HEADMAN_USES_JOURNAL = 10;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_DEPENDENCY_UNAVAILABLE = 11;
+}
+
+message AutomaticCheckinRequest {
+  string id = 1;
+  AutomaticCheckinRequestStatus status = 2;
+  AutomaticCheckinRequestOrigin origin = 3;
+  AutomaticCheckinResolutionReason resolution_reason = 4;
+}
+
+enum AutomaticCheckinRequestStatus {
+  AUTOMATIC_CHECKIN_REQUEST_STATUS_UNSPECIFIED = 0;
+  AUTOMATIC_CHECKIN_REQUEST_STATUS_PENDING = 1;
+  AUTOMATIC_CHECKIN_REQUEST_STATUS_APPROVED = 2;
+  AUTOMATIC_CHECKIN_REQUEST_STATUS_REJECTED = 3;
+  AUTOMATIC_CHECKIN_REQUEST_STATUS_CANCELLED = 4;
+}
+
+enum AutomaticCheckinRequestOrigin {
+  AUTOMATIC_CHECKIN_REQUEST_ORIGIN_UNSPECIFIED = 0;
+  AUTOMATIC_CHECKIN_REQUEST_ORIGIN_AUTO_GEO_FAILURE = 1;
+}
+
+enum AutomaticCheckinResolutionReason {
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_UNSPECIFIED = 0;
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_GEO_CONFIRMED = 1;
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_APPROVED = 2;
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_REJECTED = 3;
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_STUDENT_CANCELLED = 4;
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_PRESENT_PRIORITY = 5;
+}
+
+// Packed into gRPC status details. The BFF maps this stable code and retry_at
+// to the public Problem Details shape without parsing exception text.
+message StudentCheckinErrorDetail {
+  StudentCheckinErrorCode code = 1;
+  optional string retry_at = 2;
+}
+
+enum StudentCheckinErrorCode {
+  STUDENT_CHECKIN_ERROR_CODE_UNSPECIFIED = 0;
+  STUDENT_CHECKIN_ERROR_CODE_INVALID_REQUEST = 1;
+  STUDENT_CHECKIN_ERROR_CODE_INVALID_IDEMPOTENCY_KEY = 2;
+  STUDENT_CHECKIN_ERROR_CODE_INVALID_SESSION = 3;
+  STUDENT_CHECKIN_ERROR_CODE_WRONG_ROLE = 4;
+  STUDENT_CHECKIN_ERROR_CODE_OUT_OF_SCOPE = 5;
+  STUDENT_CHECKIN_ERROR_CODE_LESSON_NOT_FOUND = 6;
+  STUDENT_CHECKIN_ERROR_CODE_CHECKIN_COOLDOWN = 7;
+  STUDENT_CHECKIN_ERROR_CODE_MANUAL_ABSENCE_REQUIRES_APPEAL = 8;
+  STUDENT_CHECKIN_ERROR_CODE_IDEMPOTENCY_PAYLOAD_MISMATCH = 9;
+  STUDENT_CHECKIN_ERROR_CODE_CHECKIN_NOT_ELIGIBLE = 10;
+  STUDENT_CHECKIN_ERROR_CODE_DEPENDENCY_UNAVAILABLE = 11;
+}
+
+enum StudentRequestBucket {
+  STUDENT_REQUEST_BUCKET_UNSPECIFIED = 0;
+  STUDENT_REQUEST_BUCKET_OPEN = 1;
+  STUDENT_REQUEST_BUCKET_ARCHIVE = 2;
+}
+
+enum StudentRequestKind {
+  STUDENT_REQUEST_KIND_UNSPECIFIED = 0;
+  STUDENT_REQUEST_KIND_EXCUSE = 1;
+  STUDENT_REQUEST_KIND_LATE_CHECKIN = 2;
+}
+
+enum StudentRequestStatus {
+  STUDENT_REQUEST_STATUS_UNSPECIFIED = 0;
+  STUDENT_REQUEST_STATUS_PENDING = 1;
+  STUDENT_REQUEST_STATUS_APPROVED = 2;
+  STUDENT_REQUEST_STATUS_REJECTED = 3;
+  STUDENT_REQUEST_STATUS_CANCELLED = 4;
+}
+
+enum StudentRequestOrigin {
+  STUDENT_REQUEST_ORIGIN_UNSPECIFIED = 0;
+  STUDENT_REQUEST_ORIGIN_MANUAL = 1;
+  STUDENT_REQUEST_ORIGIN_AUTO_GEO_FAILURE = 2;
+}
+
+enum StudentExcuseReason {
+  STUDENT_EXCUSE_REASON_UNSPECIFIED = 0;
+  STUDENT_EXCUSE_REASON_ILLNESS = 1;
+  STUDENT_EXCUSE_REASON_MEDICAL_EXAMINATION = 2;
+  STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION = 3;
+  STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES = 4;
+  STUDENT_EXCUSE_REASON_OTHER = 5;
+}
+
+enum StudentRequestAttachmentState {
+  STUDENT_REQUEST_ATTACHMENT_STATE_UNSPECIFIED = 0;
+  STUDENT_REQUEST_ATTACHMENT_STATE_ACTIVE = 1;
+  STUDENT_REQUEST_ATTACHMENT_STATE_EXPIRED = 2;
+}
+
+message StudentRequestListQuery {
+  StudentRequestBucket bucket = 1;
+  optional int32 page = 2;
+  optional int32 size = 3;
+}
+
+message StudentRequestOptionsQuery {}
+
+message StudentRequestId {
+  string request_id = 1;
+}
+
+message StudentRequestAttachmentId {
+  string request_id = 1;
+  string attachment_id = 2;
+}
+
+message StudentRequestAttachmentUpload {
+  string name = 1;
+  string declared_content_type = 2;
+  bytes data = 3;
+}
+
+message SubmitStudentExcuseCommand {
+  repeated int64 lesson_ids = 1;
+  StudentExcuseReason reason = 2;
+  optional string comment = 3;
+  repeated StudentRequestAttachmentUpload attachments = 4;
+  string idempotency_key = 5;
+}
+
+message SubmitStudentLateCheckinCommand {
+  int64 lesson_id = 1;
+  string idempotency_key = 2;
+}
+
+message StudentRequestLesson {
+  int64 id = 1;
+  int32 lesson_number = 2;
+  string status = 3;
+  bool blocked = 4;
+  optional int64 subject_id = 5;
+  optional string subject_name = 6;
+  optional string subject_type = 7;
+  optional int64 semester_id = 8;
+  optional string date = 9;
+  optional string starts_at = 10;
+  optional string ends_at = 11;
+}
+
+message StudentRequestSummary {
+  string id = 1;
+  StudentRequestKind kind = 2;
+  StudentRequestStatus status = 3;
+  StudentRequestOrigin origin = 4;
+  repeated StudentRequestLesson lessons = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+message StudentRequestDecision {
+  optional string comment = 1;
+  optional string decided_at = 2;
+}
+
+message StudentRequestAttachment {
+  string id = 1;
+  string name = 2;
+  string content_type = 3;
+  int64 size_bytes = 4;
+  string sha256 = 5;
+  StudentRequestAttachmentState state = 6;
+  string uploaded_at = 7;
+  string expires_at = 8;
+  optional string expired_at = 9;
+}
+
+message StudentRequestDetail {
+  StudentRequestSummary summary = 1;
+  optional StudentExcuseReason reason = 2;
+  optional string comment = 3;
+  repeated StudentRequestAttachment attachments = 4;
+  optional StudentRequestDecision decision = 5;
+}
+
+message StudentRequestPage {
+  repeated StudentRequestSummary content = 1;
+  int32 page = 2;
+  int32 size = 3;
+  int64 total_elements = 4;
+  int32 total_pages = 5;
+}
+
+message StudentRequestReasonOption {
+  StudentExcuseReason code = 1;
+  string label = 2;
+}
+
+message StudentRequestFileLimits {
+  int32 max_files = 1;
+  int64 max_bytes_per_file = 2;
+  int64 max_bytes_total = 3;
+  repeated string content_types = 4;
+  repeated string extensions = 5;
+}
+
+message StudentRequestBudget {
+  int64 semester_id = 1;
+  int32 limit = 2;
+  int32 used = 3;
+  int32 remaining = 4;
+}
+
+message StudentRequestPendingRef {
+  string id = 1;
+  StudentRequestKind kind = 2;
+  StudentRequestOrigin origin = 3;
+}
+
+message StudentRequestLessonOption {
+  StudentRequestLesson lesson = 1;
+  bool excuse_eligible = 2;
+  bool late_checkin_eligible = 3;
+  repeated StudentRequestPendingRef pending_requests = 4;
+}
+
+message StudentRequestOptions {
+  repeated StudentRequestReasonOption reasons = 1;
+  StudentRequestFileLimits files = 2;
+  StudentRequestBudget budget = 3;
+  repeated StudentRequestLessonOption lessons = 4;
+}
+
+message StudentRequestAttachmentDownload {
+  bytes data = 1;
+  string content_type = 2;
+  string filename = 3;
+  int64 size = 4;
+}
+
+message StudentRequestErrorDetail {
+  StudentRequestErrorCode code = 1;
+}
+
+enum StudentRequestErrorCode {
+  STUDENT_REQUEST_ERROR_CODE_UNSPECIFIED = 0;
+  STUDENT_REQUEST_ERROR_CODE_INVALID_REQUEST = 1;
+  STUDENT_REQUEST_ERROR_CODE_INVALID_IDEMPOTENCY_KEY = 2;
+  STUDENT_REQUEST_ERROR_CODE_INVALID_SESSION = 3;
+  STUDENT_REQUEST_ERROR_CODE_WRONG_ROLE = 4;
+  STUDENT_REQUEST_ERROR_CODE_OUT_OF_SCOPE = 5;
+  STUDENT_REQUEST_ERROR_CODE_REQUEST_NOT_FOUND = 6;
+  STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_NOT_FOUND = 7;
+  STUDENT_REQUEST_ERROR_CODE_REQUEST_CONFLICT = 8;
+  STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_EXPIRED = 9;
+  STUDENT_REQUEST_ERROR_CODE_PAYLOAD_TOO_LARGE = 10;
+  STUDENT_REQUEST_ERROR_CODE_DEPENDENCY_UNAVAILABLE = 11;
+}
+
+message FetchExcuseAttachmentRequest {
+  int64 actor_user_id = 1;
+  string request_id = 2;
+  string attachment_id = 3;
+}
+
+message FetchExcuseAttachmentResponse {
+  bytes data = 1;
+  string content_type = 2;
+  string filename = 3;
+  int64 size = 4;
+}
+
+message ResolveRequestNotificationRequest {
+  StudentRequestKind kind = 1;
+  string request_id = 2;
+}
+
+message ResolveRequestNotificationResponse {
+  int64 group_id = 1;
+  int64 student_id = 2;
+  string student_name = 3;
+  StudentRequestDetail detail = 4;
+}

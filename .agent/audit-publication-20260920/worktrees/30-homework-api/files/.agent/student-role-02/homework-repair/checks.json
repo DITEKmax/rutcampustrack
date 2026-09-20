@@ -1,0 +1,151 @@
+{
+  "schema": "rct.checks.v1",
+  "task": "student-role-02-homework-api-repair",
+  "revision": "working-tree-on-8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "baseline": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "branch": "codex/student-role-02-homework-api",
+  "risk": "S3",
+  "model": "gpt-5.6-luna",
+  "effort": "max",
+  "environment": {
+    "os": "Windows",
+    "java": "21.0.10",
+    "gradle": "8.12",
+    "node": "24.14.0",
+    "npm": "11.9.0",
+    "runtime": "random-port Spring servlet + in-process Academic gRPC fake",
+    "sandbox": "workspace-write; Gradle used require_escalated after recorded absolute-classpath sandbox reproduction",
+    "secrets": "not read or printed"
+  },
+  "checks": [
+    {
+      "name": "Pre-fix focused Homework HTTP matrix",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:mobile-bff:mobile-bff-app:integrationTest --tests \"*StudentHomeworkHttpGrpcIT\"",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED_PRE_FIX",
+      "evidence": "6 tests completed, 5 failed: Homework errors lacked no-store and active-semester NOT_FOUND returned 403. Details in reproduction.md."
+    },
+    {
+      "name": "Pre-fix overflow/scalar reproduction",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:mobile-bff:mobile-bff-app:integrationTest --tests \"*StudentHomeworkHttpGrpcIT.invalidHomeworkInputsUseTypedProblemDetails\"",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED_PRE_FIX",
+      "evidence": "Diagnostic run observed overflow 500 and completed:1 200; temporary expectations were restored immediately. Details in reproduction.md."
+    },
+    {
+      "name": "Post-fix Homework HTTP to gRPC matrix",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:mobile-bff:mobile-bff-app:integrationTest --tests \"*StudentHomeworkHttpGrpcIT\"",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "6 tests passed at random servlet port; rejected input and missing active semester did not reach Homework RPCs, valid true/false completed with 200, and all asserted Homework responses carried no-store."
+    },
+    {
+      "name": "Affected Homework query unit tests",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:mobile-bff:mobile-bff-app:test --tests \"*StudentQueryHomeworkTest\"",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Moscow/default range, clamping, ordering, null link and invalid range tests passed."
+    },
+    {
+      "name": "Neighboring check-in/auth regression",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:mobile-bff:mobile-bff-app:integrationTest --tests \"*StudentHttpGrpcAuthIT\"",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Existing check-in HTTP/gRPC identity and auth matrix passed; Homework filter did not alter check-in behavior."
+    },
+    {
+      "name": "Java-first OpenAPI export",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:mobile-bff:mobile-bff-app:integrationTest --tests \"*OpenApiSnapshotIT\" '-Popenapi.snapshot.update=true' --rerun-tasks",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Canonical docs/openapi/mobile-bff.json regenerated from StudentApi annotations."
+    },
+    {
+      "name": "OpenAPI snapshot without update",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:mobile-bff:mobile-bff-app:integrationTest --tests \"*OpenApiSnapshotIT\"",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Exporter output matches the canonical snapshot."
+    },
+    {
+      "name": "Generate mobile-core types",
+      "command": "npm run generate:types",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Generated mobile-bff.ts from the canonical snapshot."
+    },
+    {
+      "name": "Generated type drift",
+      "command": "npm run generate:types:check",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Types match JS-STUDENT-01-r1 snapshot hash d6b560ed78d5bafc91f58df2e15c5081ff8456f631aad7023fa4b8a54570b03f."
+    },
+    {
+      "name": "Mobile-core typecheck",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "tsc completed with --noEmit."
+    },
+    {
+      "name": "Mobile-core lint",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "ESLint completed with --max-warnings=0."
+    },
+    {
+      "name": "Frontend contract tests",
+      "command": "npm run test:contract",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "3 contract suites passed."
+    },
+    {
+      "name": "Frontend fixture validation",
+      "command": "npm run validate:fixtures",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "9 fixtures validated."
+    },
+    {
+      "name": "Backend boot JARs",
+      "command": ".\\gradlew.bat --no-daemon --no-problems-report :services:mobile-bff:mobile-bff-app:bootJar :services:academic-service:academic-app:bootJar",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Artifacts and SHA-256 hashes are recorded in evidence.md for parent dependency scan."
+    },
+    {
+      "name": "Plain whitespace check",
+      "command": "git diff --check",
+      "exitCode": 1,
+      "status": "EXPECTED_GENERATED_CRLF",
+      "evidence": "Only generated OpenAPI CRLF lines are reported; no source normalization was performed."
+    },
+    {
+      "name": "Scoped whitespace check",
+      "command": "git -c core.whitespace=cr-at-eol diff --check",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "No product whitespace errors after allowing expected generated CRLF."
+    },
+    {
+      "name": "Repair evidence JSON syntax",
+      "command": "Get-Content -Raw .agent\\student-role-02\\homework-repair\\checks.json | ConvertFrom-Json",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "checks.json parses successfully."
+    }
+  ],
+  "runtime": {
+    "status": "PASS_SCOPED_RUNTIME",
+    "evidence": "StudentHomeworkHttpGrpcIT and StudentHttpGrpcAuthIT exercised the changed BFF request paths in-process; no product deployment or external runtime was started."
+  },
+  "limitations": [
+    "Fresh Sol independent review remains a parent gate.",
+    "Real PostgreSQL concurrency and full service graph runtime remain parent gates; unchanged Academic concurrency evidence was not repeated.",
+    "Dependency/security scanner results are parent gates using the recorded boot JAR artifacts.",
+    "Normal diff --check reports generated OpenAPI CRLF; scoped cr-at-eol check is the accepted evidence."
+  ]
+}

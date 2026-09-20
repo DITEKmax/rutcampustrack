@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+<foreignObject x="-25" y="-25" width="94" height="94"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(12.5px);clip-path:url(#bgblur_0_0_121_clip_path);height:100%;width:100%"></div></foreignObject><g id="return-to-today" data-figma-bg-blur-radius="25">
+<rect width="44" height="44" rx="22" fill="#292531"/>
+<path id="chevron-up" d="M17 24L22 19L27 24" stroke="#C8C2D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="bgblur_0_0_121_clip_path" transform="translate(25 25)"><rect width="44" height="44" rx="22"/>
+</clipPath></defs>
+</svg>

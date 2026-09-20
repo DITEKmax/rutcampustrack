@@ -1,0 +1,189 @@
+{
+  "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+  "files": [
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/AssignmentApi.java",
+      "sha256": "3E0C886C42A0FA6D9FC06040F18F0D8A04570167D82A805B9303CB93BA635C07"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/SubjectApi.java",
+      "sha256": "E697990188D858AAF234A8A5251F3BB8A8FD7E2C2A84175ABB803017698AB7FE"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/assignment/AssignTeacherRequest.java",
+      "sha256": "45D7DA215856078DCB50C2E775AE883E69428702556B2D1F9CB1992C2B716B1C"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/assignment/AssignmentResponse.java",
+      "sha256": "FA8E6E237BAE3787E792E36E308DA4E013657C53C30CA25D8FAE401C20E35736"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/AddSubjectTeacherRequest.java",
+      "sha256": "76EA8EB538E2D1C9F56F6A8C26F48C075BF6C0F67C0B91FDF5CC9F4FA8738859"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/AssignmentSummaryResponse.java",
+      "sha256": "41057933F19CC92ED59817E64A9C62230D8F2189491F25393D6C550CEAE739E4"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/CreateSubjectRequest.java",
+      "sha256": "C26F175475E1FB8F6D446CBE9468500083C9ECBBF12B9E6290B2C435B35CD53B"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/InitialAssignmentRequest.java",
+      "sha256": "86214904B8A6D9DAF58DACA22DDB9BF0B0827CA20435D7A1A65A94B2E4EF6684"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/SubjectResponse.java",
+      "sha256": "14BFF90B4D9577C5218840BDB9AE516184D29571ADD17A217C41303DED6EF0A9"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/subject/UpdateSubjectRequest.java",
+      "sha256": "770EA0F5A3337235907DF3574F7461B92A8DD8856F28CEF28F01C7A175D155FF"
+    },
+    {
+      "path": "services/academic-service/academic-app/build.gradle.kts",
+      "sha256": "4244FB8AFA6D37D22BBF349B448E53C746F2891C3D86D088A251F0C8A671DCCF"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAssembler.java",
+      "sha256": "54BBA98BD696915428A37D4E66076B54326C2F1C8E6AEF9C3E9FD0CC97BC99A7"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAuthority.java",
+      "sha256": "D6AFC5666A8DE674DA5559370C7B3F173FEABDF87D7809BDD5ACBAD634945113"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentController.java",
+      "sha256": "617E11566C33B23C38B246B4B5499347620F5AD3A29F9A1503A850572C22C388"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentService.java",
+      "sha256": "CB403F86E61C2823E44F10921E7FFCA3195602A1EDB2F53015757CD5511B5AF8"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/SubjectTypeUserType.java",
+      "sha256": "6864CB53EEB949509F37C10D7A309B085E5FE230FE8A012D54DB76908630322D"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Assignment.java",
+      "sha256": "D33B663751AEF2991FA79FC84C1CD82BB12C3699E622F7B0B39E62516E3B7F1F"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/SubjectLessonType.java",
+      "sha256": "6298421F9994C00719F482FA7197DB9DD1751E9DDE85B2535CB65FCCC9DFDF4A"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/SubjectLessonTypeId.java",
+      "sha256": "C31F4E2069C8EC0E1199C88FCDAA0545E954FEA3A12DA945B2AD9D3B2DCC93AD"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/UserRoleGrant.java",
+      "sha256": "6135E0C7A2F119C2B117180D1A6DFF16A4EDE3642A6A0674BD414416116AC87E"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/AssignmentClosureNotReadyException.java",
+      "sha256": "AB2716FB053981A223E9D1021A81622E3FEB6BF3FD6F96CC0B9262296C7D49B4"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java",
+      "sha256": "E9C6171EC109FB292B7EEF8484A023123069A82F719DDAF3AA65AD257E8C668C"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "sha256": "40DA0BE3FF493688E6D8667D97979BA49F4F3B36C91C151C1FA2EDEF26C243D5"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AssignmentRepository.java",
+      "sha256": "BDFE153249B09307E5B82B21EF4D31824298CE6FCF237BA579B6C373A3425362"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java",
+      "sha256": "1C29125D24836D22798F96ED4C3707960BF075340FFF3346CADBFB8C5504DB31"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectLessonTypeRepository.java",
+      "sha256": "91CD1004600488CAEFA65BD71F68D09CD7E9E6D5FE15710536B576C9ACB94453"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "sha256": "3BB45EF22B5415F0AE9CF9E37E27B63444C47CEB446B08072F53E259A3484D3C"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRoleGrantRepository.java",
+      "sha256": "2E8E29785F4D828312EDE38B9CC6C7E0179698ED226CAA558AB858128171FEEB"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+      "sha256": "8FC16B91FBD64E297F3F5A53C64F422035AD6886C9F40CC91A8BD686B0D9D9DE"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectAssembler.java",
+      "sha256": "E833FD9738341C23011C3B448B148DF0BC4A8FC4BD2A464F172FEC363E865D0C"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectController.java",
+      "sha256": "A69A278F8A3D387CF99EB59BDEC3E3024160048D2608982B10CAE5F13D4F36FA"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+      "sha256": "377BF9B1E2F6E2B88529DD362177F0C47318D7A6C31561C4E516FA89491AFFA3"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityContractTest.java",
+      "sha256": "2BB9EB7F63303CCA275C7C0DE39B26CF16891C4EE1ECCA57474D92388449F59C"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java",
+      "sha256": "50E533093C36D1B0409D6F27CEE01859310CBE115B02CD7C3BE1C99BBD88F621"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentClosureContractTest.java",
+      "sha256": "94ADB57A709CD00E9AAC758B442F11985A3C2A2CF5BE545BC8EECCA13C31EE35"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/SubjectTypeUserTypeTest.java",
+      "sha256": "B2408483CF5F0193E3FB8BE698086626A0544E43A547EB71C331C445E5BB445F"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcContractTest.java",
+      "sha256": "E04DCF86C6E8D4CAAA6157C4C0A7796E9652155790D318536309ACC6D96477FE"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcIT.java",
+      "sha256": "F36065F4EE8BCC9D646853A67B831A32805BA31C29A2D81F47043B2E709B9054"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+      "sha256": "90175954C1176A3A831F2C21EC2E9879C505ECA9E6A82DE53C338601F92A2EC9"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "sha256": "02F355D14C60965EACD804B9C0CE500272445BC99123F67B9767FA49D3F75FAB"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentAuthorityIT.java",
+      "sha256": "3C35FDE3E8CFC29884E3B8575A210B1CA067CE939762267DFF1B530F470EE78B"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentLockContractTest.java",
+      "sha256": "854015C34FC35CBF3F5940C9CB0874E37A410EAC40D607C3858B6C356F27879F"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityContractTest.java",
+      "sha256": "7412C196BEA04546A8FB43E581EC4DB298317B3A9FED5F2F301F85293250AA5D"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityIT.java",
+      "sha256": "64BAB23B0AD5333D1B6F607EC9ECE541392284D55FE2440EF8157B7B6AE9E0A6"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectServiceIT.java",
+      "sha256": "C43718E2B5172A356B3E70E7B31605796A73427CF5EC5320722E8966B01263E5"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+      "sha256": "FE9268849A2FAC6CC2A9E3B544F73B1FD232DA0C69076B69DCC66A3A7B653D8F"
+    }
+  ]
+}

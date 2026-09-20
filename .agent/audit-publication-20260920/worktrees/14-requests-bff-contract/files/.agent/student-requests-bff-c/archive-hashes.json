@@ -1,0 +1,16 @@
+{
+  "scope": "student-requests-bff-c",
+  "recordedAt": "2026-09-08T11:14:00+03:00",
+  "artifacts": {
+    ".agent/student-requests-bff-c/resume-packet.md": "7F8D0765D5A598CA1BACDDD16C3D7D4CEFCB616CAD9ECE3508B912212BDD3748",
+    ".agent/student-requests-bff-c/static-readiness.md": "F44D9C9984C56F64FBC070AE3C56EA0F7967B2A4D23FCF6E3694A5C66A75EE28",
+    ".agent/student-requests-bff-c/checks.json": "970AD1F70C7D4AB693C9D0A98333AF313E9FC289B5F44A0C3C1BDAFEED79505F",
+    ".agent/student-requests-bff-c/runtime.md": "3640CF7C768C5BD9C7C9634180641379D4895B2D1BB2085C26280ADA6A7D4B33",
+    ".agent/student-requests-bff-c/evidence.md": "E11EF90BCFA55C06D56530D449170C063A3793BD9FCDE3D0676EFA8B69655314",
+    ".agent/student-requests-bff-c/summary.md": "6280AF92C9050D15EC7D2E635511C9C37D109CC0B6985252D00FE3B54EB4161E",
+    ".agent/student-requests-bff-c/repair-manifest.json": "8279BF26F5A76EDD3CD65607CF3DDA934E5761528CD2AA0F52A17D727A64B754",
+    ".agent/student-requests-bff-c/reviews/gateway-original-static-review.md": "89075E3E75EF88558E3AE8343C8A44E3625E1948F3907C085084C2094886387B",
+    ".agent/student-requests-bff-c/reviews/gateway-static-addendum-2026-09-08.md": "A1C6350A370CF1EE3742F9C77A179532FD1D3CEF0659FAE899B6DB98A77D1EF0"
+  },
+  "note": "Hashes archive the evidence/review trail; production and focused test hashes are in repair-manifest.json."
+}

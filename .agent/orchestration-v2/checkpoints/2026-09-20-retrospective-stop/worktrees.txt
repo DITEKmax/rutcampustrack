@@ -1,0 +1,216 @@
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack
+HEAD 6a98366b7507e3ee76cc0e13690afffd403a5321
+branch refs/heads/main
+
+worktree C:/Users/maksd/.codex/worktrees/1267/rutcampustrack
+HEAD a1af4071f6cd181dded58abf46497facc1dd7120
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/1456/rutcampustrack
+HEAD 8002b9ea4356b10779c5bb9a6d99746d32d78ae2
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui
+HEAD 8002b9ea4356b10779c5bb9a6d99746d32d78ae2
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack
+HEAD 8002b9ea4356b10779c5bb9a6d99746d32d78ae2
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/b2-academic-scope
+HEAD bb1bd4e72bae1b1393cae712c9fefec9c788684c
+branch refs/heads/codex/b2-academic-scope
+
+worktree C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/b2-projection-computation
+HEAD 753ab61d2fc202d764c5e106b98176b48626bb3f
+branch refs/heads/codex/b2-projection-computation
+
+worktree C:/Users/maksd/.codex/worktrees/34a5/rutcampustrack/.agent/worktrees/student-academic-ui
+HEAD 8002b9ea4356b10779c5bb9a6d99746d32d78ae2
+branch refs/heads/codex/student-academic-ui
+
+worktree C:/Users/maksd/.codex/worktrees/5353/rutcampustrack
+HEAD cedce8c60aee04261ca87a18b898b148719bee89
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/6a61/rutcampustrack
+HEAD b8220ac92125a8afa37598b270aa4fab7aa1f470
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/d650/rutcampustrack
+HEAD 8df4d3c5fba85ba4766f30133a4b60bd0398810e
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/.agent/worktrees/campus-map-read-backend
+HEAD 86263384ae81353af087e61e9158af61f15e0999
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack
+HEAD 8002b9ea4356b10779c5bb9a6d99746d32d78ae2
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-backend-union-e-r1
+HEAD 1b58320296d39e29514c6c2102985b27e652cea1
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract
+HEAD d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-isolation
+HEAD d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-notification-authority
+HEAD d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+detached
+
+worktree C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-ui-c
+HEAD d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+detached
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/be
+HEAD 99f8848e70683c7458428819944c1c4332f71251
+branch refs/heads/codex/js-student-01-be
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/contract
+HEAD 3df5fbe6736cb2add826392ee30a4e786e96fbe1
+branch refs/heads/codex/js-student-01-contract
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fe
+HEAD 81c967554b3c393f58aa3bf13f65b5c660de1a7e
+branch refs/heads/codex/js-student-01-fe
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-be
+HEAD 12c6b885569bb59719b67945f6ec0e1a1f95199c
+branch refs/heads/codex/js-student-01-fix-be
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-pwa
+HEAD a78d45e4166afa0fd47fbb1397b9e1a6fd248bc0
+branch refs/heads/codex/js-student-01-fix-pwa
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-retry
+HEAD 123af361cfb332544c95f3072b3745ad45430d5a
+branch refs/heads/codex/js-student-01-fix-retry
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-review
+HEAD 2219c105d105cf9df1ef5d16c1018247dc4de675
+branch refs/heads/codex/js-student-01-fix-review
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/fix-tma
+HEAD 7e1d3ee4a45c45a629d4abc09d619e3b4224ba96
+branch refs/heads/codex/js-student-01-fix-tma
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/js-student-01/integration
+HEAD 8002b9ea4356b10779c5bb9a6d99746d32d78ae2
+branch refs/heads/codex/js-student-01-integration
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/dependency-checks
+HEAD d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+branch refs/heads/codex/student-role-02-dependency-checks
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/dependency-security
+HEAD d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+branch refs/heads/codex/student-role-02-dependency-security
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-adapters
+HEAD d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+branch refs/heads/codex/student-role-02-homework-adapters
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-api
+HEAD 8002b9ea4356b10779c5bb9a6d99746d32d78ae2
+branch refs/heads/codex/student-role-02-homework-api
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/homework-ui
+HEAD d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+branch refs/heads/codex/student-role-02-homework-ui
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/integration
+HEAD d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+branch refs/heads/codex/student-role-02-integration
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/requests-domain
+HEAD 8002b9ea4356b10779c5bb9a6d99746d32d78ae2
+branch refs/heads/codex/student-role-02-requests-domain
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/requests-transport
+HEAD d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+branch refs/heads/codex/student-role-02-requests-transport
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/shared-shell
+HEAD 8002b9ea4356b10779c5bb9a6d99746d32d78ae2
+branch refs/heads/codex/student-role-02-shared-shell
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-access-scope
+HEAD b8220ac92125a8afa37598b270aa4fab7aa1f470
+branch refs/heads/codex/v2-access-scope
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-assignment-authority
+HEAD 27860f24eb380c782311bbe0cbb65c3d2c75d85d
+branch refs/heads/codex/v2-assignment-authority
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-binding-proto
+HEAD b8220ac92125a8afa37598b270aa4fab7aa1f470
+branch refs/heads/codex/v2-binding-proto
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3
+HEAD d7ec16572db325d944f1a1fbd3b4960b827d09c3
+branch refs/heads/codex/v2-integration-a2-l3
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-l5a
+HEAD ed9b63c9449b23fa3f5dbf2feb52cd8f9e9cfe83
+branch refs/heads/codex/l5a-union-20260920
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-historical-attendance
+HEAD 3d4115f3a4c4ddba473689e27ac1a0efb519a202
+branch refs/heads/codex/l5b-historical-attendance-20260920
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-recurring-writer
+HEAD 3d4115f3a4c4ddba473689e27ac1a0efb519a202
+branch refs/heads/codex/l5b-recurring-writer-20260920
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-retrospective-union
+HEAD 3d4115f3a4c4ddba473689e27ac1a0efb519a202
+branch refs/heads/codex/l5b-retrospective-union-20260920
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-service-identity
+HEAD 3d4115f3a4c4ddba473689e27ac1a0efb519a202
+branch refs/heads/codex/l5b-service-identity-20260920
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-map-read
+HEAD b8220ac92125a8afa37598b270aa4fab7aa1f470
+branch refs/heads/codex/v2-map-read
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-mass-cancel-removal
+HEAD 13e5fd1985b798bbb61bcc85969e6a74b1fc6837
+branch refs/heads/codex/mass-cancel-removal-20260920
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-pwa-build-fix
+HEAD 426a15b6b42e816deaa3ca5c50437e0964aaf85e
+branch refs/heads/codex/v2-pwa-build-fix
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-contract
+HEAD b8220ac92125a8afa37598b270aa4fab7aa1f470
+branch refs/heads/codex/v2-requests-contract
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness
+HEAD 71bcc27572ed72c18e49f63c512ae5e4e5790b8d
+branch refs/heads/codex/v2-requests-harness
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-ui
+HEAD b8220ac92125a8afa37598b270aa4fab7aa1f470
+branch refs/heads/codex/v2-requests-ui
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build
+HEAD d7ec16572db325d944f1a1fbd3b4960b827d09c3
+branch refs/heads/codex/v2-runtime-build
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2
+HEAD 426a15b6b42e816deaa3ca5c50437e0964aaf85e
+branch refs/heads/codex/v2-runtime-build-r2
+
+worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r3
+HEAD 13e5fd1985b798bbb61bcc85969e6a74b1fc6837
+branch refs/heads/codex/v2-runtime-build-r3
+

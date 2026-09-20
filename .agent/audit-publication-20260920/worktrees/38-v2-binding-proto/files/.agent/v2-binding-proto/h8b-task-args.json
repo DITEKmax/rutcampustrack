@@ -1,0 +1,29 @@
+{
+  "schema": "h8b-task-args-v1",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "purpose": "Canonical ordered arguments reused by H9 after explicit approval; preserved as H8b provenance",
+  "module_roots": [
+    "services/schedule-service/schedule-app",
+    "services/academic-service/academic-app",
+    "services/attendance-service/attendance-app",
+    "services/mobile-bff/mobile-bff-app",
+    "services/document-renderer-service/document-renderer-app"
+  ],
+  "tasks": [
+    ":services:schedule-service:schedule-app:generateProto",
+    ":services:schedule-service:schedule-app:compileJava",
+    ":services:schedule-service:schedule-app:compileTestJava",
+    ":services:academic-service:academic-app:generateProto",
+    ":services:academic-service:academic-app:compileJava",
+    ":services:academic-service:academic-app:compileTestJava",
+    ":services:attendance-service:attendance-app:generateProto",
+    ":services:attendance-service:attendance-app:compileJava",
+    ":services:attendance-service:attendance-app:compileTestJava",
+    ":services:mobile-bff:mobile-bff-app:generateProto",
+    ":services:mobile-bff:mobile-bff-app:compileJava",
+    ":services:mobile-bff:mobile-bff-app:compileTestJava",
+    ":services:document-renderer-service:document-renderer-app:generateProto",
+    ":services:document-renderer-service:document-renderer-app:compileJava",
+    ":services:document-renderer-service:document-renderer-app:compileTestJava"
+  ]
+}

@@ -1,0 +1,1873 @@
+﻿{
+  "schema": "rct.student-requests-runtime.v1",
+  "status": "FAIL",
+  "runtime": "FAIL",
+  "scope": "S3 Requests real Nginx -> Gateway -> Mobile BFF -> Attendance harness",
+  "runId": "20260919-200855360-e6hmaaj0",
+  "unionRevision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+  "source": {
+    "nginxPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\tests\\e2e\\infra\\nginx\\nginx.conf",
+    "nginxSha256": "f38e1e783217c5ceb34d780993e309f9edd8a0dc7a41e346900e94b09061cc96",
+    "nginxBlob": "6c0f66df3d4ed4a006afe6eb9a70a0bc5775bd86",
+    "defaultPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\tests\\e2e\\infra\\nginx\\default.conf",
+    "defaultSha256": "2da18f3f8fa6975f39b4bcc076ebfed76a5cba9397ad983d2fd0a39ff50bf8b2",
+    "defaultBlob": "96f50fe6ff394d0e5047752715aac10b09a60ccd",
+    "globalMaxBodySize": "2m",
+    "requestsMaxBodySize": "24m",
+    "requestBuffering": "on (inherited default)",
+    "cacheControl": "no-store for /api/v1/student/requests and descendants",
+    "trustedForwardHeaders": "X-Forwarded-For/Proto/Host/Port overwritten; Forwarded empty",
+    "acceptedAcademicSeed": {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\..\\runtime-live\\seed-academic.sql",
+      "sha256": "de44edd7e8a6ff2382f69de61396454f6561d3ea9f722a831266e62fdbf31adc"
+    },
+    "acceptedScheduleSeed": {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\..\\browser-runtime\\seed-schedule.sql",
+      "sha256": "cf8f55e2fbc2fbb5ffd3d8073cba3b7136b4fae84f9123f012b9da7995c705ae"
+    },
+    "pinnedImages": {
+      "nginx": "nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+      "temurin": "eclipse-temurin:21-jre@sha256:ad0cdd9782db550ca7dde6939a16fd850d04e683d37d3cff79d84a5848ba6a5a",
+      "postgres": "postgres:16@sha256:93d55776e04376e19adb2733e3ccebb4392ee7dd86d8ff238503b30fe719c84f",
+      "redis": "redis:7@sha256:8b81dd37ff027bec4e516d41acfbe9fe2460070dc6d4a4570a2ac5b9d59df065",
+      "rabbitmq": "rabbitmq:3.13@sha256:606d8c0d6b3c18d1da9afc53bc7cdb2a8d5486df91b5a9830e9e07626c9ae281",
+      "mongo": "mongo:7@sha256:45d9c9b48aa1b56b5e3a9f906763fe432f376abb3bc2832438022b6d2534e4fe"
+    },
+    "buildManifest": {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\build-i6\\h57-build\\requests-build-manifest.v1.json",
+      "pinnedSha256": "61e73ed658d43cd878afe6da6ab703d2c73844e8114329fd991566bf9c009f4f",
+      "actualSha256": "61e73ed658d43cd878afe6da6ab703d2c73844e8114329fd991566bf9c009f4f",
+      "schemaVersion": 1,
+      "sourceRevision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "sourceCleanBeforeBuild": true,
+      "sourceCleanAfterBuild": true,
+      "producerCommands": [
+        {
+          "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse HEAD",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:28:53.1304821+00:00",
+          "finishedAt": "2026-09-19T18:28:53.2365185+00:00"
+        },
+        {
+          "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 status --porcelain=v1 --untracked-files=all",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:28:53.2655663+00:00",
+          "finishedAt": "2026-09-19T18:28:53.4572814+00:00"
+        },
+        {
+          "command": ".\\gradlew.bat --version",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:28:53.7050536+00:00",
+          "finishedAt": "2026-09-19T18:28:55.1349450+00:00"
+        },
+        {
+          "command": "java -version",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:28:55.1396449+00:00",
+          "finishedAt": "2026-09-19T18:28:55.2681023+00:00"
+        },
+        {
+          "command": "node --version",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:28:55.2722256+00:00",
+          "finishedAt": "2026-09-19T18:28:55.3433132+00:00"
+        },
+        {
+          "command": ".\\gradlew.bat :services:auth-service:auth-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:28:55.4991815+00:00",
+          "finishedAt": "2026-09-19T18:29:34.1984860+00:00"
+        },
+        {
+          "command": ".\\gradlew.bat :services:academic-service:academic-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:29:34.2085373+00:00",
+          "finishedAt": "2026-09-19T18:30:46.6009379+00:00"
+        },
+        {
+          "command": ".\\gradlew.bat :services:schedule-service:schedule-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:30:46.6050697+00:00",
+          "finishedAt": "2026-09-19T18:31:51.9819077+00:00"
+        },
+        {
+          "command": ".\\gradlew.bat :services:attendance-service:attendance-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:31:51.9850962+00:00",
+          "finishedAt": "2026-09-19T18:33:01.0464979+00:00"
+        },
+        {
+          "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:33:01.0497429+00:00",
+          "finishedAt": "2026-09-19T18:33:50.2336335+00:00"
+        },
+        {
+          "command": ".\\gradlew.bat :services:api-gateway:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:33:50.2401099+00:00",
+          "finishedAt": "2026-09-19T18:34:25.9243827+00:00"
+        },
+        {
+          "command": "npm run build --workspace @rct/pwa-vue",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:34:25.9272487+00:00",
+          "finishedAt": "2026-09-19T18:34:39.6598491+00:00"
+        },
+        {
+          "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse HEAD",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:34:39.6633060+00:00",
+          "finishedAt": "2026-09-19T18:34:39.7808932+00:00"
+        },
+        {
+          "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 status --porcelain=v1 --untracked-files=all",
+          "exitCode": 0,
+          "startedAt": "2026-09-19T18:34:39.7846392+00:00",
+          "finishedAt": "2026-09-19T18:34:39.9958513+00:00"
+        }
+      ],
+      "producerEnvironment": {
+        "gradle": "Gradle 8.12",
+        "hostOs": "Microsoft Windows NT 10.0.26200.0",
+        "java": "openjdk version \"21.0.10\" 2026-01-20 LTS",
+        "node": "v24.14.0",
+        "powershell": "7.6.5"
+      },
+      "currentRevisionAfterArtifactCheck": "426a15b6b42e816deaa3ca5c50437e0964aaf85e"
+    },
+    "pwaDist": {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\frontends\\pwa-vue\\dist",
+      "fileCount": 9,
+      "manifestSha256": "3e4855c9d00ed70a61d286d4942612fa84393d3e9a51d9aeca12ea7df636aa7a",
+      "files": [
+        {
+          "relativePath": "assets/index-DC_TLvi3.js",
+          "bytes": 317027,
+          "sha256": "b4d9e7bd827e81c48bcef8788bbf3aaa9cd25224c303fbed908b6df22ff52626"
+        },
+        {
+          "relativePath": "assets/index-nt1gX52y.css",
+          "bytes": 66137,
+          "sha256": "7d2d547686f7733bb801c8449dff3741f65f60e00fc15c7a07a1febad2c41120"
+        },
+        {
+          "relativePath": "assets/onest-cyrillic-wght-normal-DXI_y_WF.woff2",
+          "bytes": 14228,
+          "sha256": "37bc16874135c16134679b1db25b87fe80eb9fcd4ef3666af7c531bfde204fe2"
+        },
+        {
+          "relativePath": "assets/onest-latin-ext-wght-normal-CnNj8hVb.woff2",
+          "bytes": 15992,
+          "sha256": "391a9b24b5c46ebff5d21f53cdb2edaa31c3446da3b722f038ab07d75d02a82d"
+        },
+        {
+          "relativePath": "assets/onest-latin-wght-normal-CUIqqgP9.woff2",
+          "bytes": 32236,
+          "sha256": "67849bcc11e02177442da14ad954bfe1cc709553dad137b5003449b303e83fc3"
+        },
+        {
+          "relativePath": "index.html",
+          "bytes": 509,
+          "sha256": "701b5964b1d2adccd76274e7ba002249d7ec0a9a01db641cb8cf80d36850a85a"
+        },
+        {
+          "relativePath": "manifest.webmanifest",
+          "bytes": 194,
+          "sha256": "9b2c235c8403317044b54e598acade00b43eb6f011f9ad1ff088f5b369c3d5f2"
+        },
+        {
+          "relativePath": "sw-assets.js",
+          "bytes": 280,
+          "sha256": "b595bcd99eb14d535bf52e2eb8608c130ac7b113b6178ce246dc7a17858054be"
+        },
+        {
+          "relativePath": "sw.js",
+          "bytes": 1368,
+          "sha256": "097694122a16b22353ce0569a76cd0e4bc7e20bb7b9cb769daede3e62b83a32a"
+        }
+      ]
+    },
+    "sourceAnchor": {
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "trackedStatus": "clean",
+      "nginxBlob": "6c0f66df3d4ed4a006afe6eb9a70a0bc5775bd86",
+      "nginxSha256": "f38e1e783217c5ceb34d780993e309f9edd8a0dc7a41e346900e94b09061cc96",
+      "defaultBlob": "96f50fe6ff394d0e5047752715aac10b09a60ccd",
+      "defaultSha256": "2da18f3f8fa6975f39b4bcc076ebfed76a5cba9397ad983d2fd0a39ff50bf8b2"
+    },
+    "runtimeArtifacts": {
+      "root": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts",
+      "jars": [
+        {
+          "name": "auth",
+          "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\auth-app-0.1.0.jar",
+          "bytes": 85800800,
+          "sha256": "de82f257ae4a7ca0d6d66b62233ed07b5e828684b72dc97f6475f08b9b45f33b"
+        },
+        {
+          "name": "academic",
+          "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\academic-app-0.1.0.jar",
+          "bytes": 97485357,
+          "sha256": "d66571d3d0c60b9b579327da0e5733fc7754c4026818c9ef0deb88bf2ce3a874"
+        },
+        {
+          "name": "schedule",
+          "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\schedule-app-0.1.0.jar",
+          "bytes": 91357673,
+          "sha256": "cff0b247bbe97bc67a9d99850ff3c06a43da4f96a066e1da8fede6c0d8d083d9"
+        },
+        {
+          "name": "attendance",
+          "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\attendance-app-0.1.0.jar",
+          "bytes": 93728844,
+          "sha256": "8ca3699c8542e1fa2e1a2a205a7ad979834c0a55ff3275dec187327fe903fd2a"
+        },
+        {
+          "name": "mobileBff",
+          "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\mobile-bff-app-0.1.0.jar",
+          "bytes": 45718640,
+          "sha256": "a25ee11eb3ae21ed36ca514d051477a8e34ec50342a5f113c95c249e57de7b26"
+        },
+        {
+          "name": "gateway",
+          "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\api-gateway-0.1.0.jar",
+          "bytes": 61960636,
+          "sha256": "377bc4a903bae19c5fab9e98727098a7411366f786c7a6d61151326fb880b316"
+        }
+      ],
+      "pwaDist": {
+        "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\pwa",
+        "fileCount": 9,
+        "manifestSha256": "3e4855c9d00ed70a61d286d4942612fa84393d3e9a51d9aeca12ea7df636aa7a",
+        "files": [
+          {
+            "relativePath": "assets/index-DC_TLvi3.js",
+            "bytes": 317027,
+            "sha256": "b4d9e7bd827e81c48bcef8788bbf3aaa9cd25224c303fbed908b6df22ff52626"
+          },
+          {
+            "relativePath": "assets/index-nt1gX52y.css",
+            "bytes": 66137,
+            "sha256": "7d2d547686f7733bb801c8449dff3741f65f60e00fc15c7a07a1febad2c41120"
+          },
+          {
+            "relativePath": "assets/onest-cyrillic-wght-normal-DXI_y_WF.woff2",
+            "bytes": 14228,
+            "sha256": "37bc16874135c16134679b1db25b87fe80eb9fcd4ef3666af7c531bfde204fe2"
+          },
+          {
+            "relativePath": "assets/onest-latin-ext-wght-normal-CnNj8hVb.woff2",
+            "bytes": 15992,
+            "sha256": "391a9b24b5c46ebff5d21f53cdb2edaa31c3446da3b722f038ab07d75d02a82d"
+          },
+          {
+            "relativePath": "assets/onest-latin-wght-normal-CUIqqgP9.woff2",
+            "bytes": 32236,
+            "sha256": "67849bcc11e02177442da14ad954bfe1cc709553dad137b5003449b303e83fc3"
+          },
+          {
+            "relativePath": "index.html",
+            "bytes": 509,
+            "sha256": "701b5964b1d2adccd76274e7ba002249d7ec0a9a01db641cb8cf80d36850a85a"
+          },
+          {
+            "relativePath": "manifest.webmanifest",
+            "bytes": 194,
+            "sha256": "9b2c235c8403317044b54e598acade00b43eb6f011f9ad1ff088f5b369c3d5f2"
+          },
+          {
+            "relativePath": "sw-assets.js",
+            "bytes": 280,
+            "sha256": "b595bcd99eb14d535bf52e2eb8608c130ac7b113b6178ce246dc7a17858054be"
+          },
+          {
+            "relativePath": "sw.js",
+            "bytes": 1368,
+            "sha256": "097694122a16b22353ce0569a76cd0e4bc7e20bb7b9cb769daede3e62b83a32a"
+          }
+        ]
+      },
+      "trustedManifestSha256": "61e73ed658d43cd878afe6da6ab703d2c73844e8114329fd991566bf9c009f4f"
+    },
+    "runtimeNginx": {
+      "configSha256": "bc18f838fae0d8aa9e99c2ec5d99c2669efe8a9dff47068bab6b34985184be20",
+      "defaultSha256": "d0ccfae3573bc6a233354288c47d1b0eb3601ce6ef9f7cb2887fa5690f0e1b17",
+      "certificate": "ephemeral self-signed certificate for 127.0.0.1",
+      "diagnosticAccessLog": "request/status/upstream address/upstream status only"
+    },
+    "runtimePwaDist": {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\pwa",
+      "fileCount": 9,
+      "manifestSha256": "3e4855c9d00ed70a61d286d4942612fa84393d3e9a51d9aeca12ea7df636aa7a",
+      "files": [
+        {
+          "relativePath": "assets/index-DC_TLvi3.js",
+          "bytes": 317027,
+          "sha256": "b4d9e7bd827e81c48bcef8788bbf3aaa9cd25224c303fbed908b6df22ff52626"
+        },
+        {
+          "relativePath": "assets/index-nt1gX52y.css",
+          "bytes": 66137,
+          "sha256": "7d2d547686f7733bb801c8449dff3741f65f60e00fc15c7a07a1febad2c41120"
+        },
+        {
+          "relativePath": "assets/onest-cyrillic-wght-normal-DXI_y_WF.woff2",
+          "bytes": 14228,
+          "sha256": "37bc16874135c16134679b1db25b87fe80eb9fcd4ef3666af7c531bfde204fe2"
+        },
+        {
+          "relativePath": "assets/onest-latin-ext-wght-normal-CnNj8hVb.woff2",
+          "bytes": 15992,
+          "sha256": "391a9b24b5c46ebff5d21f53cdb2edaa31c3446da3b722f038ab07d75d02a82d"
+        },
+        {
+          "relativePath": "assets/onest-latin-wght-normal-CUIqqgP9.woff2",
+          "bytes": 32236,
+          "sha256": "67849bcc11e02177442da14ad954bfe1cc709553dad137b5003449b303e83fc3"
+        },
+        {
+          "relativePath": "index.html",
+          "bytes": 509,
+          "sha256": "701b5964b1d2adccd76274e7ba002249d7ec0a9a01db641cb8cf80d36850a85a"
+        },
+        {
+          "relativePath": "manifest.webmanifest",
+          "bytes": 194,
+          "sha256": "9b2c235c8403317044b54e598acade00b43eb6f011f9ad1ff088f5b369c3d5f2"
+        },
+        {
+          "relativePath": "sw-assets.js",
+          "bytes": 280,
+          "sha256": "b595bcd99eb14d535bf52e2eb8608c130ac7b113b6178ce246dc7a17858054be"
+        },
+        {
+          "relativePath": "sw.js",
+          "bytes": 1368,
+          "sha256": "097694122a16b22353ce0569a76cd0e4bc7e20bb7b9cb769daede3e62b83a32a"
+        }
+      ]
+    }
+  },
+  "sourceValidation": {},
+  "images": {
+    "nginx": "nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+    "temurin": "eclipse-temurin:21-jre@sha256:ad0cdd9782db550ca7dde6939a16fd850d04e683d37d3cff79d84a5848ba6a5a",
+    "postgres": "postgres:16@sha256:93d55776e04376e19adb2733e3ccebb4392ee7dd86d8ff238503b30fe719c84f",
+    "redis": "redis:7@sha256:8b81dd37ff027bec4e516d41acfbe9fe2460070dc6d4a4570a2ac5b9d59df065",
+    "rabbitmq": "rabbitmq:3.13@sha256:606d8c0d6b3c18d1da9afc53bc7cdb2a8d5486df91b5a9830e9e07626c9ae281",
+    "mongo": "mongo:7@sha256:45d9c9b48aa1b56b5e3a9f906763fe432f376abb3bc2832438022b6d2534e4fe"
+  },
+  "jars": {
+    "academic": {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\services\\academic-service\\academic-app\\build\\libs\\academic-app-0.1.0.jar",
+      "sourceRelativePath": "services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "file": "academic-app-0.1.0.jar",
+      "sha256": "d66571d3d0c60b9b579327da0e5733fc7754c4026818c9ef0deb88bf2ce3a874",
+      "bytes": 97485357
+    },
+    "gateway": {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\services\\api-gateway\\build\\libs\\api-gateway-0.1.0.jar",
+      "sourceRelativePath": "services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "file": "api-gateway-0.1.0.jar",
+      "sha256": "377bc4a903bae19c5fab9e98727098a7411366f786c7a6d61151326fb880b316",
+      "bytes": 61960636
+    },
+    "attendance": {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\services\\attendance-service\\attendance-app\\build\\libs\\attendance-app-0.1.0.jar",
+      "sourceRelativePath": "services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "file": "attendance-app-0.1.0.jar",
+      "sha256": "8ca3699c8542e1fa2e1a2a205a7ad979834c0a55ff3275dec187327fe903fd2a",
+      "bytes": 93728844
+    },
+    "auth": {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\services\\auth-service\\auth-app\\build\\libs\\auth-app-0.1.0.jar",
+      "sourceRelativePath": "services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "file": "auth-app-0.1.0.jar",
+      "sha256": "de82f257ae4a7ca0d6d66b62233ed07b5e828684b72dc97f6475f08b9b45f33b",
+      "bytes": 85800800
+    },
+    "mobileBff": {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\services\\mobile-bff\\mobile-bff-app\\build\\libs\\mobile-bff-app-0.1.0.jar",
+      "sourceRelativePath": "services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "file": "mobile-bff-app-0.1.0.jar",
+      "sha256": "a25ee11eb3ae21ed36ca514d051477a8e34ec50342a5f113c95c249e57de7b26",
+      "bytes": 45718640
+    },
+    "schedule": {
+      "path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\services\\schedule-service\\schedule-app\\build\\libs\\schedule-app-0.1.0.jar",
+      "sourceRelativePath": "services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "file": "schedule-app-0.1.0.jar",
+      "sha256": "cff0b247bbe97bc67a9d99850ff3c06a43da4f96a066e1da8fede6c0d8d083d9",
+      "bytes": 91357673
+    }
+  },
+  "ports": {
+    "edge": 18514,
+    "gatewayDiagnostics": 18515,
+    "bffDiagnostics": 18516,
+    "attendanceDiagnostics": 18517,
+    "authDiagnostics": 18518,
+    "scheduleDiagnostics": 18519,
+    "academicDiagnostics": 18520
+  },
+  "commands": [
+    {
+      "at": "2026-09-19T20:08:52.1625541+00:00",
+      "phase": "source-validation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse HEAD",
+      "purpose": "resolve union revision",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:52.3624757+00:00",
+      "phase": "source-validation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 status --porcelain=v1 --untracked-files=all",
+      "purpose": "verify union tracked source is clean",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:52.4743749+00:00",
+      "phase": "source-validation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/nginx.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/nginx.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:52.5562789+00:00",
+      "phase": "source-validation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/default.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/default.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:52.6654584+00:00",
+      "phase": "source-validation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 hash-object --path=tests/e2e/infra/nginx/nginx.conf --stdin",
+      "purpose": "bind cached nginx bytes to expected revision blob",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:52.7424006+00:00",
+      "phase": "source-validation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 hash-object --path=tests/e2e/infra/nginx/default.conf --stdin",
+      "purpose": "bind cached default.conf bytes to expected revision blob",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:54.5363941+00:00",
+      "phase": "source-validation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse HEAD",
+      "purpose": "resolve union revision",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:54.6840297+00:00",
+      "phase": "source-validation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse HEAD",
+      "purpose": "resolve union revision",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:54.8072699+00:00",
+      "phase": "source-validation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 status --porcelain=v1 --untracked-files=all",
+      "purpose": "verify union tracked source is clean",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:54.8929812+00:00",
+      "phase": "source-validation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/nginx.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/nginx.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:54.9807966+00:00",
+      "phase": "source-validation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/default.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/default.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:55.0705700+00:00",
+      "phase": "runtime-preflight",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse HEAD",
+      "purpose": "resolve union revision",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:55.1951270+00:00",
+      "phase": "runtime-preflight",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 status --porcelain=v1 --untracked-files=all",
+      "purpose": "verify union tracked source is clean",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:55.2753116+00:00",
+      "phase": "runtime-preflight",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/nginx.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/nginx.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:08:55.3502590+00:00",
+      "phase": "runtime-preflight",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/default.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/default.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:03.2089976+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker image inspect nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+      "purpose": "inspect pinned nginx image",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:03.4843584+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker image inspect eclipse-temurin:21-jre@sha256:ad0cdd9782db550ca7dde6939a16fd850d04e683d37d3cff79d84a5848ba6a5a",
+      "purpose": "inspect pinned temurin image",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:03.7208916+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker image inspect postgres:16@sha256:93d55776e04376e19adb2733e3ccebb4392ee7dd86d8ff238503b30fe719c84f",
+      "purpose": "inspect pinned postgres image",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:03.9272915+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker image inspect redis:7@sha256:8b81dd37ff027bec4e516d41acfbe9fe2460070dc6d4a4570a2ac5b9d59df065",
+      "purpose": "inspect pinned redis image",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:04.1421759+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker image inspect rabbitmq:3.13@sha256:606d8c0d6b3c18d1da9afc53bc7cdb2a8d5486df91b5a9830e9e07626c9ae281",
+      "purpose": "inspect pinned rabbitmq image",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:04.3417696+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker image inspect mongo:7@sha256:45d9c9b48aa1b56b5e3a9f906763fe432f376abb3bc2832438022b6d2534e4fe",
+      "purpose": "inspect pinned mongo image",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:04.5086931+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker network ls -q",
+      "purpose": "list Docker networks",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:04.6769592+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker network inspect f4f5b03081ca --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:04.8399824+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker network inspect 9dfcba98bf5c --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:05.0024403+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker network inspect 2654915e91c9 --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:05.1708923+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker network inspect 0928fbedc998 --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:05.3391154+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker network inspect ed5c86acb58b --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:05.5094470+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker network inspect 13cb6f704aa4 --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:05.6726528+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker network inspect f9d4d882a8b6 --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:05.8317362+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker network inspect de2bdbd0bdf9 --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:06.1138310+00:00",
+      "phase": "runtime-preflight",
+      "command": "docker network create --driver bridge --subnet 172.30.185.0/24 --gateway 172.30.185.1 --ip-range 172.30.185.128/25 --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 rct-requests-gate-20260919-200855360-e6hmaaj0",
+      "purpose": "create collision-checked owned Docker network with edge-excluding IPAM range",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:06.1833517+00:00",
+      "phase": "runtime-preflight",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse HEAD",
+      "purpose": "resolve union revision",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:06.2755559+00:00",
+      "phase": "runtime-preflight",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 status --porcelain=v1 --untracked-files=all",
+      "purpose": "verify union tracked source is clean",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:06.3350841+00:00",
+      "phase": "runtime-preflight",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/nginx.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/nginx.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:06.3993186+00:00",
+      "phase": "runtime-preflight",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/default.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/default.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:06.5901061+00:00",
+      "phase": "edge-reservation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse HEAD",
+      "purpose": "resolve union revision",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:06.6917153+00:00",
+      "phase": "edge-reservation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 status --porcelain=v1 --untracked-files=all",
+      "purpose": "verify union tracked source is clean",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:06.7544751+00:00",
+      "phase": "edge-reservation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/nginx.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/nginx.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:06.8221832+00:00",
+      "phase": "edge-reservation",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/default.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/default.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:07.1641919+00:00",
+      "phase": "edge-reservation",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-nginx --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias edge-nginx --ip 172.30.185.10 --publish 127.0.0.1:18514:443 --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\nginx\\nginx.conf,target=/etc/nginx/nginx.conf,readonly --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\nginx\\default.conf,target=/etc/nginx/conf.d/default.conf,readonly --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\keys\\server.crt,target=/etc/nginx/certs/server.crt,readonly --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\keys\\server.key,target=/etc/nginx/certs/server.key,readonly --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\pwa,target=/usr/share/nginx/html,readonly nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 nginx -g \"daemon off;\"",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-nginx container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:07.2890463+00:00",
+      "phase": "infrastructure",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse HEAD",
+      "purpose": "resolve union revision",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:07.4775937+00:00",
+      "phase": "infrastructure",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 status --porcelain=v1 --untracked-files=all",
+      "purpose": "verify union tracked source is clean",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:07.5822777+00:00",
+      "phase": "infrastructure",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/nginx.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/nginx.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:07.6817864+00:00",
+      "phase": "infrastructure",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/default.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/default.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:08.0270482+00:00",
+      "phase": "infrastructure",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-pg-academic --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias postgres-academic --env POSTGRES_USER=rct_user --env POSTGRES_DB=academic_db --env POSTGRES_PASSWORD=<redacted> --env TZ=Europe/Moscow postgres:16@sha256:93d55776e04376e19adb2733e3ccebb4392ee7dd86d8ff238503b30fe719c84f postgres",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-pg-academic container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:08.6352826+00:00",
+      "phase": "infrastructure",
+      "command": "docker start 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a",
+      "purpose": "start owned rct-requests-20260919-200855360-e6hmaaj0-pg-academic container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:09.0328918+00:00",
+      "phase": "infrastructure",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-pg-schedule --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias postgres-schedule --env POSTGRES_USER=rct_user --env POSTGRES_DB=schedule_db --env POSTGRES_PASSWORD=<redacted> --env TZ=Europe/Moscow postgres:16@sha256:93d55776e04376e19adb2733e3ccebb4392ee7dd86d8ff238503b30fe719c84f postgres",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-pg-schedule container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:09.6218791+00:00",
+      "phase": "infrastructure",
+      "command": "docker start f3ed0fe398e756a25684c3a597d9a43a1da204ca7799252fb453910b28745735",
+      "purpose": "start owned rct-requests-20260919-200855360-e6hmaaj0-pg-schedule container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:09.9928794+00:00",
+      "phase": "infrastructure",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-redis --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias redis redis:7@sha256:8b81dd37ff027bec4e516d41acfbe9fe2460070dc6d4a4570a2ac5b9d59df065 redis-server --requirepass <redacted>",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-redis container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:10.5182368+00:00",
+      "phase": "infrastructure",
+      "command": "docker start cf352a33a5502886c1a0d8c2760929c5e2b6e42d1a4d92ba46973e03fae9f5f1",
+      "purpose": "start owned rct-requests-20260919-200855360-e6hmaaj0-redis container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:10.9613303+00:00",
+      "phase": "infrastructure",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-rabbit --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias rabbitmq --env RABBITMQ_DEFAULT_USER=rct_user --env RABBITMQ_DEFAULT_PASS=<redacted> rabbitmq:3.13@sha256:606d8c0d6b3c18d1da9afc53bc7cdb2a8d5486df91b5a9830e9e07626c9ae281",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-rabbit container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:11.4824040+00:00",
+      "phase": "infrastructure",
+      "command": "docker start 8e148ad8f0ebdd885e02d72b99e23296e2b50e1f84d1031a6080fa0c6c9015bf",
+      "purpose": "start owned rct-requests-20260919-200855360-e6hmaaj0-rabbit container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:11.7797779+00:00",
+      "phase": "infrastructure",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-mongo --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias mongo --network-alias mongo-attendance mongo:7@sha256:45d9c9b48aa1b56b5e3a9f906763fe432f376abb3bc2832438022b6d2534e4fe mongod --replSet rs0 --bind_ip_all",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-mongo container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:12.3915624+00:00",
+      "phase": "infrastructure",
+      "command": "docker start 60b26495bbedea6ddcbe60b11a97ff5b08c559533b7ec68ba22741071eeee0e2",
+      "purpose": "start owned rct-requests-20260919-200855360-e6hmaaj0-mongo container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:12.7237616+00:00",
+      "phase": "infrastructure",
+      "command": "docker exec 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a pg_isready -U rct_user -d academic_db",
+      "purpose": "wait for academic PostgreSQL",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:13.0213329+00:00",
+      "phase": "infrastructure",
+      "command": "docker exec f3ed0fe398e756a25684c3a597d9a43a1da204ca7799252fb453910b28745735 pg_isready -U rct_user -d schedule_db",
+      "purpose": "wait for schedule PostgreSQL",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:13.3044591+00:00",
+      "phase": "infrastructure",
+      "command": "docker exec cf352a33a5502886c1a0d8c2760929c5e2b6e42d1a4d92ba46973e03fae9f5f1 redis-cli --no-auth-warning -a <redacted> ping",
+      "purpose": "wait for Redis",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:15.6407594+00:00",
+      "phase": "infrastructure",
+      "command": "docker exec 8e148ad8f0ebdd885e02d72b99e23296e2b50e1f84d1031a6080fa0c6c9015bf rabbitmq-diagnostics -q ping",
+      "purpose": "wait for RabbitMQ",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:17.1134087+00:00",
+      "phase": "infrastructure",
+      "command": "docker exec 60b26495bbedea6ddcbe60b11a97ff5b08c559533b7ec68ba22741071eeee0e2 mongosh --quiet --eval db.adminCommand({ping:1}).ok",
+      "purpose": "wait for MongoDB",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:18.3131575+00:00",
+      "phase": "infrastructure",
+      "command": "docker exec 60b26495bbedea6ddcbe60b11a97ff5b08c559533b7ec68ba22741071eeee0e2 mongosh --quiet --eval \"try { rs.status() } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}) }\"",
+      "purpose": "initialize Mongo rs0 with container-resolvable host",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:19.1377322+00:00",
+      "phase": "infrastructure",
+      "command": "docker exec 60b26495bbedea6ddcbe60b11a97ff5b08c559533b7ec68ba22741071eeee0e2 mongosh --quiet --eval \"db.hello().isWritablePrimary ? quit(0) : quit(1)\"",
+      "purpose": "wait for Mongo rs0 primary",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:19.2093748+00:00",
+      "phase": "backend-services",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse HEAD",
+      "purpose": "resolve union revision",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:19.3384294+00:00",
+      "phase": "backend-services",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 status --porcelain=v1 --untracked-files=all",
+      "purpose": "verify union tracked source is clean",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:19.4110113+00:00",
+      "phase": "backend-services",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/nginx.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/nginx.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:19.5044282+00:00",
+      "phase": "backend-services",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/default.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/default.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:19.7864587+00:00",
+      "phase": "backend-services",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-academic --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias academic-service --publish 127.0.0.1:18520:9091 --env SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-academic:5432/academic_db --env SPRING_DATASOURCE_USERNAME=rct_user --env GRPC_SECRET=<redacted> --env SPRING_PROFILES_ACTIVE=prod --env MANAGEMENT_ENDPOINT_METRICS_ACCESS=unrestricted --env SPRING_RABBITMQ_USERNAME=rct_user --env SPRING_RABBITMQ_PASSWORD=<redacted> --env REDIS_PASSWORD=<redacted> --env RABBITMQ_PASSWORD=<redacted> --env MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics --env TZ=Europe/Moscow --env RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=false --env POSTGRES_ACADEMIC_PASSWORD=<redacted> --env RABBITMQ_USER=rct_user --env JAVA_TOOL_OPTIONS=-Djava.security.egd=file:/dev/./urandom --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\academic-app-0.1.0.jar,target=/opt/rct/app.jar,readonly eclipse-temurin:21-jre@sha256:ad0cdd9782db550ca7dde6939a16fd850d04e683d37d3cff79d84a5848ba6a5a java -XX:+UseContainerSupport -jar /opt/rct/app.jar --server.port=9091 --server.address=0.0.0.0 --grpc.server.port=19091 --grpc.server.address=0.0.0.0",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-academic container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:20.3170486+00:00",
+      "phase": "backend-services",
+      "command": "docker start e961a8bca89f3ab072566a075431721c2cadb43a36b1eef0e7700682a1dde4ff",
+      "purpose": "start owned rct-requests-20260919-200855360-e6hmaaj0-academic container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:58.1176561+00:00",
+      "phase": "backend-services",
+      "command": "docker exec 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a psql -q -t -A -v ON_ERROR_STOP=1 -U rct_user -d academic_db -c \"SELECT CASE WHEN\r\n to_regclass('public.flyway_schema_history') IS NOT NULL\r\n AND EXISTS (SELECT 1 FROM flyway_schema_history WHERE version = '24' AND success)\r\n AND EXISTS (SELECT 1 FROM flyway_schema_history WHERE version = '25' AND success)\r\n AND EXISTS (SELECT 1 FROM flyway_schema_history WHERE version = '26' AND success)\r\n AND NOT EXISTS (SELECT 1 FROM flyway_schema_history WHERE NOT success)\r\n THEN 'true' ELSE 'false' END\"",
+      "purpose": "verify Academic V24-V26 schema",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:58.2998781+00:00",
+      "phase": "backend-services",
+      "command": "docker cp C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\..\\runtime-live\\seed-academic.sql 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a:/tmp/rct-seed-academic.sql",
+      "purpose": "copy apply accepted Academic dynamic seed",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:58.5847941+00:00",
+      "phase": "backend-services",
+      "command": "docker exec 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a psql -q -v ON_ERROR_STOP=1 -U rct_user -d academic_db -f /tmp/rct-seed-academic.sql",
+      "purpose": "apply accepted Academic dynamic seed",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:58.8381070+00:00",
+      "phase": "backend-services",
+      "command": "docker exec 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a psql -q -v ON_ERROR_STOP=1 -U rct_user -d academic_db -c \"INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at)\r\nSELECT id, 'teacher', 'active', group_id, NOW(), NOW() FROM users WHERE login = 'student' AND group_id IS NOT NULL\r\nON CONFLICT (user_id, role) DO UPDATE SET status = EXCLUDED.status, group_id = EXCLUDED.group_id, updated_at = NOW();\"",
+      "purpose": "create same-group teacher fixture grant",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:59.0724419+00:00",
+      "phase": "backend-services",
+      "command": "docker exec 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a psql -q -t -A -v ON_ERROR_STOP=1 -U rct_user -d academic_db -c \"SELECT u.id || '|' || u.group_id || '|' || u.roles_version || '|' || semester.id || '|' || hw.id || '|' || hw.subject_id || '|' || hw.binding_id\r\nFROM users u JOIN user_role_grants grants ON grants.user_id = u.id AND grants.role = 'student' AND grants.status = 'active' AND grants.group_id = u.group_id\r\nJOIN semesters semester ON semester.is_active\r\nJOIN homeworks hw ON hw.group_id = u.group_id AND hw.semester_id = semester.id AND hw.title = 'Runtime homework golden path' AND hw.actor_id = u.id AND hw.publication_state = 'ACTIVE' AND octet_length(hw.payload_hash) = 32\r\nWHERE u.login = 'student';\"",
+      "purpose": "resolve dynamic Academic fixture ids",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:59.3549478+00:00",
+      "phase": "backend-services",
+      "command": "docker exec 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a psql -q -v ON_ERROR_STOP=1 -U rct_user -d academic_db -c \"INSERT INTO subject_lesson_types (subject_id, lesson_type) VALUES (1, 'lecture') ON CONFLICT (subject_id, lesson_type) DO NOTHING;\r\nINSERT INTO assignments (teacher_id, subject_id, group_id, semester_id, lesson_type, valid_from)\r\nSELECT 3, 1, 1, 1, 'lecture', CURRENT_DATE - 1\r\nWHERE NOT EXISTS (SELECT 1 FROM assignments WHERE teacher_id = 3 AND subject_id = 1 AND group_id = 1 AND semester_id = 1 AND lesson_type = 'lecture' AND valid_from = CURRENT_DATE - 1);\"",
+      "purpose": "create dynamic Academic assignment provenance",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:59.6084289+00:00",
+      "phase": "backend-services",
+      "command": "docker exec 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a psql -q -t -A -v ON_ERROR_STOP=1 -U rct_user -d academic_db -c \"SELECT id FROM assignments WHERE teacher_id = 3 AND subject_id = 1 AND group_id = 1 AND semester_id = 1 AND lesson_type = 'lecture' ORDER BY id DESC LIMIT 1;\"",
+      "purpose": "resolve dynamic assignment id",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:09:59.8320667+00:00",
+      "phase": "backend-services",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-schedule --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias schedule-service --publish 127.0.0.1:18519:9092 --env SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-schedule:5432/schedule_db --env SPRING_DATASOURCE_USERNAME=rct_user --env GRPC_SECRET=<redacted> --env SPRING_PROFILES_ACTIVE=prod --env MANAGEMENT_ENDPOINT_METRICS_ACCESS=unrestricted --env SPRING_RABBITMQ_USERNAME=rct_user --env SPRING_RABBITMQ_PASSWORD=<redacted> --env RABBITMQ_PASSWORD=<redacted> --env MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics --env TZ=Europe/Moscow --env RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=false --env RABBITMQ_USER=rct_user --env POSTGRES_SCHEDULE_PASSWORD=<redacted> --env JAVA_TOOL_OPTIONS=-Djava.security.egd=file:/dev/./urandom --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\schedule-app-0.1.0.jar,target=/opt/rct/app.jar,readonly eclipse-temurin:21-jre@sha256:ad0cdd9782db550ca7dde6939a16fd850d04e683d37d3cff79d84a5848ba6a5a java -XX:+UseContainerSupport -jar /opt/rct/app.jar --server.port=9092 --server.address=0.0.0.0 --grpc.server.port=19092 --grpc.server.address=0.0.0.0",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-schedule container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:10:00.2960289+00:00",
+      "phase": "backend-services",
+      "command": "docker start f39b9b49a8281f392532f049658a3e2ed670b82d3fc308a3581b1d34d17a03b1",
+      "purpose": "start owned rct-requests-20260919-200855360-e6hmaaj0-schedule container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:10:27.4409811+00:00",
+      "phase": "backend-services",
+      "command": "docker cp C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\..\\browser-runtime\\seed-schedule.sql f3ed0fe398e756a25684c3a597d9a43a1da204ca7799252fb453910b28745735:/tmp/rct-seed-schedule.sql",
+      "purpose": "copy apply accepted Schedule V17 dynamic seed",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:10:27.7165220+00:00",
+      "phase": "backend-services",
+      "command": "docker exec f3ed0fe398e756a25684c3a597d9a43a1da204ca7799252fb453910b28745735 psql -q -v ON_ERROR_STOP=1 -U rct_user -d schedule_db -v subject_id=1 -v semester_id=1 -v group_id=1 -v binding_id=1 -v teacher_id=3 -v student_id=3 -v homework_id=1 -v assignment_id=1 -f /tmp/rct-seed-schedule.sql",
+      "purpose": "apply accepted Schedule V17 dynamic seed",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:10:27.9711909+00:00",
+      "phase": "backend-services",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-auth --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias auth-service --publish 127.0.0.1:18518:9090 --env RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=false --env TMA_BOT_TOKEN=<redacted> --env SPRING_PROFILES_ACTIVE=prod --env MANAGEMENT_ENDPOINT_METRICS_ACCESS=unrestricted --env SPRING_RABBITMQ_USERNAME=rct_user --env SPRING_RABBITMQ_PASSWORD=<redacted> --env SPRING_RABBITMQ_PORT=5672 --env JWT_KEY_DIR=/keys --env REDIS_PASSWORD=<redacted> --env INTERNAL_ISSUER_SECRET=<redacted> --env MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics --env SPRING_RABBITMQ_HOST=rabbitmq --env TZ=Europe/Moscow --env POSTGRES_ACADEMIC_PASSWORD=<redacted> --env JAVA_TOOL_OPTIONS=-Djava.security.egd=file:/dev/./urandom --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\auth-app-0.1.0.jar,target=/opt/rct/app.jar,readonly --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\keys,target=/keys eclipse-temurin:21-jre@sha256:ad0cdd9782db550ca7dde6939a16fd850d04e683d37d3cff79d84a5848ba6a5a java -XX:+UseContainerSupport -jar /opt/rct/app.jar",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-auth container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:10:28.4446724+00:00",
+      "phase": "backend-services",
+      "command": "docker start 19da2ecfdb54f7d5f7bef8f895e64259281a2d834d9565575fca94a1c4e1d709",
+      "purpose": "start owned rct-requests-20260919-200855360-e6hmaaj0-auth container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:10:49.7332268+00:00",
+      "phase": "backend-services",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-attendance --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias attendance-service --publish 127.0.0.1:18517:9093 --env RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=false --env GRPC_SECRET=<redacted> --env SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/attendance_db?replicaSet=rs0 --env SPRING_PROFILES_ACTIVE=prod --env MANAGEMENT_ENDPOINT_METRICS_ACCESS=unrestricted --env SPRING_RABBITMQ_USERNAME=rct_user --env SPRING_RABBITMQ_PASSWORD=<redacted> --env REDIS_PASSWORD=<redacted> --env RABBITMQ_PASSWORD=<redacted> --env MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics --env TZ=Europe/Moscow --env ATTENDANCE_GRPC_PORT=19093 --env RABBITMQ_USER=rct_user --env JAVA_TOOL_OPTIONS=-Djava.security.egd=file:/dev/./urandom --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\attendance-app-0.1.0.jar,target=/opt/rct/app.jar,readonly eclipse-temurin:21-jre@sha256:ad0cdd9782db550ca7dde6939a16fd850d04e683d37d3cff79d84a5848ba6a5a java -XX:+UseContainerSupport -jar /opt/rct/app.jar --server.port=9093 --server.address=0.0.0.0",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-attendance container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:10:50.2584172+00:00",
+      "phase": "backend-services",
+      "command": "docker start 5d8db7b8141aef8d18c5b07d4ef684d04309d47d6aae2297e1433ce3fadce83d",
+      "purpose": "start owned rct-requests-20260919-200855360-e6hmaaj0-attendance container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:17.5618323+00:00",
+      "phase": "backend-services",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-bff --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias mobile-bff --publish 127.0.0.1:18516:9080 --env MOBILE_BFF_PORT=9080 --env SPRING_PROFILES_ACTIVE=prod --env MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics --env SCHEDULE_GRPC_ADDRESS=static://schedule-service:19092 --env RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=false --env JAVA_TOOL_OPTIONS=-Djava.security.egd=file:/dev/./urandom --env ACADEMIC_GRPC_ADDRESS=static://academic-service:19091 --env TZ=Europe/Moscow --env GRPC_SECRET=<redacted> --env MANAGEMENT_ENDPOINT_METRICS_ACCESS=unrestricted --env ATTENDANCE_GRPC_ADDRESS=static://attendance-service:19093 --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\mobile-bff-app-0.1.0.jar,target=/opt/rct/app.jar,readonly eclipse-temurin:21-jre@sha256:ad0cdd9782db550ca7dde6939a16fd850d04e683d37d3cff79d84a5848ba6a5a java -XX:+UseContainerSupport -jar /opt/rct/app.jar --server.port=9080 --server.address=0.0.0.0",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-bff container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:18.0190089+00:00",
+      "phase": "backend-services",
+      "command": "docker start 48d95533f85221fc7d5d3526d06101954c2530e059ff12f7393918cea7edb4b9",
+      "purpose": "start owned rct-requests-20260919-200855360-e6hmaaj0-bff container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:28.5493563+00:00",
+      "phase": "backend-services",
+      "command": "docker create --pull=never --name rct-requests-20260919-200855360-e6hmaaj0-gateway --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=20260919-200855360-e6hmaaj0 --network rct-requests-gate-20260919-200855360-e6hmaaj0 --network-alias api-gateway --publish 127.0.0.1:18515:8080 --env RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=false --env SPRING_PROFILES_ACTIVE=prod --env MOBILE_BFF_URL=http://mobile-bff:9080 --env MANAGEMENT_ENDPOINT_METRICS_ACCESS=unrestricted --env AUTH_SERVICE_URL=http://auth-service:9090 --env ACADEMIC_SERVICE_URL=http://academic-service:9091 --env GATEWAY_TRUSTED_PROXY_ADDRESSES=172.30.185.10 --env REDIS_PASSWORD=<redacted> --env INTERNAL_ISSUER_SECRET=<redacted> --env ATTENDANCE_SERVICE_URL=http://attendance-service:9093 --env MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics --env TZ=Europe/Moscow --env JAVA_TOOL_OPTIONS=-Djava.security.egd=file:/dev/./urandom --env REDIS_PORT=6379 --env CORS_ALLOWED_ORIGIN=https://127.0.0.1:18514 --env SCHEDULE_SERVICE_URL=http://schedule-service:9092 --env REDIS_HOST=redis --mount type=bind,source=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts\\jars\\api-gateway-0.1.0.jar,target=/opt/rct/app.jar,readonly eclipse-temurin:21-jre@sha256:ad0cdd9782db550ca7dde6939a16fd850d04e683d37d3cff79d84a5848ba6a5a java -XX:+UseContainerSupport -jar /opt/rct/app.jar --server.port=8080 --server.address=0.0.0.0",
+      "purpose": "create owned rct-requests-20260919-200855360-e6hmaaj0-gateway container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:29.0368559+00:00",
+      "phase": "backend-services",
+      "command": "docker start 3f0031d92fb454647ccc26de48495123b564ad9f97a7fb114e685679ac802be6",
+      "purpose": "start owned rct-requests-20260919-200855360-e6hmaaj0-gateway container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:43.8132836+00:00",
+      "phase": "edge",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse HEAD",
+      "purpose": "resolve union revision",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:43.9169222+00:00",
+      "phase": "edge",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 status --porcelain=v1 --untracked-files=all",
+      "purpose": "verify union tracked source is clean",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:43.9806546+00:00",
+      "phase": "edge",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/nginx.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/nginx.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:44.0415668+00:00",
+      "phase": "edge",
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2 rev-parse 426a15b6b42e816deaa3ca5c50437e0964aaf85e:tests/e2e/infra/nginx/default.conf",
+      "purpose": "resolve exact revision blob for tests/e2e/infra/nginx/default.conf",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:44.4711739+00:00",
+      "phase": "edge",
+      "command": "docker start 77a8d11d7a714e4246b272ee041a3fe24fe5ee24d5e099150dd34cc085464c8e",
+      "purpose": "start reserved Nginx edge container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:44.6406765+00:00",
+      "phase": "edge",
+      "command": "docker inspect --format \"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}\" 77a8d11d7a714e4246b272ee041a3fe24fe5ee24d5e099150dd34cc085464c8e",
+      "purpose": "verify reserved edge IPv4 address",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:44.8960400+00:00",
+      "phase": "edge",
+      "command": "docker exec 77a8d11d7a714e4246b272ee041a3fe24fe5ee24d5e099150dd34cc085464c8e nginx -t",
+      "purpose": "validate owned Nginx runtime config",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:45.1237586+00:00",
+      "phase": "edge",
+      "command": "node C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\probe.mjs --origin https://127.0.0.1:18514 --ca C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\keys\\server.crt --login student --<redacted> <redacted> --health-only",
+      "purpose": "Requests Node HTTPS probe",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:45.3023962+00:00",
+      "phase": "edge",
+      "command": "docker inspect --format \"{{json .State}}\" 77a8d11d7a714e4246b272ee041a3fe24fe5ee24d5e099150dd34cc085464c8e",
+      "purpose": "capture failed edge container state",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:45.4739630+00:00",
+      "phase": "edge",
+      "command": "docker logs --tail 80 --timestamps 77a8d11d7a714e4246b272ee041a3fe24fe5ee24d5e099150dd34cc085464c8e",
+      "purpose": "capture recent failed edge logs",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:45.6513795+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" 3f0031d92fb454647ccc26de48495123b564ad9f97a7fb114e685679ac802be6",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:49.1739864+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f 3f0031d92fb454647ccc26de48495123b564ad9f97a7fb114e685679ac802be6",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:49.3725423+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect 3f0031d92fb454647ccc26de48495123b564ad9f97a7fb114e685679ac802be6",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:49.5856054+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" 48d95533f85221fc7d5d3526d06101954c2530e059ff12f7393918cea7edb4b9",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:50.2836687+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f 48d95533f85221fc7d5d3526d06101954c2530e059ff12f7393918cea7edb4b9",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:50.4778839+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect 48d95533f85221fc7d5d3526d06101954c2530e059ff12f7393918cea7edb4b9",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:50.6415851+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" 5d8db7b8141aef8d18c5b07d4ef684d04309d47d6aae2297e1433ce3fadce83d",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:51.2967014+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f 5d8db7b8141aef8d18c5b07d4ef684d04309d47d6aae2297e1433ce3fadce83d",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:51.4642913+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect 5d8db7b8141aef8d18c5b07d4ef684d04309d47d6aae2297e1433ce3fadce83d",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:51.6275214+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" 19da2ecfdb54f7d5f7bef8f895e64259281a2d834d9565575fca94a1c4e1d709",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:52.2736449+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f 19da2ecfdb54f7d5f7bef8f895e64259281a2d834d9565575fca94a1c4e1d709",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:52.5165773+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect 19da2ecfdb54f7d5f7bef8f895e64259281a2d834d9565575fca94a1c4e1d709",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:52.7273493+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" f39b9b49a8281f392532f049658a3e2ed670b82d3fc308a3581b1d34d17a03b1",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:55.4229942+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f f39b9b49a8281f392532f049658a3e2ed670b82d3fc308a3581b1d34d17a03b1",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:55.6029920+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect f39b9b49a8281f392532f049658a3e2ed670b82d3fc308a3581b1d34d17a03b1",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:55.7752138+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" e961a8bca89f3ab072566a075431721c2cadb43a36b1eef0e7700682a1dde4ff",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:56.4134420+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f e961a8bca89f3ab072566a075431721c2cadb43a36b1eef0e7700682a1dde4ff",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:56.5776229+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect e961a8bca89f3ab072566a075431721c2cadb43a36b1eef0e7700682a1dde4ff",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:56.7495987+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" 60b26495bbedea6ddcbe60b11a97ff5b08c559533b7ec68ba22741071eeee0e2",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:57.2491297+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f 60b26495bbedea6ddcbe60b11a97ff5b08c559533b7ec68ba22741071eeee0e2",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:57.4381825+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect 60b26495bbedea6ddcbe60b11a97ff5b08c559533b7ec68ba22741071eeee0e2",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:57.6245738+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" 8e148ad8f0ebdd885e02d72b99e23296e2b50e1f84d1031a6080fa0c6c9015bf",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:58.2081525+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f 8e148ad8f0ebdd885e02d72b99e23296e2b50e1f84d1031a6080fa0c6c9015bf",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:58.4035728+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect 8e148ad8f0ebdd885e02d72b99e23296e2b50e1f84d1031a6080fa0c6c9015bf",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:58.5812305+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" cf352a33a5502886c1a0d8c2760929c5e2b6e42d1a4d92ba46973e03fae9f5f1",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:59.0364871+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f cf352a33a5502886c1a0d8c2760929c5e2b6e42d1a4d92ba46973e03fae9f5f1",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:59.2131636+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect cf352a33a5502886c1a0d8c2760929c5e2b6e42d1a4d92ba46973e03fae9f5f1",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:11:59.4060229+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" f3ed0fe398e756a25684c3a597d9a43a1da204ca7799252fb453910b28745735",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:12:00.0298756+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f f3ed0fe398e756a25684c3a597d9a43a1da204ca7799252fb453910b28745735",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:12:00.2089599+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect f3ed0fe398e756a25684c3a597d9a43a1da204ca7799252fb453910b28745735",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:12:00.3772661+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:12:00.7876327+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:12:00.9566057+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect 6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:12:01.1268765+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" 77a8d11d7a714e4246b272ee041a3fe24fe5ee24d5e099150dd34cc085464c8e",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:12:01.6992922+00:00",
+      "phase": "cleanup",
+      "command": "docker rm -f 77a8d11d7a714e4246b272ee041a3fe24fe5ee24d5e099150dd34cc085464c8e",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:12:01.8716916+00:00",
+      "phase": "cleanup",
+      "command": "docker container inspect 77a8d11d7a714e4246b272ee041a3fe24fe5ee24d5e099150dd34cc085464c8e",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:12:02.0374247+00:00",
+      "phase": "cleanup",
+      "command": "docker network inspect --format \"{{index .Labels \\\"rct.runtime-owner\\\"}}|{{index .Labels \\\"rct.runtime-run\\\"}}\" 9748ed0a93145e4457a5670eb71f44e0abbfeccfade4124915983752740de36a",
+      "purpose": "inspect owned network before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:12:02.5023467+00:00",
+      "phase": "cleanup",
+      "command": "docker network rm 9748ed0a93145e4457a5670eb71f44e0abbfeccfade4124915983752740de36a",
+      "purpose": "remove owned runtime network",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-19T20:12:02.6665939+00:00",
+      "phase": "cleanup",
+      "command": "docker network inspect 9748ed0a93145e4457a5670eb71f44e0abbfeccfade4124915983752740de36a",
+      "purpose": "verify owned network removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    }
+  ],
+  "environment": {
+    "hostOs": "Microsoft Windows NT 10.0.26200.0",
+    "powershell": "7.6.5",
+    "taskRoot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime",
+    "unionRepo": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2",
+    "pwaDist": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\frontends\\pwa-vue\\dist",
+    "edgeOrigin": "https://127.0.0.1:18514",
+    "runtimeMode": "full-runtime",
+    "secrets": "redacted; no ambient credentials read"
+  },
+  "phases": [
+    {
+      "name": "source-validation",
+      "status": "START",
+      "message": "source paths and frozen edge contract",
+      "at": "2026-09-19T20:08:51.8159945+00:00"
+    },
+    {
+      "name": "source-validation",
+      "status": "PASS",
+      "message": "PowerShell source, accepted edge/seed paths, trusted build manifest artifacts and actual PWA dist are present",
+      "at": "2026-09-19T20:08:54.9828633+00:00"
+    },
+    {
+      "name": "runtime-preflight",
+      "status": "START",
+      "message": "owned ports, pinned images and collision-checked disposable network",
+      "at": "2026-09-19T20:08:54.9896138+00:00"
+    },
+    {
+      "name": "runtime-preflight",
+      "status": "PASS",
+      "message": "owned network and source artifacts are ready",
+      "at": "2026-09-19T20:09:06.5309501+00:00"
+    },
+    {
+      "name": "edge-reservation",
+      "status": "START",
+      "message": "prepare the static edge IPv4 before dynamic backend allocation; operational address is verified after start",
+      "at": "2026-09-19T20:09:06.5310210+00:00"
+    },
+    {
+      "name": "edge-reservation",
+      "status": "PASS",
+      "message": "static edge endpoint was created before backend startup and excluded from the dynamic IPAM range",
+      "at": "2026-09-19T20:09:07.1733682+00:00"
+    },
+    {
+      "name": "infrastructure",
+      "status": "START",
+      "message": "five disposable infrastructure containers and Mongo rs0",
+      "at": "2026-09-19T20:09:07.1734489+00:00"
+    },
+    {
+      "name": "infrastructure",
+      "status": "PASS",
+      "message": "infrastructure readiness passed",
+      "at": "2026-09-19T20:09:19.1379517+00:00"
+    },
+    {
+      "name": "backend-services",
+      "status": "START",
+      "message": "six Java services with runtime-only actuator diagnostics",
+      "at": "2026-09-19T20:09:19.1380518+00:00"
+    },
+    {
+      "name": "academic-service",
+      "status": "START",
+      "message": "Academic HTTP readiness on 127.0.0.1:18520",
+      "at": "2026-09-19T20:09:19.5112718+00:00"
+    },
+    {
+      "name": "academic-service",
+      "status": "PASS",
+      "message": "Academic actuator health returned an HTTP 2xx response before schema inspection",
+      "at": "2026-09-19T20:09:57.8425051+00:00"
+    },
+    {
+      "name": "auth-service",
+      "status": "PASS",
+      "message": "Auth readiness returned an HTTP 2xx actuator health response",
+      "at": "2026-09-19T20:10:49.4529006+00:00"
+    },
+    {
+      "name": "backend-services",
+      "status": "PASS",
+      "message": "backend service readiness and disposable fixture passed",
+      "at": "2026-09-19T20:11:43.7343169+00:00"
+    },
+    {
+      "name": "edge",
+      "status": "START",
+      "message": "owned Nginx TLS edge with actual PWA dist",
+      "at": "2026-09-19T20:11:43.7344114+00:00"
+    },
+    {
+      "name": "edge",
+      "status": "FAIL",
+      "message": "Requests probe did not return valid redacted JSON",
+      "at": "2026-09-19T20:11:45.4750588+00:00"
+    },
+    {
+      "name": "cleanup",
+      "status": "START",
+      "message": "verify labels, remove owned containers/network/keys, and verify absence",
+      "at": "2026-09-19T20:11:45.4788705+00:00"
+    },
+    {
+      "name": "cleanup",
+      "status": "PASS",
+      "message": "all owned resources removed and verified absent",
+      "at": "2026-09-19T20:12:02.7343735+00:00"
+    }
+  ],
+  "network": {
+    "candidates": [
+      "172.30.185.0/24",
+      "172.30.186.0/24"
+    ],
+    "existingSubnets": [
+      "172.21.0.0/16",
+      "172.18.0.0/16",
+      "172.17.0.0/16",
+      "172.19.0.0/16",
+      "172.20.0.0/16",
+      "172.22.0.0/16"
+    ],
+    "collisionChecked": true,
+    "createRecovery": {
+      "status": "NOT_NEEDED"
+    },
+    "id": "9748ed0a93145e4457a5670eb71f44e0abbfeccfade4124915983752740de36a",
+    "name": "rct-requests-gate-20260919-200855360-e6hmaaj0",
+    "subnet": "172.30.185.0/24",
+    "gateway": "172.30.185.1",
+    "dynamicIpRange": "172.30.185.128/25",
+    "nginxIp": "172.30.185.10",
+    "staticEdgeExcludedFromDynamicRange": true
+  },
+  "fixture": {
+    "login": "student",
+    "studentId": "3",
+    "groupId": "1",
+    "rolesVersion": "3",
+    "semesterId": "1",
+    "homeworkId": "1",
+    "subjectId": "1",
+    "bindingId": "1",
+    "assignmentId": "1"
+  },
+  "assertions": {
+    "edgeReservation": {
+      "state": "running",
+      "expected": "172.30.185.10",
+      "actual": "172.30.185.10",
+      "operationalAddressVerified": true,
+      "verified": true
+    },
+    "infrastructure": {
+      "fiveContainers": true,
+      "internalPorts": "postgres5432/redis6379/rabbit5672/mongo27017",
+      "timezone": "Europe/Moscow"
+    }
+  },
+  "cleanup": {
+    "status": "PASS",
+    "ownedContainers": [
+      "77a8d11d7a714e4246b272ee041a3fe24fe5ee24d5e099150dd34cc085464c8e",
+      "6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a",
+      "f3ed0fe398e756a25684c3a597d9a43a1da204ca7799252fb453910b28745735",
+      "cf352a33a5502886c1a0d8c2760929c5e2b6e42d1a4d92ba46973e03fae9f5f1",
+      "8e148ad8f0ebdd885e02d72b99e23296e2b50e1f84d1031a6080fa0c6c9015bf",
+      "60b26495bbedea6ddcbe60b11a97ff5b08c559533b7ec68ba22741071eeee0e2",
+      "e961a8bca89f3ab072566a075431721c2cadb43a36b1eef0e7700682a1dde4ff",
+      "f39b9b49a8281f392532f049658a3e2ed670b82d3fc308a3581b1d34d17a03b1",
+      "19da2ecfdb54f7d5f7bef8f895e64259281a2d834d9565575fca94a1c4e1d709",
+      "5d8db7b8141aef8d18c5b07d4ef684d04309d47d6aae2297e1433ce3fadce83d",
+      "48d95533f85221fc7d5d3526d06101954c2530e059ff12f7393918cea7edb4b9",
+      "3f0031d92fb454647ccc26de48495123b564ad9f97a7fb114e685679ac802be6"
+    ],
+    "removedContainers": [
+      "3f0031d92fb454647ccc26de48495123b564ad9f97a7fb114e685679ac802be6",
+      "48d95533f85221fc7d5d3526d06101954c2530e059ff12f7393918cea7edb4b9",
+      "5d8db7b8141aef8d18c5b07d4ef684d04309d47d6aae2297e1433ce3fadce83d",
+      "19da2ecfdb54f7d5f7bef8f895e64259281a2d834d9565575fca94a1c4e1d709",
+      "f39b9b49a8281f392532f049658a3e2ed670b82d3fc308a3581b1d34d17a03b1",
+      "e961a8bca89f3ab072566a075431721c2cadb43a36b1eef0e7700682a1dde4ff",
+      "60b26495bbedea6ddcbe60b11a97ff5b08c559533b7ec68ba22741071eeee0e2",
+      "8e148ad8f0ebdd885e02d72b99e23296e2b50e1f84d1031a6080fa0c6c9015bf",
+      "cf352a33a5502886c1a0d8c2760929c5e2b6e42d1a4d92ba46973e03fae9f5f1",
+      "f3ed0fe398e756a25684c3a597d9a43a1da204ca7799252fb453910b28745735",
+      "6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a",
+      "77a8d11d7a714e4246b272ee041a3fe24fe5ee24d5e099150dd34cc085464c8e"
+    ],
+    "verifiedAbsentContainers": [
+      "3f0031d92fb454647ccc26de48495123b564ad9f97a7fb114e685679ac802be6",
+      "48d95533f85221fc7d5d3526d06101954c2530e059ff12f7393918cea7edb4b9",
+      "5d8db7b8141aef8d18c5b07d4ef684d04309d47d6aae2297e1433ce3fadce83d",
+      "19da2ecfdb54f7d5f7bef8f895e64259281a2d834d9565575fca94a1c4e1d709",
+      "f39b9b49a8281f392532f049658a3e2ed670b82d3fc308a3581b1d34d17a03b1",
+      "e961a8bca89f3ab072566a075431721c2cadb43a36b1eef0e7700682a1dde4ff",
+      "60b26495bbedea6ddcbe60b11a97ff5b08c559533b7ec68ba22741071eeee0e2",
+      "8e148ad8f0ebdd885e02d72b99e23296e2b50e1f84d1031a6080fa0c6c9015bf",
+      "cf352a33a5502886c1a0d8c2760929c5e2b6e42d1a4d92ba46973e03fae9f5f1",
+      "f3ed0fe398e756a25684c3a597d9a43a1da204ca7799252fb453910b28745735",
+      "6727480b052b8456bae962aac47695917fd5bd233eb43180b19c5bce7566952a",
+      "77a8d11d7a714e4246b272ee041a3fe24fe5ee24d5e099150dd34cc085464c8e"
+    ],
+    "ownedNetwork": "9748ed0a93145e4457a5670eb71f44e0abbfeccfade4124915983752740de36a",
+    "networkRemoved": true,
+    "networkVerifiedAbsent": true,
+    "keysRemoved": true,
+    "artifactRoot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runs\\20260919-200855360-e6hmaaj0\\artifacts",
+    "artifactRemoved": true,
+    "artifactVerifiedAbsent": true,
+    "errors": []
+  },
+  "limitations": [
+    "This leaf does not claim runtime PASS; a full invocation records Docker, edge, I1 and I2 evidence for the root-owned runtime lease.",
+    "BFF exposes actuator metrics but no Prometheus registry; I2 uses /actuator/metrics/http.server.requests with an exact URI tag.",
+    "The accepted Academic and Schedule SQL seeds are read-only references outside this scope."
+  ],
+  "failure": {
+    "message": "Requests probe did not return valid redacted JSON"
+  },
+  "edgeFailureDiagnostics": {
+    "schema": "rct.edge-failure.v1",
+    "status": "CAPTURED",
+    "failure": "Requests probe did not return valid redacted JSON",
+    "state": {
+      "status": "running",
+      "exitCode": 0,
+      "oomKilled": false,
+      "error": "",
+      "captureExitCode": 0
+    },
+    "logs": {
+      "tail": 80,
+      "exitCode": 0,
+      "text": "2026-09-19T20:11:44.360915933Z /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration\r\n2026-09-19T20:11:44.360965659Z /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/\r\n2026-09-19T20:11:44.362717870Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh\r\n2026-09-19T20:11:44.367773509Z 10-listen-on-ipv6-by-default.sh: info: can not modify /etc/nginx/conf.d/default.conf (read-only file system?)\r\n2026-09-19T20:11:44.368131397Z /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh\r\n2026-09-19T20:11:44.368606327Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh\r\n2026-09-19T20:11:44.376599146Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh\r\n2026-09-19T20:11:44.378742557Z /docker-entrypoint.sh: Configuration complete; ready for start up\r\n2026-09-19T20:11:45.105892412Z 172.30.185.1 - - [19/Sep/2026:20:11:45 +0000] \"GET /health HTTP/1.1\" 200 509 \"-\" \"-\""
+    }
+  }
+}

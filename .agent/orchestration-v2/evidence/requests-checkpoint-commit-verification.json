@@ -1,0 +1,26 @@
+{
+  "head": "71bcc27572ed72c18e49f63c512ae5e4e5790b8d",
+  "parent": "73fd5f27ceb429ad0692b073189f8a527c550830",
+  "paths": [
+    ".agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/h68-probe-check.ps1",
+    ".agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/h68-probe-evidence.prefixed.json",
+    ".agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/synthetic-probe-invalid.mjs",
+    ".agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/synthetic-probe-nonzero.mjs",
+    ".agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/synthetic-probe-secret-warning.mjs",
+    ".agent/student-role-orchestrator/requests-runtime/h68-probe-diagnosis/synthetic-probe.mjs",
+    ".agent/student-role-orchestrator/requests-runtime/h82-actuator-counter-diagnosis/h82-counter-check.ps1",
+    ".agent/student-role-orchestrator/requests-runtime/probe.mjs",
+    ".agent/student-role-orchestrator/requests-runtime/r8-mongo-projection-check.ps1",
+    ".agent/student-role-orchestrator/requests-runtime/runner.ps1"
+  ],
+  "sourceMismatchCount": 0,
+  "remainingTracked": [
+    ".agent/student-role-orchestrator/requests-runtime/R3-EVIDENCE.md",
+    ".agent/student-role-orchestrator/requests-runtime/r10-docker-network-proof.ps1",
+    ".agent/student-role-orchestrator/requests-runtime/r10-network-proof-source-check.ps1",
+    ".agent/student-role-orchestrator/requests-runtime/r3-cleanup-failure-injection.ps1",
+    ".agent/student-role-orchestrator/requests-runtime/r6-source-contract-check.ps1",
+    ".agent/student-role-orchestrator/requests-runtime/r8-edge-reservation-check.ps1",
+    ".agent/student-role-orchestrator/requests-runtime/r8-probe-callsite-check.ps1"
+  ]
+}

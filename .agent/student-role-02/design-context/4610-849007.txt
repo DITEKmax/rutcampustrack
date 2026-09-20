@@ -1,0 +1,207 @@
+const imgIconPrevious = "https://www.figma.com/api/mcp/asset/bc5acc95-1a3a-49d0-bc72-a6c6e3c4e9ba.svg";
+const imgSourceIconDate = "https://www.figma.com/api/mcp/asset/0204a34b-5369-4cf6-9b58-c33d6614435e.svg";
+const imgIconTime = "https://www.figma.com/api/mcp/asset/128f1820-32cd-4538-b176-0214b95dda84.svg";
+const imgIcon = "https://www.figma.com/api/mcp/asset/b87b2940-7307-46e4-b46f-3e3ff0326076.svg";
+const imgChevronColor = "https://www.figma.com/api/mcp/asset/5225fec6-31f9-46b6-91ae-e05716c7c257.svg";
+
+type SharedMobileTextareaProps = {
+  className?: string;
+  state?: "placeholder";
+};
+
+function SharedMobileTextarea({ className, state = "placeholder" }: SharedMobileTextareaProps) {
+  return (
+    <div className={className || "bg-[var(--color-surface-raised,#1c1922)] content-stretch flex h-[96px] items-start overflow-clip p-[12px] relative rounded-[var(--radius-xl,16px)] w-[358px]"} data-node-id="4737:942">
+      <p className="[word-break:break-word] flex-[1_0_0] font-[family-name:var(--font-family-sans,'Onest:Regular')] h-[24px] leading-[normal] min-w-px not-italic relative text-[color:var(--color-text-secondary,#c8c2d6)] text-[length:var(--font-size-body,16px)]" data-node-id="4737:943">
+        Коротко опиши ситуацию
+      </p>
+    </div>
+  );
+}
+
+function IconPrevious({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[16px]"} data-node-id="4597:3579" data-name="icon/previous">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconPrevious} />
+    </div>
+  );
+}
+
+export default function Component18() {
+  return (
+    <div className="bg-[var(--color-surface-base,#0b0b0c)] overflow-clip relative rounded-[24px] size-full" data-node-id="4610:849007" data-name="18 · Уважительная причина / подача">
+      <div className="absolute content-stretch flex flex-col gap-[12px] h-[812px] items-start left-[16px] overflow-clip py-[20px] top-0 w-[358px]" data-node-id="4610:849008" data-name="content">
+        <div className="content-stretch flex gap-[10px] items-center overflow-clip relative shrink-0 w-[358px]" data-node-id="4610:849009" data-name="header">
+          <div className="bg-[var(--color-surface-float,#292531)] content-stretch flex items-center justify-center overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4610:849010" data-name="back">
+            <IconPrevious className="relative shrink-0 size-[16px]" />
+          </div>
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] h-[32px] leading-[normal] not-italic relative shrink-0 text-[22px] text-[color:var(--color-text-primary,#edeaf3)] w-[304px]" data-node-id="4610:849012">
+            Уважительная причина
+          </p>
+        </div>
+        <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[8px] items-start overflow-clip p-[16px] relative rounded-[24px] shrink-0 w-[358px]" data-node-id="4610:849013" data-name="lesson-summary">
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[14px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4610:849036">
+            Выбрано 2 пары
+          </p>
+          <div className="bg-[var(--color-surface-float,#292531)] h-[101px] overflow-clip relative rounded-[16px] shrink-0 w-[326px]" data-node-id="4610:849037" data-name="selected-lesson">
+            <p className="[word-break:break-word] absolute font-['Onest:SemiBold'] leading-[normal] left-[10px] not-italic text-[13px] text-[color:var(--color-text-primary,#edeaf3)] top-[10px] whitespace-nowrap" data-node-id="4610:849038">
+              Основы программирования
+            </p>
+            <div className="absolute content-stretch flex gap-[var(--space-1,4px)] h-[17px] items-center left-[10px] top-[34px] w-[306px]" data-node-id="4658:4332" data-name="meta">
+              <div className="relative shrink-0 size-[10px]" data-node-id="4889:532" data-name="icon/date">
+                <div className="absolute left-[-3.46px] size-[16px] top-[-3.46px]" data-node-id="4658:4333" data-name="source/icon/date">
+                  <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgSourceIconDate} />
+                </div>
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] whitespace-nowrap" data-node-id="4658:4335">
+                1 сентября
+              </p>
+            </div>
+            <div className="absolute content-stretch flex gap-[var(--space-1,4px)] h-[17px] items-center left-[10px] top-[54px] w-[306px]" data-node-id="4658:4336" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4658:4337" data-name="icon/time">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconTime} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] whitespace-nowrap" data-node-id="4658:4339">
+                10:40–12:10
+              </p>
+            </div>
+            <div className="absolute content-stretch flex gap-[var(--space-1,4px)] h-[17px] items-center left-[10px] top-[74px] w-[306px]" data-node-id="4658:4340" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4658:4341" data-name="icon">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] whitespace-nowrap" data-node-id="4658:4343">
+                Лекция
+              </p>
+            </div>
+          </div>
+          <div className="bg-[var(--color-surface-float,#292531)] h-[101px] overflow-clip relative rounded-[16px] shrink-0 w-[326px]" data-node-id="4610:849040" data-name="selected-lesson">
+            <p className="[word-break:break-word] absolute font-['Onest:SemiBold'] leading-[normal] left-[10px] not-italic text-[13px] text-[color:var(--color-text-primary,#edeaf3)] top-[10px] whitespace-nowrap" data-node-id="4610:849041">
+              Компьютерные сети
+            </p>
+            <div className="absolute content-stretch flex gap-[var(--space-1,4px)] h-[17px] items-center left-[10px] top-[34px] w-[306px]" data-node-id="4658:4344" data-name="meta">
+              <div className="relative shrink-0 size-[10px]" data-node-id="4889:533" data-name="icon/date">
+                <div className="absolute left-[-3.46px] size-[16px] top-[-3.46px]" data-node-id="4658:4345" data-name="source/icon/date">
+                  <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgSourceIconDate} />
+                </div>
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] whitespace-nowrap" data-node-id="4658:4347">
+                2 сентября
+              </p>
+            </div>
+            <div className="absolute content-stretch flex gap-[var(--space-1,4px)] h-[17px] items-center left-[10px] top-[54px] w-[306px]" data-node-id="4658:4348" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4658:4349" data-name="icon/time">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconTime} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] whitespace-nowrap" data-node-id="4658:4351">
+                12:20–13:50
+              </p>
+            </div>
+            <div className="absolute content-stretch flex gap-[var(--space-1,4px)] h-[17px] items-center left-[10px] top-[74px] w-[306px]" data-node-id="4658:4352" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4658:4353" data-name="icon">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] whitespace-nowrap" data-node-id="4658:4355">
+                Лабораторная
+              </p>
+            </div>
+          </div>
+        </div>
+        <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4610:849027">
+          Причина
+        </p>
+        <div className="content-stretch flex flex-col gap-[var(--space-1,4px)] h-[44px] items-start p-[var(--space-0,0px)] relative shrink-0 w-[358px]" data-node-id="4610:849028" data-name="shared/SelectField">
+          <div className="h-[40px] overflow-clip relative shrink-0 w-full" data-node-id="I4610:849028;80:155" data-name="Field">
+            <div className="absolute bg-[var(--color-surface-raised,#1c1922)] border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex gap-[var(--space-2,8px)] h-[40px] items-center left-0 px-[var(--space-3,12px)] py-[var(--space-2,8px)] right-0 rounded-[var(--radius-xl,16px)] top-0" data-node-id="I4610:849028;80:156" data-name="TextInput">
+              <div className="content-stretch flex flex-[1_0_0] gap-[var(--space-0,0px)] h-[24px] items-center min-w-px overflow-clip p-[var(--space-0,0px)] relative" data-node-id="I4610:849028;80:156;77:109" data-name="Value area">
+                <p className="[word-break:break-word] flex-[1_0_0] font-[family-name:var(--font-family-sans,'Onest:Regular')] h-[24px] leading-[1.5] max-w-[280px] min-w-px not-italic overflow-hidden relative text-[16px] text-[color:var(--color-text-primary,#edeaf3)] text-ellipsis whitespace-nowrap" data-node-id="I4610:849028;80:156;77:110" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                  Болезнь
+                </p>
+              </div>
+            </div>
+            <div className="absolute overflow-clip right-[12px] size-[16px] top-[12px]" data-node-id="I4610:849028;80:179" data-name="Chevron">
+              <div className="absolute bg-[var(--color-text-secondary,#c8c2d6)] left-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-size-[16px_16px] size-[16px] top-0" data-node-id="I4610:849028;80:182" style={{ maskImage: `url("${imgChevronColor}")` }} data-name="Chevron color" />
+            </div>
+          </div>
+        </div>
+        <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4610:849029">
+          Комментарий
+        </p>
+        <SharedMobileTextarea className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex h-[96px] items-start overflow-clip p-[12px] relative rounded-[var(--radius-xl,16px)] shrink-0 w-full" />
+        <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4610:849031">
+          Подтверждение
+        </p>
+        <div className="content-stretch flex flex-col h-[66px] items-start p-[var(--space-0,0px)] relative shrink-0 w-[358px]" data-node-id="4658:4356" data-name="shared/FileUploadField/local">
+          <div className="[word-break:break-word] border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-dashed content-stretch flex flex-col font-[family-name:var(--font-family-sans,'Onest:Regular')] gap-[4px] h-[66px] items-center not-italic overflow-clip px-[var(--space-4,16px)] py-[10px] relative rounded-[var(--radius\/2xl,24px)] shrink-0 text-center w-full" data-node-id="4658:4357" data-name="Dropzone">
+            <p className="leading-[1.5] relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-body,16px)] w-full" data-node-id="4658:4358" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+              Выбери фото или файл
+            </p>
+            <p className="leading-[1.4] relative shrink-0 text-[color:var(--color-text-muted,#8a8299)] text-[length:var(--font-size-caption,13px)] w-full" data-node-id="4658:4359" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+              До 10 МБ · не более 2 файлов
+            </p>
+          </div>
+        </div>
+        <div className="bg-[var(--color-disabled-surface,#262626)] content-stretch flex h-[48px] items-center justify-center opacity-72 overflow-clip relative rounded-[24px] shrink-0 w-[358px]" data-node-id="4610:849033" data-name="submit / disabled">
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[15px] text-[color:var(--color-disabled-text,#6b6b6b)] whitespace-nowrap" data-node-id="4610:849034">
+            Отправить заявку
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+These styles are contained in the design: body: Font(family: "var(--font-family-sans)", style: Regular, size: var(--font-size-body), weight: var(--font-weight-regular), lineHeight: 1.5, letterSpacing: 0), caption: Font(family: "var(--font-family-sans)", style: Regular, size: var(--font-size-caption), weight: var(--font-weight-regular), lineHeight: 1.399999976158142, letterSpacing: 0).
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## icon/previous
+**Node ID:** 4597:3579
+
+Временная локальная векторная заглушка смысла «предыдущий». Один stroke-вектор и метрика совпадают с icon/chevron-down; заменить финальной иконкой через instance swap.
+
+## icon/date
+**Node ID:** 4597:3590
+
+Локальный плейсхолдер смысла «дата»; рисунок заменяется свопом после выбора набора иконок.
+
+## icon/time
+**Node ID:** 4570:149
+
+Навигация: текущий день и экран «Сегодня».
+
+## Property 1=lesson-type
+**Node ID:** 4570:143
+
+Навигация: текущий день и экран «Сегодня».
+
+## shared/SelectField
+**Node ID:** 80:329
+
+SelectField: состояния TextInput плюс open и busy. Открытый список собран каркасом с заглушкой Popover; показаны default, hover, selected и disabled с причиной. state=busy — загрузка вариантов: наследует TextInput busy по брендбуку §6.3; подпись, размер и раскладка не меняются.
+
+## shared/TextInput
+**Node ID:** 77:152
+
+Однострочное поле ввода. При state=busy подпись, слоты и габариты сохраняются; Busy wave / middle использует color/surface/raised, обрезается внутренним radius/md и лежит ниже текста и иконок.
+
+## icon/chevron-down
+**Node ID:** 260:1687
+
+Временная векторная заглушка. Заменить на финальную иконку через instance swap без изменения геометрии контрола.
+
+## state=placeholder
+**Node ID:** 4737:942
+
+Мобильное многострочное поле: текст начинается в первой строке сверху. state=placeholder.
+
+## shared/MobileTextarea
+**Node ID:** 4737:953
+
+state=placeholder|filled|disabled|error. Mobile-only многострочное поле; 358×96, top-aligned first line, radius/xl.
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

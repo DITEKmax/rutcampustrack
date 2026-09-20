@@ -1,0 +1,599 @@
+{
+  "schema": "rct-profile-ui-e2-import-ledger",
+  "schemaVersion": 1,
+  "status": "FROZEN_UI_SOURCE_ACCEPTED",
+  "generatedAt": "2026-09-10T01:22:47.641+03:00",
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "risk": "S1",
+  "cwd": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui",
+  "ledgerPath": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/student-auth-a/profile/e2-import-ledger.json",
+  "scope": {
+    "goal": "Freeze the exact UI source import ledger for future E2 More/Profile/Requests work and close the omission in the repair manifest.",
+    "owner": "profile-e2-ledger",
+    "sourceRoot": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui",
+    "pathBasis": "All files[] paths are repo-relative to cwd.",
+    "writeScope": [
+      ".agent/student-auth-a/profile/e2-import-ledger.json"
+    ],
+    "readOnlyScope": [
+      "frontends/mobile-core/src/features/profile/**",
+      ".agent/worktrees/profile-ui/.agent/profile-ui/evidence/**",
+      ".agent/student-auth-a/profile/** (existing files)"
+    ],
+    "children": false
+  },
+  "contract": {
+    "goal": "Provide a coherent, byte-exact, reviewable source ledger for E2 More/Profile/Requests.",
+    "contextEvidence": "The repair source manifest covered the seven SFCs but omitted profile-types.ts, profile-state.ts, profile-state.test.ts, profile-screen.pcss and the 27 existing SVG assets.",
+    "relevantScope": "Exactly the 11 named product files and exactly the 27 current SVG assets under the nested profile feature.",
+    "requiredBehavior": "Future E2 work must consume this frozen UI fixture import surface while retaining the accepted B1 server/BFF contract boundary.",
+    "constraints": [
+      "Preserve all foreign product, code, asset and existing evidence changes.",
+      "Use the nested profile-ui source at the frozen baseline revision.",
+      "Do not add product code, APIs, generated types, configs, lockfiles or assets."
+    ],
+    "existingPatterns": [
+      "Vue strict typed props and imports from profile-types.ts.",
+      "Profile state and request error behavior are owned by profile-state.ts.",
+      "MoreScreen and ProfileScreen use optional typed navigation callbacks."
+    ],
+    "acceptanceCriteria": [
+      "files[] contains exactly 38 unique current paths.",
+      "There are 11 product entries and 27 asset entries.",
+      "Every entry has repo-relative path, byte length, uppercase SHA256 and category.",
+      "More and Profile callback/import surfaces are explicit.",
+      "Acceptance provenance records full path, SHA256 and bytes.",
+      "Scope diff adds only this ledger file."
+    ],
+    "verification": "Parse JSON, validate closure/counts/duplicates, recompute all 38 source hashes and bytes, compare referenced manifests, and inspect scoped Git status.",
+    "doNot": [
+      "Do not claim real Auth, BFF, PWA or TMA integration.",
+      "Do not replace the accepted B1 server/BFF API with this UI fixture contract.",
+      "Do not claim session invalidation or offline cache purge integration is implemented here.",
+      "Do not self-hash this recursive ledger."
+    ]
+  },
+  "importSurface": {
+    "MoreScreen.vue": {
+      "imports": [
+        "./profile-types -> ProfileResolvedTheme, ProfileRoute",
+        "./assets/more-map.svg",
+        "./assets/more-requests.svg",
+        "./assets/more-statistics.svg",
+        "./profile-screen.pcss"
+      ],
+      "callback": "onNavigate(ProfileRoute)",
+      "callbackType": "((route: ProfileRoute) => void | Promise<void>) | undefined",
+      "routes": [
+        "statistics",
+        "map",
+        "requests"
+      ],
+      "invocation": "void props.onNavigate?.(route)"
+    },
+    "ProfileScreen.vue": {
+      "imports": [
+        "./profile-types -> ProfileRequestError, ProfileResolvedTheme, ProfileRoute, ProfileSnapshot",
+        "./profile-types -> displayInitials, roleLabel",
+        "./assets/profile-appearance.svg",
+        "./assets/profile-history.svg",
+        "./assets/profile-role-switch.svg",
+        "./assets/profile-security.svg",
+        "./assets/profile-sessions.svg",
+        "./profile-screen.pcss"
+      ],
+      "consumes": [
+        "ProfileSnapshot",
+        "ProfileRequestError",
+        "ProfileRoute",
+        "ProfileResolvedTheme"
+      ],
+      "callback": "onNavigate(ProfileRoute)",
+      "callbackType": "((route: ProfileRoute) => void | Promise<void>) | undefined",
+      "routes": [
+        "role-switch",
+        "appearance",
+        "security",
+        "sessions",
+        "history"
+      ],
+      "invocation": "void props.onNavigate?.(route)"
+    },
+    "authoritativeTypedDependency": [
+      "frontends/mobile-core/src/features/profile/profile-types.ts",
+      "frontends/mobile-core/src/features/profile/profile-state.ts"
+    ],
+    "contractBoundary": "This is a UI fixture contract. It does not replace the accepted B1 server/BFF API."
+  },
+  "files": [
+    {
+      "path": "frontends/mobile-core/src/features/profile/MoreScreen.vue",
+      "bytes": 1604,
+      "sha256": "B5C2F2D45778C7EE27EBED1C1D46A3D383A0678E43CE8E020908913C4CC2E395",
+      "category": "product-screen"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/ProfileScreen.vue",
+      "bytes": 4165,
+      "sha256": "969FFED80A643F451F8CD70BE1E647B70159B46F80195FA4C691B175BBA12C4B",
+      "category": "product-screen"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/RoleSwitchScreen.vue",
+      "bytes": 4006,
+      "sha256": "B01E9793EC652389B8ED62563D3F16CD7641214C30CBA030A7F408C5D2ACCA4E",
+      "category": "product-screen"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/AppearanceScreen.vue",
+      "bytes": 2572,
+      "sha256": "7BBBFEC9FDA8D24F8E01113E9D9BC42BEE78A051A25E0B1A384E66B5AECA8475",
+      "category": "product-screen"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/SecurityScreen.vue",
+      "bytes": 11269,
+      "sha256": "5305389822B603A9727E6E9E8F391314F7B7900EF7AEF92B55C22B57BE91771E",
+      "category": "product-screen"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/SessionsScreen.vue",
+      "bytes": 5043,
+      "sha256": "EEA017B57B4D2D324A4AE5245E87D63DCFDBB1F063F41082E8613FEC226A5726",
+      "category": "product-screen"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/AccountHistoryScreen.vue",
+      "bytes": 3940,
+      "sha256": "254CB927B14FAA6995D04EB14D56D51859CA150C5EB66B5126D8590B279E23A6",
+      "category": "product-screen"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/profile-types.ts",
+      "bytes": 7314,
+      "sha256": "C3939AA0025FA80526CA2659C9892089F8B25E8C6D1972278ED856154905B98A",
+      "category": "product-typed-contract"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/profile-state.ts",
+      "bytes": 15865,
+      "sha256": "44D73CEA725538BC955DC2ACDA42A8AA7B4B87EC7C6F859F53716F7F4FB6338B",
+      "category": "product-state"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/profile-state.test.ts",
+      "bytes": 18156,
+      "sha256": "EB082F29BE135D28C25BBFA8A423B9749E28BFEC10102AFDBC53E236AD7AE7A0",
+      "category": "product-test"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/profile-screen.pcss",
+      "bytes": 15180,
+      "sha256": "D9AED24FE43CDB3CF0DBE44775B34CE28C1819D31E17494FAB7B1FB30447A142",
+      "category": "product-style"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/appearance-checked.svg",
+      "bytes": 394,
+      "sha256": "11957E7E2DB1ABDAAEC56227597F51CA2228109C7F777FCD6DC683089F3628AD",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/appearance-previous.svg",
+      "bytes": 281,
+      "sha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/history-previous.svg",
+      "bytes": 281,
+      "sha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/more-map.svg",
+      "bytes": 375,
+      "sha256": "399823D22752807BB58D6BA7FA98DFD9C98761DF5F8E8C8C14451C17C73276F3",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/more-nav-attendance.svg",
+      "bytes": 482,
+      "sha256": "560C88D0F74C2FABD63EBECC0E14AE03322744E7DEB65AB346A025902AA2A5FA",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/more-nav-homework.svg",
+      "bytes": 515,
+      "sha256": "3F8CAD39FB38B3AFAF33E6CB2869F69EBD54D51EDF9735A27203F6C32D179241",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/more-nav-more.svg",
+      "bytes": 326,
+      "sha256": "C963AD64842A84D6F0A9759B7771D223A5F34484354BC0A493B9A52BFDA34CA7",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/more-nav-profile.svg",
+      "bytes": 494,
+      "sha256": "6D989522355CFF05E1E36A4BEF18168CBB6CCCB1534724E6457C07A9704ED00F",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/more-nav-today.svg",
+      "bytes": 545,
+      "sha256": "8B5AC005B1B2E8118373EFB5CAA86E02F40DC766C260F94118C3776E36E37404",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/more-requests.svg",
+      "bytes": 366,
+      "sha256": "0815FC485B10771EA2FB10BD85AE0FE6BA0D598E2697F3B9F0AD1DAD0274986C",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/more-statistics.svg",
+      "bytes": 375,
+      "sha256": "ECC2FEAC12E5904F7345F9EEA6B1D548544E1350E75214BBBC0844790F5E74F1",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/profile-appearance.svg",
+      "bytes": 966,
+      "sha256": "49CA140DC63FF22AB72F94EE98CED31950D5279EA68553CD4BD105ED46FE6198",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/profile-history.svg",
+      "bytes": 790,
+      "sha256": "CB0EBF1A344FCA97721EBDAF479E2A778E6CF22A57C9A5D5D0CB65F874EFDF3B",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/profile-nav-attendance.svg",
+      "bytes": 482,
+      "sha256": "560C88D0F74C2FABD63EBECC0E14AE03322744E7DEB65AB346A025902AA2A5FA",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/profile-nav-homework.svg",
+      "bytes": 515,
+      "sha256": "3F8CAD39FB38B3AFAF33E6CB2869F69EBD54D51EDF9735A27203F6C32D179241",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/profile-nav-more.svg",
+      "bytes": 326,
+      "sha256": "72887CA171FD0E68EAA2CD3C636F0E6FF8B990D02E023277891BD92568E6E7C4",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/profile-nav-profile.svg",
+      "bytes": 494,
+      "sha256": "1E73734F1A6D25516615F5F05F34C3C5B486F970F61C73492D1AA6F2BE3E3A5D",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/profile-nav-today.svg",
+      "bytes": 545,
+      "sha256": "8B5AC005B1B2E8118373EFB5CAA86E02F40DC766C260F94118C3776E36E37404",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/profile-role-switch.svg",
+      "bytes": 693,
+      "sha256": "8A170F9313064CDA1F44675C9AB34B968A0CC282888A99A0E7D8B8453AEEE964",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/profile-security.svg",
+      "bytes": 474,
+      "sha256": "9538642F0E5E1F161C76DA88C83A6742D15B8D31F593867FA42BFF9DF19433BA",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/profile-sessions.svg",
+      "bytes": 913,
+      "sha256": "BDEA8A8DAD7AFE85FD9F464227076D9375847C4923E5A56D4B858594CAE7F94A",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/role-previous.svg",
+      "bytes": 281,
+      "sha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/security-hide.svg",
+      "bytes": 667,
+      "sha256": "2E8AEFD0373DB1920314BB2C6C4ED9A663268E01551D8CA54DDBEE0B806C11D5",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/security-previous.svg",
+      "bytes": 281,
+      "sha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/security-show.svg",
+      "bytes": 609,
+      "sha256": "6C0C7871DF7B0C0145771C55BD0CE0D11052DBB4F74A8385FF842D2447972035",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/security-status.svg",
+      "bytes": 259,
+      "sha256": "1E6A8FEE0287E7275E7FF77EAEC190D8690F34E479E2AA32551196E1941FD4CE",
+      "category": "asset-svg"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/assets/sessions-previous.svg",
+      "bytes": 281,
+      "sha256": "978D0D109B523854EE07B8AD87A1EEDB338B992454D4038323799B2F6DD8E485",
+      "category": "asset-svg"
+    }
+  ],
+  "counts": {
+    "productFiles": 11,
+    "assets": 27,
+    "total": 38,
+    "uniquePaths": 38
+  },
+  "acceptanceProvenance": [
+    {
+      "id": "repair-source-manifest",
+      "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui/.agent/profile-ui/evidence/resume4-repair/source-manifest.json",
+      "sha256": "DCC4563D5395565A78B05C39307DF360D7D660B96F68AEA10AE68364AAE55D88",
+      "bytes": 3112,
+      "status": "accepted",
+      "note": "Current repair source manifest. It is the authoritative replacement for SecurityScreen.vue; the historical security manifest is superseded only for that file."
+    },
+    {
+      "id": "resume4-checks",
+      "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui/.agent/profile-ui/evidence/resume4-repair/checks.json",
+      "sha256": "E6E12BA3766C2F6D0DCBE6CAD6CAB388A69FFDD179281B3BAEFAA76C09A8E21A",
+      "bytes": 5203,
+      "status": "accepted",
+      "note": "Accepted static check evidence for the frozen profile source."
+    },
+    {
+      "id": "root-mounted-repair-qa",
+      "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/student-auth-a/profile/resume4-repair-mounted-qa.md",
+      "sha256": "678B1E0260A1EC0FEFCBC76EE881B445C66008E3117BE998BA0A1D84035C474E",
+      "bytes": 3039,
+      "status": "accepted",
+      "note": "Root-owned mounted QA and exact process/port cleanup evidence."
+    },
+    {
+      "id": "fresh-sol-independent-recheck-pass",
+      "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/student-auth-a/profile/resume4-independent-recheck-pass.md",
+      "sha256": "687FCE10873E46BB514C3E29EACDB5FEAA8D60A297D573D9995C5792F1D3CF7C",
+      "bytes": 1481,
+      "status": "accepted",
+      "note": "Fresh independent Sol review PASS with no blocking findings."
+    }
+  ],
+  "historicalReferences": [
+    {
+      "id": "resume4-security-source-manifest-superseded",
+      "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui/.agent/profile-ui/evidence/resume4-security/source-manifest.json",
+      "sha256": "E594C4B422253BD0B9F8A2DE4659F5AB58475413C85DB58866961F5498931254",
+      "bytes": 5905,
+      "status": "superseded",
+      "supersededFor": [
+        "frontends/mobile-core/src/features/profile/SecurityScreen.vue"
+      ],
+      "comparison": "The other six SFCs match the current repair manifest; only the historical Security entry is replaced by the repaired DCC manifest."
+    },
+    {
+      "id": "preserved-38-file-manifest",
+      "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui/.agent/profile-ui/evidence/resume-2026-09-08/preserved/manifest.json",
+      "sha256": "6777B39AF8B07F56AF2E57C9667310B89CADE227F63E4641333BFFE22566B95A",
+      "bytes": 22825,
+      "status": "historical-preservation-reference"
+    }
+  ],
+  "evidence": {
+    "sourceManifestComparison": [
+      {
+        "reference": "repair-source-manifest",
+        "matches": 7,
+        "mismatches": [],
+        "notListed": 31,
+        "notListedReason": "The repair manifest intentionally scoped the seven SFCs; this ledger closes the 4 omitted product files and 27 omitted assets."
+      },
+      {
+        "reference": "resume4-security-source-manifest-superseded",
+        "matches": 6,
+        "mismatches": [
+          "frontends/mobile-core/src/features/profile/SecurityScreen.vue"
+        ],
+        "notListed": 31,
+        "mismatchReason": "SecurityScreen.vue is the repaired current source captured by the DCC repair manifest; the other six SFCs match."
+      },
+      {
+        "reference": "preserved-38-file-manifest",
+        "matches": 29,
+        "mismatches": [
+          "frontends/mobile-core/src/features/profile/MoreScreen.vue",
+          "frontends/mobile-core/src/features/profile/ProfileScreen.vue",
+          "frontends/mobile-core/src/features/profile/RoleSwitchScreen.vue",
+          "frontends/mobile-core/src/features/profile/AppearanceScreen.vue",
+          "frontends/mobile-core/src/features/profile/SecurityScreen.vue",
+          "frontends/mobile-core/src/features/profile/SessionsScreen.vue",
+          "frontends/mobile-core/src/features/profile/AccountHistoryScreen.vue",
+          "frontends/mobile-core/src/features/profile/profile-state.ts",
+          "frontends/mobile-core/src/features/profile/profile-state.test.ts"
+        ],
+        "notListed": 0,
+        "mismatchReason": "The preservation copy predates the accepted seven-SFC callback repair and later state/test changes; all 27 assets, profile-types.ts and profile-screen.pcss match."
+      }
+    ],
+    "sourceClosure": "Current nested source enumeration produced exactly 11 named product files and exactly 27 SVG assets; every ledger entry was recomputed from the current bytes.",
+    "revisionEvidence": "Outer and nested HEAD both resolve to 8002b9ea4356b10779c5bb9a6d99746d32d78ae2."
+  },
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "vueTsc": "3.3.11 (CLI TypeScript 5.9.3)",
+    "eslint": "10.10.0",
+    "vitest": "4.1.4",
+    "vite": "7.3.6"
+  },
+  "checks": [
+    {
+      "id": "ledger-json-parse-and-shape",
+      "criterion": "The new ledger parses as JSON and has the frozen status and 38-entry shape.",
+      "status": "PASS",
+      "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "command": "$j=Get-Content -Raw -LiteralPath '.agent/student-auth-a/profile/e2-import-ledger.json' | ConvertFrom-Json; if ($j.status -ne 'FROZEN_UI_SOURCE_ACCEPTED' -or $j.files.Count -ne 38) { exit 1 }",
+      "exitCode": 0,
+      "evidence": "JSON parse and shape check recorded at ledger freeze."
+    },
+    {
+      "id": "ledger-counts-and-duplicates",
+      "criterion": "The ledger has 11 product entries, 27 asset entries, 38 total entries and no duplicate paths.",
+      "status": "PASS",
+      "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "command": "$j=Get-Content -Raw -LiteralPath '.agent/student-auth-a/profile/e2-import-ledger.json' | ConvertFrom-Json; $dups=@($j.files.path | Group-Object | Where-Object Count -gt 1); if ($j.counts.productFiles -ne 11 -or $j.counts.assets -ne 27 -or $j.counts.total -ne 38 -or $j.files.Count -ne 38 -or $dups.Count -ne 0) { exit 1 }",
+      "exitCode": 0,
+      "evidence": "Closure/count/duplicate check recorded at ledger freeze."
+    },
+    {
+      "id": "current-source-hashes-and-bytes",
+      "criterion": "All 38 current nested source files match the ledger byte lengths and uppercase SHA256 values.",
+      "status": "PASS",
+      "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "command": "node --input-type=module -e \"Read ledger.files, hash each file under C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui, compare bytes and uppercase SHA256, and exit 1 on any mismatch.\"",
+      "exitCode": 0,
+      "evidence": "38/38 current file hashes and byte lengths matched immediately before finalization."
+    },
+    {
+      "id": "referenced-manifest-cross-check",
+      "criterion": "Current source was compared against repair, historical security and preserved manifests.",
+      "status": "PASS",
+      "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "command": "PowerShell SHA256 and byte equality comparison for repair-source-manifest, resume4-security-source-manifest-superseded and preserved-38-file-manifest.",
+      "exitCode": 0,
+      "evidence": "repair 7/7; historical security 6/7 with Security superseded; preserved 29/38 with documented callback/state/test deltas."
+    },
+    {
+      "id": "scoped-git-status",
+      "criterion": "The task diff is limited to the new ledger file and foreign work remains untouched.",
+      "status": "PASS",
+      "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "command": "git status --short --untracked-files=all -- .agent/student-auth-a/profile/e2-import-ledger.json",
+      "exitCode": 0,
+      "evidence": "Target was absent before write and is the only file added by this task; source hash recheck found no product/code/asset drift."
+    },
+    {
+      "id": "accepted-profile-strict-vue-tsc",
+      "criterion": "Strict Vue typecheck covers the profile project.",
+      "status": "PASS",
+      "verificationKind": "accepted-source-evidence",
+      "source": {
+        "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui/.agent/profile-ui/evidence/resume4-repair/checks.json",
+        "sha256": "E6E12BA3766C2F6D0DCBE6CAD6CAB388A69FFDD179281B3BAEFAA76C09A8E21A",
+        "bytes": 5203
+      },
+      "command": "node 'C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/frontends/node_modules/vue-tsc/bin/vue-tsc.js' --noEmit -p '.agent/profile-ui/vue-tsconfig.json'",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "id": "accepted-profile-focused-eslint",
+      "criterion": "All seven named profile SFCs have zero lint errors or warnings.",
+      "status": "PASS",
+      "verificationKind": "accepted-source-evidence",
+      "source": {
+        "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui/.agent/profile-ui/evidence/resume4-repair/checks.json",
+        "sha256": "E6E12BA3766C2F6D0DCBE6CAD6CAB388A69FFDD179281B3BAEFAA76C09A8E21A",
+        "bytes": 5203
+      },
+      "command": "node 'C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/frontends/node_modules/eslint/bin/eslint.js' --config '.agent/profile-ui/eslint.config.mjs' --max-warnings=0 'frontends/mobile-core/src/features/profile/MoreScreen.vue' 'frontends/mobile-core/src/features/profile/ProfileScreen.vue' 'frontends/mobile-core/src/features/profile/RoleSwitchScreen.vue' 'frontends/mobile-core/src/features/profile/AppearanceScreen.vue' 'frontends/mobile-core/src/features/profile/SecurityScreen.vue' 'frontends/mobile-core/src/features/profile/SessionsScreen.vue' 'frontends/mobile-core/src/features/profile/AccountHistoryScreen.vue'",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "id": "accepted-profile-state-vitest",
+      "criterion": "The existing profile-state regression suite remains 20/20.",
+      "status": "PASS",
+      "verificationKind": "accepted-source-evidence",
+      "source": {
+        "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui/.agent/profile-ui/evidence/resume4-repair/checks.json",
+        "sha256": "E6E12BA3766C2F6D0DCBE6CAD6CAB388A69FFDD179281B3BAEFAA76C09A8E21A",
+        "bytes": 5203
+      },
+      "command": "node 'C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/frontends/node_modules/vitest/vitest.mjs' run 'frontends/mobile-core/src/features/profile/profile-state.test.ts'",
+      "exitCode": 0,
+      "result": "1 file passed; 20 tests passed"
+    },
+    {
+      "id": "accepted-profile-harness-build",
+      "criterion": "The existing evidence harness imports and builds all seven profile SFCs.",
+      "status": "PASS",
+      "verificationKind": "accepted-source-evidence",
+      "source": {
+        "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui/.agent/profile-ui/evidence/resume4-repair/checks.json",
+        "sha256": "E6E12BA3766C2F6D0DCBE6CAD6CAB388A69FFDD179281B3BAEFAA76C09A8E21A",
+        "bytes": 5203
+      },
+      "command": "node --input-type=module -e \"import { build } from 'file:///C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/frontends/node_modules/vite/dist/node/index.js'; import config from './.agent/profile-ui/evidence/resume-2026-09-08/harness/vite.config.mjs'; await build({ ...config, configFile: false, build: { ...(config.build ?? {}), write: false } });\"",
+      "exitCode": 0,
+      "result": "44 modules transformed; write:false"
+    }
+  ],
+  "runtimeEvidence": {
+    "status": "ACCEPTED_ROOT_EVIDENCE",
+    "ledgerRuntime": "N/A",
+    "reason": "This task writes evidence only; product runtime is owned by root and was already captured for the repaired source.",
+    "source": {
+      "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/student-auth-a/profile/resume4-repair-mounted-qa.md",
+      "sha256": "678B1E0260A1EC0FEFCBC76EE881B445C66008E3117BE998BA0A1D84035C474E",
+      "bytes": 3039
+    },
+    "url": "http://127.0.0.1:18110/",
+    "observations": [
+      "ACCOUNT_INVALIDATED disabled all three password inputs and reveal controls, kept submit disabled, and kept callback count at 0.",
+      "Clearing invalidation restored empty hidden fields and enabled controls.",
+      "Ordinary CURRENT_PASSWORD_INVALID preserved values/reveal state and remained retryable without callback.",
+      "Success cleared the form; console warning/error query was empty.",
+      "The owned browser/process tree was closed and port 18110 was free after cleanup.",
+      "No real Auth, BFF, PWA or TMA service was contacted."
+    ]
+  },
+  "diff": {
+    "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "target": ".agent/student-auth-a/profile/e2-import-ledger.json",
+    "before": {
+      "targetPresent": false,
+      "productOrAssetChangesByThisTask": false
+    },
+    "after": {
+      "targetPresent": true,
+      "productOrAssetChangesByThisTask": false
+    },
+    "added": [
+      ".agent/student-auth-a/profile/e2-import-ledger.json"
+    ],
+    "modified": [],
+    "deleted": [],
+    "foreignWorkPreserved": true,
+    "note": "The checkout was already dirty in unrelated auth, profile, evidence and nested worktree scopes; no reset, clean, commit, revert or foreign-file edit was performed."
+  },
+  "sourceLimitations": [
+    "No real Auth/BFF/PWA/TMA integration.",
+    "E2 must bind accepted B1 types.",
+    "Session invalidation/offline cache purge callbacks remain integration-owned."
+  ],
+  "limitations": [
+    "The 38 entries freeze the nested UI fixture source only.",
+    "Static checks and mounted runtime observations are accepted evidence from the referenced artifacts; this ledger did not rerun product runtime.",
+    "The historical preservation manifest is retained for provenance; its nine documented mismatches are expected later source changes.",
+    "No production deployment, migration, external write or secret handling is included."
+  ]
+}

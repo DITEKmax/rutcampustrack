@@ -67,6 +67,6 @@ class OpenApiSnapshotIT extends AbstractAttendanceIntegrationTest {
         ObjectWriter writer = mapper.writer()
                 .with(SerializationFeature.INDENT_OUTPUT)
                 .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
-        return writer.writeValueAsString(root) + "\n";
+        return writer.writeValueAsString(root).replace("\r\n", "\n") + "\n";
     }
 }

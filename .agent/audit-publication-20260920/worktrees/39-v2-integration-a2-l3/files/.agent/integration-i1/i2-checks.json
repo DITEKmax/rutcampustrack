@@ -1,0 +1,272 @@
+{
+  "schema": "integration-i2-checks-v2",
+  "date": "2026-09-15",
+  "risk": "S3",
+  "target": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3",
+  "source": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-contract",
+  "base_revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "rules_sha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "source_manifest_sha256": "ED35EDC347D30D610F7530DA767C90674A6F1853E4C76331535D8098FE3992F6",
+  "pre_i1_union_sha256": "EB831B86E3E61559B4B9B3755AD36F69F582039CB6D460F88B003544E210DC85",
+  "union_manifest_path": ".agent/integration-i1/i2-union-manifest.sha256",
+  "union_manifest_sha256": "32031090D593BBC8B53869590F14D90386A97B1AD4786CDC7B6C16586C8CC266",
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "mode": "H31_EXCLUSIVE_AFTER_SOURCEFREEZE",
+    "runtime": "bounded BFF integration test and config-only Compose checks; no service/production runtime"
+  },
+  "checks": [
+    {
+      "id": "rules-hash",
+      "criterion": "the frozen project rules are the assigned rules",
+      "command": "Get-FileHash -Algorithm SHA256 C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "SHA256 B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A"
+    },
+    {
+      "id": "baseline-revisions",
+      "criterion": "target and source use the frozen E base and assigned branches",
+      "command": "git rev-parse HEAD; git status --short --branch (target and source)",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Both HEADs are b8220ac92125a8afa37598b270aa4fab7aa1f470; target branch codex/v2-integration-a2-l3 and source branch codex/v2-requests-contract. Source status remained unchanged after transfer."
+    },
+    {
+      "id": "r5-manifest-hash",
+      "criterion": "the accepted R5 inventory is the frozen source inventory",
+      "command": "Get-FileHash -Algorithm SHA256 .agent/requests-contract-r5/source-manifest.json",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "ED35EDC347D30D610F7530DA767C90674A6F1853E4C76331535D8098FE3992F6"
+    },
+    {
+      "id": "r5-source-hashes",
+      "criterion": "all non-sensitive accepted R5 rows match source manifest checksums",
+      "command": "Get-FileHash -Algorithm SHA256 over 16 non-sensitive R5 product rows",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "All 16 rows match source-manifest.json, including OpenAPI snapshot D4F97E... and generated TS 5D697D.... The tracked .env.ci row stayed opaque."
+    },
+    {
+      "id": "target-conflict-gate",
+      "criterion": "R5 non-overlap paths are clean in the existing I1 target before transfer",
+      "command": "git diff --quiet -- 16 non-overlap R5 paths",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Only the expected OpenApiSnapshotIT overlap was dirty; no unrelated R5 target conflict existed."
+    },
+    {
+      "id": "bounded-transfer",
+      "criterion": "only the accepted 17 R5 tracked paths are transferred",
+      "command": "16 explicit Copy-Item operations plus one bounded OpenApiSnapshotIT assertion patch",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "16 exact non-overlap copies returned exit 0. The opaque .env.ci row was copied without opening or printing values. The overlap received only the two confirmed assertion lines."
+    },
+    {
+      "id": "overlap-prepatch",
+      "criterion": "the critical overlap is limited to the accepted R5 request-body assertion",
+      "command": "git diff --no-index --unified=4 target OpenApiSnapshotIT.java source OpenApiSnapshotIT.java",
+      "exit_code": 1,
+      "status": "PASS_EXPECTED_BOUNDED_DIFF",
+      "evidence": "The expected no-index difference contains exactly two added assertion lines; I1 UUID/JWT fixture and existing assertions are unchanged."
+    },
+    {
+      "id": "overlap-postpatch",
+      "criterion": "the composed overlap equals the accepted R5 file after the bounded assertion",
+      "command": "git diff --no-index --quiet target OpenApiSnapshotIT.java source OpenApiSnapshotIT.java",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Target OpenApiSnapshotIT SHA256 is D0D715C22A77CBADFE61177454428B606A5F0476359C2B8FD879573A4A221C25, equal to R5 source."
+    },
+    {
+      "id": "target-r5-hashes",
+      "criterion": "transferred target rows match accepted source hashes",
+      "command": "Get-FileHash -Algorithm SHA256 over 16 non-sensitive R5 rows and the composed overlap",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "All listed hashes are recorded in i2-source-freeze.md and i2-union-manifest.sha256. Source and target opaque .env.ci lengths both equal 2843 bytes; content was not inspected."
+    },
+    {
+      "id": "scope-exact34",
+      "criterion": "the target product union is exactly 34 paths, excluding owned metadata",
+      "command": "PowerShell expected 34 array compared with git diff plus git ls-files --others, excluding AGENTS.md, .agent/integration-i1/* and docs/sources/*",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "expected=34 actual=34 missing=0 extra=0"
+    },
+    {
+      "id": "openapi-json",
+      "criterion": "the accepted generated OpenAPI snapshot remains valid JSON",
+      "command": "Get-Content -Raw docs/openapi/mobile-bff.json | ConvertFrom-Json",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Snapshot parsed successfully."
+    },
+    {
+      "id": "openapi-request-body",
+      "criterion": "the accepted generated contract marks excuse requestBody required",
+      "command": "ConvertFrom-Json then read paths.'/api/v1/student/requests/excuse'.post.requestBody.required",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "requestBody.required=true"
+    },
+    {
+      "id": "product-diff-check",
+      "criterion": "the 34-path product diff has no whitespace errors",
+      "command": "git diff --check -- accepted product paths",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "No diff-check errors; Git emitted only existing LF-to-CRLF normalization warnings."
+    },
+    {
+      "id": "union-canonical-hash",
+      "criterion": "the frozen 34-row path/hash union is reproducible",
+      "command": "Sort path=UPPER_SHA rows, join UTF-8 with LF without trailing LF, hash SHA256",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Canonical SHA256 32031090D593BBC8B53869590F14D90386A97B1AD4786CDC7B6C16586C8CC266."
+    },
+    {
+      "id": "h31-bff-openapi",
+      "criterion": "the changed BFF OpenAPI snapshot assertion passes on the frozen union",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:integrationTest --tests \"ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT\" --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exit_code": 0,
+      "status": "PASS",
+      "execution_context": {
+        "workdir": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-integration-a2-l3",
+        "shell": "PowerShell",
+        "heavy_lane": "H31 exclusive",
+        "snapshot_update": false
+      },
+      "evidence": "BUILD SUCCESSFUL; 39 actionable tasks: 39 up-to-date. Spring gRPC shutdown completed.",
+      "log_path": ".agent/integration-i1/h31-bff-openapi.log",
+      "log_sha256": "DE4ABBCF27003A5BDE8D1AE8AE95B46692CD03D5943128AAD0AA814FB9587FB8",
+      "log_bytes": 4472,
+      "junit_xml": {
+        "path": "services/mobile-bff/mobile-bff-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT.xml",
+        "sha256": "5F1EE5396894D9CE63083D0C10F3EF83F4FAE262FB61B68EFD74DAD27B3FFC5F",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "time": "3.883"
+      }
+    },
+    {
+      "id": "h31-frontend-types-initial",
+      "criterion": "frontend type guard can resolve its locked generator dependency",
+      "command": "npm run generate:types:check",
+      "exit_code": 1,
+      "status": "ENV_BLOCKED_REPRODUCTION",
+      "evidence": "The first run stopped before generation with Node ERR_MODULE_NOT_FOUND for openapi-typescript; no source or generated file changed."
+    },
+    {
+      "id": "h31-frontend-offline-bootstrap",
+      "criterion": "the missing locked frontend dependency is installed only from the local npm cache",
+      "command": "npm ci --offline",
+      "exit_code": 0,
+      "status": "PASS_OFFLINE_CACHE",
+      "evidence": "Added 222 packages, audited 226, found 0 vulnerabilities. npm cache contained the locked openapi-typescript@7.13.0 tarball; no online fallback was used."
+    },
+    {
+      "id": "h31-frontend-types",
+      "criterion": "the generated TypeScript artifact matches the accepted OpenAPI snapshot",
+      "command": "npm run generate:types:check",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "OpenAPI types match JS-STUDENT-01-r1 with spec hash d4f97e0476cd681a9460247d9f904c7901241269b73221a097ec6be45132cda0.",
+      "log_path": ".agent/integration-i1/h31-frontend-types.log",
+      "log_sha256": "684498108C6B69DF10059F53AB0FA86C3F23EC90C45AE328ECA88CBC82900789",
+      "log_bytes": 220
+    },
+    {
+      "id": "r5-bash-wrapper",
+      "criterion": "the shell syntax check uses an available parser",
+      "command": "bash -n scripts/preflight-deploy.sh",
+      "exit_code": 1,
+      "status": "ENV_WRAPPER_NOT_PARSER",
+      "evidence": "Windows system32 bash.exe returned its WSL installation stub; no shell parse result was produced."
+    },
+    {
+      "id": "r5-shell-syntax-preflight",
+      "criterion": "R5 preflight script has valid shell syntax",
+      "command": "& 'C:/Program Files/Git/bin/bash.exe' -n scripts/preflight-deploy.sh",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Git Bash parser returned no diagnostics."
+    },
+    {
+      "id": "r5-shell-syntax-validator",
+      "criterion": "R5 production environment validator has valid shell syntax",
+      "command": "& 'C:/Program Files/Git/bin/bash.exe' -n scripts/validate-env-prod.sh",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Git Bash parser returned no diagnostics."
+    },
+    {
+      "id": "r5-compose-caller-inventory",
+      "criterion": "all accepted R5 production Compose callers carry an explicit env file",
+      "command": "rg -n docker compose over the seven accepted R5 caller paths and assert --env-file on every hit",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "docker-compose-callers=35 missing-env-file=0."
+    },
+    {
+      "id": "r5-prod-compose-config",
+      "criterion": "the accepted synthetic production Compose configuration remains valid",
+      "command": "docker compose --env-file source/.agent/requests-contract-r5/isolated-synthetic.env.prod -f docker-compose.prod.yml config --quiet",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Config-only synthetic validation passed; no service or container started."
+    },
+    {
+      "id": "r5-e2e-compose-config",
+      "criterion": "the accepted synthetic E2E Compose configuration remains valid",
+      "command": "docker compose --env-file tests/e2e/.env.ci -f docker-compose.e2e.yml config --quiet",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Config-only E2E validation passed; no service or container started."
+    }
+  ],
+  "operator_notes": [
+    "One preliminary scope command was invalid: it ran in the dirty root checkout and had one expected-path typo; it returned exit 1 and was not used as target evidence. The corrected target command returned exit 0 with exact34.",
+    "The default Windows bash wrapper failed with exit 1 and was replaced by the installed Git Bash executable; the same syntax checks then passed with exit 0. This was an environment wrapper issue, not a source defect.",
+    "The initial frontend type guard reproduced a missing local dependency with exit 1. The locked package was installed from npm cache only with npm ci --offline, and the exact type guard then passed with exit 0. No generated source changed.",
+    "No WARN or ERROR was tied to the requested R5/I1 source transfer, so no product code was changed beyond the accepted files."
+  ],
+  "runtime_evidence": {
+    "status": "PASS_BOUNDED_H31",
+    "exit_code": 0,
+    "evidence": "OpenApiSnapshotIT executed 4 tests with 4 passes, 0 failures, 0 errors and 0 skipped. Synthetic PROD and E2E Compose config checks returned exit 0 without service startup. Frontend type guard returned exit 0 after offline-only dependency bootstrap.",
+    "cleanup": "Gradle single-use daemon stopped; no service/container/Testcontainers resource was left running.",
+    "historical_context": "I1 historical 46-test evidence remains prior evidence and is not a new I2 PASS claim.",
+    "deferred": "Root owns affected checks and independent full integration review under a future separately allocated integration lease."
+  },
+  "diff": {
+    "product_paths": 34,
+    "r5_tracked_paths": 17,
+    "i1_preserved_paths": 18,
+    "overlap_paths": 1,
+    "metadata_paths": [
+      ".agent/integration-i1/i2-packet.md",
+      ".agent/integration-i1/i2-source-freeze.md",
+      ".agent/integration-i1/i2-union-manifest.sha256",
+      ".agent/integration-i1/i2-checks.json",
+      ".agent/integration-i1/i2-summary.md",
+      ".agent/integration-i1/h31-bff-openapi.log",
+      ".agent/integration-i1/h31-frontend-types.log",
+      "docs/sources/manifest.yaml"
+    ],
+    "source_metadata_copied": false
+  },
+  "limitations": [
+    "No full canonical 15 generation/compile or product test suite was run in H31; those broader gates remain pending a future separately allocated integration lease.",
+    "No fresh independent Sol integration review was run by this leaf.",
+    "The existing I1 H19 failure and historical test evidence remain as recorded; I2 does not recast them as current checks.",
+    "No production, deployment, TLS, Docker service startup, or transfer/grant runtime claim is made."
+  ],
+  "status": "READY_FOR_ROOT_REVIEW"
+}

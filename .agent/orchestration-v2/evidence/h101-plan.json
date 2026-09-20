@@ -1,0 +1,32 @@
+{
+  "arguments": [
+    ":services:schedule-service:schedule-app:test",
+    "--tests",
+    "ru.rutcampustrack.schedule.recurring.RecurringScheduleItemCoordinatorTest",
+    "--tests",
+    "ru.rutcampustrack.schedule.recurring.RecurringLifecycleGateTest",
+    "--tests",
+    "ru.rutcampustrack.schedule.item.ScheduleItemSecurityTest",
+    ":services:schedule-service:schedule-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+    "--tests",
+    "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+    "--tests",
+    "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+    "--tests",
+    "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+    "--tests",
+    "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+    "--continue",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report"
+  ],
+  "resultDirectories": [
+    "services/schedule-service/schedule-app/build/test-results/test",
+    "services/schedule-service/schedule-app/build/test-results/integrationTest"
+  ],
+  "meaning": "Schedule completion units and real PG endpoint, migration, fence races and touched regression classes; remote Academic mocked; H97 date PASS retained"
+}

@@ -1,0 +1,77 @@
+{
+  "schema": "admission-review-correction-01-v1",
+  "status": "SOURCE_READY_FOR_ROOT_AUDIT",
+  "release": "RELEASE",
+  "risk": "S3",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "request": "Repair the independent Sol high stale-clock admission finding and root-approved post-sign expiry boundary within the frozen producer contract; preserve foreign work.",
+  "finding": {
+    "severity": "HIGH",
+    "source": "fresh independent Sol review",
+    "reproduction": "Mutable clock starts at 2026-09-10T10:00:00.500Z and advances in the single snapshot callback to 2026-09-10T10:00:05.250Z.",
+    "correction": "Use initialNow only for SnapshotCommand; use freshNow after the authoritative snapshot for liveness, iat, TTL, exp, and strict expiry checks; use returnNow after signing to prevent expired session/token DTO responses."
+  },
+  "files": [
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionService.java",
+      "beforeBytes": 12401,
+      "beforeSha256": "35746A3439FBEF84DF9ED05F29D274031332C7919B0CBC1DF988A6E05439C285",
+      "afterBytes": 12672,
+      "afterSha256": "89AE726537B778AB769935A858AE542415870F8C3972330B17456AE09923490A",
+      "changedByLeaf": true,
+      "correction": "fresh post-snapshot clock, command-only initial clock, and post-sign session/token expiry guard"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+      "beforeBytes": 15886,
+      "beforeSha256": "C63CC5A8BBC4D1440631817005A56EF8806472B03C3A66954A39DADD1E8D362C",
+      "afterBytes": 20025,
+      "afterSha256": "B58AA5F0B213A79C2265FDDE09AFDDEDC18A065CAA61ED330F31A2F6EF390936",
+      "changedByLeaf": true,
+      "correction": "deterministic snapshot/session expiry and signing-delay expiry denial tests"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+      "beforeBytes": 27566,
+      "beforeSha256": "FA8FB0AA20074D494CCCC5B89D014275C3EB9582C723E3DE086EF665F5B162F9",
+      "afterBytes": 27566,
+      "afterSha256": "FA8FB0AA20074D494CCCC5B89D014275C3EB9582C723E3DE086EF665F5B162F9",
+      "changedByLeaf": false,
+      "correction": "audited and preserved"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "beforeBytes": 17602,
+      "beforeSha256": "0C2E1F5497BDC5A4B371B66EDFBAE032FB5611E0879D93FD7F2C64E86750FFDF",
+      "afterBytes": 19078,
+      "afterSha256": "9CB433E2D0F0ACF3BDC8215527E841F2B9E60A52FFF65F0392955ECB7A73BFF6",
+      "changedByLeaf": true,
+      "correction": "raw signed required-claim omission, optional group_id, semantic access-wire matrix, and exact singleton audience assertion"
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtValidatorTest.java",
+      "beforeBytes": 10191,
+      "beforeSha256": "33E58D2DFD46EB28095C9C354D107BD21EEB5A85F5861E699793CBF3BE7D139C",
+      "afterBytes": 10191,
+      "afterSha256": "33E58D2DFD46EB28095C9C354D107BD21EEB5A85F5861E699793CBF3BE7D139C",
+      "changedByLeaf": false,
+      "correction": "audited and preserved foreign orphan diff"
+    }
+  ],
+  "auth13": {
+    "manifestPath": ".agent/student-auth-a/admission-producer/manifest.json",
+    "manifestSha256": "5DDABFE8EB55046DF5BB9F6D0EC0245B7D47E6CE2909D789415DC2D823A5D18B",
+    "entries": 13,
+    "hashGuardExit": 0
+  },
+  "checks": {
+    "targetHashExit": 0,
+    "structureExit": 0,
+    "reviewMarkersExit": 0,
+    "whitespaceExit": 0,
+    "gitDiffCheckExit": 0,
+    "audienceCorrectionExit": 0
+  },
+  "runtime": "HEAVY NOT RUN/NOT ACQUIRED; root runtime lease and independent recheck required",
+  "ownership": "Only the five listed source paths and this evidence directory are in scope; no staging, commit, push, reset, delete, or revert performed."
+}

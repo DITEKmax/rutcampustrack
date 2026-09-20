@@ -24,10 +24,12 @@ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.AsyncGrpcUtils;
 
 import java.time.Instant;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,6 +73,8 @@ public class MarkingService {
     private final AttendanceEventPublisher eventPublisher;
     private final SemesterCacheService semesterCacheService;
     private final RequestContext requestContext;
+    private final PairWriteCoordinator pairWriteCoordinator;
+    private final Clock clock;
     @Qualifier("grpcTaskExecutor")
     private final TaskExecutor grpcTaskExecutor;
 
@@ -109,6 +113,9 @@ public class MarkingService {
             throw new AccessDeniedException("Студент не принадлежит вашей группе");
         }
 
+        Instant now = clock.instant();
+        pairWriteCoordinator.lock(userId, lessonId, lesson.getGroupId(), now);
+
         // D-15: Upsert with $set (mutable) / $setOnInsert (immutable)
         Query filter = Query.query(
                 Criteria.where("lesson_id").is(lessonId)
@@ -118,7 +125,7 @@ public class MarkingService {
                 .set("status", request.status())
                 .set("source", AttendanceSource.HEADMAN)
                 .set("marked_by", requestContext.getUserId())
-                .set("updated_at", Instant.now())
+                .set("updated_at", now)
                 .setOnInsert("lesson_id", lessonId)
                 .setOnInsert("user_id", userId)
                 .setOnInsert("group_id", lesson.getGroupId())
@@ -126,7 +133,7 @@ public class MarkingService {
                 .setOnInsert("semester_id", semesterCacheService.getActiveSemesterId())
                 .setOnInsert("lesson_number", lesson.getLessonNumber())
                 .setOnInsert("lesson_date", LocalDate.parse(lesson.getDate()))
-                .setOnInsert("created_at", Instant.now());
+                .setOnInsert("created_at", now);
 
         mongoTemplate.upsert(filter, update, AttendanceDocument.class);
 
@@ -262,10 +269,17 @@ public class MarkingService {
         // Плюс findAndModify(returnNew=true) вместо upsert+findOne — один
         // round-trip на item вместо двух.
         Long semesterId = semesterCacheService.getActiveSemesterId();
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         Long markedBy = requestContext.getUserId();
         List<AttendanceDocument> result = new ArrayList<>(items.size());
         FindAndModifyOptions opts = FindAndModifyOptions.options().returnNew(true).upsert(true);
+
+        items.stream()
+                .sorted(java.util.Comparator
+                        .comparing(MarkBatchItem::userId)
+                        .thenComparing(MarkBatchItem::lessonId))
+                .forEach(item -> pairWriteCoordinator.lock(
+                        item.userId(), item.lessonId(), lessonsById.get(item.lessonId()).getGroupId(), now));
 
         for (MarkBatchItem item : items) {
             LessonResponse lesson = lessonsById.get(item.lessonId());

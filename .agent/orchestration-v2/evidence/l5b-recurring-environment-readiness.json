@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-09-20T13:58:55.6516405Z",
+  "purpose": "Read-only environment readiness before new scoped checks",
+  "dockerServer": "28.5.2",
+  "runningContainers": 0,
+  "java": "Microsoft OpenJDK 21.0.10",
+  "sandboxProbe": "Docker pipe access denied in sandbox",
+  "approvedProbe": "require_escalated read-only docker version and ps: exit 0",
+  "productTests": "NOT RUN"
+}

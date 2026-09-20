@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+
+    <defs>
+      <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#9E7AFF"/>
+        <stop offset="1" stop-color="#6D28D9"/>
+      </linearGradient>
+      <linearGradient id="accentSoft" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#6D28D9" stop-opacity=".72"/>
+        <stop offset="1" stop-color="#9E7AFF" stop-opacity=".16"/>
+      </linearGradient>
+      <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1.5" fill="#9E7AFF" opacity=".18"/>
+      </pattern>
+      <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#000" flood-opacity=".42"/>
+      </filter>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="24" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#9E7AFF"/>
+      </marker>
+      <style>
+        text { font-family: Onest, 'DejaVu Sans', Arial, sans-serif; }
+      </style>
+    </defs>
+    
+<rect width="1600" height="1000" fill="#0B0B0C"/>
+<circle cx="1500" cy="40" r="250" fill="#6D28D9" opacity=".06"/>
+<rect x="0" y="0" width="1600" height="1000" fill="url(#dots)" opacity=".45"/>
+<text x="64" y="76" fill="#F6F4FA" font-size="32" font-weight="650">Визуальный язык: “текучее табло”</text>
+<text x="64" y="112" fill="#C8C2D6" font-size="17">Современная пластика усиливает контекст; статусы и плотность остаются строгими</text>
+<path d="M70 200 Q70 150 130 150 H570 Q650 150 650 225 V380 Q650 445 585 445 H160 Q70 445 70 360 Z" fill="url(#accent)" filter="url(#shadow)"/>
+<path d="M540 150 C690 200 670 380 560 445" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width="34"/>
+<text x="110" y="205" text-anchor="start" fill="#fff" font-size="14" font-weight="650"><tspan x="110" dy="0">Сейчас</tspan></text>
+<text x="110" y="260" text-anchor="start" fill="#fff" font-size="28" font-weight="750"><tspan x="110" dy="0">Основы программирования</tspan></text>
+<text x="110" y="302" text-anchor="start" fill="#F3EEFE" font-size="16" font-weight="500"><tspan x="110" dy="0">10:40–12:10 · А-401</tspan></text>
+<rect x="110" y="340" width="180" height="38" rx="19.0" fill="#fff" stroke="none" stroke-width="1" opacity="1" /><text x="200.0" y="364.0" text-anchor="middle" fill="#6D28D9" font-size="13" font-weight="600"><tspan x="200.0" dy="0">Открыть пару</tspan></text>
+<text x="70" y="492" text-anchor="start" fill="#9E7AFF" font-size="16" font-weight="700"><tspan x="70" dy="0">Градиент</tspan></text>
+<text x="70" y="523" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="450"><tspan x="70" dy="0">Одна фокусная область на экране.</tspan><tspan x="70" dy="21">Не кодирует статус и не лежит за длинным текстом.</tspan></text>
+<rect x="720" y="150" width="810" height="295" rx="28" fill="#1C1922" stroke="#565061" stroke-width="1" opacity="1" />
+<text x="758" y="200" text-anchor="start" fill="#F6F4FA" font-size="21" font-weight="700"><tspan x="758" dy="0">Стекло как слой навигации</tspan></text>
+<rect x="780" y="258" width="690" height="88" rx="44" fill="#292531" stroke="#9E7AFF" stroke-width="1.4" opacity="0.88" filter="url(#shadow)"/>
+<ellipse cx="850" cy="288" rx="42" ry="23" fill="url(#accent)"/>
+<circle cx="850" cy="288" r="6" fill="#F6F4FA"/>
+<text x="850" y="326" text-anchor="middle" fill="#F6F4FA" font-size="12" font-weight="600"><tspan x="850" dy="0">Сегодня</tspan></text>
+<circle cx="988" cy="288" r="6" fill="#8A8299"/>
+<text x="988" y="326" text-anchor="middle" fill="#8A8299" font-size="12" font-weight="600"><tspan x="988" dy="0">Задания</tspan></text>
+<circle cx="1126" cy="288" r="6" fill="#8A8299"/>
+<text x="1126" y="326" text-anchor="middle" fill="#8A8299" font-size="12" font-weight="600"><tspan x="1126" dy="0">Учёт</tspan></text>
+<circle cx="1264" cy="288" r="6" fill="#8A8299"/>
+<text x="1264" y="326" text-anchor="middle" fill="#8A8299" font-size="12" font-weight="600"><tspan x="1264" dy="0">Ещё</tspan></text>
+<circle cx="1402" cy="288" r="6" fill="#8A8299"/>
+<text x="1402" y="326" text-anchor="middle" fill="#8A8299" font-size="12" font-weight="600"><tspan x="1402" dy="0">Я</tspan></text>
+<text x="758" y="390" text-anchor="start" fill="#C8C2D6" font-size="14" font-weight="450"><tspan x="758" dy="0">Blur/opacity имеют solid fallback. Под панелью нет важного текста; safe area включена</tspan><tspan x="758" dy="21">в высоту.</tspan></text>
+<rect x="70" y="610" width="320" height="132" rx="22" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="98" cy="640" r="8" fill="#9E7AFF"/>
+<text x="118" y="647" text-anchor="start" fill="#F6F4FA" font-size="16" font-weight="650"><tspan x="118" dy="0">Форма</tspan></text>
+<text x="92" y="686" text-anchor="start" fill="#C8C2D6" font-size="13" font-weight="430"><tspan x="92" dy="0">radius 24–32 только у hero / nav;</tspan><tspan x="92" dy="18">рабочие строки 12–18</tspan></text>
+<rect x="450" y="610" width="320" height="132" rx="22" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="478" cy="640" r="8" fill="#9E7AFF"/>
+<text x="498" y="647" text-anchor="start" fill="#F6F4FA" font-size="16" font-weight="650"><tspan x="498" dy="0">Паттерн</tspan></text>
+<text x="472" y="686" text-anchor="start" fill="#C8C2D6" font-size="13" font-weight="430"><tspan x="472" dy="0">точки/линии 4–8% opacity в empty и</tspan><tspan x="472" dy="18">больших пустых полях</tspan></text>
+<rect x="830" y="610" width="320" height="132" rx="22" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="858" cy="640" r="8" fill="#34C79C"/>
+<text x="878" y="647" text-anchor="start" fill="#F6F4FA" font-size="16" font-weight="650"><tspan x="878" dy="0">Motion</tspan></text>
+<text x="852" y="686" text-anchor="start" fill="#C8C2D6" font-size="13" font-weight="430"><tspan x="852" dy="0">120–260 ms; shared-element раскрытие;</tspan><tspan x="852" dy="18">reduced-motion = мгновенно</tspan></text>
+<rect x="1210" y="610" width="320" height="132" rx="22" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="1238" cy="640" r="8" fill="#F5B443"/>
+<text x="1258" y="647" text-anchor="start" fill="#F6F4FA" font-size="16" font-weight="650"><tspan x="1258" dy="0">Статусы</tspan></text>
+<text x="1232" y="686" text-anchor="start" fill="#C8C2D6" font-size="13" font-weight="430"><tspan x="1232" dy="0">+ / у / н: слово или символ + форма +</tspan><tspan x="1232" dy="18">семантический цвет</tspan></text>
+<rect x="70" y="790" width="320" height="132" rx="22" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="98" cy="820" r="8" fill="#9E7AFF"/>
+<text x="118" y="827" text-anchor="start" fill="#F6F4FA" font-size="16" font-weight="650"><tspan x="118" dy="0">Pressed</tspan></text>
+<text x="92" y="866" text-anchor="start" fill="#C8C2D6" font-size="13" font-weight="430"><tspan x="92" dy="0">fill/scale 0.98; не менять геометрию</tspan><tspan x="92" dy="18">layout</tspan></text>
+<rect x="450" y="790" width="320" height="132" rx="22" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="478" cy="820" r="8" fill="#8A8299"/>
+<text x="498" y="827" text-anchor="start" fill="#F6F4FA" font-size="16" font-weight="650"><tspan x="498" dy="0">Loading</tspan></text>
+<text x="472" y="866" text-anchor="start" fill="#C8C2D6" font-size="13" font-weight="430"><tspan x="472" dy="0">skeleton повторяет будущую форму;</tspan><tspan x="472" dy="18">spinner только в кнопке</tspan></text>
+<rect x="830" y="790" width="320" height="132" rx="22" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="858" cy="820" r="8" fill="#34C79C"/>
+<text x="878" y="827" text-anchor="start" fill="#F6F4FA" font-size="16" font-weight="650"><tspan x="878" dy="0">Empty</tspan></text>
+<text x="852" y="866" text-anchor="start" fill="#C8C2D6" font-size="13" font-weight="430"><tspan x="852" dy="0">1 мысль + 1 действие; паттерн</tspan><tspan x="852" dy="18">объясняет, не маскирует</tspan></text>
+<rect x="1210" y="790" width="320" height="132" rx="22" fill="#292531" stroke="#565061" stroke-width="1" opacity="1" />
+<circle cx="1238" cy="820" r="8" fill="#E24A4A"/>
+<text x="1258" y="827" text-anchor="start" fill="#F6F4FA" font-size="16" font-weight="650"><tspan x="1258" dy="0">Error</tspan></text>
+<text x="1232" y="866" text-anchor="start" fill="#C8C2D6" font-size="13" font-weight="430"><tspan x="1232" dy="0">сохраняет last-known content; retry</tspan><tspan x="1232" dy="18">внутри проблемного блока</tspan></text>
+</svg>

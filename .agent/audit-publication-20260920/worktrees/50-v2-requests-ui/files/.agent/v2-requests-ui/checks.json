@@ -1,0 +1,322 @@
+{
+  "revision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "environment": "Windows PowerShell; C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-ui; own frontends dependency cache; no network/shared node_modules/runtime",
+  "historyNote": "Entries before the current F1/F2 repair are historical checkpoint results; current-source acceptance is recorded by the final checks below.",
+  "checks": [
+    {
+      "criterion": "baseline",
+      "command": "git status --short --branch; git rev-parse HEAD; git branch --show-current",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "codex/v2-requests-ui at b8220ac92125a8afa37598b270aa4fab7aa1f470; clean before edits"
+    },
+    {
+      "criterion": "worktree creation",
+      "command": "git worktree add -b codex/v2-requests-ui C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-ui b8220ac92125a8afa37598b270aa4fab7aa1f470",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "isolated worktree created from E without escalation"
+    },
+    {
+      "criterion": "pre-D1 dependency availability",
+      "command": "$deps = Test-Path -LiteralPath frontends/node_modules; $vitest = Test-Path -LiteralPath frontends/node_modules/vitest; if (-not $deps -or -not $vitest) { exit 2 }",
+      "exitCode": 2,
+      "status": "BLOCKED_PREREQUISITE",
+      "evidence": "Pre-D1 probe found no frontends/node_modules and no frontends/node_modules/vitest; this historical prerequisite result was resolved by the separately granted D1 offline install"
+    },
+    {
+      "criterion": "D1 offline locked dependency install",
+      "command": "npm ci --offline --ignore-scripts --no-audit --no-fund",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Own frontends install added 222 packages in 12s; no network, shared node_modules, or global config mutation"
+    },
+    {
+      "criterion": "Vitest worker flag compatibility probe",
+      "command": "npm exec --offline -- vitest run mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts mobile-core/src/features/requests/RequestsScreen.test.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1 --minWorkers=1",
+      "exitCode": 1,
+      "status": "NON_APPLICABLE",
+      "evidence": "Locked Vitest v4.1.4 rejects --minWorkers; no suite result was claimed from this invocation"
+    },
+    {
+      "criterion": "controller assertion correction",
+      "command": "npm exec --offline -- vitest run mobile-core/src/features/requests/requests-controller.test.ts --maxWorkers=1 -t \"requires the MIME\"",
+      "exitCode": 1,
+      "status": "CORRECTED",
+      "evidence": "The first assertion used array toContain for a substring; actual message was observed and the assertion was bounded to some(error => error.includes(...))"
+    },
+    {
+      "criterion": "focused non-Vue frontend tests",
+      "command": "npm exec --offline -- vitest run mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "4 test files, 22 tests passed in one worker after adding the owner-context options-loading regression"
+    },
+    {
+      "criterion": "RequestsScreen rendered frontend tests (sandbox probe)",
+      "command": "npm exec --offline -- vitest run mobile-core/src/features/requests/RequestsScreen.test.ts --maxWorkers=1",
+      "exitCode": 1,
+      "status": "BLOCKED_HARNESS",
+      "evidence": "Direct mobile-core invocation cannot transform .vue files because no mobile-core Vitest config loads @vitejs/plugin-vue; a temporary local config probe also exited 1 with esbuild Access is denied while resolving config, then was removed"
+    },
+    {
+      "criterion": "RequestsScreen rendered frontend tests (existing Vue config; scoped escalation)",
+      "command": "npm exec --offline -- vitest run --config pwa-vue/vite.config.ts mobile-core/src/features/requests/RequestsScreen.test.ts --maxWorkers=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Existing pwa-vue/vite.config.ts loaded @vitejs/plugin-vue; 1 file and 7 tests passed in one worker after the sandbox-only esbuild access restriction was scoped to this exact command"
+    },
+    {
+      "criterion": "Sol popup adapter/action regression",
+      "command": "npm exec --offline -- vitest run mobile-core/src/features/requests/request-attachment-action.test.ts --maxWorkers=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "1 file and 11 tests passed in one worker, including exact window.open arguments, synchronous opener=null, setter failure close/fail-closed, and no unsafe download/navigation"
+    },
+    {
+      "criterion": "post-Sol typecheck first probe",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 1,
+      "status": "CORRECTED",
+      "evidence": "The first post-Sol probe found only the new test's explicit undefined tuple typing; no product type error. The test tuple was corrected before the passing rerun"
+    },
+    {
+      "criterion": "post-Sol typecheck after test correction",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "tsc -p tsconfig.json --noEmit after the adapter test tuple correction"
+    },
+    {
+      "criterion": "post-Sol mobile-core lint",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "eslint src scripts tests --max-warnings=0 after the adapter correction"
+    },
+    {
+      "criterion": "mobile-core typecheck",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "tsc -p tsconfig.json --noEmit"
+    },
+    {
+      "criterion": "mobile-core lint",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "eslint src scripts tests --max-warnings=0"
+    },
+    {
+      "criterion": "F1-F3 bundled correction focused tests",
+      "command": "npm exec --offline -- vitest run mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "4 test files, 27 tests passed in one worker; covers single route/new-request options load, stale 401/403 fences after newer success/context change, backend filename sanitization proof..pdf rejection, and popup regressions"
+    },
+    {
+      "criterion": "fresh R4 completion focused tests",
+      "command": "npm exec --offline -- vitest run mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 rerun at b8220ac92125a8afa37598b270aa4fab7aa1f470: 4 files / 27 tests passed in one worker; Windows PowerShell, Node v24.14.0, npm 11.9.0, own offline dependencies"
+    },
+    {
+      "criterion": "fresh R4 completion mobile-core typecheck",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 rerun: tsc -p tsconfig.json --noEmit completed with exit 0 in the isolated worktree"
+    },
+    {
+      "criterion": "fresh R4 completion mobile-core lint",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 rerun: eslint src scripts tests --max-warnings=0 completed with exit 0 in the isolated worktree"
+    },
+    {
+      "criterion": "fresh F3 filename correction focused tests",
+      "command": "npm exec --offline -- vitest run mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 correction rerun at b8220ac92125a8afa37598b270aa4fab7aa1f470: 4 files / 35 tests passed in one worker; covers Java String.strip whitespace exclusions and positives through acceptsRequestFile, plus prior controller/popup/owner regressions"
+    },
+    {
+      "criterion": "fresh F3 filename correction mobile-core typecheck",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 correction rerun: tsc -p tsconfig.json --noEmit completed with exit 0 in the isolated worktree"
+    },
+    {
+      "criterion": "fresh F3 filename correction mobile-core lint",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 correction rerun: eslint src scripts tests --max-warnings=0 completed with exit 0 in the isolated worktree"
+    },
+    {
+      "criterion": "fresh F3 truncation correction focused tests",
+      "command": "npm exec --offline -- vitest run mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 truncation correction rerun at b8220ac92125a8afa37598b270aa4fab7aa1f470: 4 files / 36 tests passed in one worker; covers raw post-truncation extension rejection and valid neighbor plus prior Unicode, controller, popup, and owner regressions"
+    },
+    {
+      "criterion": "fresh F3 truncation correction mobile-core typecheck",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 truncation correction rerun: tsc -p tsconfig.json --noEmit completed with exit 0 in the isolated worktree"
+    },
+    {
+      "criterion": "fresh F3 truncation correction mobile-core lint",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 truncation correction rerun: eslint src scripts tests --max-warnings=0 completed with exit 0 in the isolated worktree"
+    },
+    {
+      "criterion": "R4 actual Owner client mount",
+      "command": "npm exec --offline -- vitest run --config pwa-vue/vite.config.ts --environment ../.agent/v2-requests-ui/vitest-client-environment.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15: existing pwa-vue Vue plugin plus bounded client environment transformed the real StudentFeatureOwner SFC; 1 file / 4 tests passed, including deferred route entry and newRequest options count one"
+    },
+    {
+      "criterion": "R4 known newRequest mutation proof",
+      "command": "Controlled one-line mutation of StudentFeatureOwner.vue newRequest ensureRequestOptions() to void requests.loadOptions().catch(handleRequestsError), followed by the exact R4 actual Owner client mount command",
+      "exitCode": 1,
+      "status": "EXPECTED_FAIL_PROOF",
+      "evidence": "Original SHA 655F9CC6156DA9CB72BE91BFF9E2EE76A1348E7FF645328E50269EDFB8A72F7F; mutant SHA EA06D40AB7890BEEA10E17E46ACB8A8B5F973489C8224A641886F6EBDD60AA45; 1 test failed because getRequestOptions observed 2 calls instead of 1, proving the assertion catches the exact regression"
+    },
+    {
+      "criterion": "R4 Owner source restoration",
+      "command": "Get-FileHash -LiteralPath frontends\\mobile-core\\src\\shared\\components\\StudentFeatureOwner.vue -Algorithm SHA256",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "After immediate reverse and one controlled CRLF byte reconciliation at offset 20912, final SHA is 655F9CC6156DA9CB72BE91BFF9E2EE76A1348E7FF645328E50269EDFB8A72F7F (36033 bytes), matching the accepted pre-mutation source"
+    },
+    {
+      "criterion": "R4 rendered focused union with client environment",
+      "command": "npm exec --offline -- vitest run --config pwa-vue/vite.config.ts --environment ../.agent/v2-requests-ui/vitest-client-environment.ts mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts mobile-core/src/features/requests/RequestsScreen.test.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15: 5 files / 44 tests passed in one worker, including 7 RequestsScreen tests and 4 real Owner mount tests"
+    },
+    {
+      "criterion": "R4 harness typecheck correction",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 1,
+      "status": "CORRECTED",
+      "evidence": "Initial custom renderer inferred an optional anchor as undefined at StudentFeatureOwner.test.ts:115; the call now normalizes anchor ?? null and setup callbacks are explicitly typed"
+    },
+    {
+      "criterion": "R4 harness typecheck final",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "After typing the custom renderer and mocked Vue setup contexts, tsc -p tsconfig.json --noEmit completed successfully"
+    },
+    {
+      "criterion": "R4 harness lint correction",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 1,
+      "status": "CORRECTED",
+      "evidence": "Initial inline mocked defineComponent harness triggered five max-warning violations; plain component option objects and a default prop removed those harness-only warnings"
+    },
+    {
+      "criterion": "R4 harness lint final",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "eslint src scripts tests --max-warnings=0 completed successfully after the harness warning correction"
+    },
+    {
+      "criterion": "R4 handoff JSON syntax",
+      "command": "Get-Content -Raw '.agent\\v2-requests-ui\\checks.json' | ConvertFrom-Json | Out-Null; Get-Content -Raw '.agent\\v2-requests-ui\\runtime-evidence.json' | ConvertFrom-Json | Out-Null; Write-Output 'handoff JSON valid'",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 PowerShell parse completed for checks.json and runtime-evidence.json; command returned the handoff JSON valid marker"
+    },
+    {
+      "criterion": "R4 bounded diff whitespace check",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 isolated worktree check returned exit 0 with no whitespace errors; pre-existing global git ignore/line-ending warnings remain unrelated"
+    },
+    {
+      "criterion": "current F1/F2 MIME repair Vue union sandbox probe",
+      "command": "npm exec --offline -- vitest run --config pwa-vue/vite.config.ts --environment ../.agent/v2-requests-ui/vitest-client-environment.ts mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts mobile-core/src/features/requests/RequestsScreen.test.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1",
+      "exitCode": 1,
+      "status": "BLOCKED_HARNESS",
+      "evidence": "2026-09-15 first exact invocation in the default sandbox failed before Vitest collection because esbuild could not read the existing pwa-vue config directory (Access is denied); no product assertion ran and no source changed"
+    },
+    {
+      "criterion": "current F1/F2 MIME repair full rendered union",
+      "command": "npm exec --offline -- vitest run --config pwa-vue/vite.config.ts --environment ../.agent/v2-requests-ui/vitest-client-environment.ts mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/attachment-validation.test.ts mobile-core/src/features/requests/request-attachment-action.test.ts mobile-core/src/features/requests/RequestsScreen.test.ts mobile-core/src/shared/components/StudentFeatureOwner.test.ts --maxWorkers=1",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 20:49 MSK at HEAD b8220ac92125a8afa37598b270aa4fab7aa1f470: 5 files / 52 tests passed in one worker through the existing pwa-vue Vue config; includes four server-preserved MIME negatives and four Java-whitespace MIME positives"
+    },
+    {
+      "criterion": "current F1/F2 mobile-core typecheck",
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 current source: tsc -p tsconfig.json --noEmit completed with exit 0"
+    },
+    {
+      "criterion": "current F1/F2 mobile-core lint",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 current source: eslint src scripts tests --max-warnings=0 completed with exit 0"
+    },
+    {
+      "criterion": "current F1/F2 bounded diff whitespace",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "2026-09-15 current scoped worktree returned exit 0 with no whitespace errors; line-ending warnings remain pre-existing"
+    },
+    {
+      "criterion": "current 14-file product blob manifest",
+      "command": "$paths = @('frontends\\mobile-core\\src\\features\\requests\\RequestAttachmentField.vue','frontends\\mobile-core\\src\\features\\requests\\RequestCard.vue','frontends\\mobile-core\\src\\features\\requests\\RequestsScreen.test.ts','frontends\\mobile-core\\src\\features\\requests\\RequestsScreen.vue','frontends\\mobile-core\\src\\features\\requests\\requests-controller.test.ts','frontends\\mobile-core\\src\\features\\requests\\requests-controller.ts','frontends\\mobile-core\\src\\features\\requests\\requests.pcss','frontends\\mobile-core\\src\\features\\requests\\types.ts','frontends\\mobile-core\\src\\features\\requests\\attachment-validation.ts','frontends\\mobile-core\\src\\features\\requests\\attachment-validation.test.ts','frontends\\mobile-core\\src\\features\\requests\\request-attachment-action.ts','frontends\\mobile-core\\src\\features\\requests\\request-attachment-action.test.ts','frontends\\mobile-core\\src\\shared\\components\\StudentFeatureOwner.test.ts','frontends\\mobile-core\\src\\shared\\components\\StudentFeatureOwner.vue'); foreach ($p in $paths) { git hash-object -- $p | Out-Null; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE } }; $fences = @('frontends\\mobile-core\\src\\shared\\components\\StudentFeatureOwner.vue','frontends\\mobile-core\\src\\shared\\components\\StudentFeatureOwner.test.ts','.agent\\v2-requests-ui\\vitest-client-environment.ts'); foreach ($p in $fences) { Get-FileHash -Algorithm SHA256 -LiteralPath $p | Out-Null }; Write-Output '14 product blobs and 3 fence hashes verified'",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Current source manifest contains exactly the 14 product paths listed in diff.md/evidence.md; Owner.vue, Owner.test, and client environment fence hashes also verified"
+    },
+    {
+      "criterion": "current product inventory and fence hashes",
+      "command": "git status --short",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Current scoped status contains exactly 10 modified product files plus 4 added product files; Owner.vue SHA256 655F9CC6156DA9CB72BE91BFF9E2EE76A1348E7FF645328E50269EDFB8A72F7F, Owner.test SHA256 D90E583F3D5C90E01E8351C211B1F89052A67A5297D841BA4CDC764010681348, and client environment SHA256 CF3212D7D65917AB03161C487471EFD6A088B7463A0EF76C542D93CA65782205 match the required fences"
+    },
+    {
+      "criterion": "current handoff JSON syntax",
+      "command": "Get-Content -Raw '.agent\\v2-requests-ui\\checks.json' | ConvertFrom-Json | Out-Null; Get-Content -Raw '.agent\\v2-requests-ui\\runtime-evidence.json' | ConvertFrom-Json | Out-Null",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "Current checks.json and runtime-evidence.json parse successfully after the F1/F2 repair record"
+    },
+    {
+      "criterion": "browser/runtime",
+      "command": "N/A",
+      "exitCode": null,
+      "status": "N/A",
+      "evidence": "Runtime evidence is explicitly deferred to main after integration"
+    }
+  ],
+  "limitations": [
+    "No build, Gradle, Docker, browser, or product runtime executed by this leaf.",
+    "R5 environment/OpenAPI/generated checks remain outside this worktree.",
+    "Direct and temporary-config sandbox probes for RequestsScreen.test.ts were blocked before collection; the same focused test passed with the existing pwa-vue Vue config under one scoped escalation.",
+    "Git commit was not created because the worktree index lock was denied by the environment; no permission bypass was attempted and the source diff remains available in the isolated worktree.",
+    "The current final union is recorded above; independent Sol review, integration, and product runtime remain open."
+  ]
+}

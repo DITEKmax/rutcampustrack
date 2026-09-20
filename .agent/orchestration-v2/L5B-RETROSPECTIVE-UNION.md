@@ -1,0 +1,18 @@
+# Goal
+DRAFT NOT DISPATCHED: integrate the two frozen retrospective feature sources into one coherent worktree for final checks/review. No implementation authority until root supplies accepted input manifest hashes and dispatch.
+## Context/evidence
+Read RULES C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md SHA B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A; CURRENT; governing L5B-RECURRING-WRITER-IMPLEMENT.md and L5B-HISTORICAL-ATTENDANCE-IMPLEMENT.md. Three owner policies resolved semesterstart/past automaticABSENT/initialcohortsemesterstart, subsequenttransferactualDATE. Originalmain is dirtyhistorical material, not acceptedproductbase. Inputs final manifests TBD after H103/H104. Retain applicable H97-H103 evidence with limitations, no claim fullproducerchain.
+## Relevant scope
+Assigned fresh Luna max developer SOLE WRITER C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-retrospective-union branch codex/l5b-retrospective-union-20260920 HEAD3d4115f3a4c4ddba473689e27ac1a0efb519a202 clean rootprepared. Exactmanifest imports from recurring/historicalworktrees ONLY after root frozeninputapproval. Copy canonical docs/product/decisions/2026-09-20-retrospective-attendance.md separately if root includes hash. Never import broken/untracked docs/sources/manifest.yaml. Own .agent/l5b-retrospective-union evidence. Preserveothers, root sharedorchestrationdocsowner.
+## Required behavior
+Verify HEAD/rawhashes/pathinventory/inputnonoverlap before import. Import exact frozen changed/new/deleted files preserving content; no wholeworktree copies/node_modules/generatedbuild/secrets/.agent/transcripts. Report collision before resolving; use governingcontracts not oldmain. Add allowedlocal AGENTSpointer if oldrouting requires. Inspect integration compile/APIdependencies and combined enrollment→recurring→datedroster→ABSENT→cancel→stats wiring. Return stable full source manifest, diffcheck and smallest coherent combined build/checkcommands. No arbitrarybusinesschanges; report concreteintegrationdefect for root boundedcorrection. Codecommit only explicitrootacceptance afterreview/checks.
+## Constraints
+Luna max forknone/developer, nochildren/Terra. One writer pertree, max3leaves/rootheavyqueue. No Gradle/Docker/generation until lease. No globalconfig/fullaccess/push/deploy/mainmerge/E/proddata/secrets. Do not modify inputs or otherworktrees. Root/reviewer no codeedits. Code/testingtools knownhostcontext when leased, not sandboxclasspath workaround.
+## Existing patterns
+Bothsourcebranches same3d baseline, sourceareas disjoint Schedule vs Academic/proto/Attendance. Existing tested identity/header/DATE/physicalsnapshot/outbox/idempotence patterns preserved. One final fresh Sol fulltaskreview follows unionstablechecks; no duplicatebranchreviews.
+## Acceptance criteria
+Exactimportverified, no unintendedpaths, fullcompile/contractsconsumercoherence and actualcombinedruntime proof with honestboundary; finalreviewPASS0 required beforeacceptedcommit. Oldpasses retainedonlyfor byteidenticalsources/applicablescenarios. Late student afteralreadyclosedmaterialization explicitlyfuture, not silentlyimplemented.
+## Verification
+Capture command/revision/exits/environment/freshresults/hashfreeze, no handmade hugeinventory. Root will allocate unionbuild/runtime stages sequentially. Source review once fullunionstable. Runtimeprobe extension separately frozen once scoutcorrectedsource map accepted; thispacket does not permit reusing oldSQLseed as managedchainproof.
+## Do not
+No mainmerge/wholepreservationimport/blindbackfill/destructivecleanup/syntheticPASS/oldmainassumptions or prematureimplementation beforefinalinputamendment.

@@ -1,0 +1,219 @@
+const imgStateOpen = "https://www.figma.com/api/mcp/asset/15a1e16f-6ba9-4543-8068-27940af04072.svg";
+const imgStateClosed = "https://www.figma.com/api/mcp/asset/88cc4d37-084a-4270-a7a9-4a3b023de3ca.svg";
+const imgIconPrevious = "https://www.figma.com/api/mcp/asset/e563b044-a150-455e-9aa9-fcd265f57a3f.svg";
+const imgStatusIcon = "https://www.figma.com/api/mcp/asset/5b5d9ba7-4860-4a59-aa5d-e3ddc07ad279.svg";
+
+type IconPasswordVisibilityProps = {
+  className?: string;
+  state?: boolean;
+};
+
+function IconPasswordVisibility({ className, state = true }: IconPasswordVisibilityProps) {
+  const isNotState = !state;
+  return (
+    <div className={className || "relative size-[20px]"} id={isNotState ? "node-4734_191" : "node-4734_188"}>
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={isNotState ? imgStateClosed : imgStateOpen} />
+    </div>
+  );
+}
+
+function IconPrevious({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[16px]"} data-node-id="4597:3579" data-name="icon/previous">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconPrevious} />
+    </div>
+  );
+}
+
+export default function Component19() {
+  return (
+    <div className="bg-[var(--color-surface-base,#0b0b0c)] overflow-clip relative rounded-[24px] size-full" data-node-id="4615:326" data-name="19 · Профиль / безопасность">
+      <div className="absolute content-stretch flex flex-col gap-[12px] h-[812px] items-start left-[16px] overflow-clip py-[20px] top-0 w-[358px]" data-node-id="4615:327" data-name="content">
+        <div className="content-stretch flex gap-[10px] items-center overflow-clip relative shrink-0 w-[358px]" data-node-id="4615:328" data-name="header">
+          <div className="bg-[var(--color-surface-float,#292531)] content-stretch flex items-center justify-center overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4615:329" data-name="back">
+            <IconPrevious className="relative shrink-0 size-[16px]" />
+          </div>
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] h-[32px] leading-[normal] not-italic relative shrink-0 text-[22px] text-[color:var(--color-text-primary,#edeaf3)] w-[304px]" data-node-id="4615:331">
+            Безопасность
+          </p>
+        </div>
+        <div className="h-[410px] relative shrink-0 w-[358px]" data-node-id="4658:849306" data-name="auth/NewPasswordForm/local">
+          <div className="absolute content-stretch flex flex-col gap-[16px] h-[342px] items-start left-0 overflow-clip top-0 w-[358px]" data-node-id="4658:849307" data-name="content">
+            <div className="h-[66px] relative shrink-0 w-full" data-node-id="4658:849406" data-name="current-password-field">
+              <div className="[word-break:break-word] absolute content-stretch flex font-[family-name:var(--font-family-sans,'Onest:Regular')] gap-[var(--space-1,4px)] items-start leading-[1.4] left-0 not-italic overflow-clip p-[var(--space-0,0px)] text-[color:var(--color-text-secondary,#c8c2d6)] text-[length:var(--font-size-caption,13px)] top-0 whitespace-nowrap" data-node-id="4658:849407" data-name="Label row">
+                <p className="relative shrink-0" data-node-id="4658:849408" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                  Текущий пароль
+                </p>
+                <p className="relative shrink-0" data-node-id="4658:849409" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                  *
+                </p>
+              </div>
+              <div className="absolute content-stretch flex gap-[var(--space-0,0px)] h-[44px] items-start left-0 min-h-[40px] overflow-clip p-[var(--space-0,0px)] top-[22px] w-[358px]" data-node-id="4658:849410" data-name="Control">
+                <div className="flex-[1_0_0] h-[44px] min-w-px relative rounded-[var(--radius-full,999px)]" data-node-id="4658:849432" data-name="control/local">
+                  <div className="absolute bg-[var(--color-surface-raised,#1c1922)] border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex gap-[var(--space-2,8px)] inset-0 items-center px-[var(--component\/auth-pill\/content-padding-inline,18px)] py-[var(--space-2,8px)] rounded-[var(--radius-full,999px)]" data-node-id="4658:849433" data-name="TextInput">
+                    <div className="content-stretch flex flex-[1_0_0] gap-[var(--space-0,0px)] h-[24px] items-center min-w-px overflow-clip p-[var(--space-0,0px)] relative" data-node-id="I4658:849433;77:109" data-name="Value area">
+                      <p className="[word-break:break-word] flex-[1_0_0] font-[family-name:var(--font-family-sans,'Onest:Regular')] h-[24px] leading-[1.5] max-w-[280px] min-w-px not-italic overflow-hidden relative text-[16px] text-[color:var(--color-text-primary,#edeaf3)] text-ellipsis whitespace-nowrap" data-node-id="I4658:849433;77:110" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                        •••••••••
+                      </p>
+                    </div>
+                  </div>
+                  <div className="-translate-y-1/2 absolute content-stretch flex gap-[var(--space-2,8px)] items-center justify-center min-w-[32px] p-[var(--space-0,0px)] right-[8px] rounded-[var(--radius-full,999px)] size-[44px] top-1/2" data-node-id="4658:849434" data-name="Скрыть пароль" />
+                  <IconPasswordVisibility className="absolute left-[318px] size-[20px] top-[12px]" />
+                </div>
+              </div>
+            </div>
+            <div className="h-[66px] relative shrink-0 w-full" data-node-id="4658:849451" data-name="new-password-field">
+              <div className="[word-break:break-word] absolute content-stretch flex font-[family-name:var(--font-family-sans,'Onest:Regular')] gap-[var(--space-1,4px)] items-start leading-[1.4] left-0 not-italic overflow-clip p-[var(--space-0,0px)] text-[color:var(--color-text-secondary,#c8c2d6)] text-[length:var(--font-size-caption,13px)] top-0 whitespace-nowrap" data-node-id="4658:849452" data-name="Label row">
+                <p className="relative shrink-0" data-node-id="4658:849453" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                  Новый пароль
+                </p>
+                <p className="relative shrink-0" data-node-id="4658:849454" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                  *
+                </p>
+              </div>
+              <div className="absolute content-stretch flex gap-[var(--space-0,0px)] h-[44px] items-start left-0 min-h-[40px] overflow-clip p-[var(--space-0,0px)] top-[22px] w-[358px]" data-node-id="4658:849455" data-name="Control">
+                <div className="flex-[1_0_0] h-[44px] min-w-px relative rounded-[var(--radius-full,999px)]" data-node-id="4658:849477" data-name="control/local">
+                  <div className="absolute bg-[var(--color-surface-raised,#1c1922)] border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex gap-[var(--space-2,8px)] inset-0 items-center px-[var(--component\/auth-pill\/content-padding-inline,18px)] py-[var(--space-2,8px)] rounded-[var(--radius-full,999px)]" data-node-id="4658:849478" data-name="TextInput">
+                    <div className="content-stretch flex flex-[1_0_0] gap-[var(--space-0,0px)] h-[24px] items-center min-w-px overflow-clip p-[var(--space-0,0px)] relative" data-node-id="I4658:849478;77:109" data-name="Value area">
+                      <p className="[word-break:break-word] flex-[1_0_0] font-[family-name:var(--font-family-sans,'Onest:Regular')] h-[24px] leading-[1.5] max-w-[280px] min-w-px not-italic overflow-hidden relative text-[16px] text-[color:var(--color-text-primary,#edeaf3)] text-ellipsis whitespace-nowrap" data-node-id="I4658:849478;77:110" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                        •••••••••
+                      </p>
+                    </div>
+                  </div>
+                  <div className="-translate-y-1/2 absolute content-stretch flex gap-[var(--space-2,8px)] items-center justify-center min-w-[32px] p-[var(--space-0,0px)] right-[8px] rounded-[var(--radius-full,999px)] size-[44px] top-1/2" data-node-id="4658:849479" data-name="Показать пароль" />
+                  <IconPasswordVisibility className="absolute left-[318px] size-[20px] top-[12px]" state={false} />
+                </div>
+              </div>
+            </div>
+            <div className="h-[66px] relative shrink-0 w-full" data-node-id="4658:849496" data-name="confirm-password-field">
+              <div className="[word-break:break-word] absolute content-stretch flex font-[family-name:var(--font-family-sans,'Onest:Regular')] gap-[var(--space-1,4px)] items-start leading-[1.4] left-0 not-italic overflow-clip p-[var(--space-0,0px)] text-[color:var(--color-text-secondary,#c8c2d6)] text-[length:var(--font-size-caption,13px)] top-0 whitespace-nowrap" data-node-id="4658:849497" data-name="Label row">
+                <p className="relative shrink-0" data-node-id="4658:849498" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                  Повтори новый пароль
+                </p>
+                <p className="relative shrink-0" data-node-id="4658:849499" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                  *
+                </p>
+              </div>
+              <div className="absolute content-stretch flex gap-[var(--space-0,0px)] h-[44px] items-start left-0 min-h-[40px] overflow-clip p-[var(--space-0,0px)] top-[22px] w-[358px]" data-node-id="4658:849500" data-name="Control">
+                <div className="flex-[1_0_0] h-[44px] min-w-px relative rounded-[var(--radius-full,999px)]" data-node-id="4658:849522" data-name="control/local">
+                  <div className="absolute bg-[var(--color-surface-raised,#1c1922)] border-[length:var(--border-hairline,1px)] border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex gap-[var(--space-2,8px)] inset-0 items-center px-[var(--component\/auth-pill\/content-padding-inline,18px)] py-[var(--space-2,8px)] rounded-[var(--radius-full,999px)]" data-node-id="4658:849523" data-name="TextInput">
+                    <div className="content-stretch flex flex-[1_0_0] gap-[var(--space-0,0px)] h-[24px] items-center min-w-px overflow-clip p-[var(--space-0,0px)] relative" data-node-id="I4658:849523;77:109" data-name="Value area">
+                      <p className="[word-break:break-word] flex-[1_0_0] font-[family-name:var(--font-family-sans,'Onest:Regular')] h-[24px] leading-[1.5] max-w-[280px] min-w-px not-italic overflow-hidden relative text-[16px] text-[color:var(--color-text-primary,#edeaf3)] text-ellipsis whitespace-nowrap" data-node-id="I4658:849523;77:110" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                        •••••••••
+                      </p>
+                    </div>
+                  </div>
+                  <div className="-translate-y-1/2 absolute content-stretch flex gap-[var(--space-2,8px)] items-center justify-center min-w-[32px] p-[var(--space-0,0px)] right-[8px] rounded-[var(--radius-full,999px)] size-[44px] top-1/2" data-node-id="4658:849524" data-name="Показать пароль" />
+                  <IconPasswordVisibility className="absolute left-[318px] size-[20px] top-[12px]" state={false} />
+                </div>
+              </div>
+            </div>
+            <div className="content-stretch flex gap-[var(--space-2,8px)] items-start p-[var(--space-0,0px)] relative shrink-0 w-full" data-node-id="4658:849311" data-name="password-policy">
+              <div className="h-[16px] relative shrink-0 w-[6px]" data-node-id="I4658:849311;55:20" data-name="Status icon">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgStatusIcon} />
+              </div>
+              <p className="[word-break:break-word] flex-[1_0_0] font-[family-name:var(--font-family-sans,'Onest:Regular')] leading-[1.4] min-w-px not-italic relative self-stretch text-[color:var(--color-text-secondary,#c8c2d6)] text-[length:var(--font-size-caption,13px)]" data-node-id="I4658:849311;55:22" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                Не менее 12 символов, включая цифру и специальный знак
+              </p>
+            </div>
+            <div className="h-[44px] relative shrink-0 w-[210px]" data-node-id="4658:849543" data-name="recovery-link/local">
+              <div className="absolute content-stretch flex gap-[var(--space-1,4px)] items-start left-[2px] overflow-clip p-[var(--space-0,0px)] top-[8px]" data-node-id="4658:849544" data-name="Content">
+                <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Regular')] leading-[1.5] not-italic relative shrink-0 text-[color:var(--color-text-primary,#edeaf3)] text-[length:var(--font-size-body,16px)] whitespace-nowrap" data-node-id="4658:849545" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                  Не помню текущий пароль
+                </p>
+              </div>
+              <div className="absolute bg-[var(--color-text-primary,#edeaf3)] h-[var(--border-hairline,1px)] left-[2px] top-[35px] w-[206px]" data-node-id="4658:849549" data-name="Underline" />
+            </div>
+          </div>
+          <div className="absolute content-stretch flex flex-col gap-[12px] h-[44px] items-start left-0 overflow-clip top-[366px] w-[358px]" data-node-id="4658:849313" data-name="footer">
+            <div className="content-stretch flex h-[44px] items-start justify-end overflow-clip relative shrink-0 w-full" data-node-id="4658:849315" data-name="actions">
+              <div className="bg-[var(--color-surface-inverse,#edeaf3)] content-stretch flex gap-[var(--space-2,8px)] h-[44px] items-center justify-center min-w-[40px] p-[var(--space-0,0px)] relative rounded-[var(--radius-full,999px)] shrink-0" data-node-id="4658:849316" data-name="submit-action">
+                <div className="h-[4px] relative shrink-0 w-[8px]" data-node-id="I4658:849316;191:462" data-name="Padding leading" />
+                <div className="content-stretch flex gap-[var(--space-0,0px)] items-start min-w-[32px] overflow-clip p-[var(--space-0,0px)] relative shrink-0" data-node-id="I4658:849316;191:461" data-name="Label container">
+                  <p className="[word-break:break-word] font-[family-name:var(--font-family-sans,'Onest:Medium')] leading-[1.45] not-italic relative shrink-0 text-[color:var(--color-text-on-inverse,#0b0b0c)] text-[length:var(--font-size-dense,14px)] whitespace-nowrap" data-node-id="I4658:849316;66:23" style={{ fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
+                    Сменить пароль
+                  </p>
+                </div>
+                <div className="h-[4px] relative shrink-0 w-[8px]" data-node-id="I4658:849316;191:463" data-name="Padding trailing" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="[word-break:break-word] bg-[var(--color-state-warning-bg,#3a2404)] content-stretch flex flex-col gap-[5px] items-start leading-[normal] not-italic overflow-clip p-[16px] relative rounded-[24px] shrink-0 text-[color:var(--color-state-warning-text,#f5b443)] w-[358px]" data-node-id="4615:1538" data-name="security-confirm-note">
+          <p className="font-['Onest:SemiBold'] relative shrink-0 text-[14px] whitespace-nowrap" data-node-id="4615:1539">
+            После изменения пароля
+          </p>
+          <p className="font-['Onest:Regular'] h-[40px] relative shrink-0 text-[13px] w-[326px]" data-node-id="4615:1540">
+            Ты выйдешь со всех устройств, включая текущее.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+These styles are contained in the design: caption: Font(family: "var(--font-family-sans)", style: Regular, size: var(--font-size-caption), weight: var(--font-weight-regular), lineHeight: 1.399999976158142, letterSpacing: 0), body: Font(family: "var(--font-family-sans)", style: Regular, size: var(--font-size-body), weight: var(--font-weight-regular), lineHeight: 1.5, letterSpacing: 0), dense-strong: Font(family: "var(--font-family-sans)", style: Medium, size: var(--font-size-dense), weight: var(--font-weight-medium), lineHeight: 1.4500000476837158, letterSpacing: 0).
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## icon/previous
+**Node ID:** 4597:3579
+
+Временная локальная векторная заглушка смысла «предыдущий». Один stroke-вектор и метрика совпадают с icon/chevron-down; заменить финальной иконкой через instance swap.
+
+## shared/TextInput
+**Node ID:** 77:152
+
+Однострочное поле ввода. При state=busy подпись, слоты и габариты сохраняются; Busy wave / middle использует color/surface/raised, обрезается внутренним radius/md и лежит ниже текста и иконок.
+
+## type=ghost, size=compact, state=default
+**Node ID:** 68:78
+
+Кнопка действия. busy не собран: решение открыто. Счётчик наследует цвет текста кнопки с opacity 70%.
+
+## shared/AppButton
+**Node ID:** 70:38
+
+Кнопка действия. Оси: type, size, state. primary — surface/inverse без границы; secondary — без заливки, border/default (hover border/strong); ghost — без заливки и границы, форма проявляется на hover; danger — state/danger/fill без границы. Оба размера — radius/full. Icon-only строго квадратный: regular 40×40, compact 32×32. При state=busy подпись, иконки и габариты сохраняются; волна color/surface/raised обрезается внутренним radius/full и лежит ниже содержимого.
+
+## state=open
+**Node ID:** 4734:188
+
+Показать значение.
+
+## icon/password-visibility
+**Node ID:** 4734:192
+
+Действие видимости поля: state=open|closed. 20×20, единый смысл во всех mobile-экранах.
+
+## state=closed
+**Node ID:** 4734:191
+
+Скрыть значение.
+
+## state=pending
+**Node ID:** 4615:1085
+
+Одно правило парольной политики. Форма иконки меняется вместе с цветом: точка, галочка или крест.
+
+## auth/PasswordPolicyHint
+**Node ID:** 4615:1084
+
+Правило видно до ввода. Три состояния не обвиняют пользователя ошибкой до действия; цвет не единственный носитель.
+
+## type=primary, size=regular, state=default
+**Node ID:** 4615:551
+
+Кнопка действия. busy не собран: решение открыто. Счётчик наследует цвет текста кнопки с opacity 70%.
+
+## shared/AppButton
+**Node ID:** 4615:550
+
+Кнопка действия. Оси: type, size, state. primary — surface/inverse без границы; secondary — без заливки, border/default (hover border/strong); ghost — без заливки и границы, форма проявляется на hover; danger — state/danger/fill без границы. Оба размера — radius/full. Icon-only строго квадратный: regular 40×40, compact 32×32. При state=busy подпись, иконки и габариты сохраняются; волна color/surface/raised обрезается внутренним radius/full и лежит ниже содержимого.
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

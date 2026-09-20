@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" tests="7" skipped="0" failures="2" errors="0" timestamp="2026-09-10T18:39:37" hostname="DITEK-PK" time="1.159">
+  <properties/>
+  <testcase name="staleVersionsAndChangedGrantIdentityAreConflicts()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="1.002"/>
+  <testcase name="authoritativeSuspendedGrantIsRoleNotSelectable()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.065"/>
+  <testcase name="authorityFailuresRemainTyped()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.016"/>
+  <testcase name="malformedAccessIsInvalidAndDoesNotReadAuthority()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.028"/>
+  <testcase name="noAdmissionCacheCallsAuthorityAndSignsOnEveryRequest()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.013">
+    <failure message="SessionAdmissionException[code=SESSION_STATE_STALE]" type="ru.rutcampustrack.auth.session.SessionAdmissionException">SessionAdmissionException[code=SESSION_STATE_STALE]
+	at app//ru.rutcampustrack.auth.session.SessionAdmissionService.requireIdentityMatch(SessionAdmissionService.java:204)
+	at app//ru.rutcampustrack.auth.session.SessionAdmissionService.admit(SessionAdmissionService.java:134)
+	at app//ru.rutcampustrack.auth.session.SessionAdmissionServiceTest.noAdmissionCacheCallsAuthorityAndSignsOnEveryRequest(SessionAdmissionServiceTest.java:187)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="terminalGrantIsAdmittedReadOnly()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.016"/>
+  <testcase name="admitsLiveSnapshotAndBuildsResponseFromTheSameGrant()" classname="ru.rutcampustrack.auth.session.SessionAdmissionServiceTest" time="0.011">
+    <failure message="SessionAdmissionException[code=SESSION_STATE_STALE]" type="ru.rutcampustrack.auth.session.SessionAdmissionException">SessionAdmissionException[code=SESSION_STATE_STALE]
+	at app//ru.rutcampustrack.auth.session.SessionAdmissionService.requireIdentityMatch(SessionAdmissionService.java:204)
+	at app//ru.rutcampustrack.auth.session.SessionAdmissionService.admit(SessionAdmissionService.java:134)
+	at app//ru.rutcampustrack.auth.session.SessionAdmissionServiceTest.admitsLiveSnapshotAndBuildsResponseFromTheSameGrant(SessionAdmissionServiceTest.java:81)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

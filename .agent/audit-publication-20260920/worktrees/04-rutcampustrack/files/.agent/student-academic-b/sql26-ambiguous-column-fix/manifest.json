@@ -1,0 +1,16 @@
+{
+  "status": "SOURCE_READY",
+  "scopeStatus": "READY",
+  "heavyLease": "N/A_BY_CONTRACT",
+  "baseRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "productPaths": [
+    "services/academic-service/academic-app/src/main/resources/db/migration/V26__campus_map.sql"
+  ],
+  "evidencePath": ".agent/student-academic-b/sql26-ambiguous-column-fix",
+  "preSha256": "4307D82508FB77784C47473FA8404AB7CFFBE944D41C695BF1297DD7D896CD50",
+  "preBytes": 17076,
+  "postSha256": "21B3F522634BE7505FB73A613BF5BCB68C1584B7A1724BB45EBA5C767E4058A0",
+  "postBytes": 17109,
+  "runtime": "N/A by frozen contract; SQL execution prohibited",
+  "diffSemantics": "Single lookup alias qualification; existing asset_record assignment preserved"
+}

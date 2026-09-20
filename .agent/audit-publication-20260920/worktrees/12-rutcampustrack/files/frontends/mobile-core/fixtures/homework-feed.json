@@ -1,0 +1,41 @@
+{
+  "semester": {
+    "id": "9",
+    "name": "Осень 2026",
+    "dateFrom": "2026-09-01",
+    "dateTo": "2026-12-31"
+  },
+  "from": "2026-09-01",
+  "to": "2026-09-30",
+  "serverNow": "2026-09-07T09:30:00Z",
+  "items": [
+    {
+      "id": "142",
+      "subject": {
+        "id": "101",
+        "name": "Основы программирования"
+      },
+      "title": "Практика по алгоритмам",
+      "description": "Решить задачи из методички.",
+      "link": "https://ruttrack.example/homework/142",
+      "lessonDate": "2026-09-01",
+      "lessonNumber": 1,
+      "completed": true,
+      "completedAt": "2026-09-07T09:30:00Z"
+    },
+    {
+      "id": "848636",
+      "subject": {
+        "id": "102",
+        "name": "Компьютерные сети"
+      },
+      "title": "Отчёт по лабораторной",
+      "description": "Оформить результаты эксперимента.",
+      "link": null,
+      "lessonDate": "2026-09-02",
+      "lessonNumber": 2,
+      "completed": false,
+      "completedAt": null
+    }
+  ]
+}

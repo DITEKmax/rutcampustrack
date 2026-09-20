@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-09-11T11:20:31" hostname="DITEK-PK" time="7.991">
+  <properties/>
+  <testcase name="cookieLogoutAuthorityFailureReturns503WithoutClearingCookie()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="7.105"/>
+  <testcase name="logoutSupportsCookieOnlyAndBearerOnlyWithDurableServiceDelegation()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.212"/>
+  <testcase name="currentSessionUsesAuthoritativeIdentityAndNoStore()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.025"/>
+  <testcase name="currentPasswordInvalidIsAnHttp400ProblemWithoutCache()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.244"/>
+  <testcase name="successfulLogoutAllAndPasswordChangeInvalidateTicketsAfterDurableService()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.011"/>
+  <testcase name="foreignAuthenticatedPrincipalCannotRevokeAnotherSessionCookie()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.037"/>
+  <testcase name="committedChangesKeep204AndClearCookieWhenRedisCleanupFails()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.072"/>
+  <testcase name="bearerLogoutAuthorityFailureDoesNotInvalidateTicketsOrClearCookie()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.039"/>
+  <testcase name="publicAuthResponsesAreNoStoreAndTokenResponseKeepsTmaRefreshField()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.236"/>
+  <system-out><![CDATA[14:20:35.479 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.2.Final
+14:20:38.061 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+14:20:38.062 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+14:20:38.068 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 5 ms
+14:20:38.890 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+14:20:38.890 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+14:20:38.890 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+14:20:39.140 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+14:20:39.140 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+14:20:39.140 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+14:20:39.180 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+14:20:39.180 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+14:20:39.181 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+14:20:39.182 [Test worker] WARN ru.rutcampustrack.auth.controller.AuthSessionController -- Optional WebSocket ticket cleanup failed after committed auth-session change: RedisConnectionFailureException
+14:20:39.205 [Test worker] WARN ru.rutcampustrack.auth.controller.AuthSessionController -- Optional WebSocket ticket cleanup failed after committed auth-session change: RedisConnectionFailureException
+14:20:39.221 [Test worker] WARN ru.rutcampustrack.auth.controller.AuthSessionController -- Optional WebSocket ticket cleanup failed after committed auth-session change: RedisConnectionFailureException
+14:20:39.252 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+14:20:39.252 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+14:20:39.252 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.15.11\a38b16385e867f59a641330f0362ebe742788ed8\byte-buddy-agent-1.15.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

@@ -1,0 +1,42 @@
+{
+  "schema": "rct.student-requests-h68-process-drain-prefixed.v1",
+  "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+  "runnerSha256": "127e02cec1cc01c5048e378178f6c0bb5137d1b4b941241292aa8cfc17516513",
+  "childPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h68-process-drain-fix\\synthetic-stream-child.mjs",
+  "childSha256": "23638f9fbd68e3a04628f8b773094118b188d19eb93c73c4d8d6a30e47acd1b5",
+  "command": "AST-extracted production Invoke-ExternalSafe -> node synthetic-stream-child.mjs both 1048576; TimeoutSeconds=1; AllowFailure",
+  "controlledRuntime": "Synthetic Node child only; no network, ports, Docker, Gradle, credentials or keys.",
+  "repro": {
+    "largeSimultaneous": {
+      "mode": "both",
+      "exitCode": 124,
+      "stdoutLength": 0,
+      "stderrLength": 0,
+      "outputLength": 26,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outputPrefix": "external command timed out",
+      "typedProperties": [
+        "ExitCode",
+        "Output",
+        "Stdout",
+        "Stderr"
+      ]
+    },
+    "expected": {
+      "exitCode": 0,
+      "stdoutLength": 1048576,
+      "stderrLength": 1048576
+    },
+    "reproduced": {
+      "blockedPipeTimeout": true,
+      "stdoutMissing": true,
+      "stderrMissing": true
+    }
+  },
+  "actualDefect": "Timed production branch calls WaitForExit before draining redirected stdout/stderr. A child writing 1 MiB to both pipes blocks and is reported as timeout 124 before complete output is observed.",
+  "limitations": [
+    "This prefixed record captures only the runner pre-fix reproduction; probe secret pre-fix evidence is recorded by the companion actual-entrypoint check.",
+    "No real credentials, keys, network, ports, Docker or Gradle were used."
+  ]
+}

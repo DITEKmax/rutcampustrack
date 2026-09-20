@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+case "$1" in
+  run)
+    exit 0
+    ;;
+  compose)
+    if [ "$MOCK_COMPOSE_EXIT" -ne 0 ]; then
+      echo "synthetic compose failure without error keyword" >&2
+      exit "$MOCK_COMPOSE_EXIT"
+    fi
+    exit 0
+    ;;
+  *)
+    echo "unexpected synthetic docker invocation" >&2
+    exit 99
+    ;;
+esac

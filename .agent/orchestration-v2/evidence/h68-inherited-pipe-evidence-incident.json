@@ -1,0 +1,18 @@
+{
+  "source": "Lead tool messages; detached-run original bytes no longer retained",
+  "rootIndependentlyReadDetachedReport": false,
+  "detachedReportSha256": null,
+  "reportedHelperExit": 124,
+  "reportedHelperMilliseconds": 2679,
+  "reportedOuterExit": 0,
+  "reportedOuterMilliseconds": 3433,
+  "reportedParentPid": 15756,
+  "reportedDescendantPid": 13580,
+  "reportedRunnerDescendantCleanup": false,
+  "reportedFixtureExactPidCleanup": true,
+  "currentRootSnapshot": ".agent/orchestration-v2/evidence/h68-inherited-pipe-final-observed.json",
+  "currentRootSnapshotSha256": "9CEA8E7DB462E8CA36A71351D170234D9A37F86CAC094E77AA10218A439D09A4",
+  "currentSnapshotHelperExit": 0,
+  "currentSnapshotHelperMilliseconds": 140,
+  "limitation": "Do not treat lead-reported detached run as independently verifiable preserved report. Latest current artifact is separate no-retention run. Source hashes unchanged."
+}

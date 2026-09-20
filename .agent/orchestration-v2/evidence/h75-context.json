@@ -1,0 +1,11 @@
+{
+  "start": "2026-09-19T21:34:19.9316168Z",
+  "identity": "ditek-pk\\maksd",
+  "base_revision": "f59b3b9951c971bde42265ae67df8754dc594a58",
+  "testHash": "50E533093C36D1B0409D6F27CEE01859310CBE115B02CD7C3BE1C99BBD88F621",
+  "subjectServiceHash": "377BF9B1E2F6E2B88529DD362177F0C47318D7A6C31561C4E516FA89491AFFA3",
+  "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+  "testcontainers_reuse_enable": "false",
+  "exit_code": 0,
+  "end": "2026-09-19T21:35:26.7748959Z"
+}

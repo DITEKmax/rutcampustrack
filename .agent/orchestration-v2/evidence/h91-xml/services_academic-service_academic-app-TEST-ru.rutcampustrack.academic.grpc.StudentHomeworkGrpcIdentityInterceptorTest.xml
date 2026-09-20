@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2026-09-20T12:39:19" hostname="DITEK-PK" time="1.656">
+  <properties/>
+  <testcase name="groupRequestIsDeniedBeforeOwnUserLookup()" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="1.081"/>
+  <testcase name="invalidTokenClosesMutationWithUnauthenticated()" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.026"/>
+  <testcase name="peerRequestIsDeniedBeforeOwnUserLookup()" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.003"/>
+  <testcase name="validTokenBindsClaimsForHomeworkRead()" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.051"/>
+  <testcase name="validTokenBindsClaimsForStudentProjectionRead()" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.006"/>
+  <testcase name="wrongRoleRequestIsDeniedBeforeOwnUserLookup()" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.003"/>
+  <testcase name="homeworkReadRequiresSignedIdentityBeforeRepositoryLookup()" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.004"/>
+  <testcase name="missing token GetCampusMapManifest" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.025"/>
+  <testcase name="bad token GetCampusMapManifest" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.006"/>
+  <testcase name="missing token GetCampusFloorPlan" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.005"/>
+  <testcase name="bad token GetCampusFloorPlan" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.01"/>
+  <testcase name="missing token ReadCampusMapAsset" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.006"/>
+  <testcase name="bad token ReadCampusMapAsset" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.006"/>
+  <testcase name="terminalOwnReadUsesSignedGrantWhenLegacyUserFieldsDisagree()" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.27"/>
+  <testcase name="validTokenBindsClaimsOnlyForHomeworkMutation()" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.005"/>
+  <testcase name="GetCampusMapManifest" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.003"/>
+  <testcase name="GetCampusFloorPlan" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.003"/>
+  <testcase name="ReadCampusMapAsset" classname="ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

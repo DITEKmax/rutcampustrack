@@ -1,0 +1,510 @@
+﻿{
+  "schema": "rct.student-requests-runtime.v1",
+  "status": "PASS",
+  "runtime": "NOT_RUN",
+  "scope": "R11 Docker IPAM and owned-launch proof; product services are NOT_RUN",
+  "runId": "proof-18549ed38058",
+  "unionRevision": null,
+  "source": {
+    "mode": "network-proof",
+    "sourceAnchor": "requests-runtime/runner.ps1 -NetworkProof production branch",
+    "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+    "runnerSha256": "67f6d0e471fce5dc7835023d32bb5bd3d26eeb00426ad9ad7a7c2c62409fca3d"
+  },
+  "sourceValidation": {},
+  "images": {},
+  "jars": {},
+  "ports": {
+    "edge": 18514,
+    "gatewayDiagnostics": 18515,
+    "bffDiagnostics": 18516,
+    "attendanceDiagnostics": 18517,
+    "authDiagnostics": 18518,
+    "scheduleDiagnostics": 18519,
+    "academicDiagnostics": 18520
+  },
+  "commands": [
+    {
+      "at": "2026-09-15T20:38:31.9192408+00:00",
+      "phase": "network-proof-preflight",
+      "command": "docker image inspect nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+      "purpose": "verify existing pinned nginx image for network proof",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:32.3534440+00:00",
+      "phase": "network-proof-create",
+      "command": "docker network ls -q",
+      "purpose": "list Docker networks",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:32.5801965+00:00",
+      "phase": "network-proof-create",
+      "command": "docker network inspect f4f5b03081ca --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:32.7827594+00:00",
+      "phase": "network-proof-create",
+      "command": "docker network inspect 9dfcba98bf5c --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:32.9941167+00:00",
+      "phase": "network-proof-create",
+      "command": "docker network inspect 93f864db1ced --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:33.2088816+00:00",
+      "phase": "network-proof-create",
+      "command": "docker network inspect 0928fbedc998 --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:33.4145752+00:00",
+      "phase": "network-proof-create",
+      "command": "docker network inspect ed5c86acb58b --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:33.6425242+00:00",
+      "phase": "network-proof-create",
+      "command": "docker network inspect f9d4d882a8b6 --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:33.8441255+00:00",
+      "phase": "network-proof-create",
+      "command": "docker network inspect de2bdbd0bdf9 --format \"{{range .IPAM.Config}}{{println .Subnet}}{{end}}\"",
+      "purpose": "inspect Docker network subnets",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:34.3556086+00:00",
+      "phase": "network-proof-create",
+      "command": "docker network create --driver bridge --subnet 172.30.185.0/24 --gateway 172.30.185.1 --ip-range 172.30.185.128/25 --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=proof-18549ed38058 rct-requests-proof-18549ed38058-network",
+      "purpose": "create collision-checked owned Docker network with edge-excluding IPAM range",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:34.5559729+00:00",
+      "phase": "network-proof-create",
+      "command": "docker network inspect --format \"{{json .IPAM.Config}}\" 4a41a6559e3bae9de48e2dbd97f4c210bce3a8ab731dbf8383448df58fe893a5",
+      "purpose": "verify actual proof network IPAM",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:34.7840392+00:00",
+      "phase": "network-proof-create",
+      "command": "docker network inspect --format \"{{.Name}}|{{index .Labels \\\"rct.runtime-owner\\\"}}|{{index .Labels \\\"rct.runtime-run\\\"}}\" 4a41a6559e3bae9de48e2dbd97f4c210bce3a8ab731dbf8383448df58fe893a5",
+      "purpose": "verify owned proof network labels",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:35.2655550+00:00",
+      "phase": "network-proof-launch",
+      "command": "docker create --pull=never --name rct-requests-proof-18549ed38058-nginx --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=proof-18549ed38058 --network rct-requests-proof-18549ed38058-network --ip 172.30.185.10 nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 nginx -g \"daemon off;\"",
+      "purpose": "create owned rct-requests-proof-18549ed38058-nginx container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:35.6299801+00:00",
+      "phase": "network-proof-launch",
+      "command": "docker create --pull=never --name rct-requests-proof-18549ed38058-dynamic --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=proof-18549ed38058 --network rct-requests-proof-18549ed38058-network nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 nginx -g \"daemon off;\"",
+      "purpose": "create owned rct-requests-proof-18549ed38058-dynamic container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:36.7901124+00:00",
+      "phase": "network-proof-launch",
+      "command": "docker start 22cb661231aec4df6c75dca7278ea02415be6d6865495302ea5932a884698426",
+      "purpose": "start owned rct-requests-proof-18549ed38058-dynamic container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:36.9957103+00:00",
+      "phase": "network-proof-launch",
+      "command": "docker inspect --format \"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}\" 22cb661231aec4df6c75dca7278ea02415be6d6865495302ea5932a884698426",
+      "purpose": "verify dynamic proof container address",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:37.5825393+00:00",
+      "phase": "network-proof-launch",
+      "command": "docker start a85bdadc32cf046295f73d9ca2c56cc01d848e8d09484342fd8c8140a5a536de",
+      "purpose": "start static edge proof container",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:37.8021774+00:00",
+      "phase": "network-proof-launch",
+      "command": "docker inspect --format \"{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}\" a85bdadc32cf046295f73d9ca2c56cc01d848e8d09484342fd8c8140a5a536de",
+      "purpose": "verify reserved edge IPv4 address",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:38.0090695+00:00",
+      "phase": "network-proof-launch",
+      "command": "docker inspect --format \"{{.Name}}|{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" a85bdadc32cf046295f73d9ca2c56cc01d848e8d09484342fd8c8140a5a536de",
+      "purpose": "verify static edge proof container labels",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:38.2429819+00:00",
+      "phase": "network-proof-launch",
+      "command": "docker inspect --format \"{{.Name}}|{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" 22cb661231aec4df6c75dca7278ea02415be6d6865495302ea5932a884698426",
+      "purpose": "verify dynamic proof container labels",
+      "exitCode": 0,
+      "allowFailure": false,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:38.6151888+00:00",
+      "phase": "network-proof-start-failure",
+      "command": "docker create --pull=never --name rct-requests-proof-18549ed38058-invalid-exec --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=proof-18549ed38058 --network rct-requests-proof-18549ed38058-network --entrypoint /rct-proof/missing-executable nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+      "purpose": "create owned rct-requests-proof-18549ed38058-invalid-exec container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:39.1234179+00:00",
+      "phase": "network-proof-start-failure",
+      "command": "docker start 9a785598fb9e7e9b1c6a7c135363316295ee4f44d9abc31b71970c17ab42ae67",
+      "purpose": "start owned rct-requests-proof-18549ed38058-invalid-exec container",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:39.3905153+00:00",
+      "phase": "network-proof-pull-policy",
+      "command": "docker image inspect nginx@sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "purpose": "verify missing-image proof reference is absent",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:39.6066916+00:00",
+      "phase": "network-proof-pull-policy",
+      "command": "docker ps -a --filter name=^rct-requests-proof-18549ed38058-missing$ --format {{.ID}}",
+      "purpose": "verify missing-image proof name is unused",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:39.8191373+00:00",
+      "phase": "network-proof-pull-policy",
+      "command": "docker create --pull=never --name rct-requests-proof-18549ed38058-missing --label rct.runtime-owner=student-requests-gate --label rct.runtime-run=proof-18549ed38058 --network rct-requests-proof-18549ed38058-network nginx@sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "purpose": "create owned rct-requests-proof-18549ed38058-missing container",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:40.0476114+00:00",
+      "phase": "network-proof-pull-policy",
+      "command": "docker container inspect --format \"{{.Id}}|{{.Name}}|{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" rct-requests-proof-18549ed38058-missing",
+      "purpose": "recover ambiguous owned rct-requests-proof-18549ed38058-missing create",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:40.2632298+00:00",
+      "phase": "network-proof-pull-policy",
+      "command": "docker ps -a --filter name=^rct-requests-proof-18549ed38058-missing$ --format {{.ID}}",
+      "purpose": "verify missing-image create left no container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:40.5166473+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" 9a785598fb9e7e9b1c6a7c135363316295ee4f44d9abc31b71970c17ab42ae67",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:40.7650299+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker rm -f 9a785598fb9e7e9b1c6a7c135363316295ee4f44d9abc31b71970c17ab42ae67",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:40.9822721+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker container inspect 9a785598fb9e7e9b1c6a7c135363316295ee4f44d9abc31b71970c17ab42ae67",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:41.1939188+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" 22cb661231aec4df6c75dca7278ea02415be6d6865495302ea5932a884698426",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:41.7561895+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker rm -f 22cb661231aec4df6c75dca7278ea02415be6d6865495302ea5932a884698426",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:41.9580972+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker container inspect 22cb661231aec4df6c75dca7278ea02415be6d6865495302ea5932a884698426",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:42.1621631+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker container inspect --format \"{{index .Config.Labels \\\"rct.runtime-owner\\\"}}|{{index .Config.Labels \\\"rct.runtime-run\\\"}}\" a85bdadc32cf046295f73d9ca2c56cc01d848e8d09484342fd8c8140a5a536de",
+      "purpose": "inspect owned container before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:42.7362346+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker rm -f a85bdadc32cf046295f73d9ca2c56cc01d848e8d09484342fd8c8140a5a536de",
+      "purpose": "remove owned runtime container",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:43.1017004+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker container inspect a85bdadc32cf046295f73d9ca2c56cc01d848e8d09484342fd8c8140a5a536de",
+      "purpose": "verify owned container removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:43.4350064+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker network inspect --format \"{{index .Labels \\\"rct.runtime-owner\\\"}}|{{index .Labels \\\"rct.runtime-run\\\"}}\" 4a41a6559e3bae9de48e2dbd97f4c210bce3a8ab731dbf8383448df58fe893a5",
+      "purpose": "inspect owned network before cleanup",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:44.0217214+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker network rm 4a41a6559e3bae9de48e2dbd97f4c210bce3a8ab731dbf8383448df58fe893a5",
+      "purpose": "remove owned runtime network",
+      "exitCode": 0,
+      "allowFailure": true,
+      "secrets": "redacted"
+    },
+    {
+      "at": "2026-09-15T20:38:44.2184203+00:00",
+      "phase": "network-proof-cleanup",
+      "command": "docker network inspect 4a41a6559e3bae9de48e2dbd97f4c210bce3a8ab731dbf8383448df58fe893a5",
+      "purpose": "verify owned network removal",
+      "exitCode": 1,
+      "allowFailure": true,
+      "secrets": "redacted"
+    }
+  ],
+  "environment": {
+    "hostOs": "Microsoft Windows NT 10.0.26200.0",
+    "powershell": "7.6.5",
+    "taskRoot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime",
+    "unionRepo": null,
+    "pwaDist": null,
+    "edgeOrigin": "https://127.0.0.1:18514",
+    "runtimeMode": "network-proof",
+    "secrets": "redacted; no ambient credentials read"
+  },
+  "phases": [
+    {
+      "name": "network-proof-preflight",
+      "status": "START",
+      "message": "verify one existing pinned local image before creating the proof network",
+      "at": "2026-09-15T20:38:31.5715983+00:00"
+    },
+    {
+      "name": "network-proof-preflight",
+      "status": "PASS",
+      "message": "the pinned nginx image exists locally; no image pull is permitted",
+      "at": "2026-09-15T20:38:31.9537070+00:00"
+    },
+    {
+      "name": "network-proof-create",
+      "status": "PASS",
+      "message": "production network helper created the exact gateway and edge-excluding IPAM range",
+      "at": "2026-09-15T20:38:34.7866631+00:00"
+    },
+    {
+      "name": "network-proof-launch",
+      "status": "PASS",
+      "message": "dynamic allocation stayed in .128/25 and static .10 became operational only after start",
+      "at": "2026-09-15T20:38:38.2477575+00:00"
+    },
+    {
+      "name": "network-proof-start-failure",
+      "status": "PASS",
+      "message": "invalid executable failed at docker start after create and immediate ownership registration",
+      "at": "2026-09-15T20:38:39.1885987+00:00"
+    },
+    {
+      "name": "network-proof-pull-policy",
+      "status": "PASS",
+      "message": "create/start and missing-image paths all carried --pull=never and never requested a download",
+      "at": "2026-09-15T20:38:40.2900510+00:00"
+    },
+    {
+      "name": "network-proof-cleanup",
+      "status": "START",
+      "message": "remove only proof-owned containers and network, then verify absence",
+      "at": "2026-09-15T20:38:40.2902612+00:00"
+    },
+    {
+      "name": "network-proof-cleanup",
+      "status": "PASS",
+      "message": "proof-owned resources were removed and verified absent",
+      "at": "2026-09-15T20:38:44.2266536+00:00"
+    }
+  ],
+  "network": {
+    "existingSubnets": [
+      "172.21.0.0/16",
+      "172.18.0.0/16",
+      "172.17.0.0/16",
+      "172.19.0.0/16",
+      "172.22.0.0/16"
+    ],
+    "collisionChecked": true,
+    "createRecovery": {
+      "status": "NOT_NEEDED"
+    },
+    "id": "4a41a6559e3bae9de48e2dbd97f4c210bce3a8ab731dbf8383448df58fe893a5",
+    "name": "rct-requests-proof-18549ed38058-network",
+    "subnet": "172.30.185.0/24",
+    "gateway": "172.30.185.1",
+    "dynamicIpRange": "172.30.185.128/25",
+    "nginxIp": "172.30.185.10",
+    "staticEdgeExcludedFromDynamicRange": true
+  },
+  "fixture": {},
+  "assertions": {},
+  "cleanup": {
+    "status": "PASS",
+    "ownedContainers": [
+      "a85bdadc32cf046295f73d9ca2c56cc01d848e8d09484342fd8c8140a5a536de",
+      "22cb661231aec4df6c75dca7278ea02415be6d6865495302ea5932a884698426",
+      "9a785598fb9e7e9b1c6a7c135363316295ee4f44d9abc31b71970c17ab42ae67"
+    ],
+    "removedContainers": [
+      "9a785598fb9e7e9b1c6a7c135363316295ee4f44d9abc31b71970c17ab42ae67",
+      "22cb661231aec4df6c75dca7278ea02415be6d6865495302ea5932a884698426",
+      "a85bdadc32cf046295f73d9ca2c56cc01d848e8d09484342fd8c8140a5a536de"
+    ],
+    "verifiedAbsentContainers": [
+      "9a785598fb9e7e9b1c6a7c135363316295ee4f44d9abc31b71970c17ab42ae67",
+      "22cb661231aec4df6c75dca7278ea02415be6d6865495302ea5932a884698426",
+      "a85bdadc32cf046295f73d9ca2c56cc01d848e8d09484342fd8c8140a5a536de"
+    ],
+    "ownedNetwork": "4a41a6559e3bae9de48e2dbd97f4c210bce3a8ab731dbf8383448df58fe893a5",
+    "networkRemoved": true,
+    "networkVerifiedAbsent": true,
+    "keysRemoved": false,
+    "artifactRoot": null,
+    "artifactRemoved": false,
+    "artifactVerifiedAbsent": false,
+    "errors": []
+  },
+  "limitations": [
+    "This leaf does not claim runtime PASS; a full invocation records Docker, edge, I1 and I2 evidence for the root-owned runtime lease.",
+    "BFF exposes actuator metrics but no Prometheus registry; I2 uses /actuator/metrics/http.server.requests with an exact URI tag.",
+    "The accepted Academic and Schedule SQL seeds are read-only references outside this scope."
+  ],
+  "networkProof": {
+    "status": "PASS",
+    "subnet": "172.30.185.0/24",
+    "image": "nginx@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+    "dynamicAddress": "172.30.185.128",
+    "edgeAddress": "172.30.185.10",
+    "maxNetworks": 1,
+    "maxContainersExpected": 3,
+    "maxContainersWorstCase": 4,
+    "hostPorts": [],
+    "productServicesStarted": false,
+    "pullPolicy": "--pull=never",
+    "invalidExecStartFailure": true,
+    "invalidExecContainerRegistered": true,
+    "missingImageAbsent": true,
+    "missingContainerAbsent": true,
+    "pullPolicyVerified": true
+  }
+}

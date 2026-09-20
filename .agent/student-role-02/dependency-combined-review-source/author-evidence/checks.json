@@ -1,0 +1,186 @@
+{
+  "schema": "rct.dependency-checks.v1",
+  "status": "VERIFIED_PENDING_FRESH_SOL_REVIEW",
+  "risk": "S2",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "branch": "codex/student-role-02-dependency-checks",
+  "recordedAt": "2026-09-07T20:20:00Z",
+  "environment": {
+    "os": "Windows 11 10.0 amd64",
+    "java": "21.0.10 Microsoft LTS",
+    "gradle": "8.12 wrapper",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "docker": "Docker Desktop Linux engine through approved elevated tool context"
+  },
+  "contract": ".agent/student-role-02/dependency-checks/contract.md",
+  "frozenInput": {
+    "manifest": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/student-role-02/dependency-review-source/manifest.json",
+    "manifestSha256": "B4F2D0D344C0CBA851D4EEF6A2B1A36139CD7D63A5E0A99A11DD03B936EAF1EB",
+    "fileCount": 26,
+    "hashByteCheck": {
+      "command": "source manifest hash/byte comparison before implementation",
+      "exitCode": 0,
+      "result": "26/26 matched",
+      "evidence": "baseline.md"
+    }
+  },
+  "checks": [
+    {
+      "id": "head",
+      "command": "git rev-parse HEAD",
+      "exitCode": 0,
+      "result": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e"
+    },
+    {
+      "id": "branch",
+      "command": "git branch --show-current",
+      "exitCode": 0,
+      "result": "codex/student-role-02-dependency-checks"
+    },
+    {
+      "id": "docker-preflight",
+      "command": "docker ps --format \"table {{.ID}}\\t{{.Image}}\\t{{.Status}}\"",
+      "exitCode": 0,
+      "result": "Docker Engine available; zero containers before/after bounded runs"
+    },
+    {
+      "id": "openapi-update-runs",
+      "commands": [
+        ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.integration.OpenApiSnapshotIT\" -Popenapi.snapshot.update=true --console=plain",
+        ".\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --tests \"ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT\" -Popenapi.snapshot.update=true --console=plain",
+        ".\\gradlew.bat :services:auth-service:auth-app:integrationTest --tests \"ru.rutcampustrack.auth.integration.OpenApiSnapshotIT\" -Popenapi.snapshot.update=true --console=plain",
+        ".\\gradlew.bat :services:schedule-service:schedule-app:integrationTest --tests \"ru.rutcampustrack.schedule.integration.OpenApiSnapshotIT\" -Popenapi.snapshot.update=true --console=plain",
+        ".\\gradlew.bat :services:notification-service:notification-app:integrationTest --tests \"ru.rutcampustrack.notification.OpenApiSnapshotIT\" -Popenapi.snapshot.update=true --console=plain",
+        ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:integrationTest --tests \"ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT\" -Popenapi.snapshot.update=true --console=plain"
+      ],
+      "exitCodes": [0, 0, 0, 0, 0, 0],
+      "result": "Java-first exports passed; only documented semantic deltas accepted",
+      "evidence": "snapshot-diff.md"
+    },
+    {
+      "id": "openapi-no-update-final",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.integration.OpenApiSnapshotIT\" :services:attendance-service:attendance-app:integrationTest --tests \"ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT\" :services:auth-service:auth-app:integrationTest --tests \"ru.rutcampustrack.auth.integration.OpenApiSnapshotIT\" :services:schedule-service:schedule-app:integrationTest --tests \"ru.rutcampustrack.schedule.integration.OpenApiSnapshotIT\" :services:notification-service:notification-app:integrationTest --tests \"ru.rutcampustrack.notification.OpenApiSnapshotIT\" :services:mobile-bff:mobile-bff-app:integrationTest --tests \"ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT\" --rerun-tasks --no-parallel --console=plain",
+      "exitCode": 0,
+      "duration": "5m30s",
+      "result": "six suites, nine tests, failures/errors/skipped 0",
+      "evidence": "snapshot-diff.md; service build/test-results/integrationTest XML reports",
+      "artifacts": [
+        "services/academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.integration.OpenApiSnapshotIT.xml",
+        "services/attendance-service/attendance-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT.xml",
+        "services/auth-service/auth-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.auth.integration.OpenApiSnapshotIT.xml",
+        "services/schedule-service/schedule-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.schedule.integration.OpenApiSnapshotIT.xml",
+        "services/notification-service/notification-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.notification.OpenApiSnapshotIT.xml",
+        "services/mobile-bff/mobile-bff-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.mobilebff.contractexport.OpenApiSnapshotIT.xml"
+      ]
+    },
+    {
+      "id": "mobile-core-generated-types",
+      "commands": [
+        "npm run generate:types",
+        "npm run generate:types:check"
+      ],
+      "cwd": "frontends",
+      "exitCodes": [0, 0],
+      "result": "generated hash e991067b2f7b5fecda5bb1542f34586537e12771a83444733fb5d8f841b62b43 matches check",
+      "evidence": "snapshot-diff.md"
+    },
+    {
+      "id": "event-schema-whitelist",
+      "command": ".\\gradlew.bat :services:shared:shared-events:test --tests \"ru.rutcampustrack.shared.events.EventSchemaCoverageTest\" --console=plain",
+      "exitCode": 0,
+      "result": "50 tests, failures/errors/skipped 0; exactly two homework entries added",
+      "evidence": "services/shared/shared-events/build/test-results/test/TEST-ru.rutcampustrack.shared.events.EventSchemaCoverageTest.xml"
+    },
+    {
+      "id": "homework-producer-contract",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.events.HomeworkNotificationContractIT\" --console=plain",
+      "exitCode": 0,
+      "duration": "56s",
+      "result": "2 tests, failures/errors/skipped 0; real producer/outbox envelopes validate both schemas",
+      "evidence": "services/academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.events.HomeworkNotificationContractIT.xml"
+    },
+    {
+      "id": "bff-dynamic-port",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:integrationTest --tests \"ru.rutcampustrack.mobilebff.runtime.StudentHttpGrpcAuthIT\" --tests \"ru.rutcampustrack.mobilebff.runtime.StudentHomeworkHttpGrpcIT\" --console=plain",
+      "exitCode": 0,
+      "duration": "50s",
+      "result": "19 tests, failures/errors/skipped 0; test-only grpc.server.port=0 and signed HTTP→gRPC boundary retained",
+      "evidence": "services/mobile-bff/mobile-bff-app/build/test-results/integrationTest/"
+    },
+    {
+      "id": "renderer-narrow-diagnostic",
+      "command": ".\\gradlew.bat :services:document-renderer-service:document-renderer-app:test --tests \"ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterTest\" :services:document-renderer-service:document-renderer-app:jacocoTestReport :services:document-renderer-service:document-renderer-app:jacocoTestCoverageVerification --console=plain",
+      "exitCode": 1,
+      "expected": true,
+      "result": "45% coverage because the narrow selection omitted other handwritten renderer tests; no product change",
+      "correction": "run full renderer test task before JaCoCo report and verification"
+    },
+    {
+      "id": "renderer-full-coverage",
+      "command": ".\\gradlew.bat :services:document-renderer-service:document-renderer-app:test :services:document-renderer-service:document-renderer-app:jacocoTestReport :services:document-renderer-service:document-renderer-app:jacocoTestCoverageVerification --console=plain",
+      "exitCode": 0,
+      "result": "10 tests, failures/errors/skipped 0; line 100/133 (75.19%), class 6/8 (75%); existing 60% floor preserved",
+      "evidence": "services/document-renderer-service/document-renderer-app/build/reports/jacoco/test/jacocoTestReport.xml"
+    },
+    {
+      "id": "push-library-compatibility",
+      "command": ".\\gradlew.bat :services:notification-service:notification-app:test --tests \"ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest\" --console=plain",
+      "exitCode": 0,
+      "duration": "16s",
+      "result": "1 test; actual web-push 5.1.2 PushService.send to loopback returns 201 and headers/body/signature/encryption assertions pass",
+      "evidence": "services/notification-service/notification-app/build/test-results/test/TEST-ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest.xml"
+    },
+    {
+      "id": "git-diff-check",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "no whitespace errors"
+    },
+    {
+      "id": "scope-status",
+      "command": "git status --porcelain=v1 --untracked-files=all",
+      "exitCode": 0,
+      "result": "40 tracked diff paths and 19 bounded untracked source/evidence paths plus foreign imported work; no staged paths and no commit",
+      "evidence": "source-manifest.json"
+    },
+    {
+      "id": "security-handoff-high-critical",
+      "command": "pinned Trivy rootfs scan over eight rebuilt BootJARs, then severity HIGH,CRITICAL gate",
+      "exitCode": 0,
+      "source": "dependency-security handoff",
+      "result": "1,141 package records in 8 JARs; 0 HIGH and 0 CRITICAL; full report retains 57 MEDIUM",
+      "evidence": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/dependency-security/.agent/student-role-02/runtime/checks.json"
+    },
+    {
+      "id": "git-stat-refresh-diagnostic",
+      "command": "git update-index --refresh -- docs/openapi/academic.json",
+      "exitCode": 1,
+      "expected": true,
+      "result": "shared Git object database is read-only in this environment; content comparison remains equal after EOL normalization",
+      "correction": "leave index/worktree untouched; classify academic snapshot as generated-no-semantic-delta"
+    }
+  ],
+  "runtimeEvidence": {
+    "status": "bounded-integration-runtime-verified",
+    "details": "Academic, BFF, notification and snapshot tests started actual Spring contexts and Testcontainers-backed dependencies; task-owned loopback push server was used; all Docker containers were cleaned.",
+    "artifact": "runtime-evidence.md",
+    "productionRuntime": "not applicable; no deployment or external endpoint"
+  },
+  "diff": {
+    "command": "git diff --ignore-space-at-eol --numstat",
+    "exitCode": 0,
+    "trackedFiles": 40,
+    "contentAwareAdditions": 573,
+    "contentAwareDeletions": 462,
+    "semanticSnapshotDelta": "documented in snapshot-diff.md; raw generated-file EOL churn intentionally retained",
+    "manifest": "source-manifest.json"
+  },
+  "limitations": [
+    "Fresh independent Sol high review remains required before S2 acceptance.",
+    "This worker does not claim full-role, PWA/TMA, genuine Telegram-host or broad root check acceptance.",
+    "The full dependency rootfs report has expected exit 1 for 57 MEDIUM records; the HIGH/CRITICAL gate is exit 0.",
+    "The combined no-update invocation previously failed in sandbox before snapshot assertions because Docker pipe access was unavailable; the elevated rerun passed exit 0.",
+    "The academic snapshot is semantically equal to HEAD; Git stat-cache refresh could not write the shared object database and was recorded as an environment diagnostic."
+  ]
+}

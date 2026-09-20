@@ -1,0 +1,26 @@
+ M event-schemas/excuse.decided.json
+ M event-schemas/excuse.requested.json
+ M event-schemas/late_checkin.decided.json
+ M services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java
+ M services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java
+ M services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java
+ M services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
+ M services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java
+ M services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java
+ M services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java
+ M services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventPublisher.java
+ M services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java
+ M services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java
+ M services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java
+?? .agent/checks.json
+?? .agent/requests-domain-checkpoint.md
+?? .agent/requests-domain-evidence.md
+?? .agent/requests-domain-manifest.yaml
+?? .agent/requests-domain-scope.md
+?? .agent/requests-domain-summary.md
+?? .agent/student-role-02/
+?? services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java
+?? services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java
+?? services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java
+?? services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/
+?? services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/

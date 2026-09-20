@@ -1,0 +1,11 @@
+gradle.afterProject { candidate ->
+    if (candidate.path == ':services:shared:shared-security') {
+        candidate.tasks.register('printMainCompileClasspath') {
+            doLast {
+                candidate.sourceSets.main.compileClasspath.files.each { entry ->
+                    println("SHARED_SECURITY_CLASSPATH=" + entry.absolutePath)
+                }
+            }
+        }
+    }
+}

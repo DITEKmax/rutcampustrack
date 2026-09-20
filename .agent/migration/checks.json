@@ -1,0 +1,10 @@
+{
+  "revision": "87784165874e2da6fc261abc1c01584e24624289",
+  "environment": "Windows PowerShell; source roots read-only",
+  "checks": [
+    {"criterion":"inventory generation and SHA-256 collection","command":"powershell.exe -NoProfile -ExecutionPolicy Bypass -File .agent\\migration\\generate-inventory.ps1","exit_code":0,"result":"PASS"},
+    {"criterion":"JSON syntax, required statuses and duplicate retained addresses","command":"PowerShell ConvertFrom-Json validation","exit_code":0,"result":"PASS"},
+    {"criterion":"final source coverage after concurrent additions","command":"powershell.exe -NoProfile -ExecutionPolicy Bypass -File .agent\\migration\\verify-source-snapshot.ps1","exit_code":0,"result":"PASS; source-snapshot.json stable=true"},
+    {"criterion":"runtime application/service","command":"not applicable: documentation and JSON mapping only (tests/AGENTS.md)","exit_code":null,"result":"SKIPPED"}
+  ]
+}

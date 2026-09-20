@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.schedule.recurring.RecurringScheduleItemCoordinatorTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-20T15:18:27" hostname="DITEK-PK" time="0.147">
+  <properties/>
+  <testcase name="activeGroupResponseForAnotherIdIsRejectedBeforeLocalWriter()" classname="ru.rutcampustrack.schedule.recurring.RecurringScheduleItemCoordinatorTest" time="0.147"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

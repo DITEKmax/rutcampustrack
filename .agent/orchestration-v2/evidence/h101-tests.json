@@ -1,0 +1,74 @@
+[
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/test",
+    "name": "ru.rutcampustrack.schedule.item.ScheduleItemSecurityTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:18:28.1851690Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/test",
+    "name": "ru.rutcampustrack.schedule.recurring.RecurringLifecycleGateTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:18:28.1823995Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/test",
+    "name": "ru.rutcampustrack.schedule.recurring.RecurringScheduleItemCoordinatorTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:18:28.1834024Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:19:08.3546796Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+    "tests": 15,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:19:08.3566802Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:19:08.3505242Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+    "tests": 6,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:19:08.3494525Z"
+  },
+  {
+    "directory": "services/schedule-service/schedule-app/build/test-results/integrationTest",
+    "name": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+    "tests": 8,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "modifiedUtc": "2026-09-20T15:19:08.3612033Z"
+  }
+]

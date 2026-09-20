@@ -1,0 +1,46 @@
+ M build.gradle.kts
+ M docs/openapi/academic.json
+ M docs/openapi/attendance.json
+ M docs/openapi/auth.json
+ M docs/openapi/mobile-bff.json
+ M docs/openapi/notification.json
+ M docs/openapi/schedule.json
+ M frontends/mobile-core/src/api/generated/mobile-bff.ts
+ M gradle/libs.versions.toml
+ M services/academic-service/academic-api-contract/build.gradle.kts
+ M services/academic-service/academic-app/build.gradle.kts
+ M services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java
+ M services/api-gateway/build.gradle.kts
+ M services/api-gateway/src/main/resources/application-prod.yml
+ M services/api-gateway/src/main/resources/application.yml
+ M services/attendance-service/attendance-api-contract/build.gradle.kts
+ M services/attendance-service/attendance-app/build.gradle.kts
+ M services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java
+ M services/auth-service/auth-api-contract/build.gradle.kts
+ M services/auth-service/auth-app/build.gradle.kts
+ M services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java
+ M services/document-renderer-service/document-renderer-app/build.gradle.kts
+ M services/mobile-bff/mobile-bff-api-contract/build.gradle.kts
+ M services/mobile-bff/mobile-bff-app/build.gradle.kts
+ M services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java
+ M services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java
+ M services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java
+ M services/notification-service/notification-api-contract/build.gradle.kts
+ M services/notification-service/notification-app/build.gradle.kts
+ M services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java
+ M services/schedule-service/schedule-api-contract/build.gradle.kts
+ M services/schedule-service/schedule-app/build.gradle.kts
+ M services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java
+ M services/shared/shared-events/build.gradle.kts
+ M services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java
+ M services/shared/shared-logback/build.gradle.kts
+ M services/shared/shared-observability/build.gradle.kts
+ M services/shared/shared-outbox/build.gradle.kts
+ M services/shared/shared-security/build.gradle.kts
+ M services/shared/shared-test-containers/build.gradle.kts
+ M services/shared/shared-web-api/build.gradle.kts
+ M services/shared/shared-web/build.gradle.kts
+?? .agent/student-role-02/
+?? services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java
+?? services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterTest.java
+?? services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.attendance.report.ReportServiceTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2026-09-20T09:01:41" hostname="DITEK-PK" time="3.888">
+  <properties/>
+  <testcase name="dashboard_forgotToCheckinCountedFromLateCheckinSource()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="3.56"/>
+  <testcase name="stats_percentageCalculation()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.021"/>
+  <testcase name="stats_cancelledExcluded()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.038"/>
+  <testcase name="authorizeHeadmanOrTeacher_regularStudentThrows403()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.03"/>
+  <testcase name="dashboard_weeklyGroupsByWeekOfSemester()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.025"/>
+  <testcase name="dashboard_topMissedSortedByAbsentDescAndCapped()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.016"/>
+  <testcase name="lessonAttendance_missingStudentShowsAbsent()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.034"/>
+  <testcase name="authorizeTeacherWithEmptyAcademicResponseDeniesLesson()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.037"/>
+  <testcase name="getJournal_cellIncludesLessonId()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.021"/>
+  <testcase name="authorizeTeacherWithDifferentGroupDeniesLesson()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.022"/>
+  <testcase name="stats_emptyRecords()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.009"/>
+  <testcase name="stats_subjectNameResolvedViaGrpc()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.01"/>
+  <testcase name="stats_overallAggregation()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.012"/>
+  <testcase name="stats_allCancelled()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.009"/>
+  <testcase name="authorizeTeacherWithDifferentSubjectDeniesLesson()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.008"/>
+  <testcase name="authorizeTeacherWithCurrentAssignmentAllowsMatchingLesson()" classname="ru.rutcampustrack.attendance.report.ReportServiceTest" time="0.01"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.8\f09415827a71be7ed621c7bd02550678f28bc81c\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

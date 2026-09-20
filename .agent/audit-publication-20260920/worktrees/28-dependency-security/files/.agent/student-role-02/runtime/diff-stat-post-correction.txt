@@ -1,0 +1,59 @@
+baseline=d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+currentHead=d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+branch=codex/student-role-02-dependency-security
+changedFileCount=26
+--- git diff --stat ---
+ build.gradle.kts                                   |  11 +-
+ gradle/libs.versions.toml                          |   7 +-
+ .../academic-api-contract/build.gradle.kts         |   8 +-
+ .../academic-service/academic-app/build.gradle.kts |  20 +-
+ services/api-gateway/build.gradle.kts              |   6 +-
+ .../src/main/resources/application-prod.yml        |  38 +-
+ .../api-gateway/src/main/resources/application.yml | 642 +++++++++++----------
+ .../attendance-api-contract/build.gradle.kts       |   8 +-
+ .../attendance-app/build.gradle.kts                |  20 +-
+ .../auth-api-contract/build.gradle.kts             |   6 +-
+ services/auth-service/auth-app/build.gradle.kts    |   2 +-
+ .../document-renderer-app/build.gradle.kts         |  17 +-
+ .../mobile-bff-api-contract/build.gradle.kts       |   4 +-
+ .../mobile-bff/mobile-bff-app/build.gradle.kts     |  19 +-
+ .../notification-api-contract/build.gradle.kts     |   8 +-
+ .../notification-app/build.gradle.kts              |  11 +-
+ .../schedule-api-contract/build.gradle.kts         |   8 +-
+ .../schedule-service/schedule-app/build.gradle.kts |  18 +-
+ services/shared/shared-events/build.gradle.kts     |   2 +-
+ services/shared/shared-logback/build.gradle.kts    |   2 +-
+ .../shared/shared-observability/build.gradle.kts   |  17 +-
+ services/shared/shared-outbox/build.gradle.kts     |   2 +-
+ services/shared/shared-security/build.gradle.kts   |   2 +-
+ .../shared/shared-test-containers/build.gradle.kts |   4 +-
+ services/shared/shared-web-api/build.gradle.kts    |   2 +-
+ services/shared/shared-web/build.gradle.kts        |   2 +-
+ 26 files changed, 478 insertions(+), 408 deletions(-)
+--- git diff --numstat ---
+10	1	build.gradle.kts
+4	3	gradle/libs.versions.toml
+4	4	services/academic-service/academic-api-contract/build.gradle.kts
+14	6	services/academic-service/academic-app/build.gradle.kts
+3	3	services/api-gateway/build.gradle.kts
+20	18	services/api-gateway/src/main/resources/application-prod.yml
+322	320	services/api-gateway/src/main/resources/application.yml
+4	4	services/attendance-service/attendance-api-contract/build.gradle.kts
+14	6	services/attendance-service/attendance-app/build.gradle.kts
+3	3	services/auth-service/auth-api-contract/build.gradle.kts
+1	1	services/auth-service/auth-app/build.gradle.kts
+14	3	services/document-renderer-service/document-renderer-app/build.gradle.kts
+2	2	services/mobile-bff/mobile-bff-api-contract/build.gradle.kts
+15	4	services/mobile-bff/mobile-bff-app/build.gradle.kts
+4	4	services/notification-service/notification-api-contract/build.gradle.kts
+9	2	services/notification-service/notification-app/build.gradle.kts
+4	4	services/schedule-service/schedule-api-contract/build.gradle.kts
+13	5	services/schedule-service/schedule-app/build.gradle.kts
+1	1	services/shared/shared-events/build.gradle.kts
+1	1	services/shared/shared-logback/build.gradle.kts
+9	8	services/shared/shared-observability/build.gradle.kts
+1	1	services/shared/shared-outbox/build.gradle.kts
+1	1	services/shared/shared-security/build.gradle.kts
+3	1	services/shared/shared-test-containers/build.gradle.kts
+1	1	services/shared/shared-web-api/build.gradle.kts
+1	1	services/shared/shared-web/build.gradle.kts

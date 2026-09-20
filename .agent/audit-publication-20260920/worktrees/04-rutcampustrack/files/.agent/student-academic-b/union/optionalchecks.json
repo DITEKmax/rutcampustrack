@@ -1,0 +1,126 @@
+{
+  "kind": "b0-local-contract-checks",
+  "status": "PASS",
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "recordedAt": "2026-09-08",
+  "environment": "Windows 11 10.0 amd64; PowerShell; documentation-only checks",
+  "scope": {
+    "writer": "b0_local_contract",
+    "ownedArtifacts": [
+      ".agent/student-academic-b/union/contract.md",
+      ".agent/student-academic-b/union/paths.json",
+      ".agent/student-academic-b/union/source-preflight.json",
+      ".agent/student-academic-b/union/manifest.sha256",
+      ".agent/student-academic-b/union/optionalchecks.json"
+    ],
+    "ownedPathCount": 32,
+    "deferredOwnership": "unassigned pending explicit B1 packet",
+    "reservation": "proto/attendance.proto is outside B0; current C temporary sole writer retains it until B1 release"
+  },
+  "criteria": [
+    {
+      "id": "canonical-contract",
+      "status": "PASS",
+      "evidence": "contract.md is the root-prepared nine-section B0 frozen draft with the separate attendance.proto reservation note"
+    },
+    {
+      "id": "exact-owned-scope",
+      "status": "PASS",
+      "evidence": "paths.json reservedTargets contains exactly 32 unique required paths; the unneeded academic FlywayMigrationIT is absent"
+    },
+    {
+      "id": "source-preflight",
+      "status": "PASS",
+      "evidence": "source-preflight.json remains PASS with 81 manifested files, 81 source hash matches, 81 clean destination guards, and zero mismatches"
+    },
+    {
+      "id": "numeric-review-preservation",
+      "status": "PASS",
+      "evidence": "parent numeric manifest remains AA6B28B284E5D0E43FEB6215C13197044AECE879378B013E4854AEA496029362; separate review-2 FAIL and recheck PASS artifacts are present"
+    }
+  ],
+  "checks": [
+    {
+      "id": "json-parse",
+      "command": "Get-Content -Raw paths.json,source-preflight.json | ConvertFrom-Json",
+      "exitCode": 0,
+      "evidence": "Both union JSON artifacts parsed successfully"
+    },
+    {
+      "id": "owned-scope",
+      "command": "ConvertFrom-Json paths.json; collect academicMigrations,scheduleMigrations,proto,authContracts,mapContracts,homeworkAndLesson,migrationTests; compare required set",
+      "exitCode": 0,
+      "evidence": "owned=32 unique=32 required=32 legacyAcademic=0 deferredLabels=unassigned"
+    },
+    {
+      "id": "contract-scope",
+      "command": "Read contract.md; assert nine numbered section prefixes, one occurrence for each owned path link, and attendance.proto reservation",
+      "exitCode": 0,
+      "evidence": "contract headings=9 ownedPathLinks=32 reservation=present"
+    },
+    {
+      "id": "preflight-integrity",
+      "command": "ConvertFrom-Json source-preflight.json; assert PASS, 81/81 source and destination counts, zero mismatch arrays, and matching artifact evidence",
+      "exitCode": 0,
+      "evidence": "preflight PASS 81/81 source+destination, 0 mismatches, artifact evidence all match"
+    },
+    {
+      "id": "numeric-preservation",
+      "command": "SHA256 parent .agent/student-academic-b/manifest.sha256 and assert separate review-2 FAIL/PASS files",
+      "exitCode": 0,
+      "evidence": "numeric manifest unchanged AA6B...; FAIL and PASS review artifacts present"
+    },
+    {
+      "id": "tracked-diff",
+      "command": "git diff --name-only",
+      "exitCode": 0,
+      "evidence": "tracked diff empty; pre-existing untracked work preserved"
+    },
+    {
+      "id": "contract-probe-correction",
+      "initialExitCode": 1,
+      "initialEvidence": "The first heading probe over-escaped its own regex and reported headings=0 while path links passed",
+      "correction": "Replayed with literal heading prefixes; no artifact or product file changed",
+      "exitCode": 0,
+      "evidence": "contract headings=9 ownedPathLinks=32 reservation=present"
+    }
+  ],
+  "runtime": {
+    "status": "N/A",
+    "productRuntime": "N/A",
+    "reason": "This leaf saved and checked local contract/evidence artifacts only; no product code, SQL, imports, Gradle, service, database, or external application runtime was authorized or required"
+  },
+  "diff": {
+    "status": "PASS",
+    "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "trackedDiffExitCode": 0,
+    "trackedDiffEvidence": "git diff --name-only returned no tracked paths",
+    "foreignWorkPreserved": [
+      ".agent/worktrees/student-academic-ui/",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/",
+      "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/"
+    ],
+    "numericManifestPolicy": "parent .agent/student-academic-b/manifest.sha256 is accepted numeric evidence and was not rewritten"
+  },
+  "warnings": [
+    {
+      "id": "git-ignore-permission",
+      "severity": "WARN",
+      "command": "git status --short -- .agent/student-academic-b/union .agent/student-academic-b/review-2-result.md .agent/student-academic-b/review-2-recheck-result.md",
+      "reproduction": "Git printed unable to access C:\\Users\\maksd/.config/git/ignore: Permission denied twice",
+      "impact": "No impact on the targeted status result: command exitCode=0, targeted artifacts are listed, and tracked diff remains empty",
+      "action": "Recorded as environment evidence only; no code or product state changed"
+    }
+  ],
+  "reviews": {
+    "review2Fail": ".agent/student-academic-b/review-2-result.md",
+    "review2RecheckPass": ".agent/student-academic-b/review-2-recheck-result.md",
+    "reviewArtifactsHashedInUnionManifest": false
+  },
+  "limitations": [
+    "The B0 source union is a staged boundary; it is not independently deployable before B1 integration.",
+    "B1 runtime, endpoint/authz, concurrency, event, attendance, roster, lineage, and generated API checks remain open integration gates.",
+    "d3 exact42 is recorded as a prospective previous layer and was not imported by this documentation leaf.",
+    "No product runtime evidence is claimed for this local documentation scope."
+  ]
+}

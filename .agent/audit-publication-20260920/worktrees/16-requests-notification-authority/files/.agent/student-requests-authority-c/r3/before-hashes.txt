@@ -1,0 +1,12 @@
+R3 BEFORE SNAPSHOT
+date=2026-09-08
+head=d3c31acb8cce53791a4981e5858a37d44fdc9a0e
+status_command=git status --porcelain=v1 --untracked-files=all
+status_exit=0
+status_rows=106
+environment=Windows PowerShell; worktree requests-notification-authority
+foreign_dirty_scope=preserved; no reset/clean/checkout/commit
+
+services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java  BD054202143BEB11265608080373BD874228C4057DB64ABC8F17A3C141B9DE1F
+services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java  0591DAC19F2FD5BDB7C3E41C9F66106FD9D0799945F8CFBD66141FEE9261BD7C
+review_artifact_sha256=67F540C9BBD485E618D3DE590AB8A96590B4A0A4E8CD626B0B515874AA387C7A

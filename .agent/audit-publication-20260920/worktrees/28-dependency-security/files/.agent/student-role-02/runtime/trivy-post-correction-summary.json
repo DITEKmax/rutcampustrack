@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 2,
+  "trivyVersion": "0.74.0",
+  "reportId": "01a07cd9-b263-7e4c-836d-f07b6c78c637",
+  "dbUpdatedAt": null,
+  "artifact": "/scope",
+  "targetCount": 1,
+  "targets": [
+    null
+  ],
+  "packageRecords": 0,
+  "vulnerabilityRecords": 0,
+  "critical": 0,
+  "high": 0,
+  "medium": 0,
+  "reportSha256": "2F7A3EC650059900B3CD4F90334635F63F9D124F6F1152D07F6A3140DA5FBCB2"
+}

@@ -1,0 +1,72 @@
+import java.nio.file.Files
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+import javax.tools.JavaFileObject
+import javax.tools.StandardLocation
+import javax.tools.ToolProvider
+import org.gradle.api.tasks.compile.JavaCompile
+
+def digestBytes = { byte[] bytes ->
+    MessageDigest digest = MessageDigest.getInstance('SHA-256')
+    digest.digest(bytes).collect { String.format('%02X', it) }.join()
+}
+
+allprojects { project ->
+    project.tasks.withType(JavaCompile).configureEach { compileTask ->
+        if (project.path == ':services:schedule-service:schedule-app' && compileTask.name == 'compileJava') {
+            compileTask.doFirst {
+                def requiredEntries = [
+                        'ru/rutcampustrack/schedule/contract/enums/LessonStatus.class',
+                        'ru/rutcampustrack/schedule/contract/enums/WeekType.class',
+                        'ru/rutcampustrack/shared/observability/BusinessMetrics.class',
+                        'ru/rutcampustrack/shared/events/DomainEvent.class',
+                        'ru/rutcampustrack/shared/outbox/OutboxStorage.class'
+                ]
+                def classpathFiles = compileTask.classpath.files.toList()
+                println('H95_DIAG_COMPILER_API_BEGIN')
+                println('JVM|' + System.getProperty('java.version') + '|' + System.getProperty('java.home'))
+                println('CLASSPATH_COUNT|' + classpathFiles.size())
+                requiredEntries.each { entryName ->
+                    byte[] bytes = null
+                    String origin = null
+                    classpathFiles.each { file ->
+                        if (bytes == null && file.isDirectory()) {
+                            File candidate = new File(file, entryName)
+                            if (candidate.isFile()) {
+                                bytes = Files.readAllBytes(candidate.toPath())
+                                origin = candidate.absolutePath
+                            }
+                        } else if (bytes == null && file.isFile() && file.name.toLowerCase().endsWith('.jar')) {
+                            ZipFile zip = null
+                            try {
+                                zip = new ZipFile(file)
+                                def zipEntry = zip.getEntry(entryName)
+                                if (zipEntry != null) {
+                                    bytes = zip.getInputStream(zipEntry).bytes
+                                    origin = file.absolutePath + '!/' + entryName
+                                }
+                            } finally {
+                                if (zip != null) {
+                                    zip.close()
+                                }
+                            }
+                        }
+                    }
+                    println('BYTES|' + entryName + '|found=' + (bytes != null) + '|length=' + (bytes == null ? -1 : bytes.length) + '|sha256=' + (bytes == null ? '' : digestBytes(bytes)) + '|origin=' + (origin == null ? '' : origin))
+                }
+
+                def compiler = ToolProvider.getSystemJavaCompiler()
+                println('JAVA_COMPILER|' + (compiler == null ? 'null' : compiler.class.name))
+                def fileManager = compiler.getStandardFileManager(null, null, null)
+                fileManager.setLocation(StandardLocation.CLASS_PATH, classpathFiles)
+                requiredEntries.each { entryName ->
+                    String binaryName = entryName.substring(0, entryName.length() - '.class'.length()).replace('/', '.')
+                    def fileObject = fileManager.getJavaFileForInput(StandardLocation.CLASS_PATH, binaryName, JavaFileObject.Kind.CLASS)
+                    println('JAVAC_LOOKUP|' + binaryName + '|found=' + (fileObject != null) + '|uri=' + (fileObject == null ? '' : fileObject.toUri()))
+                }
+                fileManager.close()
+                println('H95_DIAG_COMPILER_API_END')
+            }
+        }
+    }
+}

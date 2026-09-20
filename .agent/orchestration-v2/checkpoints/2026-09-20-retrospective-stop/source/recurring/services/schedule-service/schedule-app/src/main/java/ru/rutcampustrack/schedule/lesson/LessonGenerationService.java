@@ -1,0 +1,209 @@
+package ru.rutcampustrack.schedule.lesson;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.schedule.contract.enums.WeekType;
+import ru.rutcampustrack.schedule.event.LessonDeletedEvent;
+import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
+
+import java.time.Clock;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.WeekFields;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Service responsible for generating Lesson entities from ScheduleItem templates.
+ *
+ * Week parity is anchored to the ISO-8601 week number of each candidate date:
+ * - Even ISO week (16, 18, ...) → 1-я учебная неделя → WeekType.ODD.
+ * - Odd  ISO week (17, 19, ...) → 2-я учебная неделя → WeekType.EVEN.
+ * UI показывает только номер (1 или 2), без слов «чётная/нечётная» — legacy
+ * именование enum-а сохранено для backwards-compatibility DTO.
+ *
+ * Этот выбор синхронизирует бэкенд с фронтендом (web-panel/pwa показывают
+ * баннер «идёт N-я неделя» на основе ISO-номера) и не зависит от даты
+ * начала семестра или колонки `first_week_type` — при смене семестра
+ * ничего в коде править не нужно.
+ *
+ * Параметр `firstWeekType` в публичных методах оставлен для обратной
+ * совместимости сигнатур/контрактов, но более НЕ влияет на результат.
+ *
+ * Satisfies LSSN-01 (generate lessons for a schedule item) and
+ * LSSN-02 (week parity algorithm).
+ */
+@Service
+public class LessonGenerationService {
+
+    private final LessonRepository lessonRepository;
+    private final Clock clock;
+    private final ApplicationEventPublisher eventPublisher;
+
+    public LessonGenerationService(
+            LessonRepository lessonRepository,
+            Clock clock,
+            ApplicationEventPublisher eventPublisher
+    ) {
+        this.lessonRepository = lessonRepository;
+        this.clock = clock;
+        this.eventPublisher = eventPublisher;
+    }
+
+    /**
+     * Publishes {@link LessonDeletedEvent} for the given ids (no-op if empty).
+     * Called right before a physical delete so downstream consumers (attendance-
+     * service) can drop records keyed to the about-to-vanish lesson ids.
+     * The {@code @TransactionalEventListener(AFTER_COMMIT)} in DomainEventListener
+     * ensures the message is dispatched only if the surrounding transaction commits.
+     */
+    private void publishDeleted(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return;
+        eventPublisher.publishEvent(new LessonDeletedEvent(this, ids));
+    }
+
+    /**
+     * Computes all lesson dates for a given schedule item template within [semesterStart, semesterEnd].
+     *
+     * @param semesterStart    First day of the semester (inclusive)
+     * @param semesterEnd      Last day of the semester (inclusive)
+     * @param firstWeekType    IGNORED — retained for signature backwards compatibility.
+     *                         Parity is now derived solely from ISO week number.
+     * @param dayOfWeek        1=Monday .. 6=Saturday (schedule_items convention, aligned with java.time.DayOfWeek)
+     * @param templateWeekType The schedule item's week type: ALL, ODD, or EVEN
+     * @return ordered list of LocalDate occurrences
+     */
+    public List<LocalDate> computeLessonDates(
+            LocalDate semesterStart,
+            LocalDate semesterEnd,
+            @SuppressWarnings("unused") WeekType firstWeekType,
+            short dayOfWeek,
+            WeekType templateWeekType) {
+
+        // dayOfWeek is aligned with java.time.DayOfWeek (1=Mon..7=Sun).
+        // Legacy rows may still have 0; treat them as Monday for backward compatibility
+        // (V5 migration widened the CHECK to 0..7 without normalising old data).
+        int normalisedDow = dayOfWeek == 0 ? 1 : dayOfWeek;
+        DayOfWeek targetJavaDow = DayOfWeek.of(normalisedDow);
+
+        List<LocalDate> dates = new ArrayList<>();
+        LocalDate current = semesterStart;
+
+        while (!current.isAfter(semesterEnd)) {
+            if (current.getDayOfWeek() == targetJavaDow) {
+                if (templateWeekType == WeekType.ALL) {
+                    dates.add(current);
+                } else {
+                    int isoWeek = current.get(WeekFields.ISO.weekOfWeekBasedYear());
+                    WeekType currentParity = (isoWeek % 2 == 0) ? WeekType.ODD : WeekType.EVEN;
+
+                    if (currentParity == templateWeekType) {
+                        dates.add(current);
+                    }
+                }
+            }
+            current = current.plusDays(1);
+        }
+
+        return dates;
+    }
+
+    /**
+     * Generates Lesson entities for a ScheduleItem and persists them.
+     * Lessons are created with status=PLANNED and isGeoBlocked=false.
+     *
+     * @param item          The schedule item template
+     * @param semesterStart Semester start date
+     * @param semesterEnd   Semester end date
+     * @param firstWeekType Parity of the first semester week
+     */
+    @Transactional
+    public void generateLessons(
+            ScheduleItem item,
+            LocalDate semesterStart,
+            LocalDate semesterEnd,
+            WeekType firstWeekType) {
+
+        throw new RecurringLifecycleNotReadyException("legacy generateLessons");
+    }
+
+    /**
+     * Deletes PLANNED lessons from `fromDate` onward and re-generates them.
+     * Used when a ScheduleItem is updated (day, time, room, weekType) and
+     * the generated lessons need to be refreshed for the remaining semester.
+     *
+     * @param item          Updated schedule item
+     * @param semesterStart Semester start date (needed for parity anchor)
+     * @param semesterEnd   Semester end date
+     * @param firstWeekType Parity of the first semester week
+     * @param fromDate      Only regenerate dates on or after this date
+     */
+    @Transactional
+    public void regenerateFromDate(
+            ScheduleItem item,
+            LocalDate semesterStart,
+            LocalDate semesterEnd,
+            WeekType firstWeekType,
+            LocalDate fromDate) {
+
+        throw new RecurringLifecycleNotReadyException("regenerateFromDate");
+    }
+
+    /**
+     * Reconciliation variant of {@link #regenerateFromDate}: wipes BOTH
+     * PLANNED and CANCELLED lessons before reinsert. Used by
+     * {@link IsoParityReconciler} to avoid duplicate-key collisions on the
+     * {@code UNIQUE (schedule_item_id, date)} constraint when the prior
+     * generation left a future-dated CANCELLED occurrence on the same day
+     * that the ISO-anchored algorithm now wants to regenerate.
+     *
+     * Not used by headman-driven updates — those call {@link #regenerateFromDate}
+     * so freshly-cancelled slots are preserved.
+     */
+    @Transactional
+    public void regenerateFromDateForReconciliation(
+            ScheduleItem item,
+            LocalDate semesterStart,
+            LocalDate semesterEnd,
+            WeekType firstWeekType,
+            LocalDate fromDate) {
+
+        throw new RecurringLifecycleNotReadyException("regenerateFromDateForReconciliation");
+    }
+
+    /**
+     * Deletes all PLANNED lessons for a schedule item starting from today.
+     * Called by ScheduleItemService.deleteScheduleItem so that disabling a
+     * template also clears future planned occurrences from the calendar
+     * (Bug: «удалил из матрицы — осталось в "Парах на 2 недели"»).
+     *
+     * Past lessons are intentionally preserved — they may carry attendance.
+     */
+    @Transactional
+    public void deletePlannedLessonsFromToday(Long scheduleItemId) {
+        throw new RecurringLifecycleNotReadyException("deletePlannedLessonsFromToday");
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    private List<Lesson> buildLessons(Long scheduleItemId, List<LocalDate> dates) {
+        OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
+        return dates.stream().map(date -> {
+            Lesson lesson = new Lesson();
+            lesson.setScheduleItemId(scheduleItemId);
+            lesson.setDate(date);
+            lesson.setStatus(ru.rutcampustrack.schedule.contract.enums.LessonStatus.PLANNED);
+            lesson.setGeoBlocked(false);
+            lesson.setCreatedAt(now);
+            return lesson;
+        }).toList();
+    }
+}

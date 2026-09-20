@@ -1,0 +1,44 @@
+[
+  {
+    "name": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+    "tests": 19,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "name": "ru.rutcampustrack.academic.subject.SubjectServiceIT",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+]

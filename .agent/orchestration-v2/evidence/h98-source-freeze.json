@@ -1,0 +1,177 @@
+{
+  "baseRevision": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+  "kind": "First historical membership/attendance source freeze; real Mongo concurrent test and union pending",
+  "worktree": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-historical-attendance",
+  "files": [
+    {
+      "path": "proto/academic.proto",
+      "sha256": "3560E5470E5EE23C472B69C126F7F6F2A6BEE1DD81E4697AF07CEC75BB1233A2",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/GroupHistoryCoverage.java",
+      "sha256": "2F6BE0465FBC71701ACD1CD18C10983955E8E9DB698AD4DFC49535500AFEC113",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java",
+      "sha256": "E5A07994B834106F050DC6E32EF3374EB0296C639470BEC0D2F0CE36B98607BD",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupService.java",
+      "sha256": "3582A9264740EB327CD39F3828BF39A453452C058BA4CA92A3ED6D9F155CD580",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "sha256": "C2DB64B4D053A6C9827B667D31636393EEDD644520CFCC75D8C3C11C71C15596",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicReadService.java",
+      "sha256": "3B68BBDE192E8D3952765C0923CB238A19ACBB183BC4362F087E1F1DA757AD18",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcExceptionAdvice.java",
+      "sha256": "6D989A893C3E74DFE24E4EB8BF84BDE28567D02FE258CAF26E4F3204E7AF9BD5",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/history/HistoricalMembershipException.java",
+      "sha256": "43FB8D87743E1EEF68EF126EE07969BC045397741D1F548E30B0145590B7DCBE",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/history/HistoricalMembershipService.java",
+      "sha256": "E7F50115E4847FDDE65BECE627050523CBA5C28E0483370BDC9FFE2FE5E400BC",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupHistoryCoverageRepository.java",
+      "sha256": "33F3F9253DEB79909627F9F99991BDC7636CD4EA259E7F4DFA3594B03E088934",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupRepository.java",
+      "sha256": "9C9B7A54DE084B40CF3E7F89F1BE52D4AB6D16963A4F6217EDBBDC8E22BA9FFE",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java",
+      "sha256": "BC1A698AB5B252BB6B056715B3AF5F96C1E8944E979B86648439EA890906AD27",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/StudentGroupHistoryRepository.java",
+      "sha256": "F8FF09AB836CD293DBF3C32065B8E915D2AE83B70AF3BC77773D2218686CAEB9",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java",
+      "sha256": "52C0A254A344756DD97D3F14C44E82640E83D0B9C9B00096C30C9D03E9177A96",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java",
+      "sha256": "8BE404BDDFF3E2A15DF09B012955E0677CA96957DCDF18B0D3FB96F42C2CBC19",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V27__historical_membership_coverage.sql",
+      "sha256": "23F772D86E6D09CA860C4E81E796C48FE42D11911F1F59457EE357162E103758",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupServiceTest.java",
+      "sha256": "CBD12A74D8D209654AEC7BE91B9792C594B6FD976191A48607C8AD80ECB6FFE8",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HistoricalMembershipGrpcTest.java",
+      "sha256": "5E8015DE5072D2C2043F2DD9B2B5CF5594E038C524C5BD03236E709862BE3079",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/history/HistoricalMembershipServiceTest.java",
+      "sha256": "0059A87557CBA49F4E336EF397F301F5855C446496435796B8AD17F626ED6754",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java",
+      "sha256": "2C974D6E7DDD81D0D5DAA31EF43B658B54F55E07D2F13F42FD134BA4067C0B0D",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java",
+      "sha256": "28698361C0077CA702FFF5C7318812B45525E22772FCAA1038728F3C05D872DC",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+      "sha256": "8554E054A5182E6650A5D71E24B711CD400B9703AA5F2A71D630A7F7DEE56CF7",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java",
+      "sha256": "33BA26279491E920A5DC8C9D1FC67115F4E254B11C77E357D9D90CAC2BBE0106",
+      "deleted": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java",
+      "sha256": "2D8C95783599BDD0A470D5120B9207221ABB704B6672A4B05C70BE938747A449",
+      "deleted": false
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java",
+      "sha256": "7DD321BA2C9882D9F57411F439DDCC4E0F64D920637EEB507AE5DEF4300DCC12",
+      "deleted": false
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonCancellationMarker.java",
+      "sha256": "9DA9C0862C3183CCB780F97F1C3D75122F504D50FF50A201F152DF7A1A4A4E4D",
+      "deleted": false
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonEventService.java",
+      "sha256": "317F46CF8676BD0571E1EB750A7F24EC1A9E7738EDC42EB88F21E95E1BD85506",
+      "deleted": false
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+      "sha256": "9CEC81443FDED6D1ED5C5593F9EC31EA154852794CD83885A4C02F566E0FF4DF",
+      "deleted": false
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+      "sha256": "3C03666D80AEDEE41011BDCBC062AE9C851973A6578A0AF610C0B0DC76F2908C",
+      "deleted": false
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceParallelTest.java",
+      "sha256": "EDE4CCFF4FB5C19BA296C53897F2D3D0E56A341AC96C0E2FD7DCC65F42E21996",
+      "deleted": false
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceTest.java",
+      "sha256": "1A865A93BB53310EEF2AAAFF5038E0272C82408DAC73557E083B38467CAD121A",
+      "deleted": false
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+      "sha256": "3BA1E0830264A45D5426595A2717DCA9B2828D7E00CB5AAF0F045CB91E61D9EB",
+      "deleted": false
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+      "sha256": "2EACBB539608835A136E0D325BD5722324828A1C36599BC26E54E725641B71AE",
+      "deleted": false
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+      "sha256": "06A9C7D012638B2EA556E4162EB729E82732EC853BDF56AE67DAAAF0E9AA921B",
+      "deleted": false
+    }
+  ]
+}

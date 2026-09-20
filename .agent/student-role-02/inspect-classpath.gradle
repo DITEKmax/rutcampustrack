@@ -1,0 +1,10 @@
+allprojects {
+    tasks.withType(JavaCompile).configureEach {
+        doFirst {
+            println('RCT_COMPILE_TASK=' + path)
+            classpath.files.findAll { it.path.contains('shared-') }.each {
+                println('RCT_PROJECT_CP=' + it.absolutePath + '; exists=' + it.exists())
+            }
+        }
+    }
+}

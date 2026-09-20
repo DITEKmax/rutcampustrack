@@ -1,0 +1,73 @@
+{
+  "schema": "rct.student-requests-h62-edge-fix.v1",
+  "runnerPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1",
+  "runnerSha256": "13aafbf6f6f437ab75910abf2feae79d3d2e710443efe4f77c6816986445b99a",
+  "unionRoot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2",
+  "fixture": {
+    "root": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h62-edge-diagnosis\\fixture",
+    "nginxConfig": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h62-edge-diagnosis\\fixture\\nginx\\nginx.conf",
+    "defaultConfig": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h62-edge-diagnosis\\fixture\\nginx\\default.conf",
+    "certificate": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h62-edge-diagnosis\\fixture\\keys\\server.crt",
+    "privateKey": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\h62-edge-diagnosis\\fixture\\keys\\server.key",
+    "nginxSha256": "bc18f838fae0d8aa9e99c2ec5d99c2669efe8a9dff47068bab6b34985184be20",
+    "defaultSha256": "d0ccfae3573bc6a233354288c47d1b0eb3601ce6ef9f7cb2887fa5690f0e1b17",
+    "certificateBytes": 1008,
+    "privateKeyBytes": 1703,
+    "tlsContentsPrinted": false
+  },
+  "checks": {
+    "parser": "PASS",
+    "converter": "PASS",
+    "writerNoBom": "PASS",
+    "apiContract": "PASS",
+    "unexpectedSourceRejected": "PASS",
+    "diagnosticsRedactedAndBounded": "PASS",
+    "outerFailurePath": "FAIL",
+    "docker": "NOT_RUN",
+    "gradle": "NOT_RUN"
+  },
+  "outerFailurePath": {
+    "status": "FAIL",
+    "astExtracted": true,
+    "outerTryStartOffset": 161896,
+    "outerTryEndOffset": 167135,
+    "diagnosticFailure": {
+      "name": "diagnostics-failure",
+      "diagnosticCalls": 1,
+      "cleanupCalls": 1,
+      "reportWrites": 1,
+      "events": [
+        "diagnostics",
+        "cleanup"
+      ],
+      "diagnosticsBeforeCleanup": true,
+      "processExitCode": 1,
+      "failurePresent": false,
+      "failureMessage": null,
+      "failureRedacted": false,
+      "cleanupStatus": "PASS",
+      "cleanupFailureEvidence": false,
+      "invocationError": "injected diagnostics failure <redacted>"
+    },
+    "cleanupFailure": {
+      "name": "cleanup-failure",
+      "diagnosticCalls": 1,
+      "cleanupCalls": 1,
+      "reportWrites": 1,
+      "events": [
+        "diagnostics",
+        "cleanup"
+      ],
+      "diagnosticsBeforeCleanup": true,
+      "processExitCode": 1,
+      "failurePresent": true,
+      "failureMessage": "injected cleanup failure <redacted>",
+      "failureRedacted": true,
+      "cleanupStatus": "FAIL",
+      "cleanupFailureEvidence": true,
+      "invocationError": "original edge failure <redacted>"
+    },
+    "defect": "Current outer catch allows a diagnostics exception to escape before assigning report.failure; separately, cleanup failure handling checks PSObject.Properties on an OrderedDictionary and overwrites the original failure with cleanup-only text.",
+    "boundedGuardProposal": "Guard Capture-EdgeFailureDiagnostics in the outer catch, record a redacted diagnostic-capture error, then always assign report.failure from the original exception; in cleanup failure handling use dictionary-safe failure-key detection (or initialize failure) before appending cleanup evidence."
+  }
+}

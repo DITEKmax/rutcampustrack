@@ -1,0 +1,159 @@
+{
+  "kind": "fresh-d3-source-recovery-checks",
+  "status": "PASS",
+  "generatedAt": "2026-09-08T07:49:05.001Z",
+  "cwd": "C:\\Users\\maksd\\.codex\\worktrees\\34a5\\rutcampustrack",
+  "environment": {
+    "os": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "head": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "baseRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+    "sourceRevision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e"
+  },
+  "checks": [
+    {
+      "id": "head",
+      "criterion": "HEAD is frozen 8002 baseline",
+      "command": "git rev-parse HEAD",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "manifest.json"
+    },
+    {
+      "id": "d3-diff-tree",
+      "criterion": "d3 authority has exact 42 paths",
+      "command": "git diff-tree --no-commit-id --name-status -r d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "preflight.json"
+    },
+    {
+      "id": "preflight",
+      "criterion": "fresh 39-path/81-import/3-overlap guards",
+      "command": "node -e <fresh preflight guard script>",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "preflight.json"
+    },
+    {
+      "id": "mutation",
+      "criterion": "39 guarded exact Git blob writes",
+      "command": "node -e <guarded exact Git blob mutation script>",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "mutation.json"
+    },
+    {
+      "id": "exact39",
+      "criterion": "all 39 destination bytes equal d3 blobs",
+      "command": "SHA256/raw bytes + git hash-object for all 39 destinations",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "manifest.json"
+    },
+    {
+      "id": "snapshots81",
+      "criterion": "all 81 imported destination hashes unchanged",
+      "command": "SHA256 raw bytes for all 81 imported destinations",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "manifest.json"
+    },
+    {
+      "id": "overlap-winners",
+      "criterion": "three dependency winners unchanged",
+      "command": "SHA256 raw bytes for three overlap winners",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "manifest.json"
+    },
+    {
+      "id": "effective42",
+      "criterion": "effective layer is exactly 39 d3 + 3 winners",
+      "command": "set comparison of d3 diff-tree paths and effective manifest paths",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "manifest.json"
+    },
+    {
+      "id": "scope",
+      "criterion": "no foreign status changed; product status is 18 M + 21 ??",
+      "command": "git status --porcelain=v1 --untracked-files=all",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "manifest.json"
+    },
+    {
+      "id": "diff",
+      "criterion": "tracked diff has exactly 18 modified accepted targets",
+      "command": "git diff --name-status -- <39 accepted d3 paths>",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "manifest.json"
+    },
+    {
+      "id": "frozen-sources",
+      "criterion": "frozen union sources unchanged",
+      "command": "SHA256 frozen contract/paths/source-gate/shutdown files",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "manifest.json"
+    },
+    {
+      "id": "wip-preservation",
+      "criterion": "four SQL WIP files and five numeric accepted files unchanged",
+      "command": "SHA256 SQL WIP and numeric accepted sentinel files",
+      "exitCode": 0,
+      "status": "PASS",
+      "evidence": "manifest.json"
+    },
+    {
+      "id": "runtime",
+      "criterion": "product runtime",
+      "command": "not run by source-recovery contract",
+      "exitCode": null,
+      "status": "N/A",
+      "evidence": "manifest.json runtime"
+    }
+  ],
+  "allMechanicalChecksPass": true,
+  "errors": [],
+  "evidence": [
+    {
+      "path": "packet.md",
+      "sha256": "923F15023B028F41176B0EC9E279E5736106760B1D5B978C4E8B2A8905BE52C7"
+    },
+    {
+      "path": "preflight.json",
+      "sha256": "32ADDCDCBAAB87C73225417E471D9B028F82CEE818ED05D7FE196E53E7AFC849"
+    },
+    {
+      "path": "mutation.json",
+      "sha256": "2565854EF3852DEAF6CF198E3CE43AC68A646040ADC658B8A4C618D81FFBD4C6"
+    },
+    {
+      "path": "manifest.json",
+      "sha256": "67DFF5431BA38624675572092A464CF366E0AE8D40352E03C1201C36E5ADE912"
+    },
+    {
+      "path": "summary.md",
+      "sha256": "42344AEC91633AD91C3A9BD588E18BE087FF368165E888522FA4894FFA15D739"
+    },
+    {
+      "path": "checks.json",
+      "sha256": "self-hash omitted to avoid circular evidence"
+    }
+  ],
+  "manifestSha256": "67DFF5431BA38624675572092A464CF366E0AE8D40352E03C1201C36E5ADE912",
+  "summarySha256": "42344AEC91633AD91C3A9BD588E18BE087FF368165E888522FA4894FFA15D739",
+  "note": "Late guarded source import; evidence is frozen after this file is written.",
+  "verificationCorrection": {
+    "defect": "First final evidence pass used a shutdown-checkpoint expected SHA literal with one extra trailing zero.",
+    "reproduction": "Initial final freeze command exited 1 with only frozen evidence mismatch; exact39, snapshots81, overlapWinners, effective42, scope, trackedDiff and preservation sentinels were PASS.",
+    "newEvidence": "Get-FileHash -Algorithm SHA256 shutdown-checkpoint.md returned the verified 64-character SHA recorded above.",
+    "correction": "Regenerated only resume-recovery/manifest.json, summary.md and checks.json with the exact frozen SHA; no product file was rewritten.",
+    "scope": "resume-recovery evidence only",
+    "rootDecision": "No Terra escalation; source recovery scope and bytes remain unchanged."
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "created": "2026-09-20T00:29:26.7923684+03:00",
+  "baseline": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+  "scout_count": 12,
+  "lead_additional_count": 3,
+  "total_distinct": 15,
+  "sources": [
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/oneoff/CreateOneOffLessonRequest.java",
+      "sha256": "EC94366B314DF6315E60661038B66E9AD75AAA2B1ECC383E48FEA780F4306B7A",
+      "lines": "19,50",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java",
+      "sha256": "CCFD2C26AC282D03A2CAF3CAA81C28DAA5F8FA2BC4B0D61181F1E9103E5452B5",
+      "lines": "98,147",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/entity/OneOffLesson.java",
+      "sha256": "D9BA13996312CE4F60342B981904273F3EB3FB40EBCFC3F2ABA023980CC07161",
+      "lines": "29,69",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java",
+      "sha256": "9540B7F22878CEC844788A7E0B72D1DFF786D442D7EAA1DF21B231774AE2B96F",
+      "lines": "20,55",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonAssembler.java",
+      "sha256": "6B8C742AFEAB45323572DB27C37E9FE73424E3A8B78854BF1F5122B127706B94",
+      "lines": "17,31",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java",
+      "sha256": "E467BF075DB68519D59781DC118E45EB9E4D143B02C6741967C6D1F5EA3CCAE3",
+      "lines": "28,40",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/entity/ScheduleItem.java",
+      "sha256": "80EDBE5EDDB3AED06B89B4A52A91E015A498B68DBFEB68F2F1FBEAF53EDCF65F",
+      "lines": "49,62",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemService.java",
+      "sha256": "05182B54888C406ADB41A408A635FF15CE17F0498B9524380B0646C228F611D9",
+      "lines": "86,114",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonGenerationService.java",
+      "sha256": "4197C3FF9336CEE577FAF2AA1FC5E3AF5EF34494F17809E69BF5EAB6470AE82C",
+      "lines": "225,234",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/ClockConfig.java",
+      "sha256": "B808B21CE49011CC903EDF50B25CB8F74E92229FF0684258CEDBA10DFC48BDB0",
+      "lines": "9,19",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/lessons-l5b-design/PROPOSAL.md",
+      "sha256": "836D567E86F868102819DACD283ECFFA0AC068B308C5A5643BC44A3C7109E0A0",
+      "lines": "174,183",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/lessons-l5b-design/source-snapshots/LESSONS-L5.md",
+      "sha256": "287641EC02BCE97C2F587AE7DB12A3143B076A57394FCC7648697F11BC54B28E",
+      "lines": "1,34",
+      "inspection": "scout bounded12; critical code also independently read by lead"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+      "sha256": "40A13A9DDB8CC2E8A2AB8C7CEC2AEC9F0DDFE7F6DE10DFBC6E779423046330D3",
+      "lines": "196,223,226",
+      "inspection": "lead direct critical-original check, outside scout12"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/docs/architecture/reference-rutcampustrack-design/api-digest.md",
+      "sha256": "DB529A3EBD943871136582D1BC5B3D9AA7B79225712F0A5F1687B25E75CAECAB",
+      "lines": "133,151",
+      "inspection": "lead direct critical-original check, outside scout12"
+    },
+    {
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+      "sha256": "701EBFB7C91906F1EF57B2D6ED5B54202A38475A1E246C3172FADB1AB6646DD8",
+      "lines": "329,350",
+      "inspection": "lead direct critical-original check, outside scout12"
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+# A → B/C/E finite shared integration contract
+2026-09-08. Risk S3. Baseline 8002b9ea4356b10779c5bb9a6d99746d32d78ae2 plus separately accepted source manifests. This is a patch contract, not permission for A to edit shared product files. Parent orchestrator is the reservation authority.
+
+## 1. Goal
+Provide durable per-role grants, session-scoped active role, exact refresh/revocation boundaries and real profile/session/history APIs. B owns the single union migration/proto writer after parent freeze; C owns Gateway; E owns shell adapters. A currently implements only independent pure domain and reserved profile feature files.
+
+## 2. Context/evidence
+Primary: docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:144 (R6); C:/Users/maksd/IntelliJIDEA/rutcampustrack/docs/wireframes/student/108-student-settings.md:113; canonical .agent/student-role-02/design-context final4611-142,4611-848928,4611-849055,4614-276,4615-326,4618-535,4618-849228. Final4615 password12/digit/special; parent accepted Unicode details as bounded choice.
+Original code: AuthService login/refresh/logout/password; JwtService and Auth filter; AuthController, WsTicketService/InternalIssuerController; Academic User.java SQLRestriction and repository findByIdIncludingArchived; BFF StudentQueryService.java:55,111; Gateway InternalJwtIssuerClient.java:63; shared InternalJwtClaims/InternalJwtValidator. Auth and Academic connect to academic_db; Auth Flyway disabled.
+Adjacent consultation-result.md preserved unchanged; root-decision.md qualifies source-based findings and accepted refinements. Purpose4 is separately accepted; no integrated revocation proof yet.
+
+## 3. Relevant scope — exact paths and ownership
+B integration only after union freeze:
+- services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql (parent exact reservation; V25 B foundation, V26 D map).
+- proto/academic.proto (one combined generation pass; field tags below rechecked against union).
+- services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java (narrow own-terminal read and authoritative active roster).
+- services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java (exact current path must be verified by integrator before reservation expansion; no guessed write).
+Auth API contract proposal, still requires parent assignment:
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthSessionApi.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalSessionAdmissionApi.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/CurrentSessionResponse.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RoleGrantResponse.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleRequest.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleResponse.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionsPage.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionSummary.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryPage.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryEvent.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordPolicyResponse.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionRequest.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionResponse.java
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ChangePasswordRequest.java (remove contradictory old8/lowerupper policy; service applies frozen policy with typed400).
+- services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthApi.java (current logout/password response semantics at coordinated wiring).
+No Java controllers/JPA/admission client/shared-security/WS implementations are implicitly assigned by this list. They need a later exact packet. OpenAPI/generated outputs come only from the union Java contracts, with one root-assigned exporter.
+
+## 4. Required behavior
+
+### V24 storage contract
+Root implementation refinement to consultation: new grants use local VARCHAR+CHECK values, not a change to legacy users.role/status enum types. This keeps unrelated old JPA enums untouched until coordinated cutover; the new table is the authority. SQL values lower-case, domain/wire role/status upper-case with explicit mapping.
+
+users addition:
+- roles_version BIGINT NOT NULL DEFAULT 1 CHECK >0.
+
+user_role_grants:
+- id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY.
+- user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT.
+- role VARCHAR(16) NOT NULL CHECK IN(student,headman,teacher,admin).
+- status VARCHAR(16) NOT NULL CHECK IN(active,expelled,graduated,suspended,archived).
+- group_id BIGINT NULL REFERENCES groups(id) ON DELETE RESTRICT.
+- created_at TIMESTAMPTZ NOT NULL, updated_at TIMESTAMPTZ NOT NULL.
+- UNIQUE(user_id,role); UNIQUE(id,user_id) for composite own-grant FK.
+- CHECK(role <> headman OR group_id IS NOT NULL).
+- index(group_id,user_id) WHERE role=student AND status=active.
+- row trigger increases the affected users.roles_version on INSERT/UPDATE/DELETE of grants; on UPDATE moving user_id is forbidden (grant ownership immutable). Relevant updates include status, role and group scope; do not double-increment in a service in addition to trigger. Overflow fails transaction, never wraps.
+
+auth_sessions:
+- sid UUID PRIMARY KEY; user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT.
+- active_role_grant_id BIGINT NULL; FOREIGN KEY(active_role_grant_id,user_id) REFERENCES user_role_grants(id,user_id) ON DELETE RESTRICT.
+- session_version BIGINT NOT NULL CHECK >0.
+- current_refresh_jti UUID NOT NULL UNIQUE; previous_refresh_jti UUID NULL; CHECK(previous IS NULL OR previous <> current).
+- refresh_expires_at TIMESTAMPTZ NOT NULL, created_at TIMESTAMPTZ NOT NULL, last_seen_at TIMESTAMPTZ NOT NULL.
+- revoked_at TIMESTAMPTZ NULL, revoke_reason VARCHAR(32) NULL; both null or both nonnull. Reasons CURRENT_LOGOUT, LOGOUT_ALL, PASSWORD_CHANGED, SECURITY_REVOKED.
+- auth_method VARCHAR(16) NOT NULL CHECK IN(PASSWORD,OTP,TMA).
+- client_label VARCHAR(160) NULL, location_label VARCHAR(160) NULL; trusted observed metadata only, never inferred city fixture.
+- CHECK(refresh_expires_at > created_at); CHECK(last_seen_at >= created_at).
+- index(user_id,created_at DESC,sid DESC) WHERE revoked_at IS NULL; expiry is runtime predicate (no time-dependent partial-index predicate).
+- UNIQUE(sid,user_id) to support own-event FK.
+- active grant removal requires explicitly clearing affected session active grants and incrementing their session_version in the same transaction before deleting grant. No implicit fallback or physical session deletion.
+
+account_security_events:
+- id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY.
+- user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT.
+- sid UUID NULL; FOREIGN KEY(sid,user_id) REFERENCES auth_sessions(sid,user_id) ON DELETE RESTRICT.
+- event_type VARCHAR(32) NOT NULL CHECK IN(LOGIN,ROLE_CHANGED,CURRENT_LOGOUT,LOGOUT_ALL,PASSWORD_CHANGED,SECURITY_REVOKED).
+- occurred_at TIMESTAMPTZ NOT NULL, auth_method VARCHAR(16) NULL, client_label/location_label VARCHAR(160) NULL.
+- index(user_id,occurred_at DESC,id DESC).
+- append-only through the adapter; no password/token/OTP/raw initData or invented historical events.
+
+V24 exact source conversion:
+- Every legacy users row yields exactly its existing role/status grant, preserving stored group scope and timestamps; no roles inferred from Figma examples.
+- HEADMAN grant only from an explicit legacy is_headman=true on a STUDENT with valid nonnull group. Preserve that source status; do not grant HEADMAN solely because a name/group resembles a sample.
+- Reject inconsistent/unknown role/status or headman-without-student/group input with a clear migration failure. Do not guess a backfill.
+- Do not migrate Redis bearer values into session authority. New auth_sessions/security events begin empty; old external tokens without sid/purpose/version are rejected only at coordinated cutover.
+- No deletion of legacy columns or user data in V24. Old fields cease authority only after all readers/writers cross the frozen contract together.
+- Run V24 as one transactional Flyway migration on task-owned fresh DB only. Verify row counts, exact per-user grants and FK/check rejection. On migration failure transaction rolls back; no repair/clean/drop/skip. Report error and fix versioned source before retry on a fresh task-owned database.
+- No production migration/deploy authorised. Rollback for source acceptance is withholding/reverting the unmerged patch; do not issue data-destructive rollback scripts.
+
+### Atomic port/admission rules
+All session changes use one DB transaction, coherent user/session/grant snapshot, and consistent user-row-then-session-row lock order. Ports expose a single atomic operation, never service-level hasKey/read/write sequences. Admission can use a single consistent SQL join statement; an admission starting after revoke commit must observe revoke.
+createSession consumes an already validated auth proof and creates a fresh sid/current JTI with fixed absolute expiry and authoritative grant snapshot. Password login must recheck the credential/hash observed during authentication under user lock before session creation to prevent a completed password change racing an old verification. OTP/TMA proofs retain their distinct validation and replay rules.
+Default selectable STUDENT else selectable TEACHER. Otherwise null active grant, no auto ADMIN or HEADMAN.
+switchRole(userId,sid,role,expectedSessionVersion) validates own live session, expected version, actual own selectable grant; atomically changes active grant, increments version and appends event. Same-role desired state can return unchanged snapshot; an expected-version conflict is409, not last-writer-wins.
+refresh(userId,sid,presentedJti,newJti,now) checks unrevoked/unexpired own session and rotates under lock. Current wins; previous409 REFRESH_ALREADY_ROTATED, older/unknown401 REFRESH_REJECTED. No replay grace or revoke on benign loser. Fixed expiry never extended. A now-nonselectable active grant becomes null with version increment, not automatic alternate role. Lost winner response can require login.
+revokeCurrent changes one own sid and event atomically; idempotent already-revoked result. revokeAll updates every own session including current and event atomically. changePassword compares expected hash again, updates hash+password flags+all session revocation+event in the same transaction. DB failure503, no success/cookie clearing before durable commit. Redis optional after-commit signal only.
+Internal admission validates ORIGINAL signed access token purpose/iss/aud/exp/sub/sid/sv/rv; checks live SQL session+current grant/status/version; never accepts client-supplied claims as authority. It returns current claims plus short-lived internal JWT for this request. No positive admission/internal-JWT cache. Existing caller-claim issuer must be removed/disabled at cutover, not left as a bypass.
+ReadOnly derives from EXPELLED/GRADUATED/ARCHIVED active grant. Deny domain mutations at downstream ingress and mutation entry; allow scoped account security actions. SUSPENDED nonselectable inactive. Only ACTIVE STUDENT grants appear in active roster. Terminal own read uses narrow own-user archived bypass; no global removal of SQLRestriction and no peer payload/self insertion in rank.
+Guarantee: requests admitted after revocation commit denied; earlier admitted work may finish. Strict cross-DB cancellation is not promised.
+
+### Finite REST DTO/API contract
+IDs and versions in public JSON are canonical decimal strings (sid UUID string), avoiding JavaScript integer rounding; adapters parse and validate bounds. Instants are RFC3339 UTC. Role/status wire strings uppercase.
+RoleGrantResponse(grantId,role,status,groupId?,contextLabel?,selectable,readOnly). Labels only from real server identity/group data.
+CurrentSessionResponse(sessionId,userId,displayName,groupLabel?,sessionVersion,rolesVersion,activeRole?,roles[],readOnly,passwordPolicy).
+PasswordPolicyResponse(minCodePoints=12,maxUtf8Bytes=72,requiresDecimalDigit=true,specialCategories=[P,S],normalization=NONE).
+SelectActiveRoleRequest(role,expectedSessionVersion).
+SelectActiveRoleResponse(accessToken,expiresIn,session).
+AuthSessionSummary(sessionId,authMethod,clientLabel?,locationLabel?,createdAt,lastSeenAt,current).
+AuthSessionsPage(items,nextCursor?).
+AccountHistoryEvent(id,type,occurredAt,authMethod?,clientLabel?,locationLabel?). Text labels rendered from known event types; nullable source data omitted rather than fabricated.
+AccountHistoryPage(items,nextCursor?).
+AuthAdmissionRequest(accessToken). No userId/role/group/readOnly claims accepted from requester.
+AuthAdmissionResponse(internalToken,expiresAt,sessionId,userId,sessionVersion,rolesVersion,role,status,groupId?,isHeadman,readOnly). Claims derive from active grant; isHeadman true only active HEADMAN, not from another held role.
+
+Exact methods:
+- GET /auth/session ->200 CurrentSessionResponse, authenticated access or bootstrap with live state.
+- PUT /auth/session/active-role ->200 SelectActiveRoleResponse; no refresh rotation. No optimistic grant elevation.
+- GET /auth/sessions?cursor&limit ->200 AuthSessionsPage. Own active nonexpired sessions only, keyset(created_at,sid), default20 max50; current distinguished by sid.
+- POST /auth/logout ->204 after current-sid durable revoke, cookie cleared only after commit. Invalid absent already-cleared token can be idempotent; dependency failure is not swallowed.
+- POST /auth/logout-all ->204 after all-sid durable revoke incl current, cookie cleared.
+- GET /auth/account-history?cursor&limit ->200 AccountHistoryPage. Own keyset(occurred_at,id), default20 max50; malformed cursor400. Cursor never selects user scope; WHERE user_id always from live principal.
+- POST /auth/change-password ->204 and cookie cleared after atomic change+revoke. CurrentPassword exemption from new policy; malformed/new-policy400, wrong current password typed400 CURRENT_PASSWORD_INVALID rather than treating field error as expired access.
+- POST /internal/auth/admit ->200 AuthAdmissionResponse, service credential protected and access-purpose only; bootstrap/refresh/internal tokens denied, dependency503.
+
+Every response including errors no-store. Cursor validation is bounded and does not leak foreign data. Public profile/session/history endpoints never return refresh tokens; current TokenResponse/login/TMA refresh delivery is coordinated separately and never persisted in localStorage.
+
+Bootstrap future contract:
+token_use=bootstrap, no role/group/is_headman/readOnly capability claim, signed sub/sid/sv/rv/exp with expiry <= ordinary access policy and session absolute expiry. Live authority checks still mandatory.
+Exact allowlist: GET /auth/session; PUT /auth/session/active-role; GET /auth/sessions; POST /auth/logout; POST /auth/logout-all. No prefix matching. GET /auth/account-history and POST /auth/change-password require selected access role in this finite bootstrap contract. BFF, /internal/auth/admit and all WS ticket APIs deny bootstrap. It cannot become role-bearing until explicit successful server selection.
+Purpose4 existing code remains frozen; later wiring must add bootstrap handling without relaxing parseAccessToken.
+
+HTTP error mapping:
+400 PASSWORD_POLICY_VIOLATION, CURRENT_PASSWORD_INVALID, INVALID_CURSOR.
+401 INVALID_SESSION, SESSION_REVOKED, REFRESH_REJECTED.
+403 ROLE_NOT_GRANTED, ROLE_NOT_SELECTABLE, ROLE_READ_ONLY, BOOTSTRAP_SCOPE_DENIED.
+409 SESSION_STATE_STALE, SESSION_VERSION_CONFLICT, REFRESH_ALREADY_ROTATED.
+503 AUTHORITY_UNAVAILABLE.
+SESSION_STATE_STALE is the canonical spelling (consultant SESSION_STALE superseded here), and exposes no replacement grants until live refresh/session read succeeds.
+
+### Academic proto patch
+On baseline UserResponse uses tags1..9. Proposed additions only after union tag check:
+- repeated UserRoleGrant roles=10;
+- int64 roles_version=11.
+UserRoleGrant: int64 grant_id=1; string role=2; string status=3; optional int64 group_id=4.
+Add explicit GetOwnUser(Empty)->UserResponse only if current caller identity can be enforced from trusted internal sid/claims; do not let a request user_id choose a terminal user's data. If existing GetUserById remains for service reads, its authorization stays separately scoped and is not globally broadened to archived users.
+GetGroupMembers semantics become ACTIVE STUDENT-grant roster; no existing student self auto-add or peer payload on statistics route. Generated Java/TS/OpenAPI regenerated once from union; no hand-edited generated output. Proto wiring not assigned to A domain leaf.
+
+### C/E and remaining integration gates
+C future per-request admission overwrites internal trusted identity attribute before user limiter, removes four-minute cache, keeps token-purpose initial reject layer. Shared internal validators add sid/sv/rv/status/readOnly and reject wrong purpose. Every relevant mutation entry enforces readOnly without combining permissions of other held roles.
+WS ticket issue/consume carries sid/sv/rv; open sockets recheck on sensitive delivery/message and close after revoke, not only ticket TTL.
+E shell handles same-sid role convergence, typed stale refresh, two-tab refresh singleflight, generation guard, no old-owner command retry. Logout/password/security reset invalidates protected queries and schedule/homework/maps authenticated caches. PWA maps cache newly allowed by owner; TMA stays online. Genuine Telegram host proof remains separate.
+
+## 5. Constraints
+No A writes to SQL/proto/DTO/shared/Gateway/shell here; reservations remain parent-owned. No production changes, real OTP/Telegram, secrets, fabricated campus data or broad source import. Exact accepted bundle/hash checks before union. No dual authority or success from optional Redis.
+
+## 6. Existing patterns
+Java21 records and Java-first contract generation; shared PostgreSQL; native findByIdIncludingArchived for narrow own-read use; task-owned runtime18100-18119 and DB rct_student_auth only after lease. Vue/PCSS profile features receive typed callbacks independently.
+
+## 7. Acceptance criteria
+Schema preserves exact source grants and rejects foreign active grant; roles/status/session state authoritative. Old access/refresh/internal/bootstrap wrong-purpose tests at exact boundaries. Revoked access after SQL commit denied, stale claims conflict, concurrent refresh one winner, password change all sessions incl current revoked, database failure no partial success. Terminal own reads retained without active roster/rank insertion or peer disclosure. Session/history pages are real own data. All7 final profile states use real APIs at final integration.
+
+## 8. Verification
+B: migration on isolated fresh PostgreSQL with malformed-source/FK/check/trigger/rollback tests and exact counts; no production. A future adapter: real transaction race/fault tests, not in-memory port proof. C: complete HTTP ingress/access-bootstrap/internal boundaries and admission dependency failure. E: PWA two tabs/lost refresh/logout/cache purge and genuine TMA separately. Security scanner+fresh independent Sol important review on stable union. Record baseline/manifests/commands/exits/environment; open gate is not PASS.
+
+## 9. Do not
+Do not guess versions/tags, handwrite generated files, add fake grants/locations/history, claim old JWT runtime exploit from source-only analysis, use refresh/cache TTL as revocation, swallow authority failures, or mark full story DONE from domain/fixture tests.
+

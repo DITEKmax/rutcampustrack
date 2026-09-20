@@ -1,0 +1,162 @@
+[
+  {
+    "name": "spring-boot",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "org.springframework.boot:spring-boot",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency org.springframework.boot:spring-boot --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/spring-boot.txt"
+  },
+  {
+    "name": "spring-data-commons",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "org.springframework.data:spring-data-commons",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency org.springframework.data:spring-data-commons --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/spring-data-commons.txt"
+  },
+  {
+    "name": "spring-hateoas",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "org.springframework.hateoas:spring-hateoas",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency org.springframework.hateoas:spring-hateoas --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/spring-hateoas.txt"
+  },
+  {
+    "name": "spring-security-core",
+    "project": ":services:auth-service:auth-app",
+    "dependency": "org.springframework.security:spring-security-core",
+    "command": ".\\gradlew.bat :services:auth-service:auth-app:dependencyInsight --configuration runtimeClasspath --dependency org.springframework.security:spring-security-core --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/spring-security-core.txt"
+  },
+  {
+    "name": "spring-security-crypto",
+    "project": ":services:auth-service:auth-app",
+    "dependency": "org.springframework.security:spring-security-crypto",
+    "command": ".\\gradlew.bat :services:auth-service:auth-app:dependencyInsight --configuration runtimeClasspath --dependency org.springframework.security:spring-security-crypto --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/spring-security-crypto.txt"
+  },
+  {
+    "name": "spring-core",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "org.springframework:spring-core",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency org.springframework:spring-core --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/spring-core.txt"
+  },
+  {
+    "name": "spring-expression",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "org.springframework:spring-expression",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency org.springframework:spring-expression --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/spring-expression.txt"
+  },
+  {
+    "name": "spring-webmvc",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "org.springframework:spring-webmvc",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency org.springframework:spring-webmvc --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/spring-webmvc.txt"
+  },
+  {
+    "name": "jackson-core",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "com.fasterxml.jackson.core:jackson-core",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency com.fasterxml.jackson.core:jackson-core --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/jackson-core.txt"
+  },
+  {
+    "name": "jackson-databind",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "com.fasterxml.jackson.core:jackson-databind",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency com.fasterxml.jackson.core:jackson-databind --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/jackson-databind.txt"
+  },
+  {
+    "name": "protobuf-java",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "com.google.protobuf:protobuf-java",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency com.google.protobuf:protobuf-java --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/protobuf-java.txt"
+  },
+  {
+    "name": "amqp-client",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "com.rabbitmq:amqp-client",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency com.rabbitmq:amqp-client --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/amqp-client.txt"
+  },
+  {
+    "name": "grpc-netty",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "io.grpc:grpc-netty",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency io.grpc:grpc-netty --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/grpc-netty.txt"
+  },
+  {
+    "name": "grpc-netty-shaded",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "io.grpc:grpc-netty-shaded",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency io.grpc:grpc-netty-shaded --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/grpc-netty-shaded.txt"
+  },
+  {
+    "name": "micrometer-core",
+    "project": ":services:api-gateway",
+    "dependency": "io.micrometer:micrometer-core",
+    "command": ".\\gradlew.bat :services:api-gateway:dependencyInsight --configuration runtimeClasspath --dependency io.micrometer:micrometer-core --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/micrometer-core.txt"
+  },
+  {
+    "name": "netty-codec",
+    "project": ":services:api-gateway",
+    "dependency": "io.netty:netty-codec",
+    "command": ".\\gradlew.bat :services:api-gateway:dependencyInsight --configuration runtimeClasspath --dependency io.netty:netty-codec --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/netty-codec.txt"
+  },
+  {
+    "name": "netty-handler",
+    "project": ":services:api-gateway",
+    "dependency": "io.netty:netty-handler",
+    "command": ".\\gradlew.bat :services:api-gateway:dependencyInsight --configuration runtimeClasspath --dependency io.netty:netty-handler --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/netty-handler.txt"
+  },
+  {
+    "name": "json-smart",
+    "project": ":services:api-gateway",
+    "dependency": "net.minidev:json-smart",
+    "command": ".\\gradlew.bat :services:api-gateway:dependencyInsight --configuration runtimeClasspath --dependency net.minidev:json-smart --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/json-smart.txt"
+  },
+  {
+    "name": "tomcat-embed-core",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "org.apache.tomcat.embed:tomcat-embed-core",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency org.apache.tomcat.embed:tomcat-embed-core --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/tomcat-embed-core.txt"
+  },
+  {
+    "name": "postgresql",
+    "project": ":services:academic-service:academic-app",
+    "dependency": "org.postgresql:postgresql",
+    "command": ".\\gradlew.bat :services:academic-service:academic-app:dependencyInsight --configuration runtimeClasspath --dependency org.postgresql:postgresql --no-daemon --console=plain",
+    "exitCode": 0,
+    "output": ".agent/student-role-02/runtime/dependency-insight/postgresql.txt"
+  }
+]

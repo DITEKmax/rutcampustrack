@@ -1,0 +1,89 @@
+/*
+ * FE13 aliases resolved from docs/design/tokens-v2.json.
+ * Dark/light primitives are intentionally local to the feature root so the
+ * host can provide a theme without changing the shell or global token file.
+ */
+.attendance-screen {
+  --attendance-surface-base: #0b0b0c;
+  --attendance-surface-raised: #1c1922;
+  --attendance-surface-float: #292531;
+  --attendance-text-primary: #edeaf3;
+  --attendance-text-secondary: #c8c2d6;
+  --attendance-text-muted: #8a8299;
+  --attendance-text-disabled: #6b6b6b;
+  --attendance-border-default: #3d3846;
+  --attendance-border-focus: #9e7aff;
+  --attendance-accent-now: #b79cfa;
+  --attendance-accent-on-now: #0b0b0c;
+  --attendance-present-fill: #61dfb8;
+  --attendance-present-text: #61dfb8;
+  --attendance-absent-fill: #f27f7f;
+  --attendance-absent-text: #f27f7f;
+  --attendance-excused-fill: #f5b443;
+  --attendance-excused-text: #f5b443;
+  --attendance-none-fill: #c4c4c4;
+  --attendance-success-bg: #063429;
+  --attendance-danger-bg: #470e0e;
+  --attendance-warning-text: #f5b443;
+  --attendance-disabled-surface: #262626;
+  --attendance-font-family: 'Onest Variable', Onest, sans-serif;
+  --attendance-font-display: 2rem;
+  --attendance-font-title: 1.5rem;
+  --attendance-font-block: 1.125rem;
+  --attendance-font-body: 1rem;
+  --attendance-font-dense: 0.875rem;
+  --attendance-font-caption: 0.8125rem;
+  --attendance-font-micro: 0.75rem;
+  --attendance-font-weight-regular: 400;
+  --attendance-font-weight-medium: 500;
+  --attendance-font-weight-bold: 600;
+  --attendance-radius-lg: 0.75rem;
+  --attendance-radius-xl: 1rem;
+  --attendance-radius-2xl: 1.5rem;
+  --attendance-radius-full: 62.4375rem;
+  --attendance-border-hairline: 0.0625rem;
+  --attendance-focus-width: 0.125rem;
+  --attendance-focus-offset: 0.125rem;
+  --attendance-content-width: 22.375rem;
+  --attendance-inset: 1rem;
+  --attendance-control: 2.75rem;
+  --attendance-metadata: 0.625rem;
+  --attendance-meta-gap: 0.25rem;
+  --attendance-disclosure: 1.375rem;
+  --attendance-plot-height: 10.625rem;
+  --attendance-history-height: 0.5rem;
+  --attendance-dock-height: 4.75rem;
+  --attendance-dock-bottom: 1rem;
+}
+
+.attendance-screen[data-theme='light'] {
+  --attendance-surface-base: #fcfbfe;
+  --attendance-surface-raised: #ffffff;
+  --attendance-surface-float: #ffffff;
+  --attendance-text-primary: #292531;
+  --attendance-text-secondary: #565061;
+  --attendance-text-muted: #6e6779;
+  --attendance-text-disabled: #a3a3a3;
+  --attendance-border-default: #ded9e8;
+  --attendance-border-focus: #8557f5;
+  --attendance-accent-now: #6d28d9;
+  --attendance-accent-on-now: #ffffff;
+  --attendance-present-fill: #94e6cb;
+  --attendance-present-text: #0c6a53;
+  --attendance-absent-fill: #f7aaaa;
+  --attendance-absent-text: #8e1d1d;
+  --attendance-excused-fill: #f8ce7d;
+  --attendance-excused-text: #764b09;
+  --attendance-none-fill: #dcdcdc;
+  --attendance-success-bg: #e4f9f1;
+  --attendance-danger-bg: #fdecec;
+  --attendance-warning-text: #764b09;
+  --attendance-disabled-surface: #ededed;
+}
+
+@define-mixin attendance-focus-ring {
+  &:focus-visible {
+    outline: var(--attendance-focus-width) solid var(--attendance-border-focus);
+    outline-offset: var(--attendance-focus-offset);
+  }
+}

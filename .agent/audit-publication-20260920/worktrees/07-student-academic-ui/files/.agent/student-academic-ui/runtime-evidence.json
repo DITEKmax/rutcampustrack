@@ -1,0 +1,66 @@
+{
+  "schema": "rct.runtime-evidence.v1",
+  "task": "FE13 Attendance8 + Statistics5",
+  "baseline": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "revision": "working tree at 8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "runId": "20260908-fe13-harness",
+  "status": "PARTIAL",
+  "stage": "standalone real-component harness HTTP smoke",
+  "environment": {
+    "os": "Windows 11-compatible build 10.0.26200.0",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "browser": "Unavailable through this leaf's CUA surface",
+    "viewport": "Required 390x844; no screenshot claim made",
+    "liveBackend": false
+  },
+  "harness": {
+    "servers": [
+      {
+        "port": 18210,
+        "scope": "Attendance",
+        "command": "npx --no-install vite --config mobile-core/harness/attendance-statistics/vite.config.ts --configLoader runner --host 127.0.0.1",
+        "stopped": true
+      },
+      {
+        "port": 18211,
+        "scope": "Statistics",
+        "command": "HARNESS_PORT=18211 npx --no-install vite --config mobile-core/harness/attendance-statistics/vite.config.ts --configLoader runner --host 127.0.0.1",
+        "stopped": true
+      }
+    ],
+    "fixtureIds": [
+      "4593-142",
+      "4593-848365",
+      "4593-848496",
+      "4595-293",
+      "4595-848430",
+      "4596-365",
+      "4710-232",
+      "4768-228",
+      "4603-142",
+      "4603-848696",
+      "4798-142",
+      "4798-200",
+      "4798-285"
+    ],
+    "probeExitCode": 0,
+    "probeEvidence": "Each fixture URL returned HTTP 200 from a task-owned Vite server; /main.ts returned HTTP 200."
+  },
+  "browserEvidence": {
+    "status": "BLOCKED_IN_LEAF",
+    "reason": "No browser provider was exposed by CUA (iab and chrome unavailable).",
+    "screenshots": [],
+    "keyboard": [],
+    "requiredSupplement": "Root CUA run must verify 390x844, light/dark/system, narrow/rootFont variants, focus-visible, request Back/return focus and terminal/error/offline states."
+  },
+  "boundaries": [
+    "Harness imports the real AttendanceScreen and StatisticsScreen components.",
+    "Fixtures are local typed projections; no fake API/fetch/cache or backend claim.",
+    "Requests request-form remains an OPEN slot integration gate."
+  ],
+  "limitations": [
+    "HTTP smoke proves server/module reachability only; it does not prove DOM paint or keyboard behavior.",
+    "Live auth, API, PWA/TMA shell and backend integration remain outside this frontend lane."
+  ]
+}

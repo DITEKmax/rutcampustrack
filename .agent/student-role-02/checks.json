@@ -1,0 +1,249 @@
+{
+  "schema": "rct.student-role-02.checks.v1",
+  "status": "IN_PROGRESS",
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "branch": "main",
+  "recordedAt": "2026-09-07T19:47:58.9142093Z",
+  "environment": "Initial preparation environment retained in old entries; later checks carry scoped revision/environment/evidence. Full student role runtime is not yet accepted.",
+  "checks": [
+    {
+      "name": "HEAD baseline",
+      "command": "git rev-parse HEAD",
+      "exitCode": 0,
+      "evidence": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2"
+    },
+    {
+      "name": "Branch baseline",
+      "command": "git branch --show-current",
+      "exitCode": 0,
+      "evidence": "main"
+    },
+    {
+      "name": "Pre-write Git status inventory",
+      "command": "git status --porcelain=v1 --untracked-files=all",
+      "exitCode": 0,
+      "evidence": "Baseline recorded 1603 entries: 48 dirty tracked and 1555 untracked. Global ignore and notification-bot cache warnings are in baseline.json."
+    },
+    {
+      "name": "JSON artifact parse",
+      "command": "Get-Content baseline.json,checks.json -Raw | ConvertFrom-Json",
+      "exitCode": 0,
+      "evidence": "baseline and checks artifacts parse after the final edits."
+    },
+    {
+      "name": "Live node count",
+      "command": "rg -n '^\\| [0-9]+:' .agent/student-role-02/matrix.md",
+      "exitCode": 0,
+      "evidence": "39 live node rows."
+    },
+    {
+      "name": "Nine-section contract",
+      "command": "rg -n '^## [1-9]\\.' .agent/student-role-02/contract.md",
+      "exitCode": 0,
+      "evidence": "Nine numbered contract sections are present."
+    },
+    {
+      "name": "Matrix required columns",
+      "command": "rg -n '^\\| node \\| screen-state-transition \\| story \\| API \\| existing \\| gap \\| acceptance \\| PWA \\| TMA \\|' .agent/student-role-02/matrix.md",
+      "exitCode": 0,
+      "evidence": "All requested node, transition, story, API, existing, gap, acceptance, PWA and TMA columns are present."
+    },
+    {
+      "name": "Owner wording stale scan",
+      "command": "rg stale R2/R11 phrases under .agent/student-role-02; no matches expected",
+      "exitCode": 0,
+      "evidence": "No stale five individual manual excuse or R11 blocks only excuse wording remains. R2/R11 semantics match root correction."
+    },
+    {
+      "name": "Tracked path preservation",
+      "command": "Compare current dirty tracked path set with baseline.json",
+      "exitCode": 0,
+      "evidence": "48 current tracked paths equal 48 baseline tracked paths; no tracked path changed by this worker."
+    },
+    {
+      "name": "Owned scope inventory",
+      "command": "git status --porcelain=v1 --untracked-files=all; classify .agent/student-role-02 and known root worktree rows",
+      "exitCode": 0,
+      "evidence": "7 owned rows, all under .agent/student-role-02. Total current rows 1612; two additional outside rows are root-owned .agent/worktrees/student-role-02/homework-api/ and shared-shell/."
+    },
+    {
+      "name": "External concurrent drift gate",
+      "command": "Compare post-write outside inventory with baseline status digest",
+      "exitCode": 0,
+      "evidence": "Outside count/digest differs by two known root worktree rows. This is recorded as concurrent external drift; strict whole-checkout equality is not claimed."
+    },
+    {
+      "name": "Applicable instructions read",
+      "command": "Get-Content AGENTS.md; Get-Content frontends/AGENTS.md; Get-Content services/AGENTS.md; Get-Content tests/AGENTS.md; Get-Content docs/agent-workflow.md",
+      "exitCode": 0,
+      "evidence": "Project routing, frontend/backend/checks boundaries and nine-section workflow were read before writing."
+    },
+    {
+      "name": "Root PWA visual fixture baseline",
+      "command": "Root-provided browser fixture at http://127.0.0.1:5175, viewport 390x844",
+      "exitCode": 0,
+      "source": "root evidence from shared-shell worktree",
+      "evidence": "Screenshot displayed; AX showed disabled role and four disabled navigation items; extra visible semester schedule block. Fixture visual evidence only, no API PASS."
+    },
+    {
+      "name": "Root frontend dependency install",
+      "command": "npm ci --ignore-scripts --no-audit --no-fund",
+      "exitCode": 0,
+      "source": "root evidence from shared-shell worktree",
+      "evidence": "222 packages installed."
+    },
+    {
+      "name": "Root Docker inventory",
+      "command": "docker ps",
+      "exitCode": 0,
+      "source": "root evidence",
+      "evidence": "No containers running."
+    },
+    {
+      "name": "Root dev wrapper first attempt",
+      "command": "workspace dev wrapper --host",
+      "exitCode": 1,
+      "source": "root evidence",
+      "evidence": "Invalid first invocation; stopped and corrected. Recorded as environment evidence, not a product defect."
+    },
+    {
+      "name": "Root corrected fixture startup",
+      "command": "corrected per-workspace Vite startup",
+      "exitCode": 0,
+      "source": "root evidence",
+      "evidence": "Owned dev session on port 5175; sandbox denial was resolved by the approved root escalation."
+    },
+    {
+      "name": "Root: Gateway single-dispatch negative probe",
+      "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "command": "java --class-path <gateway-double-dispatch-repro/snapshot-classpath.txt> GatewayDispatchProbe.java",
+      "exitCode": 1,
+      "environment": "Windows PowerShell, Java21.0.10, approved isolated execution, actual compiled filter, synthetic mock exchange",
+      "evidence": "gateway-double-dispatch-repro/evidence.md",
+      "result": "CONFIRMED_DEFECT: two downstream subscriptions, not proof of two Auth HTTP requests"
+    },
+    {
+      "name": "Root: Auth token-purpose negative probe",
+      "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "command": "java --class-path <auth-token-purpose-probe/classpath.txt> AuthTokenPurposeProbe.java",
+      "exitCode": 1,
+      "environment": "Windows PowerShell, Java21.0.10, approved isolated execution, in-memory synthetic RSA, no Redis/DB/network",
+      "evidence": "auth-token-purpose-probe/evidence.md",
+      "result": "CONFIRMED_DEFECT: refresh authenticated as ROLE_null; missing/access controls pass"
+    },
+    {
+      "name": "Root: Homework same-tick owner retry probe",
+      "revision": "d3c31 plus frozen UI15 composable SHA03C72E19A41901A6C77F19E7D1C43EEA9CF384BBAE7CDEF1F6BCC61A8EA6BE8E",
+      "command": "node homework-owner-retry-probe/build.cjs then node homework-owner-retry-probe/probe.cjs",
+      "exitCode": 1,
+      "environment": "Node24.14.0, actual Vue/VueQuery, esbuild bundle of frozen copies, fake API only",
+      "evidence": "homework-owner-retry-probe/evidence.md",
+      "result": "CONFIRMED_DEFECT: A failed retry invoked for B; active UI writer received correction gate"
+    },
+    {
+      "name": "Root: dependency source freeze26",
+      "revision": "d3c31 plus dependency26",
+      "command": "Get-FileHash SHA256 for each source and copied path against runtime/source-manifest-post-correction.json",
+      "exitCode": 0,
+      "environment": "Windows PowerShell, local read/copy into root evidence after explicit handoff",
+      "evidence": "dependency-review-source/root-freeze.json",
+      "result": "26 source +26 copied hashes matched, not full acceptance"
+    },
+    {
+      "name": "Root: dependency post-correction staged JAR hashes",
+      "revision": "d3c31 plus dependency26",
+      "command": "Get-FileHash SHA256 for all source/staged paths in runtime/scan-input/manifest-post-correction.json",
+      "exitCode": 0,
+      "environment": "Windows PowerShell, read-only",
+      "evidence": "dependency-post-correction-jar-root-hashes.json",
+      "result": "8 source/staged pairs matched"
+    },
+    {
+      "name": "Root: covered dependency Trivy report verification",
+      "revision": "d3c31 plus dependency26",
+      "command": "Get-Content corrected Trivy rootfs JSON -Raw | ConvertFrom-Json -Depth 100; count packages, FilePath roots and vulnerability severities",
+      "exitCode": 0,
+      "environment": "Read-only verification of pinned Trivy0.74.0 network-none report; scanner exact command/exit under dependency worktree runtime",
+      "evidence": ".agent/worktrees/student-role-02/dependency-security/.agent/student-role-02/runtime/vulnerability-correction-rescan.json",
+      "result": "8JAR/1141packages, HIGH/CRITICAL gate0, fullreport57MEDIUM; empty17:10 report excluded"
+    },
+    {
+      "name": "Root: owner47 preservation after temporary config restore",
+      "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+      "command": "Get-FileHash SHA256 for each present baseline.json dirtyTracked entry; Test-Path skills-lock.json; Get-FileHash .codex/config.toml",
+      "exitCode": 0,
+      "environment": "Windows PowerShell, main checkout read-only",
+      "evidence": "baseline.json; temporary-agent-limit.md",
+      "result": "47 files match; skills-lock absent; exact original config SHA1CE988CB4230EDCBED60FCD3A96D583F809C8FE274F9B3277A3D3894704CEE28"
+    },
+    {
+      "name": "Root actual StudentApi and PWA auth session boundary repro",
+      "command": "node .agent/student-role-02/session-retry-root-probe/probe.cjs",
+      "exitCode": 1,
+      "status": "CONFIRMED_DEFECT",
+      "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "environment": "Windows Node24.14.0; frozen actual TS, installed Vue, synthetic fetch only; no real network or tokens",
+      "evidence": "session-retry-root-probe/evidence.md; manifest.json; result.log. Old A PUT resends under B after401; pending refresh restores local token after completed logout. Build approved exit0 after sandbox filesystem denial; source pairs2 mismatches0."
+    },
+    {
+      "name": "Root final shared Homework fixture recapture",
+      "command": "node .agent/student-role-02/homework-final-visual-root/visual-check.mjs",
+      "exitCode": 0,
+      "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e + frozen25 A95351F7282536C75D0F84416986098684953655114D26B67AFD4428C72DD0FA",
+      "environment": "Windows Node24.14.0 Edge headless DPR1; actual shared component deterministic fixture",
+      "evidence": "homework-final-visual-root/evidence.md + manifest/visual-evidence.json. Five390x844 loaded Onest/date17px/axe0; light/font/320–430 matrix nooverflow; postrun25source SHA0mismatch. Not realAPI/TMA."
+    },
+    {
+      "name": "Root corrected stale-owner retry exact repro",
+      "command": "node .agent/student-role-02/homework-owner-retry-corrected-probe/probe.cjs",
+      "exitCode": 0,
+      "revision": "d3c31 + frozen25 source",
+      "environment": "Windows Node24.14.0 Vue/VueQuery synthetic API",
+      "evidence": "homework-owner-retry-corrected-probe/evidence.md + result.log. Same original failedA→Bsame-tick probe, retry=null/APIAonly. Old failing snapshot preserved."
+    },
+    {
+      "name": "Root generated type drift classification",
+      "command": "node .agent/student-role-02/homework-combined-review-source/generated-drift-probe.mjs .agent/worktrees/student-role-02/homework-ui",
+      "exitCode": 0,
+      "revision": "d3c31 + unchanged generator/spec/generatedTS",
+      "environment": "Windows Node24.14.0 openapi-typescript7.13.0 actual AST generator options",
+      "evidence": "homework-combined-review-source/generated-drift-result.json. exactEqual=false; normalizedLineEndingsEqual=true; CRLF-only. Original npm generated check still exit1, not converted toPASS."
+    },
+    {
+      "name": "Actual composable historical-range owner transition",
+      "command": "node .agent/student-role-02/homework-owner-range-probe/probe.cjs",
+      "exitCode": 0,
+      "status": "REVIEW_FINDING_WITHDRAWN",
+      "revision": "d3c31 + frozen25 source",
+      "environment": "Windows Node24.14.0 actual Vue/VueQuery/createRenderer and frozen useHomework; synthetic API",
+      "evidence": "homework-owner-range-probe/evidence.md, result.log, exact source copy hashes. A historical→B current only; reviewer independently reran exit0 and withdrew equivalent-model MEDIUM claim. No product repair."
+    }
+  ],
+  "runtime": {
+    "status": "FIXTURE_BASELINE_ONLY",
+    "command": "Root browser fixture at http://127.0.0.1:5175",
+    "exitCode": 0,
+    "evidence": "PWA visual fixture at 390x844 was displayed and inspected. This does not prove API behavior or TMA host lifecycle.",
+    "tmaGenuineHost": "OPEN"
+  },
+  "scopeDiff": {
+    "status": "PASS_OWNED_SCOPE_WITH_EXTERNAL_DRIFT",
+    "command": "Compare current status with baseline and classify known root worktree rows",
+    "exitCode": 0,
+    "ownedRows": 7,
+    "externalConcurrentRows": 2,
+    "externalRows": [
+      ".agent/worktrees/student-role-02/homework-api/",
+      ".agent/worktrees/student-role-02/shared-shell/"
+    ],
+    "evidence": "All seven new rows are owned preparation files. The two outside rows are concurrent root worktrees; no existing path was edited by this worker."
+  },
+  "limitations": [
+    "Ownership gateway was not exposed to this worker; no ownership claim was invented.",
+    "Non-Today API/response/error contracts, DTO freeze, most design context and screenshot comparison are pending.",
+    "Untracked docs/source are represented by status inventory/path digest; prior 76 restored hashes remain referenced in apply-result.json.",
+    "No independent Sol review or genuine Telegram host runtime was run for this preparation.",
+    "Whole-checkout status digest changed by two known root worktree rows after baseline; this worker claims only the owned directory scope."
+  ],
+  "pauseCheckpoint": "pause-2026-09-07-1850Z/CHECKPOINT.md"
+}

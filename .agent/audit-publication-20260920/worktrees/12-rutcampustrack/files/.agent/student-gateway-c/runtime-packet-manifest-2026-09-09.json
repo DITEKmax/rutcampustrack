@@ -1,0 +1,34 @@
+{
+  "schema": "rct.gateway.runtime-packet-manifest.v1",
+  "date": "2026-09-09",
+  "status": "READY_CONTRACT_WAIT_B",
+  "runtime": "NOT_RUN",
+  "repairManifest": {
+    "path": ".agent/student-gateway-c/repair-manifest.json",
+    "sha256": "9126E5BA7CBD7BFC02E8EDB470CF85B28A68C04BE1D867F041B5E62D7A34307F",
+    "files": 24,
+    "guard": "PASS"
+  },
+  "artifacts": [
+    {
+      "path": ".agent/student-gateway-c/runtime-readiness.md",
+      "sha256": "67A1E3A556CD69629CDD8DB6A5BC8A1B3DA61F41A9394AAC3D04EA61A264FC47"
+    },
+    {
+      "path": ".agent/student-gateway-c/runtime-packet-2026-09-09.md",
+      "sha256": "0E1CE547F22DDBDA1C992D5B943558CCEE86B764B7222AAB8136DCAD5196EF99"
+    }
+  ],
+  "acceptedRequests": {
+    "checkout": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract",
+    "finalManifestSha256": "1DE6B9AF78677A28199E7503C0DA04813715352D238F438897011DC89ED96502",
+    "reviewSha256": "802EAF24E88C918DB3363353E1AF5C5F4EDECC70E840B015F6B841512018C96C"
+  },
+  "prerequisites": [
+    "A accepted access JWT/admission/session authority",
+    "B/B1 Java-first union/export plus exact-25 compile",
+    "stable integrated service/database baseline"
+  ],
+  "productFilesChanged": 0,
+  "evidenceWriter": "root after bounded leaf release"
+}

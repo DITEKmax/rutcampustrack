@@ -1,0 +1,137 @@
+plugins {
+    java
+    id("org.springframework.boot")
+    id("io.spring.dependency-management")
+    id("com.google.protobuf") version "0.9.4"
+}
+
+group = "ru.rutcampustrack"
+version = "0.1.0"
+
+dependencyManagement {
+    imports {
+        mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
+        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
+        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
+    }
+}
+
+dependencies {
+    // Наш контракт
+    implementation(project(":services:academic-service:academic-api-contract"))
+
+    // M11 G0.4: shared-web Spring Boot starter (GlobalExceptionHandler
+    // catch-all для Spring MVC exceptions + JacksonConfig + AdminActionAspect
+    // + SharedOpenApiCustomizer через @AutoConfiguration). Этот сервис
+    // имеет свой academic-domain handler с @Order(HIGHEST_PRECEDENCE).
+    implementation(project(":services:shared:shared-web"))
+
+    // M02 — shared-outbox + ShedLock + shared-events (D5(a) единый envelope)
+    implementation(project(":services:shared:shared-outbox"))
+    implementation(project(":services:shared:shared-events"))
+    implementation(libs.shedlock.spring)
+    implementation(libs.shedlock.provider.jdbc.template)
+
+    // M03a — shared-security (Internal JWT validator + dual-mode filter)
+    implementation(project(":services:shared:shared-security"))
+
+    // M04 — shared-observability (MdcKeys + BusinessMetrics + HealthIndicators)
+    implementation(project(":services:shared:shared-observability"))
+
+    // M04 QA7 — shared-logback (JSON-вывод + masking через logback-base.xml)
+    implementation(project(":services:shared:shared-logback"))
+
+    // M04 QA2 — distributed tracing OTel + OTLP exporter → grafana/tempo
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
+    // Spring Boot
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-hateoas")
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
+    // OpenAPI / Swagger UI
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+
+    // Spring Security Crypto (BCrypt password encoding)
+    implementation("org.springframework.security:spring-security-crypto")
+
+    // AOP support (for @RequireRole aspect)
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+
+    // PostgreSQL
+    runtimeOnly("org.postgresql:postgresql")
+
+    // Flyway
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
+
+    // gRPC server
+    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
+
+    // gRPC client (Phase 61 D-04: academic→schedule ResolveLesson)
+    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
+    implementation("io.grpc:grpc-netty")
+    implementation("com.google.protobuf:protobuf-java")
+    // Structured Academic projection errors use google.rpc.Status trailers.
+    implementation("com.google.api.grpc:proto-google-common-protos:2.29.0")
+
+    // Required for generated gRPC stubs (javax.annotation.Generated removed in Java 9+)
+    compileOnly("javax.annotation:javax.annotation-api:1.3.2")
+
+    // Jackson Hibernate6 module — normalizes Hibernate proxy class names during Redis serialization
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6")
+
+    // Lombok (только для entity и внутренних классов, НЕ для DTO контракта)
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
+    // Test
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:rabbitmq")
+    testImplementation(libs.json.schema.validator)
+    testImplementation(libs.archunit.junit5)
+    testImplementation(testFixtures(project(":services:shared:shared-security")))
+    testImplementation(testFixtures(project(":services:shared:shared-observability")))
+    // M08 Группа 1 (P2-8/1) — IntegrationTestNamingRule shared rule
+    testImplementation(testFixtures(project(":services:shared:shared-test-containers")))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir(rootProject.file("proto"))
+        }
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
+    }
+    plugins {
+        create("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
+        }
+    }
+    generateProtoTasks {
+        ofSourceSet("main").forEach {
+            it.plugins {
+                create("grpc") { }
+            }
+        }
+    }
+}

@@ -1,0 +1,8 @@
+{
+  "schema": "rutcampustrack.figma-asset-diagnostics.v1",
+  "excludedUrl": "https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png",
+  "classification": "boilerplate documentation example, not an actual generated-code asset reference",
+  "downloadObservation": "HTTP 404 occurred before the parser was corrected",
+  "requiredAsset": false,
+  "action": "excluded from asset inventory and gaps; future extraction accepts code constants or literal img src only"
+}

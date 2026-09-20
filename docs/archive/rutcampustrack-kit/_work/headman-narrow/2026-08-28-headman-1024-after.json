@@ -1,0 +1,106 @@
+{
+  "capturedAt": "2026-08-28T14:00:15.250Z",
+  "stage": "headman dark 1024, stopped at shared-master and count gates",
+  "documentA": 46584,
+  "deltaFromDocumentBase46466A": 118,
+  "page18": {
+    "id": "1902:253474",
+    "frames": 77,
+    "A": 532,
+    "deltaA": 76
+  },
+  "lessonCounters": {
+    "id": "1073:354",
+    "A": 25,
+    "deltaA": 6,
+    "directPhysicalConsumers": 13,
+    "expandedRefsOneCall": 13,
+    "headmanRolePageConsumers": 7,
+    "authConsumers": 0,
+    "studentConsumers": 0,
+    "newVariant": {
+      "id": "3245:75018",
+      "name": "width=1024",
+      "width": 960,
+      "height": 240,
+      "A": 6,
+      "children": [
+        {"id": "3245:75021", "width": 960, "height": 108, "x": 0, "y": 0},
+        {"id": "3245:75022", "width": 468, "height": 108, "x": 0, "y": 132},
+        {"id": "3245:75023", "width": 468, "height": 108, "x": 492, "y": 132}
+      ]
+    },
+    "desktopGeometryDeviations": 0
+  },
+  "screens": [
+    {"id": "3250:128191", "screen": "111", "x": 5240, "y": 0, "width": 1024, "height": 4137, "A": 12, "screenGeometryOutputs": 0, "screenRenderOutputs": 0, "rectangularUnderlays": 0, "visual": "accepted"},
+    {"id": "3250:129378", "screen": "112", "x": 5240, "y": 4401, "width": 1024, "height": 2658, "A": 10, "screenGeometryOutputs": 0, "screenRenderOutputs": 0, "rectangularUnderlays": 0, "visual": "accepted"},
+    {"id": "3250:135506", "screen": "113", "x": 5240, "y": 7323, "width": 1024, "height": 7250, "A": 10, "screenGeometryOutputs": 248, "screenRenderOutputs": 7, "rectangularUnderlays": 0, "visual": "gate: metrics one-column and fixed 1216 content"},
+    {"id": "3250:138329", "screen": "114-list", "x": 5240, "y": 14773, "width": 1024, "height": 1143, "A": 5, "screenGeometryOutputs": 0, "screenRenderOutputs": 0, "rectangularUnderlays": 0, "visual": "accepted"},
+    {"id": "3250:138628", "screen": "114-composer", "x": 5240, "y": 16180, "width": 1024, "height": 1193, "A": 5, "screenGeometryOutputs": 0, "screenRenderOutputs": 0, "rectangularUnderlays": 0, "visual": "accepted"},
+    {"id": "3250:139289", "screen": "115", "x": 5240, "y": 17637, "width": 1024, "height": 1137, "A": 8, "screenGeometryOutputs": 0, "screenRenderOutputs": 0, "rectangularUnderlays": 0, "visual": "accepted"},
+    {"id": "3250:139521", "screen": "116", "x": 5240, "y": 19038, "width": 1024, "height": 2124, "A": 4, "screenGeometryOutputs": 0, "screenRenderOutputs": 0, "rectangularUnderlays": 0, "visual": "accepted"},
+    {"id": "3250:141483", "screen": "116.1", "x": 5240, "y": 21474, "width": 1024, "height": 1352, "A": 5, "screenGeometryOutputs": 57, "screenRenderOutputs": 0, "rectangularUnderlays": 0, "visual": "gate: implicit clipping without horizontal viewport"},
+    {"id": "3250:141966", "screen": "117", "x": 5240, "y": 23090, "width": 1024, "height": 1424, "A": 5, "screenGeometryOutputs": 0, "screenRenderOutputs": 0, "rectangularUnderlays": 0, "visual": "accepted"},
+    {"id": "3250:142570", "screen": "118", "x": 5240, "y": 24778, "width": 1024, "height": 1328, "A": 5, "screenGeometryOutputs": 65, "screenRenderOutputs": 63, "rectangularUnderlays": 0, "visual": "gate: LessonManagement grid has no horizontal viewport"},
+    {"id": "3250:143175", "screen": "119", "x": 5240, "y": 26322, "width": 1024, "height": 2480, "A": 7, "screenGeometryOutputs": 0, "screenRenderOutputs": 0, "rectangularUnderlays": 0, "visual": "accepted"}
+  ],
+  "attendanceJournal": {
+    "screenId": "3250:129378",
+    "weekViewport": {"id": "I3250:129381;2239:318245", "width": 960, "height": 1120, "contentWidth": 1824, "contentHeight": 1120, "overflowX": 864, "stickyFirstColumn": true, "firstColumnWidth": 224, "headerHeight": 160, "rowHeight": 32},
+    "subjectViewport": {"id": "I3250:129385;2239:324108", "width": 960, "height": 1024, "contentWidth": 2176, "contentHeight": 1024, "overflowX": 1216, "stickyFirstColumn": true, "firstColumnWidth": 224, "headerHeight": 64, "rowHeight": 32}
+  },
+  "attendanceStatusMark": {
+    "promptCount": 972,
+    "directPhysicalA": 847,
+    "expandedRefsOneCall": 847,
+    "insideAttendanceJournalGridSet": 836,
+    "insideDependencyBank": 11,
+    "widthHistogram": {"20": 847},
+    "heightHistogram": {"20": 847},
+    "parentWidthHistogram": {"68": 847},
+    "parentHeightHistogram": {"32": 847},
+    "sourceOffsetXHistogram": {"24": 847},
+    "sourceOffsetYHistogram": {"6": 847},
+    "status": "count gate: prompt and live file differ by -125"
+  },
+  "radiusBucketsByScreen": {
+    "111": {"0": 303, "6": 6, "12": 3, "16": 2, "24": 11, "999": 60},
+    "112": {"0": 2784, "6": 1, "10": 5, "12": 1, "16": 2, "24": 4, "999": 1038},
+    "113": {"0": 1237, "10": 4, "12": 1, "16": 7, "24": 7, "999": 79},
+    "114-list": {"0": 79, "12": 1, "24": 3, "999": 13},
+    "114-composer": {"0": 178, "10": 5, "12": 2, "16": 2, "24": 3, "999": 59},
+    "115": {"0": 61, "10": 6, "12": 1, "16": 2, "24": 2, "999": 8},
+    "116": {"0": 691, "12": 8, "999": 129},
+    "116.1": {"0": 152, "10": 2, "12": 2, "16": 4, "24": 4, "999": 31},
+    "117": {"0": 117, "10": 4, "12": 1, "16": 1, "24": 118, "999": 12},
+    "118": {"0": 165, "10": 1, "12": 1, "24": 115, "999": 17},
+    "119": {"0": 165, "10": 4, "12": 1, "16": 4, "24": 6, "999": 33}
+  },
+  "r7": {
+    "darkRowsAfter113ShiftY": 288,
+    "lightTableShiftY": 312,
+    "nonYDesktopChanges": 0,
+    "overlaps": 0,
+    "rowGap": 200
+  },
+  "repairGateExpected": {
+    "deltaA": 30,
+    "documentAAfter": 46614,
+    "page18DeltaA": 0,
+    "screen113HeightAfter": 6800,
+    "newBranch": {
+      "masterId": "1112:15201",
+      "name": "block/SemesterTotals width=1024",
+      "deltaA": 30,
+      "root": {"width": 960, "height": 160},
+      "cards": {"count": 4, "width": 222, "gap": 24}
+    },
+    "sharedRepairs": [
+      {"masterId": "1112:114391", "name": "block/SubjectStats", "deltaA": 0, "desktopGeometryDelta": 0, "narrowRootHeightBefore": 2350, "narrowRootHeightAfter": 2428},
+      {"masterId": "1112:115466", "name": "block/TrendPanel · 113", "deltaA": 0, "desktopGeometryDelta": 0, "narrowRootHeightBefore": 1160, "narrowRootHeightAfter": 1160},
+      {"masterId": "1148:25318", "name": "block/SubjectsList", "deltaA": 0, "desktopGeometryDelta": 0, "viewport": {"width": 960, "height": 368, "contentWidth": 1216}},
+      {"masterId": "1165:32086", "name": "block/LessonManagement", "deltaA": 0, "desktopGeometryDelta": 0, "viewport": {"width": 960, "height": 1012, "contentWidth": 1216}}
+    ]
+  }
+}

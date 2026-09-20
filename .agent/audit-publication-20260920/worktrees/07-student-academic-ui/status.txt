@@ -1,0 +1,4 @@
+?? .agent/student-academic-ui/
+?? frontends/mobile-core/harness/
+?? frontends/mobile-core/src/features/attendance/
+?? frontends/mobile-core/src/features/statistics/

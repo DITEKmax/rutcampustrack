@@ -1,0 +1,16 @@
+{
+  "baseRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "commit": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "committedPathCount": 42,
+  "manifest": "manifest.json",
+  "scope": "12 shared-shell + 30 homework-api accepted paths",
+  "postCommit": {
+    "sourceShaPass": 42,
+    "destinationShaPass": 42,
+    "commitUnexpected": 0,
+    "commitMissing": 0,
+    "trackedUnstagedCount": 0,
+    "stagedCount": 0
+  },
+  "evidenceOnlyFilesRemainUntracked": true
+}

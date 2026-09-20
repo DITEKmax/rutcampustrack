@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "late_checkin.decided",
+  "description": "Запрос студента завершён решением старосты или успешной геоотметкой. Генерируется Attendance Service после терминального перехода.",
+  "type": "object",
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
+  "properties": {
+    "event_type": {
+      "const": "late_checkin.decided"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "request_id",
+        "user_id",
+        "status"
+      ],
+      "properties": {
+        "request_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "Студент — получатель уведомления об итоге"
+        },
+        "group_id": {
+          "type": "integer"
+        },
+        "lesson_id": {
+          "type": "integer"
+        },
+        "decision_by": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Telegram user_id старосты, принявшего решение"
+        },
+        "status": {
+          "enum": [
+            "approved",
+            "rejected",
+            "cancelled"
+          ]
+        },
+        "resolution_reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "headman_approved",
+            "headman_rejected",
+            "geo_confirmed",
+            "student_cancelled",
+            "present_priority",
+            null
+          ]
+        },
+        "decided_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lesson_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "lesson_number": {
+          "type": "integer"
+        },
+        "subject_id": {
+          "type": "integer"
+        },
+        "subject_name": {
+          "type": "string"
+        }
+      }
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion"
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "description": "Имя сервиса-источника (academic-service / schedule-service / attendance-service / auth-service)."
+    }
+  }
+}

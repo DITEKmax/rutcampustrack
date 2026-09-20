@@ -1,0 +1,2058 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "RutCampusTrack Student Mobile BFF",
+    "description" : "Canonical PWA/TMA student contract. Domain handlers land after contract freeze.",
+    "version" : "JS-STUDENT-01-r1"
+  },
+  "tags" : [ {
+    "name" : "Student mobile",
+    "description" : "PWA/TMA student read model and geo check-in"
+  } ],
+  "paths" : {
+    "/api/v1/student/homework/{id}/completion" : {
+      "put" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Set homework completion state",
+        "description" : "Desired-state mutation for the authenticated student; repeated requests are safe.",
+        "operationId" : "setHomeworkCompletion",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/StudentHomeworkCompletionCommand"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Completion state",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentHomeworkCompletion"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Wrong role, group or semester scope",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Homework not found",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Academic dependency unavailable",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/{id}/cancel" : {
+      "post" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Cancel a pending student request",
+        "operationId" : "cancelRequest",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{24}$",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Cancelled or replayed request",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Request not found",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Request is already decided",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/late-checkin" : {
+      "post" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Submit a manual late-checkin request",
+        "operationId" : "submitLateCheckin",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "maxLength" : 128,
+            "minLength" : 16,
+            "pattern" : "^[\\x21-\\x7E]+$",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/StudentLateCheckinRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Created or replayed request",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestDetail"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request or key",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Request conflict",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/excuse" : {
+      "post" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Submit a student excuse request",
+        "operationId" : "submitExcuse",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "maxLength" : 128,
+            "minLength" : 16,
+            "pattern" : "^[\\x21-\\x7E]+$",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "required" : [ "request" ],
+                "type" : "object",
+                "properties" : {
+                  "request" : {
+                    "$ref" : "#/components/schemas/StudentExcuseRequest"
+                  },
+                  "files" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string",
+                      "format" : "binary"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Created or replayed request",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestDetail"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request, file or key",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Request conflict",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "Payload too large",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/lessons/{lessonId}/checkin" : {
+      "post" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Attempt student geo check-in",
+        "description" : "The attendance domain owns the window, geofence, cooldown, idempotency and automatic request.",
+        "operationId" : "checkin",
+        "parameters" : [ {
+          "name" : "lessonId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Opaque 16-128 ASCII character command key",
+          "required" : true,
+          "schema" : {
+            "maxLength" : 128,
+            "minLength" : 16,
+            "pattern" : "^[\\x21-\\x7E]+$",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/StudentCheckinCommand"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "PRESENT or atomically persisted PENDING_CONFIRMATION",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentCheckinAck"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid input or idempotency key",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Wrong role or group scope",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Lesson not found",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Manual absence, ineligible state or idempotency payload mismatch",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Durable 300-second pair cooldown",
+            "headers" : {
+              "Retry-After" : {
+                "description" : "Whole seconds until retry",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Mandatory dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/today" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Today projection with current or nearest lesson",
+        "operationId" : "getToday",
+        "responses" : {
+          "200" : {
+            "description" : "Live Today projection",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentToday"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Wrong role or group scope",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Mandatory dependency unavailable; eligibility fails closed",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/session" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Current student session projection",
+        "operationId" : "getSession",
+        "responses" : {
+          "200" : {
+            "description" : "Session projection",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentSession"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Active role is not STUDENT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Mandatory dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/schedule" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Server-scoped semester schedule for PWA offline reads",
+        "operationId" : "getSchedule",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "If-None-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Materialized lessons in one authorized semester",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "private, no-cache",
+                "style" : "simple"
+              },
+              "ETag" : {
+                "description" : "Authorized stable representation validator",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentSemesterSchedule"
+                }
+              }
+            }
+          },
+          "304" : {
+            "description" : "Authorized representation unchanged",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentSemesterSchedule"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Semester is outside the student's group scope",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Mandatory dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "List the authenticated student's requests",
+        "operationId" : "listRequests",
+        "parameters" : [ {
+          "name" : "bucket",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "OPEN",
+            "enum" : [ "OPEN", "ARCHIVE" ]
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Request page",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestPage"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid page parameters",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Wrong role or group scope",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/{id}" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Get one of the authenticated student's requests",
+        "operationId" : "getRequest",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{24}$",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Request detail",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestDetail"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request id",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Request not found",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/{id}/attachments/{attachmentId}" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Download a request attachment",
+        "operationId" : "downloadRequestAttachment",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{24}$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "attachmentId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{24}$",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Attachment bytes",
+            "content" : {
+              "application/octet-stream" : { }
+            }
+          },
+          "403" : {
+            "description" : "Attachment is outside the student's scope",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Attachment not found",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "410" : {
+            "description" : "Attachment expired",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/options" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Get request submission options",
+        "operationId" : "requestOptions",
+        "responses" : {
+          "200" : {
+            "description" : "Request options",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestOptions"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/homework" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Student homework feed",
+        "description" : "Active-semester homework for the authenticated student's own group. Missing bounds default to Moscow today through semester end.",
+        "operationId" : "getHomework",
+        "parameters" : [ {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "pattern" : "^\\d{4}-\\d{2}-\\d{2}$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "pattern" : "^\\d{4}-\\d{2}-\\d{2}$",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Homework feed",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentHomework"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid or out-of-semester date range",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Wrong role or group scope",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Homework scope was not found",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Academic dependency unavailable",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "StudentHomeworkCompletionCommand" : {
+        "required" : [ "completed" ],
+        "type" : "object",
+        "properties" : {
+          "completed" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "StudentHomeworkCompletion" : {
+        "required" : [ "completed", "completedAt", "id" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "completed" : {
+            "type" : "boolean"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          }
+        }
+      },
+      "MobileProblemDetails" : {
+        "required" : [ "code", "detail", "instance", "status", "timestamp", "title", "type" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "type" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "traceId" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "code" : {
+            "type" : "string",
+            "enum" : [ "INVALID_REQUEST", "INVALID_IDEMPOTENCY_KEY", "INVALID_SESSION", "WRONG_ROLE", "OUT_OF_SCOPE", "ROLE_READ_ONLY", "HOMEWORK_NOT_FOUND", "LESSON_NOT_FOUND", "REQUEST_NOT_FOUND", "ATTACHMENT_NOT_FOUND", "REQUEST_CONFLICT", "ATTACHMENT_EXPIRED", "PAYLOAD_TOO_LARGE", "CHECKIN_COOLDOWN", "MANUAL_ABSENCE_REQUIRES_APPEAL", "IDEMPOTENCY_PAYLOAD_MISMATCH", "CHECKIN_NOT_ELIGIBLE", "DEPENDENCY_UNAVAILABLE", "INTERNAL_ERROR" ]
+          },
+          "retryAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "extras" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string",
+              "nullable" : true
+            },
+            "nullable" : true
+          }
+        },
+        "description" : "RFC 9457 Problem Details with a stable machine code"
+      },
+      "StudentRequestAttachment" : {
+        "required" : [ "contentType", "expiredAt", "expiresAt", "id", "name", "sha256", "sizeBytes", "state", "uploadedAt" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "sizeBytes" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "sha256" : {
+            "type" : "string"
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "ACTIVE", "EXPIRED" ]
+          },
+          "uploadedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "expiredAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          }
+        }
+      },
+      "StudentRequestDecision" : {
+        "required" : [ "comment", "decidedAt" ],
+        "type" : "object",
+        "properties" : {
+          "comment" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "decidedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          }
+        },
+        "nullable" : true
+      },
+      "StudentRequestDetail" : {
+        "required" : [ "attachments", "comment", "decision", "reason", "summary" ],
+        "type" : "object",
+        "properties" : {
+          "summary" : {
+            "$ref" : "#/components/schemas/StudentRequestSummary"
+          },
+          "reason" : {
+            "type" : "string",
+            "nullable" : true,
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
+          },
+          "comment" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "decision" : {
+            "$ref" : "#/components/schemas/StudentRequestDecision"
+          },
+          "attachments" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestAttachment"
+            }
+          }
+        }
+      },
+      "StudentRequestLesson" : {
+        "required" : [ "blocked", "id", "lessonNumber", "status" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "lessonNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "blocked" : {
+            "type" : "boolean"
+          },
+          "subjectId" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "subjectName" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "subjectType" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "semesterId" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date",
+            "nullable" : true
+          },
+          "startsAt" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "endsAt" : {
+            "type" : "string",
+            "nullable" : true
+          }
+        }
+      },
+      "StudentRequestSummary" : {
+        "required" : [ "createdAt", "id", "kind", "lessons", "origin", "status", "updatedAt" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "EXCUSE", "LATE_CHECKIN" ]
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
+          },
+          "origin" : {
+            "type" : "string",
+            "enum" : [ "MANUAL", "AUTO_GEO_FAILURE" ]
+          },
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestLesson"
+            }
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "StudentLateCheckinRequest" : {
+        "required" : [ "lessonId" ],
+        "type" : "object",
+        "properties" : {
+          "lessonId" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        }
+      },
+      "StudentExcuseRequest" : {
+        "required" : [ "lessonIds", "reason" ],
+        "type" : "object",
+        "properties" : {
+          "lessonIds" : {
+            "maxItems" : 2147483647,
+            "minItems" : 1,
+            "type" : "array",
+            "items" : {
+              "pattern" : "^[1-9][0-9]*$",
+              "type" : "string"
+            }
+          },
+          "reason" : {
+            "type" : "string",
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
+          },
+          "comment" : {
+            "maxLength" : 1000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "CoordinatesGeo" : {
+        "required" : [ "kind", "latitude", "longitude" ],
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "COORDINATES" ]
+          },
+          "latitude" : {
+            "maximum" : 90.0,
+            "exclusiveMaximum" : false,
+            "minimum" : -90.0,
+            "exclusiveMinimum" : false,
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "maximum" : 180.0,
+            "exclusiveMaximum" : false,
+            "minimum" : -180.0,
+            "exclusiveMinimum" : false,
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "GeoInput" : {
+        "type" : "object",
+        "discriminator" : {
+          "propertyName" : "kind",
+          "mapping" : {
+            "COORDINATES" : "#/components/schemas/CoordinatesGeo",
+            "UNAVAILABLE" : "#/components/schemas/UnavailableGeo"
+          }
+        },
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/CoordinatesGeo"
+        }, {
+          "$ref" : "#/components/schemas/UnavailableGeo"
+        } ]
+      },
+      "StudentCheckinCommand" : {
+        "required" : [ "geo" ],
+        "type" : "object",
+        "properties" : {
+          "geo" : {
+            "$ref" : "#/components/schemas/GeoInput"
+          }
+        }
+      },
+      "UnavailableGeo" : {
+        "required" : [ "kind", "reason" ],
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "UNAVAILABLE" ]
+          },
+          "reason" : {
+            "type" : "string",
+            "enum" : [ "PERMISSION_DENIED", "POSITION_UNAVAILABLE", "TIMEOUT" ]
+          }
+        }
+      },
+      "Attendance" : {
+        "required" : [ "markedAt", "source", "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "ABSENT", "EXCUSED" ]
+          },
+          "source" : {
+            "type" : "string",
+            "enum" : [ "STUDENT_GEO", "LATE_CHECKIN", "HEADMAN", "TEACHER", "SYSTEM" ]
+          },
+          "markedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          }
+        },
+        "nullable" : true
+      },
+      "AutomaticCheckinRequest" : {
+        "required" : [ "id", "origin", "resolutionReason", "status" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
+          },
+          "origin" : {
+            "type" : "string",
+            "enum" : [ "AUTO_GEO_FAILURE" ]
+          },
+          "resolutionReason" : {
+            "type" : "string",
+            "nullable" : true,
+            "enum" : [ "GEO_CONFIRMED", "HEADMAN_APPROVED", "HEADMAN_REJECTED", "STUDENT_CANCELLED", "PRESENT_PRIORITY" ]
+          }
+        },
+        "nullable" : true
+      },
+      "Link" : {
+        "required" : [ "href" ],
+        "type" : "object",
+        "properties" : {
+          "href" : {
+            "type" : "string",
+            "format" : "uri"
+          }
+        }
+      },
+      "StudentCheckinAck" : {
+        "required" : [ "_links", "attendance", "lessonId", "outcome", "request", "retryAt", "serverNow" ],
+        "type" : "object",
+        "properties" : {
+          "outcome" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "PENDING_CONFIRMATION" ]
+          },
+          "lessonId" : {
+            "type" : "string"
+          },
+          "attendance" : {
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/Attendance"
+            } ]
+          },
+          "request" : {
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/AutomaticCheckinRequest"
+            } ]
+          },
+          "retryAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "_links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "$ref" : "#/components/schemas/Link"
+            }
+          }
+        }
+      },
+      "CheckinEligibility" : {
+        "required" : [ "allowed", "reason", "retryAt" ],
+        "type" : "object",
+        "properties" : {
+          "allowed" : {
+            "type" : "boolean"
+          },
+          "reason" : {
+            "type" : "string",
+            "enum" : [ "ELIGIBLE", "ALREADY_PRESENT", "LESSON_CANCELLED", "TOO_EARLY", "WINDOW_CLOSED", "GEO_BLOCKED", "PENDING_CONFIRMATION", "COOLDOWN", "HEADMAN_ABSENT_REQUIRES_APPEAL", "HEADMAN_USES_JOURNAL", "DEPENDENCY_UNAVAILABLE" ]
+          },
+          "retryAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          }
+        }
+      },
+      "LessonSchedule" : {
+        "required" : [ "date", "endsAt", "id", "lessonNumber", "room", "startsAt", "status", "subject" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lessonNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "startsAt" : {
+            "type" : "string"
+          },
+          "endsAt" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PLANNED", "ACTIVE", "CLOSED", "CANCELLED" ]
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/Subject"
+          },
+          "room" : {
+            "$ref" : "#/components/schemas/Room"
+          }
+        }
+      },
+      "Room" : {
+        "required" : [ "changeState", "current", "previous" ],
+        "type" : "object",
+        "properties" : {
+          "current" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "previous" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "changeState" : {
+            "type" : "string",
+            "enum" : [ "UNCHANGED", "CHANGED", "UNKNOWN" ]
+          }
+        }
+      },
+      "StudentToday" : {
+        "required" : [ "_links", "date", "lessons", "serverNow", "timeZone" ],
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "timeZone" : {
+            "type" : "string"
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TodayLesson"
+            }
+          },
+          "_links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "$ref" : "#/components/schemas/Link"
+            }
+          }
+        }
+      },
+      "Subject" : {
+        "required" : [ "id", "name", "type" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+          }
+        }
+      },
+      "TodayLesson" : {
+        "required" : [ "attendance", "checkinEligibility", "request", "schedule" ],
+        "type" : "object",
+        "properties" : {
+          "schedule" : {
+            "$ref" : "#/components/schemas/LessonSchedule"
+          },
+          "attendance" : {
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/Attendance"
+            } ]
+          },
+          "checkinEligibility" : {
+            "$ref" : "#/components/schemas/CheckinEligibility"
+          },
+          "request" : {
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/AutomaticCheckinRequest"
+            } ]
+          }
+        }
+      },
+      "GroupSummary" : {
+        "required" : [ "id", "name" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "nullable" : true
+      },
+      "SemesterSummary" : {
+        "required" : [ "endsOn", "id", "name", "startsOn" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "startsOn" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endsOn" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "StudentSession" : {
+        "required" : [ "_links", "activeRole", "capabilities", "group", "readOnly", "rolesVersion", "semester", "serverNow", "sessionId", "sessionVersion", "user" ],
+        "type" : "object",
+        "properties" : {
+          "sessionId" : {
+            "minLength" : 1,
+            "pattern" : "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "sessionVersion" : {
+            "minLength" : 1,
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          },
+          "rolesVersion" : {
+            "minLength" : 1,
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          },
+          "readOnly" : {
+            "type" : "boolean"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/StudentUser"
+          },
+          "activeRole" : {
+            "type" : "string",
+            "enum" : [ "STUDENT" ]
+          },
+          "group" : {
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/GroupSummary"
+            } ]
+          },
+          "semester" : {
+            "nullable" : true,
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SemesterSummary"
+            } ]
+          },
+          "capabilities" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "TODAY", "GEO_CHECKIN", "OFFLINE_SEMESTER_SCHEDULE" ]
+            }
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "_links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "$ref" : "#/components/schemas/Link"
+            }
+          }
+        }
+      },
+      "StudentUser" : {
+        "required" : [ "displayName", "id" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "displayName" : {
+            "type" : "string"
+          }
+        }
+      },
+      "StudentSemesterSchedule" : {
+        "required" : [ "_links", "dateFrom", "dateTo", "lessons", "semester", "updatedAt" ],
+        "type" : "object",
+        "properties" : {
+          "semester" : {
+            "$ref" : "#/components/schemas/SemesterSummary"
+          },
+          "dateFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dateTo" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LessonSchedule"
+            }
+          },
+          "_links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "$ref" : "#/components/schemas/Link"
+            }
+          }
+        }
+      },
+      "StudentRequestPage" : {
+        "required" : [ "content", "page", "size", "totalElements", "totalPages" ],
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestSummary"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "StudentRequestBudget" : {
+        "required" : [ "limit", "remaining", "semesterId", "used" ],
+        "type" : "object",
+        "properties" : {
+          "semesterId" : {
+            "type" : "string"
+          },
+          "limit" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "used" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "remaining" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "StudentRequestFileLimits" : {
+        "required" : [ "contentTypes", "extensions", "maxBytesPerFile", "maxBytesTotal", "maxFiles" ],
+        "type" : "object",
+        "properties" : {
+          "maxFiles" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxBytesPerFile" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "maxBytesTotal" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "contentTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "extensions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "StudentRequestLessonOption" : {
+        "required" : [ "excuseEligible", "lateCheckinEligible", "lesson", "pendingRequests" ],
+        "type" : "object",
+        "properties" : {
+          "lesson" : {
+            "$ref" : "#/components/schemas/StudentRequestLesson"
+          },
+          "excuseEligible" : {
+            "type" : "boolean"
+          },
+          "lateCheckinEligible" : {
+            "type" : "boolean"
+          },
+          "pendingRequests" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestPendingRef"
+            }
+          }
+        }
+      },
+      "StudentRequestOptions" : {
+        "required" : [ "budget", "files", "lessons", "reasons" ],
+        "type" : "object",
+        "properties" : {
+          "reasons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestReasonOption"
+            }
+          },
+          "files" : {
+            "$ref" : "#/components/schemas/StudentRequestFileLimits"
+          },
+          "budget" : {
+            "$ref" : "#/components/schemas/StudentRequestBudget"
+          },
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestLessonOption"
+            }
+          }
+        }
+      },
+      "StudentRequestPendingRef" : {
+        "required" : [ "id", "kind", "origin" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "EXCUSE", "LATE_CHECKIN" ]
+          },
+          "origin" : {
+            "type" : "string",
+            "enum" : [ "MANUAL", "AUTO_GEO_FAILURE" ]
+          }
+        }
+      },
+      "StudentRequestReasonOption" : {
+        "required" : [ "code", "commentRequired", "label" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "commentRequired" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "StudentHomework" : {
+        "required" : [ "from", "items", "semester", "serverNow", "to" ],
+        "type" : "object",
+        "properties" : {
+          "semester" : {
+            "$ref" : "#/components/schemas/StudentHomeworkSemester"
+          },
+          "from" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "to" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentHomeworkItem"
+            }
+          }
+        }
+      },
+      "StudentHomeworkItem" : {
+        "required" : [ "completed", "completedAt", "description", "id", "lessonDate", "lessonNumber", "link", "subject", "title" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/StudentHomeworkSubject"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "link" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "lessonDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lessonNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "completed" : {
+            "type" : "boolean"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          }
+        }
+      },
+      "StudentHomeworkSemester" : {
+        "required" : [ "dateFrom", "dateTo", "id", "name" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "dateFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dateTo" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "StudentHomeworkSubject" : {
+        "required" : [ "id", "name" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "description" : "Validated access JWT; client X-User-* headers are never identity",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      }
+    }
+  }
+}

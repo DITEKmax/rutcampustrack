@@ -1,0 +1,13 @@
+{
+  "capturedAt": "2026-09-07",
+  "baseRevision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "branch": "codex/student-role-02-homework-adapters",
+  "acceptedSourceManifest": ".agent/student-role-02/homework-presentation-recheck-source/manifest.json",
+  "acceptedSourceManifestSha256": "6F0293C15D1FB8481813181532A12C719290E8E19E93EA232F9D2E878F3151ED",
+  "importedFileCount": 25,
+  "sourceShaVerification": "PASS",
+  "destinationShaVerification": "PASS",
+  "importedSourceManifestCopy": ".agent/student-role-02/homework-adapters/imported-source-manifest.json",
+  "adapterEditsStarted": false,
+  "scopeNote": "Accepted shared Homework UI snapshots were imported before any adapter edits. The copied manifest contains every expected source and destination hash."
+}

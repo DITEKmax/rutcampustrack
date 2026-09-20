@@ -1,0 +1,42 @@
+[versions]
+# M01 — shared modules foundations
+# Добавляем минимальный набор версий, используемых shared-* модулями.
+# Остальные сервисы мигрируют на catalog постепенно (не scope M01).
+springBoot = "3.5.16"
+springDependencyManagement = "1.1.7"
+logstashLogback = "7.4"
+testcontainersBom = "1.20.4"
+grpc = "1.82.4"
+protobuf = "3.25.8"
+wiremock = "3.9.1"
+springdocOpenapi = "2.8.9"
+
+# M02 — reliable eventing (ShedLock + outbox + contract-тесты)
+shedlock = "5.16.0"
+jsonSchemaValidator = "1.5.4"
+archunit = "1.3.0"
+
+[libraries]
+# shared-logback
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstashLogback" }
+
+# shared-test-containers
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainersBom" }
+grpc-inprocess = { module = "io.grpc:grpc-inprocess", version.ref = "grpc" }
+grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
+grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
+wiremock-standalone = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
+
+# shared-web (OpenAPI — заглушка OpenApiCustomizer для M06)
+springdoc-openapi-starter-common = { module = "org.springdoc:springdoc-openapi-starter-common", version.ref = "springdocOpenapi" }
+
+# M02 — ShedLock (distributed cluster locks для @Scheduled)
+shedlock-spring = { module = "net.javacrumbs.shedlock:shedlock-spring", version.ref = "shedlock" }
+shedlock-provider-jdbc-template = { module = "net.javacrumbs.shedlock:shedlock-provider-jdbc-template", version.ref = "shedlock" }
+shedlock-provider-mongo = { module = "net.javacrumbs.shedlock:shedlock-provider-mongo", version.ref = "shedlock" }
+
+# M02 — JSON Schema validation (contract-тесты events)
+json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "jsonSchemaValidator" }
+
+# M02 — ArchUnit (NEW-28 — @Scheduled должен иметь @SchedulerLock)
+archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "projectId": "8e88971d-4db9-4e29-888d-838b8f42ff1c",
+  "projectPath": "C:/Users/maksd/IntelliJIDEA/rutcampustrack",
+  "status": "ACTIVE_OWNER_GO_2026_09_19",
+  "model": "gpt-6-astra",
+  "thinking": "medium",
+  "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+  "main": {
+    "threadId": "01a09c09-da2a-7c51-b5a5-1c9c157851dc",
+    "title": "2 · Главный оркестратор — rutcampustrackFULL",
+    "model": "gpt-6-astra",
+    "thinking": "medium"
+  },
+  "directions": [
+    {
+      "key": "lessons",
+      "threadId": "01a09c0a-7960-7ca1-9bdf-abebba460507",
+      "title": "2 · Тимлид backend — Занятия и задания",
+      "packet": "LESSONS.md",
+      "parentThreadId": "01a09c09-da2a-7c51-b5a5-1c9c157851dc",
+      "model": "gpt-6-astra",
+      "thinking": "low",
+      "status": "ACTIVE_L5A_FULL_RECHECK"
+    },
+    {
+      "key": "attendance",
+      "threadId": "01a09c0a-8931-7162-825e-2ccef42f8ae4",
+      "title": "2 · Тимлид backend — Посещаемость и заявки",
+      "packet": "ATTENDANCE.md",
+      "parentThreadId": "01a09c09-da2a-7c51-b5a5-1c9c157851dc",
+      "model": "gpt-6-astra",
+      "thinking": "low",
+      "status": "ACTIVE_H62_OUTER_FAILURE_CORRECTION"
+    },
+    {
+      "key": "access",
+      "threadId": "01a09c0a-97a5-7c82-8f40-c455b7e5de77",
+      "title": "2 · Тимлид backend — Пользователи и доступ",
+      "packet": "ACCESS.md",
+      "parentThreadId": "01a09c09-da2a-7c51-b5a5-1c9c157851dc",
+      "model": "gpt-6-astra",
+      "thinking": "low",
+      "status": "RELEASED_NO_ALLOCATION"
+    },
+    {
+      "key": "maps",
+      "threadId": "01a09c0a-a7d1-74a0-bdd9-9a5323f13790",
+      "title": "2 · Тимлид backend — Карта",
+      "packet": "MAPS.md",
+      "parentThreadId": "01a09c09-da2a-7c51-b5a5-1c9c157851dc",
+      "model": "gpt-6-astra",
+      "thinking": "low",
+      "status": "RELEASED_NO_ALLOCATION"
+    }
+  ]
+}

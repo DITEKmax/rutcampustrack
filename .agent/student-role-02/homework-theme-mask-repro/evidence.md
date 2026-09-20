@@ -1,0 +1,7 @@
+# Compound disclosure SVG lost under alpha mask
+
+Severity: MEDIUM visual/interaction regression: disclosure affordance disappears in both themes. 07.09.2026. Root opened the actual mobile-theme explicit-dark-16.png and explicit-light-16.png screenshots while the theme writer was still working. Both show plain solid circles instead of disclosure chevrons. These are intermediate full-page keyboard-fixture captures, not final five-state Figma acceptance.
+
+Root opened homework-expand.svg: its44×44 opaque rounded rectangle and overlaid chevron have different colors but both are opaque. Applying the complete SVG as one alpha mask makes the opaque disk swallow the internal chevron shape. HomeworkScreen.vue/homework-screen.pcss currently apply that mask with a single foreground. Root copied both screenshots, the unchanged SVG and the current screen/PCSS into this evidence directory; all five source/copy hashes match and source hashes were rechecked after copying. This is a verified visual regression, not a proposed alternative style.
+
+The active mobile_theme_repair_fresh writer was told to correct the layered icon in the existing authorized theme/icon scope, preserve geometry/background/chevron colors per theme, inspect other compound icons, and recapture. No root product edit. Dark/light final reference states still need viewport390×844 captures with Onest and actual focus transitions; a1308px full-page fixture screenshot is additional evidence only.

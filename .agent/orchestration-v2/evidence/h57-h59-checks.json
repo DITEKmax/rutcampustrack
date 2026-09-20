@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+  "environment": {
+    "java": "21.0.10",
+    "host": "Windows",
+    "identity": "ditek-pk\\maksd",
+    "node": "24.14.0",
+    "gradle": "8.12",
+    "context": "require_escalated"
+  },
+  "checks": [
+    {
+      "sourceCleanBefore": true,
+      "id": "H57",
+      "sourceCleanAfter": true,
+      "command": "frozen producer.ps1 normal six bootJar + PWA",
+      "manifestSha256": "61E73ED658D43CD878AFE6DA6AB703D2C73844E8114329FD991566BF9C009F4F",
+      "status": "PASS",
+      "evidence": "build-i6/h57-build/runs/20260919T182852505Z-dde32d4c342c4388bb96b8e949b847eb/run-report.json",
+      "exitCode": 0
+    },
+    {
+      "status": "PASS",
+      "evidence": "evidence/h58-source-validation.json",
+      "id": "H58",
+      "resourcesCreated": false,
+      "runtime": "NOT_RUN",
+      "exitCode": 0,
+      "command": "runner.ps1 exact H57 manifest -ValidateOnly"
+    },
+    {
+      "resourcesReleased": true,
+      "cleanup": "PASS",
+      "exitCode": 1,
+      "id": "H59",
+      "evidence": "evidence/h59-report.json",
+      "i1": "NOT_REACHED",
+      "correctionPacket": "REQUESTS-H59-METRICS-FIX.md",
+      "status": "FAIL",
+      "command": "runner.ps1 exact H57 manifest full-runtime",
+      "failure": "Academic startup: runtime harness sets mutually exclusive management.endpoint.metrics.enabled/access",
+      "i2": "NOT_REACHED"
+    }
+  ],
+  "limitations": [
+    "No production deployment or whole-product readiness claim",
+    "L5A independent worktree not included in revision426a15b6",
+    "Browser UI not verified by these gates"
+  ]
+}

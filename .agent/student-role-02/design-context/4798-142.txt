@@ -1,0 +1,163 @@
+const imgIconPrevious = "https://www.figma.com/api/mcp/asset/7e70fadd-a527-4f1a-b6fe-e67e1247cf3e.svg";
+const imgPresentArea = "https://www.figma.com/api/mcp/asset/afa631f1-490e-4baa-bf5d-2ea5e1bd568c.svg";
+const imgExcusedArea = "https://www.figma.com/api/mcp/asset/94eae261-9cbe-4284-9285-5bede181d270.svg";
+const imgAbsentArea = "https://www.figma.com/api/mcp/asset/15d38882-7212-47b1-ab8c-ccdc2cc2a821.svg";
+const imgPresentBoundary = "https://www.figma.com/api/mcp/asset/3bc5e437-5151-455b-b537-59607ce5d2e6.svg";
+
+function IconPrevious({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[16px]"} data-node-id="4597:3579" data-name="icon/previous">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconPrevious} />
+    </div>
+  );
+}
+
+export default function Component161() {
+  return (
+    <div className="bg-[var(--color-surface-base,#0b0b0c)] overflow-clip relative rounded-[24px] size-full" data-node-id="4798:142" data-name="16 · Статистика / предмет, 1 тип">
+      <div className="absolute content-stretch flex flex-col gap-[12px] items-start left-[16px] overflow-clip py-[20px] top-0 w-[358px]" data-node-id="4798:143" data-name="content">
+        <div className="content-stretch flex gap-[10px] h-[44px] items-center overflow-clip relative shrink-0" data-node-id="4798:144" data-name="header">
+          <div className="bg-[var(--color-surface-float,#292531)] overflow-clip relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4798:146" data-name="back">
+            <IconPrevious className="absolute left-[14px] size-[16px] top-[14px]" />
+          </div>
+          <div className="[word-break:break-word] flex flex-col font-['Onest:SemiBold'] h-[32px] justify-center leading-[0] not-italic relative shrink-0 text-[22px] text-[color:var(--color-text-primary,#edeaf3)] w-[304px]" data-node-id="4798:149">
+            <p className="leading-[normal]">Математический анализ</p>
+          </div>
+        </div>
+        <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[12px] items-start overflow-clip p-[16px] relative rounded-[16px] shrink-0 w-[358px]" data-node-id="4798:150" data-name="semester-chart">
+          <div className="[word-break:break-word] flex flex-col font-['Onest:SemiBold'] h-[23px] justify-center leading-[0] not-italic relative shrink-0 text-[18px] text-[color:var(--color-text-primary,#edeaf3)] w-[326px]" data-node-id="4798:151">
+            <p className="leading-[normal]">Посещаемость за семестр</p>
+          </div>
+          <div className="bg-[var(--color-surface-float,#292531)] h-[170px] overflow-clip relative rounded-[12px] shrink-0 w-[326px]" data-node-id="4798:152" data-name="semester-plot">
+            <div className="absolute h-[120px] left-[32px] top-[16px] w-[208.267px]" data-node-id="4798:153" data-name="present-area">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgPresentArea} />
+            </div>
+            <div className="absolute h-[60px] left-[32px] top-[16px] w-[208.267px]" data-node-id="4798:154" data-name="excused-area">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgExcusedArea} />
+            </div>
+            <div className="absolute h-[39.6px] left-[32px] top-[16px] w-[208.267px]" data-node-id="4798:155" data-name="absent-area">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgAbsentArea} />
+            </div>
+            <div className="absolute h-[60px] left-[32px] top-[16px] w-[208.267px]" data-node-id="4798:156" data-name="present-boundary">
+              <div className="absolute inset-[-1.25%_-0.36%]">
+                <img alt="" className="block max-w-none size-full" src={imgPresentBoundary} />
+              </div>
+            </div>
+            <div className="absolute bg-[var(--color-status-none-fill,#c4c4c4)] h-[120px] left-[240.27px] top-[16px] w-[75.733px]" data-node-id="4798:157" data-name="future-period" />
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[40.88px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:158">
+              <p className="leading-[normal]">1</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[58.63px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:159">
+              <p className="leading-[normal]">2</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[76.38px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:160">
+              <p className="leading-[normal]">3</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[94.13px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:161">
+              <p className="leading-[normal]">4</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[111.88px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:162">
+              <p className="leading-[normal]">5</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[129.63px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:163">
+              <p className="leading-[normal]">6</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[147.38px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:164">
+              <p className="leading-[normal]">7</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[165.13px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:165">
+              <p className="leading-[normal]">8</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[182.88px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:166">
+              <p className="leading-[normal]">9</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[200.63px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:167">
+              <p className="leading-[normal]">10</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[218.38px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:168">
+              <p className="leading-[normal]">11</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[236.13px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:169">
+              <p className="leading-[normal]">12</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[253.88px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:170">
+              <p className="leading-[normal]">13</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[271.63px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:171">
+              <p className="leading-[normal]">14</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[289.38px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:172">
+              <p className="leading-[normal]">15</p>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-[307.13px] not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] text-center top-[154.5px] w-[17.75px]" data-node-id="4798:173">
+              <p className="leading-[normal]">16</p>
+            </div>
+            <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-0 not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] top-[14.5px] w-[28px]" data-node-id="4798:174">
+              <p className="leading-[normal]">100%</p>
+            </div>
+            <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:Regular'] h-[13px] justify-center leading-[0] left-0 not-italic text-[8px] text-[color:var(--color-text-secondary,#c8c2d6)] top-[134.5px] w-[28px]" data-node-id="4798:175">
+              <p className="leading-[normal]">0%</p>
+            </div>
+          </div>
+        </div>
+        <div className="content-stretch flex flex-col h-[134px] items-start pt-[14px] relative shrink-0 w-[358px]" data-node-id="4798:176" data-name="type-stack">
+          <div className="bg-[var(--color-surface-raised,#1c1922)] border border-[var(--color-border-default,#3d3846)] border-solid h-[120px] relative rounded-[16px] shrink-0 w-[342px]" data-node-id="4798:177" data-name="type-card/Практика">
+            <div className="absolute bg-[var(--color-surface-raised,#1c1922)] border border-[var(--color-border-default,#3d3846)] border-solid content-stretch flex h-[28px] items-center justify-center left-[213px] overflow-clip rounded-[14px] top-[-15px]" data-node-id="4798:178" data-name="type-pill">
+              <div className="[word-break:break-word] flex flex-col font-['Onest:SemiBold'] justify-center leading-[0] not-italic relative shrink-0 text-[12px] text-[color:var(--color-text-primary,#edeaf3)] text-center w-[108px]" data-node-id="4798:179">
+                <p className="leading-[normal]">Практика</p>
+              </div>
+            </div>
+            <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Onest:SemiBold'] h-[17px] justify-center leading-[0] left-[13px] not-italic text-[13px] text-[color:var(--color-text-primary,#edeaf3)] top-[21.5px] w-[120px]" data-node-id="4798:180">
+              <p className="leading-[normal]">Пар 6/10</p>
+            </div>
+            <div className="absolute bg-[var(--color-status-present-fill,#61dfb8)] h-[8px] left-[13px] rounded-[4px] top-[99px] w-[28.7px]" data-node-id="4798:190" data-name="history-1" />
+            <div className="absolute bg-[var(--color-status-excused-fill,#f5b443)] h-[8px] left-[44.7px] rounded-[4px] top-[99px] w-[28.7px]" data-node-id="4798:191" data-name="history-2" />
+            <div className="absolute bg-[var(--color-status-absent-fill,#f27f7f)] h-[8px] left-[76.4px] rounded-[4px] top-[99px] w-[28.7px]" data-node-id="4798:192" data-name="history-3" />
+            <div className="absolute bg-[var(--color-status-present-fill,#61dfb8)] h-[8px] left-[108.1px] rounded-[4px] top-[99px] w-[28.7px]" data-node-id="4798:193" data-name="history-4" />
+            <div className="absolute bg-[var(--color-status-present-fill,#61dfb8)] h-[8px] left-[139.8px] rounded-[4px] top-[99px] w-[28.7px]" data-node-id="4798:194" data-name="history-5" />
+            <div className="absolute bg-[var(--color-status-absent-fill,#f27f7f)] h-[8px] left-[171.5px] rounded-[4px] top-[99px] w-[28.7px]" data-node-id="4798:195" data-name="history-6" />
+            <div className="absolute bg-[var(--color-status-excused-fill,#f5b443)] h-[8px] left-[203.2px] rounded-[4px] top-[99px] w-[28.7px]" data-node-id="4798:196" data-name="history-7" />
+            <div className="absolute bg-[var(--color-status-none-fill,#c4c4c4)] h-[8px] left-[234.9px] rounded-[4px] top-[99px] w-[28.7px]" data-node-id="4798:197" data-name="history-8" />
+            <div className="absolute bg-[var(--color-status-none-fill,#c4c4c4)] h-[8px] left-[266.6px] rounded-[4px] top-[99px] w-[28.7px]" data-node-id="4798:198" data-name="history-9" />
+            <div className="absolute bg-[var(--color-status-none-fill,#c4c4c4)] h-[8px] left-[298.3px] rounded-[4px] top-[99px] w-[28.7px]" data-node-id="4798:199" data-name="history-10" />
+            <div className="absolute content-stretch flex h-[18px] items-center justify-between left-[13px] top-[39px] w-[314px]" data-node-id="4911:144" data-name="status-strip">
+              <div className="content-stretch flex gap-[4px] h-[18px] items-center overflow-clip relative shrink-0" data-node-id="4798:181" data-name="status-row">
+                <div className="bg-[var(--color-status-present-fill,#61dfb8)] relative rounded-[4px] shrink-0 size-[8px]" data-node-id="4798:182" data-name="status-dot" />
+                <div className="[word-break:break-word] flex flex-col font-['Onest:SemiBold'] h-[15px] justify-center leading-[0] not-italic relative shrink-0 text-[12px] text-[color:var(--color-text-primary,#edeaf3)] w-[40px]" data-node-id="4798:183">
+                  <p className="leading-[normal]">67%</p>
+                </div>
+              </div>
+              <div className="content-stretch flex gap-[4px] h-[18px] items-center overflow-clip relative shrink-0" data-node-id="4798:184" data-name="status-row">
+                <div className="bg-[var(--color-status-excused-fill,#f5b443)] relative rounded-[4px] shrink-0 size-[8px]" data-node-id="4798:185" data-name="status-dot" />
+                <div className="[word-break:break-word] flex flex-col font-['Onest:SemiBold'] h-[15px] justify-center leading-[0] not-italic relative shrink-0 text-[12px] text-[color:var(--color-text-primary,#edeaf3)] w-[40px]" data-node-id="4798:186">
+                  <p className="leading-[normal]">17%</p>
+                </div>
+              </div>
+              <div className="content-stretch flex gap-[4px] h-[18px] items-center overflow-clip relative shrink-0" data-node-id="4798:187" data-name="status-row">
+                <div className="bg-[var(--color-status-absent-fill,#f27f7f)] relative rounded-[4px] shrink-0 size-[8px]" data-node-id="4798:188" data-name="status-dot" />
+                <div className="[word-break:break-word] flex flex-col font-['Onest:SemiBold'] h-[15px] justify-center leading-[0] not-italic relative shrink-0 text-[12px] text-[color:var(--color-text-primary,#edeaf3)] w-[40px]" data-node-id="4798:189">
+                  <p className="leading-[normal]">16%</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## icon/previous
+**Node ID:** 4597:3579
+
+Временная локальная векторная заглушка смысла «предыдущий». Один stroke-вектор и метрика совпадают с icon/chevron-down; заменить финальной иконкой через instance swap.
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

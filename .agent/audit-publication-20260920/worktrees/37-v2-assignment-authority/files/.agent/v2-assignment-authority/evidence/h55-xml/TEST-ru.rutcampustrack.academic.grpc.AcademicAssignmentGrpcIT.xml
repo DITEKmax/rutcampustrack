@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT" tests="3" skipped="0" failures="2" errors="0" timestamp="2026-09-19T18:13:06" hostname="DITEK-PK" time="1.274">
+  <properties/>
+  <testcase name="assignmentsByIdsRejectPositiveMissingIdsAtomically()" classname="ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT" time="0.826">
+    <failure message="java.lang.NullPointerException: Cannot invoke &quot;com.fasterxml.jackson.databind.JsonNode.get(int)&quot; because the return value of &quot;com.fasterxml.jackson.databind.JsonNode.get(String)&quot; is null" type="java.lang.NullPointerException">java.lang.NullPointerException: Cannot invoke &quot;com.fasterxml.jackson.databind.JsonNode.get(int)&quot; because the return value of &quot;com.fasterxml.jackson.databind.JsonNode.get(String)&quot; is null
+	at ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT.assignmentsByIdsRejectPositiveMissingIdsAtomically(AcademicAssignmentGrpcIT.java:95)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="assignmentsByIdsReturnRetainedIdentityAndConcreteEffectiveEnd()" classname="ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT" time="0.065">
+    <failure message="java.lang.NullPointerException: Cannot invoke &quot;com.fasterxml.jackson.databind.JsonNode.get(int)&quot; because the return value of &quot;com.fasterxml.jackson.databind.JsonNode.get(String)&quot; is null" type="java.lang.NullPointerException">java.lang.NullPointerException: Cannot invoke &quot;com.fasterxml.jackson.databind.JsonNode.get(int)&quot; because the return value of &quot;com.fasterxml.jackson.databind.JsonNode.get(String)&quot; is null
+	at ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT.assignmentsByIdsReturnRetainedIdentityAndConcreteEffectiveEnd(AcademicAssignmentGrpcIT.java:71)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="teacherSubjectsExcludeFutureAndExpiredAssignmentsAndRequireActiveGrant()" classname="ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT" time="0.38"/>
+  <system-out><![CDATA[21:12:34.111 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT]: AcademicAssignmentGrpcIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+21:12:34.648 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.rutcampustrack.academic.AcademicApplication for test class ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT
+21:12:34.969 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+21:12:34.976 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+21:12:34.994 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.20.4
+21:12:35.524 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+21:12:36.031 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+21:12:36.032 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+21:12:36.059 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.5.2
+  API Version: 1.51
+  Operating System: Docker Desktop
+  Total Memory: 11963 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+21:12:37.016 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Creating container for image: testcontainers/ryuk:0.11.0
+21:12:37.162 [Test worker] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+21:12:37.356 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 is starting: 8fc8e5c2a55a34525f8674edd86c316b65e7134a4b7c36b37d4e3ae567949e4d
+21:12:37.854 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 started in PT0.8371316S
+21:12:37.862 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+21:12:37.862 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+21:12:37.863 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+21:12:37.864 [Test worker] INFO tc.postgres:16 -- Creating container for image: postgres:16
+21:12:37.865 [Test worker] WARN tc.postgres:16 -- Reuse was requested but the environment does not support the reuse of containers
+To enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at C:\Users\maksd\.testcontainers.properties
+21:12:37.996 [Test worker] INFO tc.postgres:16 -- Container postgres:16 is starting: d4190aedc624165e704b538dec32b90d74b6bdcc4597326c741a5ae48d33b41d
+21:12:39.737 [Test worker] INFO tc.postgres:16 -- Container postgres:16 started in PT1.8728831S
+21:12:39.738 [Test worker] INFO tc.postgres:16 -- Container is started (JDBC URL: jdbc:postgresql://localhost:60805/academic_db?loggerLevel=OFF)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+{"ts":"2026-09-19T21:12:40.930+03:00","v":"1","level":"INFO","logger":"org.hibernate.validator.internal.util.Version","thread":"background-preinit","msg":"HV000001: Hibernate Validator 8.0.3.Final","service":"academic-service"}
+{"ts":"2026-09-19T21:12:41.101+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT","thread":"Test worker","msg":"Starting AcademicAssignmentGrpcIT using Java 21.0.10 with PID 8976 (started by maksd in C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-assignment-authority\\services\\academic-service\\academic-app)","service":"academic-service"}
+{"ts":"2026-09-19T21:12:41.103+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT","thread":"Test worker","msg":"Running with Spring Boot v3.5.16, Spring v6.2.19","service":"academic-service"}
+{"ts":"2026-09-19T21:12:41.104+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT","thread":"Test worker","msg":"The following 1 profile is active: \"test\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:43.821+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Multiple Spring Data modules found, entering strict repository configuration mode","service":"academic-service"}
+{"ts":"2026-09-19T21:12:43.825+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Bootstrapping Spring Data JPA repositories in DEFAULT mode.","service":"academic-service"}
+{"ts":"2026-09-19T21:12:44.207+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Finished Spring Data repository scanning in 359 ms. Found 15 JPA repository interfaces.","service":"academic-service"}
+{"ts":"2026-09-19T21:12:47.952+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat initialized with port 0 (http)","service":"academic-service"}
+{"ts":"2026-09-19T21:12:48.404+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Initializing ProtocolHandler [\"http-nio-auto-1\"]","service":"academic-service"}
+{"ts":"2026-09-19T21:12:48.437+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardService","thread":"Test worker","msg":"Starting service [Tomcat]","service":"academic-service"}
+{"ts":"2026-09-19T21:12:48.438+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardEngine","thread":"Test worker","msg":"Starting Servlet engine: [Apache Tomcat/10.1.59]","service":"academic-service"}
+{"ts":"2026-09-19T21:12:48.836+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","thread":"Test worker","msg":"Initializing Spring embedded WebApplicationContext","service":"academic-service"}
+{"ts":"2026-09-19T21:12:48.838+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","thread":"Test worker","msg":"Root WebApplicationContext: initialization completed in 7702 ms","service":"academic-service"}
+{"ts":"2026-09-19T21:12:50.140+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.security.AcademicUserContextFilter","thread":"Test worker","msg":"Filter 'academicUserContextFilter' configured for use","service":"academic-service"}
+{"ts":"2026-09-19T21:12:50.683+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Starting...","service":"academic-service"}
+{"ts":"2026-09-19T21:12:50.973+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.pool.HikariPool","thread":"Test worker","msg":"HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@5948656e","service":"academic-service"}
+{"ts":"2026-09-19T21:12:50.977+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Start completed.","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.043+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.FlywayExecutor","thread":"Test worker","msg":"Database: jdbc:postgresql://localhost:60805/academic_db?loggerLevel=OFF (PostgreSQL 16.13)","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.163+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Schema history table \"public\".\"flyway_schema_history\" does not exist yet","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.170+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbValidate","thread":"Test worker","msg":"Successfully validated 26 migrations (execution time 00:00.085s)","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.195+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Creating Schema History table \"public\".\"flyway_schema_history\" ...","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.256+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Current version of schema \"public\": << Empty Schema >>","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.286+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"1 - baseline\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.384+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"2 - seed test data\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.414+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"3 - login sequences\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.439+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"4 - campus settings bigserial\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.467+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"5 - add enum casts\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.486+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"6 - add semester first week type\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.505+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"7 - add user avatar\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.529+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"8 - group unify name\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.551+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"9 - groups archived at\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.569+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"10 - semesters no overlap\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.618+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"11 - enum equality operators\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.644+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"12 - subjects group id\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.649+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.673+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"13 - homework lesson binding\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.697+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"14 - update campus coordinates\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.712+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"15 - shedlock table\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.728+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"16 - academic outbox\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.748+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"17 - add performance indexes\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.765+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"18 - event consumer processed\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.784+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"19 - audit log\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.803+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"20 - audit log indexes\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.820+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"21 - user name icu collation\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.837+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"22 - user name sort index\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.855+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"23 - homework notifications\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.877+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"24 - auth session authority\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.921+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"25 - student subject homework foundation\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.925+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: extension \"btree_gist\" already exists, skipping (SQL State: 42710 - Error Code: 0)","service":"academic-service"}
+{"ts":"2026-09-19T21:12:51.972+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"26 - campus map\"","service":"academic-service"}
+{"ts":"2026-09-19T21:12:52.039+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Successfully applied 26 migrations to schema \"public\", now at version v26 (execution time 00:00.398s)","service":"academic-service"}
+{"ts":"2026-09-19T21:12:52.296+03:00","v":"1","level":"INFO","logger":"org.hibernate.jpa.internal.util.LogHelper","thread":"Test worker","msg":"HHH000204: Processing PersistenceUnitInfo [name: default]","service":"academic-service"}
+{"ts":"2026-09-19T21:12:52.438+03:00","v":"1","level":"INFO","logger":"org.hibernate.Version","thread":"Test worker","msg":"HHH000412: Hibernate ORM core version 6.6.53.Final","service":"academic-service"}
+{"ts":"2026-09-19T21:12:52.533+03:00","v":"1","level":"INFO","logger":"org.hibernate.cache.internal.RegionFactoryInitiator","thread":"Test worker","msg":"HHH000026: Second-level cache disabled","service":"academic-service"}
+{"ts":"2026-09-19T21:12:52.817+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo","thread":"Test worker","msg":"No LoadTimeWeaver setup: ignoring JPA class transformer","service":"academic-service"}
+{"ts":"2026-09-19T21:12:52.936+03:00","v":"1","level":"WARN","logger":"org.hibernate.orm.deprecation","thread":"Test worker","msg":"HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)","service":"academic-service"}
+{"ts":"2026-09-19T21:12:52.963+03:00","v":"1","level":"INFO","logger":"org.hibernate.orm.connections.pooling","thread":"Test worker","msg":"HHH10001005: Database info:\n\tDatabase JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']\n\tDatabase driver: undefined/unknown\n\tDatabase version: 16.13\n\tAutocommit mode: undefined/unknown\n\tIsolation level: undefined/unknown\n\tMinimum pool size: undefined/unknown\n\tMaximum pool size: undefined/unknown","service":"academic-service"}
+{"ts":"2026-09-19T21:12:54.850+03:00","v":"1","level":"INFO","logger":"org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator","thread":"Test worker","msg":"HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)","service":"academic-service"}
+{"ts":"2026-09-19T21:12:54.911+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"Test worker","msg":"Initialized JPA EntityManagerFactory for persistence unit 'default'","service":"academic-service"}
+{"ts":"2026-09-19T21:12:55.242+03:00","v":"1","level":"INFO","logger":"org.springframework.data.jpa.repository.query.QueryEnhancerFactory","thread":"Test worker","msg":"Hibernate is in classpath; If applicable, HQL parser will be used.","service":"academic-service"}
+{"ts":"2026-09-19T21:12:57.336+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.client.autoconfigure.GrpcClientAutoConfiguration","thread":"Test worker","msg":"Detected grpc-netty: Creating NettyChannelFactory + InProcessChannelFactory","service":"academic-service"}
+{"ts":"2026-09-19T21:13:05.055+03:00","v":"1","level":"ERROR","logger":"ru.rutcampustrack.shared.security.PublicKeyProvider","thread":"Test worker","msg":"Auth Service unreachable: I/O error on GET request for \"http://localhost:9999/auth/public-key\": null","service":"academic-service"}
+{"ts":"2026-09-19T21:13:05.901+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.server.autoconfigure.GrpcServerFactoryAutoConfiguration","thread":"Test worker","msg":"'grpc.server.in-process-name' is set: Creating InProcessGrpcServerFactory","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.479+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.security.AcademicUserContextFilter","thread":"Test worker","msg":"Filter 'academicUserContextFilter' configured for use","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.481+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","thread":"Test worker","msg":"Initializing Spring TestDispatcherServlet ''","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.481+03:00","v":"1","level":"INFO","logger":"org.springframework.test.web.servlet.TestDispatcherServlet","thread":"Test worker","msg":"Initializing Servlet ''","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.490+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.actuate.endpoint.web.EndpointLinksResolver","thread":"Test worker","msg":"Exposing 2 endpoints beneath base path '/actuator'","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.504+03:00","v":"1","level":"INFO","logger":"org.springframework.test.web.servlet.TestDispatcherServlet","thread":"Test worker","msg":"Completed initialization in 23 ms","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.604+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Starting ProtocolHandler [\"http-nio-auto-1\"]","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.620+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat started on port 62043 (http) with context path '/'","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.625+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.server.serverfactory.AbstractGrpcServerFactory","thread":"Test worker","msg":"Registered gRPC service: rutcampustrack.academic.AcademicGrpcService, bean: academicGrpcServiceImpl, class: ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.626+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.server.serverfactory.AbstractGrpcServerFactory","thread":"Test worker","msg":"Registered gRPC service: grpc.health.v1.Health, bean: grpcHealthService, class: io.grpc.protobuf.services.HealthServiceImpl","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.626+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.server.serverfactory.AbstractGrpcServerFactory","thread":"Test worker","msg":"Registered gRPC service: grpc.reflection.v1alpha.ServerReflection, bean: protoReflectionService, class: io.grpc.protobuf.services.ProtoReflectionService","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.637+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.server.serverfactory.GrpcServerLifecycle","thread":"Test worker","msg":"gRPC Server started, listening on address: in-process:academic-assignment-grpc-it, port: -1","service":"academic-service"}
+{"ts":"2026-09-19T21:13:06.653+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT","thread":"Test worker","msg":"Started AcademicAssignmentGrpcIT in 26.872 seconds (process running for 34.857)","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.056+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.id=? for no key update","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.139+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subjects (created_at,group_id,name,type) values (?,?,?,?)","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.174+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.lesson_type,slt1_0.subject_id from public.subject_lesson_types slt1_0 where (slt1_0.lesson_type,slt1_0.subject_id) in ((?,?))","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.189+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.lesson_type,slt1_0.subject_id from public.subject_lesson_types slt1_0 where (slt1_0.lesson_type,slt1_0.subject_id) in ((?,?))","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.225+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subject_lesson_types (lesson_type,subject_id) values (?,?)","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.227+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subject_lesson_types (lesson_type,subject_id) values (?,?)","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.230+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.subject_id,slt1_0.lesson_type from public.subject_lesson_types slt1_0 where slt1_0.subject_id=? and slt1_0.lesson_type=? fetch first ? rows only","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.234+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select u1_0.id,u1_0.avatar_id,u1_0.created_at,u1_0.email,u1_0.employee_number,u1_0.first_name,u1_0.group_id,u1_0.initial_password,u1_0.is_headman,u1_0.last_name,u1_0.login,u1_0.middle_name,u1_0.password_changed,u1_0.password_hash,u1_0.phone,u1_0.role,u1_0.status,u1_0.telegram_id,u1_0.telegram_username,u1_0.updated_at from public.users u1_0 where u1_0.id=? and (u1_0.status <> 'archived')","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.239+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.273+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"SELECT a.*\nFROM assignments a\nJOIN semesters existing_semester ON existing_semester.id = a.semester_id\nWHERE a.teacher_id = ?\n  AND a.subject_id = ?\n  AND a.group_id = ?\n  AND a.semester_id = ?\n  AND a.lesson_type = CAST(? AS subject_type)\n  AND daterange(\n        a.valid_from,\n        COALESCE(a.valid_until_exclusive, existing_semester.date_to + 1),\n        '[)'\n      ) && daterange(\n        CAST(? AS date),\n        COALESCE(CAST(? AS date), existing_semester.date_to + 1),\n        '[)'\n      )\nLIMIT 1\n","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.283+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.assignments (created_at,group_id,lesson_type,semester_id,subject_id,teacher_id,valid_from,valid_until_exclusive) values (?,?,?,?,?,?,?,?)","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.288+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.subject_id,slt1_0.lesson_type from public.subject_lesson_types slt1_0 where slt1_0.subject_id=? and slt1_0.lesson_type=? fetch first ? rows only","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.290+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select u1_0.id,u1_0.avatar_id,u1_0.created_at,u1_0.email,u1_0.employee_number,u1_0.first_name,u1_0.group_id,u1_0.initial_password,u1_0.is_headman,u1_0.last_name,u1_0.login,u1_0.middle_name,u1_0.password_changed,u1_0.password_hash,u1_0.phone,u1_0.role,u1_0.status,u1_0.telegram_id,u1_0.telegram_username,u1_0.updated_at from public.users u1_0 where u1_0.id=? and (u1_0.status <> 'archived')","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.293+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.297+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"SELECT a.*\nFROM assignments a\nJOIN semesters existing_semester ON existing_semester.id = a.semester_id\nWHERE a.teacher_id = ?\n  AND a.subject_id = ?\n  AND a.group_id = ?\n  AND a.semester_id = ?\n  AND a.lesson_type = CAST(? AS subject_type)\n  AND daterange(\n        a.valid_from,\n        COALESCE(a.valid_until_exclusive, existing_semester.date_to + 1),\n        '[)'\n      ) && daterange(\n        CAST(? AS date),\n        COALESCE(CAST(? AS date), existing_semester.date_to + 1),\n        '[)'\n      )\nLIMIT 1\n","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.300+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.assignments (created_at,group_id,lesson_type,semester_id,subject_id,teacher_id,valid_from,valid_until_exclusive) values (?,?,?,?,?,?,?,?)","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.329+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.lesson_type,slt1_0.subject_id from public.subject_lesson_types slt1_0 where slt1_0.subject_id=?","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.340+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select a1_0.id,a1_0.created_at,a1_0.group_id,a1_0.lesson_type,a1_0.semester_id,a1_0.subject_id,a1_0.teacher_id,a1_0.valid_from,a1_0.valid_until_exclusive from public.assignments a1_0 where a1_0.subject_id=?","traceId":"5367a4aa170476397fed2af8675f894b","service":"academic-service"}
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /academic/subjects
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-User-Id:"4", X-User-Role:"STUDENT", X-Group-Id:"2", X-Is-Headman:"true", Content-Length:"337"]
+             Body = {
+  "name":"L5A grpc batch",
+  "type":"LECTURE",
+  "lessonTypes":["LECTURE","PRACTICE"],
+  "initialAssignments":[{"teacherId":5,"semesterId":2,"lessonType":"LECTURE","validFrom":"2200-01-02","validUntilExclusive":"2200-01-09"},{"teacherId":6,"semesterId":2,"lessonType":"PRACTICE","validFrom":"2200-01-02","validUntilExclusive":null}]
+}
+
+    Session Attrs = {}
+
+Handler:
+             Type = ru.rutcampustrack.academic.subject.SubjectController
+           Method = ru.rutcampustrack.academic.subject.SubjectController#createSubject(CreateSubjectRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Content-Type:"application/hal+json"]
+     Content type = application/hal+json
+             Body = {"id":1,"name":"L5A grpc batch","type":"LECTURE","groupId":2,"lessonTypes":["LECTURE","PRACTICE"],"teacherIds":[5,6],"assignments":[{"id":1,"teacherId":5,"semesterId":2,"lessonType":"LECTURE","validFrom":"2200-01-02","validUntilExclusive":"2200-01-09"},{"id":2,"teacherId":6,"semesterId":2,"lessonType":"PRACTICE","validFrom":"2200-01-02","validUntilExclusive":null}],"createdAssignmentIds":[1,2],"createdAt":"2026-09-19T21:13:07.1174786+03:00","_links":{"self":{"href":"http://localhost/academic/subjects/1"}}}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+{"ts":"2026-09-19T21:13:07.532+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.id=? for no key update","traceId":"dab6528bf8db7f1c6f1f57fa91ac2111","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.535+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subjects (created_at,group_id,name,type) values (?,?,?,?)","traceId":"dab6528bf8db7f1c6f1f57fa91ac2111","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.537+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.lesson_type,slt1_0.subject_id from public.subject_lesson_types slt1_0 where (slt1_0.lesson_type,slt1_0.subject_id) in ((?,?))","traceId":"dab6528bf8db7f1c6f1f57fa91ac2111","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.542+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subject_lesson_types (lesson_type,subject_id) values (?,?)","traceId":"dab6528bf8db7f1c6f1f57fa91ac2111","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.543+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.subject_id,slt1_0.lesson_type from public.subject_lesson_types slt1_0 where slt1_0.subject_id=? and slt1_0.lesson_type=? fetch first ? rows only","traceId":"dab6528bf8db7f1c6f1f57fa91ac2111","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.546+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select u1_0.id,u1_0.avatar_id,u1_0.created_at,u1_0.email,u1_0.employee_number,u1_0.first_name,u1_0.group_id,u1_0.initial_password,u1_0.is_headman,u1_0.last_name,u1_0.login,u1_0.middle_name,u1_0.password_changed,u1_0.password_hash,u1_0.phone,u1_0.role,u1_0.status,u1_0.telegram_id,u1_0.telegram_username,u1_0.updated_at from public.users u1_0 where u1_0.id=? and (u1_0.status <> 'archived')","traceId":"dab6528bf8db7f1c6f1f57fa91ac2111","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.549+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","traceId":"dab6528bf8db7f1c6f1f57fa91ac2111","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.552+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"SELECT a.*\nFROM assignments a\nJOIN semesters existing_semester ON existing_semester.id = a.semester_id\nWHERE a.teacher_id = ?\n  AND a.subject_id = ?\n  AND a.group_id = ?\n  AND a.semester_id = ?\n  AND a.lesson_type = CAST(? AS subject_type)\n  AND daterange(\n        a.valid_from,\n        COALESCE(a.valid_until_exclusive, existing_semester.date_to + 1),\n        '[)'\n      ) && daterange(\n        CAST(? AS date),\n        COALESCE(CAST(? AS date), existing_semester.date_to + 1),\n        '[)'\n      )\nLIMIT 1\n","traceId":"dab6528bf8db7f1c6f1f57fa91ac2111","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.554+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.assignments (created_at,group_id,lesson_type,semester_id,subject_id,teacher_id,valid_from,valid_until_exclusive) values (?,?,?,?,?,?,?,?)","traceId":"dab6528bf8db7f1c6f1f57fa91ac2111","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.559+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.lesson_type,slt1_0.subject_id from public.subject_lesson_types slt1_0 where slt1_0.subject_id=?","traceId":"dab6528bf8db7f1c6f1f57fa91ac2111","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.562+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select a1_0.id,a1_0.created_at,a1_0.group_id,a1_0.lesson_type,a1_0.semester_id,a1_0.subject_id,a1_0.teacher_id,a1_0.valid_from,a1_0.valid_until_exclusive from public.assignments a1_0 where a1_0.subject_id=?","traceId":"dab6528bf8db7f1c6f1f57fa91ac2111","service":"academic-service"}
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /academic/subjects
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-User-Id:"8", X-User-Role:"STUDENT", X-Group-Id:"3", X-Is-Headman:"true", Content-Length:"214"]
+             Body = {
+  "name":"L5A grpc identity",
+  "type":"LECTURE",
+  "lessonTypes":["LECTURE"],
+  "initialAssignments":[{"teacherId":9,"semesterId":3,"lessonType":"LECTURE","validFrom":"2200-02-02","validUntilExclusive":null}]
+}
+
+    Session Attrs = {}
+
+Handler:
+             Type = ru.rutcampustrack.academic.subject.SubjectController
+           Method = ru.rutcampustrack.academic.subject.SubjectController#createSubject(CreateSubjectRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Content-Type:"application/hal+json"]
+     Content type = application/hal+json
+             Body = {"id":2,"name":"L5A grpc identity","type":"LECTURE","groupId":3,"lessonTypes":["LECTURE"],"teacherIds":[9],"assignments":[{"id":3,"teacherId":9,"semesterId":3,"lessonType":"LECTURE","validFrom":"2200-02-02","validUntilExclusive":null}],"createdAssignmentIds":[3],"createdAt":"2026-09-19T21:13:07.535009+03:00","_links":{"self":{"href":"http://localhost/academic/subjects/2"}}}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+{"ts":"2026-09-19T21:13:07.610+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.id=? for no key update","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.618+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subjects (created_at,group_id,name,type) values (?,?,?,?)","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.622+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.lesson_type,slt1_0.subject_id from public.subject_lesson_types slt1_0 where (slt1_0.lesson_type,slt1_0.subject_id) in ((?,?))","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.624+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.lesson_type,slt1_0.subject_id from public.subject_lesson_types slt1_0 where (slt1_0.lesson_type,slt1_0.subject_id) in ((?,?))","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.628+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.lesson_type,slt1_0.subject_id from public.subject_lesson_types slt1_0 where (slt1_0.lesson_type,slt1_0.subject_id) in ((?,?))","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.634+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subject_lesson_types (lesson_type,subject_id) values (?,?)","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.635+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subject_lesson_types (lesson_type,subject_id) values (?,?)","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.637+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.subject_lesson_types (lesson_type,subject_id) values (?,?)","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.638+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.subject_id,slt1_0.lesson_type from public.subject_lesson_types slt1_0 where slt1_0.subject_id=? and slt1_0.lesson_type=? fetch first ? rows only","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.640+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select u1_0.id,u1_0.avatar_id,u1_0.created_at,u1_0.email,u1_0.employee_number,u1_0.first_name,u1_0.group_id,u1_0.initial_password,u1_0.is_headman,u1_0.last_name,u1_0.login,u1_0.middle_name,u1_0.password_changed,u1_0.password_hash,u1_0.phone,u1_0.role,u1_0.status,u1_0.telegram_id,u1_0.telegram_username,u1_0.updated_at from public.users u1_0 where u1_0.id=? and (u1_0.status <> 'archived')","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.644+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.648+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"SELECT a.*\nFROM assignments a\nJOIN semesters existing_semester ON existing_semester.id = a.semester_id\nWHERE a.teacher_id = ?\n  AND a.subject_id = ?\n  AND a.group_id = ?\n  AND a.semester_id = ?\n  AND a.lesson_type = CAST(? AS subject_type)\n  AND daterange(\n        a.valid_from,\n        COALESCE(a.valid_until_exclusive, existing_semester.date_to + 1),\n        '[)'\n      ) && daterange(\n        CAST(? AS date),\n        COALESCE(CAST(? AS date), existing_semester.date_to + 1),\n        '[)'\n      )\nLIMIT 1\n","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.652+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.assignments (created_at,group_id,lesson_type,semester_id,subject_id,teacher_id,valid_from,valid_until_exclusive) values (?,?,?,?,?,?,?,?)","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.655+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.subject_id,slt1_0.lesson_type from public.subject_lesson_types slt1_0 where slt1_0.subject_id=? and slt1_0.lesson_type=? fetch first ? rows only","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.660+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.664+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"SELECT a.*\nFROM assignments a\nJOIN semesters existing_semester ON existing_semester.id = a.semester_id\nWHERE a.teacher_id = ?\n  AND a.subject_id = ?\n  AND a.group_id = ?\n  AND a.semester_id = ?\n  AND a.lesson_type = CAST(? AS subject_type)\n  AND daterange(\n        a.valid_from,\n        COALESCE(a.valid_until_exclusive, existing_semester.date_to + 1),\n        '[)'\n      ) && daterange(\n        CAST(? AS date),\n        COALESCE(CAST(? AS date), existing_semester.date_to + 1),\n        '[)'\n      )\nLIMIT 1\n","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.668+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.assignments (created_at,group_id,lesson_type,semester_id,subject_id,teacher_id,valid_from,valid_until_exclusive) values (?,?,?,?,?,?,?,?)","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.672+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.subject_id,slt1_0.lesson_type from public.subject_lesson_types slt1_0 where slt1_0.subject_id=? and slt1_0.lesson_type=? fetch first ? rows only","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.676+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.680+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"SELECT a.*\nFROM assignments a\nJOIN semesters existing_semester ON existing_semester.id = a.semester_id\nWHERE a.teacher_id = ?\n  AND a.subject_id = ?\n  AND a.group_id = ?\n  AND a.semester_id = ?\n  AND a.lesson_type = CAST(? AS subject_type)\n  AND daterange(\n        a.valid_from,\n        COALESCE(a.valid_until_exclusive, existing_semester.date_to + 1),\n        '[)'\n      ) && daterange(\n        CAST(? AS date),\n        COALESCE(CAST(? AS date), existing_semester.date_to + 1),\n        '[)'\n      )\nLIMIT 1\n","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.683+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.assignments (created_at,group_id,lesson_type,semester_id,subject_id,teacher_id,valid_from,valid_until_exclusive) values (?,?,?,?,?,?,?,?)","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.688+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select slt1_0.lesson_type,slt1_0.subject_id from public.subject_lesson_types slt1_0 where slt1_0.subject_id=?","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.691+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select a1_0.id,a1_0.created_at,a1_0.group_id,a1_0.lesson_type,a1_0.semester_id,a1_0.subject_id,a1_0.teacher_id,a1_0.valid_from,a1_0.valid_until_exclusive from public.assignments a1_0 where a1_0.subject_id=?","traceId":"2e887e139440368031c78373defeb537","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.792+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"grpc-default-executor-0","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","traceId":"675a0c24cd7de23d76d4b8ab93c1f5cf","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.795+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"grpc-default-executor-0","msg":"select s1_0.id,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.first_week_type,s1_0.is_active,s1_0.name from public.semesters s1_0 where s1_0.id=?","traceId":"675a0c24cd7de23d76d4b8ab93c1f5cf","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.800+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"grpc-default-executor-0","msg":"select a1_0.id,a1_0.created_at,a1_0.group_id,a1_0.lesson_type,a1_0.semester_id,a1_0.subject_id,a1_0.teacher_id,a1_0.valid_from,a1_0.valid_until_exclusive from public.assignments a1_0 where a1_0.teacher_id=? and a1_0.semester_id=?","traceId":"675a0c24cd7de23d76d4b8ab93c1f5cf","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.804+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"grpc-default-executor-0","msg":"select s1_0.id,s1_0.created_at,s1_0.group_id,s1_0.name,s1_0.type from public.subjects s1_0 where s1_0.id=?","traceId":"675a0c24cd7de23d76d4b8ab93c1f5cf","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.808+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"grpc-default-executor-0","msg":"select g1_0.id,g1_0.archived_at,g1_0.created_at,g1_0.is_active,g1_0.name from public.groups g1_0 where g1_0.id=?","traceId":"675a0c24cd7de23d76d4b8ab93c1f5cf","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.938+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"grpc-default-executor-0","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","traceId":"b65e15543a068a1528516e801ab94948","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.961+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.server.serverfactory.GrpcServerLifecycle","thread":"Test worker","msg":"Completed gRPC server shutdown","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.963+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"Test worker","msg":"Commencing graceful shutdown. Waiting for active requests to complete","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.964+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"tomcat-shutdown","msg":"Pausing ProtocolHandler [\"http-nio-auto-1-62043\"]","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.970+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"tomcat-shutdown","msg":"Graceful shutdown complete","service":"academic-service"}
+{"ts":"2026-09-19T21:13:07.970+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Stopping ProtocolHandler [\"http-nio-auto-1\"]","service":"academic-service"}
+{"ts":"2026-09-19T21:13:08.008+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"Test worker","msg":"Closing JPA EntityManagerFactory for persistence unit 'default'","service":"academic-service"}
+{"ts":"2026-09-19T21:13:08.012+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Shutdown initiated...","service":"academic-service"}
+{"ts":"2026-09-19T21:13:08.015+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Shutdown completed.","service":"academic-service"}
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.8\f09415827a71be7ed621c7bd02550678f28bc81c\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

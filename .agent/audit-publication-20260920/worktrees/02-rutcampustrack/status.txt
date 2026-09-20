@@ -1,0 +1,56 @@
+ M docs/openapi/auth.json
+ M services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthApi.java
+ M services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ChangePasswordRequest.java
+ M services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/TokenResponse.java
+ M services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java
+ M services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java
+ M services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthController.java
+ D services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalIssuerController.java
+ M services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java
+ M services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java
+ M services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java
+ M services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/OtpService.java
+ M services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/TmaService.java
+ M services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java
+ M services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java
+ M services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java
+ D services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalIssuerIT.java
+ M services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LogoutLifecycleIT.java
+ M services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java
+ M services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java
+ M services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java
+ M services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtClaims.java
+ M services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java
+ M services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/DualModeUserContextFilterTest.java
+ M services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtValidatorTest.java
+ M services/shared/shared-security/src/testFixtures/java/ru/rutcampustrack/shared/security/InternalJwtTestFactory.java
+?? .agent/profile-ui/
+?? .agent/student-auth-a/
+?? .agent/worktrees/
+?? frontends/mobile-core/src/features/profile/
+?? services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthSessionApi.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalSessionAdmissionApi.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryEvent.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AccountHistoryPage.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionRequest.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthAdmissionResponse.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionSummary.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/AuthSessionsPage.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/CurrentSessionResponse.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/PasswordPolicyResponse.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/RoleGrantResponse.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleRequest.java
+?? services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/SelectActiveRoleResponse.java
+?? services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthSessionController.java
+?? services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalSessionAdmissionController.java
+?? services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/security/SessionPrincipal.java
+?? services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/
+?? services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java
+?? services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/
+?? services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java
+?? services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java
+?? services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/AuthServiceRepositoryFailureTest.java
+?? services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java
+?? services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceRepositoryFailureTest.java
+?? services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/

@@ -1,0 +1,268 @@
+{
+  "created": "2026-09-19T23:27:29.2109673+03:00",
+  "owner": "lessons lead",
+  "status": "DRAFT static source map, not migration/implementation authority",
+  "sources": [
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "36,150,247,300,343",
+      "purpose": "physical snapshot/history/occurrence/replay/binding constraints",
+      "sha256": "E3BB260872539B0398EF2FCBA9F817BBEB5ED550524F2778508EF2D30B4D953B",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/academic-service/academic-app/src/main/resources/db/migration/V25__student_subject_homework_foundation.sql",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/academic-service/academic-app/src/main/resources/db/migration/V25__student_subject_homework_foundation.sql",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "129,174,211",
+      "purpose": "assignment immutable validity and homework binding guards",
+      "sha256": "6B01FF0277D327A368758AA671A145AEE9A90A52B310B57F073F347454EF394A",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonGenerationService.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonGenerationService.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "126,152,185,214,229",
+      "purpose": "generation/regeneration/deletion/physical writer",
+      "sha256": "4197C3FF9336CEE577FAF2AA1FC5E3AF5EF34494F17809E69BF5EAB6470AE82C",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemService.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemService.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "86,147,198",
+      "purpose": "template create/update/deactivate and generator calls",
+      "sha256": "05182B54888C406ADB41A408A635FF15CE17F0498B9524380B0646C228F611D9",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "98,165",
+      "purpose": "one-off origin create/delete and events",
+      "sha256": "CCFD2C26AC282D03A2CAF3CAA81C28DAA5F8FA2BC4B0D61181F1E9103E5452B5",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "111,144,164,201,213,240",
+      "purpose": "cancel/restore/mass/block existing paths",
+      "sha256": "64E7217DC85008B8FC598758D0B9559244B8F0798478CA0D8BF9E47D2064607F",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/IsoParityReconciler.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/IsoParityReconciler.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "65,91,124",
+      "purpose": "startup regenerate and separately committed marker",
+      "sha256": "5FC53540505EF470DDAE1DDF00C0931B97B5CA3AEF2B28A2D1D7B488B6F5C5EB",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "54",
+      "purpose": "scheduled status mutation/events",
+      "sha256": "7BEA95096CB1FE8102E57A282CA7008E157F1B8D69C86E030B8815C8D71FDC7E",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/subject/SubjectDeletedCascadeService.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/subject/SubjectDeletedCascadeService.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "59",
+      "purpose": "destructive subject event cascade",
+      "sha256": "C27EEE658B68E14E641998F5C675E7C23507994881160652523291EC461AED8B",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/DomainEventListener.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/DomainEventListener.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "46",
+      "purpose": "actual BEFORE_COMMIT outbox",
+      "sha256": "79F2AE769159C0169CA42DC07C43EEA3BC97714D0F2BAB94FFBA7507BE739665",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "146,197,223,238",
+      "purpose": "parent-derived lesson reads/count RPC",
+      "sha256": "D02202F29B05D0039C7F222C9F016F74D3919A3C1BE93CCC1E40528CB7A76DF6",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/GrpcAuthInterceptor.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/GrpcAuthInterceptor.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "15,25",
+      "purpose": "configured shared secret and unset behavior",
+      "sha256": "349D4EA7EB8AE82E729DE6382619089274222B9F64000D554F21EF7938DC70B5",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/GrpcSecretClientInterceptor.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/GrpcSecretClientInterceptor.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "13,24",
+      "purpose": "outgoing existing service credentials mechanism",
+      "sha256": "489CDF1A8E5C3B93BC64F3453BFE94329EE3A58CA9893BBF19E5D89875E416D8",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkService.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkService.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "115",
+      "purpose": "natural-key Homework producer",
+      "sha256": "83190EECC72F277CB29767283E1EAE5FE15B5A66056F8FB01ACE780574705E1C",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonEventService.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/LessonEventService.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "124,135,152",
+      "purpose": "natural-key delete, cancellation rewrite, physical ID delete consumers",
+      "sha256": "80CC32C7367C89AD46ABF991181CADFBA7DF757BFB67A063DA1B22C8F536A121",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/CreateScheduleItemRequest.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/CreateScheduleItemRequest.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "19",
+      "purpose": "legacy template request lacks assignmentId",
+      "sha256": "F56EA7143F8D2D27C588408E546A5F388D3CC8B4D376340088818EEDB53562C8",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/oneoff/CreateOneOffLessonRequest.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/oneoff/CreateOneOffLessonRequest.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "20",
+      "purpose": "one-off request missing assignment and explicit time snapshot",
+      "sha256": "EC94366B314DF6315E60661038B66E9AD75AAA2B1ECC383E48FEA780F4306B7A",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/TransferLessonRequest.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/TransferLessonRequest.java",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "15",
+      "purpose": "existing target/revision/requestKey contract",
+      "sha256": "8967B83F0A2345FFCD0FE927D54198CB298DE95FCFD500381657E6445EA80C95",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:proto/schedule.proto",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/proto/schedule.proto",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "30,33,36,68,115,154,180",
+      "purpose": "existing retained identity/history/binding wire",
+      "sha256": "9A244EAE37560B2A9B547F12A225B53730E428A277E7CFBE24130F7023D1DA47",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "R2:proto/academic.proto",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2/proto/academic.proto",
+      "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+      "lines": "55,302",
+      "purpose": "assignment identity retrieval wire",
+      "sha256": "5F85A6691F8C27769059B0A68D5173604B81756D20BDC19EF6BE3584BBC7A2BC",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "L5A:services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-assignment-authority/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+      "revision": "f59b3b9951c971bde42265ae67df8754dc594a58",
+      "lines": "110,276",
+      "purpose": "accepted subject create/disabled close authority",
+      "sha256": "377BF9B1E2F6E2B88529DD362177F0C47318D7A6C31561C4E516FA89491AFFA3",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "ORIGINAL:.agent/orchestration-v2/LESSONS-L5.md",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/LESSONS-L5.md",
+      "revision": "dated owner document snapshot",
+      "lines": "1",
+      "purpose": "canonical v3 owner authority",
+      "sha256": "287641EC02BCE97C2F587AE7DB12A3143B076A57394FCC7648697F11BC54B28E",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "ORIGINAL:.agent/orchestration-v2/RULES.md",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "revision": "dated owner document snapshot",
+      "lines": "1",
+      "purpose": "routing and owner constraints",
+      "sha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "ORIGINAL:.agent/orchestration-v2/LESSONS-L5A-ACCEPTED-2026-09-19.md",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/LESSONS-L5A-ACCEPTED-2026-09-19.md",
+      "revision": "dated owner document snapshot",
+      "lines": "1",
+      "purpose": "accepted source commit permission/scope",
+      "sha256": "FDE44C71A1559DFE186000FAEFE2ED645F550B14F7C69AC2011FACDB62285C95",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "ORIGINAL:.agent/orchestration-v2/LESSONS-L5B-DESIGN-PREP.md",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/LESSONS-L5B-DESIGN-PREP.md",
+      "revision": "dated owner document snapshot",
+      "lines": "1",
+      "purpose": "explicit own-doc ownership/design scope",
+      "sha256": "B21C55EA25324944A180840688987D45D420528D980A92C97042CEBB87F0B45A",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "ORIGINAL:.agent/orchestration-v2/LESSONS-L5B-SOURCE-GAPS.md",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/LESSONS-L5B-SOURCE-GAPS.md",
+      "revision": "dated owner document snapshot",
+      "lines": "1",
+      "purpose": "root navigation/provenance secondary evidence",
+      "sha256": "4AA13FD3E0B6BBB0C1E950C1F9EAE5B3BEBF6C7F66EE95D1524D2FF4F955A36E",
+      "inspection": "direct read, static only"
+    },
+    {
+      "id": "E:summary-homework-write.md",
+      "path": "C:/Users/maksd/.codex/worktrees/6a61/rutcampustrack/.agent/homework-lifecycle-e-resume/summary-homework-write.md",
+      "revision": "preserved E document; historical stated commits are context, not execution authority",
+      "lines": "1",
+      "purpose": "PWA/TMA/offline provenance; not Schedule producer",
+      "sha256": "0D08F96724C6D8C77B1A5411527AC80039708FB6262A2E9B1CF5C6B1FF981004",
+      "inspection": "direct bounded document read, static only"
+    },
+    {
+      "id": "E:contract.md",
+      "path": "C:/Users/maksd/.codex/worktrees/6a61/rutcampustrack/.agent/student-homework-e/contract.md",
+      "revision": "preserved E document; historical stated commits are context, not execution authority",
+      "lines": "1",
+      "purpose": "PWA/TMA/offline provenance; not Schedule producer",
+      "sha256": "D69CC82DB312B39F6FEF0938FDB3843B175643E95D99A4A1BB3A03C8C9DFAEE7",
+      "inspection": "direct bounded document read, static only"
+    },
+    {
+      "id": "ORIGINAL:.agent/orchestration-v2/HANDOFF.md",
+      "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/HANDOFF.md",
+      "revision": "dated owner handoff snapshot",
+      "lines": "1",
+      "purpose": "prior restore empty generation and preserved source boundaries",
+      "sha256": "48A5D1F7C956177592FEC418A2888AE4A4C18D3C2A431EB4043809D40F5AD56F",
+      "inspection": "direct read, static only"
+    }
+  ]
+}

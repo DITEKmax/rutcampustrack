@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.attendance.event.LessonEventServiceTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-20T14:48:19" hostname="DITEK-PK" time="0.187">
+  <properties/>
+  <testcase name="processLessonClosed_emptyGroup_skipsWithoutBulkOps()" classname="ru.rutcampustrack.attendance.event.LessonEventServiceTest" time="0.089"/>
+  <testcase name="processLessonClosed_callsBulkUpsertForEachStudent()" classname="ru.rutcampustrack.attendance.event.LessonEventServiceTest" time="0.034"/>
+  <testcase name="processLessonCancelled_grpcNotInvolved()" classname="ru.rutcampustrack.attendance.event.LessonEventServiceTest" time="0.011"/>
+  <testcase name="processLessonClosed_missingSemesterId_failsClosed()" classname="ru.rutcampustrack.attendance.event.LessonEventServiceTest" time="0.019"/>
+  <testcase name="processLessonCancelled_callsUpdateMulti()" classname="ru.rutcampustrack.attendance.event.LessonEventServiceTest" time="0.011"/>
+  <testcase name="processLessonClosed_grpcFailure_propagatesException()" classname="ru.rutcampustrack.attendance.event.LessonEventServiceTest" time="0.015"/>
+  <system-out><![CDATA[17:48:19.858 [Test worker] INFO ru.rutcampustrack.attendance.event.LessonEventService -- lesson.closed: no historical students in group 10 for lesson 1, skipping
+17:48:19.902 [Test worker] INFO ru.rutcampustrack.attendance.event.LessonEventService -- lesson.closed: lessonId=1, processed 3 students for auto-absent
+17:48:19.915 [Test worker] INFO ru.rutcampustrack.attendance.event.LessonEventService -- lesson.cancelled: lessonId=1, cancellation marker durable
+17:48:19.949 [Test worker] INFO ru.rutcampustrack.attendance.event.LessonEventService -- lesson.cancelled: lessonId=1, cancellation marker durable
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,75 @@
+{
+  "schema": "rutcampustrack.figma-assets.v1",
+  "assets": [
+    {
+      "sourceUrl": "https://www.figma.com/api/mcp/asset/277abdc3-41bc-45f1-a972-958e9c390782.svg",
+      "path": "sha256/5fe054606397e33574ad8faff8cb3ec1f0dc1a7e4af3e97bd54877a248c4f229.svg",
+      "mimeType": "image/svg+xml",
+      "bytes": 255,
+      "sha256": "5fe054606397e33574ad8faff8cb3ec1f0dc1a7e4af3e97bd54877a248c4f229",
+      "validated": "xml",
+      "canonical": true,
+      "sourceCall": "R010"
+    },
+    {
+      "sourceUrl": "https://www.figma.com/api/mcp/asset/49f6ec77-834e-4379-a728-eae8c2383b98.svg",
+      "path": "sha256/897e2c20c9f290adbe37668011fe6f38b3bc94c101324cc084c57bd429a91bff.svg",
+      "mimeType": "image/svg+xml",
+      "bytes": 384,
+      "sha256": "897e2c20c9f290adbe37668011fe6f38b3bc94c101324cc084c57bd429a91bff",
+      "validated": "xml",
+      "canonical": true,
+      "sourceCall": "R010"
+    },
+    {
+      "sourceUrl": "https://www.figma.com/api/mcp/asset/4b44dd33-3035-405e-b1a1-42bce89d2043.svg",
+      "path": "sha256/46c2a4c1221ee48d754fab1b1d5d32769cc04327bc6f41657a38f602217c159e.svg",
+      "mimeType": "image/svg+xml",
+      "bytes": 320,
+      "sha256": "46c2a4c1221ee48d754fab1b1d5d32769cc04327bc6f41657a38f602217c159e",
+      "validated": "xml",
+      "canonical": true,
+      "sourceCall": "R010"
+    },
+    {
+      "sourceUrl": "https://www.figma.com/api/mcp/asset/4c048c09-2082-49e5-a502-7efcc20f0f44.svg",
+      "path": "sha256/978d0d109b523854ee07b8ad87a1eedb338b992454d4038323799b2f6dd8e485.svg",
+      "mimeType": "image/svg+xml",
+      "bytes": 281,
+      "sha256": "978d0d109b523854ee07b8ad87a1eedb338b992454d4038323799b2f6dd8e485",
+      "validated": "xml",
+      "canonical": true,
+      "sourceCall": "R010"
+    },
+    {
+      "sourceUrl": "https://www.figma.com/api/mcp/asset/4c33a5a2-3b38-4eac-8303-2d2e203854b0.svg",
+      "path": "sha256/40e6aa0e1f0fdd340c51284f51e047b075c07c664cf7e8a620b3995bd1e53239.svg",
+      "mimeType": "image/svg+xml",
+      "bytes": 409,
+      "sha256": "40e6aa0e1f0fdd340c51284f51e047b075c07c664cf7e8a620b3995bd1e53239",
+      "validated": "xml",
+      "canonical": true,
+      "sourceCall": "R010"
+    },
+    {
+      "sourceUrl": "https://www.figma.com/api/mcp/asset/568733c5-6550-47da-a171-aef8958494c0.svg",
+      "path": "sha256/3196548642ea3ee3c910cf379d1240564628568e56a01185485edb85233b5ad5.svg",
+      "mimeType": "image/svg+xml",
+      "bytes": 409,
+      "sha256": "3196548642ea3ee3c910cf379d1240564628568e56a01185485edb85233b5ad5",
+      "validated": "xml",
+      "canonical": true,
+      "sourceCall": "R010"
+    },
+    {
+      "sourceUrl": "https://www.figma.com/api/mcp/asset/f842f21a-676c-4b2a-b93f-3aaeeb63d1a3.svg",
+      "path": "sha256/ed4461d521924a71eb3cc6953188a4ca86bcdc767f4025e6adca18652c148063.svg",
+      "mimeType": "image/svg+xml",
+      "bytes": 384,
+      "sha256": "ed4461d521924a71eb3cc6953188a4ca86bcdc767f4025e6adca18652c148063",
+      "validated": "xml",
+      "canonical": true,
+      "sourceCall": "R010"
+    }
+  ]
+}

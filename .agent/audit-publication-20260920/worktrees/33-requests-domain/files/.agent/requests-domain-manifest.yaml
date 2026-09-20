@@ -1,0 +1,70 @@
+manifestVersion: 1
+task: student-role-02-requests-domain
+status: domain-accepted-pending-root-integration
+risk: S3
+baseline: 8002b9ea4356b10779c5bb9a6d99746d32d78ae2
+branch: codex/student-role-02-requests-domain
+ownership:
+  writer: fresh-gpt-5.6-luna-max
+  scope: attendance student-request domain and owned attendance contract/event changes
+  children: false
+  commitCreated: false
+criteria:
+  - id: excuse
+    result: pass
+    evidence: StudentRequestDomainIT invalid package, overlap and owner/detail/options cases
+  - id: manual-late-budget
+    result: pass
+    evidence: StudentRequestDomainIT six concurrent submissions charge exactly five
+  - id: idempotency
+    result: pass
+    evidence: StudentRequestDomainIT same-key single receipt/ticket and focused replay paths
+  - id: attachments
+    result: pass
+    evidence: StudentRequestDomainIT exact 2x10MiB, spoof/third/oversize, expiry and cancel retention
+  - id: authz
+    result: pass
+    evidence: StudentRequestServiceAuthorizationTest 5/5 including missing role and foreign group
+  - id: present-priority
+    result: pass
+    evidence: StudentRequestDomainIT presentPriorityKeepsExistingAttendanceDuringExcuseApproval
+  - id: schemas-and-build
+    result: pass
+    evidence: checks.json
+files:
+  added:
+    - services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestKind.java
+    - services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestOrigin.java
+    - services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/StudentRequestStatus.java
+    - services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/
+    - services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/
+  modified:
+    - event-schemas/excuse.requested.json
+    - event-schemas/late_checkin.decided.json
+    - services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseTicketStatus.java
+    - services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/ExcuseType.java
+    - services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/enums/LateCheckinResolutionReason.java
+    - services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/MongoConfig.java
+    - services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisher.java
+    - services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/entity/ExcuseTicket.java
+    - services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java
+    - services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/entity/LateCheckinRequest.java
+  evidence:
+    - .agent/requests-domain-scope.md
+    - .agent/checks.json
+    - .agent/requests-domain-evidence.md
+    - .agent/requests-domain-summary.md
+    - .agent/requests-domain-manifest.yaml
+constraints:
+  - No public REST/gRPC/BFF/frontend/generated transport changes
+  - No legacy route/EventConsumer/notification-bot integration
+  - No deploy, migration, cleanup, commit, reset or rollback
+  - Existing worktree modifications preserved
+rootDecisionsRequired:
+  - route or retire legacy student create paths through this domain
+  - adapt legacy EventConsumer decisions to domain decision methods
+  - define descriptor-only notification-bot consumer contract
+  - resolve PRESENT_PRIORITY representation in automatic-checkin proto
+review:
+  independentSol: pending
+  productRuntime: pending downstream transport writer

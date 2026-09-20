@@ -1,0 +1,128 @@
+{
+  "schema": "rct.checks.v1",
+  "task": "Gateway C",
+  "risk": "S3",
+  "baseRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "currentHead": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "evidenceRevision": "working tree on currentHead; repair-manifest hashes current owned files",
+  "model": "gpt-5.6-luna",
+  "effort": "max",
+  "environment": {
+    "os": "Windows 11 amd64",
+    "java": "21.0.10",
+    "gradle": "8.12",
+    "shell": "PowerShell",
+    "workspace": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack",
+    "docker": "daemon ACL blocked in leaf shell"
+  },
+  "checks": [
+    {
+      "name": "ordered import verification",
+      "command": "Get-FileHash -Algorithm SHA256 for snapshot source/destination plus git hash-object against d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+      "exitCode": 0,
+      "evidence": "42-path delta and 45-file snapshot checked in .agent/student-gateway-c/import-evidence.md; supplied snapshot manifest SHA-256 matched; snapshot-overlap policy was applied."
+    },
+    {
+      "name": "focused Gateway unit selector before JWT delta",
+      "command": ".\\gradlew.bat :services:api-gateway:test --tests \"ru.rutcampustrack.gateway.clientip.*\" --tests \"ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest\" --tests \"ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest\" --tests \"ru.rutcampustrack.gateway.filter.StudentRequestsNoStoreFilterTest\" --tests \"ru.rutcampustrack.gateway.filter.StreamingRequestSizeGatewayFilterFactoryTest\" --tests \"ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest\" --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 0,
+      "evidence": "7 XML suites, 47 tests, 0 failures, 0 errors, 0 skipped; reports under services/api-gateway/build/test-results/test/."
+    },
+    {
+      "name": "JWT claim regression selector",
+      "command": ".\\gradlew.bat :services:api-gateway:test --tests \"ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest\" --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 0,
+      "evidence": "XML TEST-ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.xml timestamp 2026-09-07T23:42:09: 32 tests, 0 failures, 0 errors, 0 skipped. Signed cases cover required claim absence, wrong values/types, audience multiplicity, subject bounds/types and wrong token use."
+    },
+    {
+      "name": "scoped whitespace check",
+      "command": "git diff --check -- services/api-gateway docker-compose.prod.yml docker-compose.e2e.yml nginx tests/e2e/infra/nginx .agent/student-gateway-c",
+      "exitCode": 0,
+      "evidence": "No whitespace errors in the owned Gateway/config/evidence scope."
+    },
+    {
+      "name": "production Compose syntax",
+      "command": "docker compose -f docker-compose.prod.yml config --no-interpolate --quiet",
+      "exitCode": 0,
+      "evidence": "Compose YAML parsed without expanding secrets or requiring daemon access."
+    },
+    {
+      "name": "e2e Compose syntax",
+      "command": "docker compose -f docker-compose.e2e.yml config --no-interpolate --quiet",
+      "exitCode": 0,
+      "evidence": "Compose YAML parsed without expanding secrets or requiring daemon access."
+    },
+    {
+      "name": "host Nginx syntax",
+      "command": "nginx -t -c nginx/nginx.conf",
+      "exitCode": 1,
+      "status": "ENVIRONMENT_BLOCKED",
+      "evidence": "Host nginx executable is not installed; image-backed nginx -t remains open for root runtime stage."
+    },
+    {
+      "name": "Docker daemon availability",
+      "command": "docker version --format '{{.Server.Version}}'",
+      "exitCode": 1,
+      "status": "ENVIRONMENT_BLOCKED",
+      "evidence": "Docker client could not open the daemon pipe because the leaf shell lacks ACL; no container or production Compose project was started."
+    }
+  ],
+  "diagnostics": [
+    {
+      "id": "UNIT-COMPILER-01",
+      "status": "CLOSED",
+      "severity": "test-compile",
+      "evidence": "Initial focused selector exit 1 had three ambiguous AssertJ assertThat(Object attribute) overloads in TrustedClientIpFilterTest:47/49 and JwtAuthenticationFilterTest:130.",
+      "correction": "Added explicit Java String casts in the three owned assertions.",
+      "verification": "Focused selector rerun passed exit 0 with 47 tests."
+    },
+    {
+      "id": "FIXTURE-EDIT-01",
+      "status": "CLOSED",
+      "severity": "test-compile",
+      "evidence": "First correction accidentally emitted PowerShell [string] syntax into Java; bounded rerun exit 1 at the same three assertions.",
+      "correction": "Replaced with Java (String) casts only.",
+      "verification": "Focused selector rerun passed exit 0 with 47 tests."
+    },
+    {
+      "id": "JWT-FIXTURE-01",
+      "status": "CLOSED",
+      "severity": "test-fixture",
+      "evidence": "Signed numeric sub could not be built by JJWT builder; 28-case selector exit 1 before Gateway invocation.",
+      "correction": "Added a test-only RS256 raw JSON signer preserving numeric/wrong-type claims and epoch-second exp.",
+      "verification": "Final JWT selector exit 0; 32/0/0/0 XML."
+    },
+    {
+      "id": "JWT-FIXTURE-02",
+      "status": "CLOSED",
+      "severity": "test-fixture",
+      "evidence": "JJWT builder also rejected wrong-type issuer/audience; 32-case selector exit 1 before Gateway invocation.",
+      "correction": "Used the raw signed JSON fixture for every parameterized invalid-claim case; production code unchanged.",
+      "verification": "Final JWT selector exit 0; wrong-type issuer/audience/sub/token_use/role cases passed."
+    }
+  ],
+  "runtime": {
+    "status": "OPEN",
+    "unit": "PASS",
+    "gatewayRedisFakeUpstream": "NOT_RUN",
+    "nginxEdge": "NOT_RUN",
+    "composeRuntime": "NOT_RUN",
+    "requestsBffAttendanceMongoNoWrite": "OPEN; owned by integrated runtime stage",
+    "securityScans": "NOT_RUN",
+    "evidenceFile": ".agent/student-gateway-c/runtime-readiness.md",
+    "note": "Unit/direct-filter evidence cannot prove Netty framing, Nginx header overwrite, Redis bucket isolation, or zero domain writes. No runtime PASS is claimed."
+  },
+  "ownership": {
+    "repairManifest": ".agent/student-gateway-c/repair-manifest.json",
+    "foreignChanges": "preserved; parallel imported paths remain in working tree and are not included in repairFiles",
+    "acceptedImportOnly": [
+      "services/api-gateway/build.gradle.kts"
+    ]
+  },
+  "limitations": [
+    "Current combined seven-suite selector was not rerun after the JWT parameterized delta; the latest targeted JWT class passed 32/0/0/0 and the prior combined selector passed 47/0/0/0 before that delta.",
+    "Image-backed nginx -t requires root Docker ACL/runtime stage.",
+    "Real Gateway → Redis → fake-upstream and Nginx edge checks remain open.",
+    "Full Requests 24 MiB/no-write proof requires BFF → Attendance → Mongo/outbox integration and cannot be claimed by a fake upstream."
+  ]
+}

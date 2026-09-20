@@ -1,0 +1,136 @@
+{
+  "verification": "rct-verification",
+  "revisionUnderTest": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "frozenIntegrationCommit": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "environment": {
+    "os": "Windows PowerShell",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "java": "openjdk 21.0.10 2026-01-20 LTS",
+    "gradle": "8.12",
+    "docker": "28.5.2"
+  },
+  "checks": [
+    {
+      "id": "post-commit-scope-and-hash",
+      "criterion": "Frozen commit contains exactly the accepted union and source/destination bytes remain canonical",
+      "command": "PowerShell inline post-commit git diff-tree + Get-FileHash + status verifier",
+      "exitCode": 0,
+      "evidence": "Commit d3c31acb8cce53791a4981e5858a37d44fdc9a0e has 42 paths, commit unexpected/missing 0/0, source/destination SHA 42/42, staged/unstaged tracked drift 0, status outside evidence 0"
+    },
+    {
+      "id": "canonical-source-destination-hash-and-scope",
+      "criterion": "42 accepted source files match canonical hashes and target product scope has no missing/unexpected/excluded path",
+      "command": "PowerShell inline canonical-manifest Get-FileHash + target git status/diff scope verifier",
+      "exitCode": 0,
+      "evidence": "42/42 source SHA, 42/42 destination SHA, target status paths 42, unexpected 0, missing 0, excluded 0, tracked diff outside scope 0"
+    },
+    {
+      "id": "generated-contract-drift",
+      "criterion": "OpenAPI generated TypeScript is current",
+      "command": "npm run generate:types:check",
+      "exitCode": 0,
+      "evidence": "OpenAPI types match JS-STUDENT-01-r1 (cc22aaf4518392cb0aa792166d4bdd8d4071958bd82d0c2bcc990b6d6924d363)"
+    },
+    {
+      "id": "fixtures",
+      "criterion": "Accepted Homework fixtures conform to the exported contract",
+      "command": "npm run validate:fixtures",
+      "exitCode": 0,
+      "evidence": "Validated 12 fixtures against JS-STUDENT-01-r1"
+    },
+    {
+      "id": "mobile-core-contract-and-navigation",
+      "criterion": "Core contract, date fields, navigation and shell visibility behavior pass",
+      "command": "npm run test:contract",
+      "exitCode": 0,
+      "evidence": "11 tests passed, 0 failed, 0 skipped"
+    },
+    {
+      "id": "foundation-typecheck",
+      "criterion": "Shared frontend foundation compiles",
+      "command": "npm run typecheck:foundation",
+      "exitCode": 0,
+      "evidence": "tsc foundation noEmit completed successfully"
+    },
+    {
+      "id": "workspace-typecheck",
+      "criterion": "mobile-core, PWA Vue and TMA Vue typecheck",
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "evidence": "mobile-core tsc and pwa-vue/tma-vue vue-tsc completed successfully"
+    },
+    {
+      "id": "mobile-core-lint",
+      "criterion": "Accepted core source and tests lint cleanly",
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "evidence": "ESLint completed with max-warnings=0"
+    },
+    {
+      "id": "workspace-lint",
+      "criterion": "All Vue workspace lint scopes pass",
+      "command": "npm run lint",
+      "exitCode": 0,
+      "evidence": "mobile-core, pwa-vue and tma-vue ESLint completed with max-warnings=0"
+    },
+    {
+      "id": "vue-builds",
+      "criterion": "Both accepted Vue shells build from the integrated workspace",
+      "command": "npm run build",
+      "exitCode": 0,
+      "evidence": "PWA Vue built 106 modules; TMA Vue built 107 modules"
+    },
+    {
+      "id": "academic-focused-unit",
+      "criterion": "Homework service and gRPC identity unit behavior pass",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests \"ru.rutcampustrack.academic.homework.HomeworkStudentServiceTest\" --tests \"ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest\" --no-daemon",
+      "exitCode": 0,
+      "evidence": "HomeworkStudentServiceTest 6/6 and StudentHomeworkGrpcIdentityInterceptorTest 2/2"
+    },
+    {
+      "id": "bff-focused-unit",
+      "criterion": "Homework BFF query service unit behavior passes",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:test --tests \"ru.rutcampustrack.mobilebff.student.StudentQueryHomeworkTest\" --no-daemon",
+      "exitCode": 0,
+      "evidence": "StudentQueryHomeworkTest 6/6"
+    },
+    {
+      "id": "bff-runtime-it",
+      "criterion": "HTTP to local Academic gRPC boundary preserves auth, date delta and typed failure behavior",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:integrationTest --tests \"ru.rutcampustrack.mobilebff.runtime.StudentHomeworkHttpGrpcIT\" --no-daemon",
+      "exitCode": 0,
+      "evidence": "StudentHomeworkHttpGrpcIT XML: 7 tests, failures 0, errors 0, skipped 0"
+    },
+    {
+      "id": "academic-runtime-it",
+      "criterion": "Real PostgreSQL desired-state concurrency and completed-today union behavior pass",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests \"ru.rutcampustrack.academic.homework.HomeworkStudentCompletionConcurrencyIT\" --no-daemon",
+      "exitCode": 0,
+      "evidence": "HomeworkStudentCompletionConcurrencyIT XML: 6 tests, failures 0, errors 0, skipped 0"
+    },
+    {
+      "id": "crlf-aware-diff",
+      "criterion": "Accepted source review whitespace policy passes without line-ending or EOF rewrite",
+      "command": "git -c core.whitespace=cr-at-eol,-blank-at-eof diff --cached --check",
+      "exitCode": 0,
+      "evidence": "No findings after preserving canonical CRLF and accepted EOF bytes"
+    },
+    {
+      "id": "cached-default-whitespace-informational",
+      "criterion": "Diagnostic comparison of default CRLF-aware staged whitespace behavior",
+      "command": "git -c core.whitespace=cr-at-eol diff --cached --check",
+      "exitCode": 1,
+      "status": "INFORMATIONAL",
+      "evidence": "Accepted shell bytes report new blank lines at EOF at mobile-bottom-nav.pcss:98 and host.ts:23; source review PASS and canonical SHA contract require preserving them"
+    },
+    {
+      "id": "plain-diff-informational",
+      "criterion": "Diagnostic comparison of plain Git whitespace behavior",
+      "command": "git diff --check",
+      "exitCode": 2,
+      "status": "INFORMATIONAL",
+      "evidence": "Accepted CRLF OpenAPI additions are reported as trailing whitespace by plain mode; canonical bytes are retained and accepted CRLF/EOF policy is PASS"
+    }
+  ]
+}

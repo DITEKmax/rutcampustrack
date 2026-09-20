@@ -1,0 +1,291 @@
+{
+  "schema": "rct.retrospective-source-check.v1",
+  "status": "PASS",
+  "scope": "source-freeze/static-checks for opt-in RetrospectiveOnly Requests runtime",
+  "taskRoot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness",
+  "revision": "71bcc27572ed72c18e49f63c512ae5e4e5790b8d",
+  "checks": [
+    {
+      "name": "runner-present",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\runner.ps1"
+    },
+    {
+      "name": "old-probe-present",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\probe.mjs"
+    },
+    {
+      "name": "retrospective-probe-present",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-requests-harness\\.agent\\student-role-orchestrator\\requests-runtime\\retrospective-probe.mjs"
+    },
+    {
+      "name": "runner-powershell-parser",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "errors=0"
+    },
+    {
+      "name": "source-check-powershell-parser",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "errors=0"
+    },
+    {
+      "name": "old-probe-node-check",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": ""
+    },
+    {
+      "name": "retrospective-probe-node-check",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": ""
+    },
+    {
+      "name": "retrospective-probe-self-test",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "{\"schema\":\"rct.retrospective-probe.v1\",\"status\":\"PASS\",\"mode\":\"source-self-test\",\"checks\":[\"redaction\",\"uuid\",\"json-body\",\"bounded-poll\"]}"
+    },
+    {
+      "name": "retrospective-probe-self-test-shape",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "status=PASS, mode=source-self-test required"
+    },
+    {
+      "name": "runner-marker:RetrospectiveOnly",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "RetrospectiveOnly"
+    },
+    {
+      "name": "runner-marker:retrospectiveProbePath",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "retrospectiveProbePath"
+    },
+    {
+      "name": "runner-marker:Invoke-RetrospectiveProbe",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "Invoke-RetrospectiveProbe"
+    },
+    {
+      "name": "runner-marker:if ($RetrospectiveOnly)",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "if ($RetrospectiveOnly)"
+    },
+    {
+      "name": "runner-marker:academicSqlSeed = 'SKIPPED'",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "academicSqlSeed = 'SKIPPED'"
+    },
+    {
+      "name": "runner-marker:scheduleSqlSeed = 'SKIPPED'",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "scheduleSqlSeed = 'SKIPPED'"
+    },
+    {
+      "name": "default-requests-preserved:Invoke-RequestsProbe",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "Invoke-RequestsProbe"
+    },
+    {
+      "name": "default-requests-preserved:--i1-only",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "--i1-only"
+    },
+    {
+      "name": "default-requests-preserved:--i2-only",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "--i2-only"
+    },
+    {
+      "name": "default-requests-preserved:I1 exact files",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "I1 exact files"
+    },
+    {
+      "name": "default-requests-preserved:I2 edge rejection",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "I2 edge rejection"
+    },
+    {
+      "name": "retrospective-marker:rct.retrospective-probe.v1",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "rct.retrospective-probe.v1"
+    },
+    {
+      "name": "retrospective-marker:api/academic/semesters",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "api/academic/semesters"
+    },
+    {
+      "name": "retrospective-marker:api/academic/groups",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "api/academic/groups"
+    },
+    {
+      "name": "retrospective-marker:api/academic/users",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "api/academic/users"
+    },
+    {
+      "name": "retrospective-marker:api/academic/subjects",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "api/academic/subjects"
+    },
+    {
+      "name": "retrospective-marker:api/schedule/items",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "api/schedule/items"
+    },
+    {
+      "name": "retrospective-marker:assignmentId",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "assignmentId"
+    },
+    {
+      "name": "retrospective-marker:Idempotency-Key",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "Idempotency-Key"
+    },
+    {
+      "name": "retrospective-marker:api/attendance/reports/lesson",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "api/attendance/reports/lesson"
+    },
+    {
+      "name": "retrospective-marker:AUTO_SCHEDULER",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "AUTO_SCHEDULER"
+    },
+    {
+      "name": "retrospective-marker:blockedApi",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "blockedApi"
+    },
+    {
+      "name": "retrospective-marker:lesson_cancellation_markers",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "lesson_cancellation_markers"
+    },
+    {
+      "name": "retrospective-probe-no-datastore-bypass",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "probe has no SQL, Docker or direct datastore access"
+    },
+    {
+      "name": "retrospective-probe-no-fetch",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "probe uses Node https.request"
+    },
+    {
+      "name": "preserved:probe.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "expected=52a2834f17f0840a815be221a6579d075bcf35a5ac338ec3dadfb21430be1120 actual=52a2834f17f0840a815be221a6579d075bcf35a5ac338ec3dadfb21430be1120"
+    },
+    {
+      "name": "preserved:../runtime-live/seed-academic.sql",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "expected=de44edd7e8a6ff2382f69de61396454f6561d3ea9f722a831266e62fdbf31adc actual=de44edd7e8a6ff2382f69de61396454f6561d3ea9f722a831266e62fdbf31adc"
+    },
+    {
+      "name": "preserved:../browser-runtime/seed-schedule.sql",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "expected=cf8f55e2fbc2fbb5ffd3d8073cba3b7136b4fae84f9123f012b9da7995c705ae actual=cf8f55e2fbc2fbb5ffd3d8073cba3b7136b4fae84f9123f012b9da7995c705ae"
+    },
+    {
+      "name": "preexisting-dirty-preserved:R3-EVIDENCE.md",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "expected=f13f80a7499d139f1f31e6b2d354871c659fd1e7bd34d448e22a94d10ecaaaa8 actual=f13f80a7499d139f1f31e6b2d354871c659fd1e7bd34d448e22a94d10ecaaaa8"
+    },
+    {
+      "name": "preexisting-dirty-preserved:r10-docker-network-proof.ps1",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "expected=0918c18d7c6915cc1c8f06ec94e4b86d7ebacc390f7e29f4dff8255e49d2e2c8 actual=0918c18d7c6915cc1c8f06ec94e4b86d7ebacc390f7e29f4dff8255e49d2e2c8"
+    },
+    {
+      "name": "preexisting-dirty-preserved:r10-network-proof-source-check.ps1",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "expected=e6f0f92c641dbb5fb56d1190f10b8501498631b23c228f2f28b6cde5355717b5 actual=e6f0f92c641dbb5fb56d1190f10b8501498631b23c228f2f28b6cde5355717b5"
+    },
+    {
+      "name": "preexisting-dirty-preserved:r3-cleanup-failure-injection.ps1",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "expected=baf03194d0eeea59013e05a54832ac89946b071db9f445468d95f3e7d7fa7e78 actual=baf03194d0eeea59013e05a54832ac89946b071db9f445468d95f3e7d7fa7e78"
+    },
+    {
+      "name": "preexisting-dirty-preserved:r6-source-contract-check.ps1",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "expected=3c36387ad3cdc33e3a26f16cd928cf2e295252e4ff43f3b694c600b375226e94 actual=3c36387ad3cdc33e3a26f16cd928cf2e295252e4ff43f3b694c600b375226e94"
+    },
+    {
+      "name": "preexisting-dirty-preserved:r8-edge-reservation-check.ps1",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "expected=63bd96b2c0da42a1e7680ecee679e1ad5a48d08e3a41271760c11e62b109e5d3 actual=63bd96b2c0da42a1e7680ecee679e1ad5a48d08e3a41271760c11e62b109e5d3"
+    },
+    {
+      "name": "preexisting-dirty-preserved:r8-probe-callsite-check.ps1",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "expected=aec6fab3128c6533c43e403efe58780c67a502cca7f3e48c4017f607b0f71cc0 actual=aec6fab3128c6533c43e403efe58780c67a502cca7f3e48c4017f607b0f71cc0"
+    },
+    {
+      "name": "runner-is-scoped-change",
+      "status": "PASS",
+      "exitCode": 0,
+      "evidence": "runner hash differs from pre-edit baseline as required by the contract"
+    }
+  ],
+  "runtime": {
+    "status": "NOT_RUN",
+    "reason": "root runtime lease required"
+  },
+  "noActiveProcess": {
+    "status": "NOT_RUN",
+    "reason": "leaf created no runtime resources; root owns runtime inspection"
+  },
+  "limitations": [
+    "No Docker, services, browser edge or product API was started by this source-only check.",
+    "API-managed headman grant synchronization remains a runtime/source integration gate; the probe reports blockedApi and never bypasses it."
+  ]
+}

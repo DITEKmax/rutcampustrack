@@ -1,0 +1,20 @@
+{
+  "stage": "H86",
+  "start": "2026-09-20T10:59:40.2633244Z",
+  "head": "ed9b63c9449b23fa3f5dbf2feb52cd8f9e9cfe83",
+  "freezeManifestSha256": "44683CF549DD2343A415C9E9D0CB31BD8C4B231ACA6DCFF4347B938084714DA0",
+  "command": [
+    ".\\gradlew.bat",
+    ":services:schedule-service:schedule-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.schedule.integration.LessonApiIT",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-problems-report"
+  ],
+  "testcontainersReuse": "false",
+  "exitCode": 0,
+  "end": "2026-09-20T11:01:29.9664086Z",
+  "postHashMismatches": []
+}

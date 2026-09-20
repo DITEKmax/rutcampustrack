@@ -1,0 +1,130 @@
+{
+  "schema": "rct-profile-ui-source-manifest",
+  "revision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "contract": {
+    "path": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/student-auth-a/profile/resume4-security-verification-contract.md",
+    "sha256": "4EDFF91F229C9BD38B0D4DEDFA6F9CA060A0A5040D411E4BC2780DCBC548D177",
+    "bytes": 6229
+  },
+  "cwd": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui",
+  "productScope": "frontends/mobile-core/src/features/profile/{MoreScreen,ProfileScreen,RoleSwitchScreen,AppearanceScreen,SecurityScreen,SessionsScreen,AccountHistoryScreen}.vue",
+  "productFiles": [
+    {
+      "path": "frontends/mobile-core/src/features/profile/MoreScreen.vue",
+      "bytes": 1604,
+      "sha256": "B5C2F2D45778C7EE27EBED1C1D46A3D383A0678E43CE8E020908913C4CC2E395"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/ProfileScreen.vue",
+      "bytes": 4165,
+      "sha256": "969FFED80A643F451F8CD70BE1E647B70159B46F80195FA4C691B175BBA12C4B"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/RoleSwitchScreen.vue",
+      "bytes": 4006,
+      "sha256": "B01E9793EC652389B8ED62563D3F16CD7641214C30CBA030A7F408C5D2ACCA4E"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/AppearanceScreen.vue",
+      "bytes": 2572,
+      "sha256": "7BBBFEC9FDA8D24F8E01113E9D9BC42BEE78A051A25E0B1A384E66B5AECA8475"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/SecurityScreen.vue",
+      "bytes": 10943,
+      "sha256": "AB039523841BEE93E78ABCA535DEAB7400DFA36003E1102D83F782911E2B659E"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/SessionsScreen.vue",
+      "bytes": 5043,
+      "sha256": "EEA017B57B4D2D324A4AE5245E87D63DCFDBB1F063F41082E8613FEC226A5726"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/profile/AccountHistoryScreen.vue",
+      "bytes": 3940,
+      "sha256": "254CB927B14FAA6995D04EB14D56D51859CA150C5EB66B5126D8590B279E23A6"
+    }
+  ],
+  "priorSecurityBinding": {
+    "sha256": "51FD2424CB07C6EBEC6DF93033D5E1F515D6BA6326034DEF69B554AFB50687FA",
+    "bytes": 10825,
+    "note": "Existing invalidation correction verified from the assigned baseline before the callback-only lint repair."
+  },
+  "diff": {
+    "authorized": true,
+    "changes": [
+      "SecurityScreen.vue: callback prop values explicitly include undefined and matching withDefaults entries use literal undefined.",
+      "MoreScreen.vue, ProfileScreen.vue, RoleSwitchScreen.vue, AppearanceScreen.vue, SessionsScreen.vue, AccountHistoryScreen.vue: the identical mechanical callback type/default pattern was applied only after the Security pilot passed."
+    ],
+    "guardPreserved": "SecurityScreen submit still returns when isBusy or accountInvalidated, and still returns when onChangePassword is absent; no-op callbacks were not added.",
+    "behaviorPreserved": "ACCOUNT_INVALIDATED watcher, sensitive-field clearing, reveal reset, external-error visibility and disabled submit binding remain unchanged."
+  },
+  "evidenceInputs": [
+    {
+      "path": ".agent/profile-ui/evidence/resume-security-fix2/packet.md",
+      "bytes": 2981,
+      "sha256": "8E44D502E8F42AEC0A0ACC5879C25038E5919BCE2A5A7A6961EDB09C25A17DB8"
+    },
+    {
+      "path": ".agent/profile-ui/evidence/resume4-security/checks-output.md",
+      "bytes": 8307,
+      "sha256": "33DC0646D5D3B2CCE1C1C21C32DE102353BA50233598E2A30D442825E2C44362"
+    },
+    {
+      "path": ".agent/profile-ui/evidence/resume4-security/checks.json",
+      "bytes": 6475,
+      "sha256": "B7DDA706A053EDF91D4DDF56810F5BAB3FCCD47F321AD05B7E3E28D5044EF0ED"
+    }
+  ],
+  "harnessInputs": [
+    {
+      "path": ".agent/profile-ui/evidence/resume-2026-09-08/harness/App.vue",
+      "bytes": 16626,
+      "sha256": "56D9389BAE087410209E2224549729C23EE02E4E67A703173EE831EE41E452F7"
+    },
+    {
+      "path": ".agent/profile-ui/evidence/resume-2026-09-08/harness/main.ts",
+      "bytes": 90,
+      "sha256": "50CB9F18B1C7115799AE456F0D0038840278B49EA520B5549D468EC76C248FB9"
+    },
+    {
+      "path": ".agent/profile-ui/evidence/resume-2026-09-08/harness/index.html",
+      "bytes": 312,
+      "sha256": "F0AC67F8352334DC82ACB7A356761415CEED796EF91DE067B9B2847C9BC37BCA"
+    },
+    {
+      "path": ".agent/profile-ui/evidence/resume-2026-09-08/harness/vite.config.mjs",
+      "bytes": 928,
+      "sha256": "B67B1828C23ADE53DEA15104A3CB144108AAE084D9CE43B3E64F10871CB37A8D"
+    },
+    {
+      "path": ".agent/profile-ui/evidence/resume-2026-09-08/harness/serve.mjs",
+      "bytes": 511,
+      "sha256": "DEC5D01E38A87F767785DF6F7F617CF9B5EB80D9A0788B34A3F2745478C5AF92"
+    }
+  ],
+  "foreignWork": {
+    "gitStatus": [
+      "## HEAD (no branch)",
+      "?? .agent/profile-ui/",
+      "?? frontends/mobile-core/src/features/profile/"
+    ],
+    "note": "Detached baseline and pre-existing nested/outer work were preserved; no commit, reset, clean, backend, lockfile or shared-file mutation was performed."
+  },
+  "runtime": {
+    "leafStatus": "NOT_STARTED",
+    "rootOwned": true,
+    "url": "http://127.0.0.1:18110/",
+    "startupCwd": "C:/Users/maksd/.codex/worktrees/1456/rutcampustrack/.agent/worktrees/profile-ui/.agent/profile-ui/evidence/resume-2026-09-08/harness",
+    "startupCommand": "node .\\serve.mjs",
+    "strictPort": true,
+    "host": "127.0.0.1",
+    "note": "Root owns fresh free-port proof, server lease, mounted IAB flow and cleanup."
+  },
+  "limitations": [
+    "No mounted post-correction browser verdict is claimed by this leaf.",
+    "No backend/Auth integration, PWA service worker, TMA live behavior or full seven-screen browser acceptance is claimed.",
+    "The default ESLint gate was WARN/exit 1 before the recorded contract correction; current full focused ESLint is PASS/exit 0.",
+    "Accepted purpose13/domain21 bundles were preserved and not rerun."
+  ]
+}

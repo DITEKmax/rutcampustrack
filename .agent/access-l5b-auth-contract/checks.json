@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-20",
+  "scope": "Access L5B service identity static documentation",
+  "revision": "426a15b6b42e816deaa3ca5c50437e0964aaf85e",
+  "command": "Parse sources.json; rehash all listed originals; compare SHA256",
+  "exitCode": 0,
+  "sourceCount": 15,
+  "hashMismatches": 0,
+  "environment": "Windows PowerShell; readonly source inspection",
+  "runtime": "N/A",
+  "tests": "NOT_RUN",
+  "productWrites": false,
+  "scoutStatus": "completed/released",
+  "leadOriginalReads": [
+    "Schedule GrpcAuthInterceptor",
+    "Schedule GrpcSecretClientInterceptor",
+    "InternalJwtValidator",
+    "Academic StudentHomeworkGrpcIdentityInterceptor",
+    "Academic ScheduleGrpcClient",
+    "Schedule AcademicGrpcClient",
+    "schedule.proto",
+    "JdbcSessionAuthority revokeCurrent/isLive",
+    "accepted v3 PROPOSAL sections4.2/5",
+    "ACCESS-A2"
+  ],
+  "limitations": [
+    "No implementation or readiness conclusion",
+    "No root policy decision inferred",
+    "No runtime, network, credentials or secret reads",
+    "Sources pinned by full SHA256; root shared registry not modified"
+  ]
+}

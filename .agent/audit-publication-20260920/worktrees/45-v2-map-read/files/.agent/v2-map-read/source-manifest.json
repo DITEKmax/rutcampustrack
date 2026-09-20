@@ -1,0 +1,173 @@
+{
+  "milestone": "H30_FOCUSED_RUNTIME_VERIFIED",
+  "risk": "S3",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-map-read",
+  "branch": "codex/v2-map-read",
+  "baseRevision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "headRevision": "b8220ac92125a8afa37598b270aa4fab7aa1f470",
+  "workingTree": "uncommitted bounded source diff; no commit or push",
+  "contract": {
+    "path": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/MAP-READ-M2.md",
+    "rulesSha256": "B256A175274987DA9710D804B3C050A5DBCB47D8448CC03644D74168B52A437A",
+    "currentIncludesSafeParallelismAmendment": true,
+    "retainedPlanClarificationApplied": true
+  },
+  "scope": {
+    "allowed": [
+      "Academic campus-map read repository/service/models",
+      "AcademicGrpcServiceImpl constructor and three map read RPC handlers/mapping",
+      "StudentHomeworkGrpcIdentityInterceptor map method registrations",
+      "focused Academic source tests and necessary constructor adaptations",
+      "local .agent/v2-map-read evidence and AGENTS pointer"
+    ],
+    "forbiddenChangesObserved": [],
+    "realMapDataAdded": false,
+    "sharedOrGeneratedContractChanged": false
+  },
+  "candidateModelImports": [
+    {
+      "name": "CampusMapFormat.java",
+      "source": "C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/.agent/worktrees/campus-map-read-backend/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormat.java",
+      "sourceRevision": "86263384ae81353af087e61e9158af61f15e0999",
+      "destination": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormat.java",
+      "sourceSha256": "83029C6ED4C4AD7391EF6128486CF1D45C34FC770A398B4F590845502A6BEBBB",
+      "destinationSha256": "83029C6ED4C4AD7391EF6128486CF1D45C34FC770A398B4F590845502A6BEBBB"
+    },
+    {
+      "name": "CampusMapFormatState.java",
+      "source": "C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/.agent/worktrees/campus-map-read-backend/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormatState.java",
+      "sourceRevision": "86263384ae81353af087e61e9158af61f15e0999",
+      "destination": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormatState.java",
+      "sourceSha256": "D8E20EFA3F4FBD9D5812ABF9C749BEB5E6B5C121E052A081D9F29E333AB57ACA",
+      "destinationSha256": "D8E20EFA3F4FBD9D5812ABF9C749BEB5E6B5C121E052A081D9F29E333AB57ACA"
+    },
+    {
+      "name": "CampusMapReadException.java",
+      "source": "C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/.agent/worktrees/campus-map-read-backend/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadException.java",
+      "sourceRevision": "86263384ae81353af087e61e9158af61f15e0999",
+      "destination": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadException.java",
+      "sourceSha256": "C3B3D44FFA33BF791CA420EE16DFEE63E036F0B916AB99B9398F0F9C6F901955",
+      "destinationSha256": "C3B3D44FFA33BF791CA420EE16DFEE63E036F0B916AB99B9398F0F9C6F901955"
+    },
+    {
+      "name": "CampusMapReadModels.java",
+      "source": "C:/Users/maksd/.codex/worktrees/d650/rutcampustrack/.agent/worktrees/campus-map-read-backend/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadModels.java",
+      "sourceRevision": "86263384ae81353af087e61e9158af61f15e0999",
+      "destination": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadModels.java",
+      "sourceSha256": "6FAB3B059B94ACB202BFBC9FBF91E2984078A4547D488714D2F46E0633ABD0A0",
+      "destinationSha256": "55AFEBC88AB0DA09D115EDE2E6CA868E61B7ECEFC27369F3E9DF7232EFB5EA2D",
+      "destinationChange": "retains JDBC row records and adds nested manifest aggregates"
+    }
+  ],
+  "files": [
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadRepository.java",
+      "symbols": ["CampusMapReadRepository", "findCurrentCatalogs", "findCatalogById", "findPlanById", "findAssetMetadata", "loadAsset"],
+      "sha256": "579A98B36E589E4C5290CEBECD3971EFD58F6FC72CD11AA9B604C812186D5550"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadService.java",
+      "symbols": ["CampusMapReadService", "readManifest", "readFloorPlan", "readAsset", "authorize", "validatePlanIdentity", "digestMatches"],
+      "sha256": "DFB12285B1F2413359FA422D7743C4B57F68533D7116673AFA510375C2D03B58"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "symbols": ["getCampusMapManifest", "getCampusFloorPlan", "readCampusMapAsset", "toProtoManifest", "onCampusMapError"],
+      "sha256": "C29987CCCB30ACA6C2DE2ECFA2DF2019A3CD4C9FC4AE6C3CF25591A8976A8876"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+      "symbols": ["MAP_MANIFEST_METHOD_NAME", "MAP_FLOOR_PLAN_METHOD_NAME", "MAP_ASSET_METHOD_NAME", "interceptCall"],
+      "sha256": "3D7267482244397C457F5AD716B0AE575C08C82EDF525F01DAD253CDC5691FA5"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+      "symbols": ["manifestPreservesBuildingAndFloorOrderAndIndependentFormatStates", "manifestAllowsRetainedPublishedPlanFromPriorCatalogAlongsideChangedFloor", "invalidSignedClaimsAreDeniedBeforeUserAndMapLookups", "signedStudentStatusMatrixAllowsOnlyActiveRegularAndTerminalReadOnly", "missingArchivedAwareUserIsDeniedBeforeMapLookup", "floorPlanDistinguishesNoPlanFromUnknownBuildingAndRejectsNonCanonicalIds", "nonCanonicalFloorAndAssetIdsAreRejectedBeforeMapLookup", "unknownFloorIsNotFoundBeforePlanReads", "floorWithForeignBuildingParentIsNotFoundBeforePlanReads", "invalidCurrentPointerFailsClosedBeforeFormatReads", "floorPlanResolvesCurrentPointerAsPlanId", "unknownHistoricalVersionIsNotFoundBeforeFormatReads", "wrongAssetIdIsNotFoundBeforeMetadataOrByteLoad", "missingPlanCatalogParentFailsClosedBeforeFormatReads", "manifestKeepsEachNonReadyFormatStateWithoutByteMetadataLookup", "nonReadyAssetWithNullAssetIdIsNotFoundBeforeMetadataOrByteLoad", "readyAssetWithoutMetadataFailsBeforeByteLoad", "currentPlanRejectsMissingDuplicateOrMisparentedFormatSlots", "assetMetadataParentHashAndDimensionsMustMatchBeforeByteLoad", "digestMismatchFailsAfterMetadataButBeforeReturningAsset", "manifestResultTruthTableKeepsFullAndUnchangedStatesDistinct"],
+      "sha256": "39D7AD63EB5D807FA7A869AC4FCC8FEFAABAF55C84DBD7570A077159284191FB"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java",
+      "symbols": ["assetChunksUse64KiBBoundAndMonotonicOffsets", "cancelledServerStreamStopsBeforeCompletion", "missingSignedIdentityReturnsPermissionDeniedWithoutMapCallOrEmission", "typedMapFailureUsesSafeStatusWithoutEmission", "downstreamIllegalStateUsesInternalWithoutEmission", "invalidReturnedContentFailsBeforeFirstChunk"],
+      "sha256": "15A92266A8851B9D3CE0E97A10BA73C3693B5E9F609A58CDB27CD7354D6567F9"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+      "symbols": ["validTokenBindsClaimsForEveryCampusMapRead", "missingOrBadMapTokenClosesUnauthenticatedWithoutCallingHandler", "service"],
+      "sha256": "498758B8803E8E179150137447B1EA5D28757A71276F587CB0C7288D97D175A2"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+      "symbols": [
+        "CampusMapReadRepositoryIT",
+        "realJdbcReadsOrderedGraphHistoricalAssetAndMaterializationTrace",
+        "realJdbcNegativeReadsReturnTypedBoundariesWithoutContentMaterialization",
+        "realJdbcNonReadyAssetWithNullAssetIdIsNotFoundBeforeMetadataOrContent",
+        "repeatableReadSnapshotStaysAtR1AcrossCommittedCatalogSwitch",
+        "JdbcObservation",
+        "ObservedDataSource",
+        "CatalogGate"
+      ],
+      "sha256": "513C784FB21994DDB215F4EFC546774CDC4D37C626150CCEF6BC1586595DB077",
+      "status": "H30_RUNTIME_VERIFIED"
+    }
+  ],
+  "evidence": {
+    "summary": ".agent/v2-map-read/source-summary.md",
+    "checks": ".agent/v2-map-read/evidence/checks.json",
+    "m3RepositoryIT": {
+      "contract": ".agent/v2-map-repository-it/contract.md",
+      "summary": ".agent/v2-map-repository-it/summary.md",
+      "checks": ".agent/v2-map-repository-it/evidence/checks.json",
+      "status": "H30_RUNTIME_VERIFIED"
+    },
+    "h27H28H29H30": {
+      "h27Unit": ".agent/v2-map-repository-it/evidence/h27-unit.log",
+      "h28Compile": ".agent/v2-map-repository-it/evidence/h28-shared-outbox.log",
+      "h28Stdout": ".agent/v2-map-repository-it/evidence/h28-shared-outbox.stdout.log",
+      "h28Stderr": ".agent/v2-map-repository-it/evidence/h28-shared-outbox.stderr.log",
+      "h28Context": ".agent/v2-map-repository-it/evidence/h28-shared-outbox.context.log",
+      "h29Unit": ".agent/v2-map-repository-it/evidence/h29-unit.log",
+      "h29Stdout": ".agent/v2-map-repository-it/evidence/h29-unit.stdout.log",
+      "h29Stderr": ".agent/v2-map-repository-it/evidence/h29-unit.stderr.log",
+      "h29Context": ".agent/v2-map-repository-it/evidence/h29-unit.context.log",
+      "h30Unit": ".agent/v2-map-repository-it/evidence/h30-unit.log",
+      "h30UnitStdout": ".agent/v2-map-repository-it/evidence/h30-unit.stdout.log",
+      "h30UnitStderr": ".agent/v2-map-repository-it/evidence/h30-unit.stderr.log",
+      "h30UnitContext": ".agent/v2-map-repository-it/evidence/h30-unit.context.log",
+      "h30Integration": ".agent/v2-map-repository-it/evidence/h30-integration.log",
+      "h30IntegrationStdout": ".agent/v2-map-repository-it/evidence/h30-integration.stdout.log",
+      "h30IntegrationStderr": ".agent/v2-map-repository-it/evidence/h30-integration.stderr.log",
+      "h30IntegrationContext": ".agent/v2-map-repository-it/evidence/h30-integration.context.log",
+      "status": "H30_RELEASED_SUCCESS"
+    }
+  },
+  "runtimeEvidence": {
+    "status": "H30_FOCUSED_RUNTIME_VERIFIED",
+    "reason": "H30 focused unit selectors produced 98 tests with zero failures/errors/skips; the real PostgreSQL repository IT produced 6 tests with zero failures/errors/skips. No application runtime outside these selectors was used."
+  },
+  "heavyChecksExecuted": [
+    {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.map.CampusMapReadServiceTest --tests ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest --tests ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 0,
+      "tests": 98,
+      "xmlCount": 3
+    },
+    {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "exitCode": 0,
+      "tests": 6,
+      "xmlCount": 1
+    }
+  ],
+  "openGates": [
+    "main-owned heavy compile/unit/integration batch",
+    "fresh independent Sol high review of the stable full M2 diff",
+    "root integration and any required recheck after integration",
+    "real database/runtime checks if the main lease declares them applicable"
+  ],
+  "limitations": [
+    "Focused tests are authored but not executed and therefore are not claimed PASS.",
+    "The source-only javac check covers the four dependency-free model files; service/handler compilation awaits generated protobuf and Gradle dependencies.",
+    "Database parent existence relies on the bound findCatalogById read plus the V26 foreign key; no migration or seed was changed."
+  ]
+}

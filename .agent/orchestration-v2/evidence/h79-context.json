@@ -1,0 +1,8 @@
+{
+  "image": "mongo:7@sha256:45d9c9b48aa1b56b5e3a9f906763fe432f376abb3bc2832438022b6d2534e4fe",
+  "container": "b44e126741f57f24fa7e8a9dc0d147689c5a7990ea768cbe6b57278fbfcd2e85",
+  "command": "mongosh --nodb --quiet --eval controlled BSON sample",
+  "exitCode": 0,
+  "network": "none",
+  "productRuntime": "NOT_RUN"
+}

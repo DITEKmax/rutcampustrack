@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.arch.AuthApiContractTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-11T09:28:02" hostname="DITEK-PK" time="2.426">
+  <properties/>
+  <testcase name="controllersMustNotCarryClassLevelMapping" classname="ru.rutcampustrack.auth.arch.AuthApiContractTest" time="2.404"/>
+  <testcase name="controllerMethodsMustNotCarryMappings" classname="ru.rutcampustrack.auth.arch.AuthApiContractTest" time="0.018"/>
+  <testcase name="restControllersMustImplementContractInterface" classname="ru.rutcampustrack.auth.arch.AuthApiContractTest" time="0.003"/>
+  <system-out><![CDATA[12:28:02.408 [Test worker] INFO com.tngtech.archunit.core.PluginLoader -- Detected Java version 21.0.10
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

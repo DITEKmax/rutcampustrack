@@ -1,0 +1,35 @@
+# Scanner evidence — resumed 07.09.2026
+
+Fourth-pause resume 07.09.2026 10:54Z: all 74 source/test snapshot files matched current worktrees before scan; 47 owner-file hashes also matched separately. Same fixed Gitleaks image and offline read-only restrictions scanned `pause-2026-09-07-1232`; exit 0, 720331 bytes, no leaks. Report `gitleaks-fourth-pause-scope.json`. Coverage includes snapshot metadata, excludes later request repair changes and repository history. Backend dependency FAIL remains open.
+
+Scope snapshot: `../pause-2026-09-07/`, 12 shared-shell +21 homework API files and SHA-256 manifests on baseline8002b9ea. Actual source hashes matched these manifests at resume. Additional in-progress verification tests are outside this snapshot; scan them after stabilization. This is not a full-history or full-repository scan.
+
+Gitleaks8.30.1 official image `ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f`, Windows Docker execution with required escalation. Source mounted readonly, network none, read-only container filesystem, capabilities dropped. Command inside container:
+
+`dir /scope --redact=100 --no-banner --report-format json --report-path /reports/gitleaks-pause-scope.json`
+
+Exit0; ~235324 bytes scanned, no leaks found. Report beside this file. No secrets printed, no scan results sent externally.
+
+CLI version/source verified from [official release](https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1) and [official README](https://github.com/gitleaks/gitleaks/blob/v8.30.1/README.md). Trivy0.74.0 downloaded earlier (official release verified), vulnerability DB preparation currently running; no Trivy scan/PASS yet.
+
+Trivy DB attempt via `ghcr.io/aquasecurity/trivy-db:2` with default timeout exited1 at 05:45:48Z: `context deadline exceeded`. No vulnerability assessment ran. Retry uses the same fixed Trivy image and repository with `fs --download-db-only --timeout 30m --no-progress`, task-owned container `rct-student-role-02-trivy-db`, only cache bind mount, exec session8050. Source files are not mounted during DB preparation. The earlier mirror.gcr.io attempt was intentionally stopped after very slow transfer, not a vulnerability finding.
+
+At05:55Z Gitleaks scanned all22 stable Homework product/test files copied from `homework-review-manifest.json`; each SHA-256 verified after copy. Same fixed image and sandbox flags, `/scope` readonly, no network; command `dir /scope --redact=100 --no-banner --report-format json --report-path /reports/gitleaks-homework-stable.json`. Exit0,199387bytes, no leaks. This includes new DB/HTTP tests and supersedes the earlier limited Homework snapshot coverage, but does not scan repository history/unrelated owner files.
+
+Trivy ghcr retry session8050 failed at05:55:17Z, exit1: HTTP/2 stream PROTOCOL_ERROR. Mirror retry session79722 started05:57:19Z using `--db-repository mirror.gcr.io/aquasec/trivy-db:2 --timeout 30m --no-progress`; completed06:18:25Z exit0. DB UpdatedAt2026-09-07T01:01:06Z, downloaded06:18:25Z. No source changes from DB preparation.
+
+Trivy mobile lockfile scan: fixed image above, Docker network none/read-only/cap-dropALL/no-new-privileges, tmpfs/tmp, source lockfile readonly, only cache/report mounts writable. Command `fs /scope --skip-db-update --offline-scan --scanners vuln --severity HIGH,CRITICAL --exit-code 1 --format json --output /reports/trivy-mobile-npm.json --no-progress` exit0. Default output explicitly excluded dev/test dependencies, so coverage was broadened with `--include-dev-deps`, output `trivy-mobile-npm-including-dev.json`, exit0 at06:20:11Z. Report identified265 npm packages, HIGH/CRITICAL vulnerability count0. Lockfile SHA256 `4AF978B91987A6A422732BF7598648521AD16A14632DEA85620C0307EED113F6`; baseline unchanged. No ignore-unfixed filter was used. This is not a Java dependency scan or universal security PASS.
+
+Backend JAR scan pending. API repair writer owns builds and will supply Academic/BFF bootJars. Java index download started06:21:21Z, session69886, named task container rct-student-role-02-trivy-java-db, same fixed Trivy image/cache, `fs --download-java-db-only --java-db-repository mirror.gcr.io/aquasec/trivy-java-db:1 --timeout 30m --no-progress`. No backend scan/PASS yet.
+
+Owner paused Java DB download at06:33:41Z, session69886 exit1 after shutdown signal; docker stop exit0, cache preserved. Owner resumed; fresh same-image/cache download session94238 started07:14:52Z via mirror.gcr.io/aquasec/trivy-java-db:1, timeout30m. No backend scan yet.
+
+Java DB resumed download completed07:18:38Z exit0. Stable repair-stage Academic/BFF bootJars copied into backend-artifacts and SHA verified against repair evidence; new completion-date delta does not own dependency changes. Scanner coverage is these artifacts and dependencies, not final date-delta runtime.
+
+Backend scan: fs mode exited0 but detected0languagefiles; NOT a security PASS (trivy-homework-backend.json). Root checked installed CLI help and official Java coverage docs https://trivy.dev/docs/latest/guide/coverage/language/java/. Corrected mode rootfs same offline/read-only mounts, report trivy-homework-backend-rootfs.json, exit1 at07:20:21Z. Detected256Java package records;82vulnerability instances,51unique package+version+CVE (8CRITICAL,43HIGH). Compact findings backend-findings-unique.json. Known-version findings are not a claim that every exploit precondition applies; gate remains FAIL until bounded dependency remediation or evidence-based disposition. Stable JAR hashes from homework-repair/evidence.md preserved. No ignore-unfixed/ignore policy was applied.
+
+Resume third pause: all66product/test snapshotfiles SHA verified against currentworktrees. Gitleaks fixed8.30.1 image c00b6bd0... scanned entire pause-2026-09-07-1115 snapshot readonly/networknone/read-only/capdropALL/no-new-privileges. Command dir /scope --redact=100 --no-banner --report-format json --report-path /reports/gitleaks-third-pause-scope.json. Exit0 at08:56Z,702066bytes,no leaks. Snapshot includes66sourcefiles plus manifests/priorcheckpoint; no repositoryhistory/unrelatedownercoverage claim. BackendvulnerabilityFAIL unchanged.
+
+Final request-repair source scan: root frozen32 source/test files plus manifest in requests-review-2-source after verifying exact copied SHA and no unexpected path. Same pinnedGitleaks8.30.1 image with offline/read-only/cap-drop/no-new-privileges flags; command dir /scope --redact=100 --no-banner --report-format json --report-path /reports/gitleaks-requests-review-2.json. Exit0 at11:41Z,229414bytes,no leaks. Backend vulnerability FAIL and gateway XFF finding remain open. No repository history coverage claimed.
+
+Decision retry repair snapshot32 files+manifest rootSHA-verified aftercopy; exactly2 changed fromprior32. FixedGitleaks8.30.1 same pinned digest, networknone/readonly/capdrop/no-new-privileges, dir /scope --redact=100 --no-banner --report-format json --report-path /reports/gitleaks-requests-review-3.json. Exit0 at14:47Z,241619bytes,no leaks; report[]. No repo history/fullrepo coverage or dependency PASS claimed.

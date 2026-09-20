@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.integration.TmaIT" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-11T09:54:41" hostname="DITEK-PK" time="0.271">
+  <properties/>
+  <testcase name="tma_withDifferentBotTokenSignature_returns401()" classname="ru.rutcampustrack.auth.integration.TmaIT" time="0.032"/>
+  <testcase name="tma_withValidInitData_returnsTokenPair()" classname="ru.rutcampustrack.auth.integration.TmaIT" time="0.046"/>
+  <testcase name="tma_withTamperedHash_returns401()" classname="ru.rutcampustrack.auth.integration.TmaIT" time="0.021"/>
+  <testcase name="tma_withUnlinkedTelegramId_returns401()" classname="ru.rutcampustrack.auth.integration.TmaIT" time="0.026"/>
+  <testcase name="tma_withReplayedInitDataInsideWindow_returnsToken()" classname="ru.rutcampustrack.auth.integration.TmaIT" time="0.071"/>
+  <testcase name="tma_withBitFlippedSignature_returns401()" classname="ru.rutcampustrack.auth.integration.TmaIT" time="0.026"/>
+  <testcase name="tma_withExpiredAuthDate_returns401()" classname="ru.rutcampustrack.auth.integration.TmaIT" time="0.02"/>
+  <testcase name="tma_withMissingHashField_returns401()" classname="ru.rutcampustrack.auth.integration.TmaIT" time="0.022"/>
+  <system-out><![CDATA[{"ts":"2026-09-11T12:54:41.126+03:00","v":"1","level":"INFO","logger":"org.springframework.test.context.support.AnnotationConfigContextLoaderUtils","thread":"Test worker","msg":"Could not detect default configuration classes for test class [ru.rutcampustrack.auth.integration.TmaIT]: TmaIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.","service":"auth-service"}
+{"ts":"2026-09-11T12:54:41.133+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.test.context.SpringBootTestContextBootstrapper","thread":"Test worker","msg":"Found @SpringBootConfiguration ru.rutcampustrack.auth.AuthApplication for test class ru.rutcampustrack.auth.integration.TmaIT","service":"auth-service"}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

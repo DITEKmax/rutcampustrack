@@ -1,0 +1,3689 @@
+diff --git a/docs/openapi/schedule.json b/docs/openapi/schedule.json
+index 41bbafea..f2e6dfcf 100644
+--- a/docs/openapi/schedule.json
++++ b/docs/openapi/schedule.json
+@@ -866,6 +866,15 @@
+         "tags" : [ "Schedule Items" ],
+         "summary" : "Создать шаблон расписания (HEADMAN/ADMIN)",
+         "operationId" : "createScheduleItem",
++        "parameters" : [ {
++          "name" : "Idempotency-Key",
++          "in" : "header",
++          "required" : true,
++          "schema" : {
++            "type" : "string",
++            "format" : "uuid"
++          }
++        } ],
+         "requestBody" : {
+           "content" : {
+             "application/json" : {
+@@ -907,8 +916,8 @@
+               }
+             }
+           },
+-          "503" : {
+-            "description" : "Academic Service недоступен",
++          "409" : {
++            "description" : "Конфликт assignment fence или idempotency replay",
+             "content" : {
+               "*/*" : {
+                 "schema" : {
+@@ -917,18 +926,18 @@
+               }
+             }
+           },
+-          "401" : {
+-            "description" : "Требуется аутентификация",
++          "503" : {
++            "description" : "Academic Service недоступен",
+             "content" : {
+-              "application/problem+json" : {
++              "*/*" : {
+                 "schema" : {
+-                  "$ref" : "#/components/schemas/ErrorResponse"
++                  "$ref" : "#/components/schemas/EntityModelScheduleItemResponse"
+                 }
+               }
+             }
+           },
+-          "404" : {
+-            "description" : "Ресурс не найден",
++          "401" : {
++            "description" : "Требуется аутентификация",
+             "content" : {
+               "application/problem+json" : {
+                 "schema" : {
+@@ -937,8 +946,8 @@
+               }
+             }
+           },
+-          "409" : {
+-            "description" : "Конфликт данных",
++          "404" : {
++            "description" : "Ресурс не найден",
+             "content" : {
+               "application/problem+json" : {
+                 "schema" : {
+@@ -1687,6 +1696,10 @@
+             "type" : "integer",
+             "format" : "int64"
+           },
++          "assignmentId" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
+           "groupId" : {
+             "type" : "integer",
+             "format" : "int64"
+@@ -1727,6 +1740,18 @@
+             "type" : "string",
+             "format" : "date-time"
+           },
++          "generatedCount" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
++          "generatedFrom" : {
++            "type" : "string",
++            "format" : "date"
++          },
++          "generatedUntil" : {
++            "type" : "string",
++            "format" : "date"
++          },
+           "_links" : {
+             "$ref" : "#/components/schemas/Links"
+           }
+@@ -1892,6 +1917,36 @@
+             "type" : "string",
+             "format" : "date-time"
+           },
++          "occurrenceId" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
++          "assignmentId" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
++          "semesterId" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
++          "assignedTeacherId" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
++          "lessonType" : {
++            "type" : "string"
++          },
++          "generation" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
++          "revision" : {
++            "type" : "integer",
++            "format" : "int64"
++          },
++          "current" : {
++            "type" : "boolean"
++          },
+           "_links" : {
+             "$ref" : "#/components/schemas/Links"
+           }
+@@ -1901,6 +1956,13 @@
+         "type" : "object",
+         "description" : "Запрос на создание шаблона пары в расписании (повторяющийся слот)",
+         "properties" : {
++          "assignmentId" : {
++            "type" : "integer",
++            "format" : "int64",
++            "description" : "ID авторитетного назначения преподаватель–предмет–группа",
++            "example" : 501,
++            "minimum" : 1
++          },
+           "groupId" : {
+             "type" : "integer",
+             "format" : "int64",
+@@ -1959,7 +2021,7 @@
+             "minLength" : 0
+           }
+         },
+-        "required" : [ "dayOfWeek", "endTime", "groupId", "lessonNumber", "semesterId", "startTime", "subjectId", "weekType" ]
++        "required" : [ "assignmentId", "dayOfWeek", "endTime", "groupId", "lessonNumber", "semesterId", "startTime", "subjectId", "weekType" ]
+       },
+       "GeoBlockRequest" : {
+         "type" : "object",
+diff --git a/frontends/pwa/src/api/generated/attendance.types.ts b/frontends/pwa/src/api/generated/attendance.types.ts
+index d6176825..c5959d61 100644
+--- a/frontends/pwa/src/api/generated/attendance.types.ts
++++ b/frontends/pwa/src/api/generated/attendance.types.ts
+@@ -482,7 +482,7 @@ export interface components {
+              *     }
+              */
+             extras?: {
+-                [key: string]: Record<string, never>;
++                [key: string]: unknown;
+             };
+         };
+         /** @description Ошибка валидации одного поля DTO (RFC 9457 Extension Member) */
+@@ -493,7 +493,7 @@ export interface components {
+              */
+             field?: string;
+             /** @description Отклонённое значение */
+-            rejectedValue?: Record<string, never>;
++            rejectedValue?: unknown;
+             /**
+              * @description Локализованное сообщение об ошибке
+              * @example Имя не может быть пустым
+diff --git a/frontends/pwa/src/api/generated/auth.types.ts b/frontends/pwa/src/api/generated/auth.types.ts
+index 165a6c86..9c2bfefb 100644
+--- a/frontends/pwa/src/api/generated/auth.types.ts
++++ b/frontends/pwa/src/api/generated/auth.types.ts
+@@ -3,6 +3,23 @@
+ // Source: docs/openapi/auth.json (committed for CI drift-guard).
+ 
+ export interface paths {
++    "/auth/session/active-role": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        get?: never;
++        /** Select the active role for the current session */
++        put: operations["selectActiveRole"];
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+     "/auth/ws-ticket": {
+         parameters: {
+             query?: never;
+@@ -132,10 +149,7 @@ export interface paths {
+         };
+         get?: never;
+         put?: never;
+-        /**
+-         * Logout
+-         * @description Invalidate refresh token, ws-tickets, and clear refresh cookie
+-         */
++        /** Revoke the current session */
+         post: operations["logout"];
+         delete?: never;
+         options?: never;
+@@ -143,6 +157,23 @@ export interface paths {
+         patch?: never;
+         trace?: never;
+     };
++    "/auth/logout-all": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        get?: never;
++        put?: never;
++        /** Revoke all sessions for the current user */
++        post: operations["logoutAll"];
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+     "/auth/login": {
+         parameters: {
+             query?: never;
+@@ -172,10 +203,7 @@ export interface paths {
+         };
+         get?: never;
+         put?: never;
+-        /**
+-         * Change password
+-         * @description Change password for authenticated user
+-         */
++        /** Change the current user's password */
+         post: operations["changePassword"];
+         delete?: never;
+         options?: never;
+@@ -183,6 +211,40 @@ export interface paths {
+         patch?: never;
+         trace?: never;
+     };
++    "/auth/sessions": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /** List the current user's live sessions */
++        get: operations["sessions"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
++    "/auth/session": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /** Read the current session */
++        get: operations["currentSession"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+     "/auth/public-key": {
+         parameters: {
+             query?: never;
+@@ -203,10 +265,67 @@ export interface paths {
+         patch?: never;
+         trace?: never;
+     };
++    "/auth/account-history": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /** Read the current user's account security history */
++        get: operations["accountHistory"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+ }
+ export type webhooks = Record<string, never>;
+ export interface components {
+     schemas: {
++        SelectActiveRoleRequest: {
++            role?: string;
++            expectedSessionVersion?: string;
++        };
++        CurrentSessionResponse: {
++            sessionId: string;
++            userId: string;
++            displayName: string;
++            groupLabel?: string;
++            sessionVersion: string;
++            rolesVersion: string;
++            activeRole?: string;
++            roles: components["schemas"]["RoleGrantResponse"][];
++            readOnly: boolean;
++            passwordPolicy: components["schemas"]["PasswordPolicyResponse"];
++        };
++        PasswordPolicyResponse: {
++            /** Format: int32 */
++            minCodePoints?: number;
++            /** Format: int32 */
++            maxUtf8Bytes?: number;
++            requiresDecimalDigit?: boolean;
++            specialCategories: string[];
++            normalization: string;
++        };
++        RoleGrantResponse: {
++            grantId?: string;
++            role?: string;
++            status?: string;
++            groupId?: string;
++            contextLabel?: string;
++            selectable?: boolean;
++            readOnly?: boolean;
++        };
++        SelectActiveRoleResponse: {
++            accessToken?: string;
++            /** Format: int64 */
++            expiresIn?: number;
++            session: components["schemas"]["CurrentSessionResponse"];
++        };
+         WsTicketResponse: {
+             ticket?: string;
+             /** Format: date-time */
+@@ -233,9 +352,6 @@ export interface components {
+             /** Format: int64 */
+             telegramId: number;
+         };
+-        RefreshRequest: {
+-            refreshToken?: string;
+-        };
+         LoginRequest: {
+             login?: string;
+             password?: string;
+@@ -244,10 +360,38 @@ export interface components {
+             currentPassword?: string;
+             newPassword?: string;
+         };
++        AuthSessionSummary: {
++            sessionId: string;
++            authMethod: string;
++            clientLabel?: string;
++            locationLabel?: string;
++            /** Format: date-time */
++            createdAt: string;
++            /** Format: date-time */
++            lastSeenAt: string;
++            current: boolean;
++        };
++        AuthSessionsPage: {
++            items: components["schemas"]["AuthSessionSummary"][];
++            nextCursor?: string;
++        };
+         PublicKeyResponse: {
+             publicKey?: string;
+             algorithm?: string;
+         };
++        AccountHistoryEvent: {
++            id?: string;
++            type?: string;
++            /** Format: date-time */
++            occurredAt: string;
++            authMethod?: string;
++            clientLabel?: string;
++            locationLabel?: string;
++        };
++        AccountHistoryPage: {
++            items: components["schemas"]["AccountHistoryEvent"][];
++            nextCursor?: string;
++        };
+         /** @description Стандартный формат ошибки API (RFC 9457 Problem Details) */
+         ErrorResponse: {
+             /**
+@@ -328,6 +472,93 @@ export interface components {
+ }
+ export type $defs = Record<string, never>;
+ export interface operations {
++    selectActiveRole: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody: {
++            content: {
++                "application/json": components["schemas"]["SelectActiveRoleRequest"];
++            };
++        };
++        responses: {
++            /** @description Role selected with a fresh session snapshot */
++            200: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "*/*": components["schemas"]["SelectActiveRoleResponse"];
++                };
++            };
++            /** @description Ошибка валидации запроса */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Требуется аутентификация */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Доступ запрещён */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Ресурс не найден */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Конфликт данных */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Превышен лимит запросов */
++            429: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Внутренняя ошибка сервера */
++            500: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++        };
++    };
+     issueTicket: {
+         parameters: {
+             query?: never;
+@@ -851,13 +1082,90 @@ export interface operations {
+                 rct_refresh?: string;
+             };
+         };
+-        requestBody?: {
+-            content: {
+-                "application/json": components["schemas"]["RefreshRequest"];
++        requestBody?: never;
++        responses: {
++            /** @description Current session revoked */
++            204: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content?: never;
++            };
++            /** @description Ошибка валидации запроса */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Требуется аутентификация */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Доступ запрещён */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Ресурс не найден */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Конфликт данных */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Превышен лимит запросов */
++            429: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Внутренняя ошибка сервера */
++            500: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
+             };
+         };
++    };
++    logoutAll: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
+         responses: {
+-            /** @description Successfully logged out */
++            /** @description All sessions revoked */
+             204: {
+                 headers: {
+                     [name: string]: unknown;
+@@ -1029,7 +1337,7 @@ export interface operations {
+             };
+         };
+         responses: {
+-            /** @description Password changed successfully */
++            /** @description Password changed and sessions revoked */
+             204: {
+                 headers: {
+                     [name: string]: unknown;
+@@ -1045,7 +1353,176 @@ export interface operations {
+                     "application/problem+json": components["schemas"]["ErrorResponse"];
+                 };
+             };
+-            /** @description Current password is incorrect */
++            /** @description Требуется аутентификация */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Доступ запрещён */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Ресурс не найден */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Конфликт данных */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Превышен лимит запросов */
++            429: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Внутренняя ошибка сервера */
++            500: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++        };
++    };
++    sessions: {
++        parameters: {
++            query?: {
++                cursor?: string;
++                limit?: number;
++            };
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Own non-expired sessions */
++            200: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "*/*": components["schemas"]["AuthSessionsPage"];
++                };
++            };
++            /** @description Ошибка валидации запроса */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Требуется аутентификация */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Доступ запрещён */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Ресурс не найден */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Конфликт данных */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Превышен лимит запросов */
++            429: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Внутренняя ошибка сервера */
++            500: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++        };
++    };
++    currentSession: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Current live session state */
++            200: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "*/*": components["schemas"]["CurrentSessionResponse"];
++                };
++            };
++            /** @description Ошибка валидации запроса */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Требуется аутентификация */
+             401: {
+                 headers: {
+                     [name: string]: unknown;
+@@ -1184,4 +1661,90 @@ export interface operations {
+             };
+         };
+     };
++    accountHistory: {
++        parameters: {
++            query?: {
++                cursor?: string;
++                limit?: number;
++            };
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Own account history page */
++            200: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "*/*": components["schemas"]["AccountHistoryPage"];
++                };
++            };
++            /** @description Ошибка валидации запроса */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Требуется аутентификация */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Доступ запрещён */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Ресурс не найден */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Конфликт данных */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Превышен лимит запросов */
++            429: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Внутренняя ошибка сервера */
++            500: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++        };
++    };
+ }
+diff --git a/frontends/pwa/src/api/generated/schedule.types.ts b/frontends/pwa/src/api/generated/schedule.types.ts
+index 3d0c96af..825c5c51 100644
+--- a/frontends/pwa/src/api/generated/schedule.types.ts
++++ b/frontends/pwa/src/api/generated/schedule.types.ts
+@@ -1,6 +1,7 @@
+ // AUTO-GENERATED — do not edit by hand.
+ // Regenerate: npm run generate:types (requires backend running).
+ // Source: docs/openapi/schedule.json (committed for CI drift-guard).
++
+ export interface paths {
+     "/schedule/items/{id}": {
+         parameters: {
+@@ -226,6 +227,8 @@ export interface components {
+             /** Format: int64 */
+             id?: number;
+             /** Format: int64 */
++            assignmentId?: number;
++            /** Format: int64 */
+             groupId?: number;
+             /** Format: int64 */
+             subjectId?: number;
+@@ -243,6 +246,12 @@ export interface components {
+             active?: boolean;
+             /** Format: date-time */
+             createdAt?: string;
++            /** Format: int64 */
++            generatedCount?: number;
++            /** Format: date */
++            generatedFrom?: string;
++            /** Format: date */
++            generatedUntil?: string;
+             _links?: components["schemas"]["Links"];
+         };
+         /** @description Запрос на создание разовой пары вне шаблона расписания (semesterId определяется по дате на сервере, D-23) */
+@@ -332,10 +341,30 @@ export interface components {
+             cancelledAt?: string;
+             /** Format: date-time */
+             createdAt?: string;
++            /** Format: int64 */
++            occurrenceId?: number;
++            /** Format: int64 */
++            assignmentId?: number;
++            /** Format: int64 */
++            semesterId?: number;
++            /** Format: int64 */
++            assignedTeacherId?: number;
++            lessonType?: string;
++            /** Format: int64 */
++            generation?: number;
++            /** Format: int64 */
++            revision?: number;
++            current?: boolean;
+             _links?: components["schemas"]["Links"];
+         };
+         /** @description Запрос на создание шаблона пары в расписании (повторяющийся слот) */
+         CreateScheduleItemRequest: {
++            /**
++             * Format: int64
++             * @description ID авторитетного назначения преподаватель–предмет–группа
++             * @example 501
++             */
++            assignmentId: number;
+             /**
+              * Format: int64
+              * @description ID группы
+@@ -1259,7 +1288,9 @@ export interface operations {
+     createScheduleItem: {
+         parameters: {
+             query?: never;
+-            header?: never;
++            header: {
++                "Idempotency-Key": string;
++            };
+             path?: never;
+             cookie?: never;
+         };
+@@ -1314,13 +1345,13 @@ export interface operations {
+                     "application/problem+json": components["schemas"]["ErrorResponse"];
+                 };
+             };
+-            /** @description Конфликт данных */
++            /** @description Конфликт assignment fence или idempotency replay */
+             409: {
+                 headers: {
+                     [name: string]: unknown;
+                 };
+                 content: {
+-                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                    "*/*": components["schemas"]["EntityModelScheduleItemResponse"];
+                 };
+             };
+             /** @description Превышен лимит запросов */
+diff --git a/frontends/web-panel/src/app/api/generated/attendance.types.ts b/frontends/web-panel/src/app/api/generated/attendance.types.ts
+index d6176825..c5959d61 100644
+--- a/frontends/web-panel/src/app/api/generated/attendance.types.ts
++++ b/frontends/web-panel/src/app/api/generated/attendance.types.ts
+@@ -482,7 +482,7 @@ export interface components {
+              *     }
+              */
+             extras?: {
+-                [key: string]: Record<string, never>;
++                [key: string]: unknown;
+             };
+         };
+         /** @description Ошибка валидации одного поля DTO (RFC 9457 Extension Member) */
+@@ -493,7 +493,7 @@ export interface components {
+              */
+             field?: string;
+             /** @description Отклонённое значение */
+-            rejectedValue?: Record<string, never>;
++            rejectedValue?: unknown;
+             /**
+              * @description Локализованное сообщение об ошибке
+              * @example Имя не может быть пустым
+diff --git a/frontends/web-panel/src/app/api/generated/auth.types.ts b/frontends/web-panel/src/app/api/generated/auth.types.ts
+index 165a6c86..9c2bfefb 100644
+--- a/frontends/web-panel/src/app/api/generated/auth.types.ts
++++ b/frontends/web-panel/src/app/api/generated/auth.types.ts
+@@ -3,6 +3,23 @@
+ // Source: docs/openapi/auth.json (committed for CI drift-guard).
+ 
+ export interface paths {
++    "/auth/session/active-role": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        get?: never;
++        /** Select the active role for the current session */
++        put: operations["selectActiveRole"];
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+     "/auth/ws-ticket": {
+         parameters: {
+             query?: never;
+@@ -132,10 +149,7 @@ export interface paths {
+         };
+         get?: never;
+         put?: never;
+-        /**
+-         * Logout
+-         * @description Invalidate refresh token, ws-tickets, and clear refresh cookie
+-         */
++        /** Revoke the current session */
+         post: operations["logout"];
+         delete?: never;
+         options?: never;
+@@ -143,6 +157,23 @@ export interface paths {
+         patch?: never;
+         trace?: never;
+     };
++    "/auth/logout-all": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        get?: never;
++        put?: never;
++        /** Revoke all sessions for the current user */
++        post: operations["logoutAll"];
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+     "/auth/login": {
+         parameters: {
+             query?: never;
+@@ -172,10 +203,7 @@ export interface paths {
+         };
+         get?: never;
+         put?: never;
+-        /**
+-         * Change password
+-         * @description Change password for authenticated user
+-         */
++        /** Change the current user's password */
+         post: operations["changePassword"];
+         delete?: never;
+         options?: never;
+@@ -183,6 +211,40 @@ export interface paths {
+         patch?: never;
+         trace?: never;
+     };
++    "/auth/sessions": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /** List the current user's live sessions */
++        get: operations["sessions"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
++    "/auth/session": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /** Read the current session */
++        get: operations["currentSession"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+     "/auth/public-key": {
+         parameters: {
+             query?: never;
+@@ -203,10 +265,67 @@ export interface paths {
+         patch?: never;
+         trace?: never;
+     };
++    "/auth/account-history": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /** Read the current user's account security history */
++        get: operations["accountHistory"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+ }
+ export type webhooks = Record<string, never>;
+ export interface components {
+     schemas: {
++        SelectActiveRoleRequest: {
++            role?: string;
++            expectedSessionVersion?: string;
++        };
++        CurrentSessionResponse: {
++            sessionId: string;
++            userId: string;
++            displayName: string;
++            groupLabel?: string;
++            sessionVersion: string;
++            rolesVersion: string;
++            activeRole?: string;
++            roles: components["schemas"]["RoleGrantResponse"][];
++            readOnly: boolean;
++            passwordPolicy: components["schemas"]["PasswordPolicyResponse"];
++        };
++        PasswordPolicyResponse: {
++            /** Format: int32 */
++            minCodePoints?: number;
++            /** Format: int32 */
++            maxUtf8Bytes?: number;
++            requiresDecimalDigit?: boolean;
++            specialCategories: string[];
++            normalization: string;
++        };
++        RoleGrantResponse: {
++            grantId?: string;
++            role?: string;
++            status?: string;
++            groupId?: string;
++            contextLabel?: string;
++            selectable?: boolean;
++            readOnly?: boolean;
++        };
++        SelectActiveRoleResponse: {
++            accessToken?: string;
++            /** Format: int64 */
++            expiresIn?: number;
++            session: components["schemas"]["CurrentSessionResponse"];
++        };
+         WsTicketResponse: {
+             ticket?: string;
+             /** Format: date-time */
+@@ -233,9 +352,6 @@ export interface components {
+             /** Format: int64 */
+             telegramId: number;
+         };
+-        RefreshRequest: {
+-            refreshToken?: string;
+-        };
+         LoginRequest: {
+             login?: string;
+             password?: string;
+@@ -244,10 +360,38 @@ export interface components {
+             currentPassword?: string;
+             newPassword?: string;
+         };
++        AuthSessionSummary: {
++            sessionId: string;
++            authMethod: string;
++            clientLabel?: string;
++            locationLabel?: string;
++            /** Format: date-time */
++            createdAt: string;
++            /** Format: date-time */
++            lastSeenAt: string;
++            current: boolean;
++        };
++        AuthSessionsPage: {
++            items: components["schemas"]["AuthSessionSummary"][];
++            nextCursor?: string;
++        };
+         PublicKeyResponse: {
+             publicKey?: string;
+             algorithm?: string;
+         };
++        AccountHistoryEvent: {
++            id?: string;
++            type?: string;
++            /** Format: date-time */
++            occurredAt: string;
++            authMethod?: string;
++            clientLabel?: string;
++            locationLabel?: string;
++        };
++        AccountHistoryPage: {
++            items: components["schemas"]["AccountHistoryEvent"][];
++            nextCursor?: string;
++        };
+         /** @description Стандартный формат ошибки API (RFC 9457 Problem Details) */
+         ErrorResponse: {
+             /**
+@@ -328,6 +472,93 @@ export interface components {
+ }
+ export type $defs = Record<string, never>;
+ export interface operations {
++    selectActiveRole: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody: {
++            content: {
++                "application/json": components["schemas"]["SelectActiveRoleRequest"];
++            };
++        };
++        responses: {
++            /** @description Role selected with a fresh session snapshot */
++            200: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "*/*": components["schemas"]["SelectActiveRoleResponse"];
++                };
++            };
++            /** @description Ошибка валидации запроса */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Требуется аутентификация */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Доступ запрещён */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Ресурс не найден */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Конфликт данных */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Превышен лимит запросов */
++            429: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Внутренняя ошибка сервера */
++            500: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++        };
++    };
+     issueTicket: {
+         parameters: {
+             query?: never;
+@@ -851,13 +1082,90 @@ export interface operations {
+                 rct_refresh?: string;
+             };
+         };
+-        requestBody?: {
+-            content: {
+-                "application/json": components["schemas"]["RefreshRequest"];
++        requestBody?: never;
++        responses: {
++            /** @description Current session revoked */
++            204: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content?: never;
++            };
++            /** @description Ошибка валидации запроса */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Требуется аутентификация */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Доступ запрещён */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Ресурс не найден */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Конфликт данных */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Превышен лимит запросов */
++            429: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Внутренняя ошибка сервера */
++            500: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
+             };
+         };
++    };
++    logoutAll: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
+         responses: {
+-            /** @description Successfully logged out */
++            /** @description All sessions revoked */
+             204: {
+                 headers: {
+                     [name: string]: unknown;
+@@ -1029,7 +1337,7 @@ export interface operations {
+             };
+         };
+         responses: {
+-            /** @description Password changed successfully */
++            /** @description Password changed and sessions revoked */
+             204: {
+                 headers: {
+                     [name: string]: unknown;
+@@ -1045,7 +1353,176 @@ export interface operations {
+                     "application/problem+json": components["schemas"]["ErrorResponse"];
+                 };
+             };
+-            /** @description Current password is incorrect */
++            /** @description Требуется аутентификация */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Доступ запрещён */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Ресурс не найден */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Конфликт данных */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Превышен лимит запросов */
++            429: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Внутренняя ошибка сервера */
++            500: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++        };
++    };
++    sessions: {
++        parameters: {
++            query?: {
++                cursor?: string;
++                limit?: number;
++            };
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Own non-expired sessions */
++            200: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "*/*": components["schemas"]["AuthSessionsPage"];
++                };
++            };
++            /** @description Ошибка валидации запроса */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Требуется аутентификация */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Доступ запрещён */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Ресурс не найден */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Конфликт данных */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Превышен лимит запросов */
++            429: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Внутренняя ошибка сервера */
++            500: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++        };
++    };
++    currentSession: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Current live session state */
++            200: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "*/*": components["schemas"]["CurrentSessionResponse"];
++                };
++            };
++            /** @description Ошибка валидации запроса */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Требуется аутентификация */
+             401: {
+                 headers: {
+                     [name: string]: unknown;
+@@ -1184,4 +1661,90 @@ export interface operations {
+             };
+         };
+     };
++    accountHistory: {
++        parameters: {
++            query?: {
++                cursor?: string;
++                limit?: number;
++            };
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Own account history page */
++            200: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "*/*": components["schemas"]["AccountHistoryPage"];
++                };
++            };
++            /** @description Ошибка валидации запроса */
++            400: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Требуется аутентификация */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Доступ запрещён */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Ресурс не найден */
++            404: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Конфликт данных */
++            409: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Превышен лимит запросов */
++            429: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++            /** @description Внутренняя ошибка сервера */
++            500: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                };
++            };
++        };
++    };
+ }
+diff --git a/frontends/web-panel/src/app/api/generated/schedule.types.ts b/frontends/web-panel/src/app/api/generated/schedule.types.ts
+index 3d0c96af..825c5c51 100644
+--- a/frontends/web-panel/src/app/api/generated/schedule.types.ts
++++ b/frontends/web-panel/src/app/api/generated/schedule.types.ts
+@@ -1,6 +1,7 @@
+ // AUTO-GENERATED — do not edit by hand.
+ // Regenerate: npm run generate:types (requires backend running).
+ // Source: docs/openapi/schedule.json (committed for CI drift-guard).
++
+ export interface paths {
+     "/schedule/items/{id}": {
+         parameters: {
+@@ -226,6 +227,8 @@ export interface components {
+             /** Format: int64 */
+             id?: number;
+             /** Format: int64 */
++            assignmentId?: number;
++            /** Format: int64 */
+             groupId?: number;
+             /** Format: int64 */
+             subjectId?: number;
+@@ -243,6 +246,12 @@ export interface components {
+             active?: boolean;
+             /** Format: date-time */
+             createdAt?: string;
++            /** Format: int64 */
++            generatedCount?: number;
++            /** Format: date */
++            generatedFrom?: string;
++            /** Format: date */
++            generatedUntil?: string;
+             _links?: components["schemas"]["Links"];
+         };
+         /** @description Запрос на создание разовой пары вне шаблона расписания (semesterId определяется по дате на сервере, D-23) */
+@@ -332,10 +341,30 @@ export interface components {
+             cancelledAt?: string;
+             /** Format: date-time */
+             createdAt?: string;
++            /** Format: int64 */
++            occurrenceId?: number;
++            /** Format: int64 */
++            assignmentId?: number;
++            /** Format: int64 */
++            semesterId?: number;
++            /** Format: int64 */
++            assignedTeacherId?: number;
++            lessonType?: string;
++            /** Format: int64 */
++            generation?: number;
++            /** Format: int64 */
++            revision?: number;
++            current?: boolean;
+             _links?: components["schemas"]["Links"];
+         };
+         /** @description Запрос на создание шаблона пары в расписании (повторяющийся слот) */
+         CreateScheduleItemRequest: {
++            /**
++             * Format: int64
++             * @description ID авторитетного назначения преподаватель–предмет–группа
++             * @example 501
++             */
++            assignmentId: number;
+             /**
+              * Format: int64
+              * @description ID группы
+@@ -1259,7 +1288,9 @@ export interface operations {
+     createScheduleItem: {
+         parameters: {
+             query?: never;
+-            header?: never;
++            header: {
++                "Idempotency-Key": string;
++            };
+             path?: never;
+             cookie?: never;
+         };
+@@ -1314,13 +1345,13 @@ export interface operations {
+                     "application/problem+json": components["schemas"]["ErrorResponse"];
+                 };
+             };
+-            /** @description Конфликт данных */
++            /** @description Конфликт assignment fence или idempotency replay */
+             409: {
+                 headers: {
+                     [name: string]: unknown;
+                 };
+                 content: {
+-                    "application/problem+json": components["schemas"]["ErrorResponse"];
++                    "*/*": components["schemas"]["EntityModelScheduleItemResponse"];
+                 };
+             };
+             /** @description Превышен лимит запросов */
+diff --git a/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/api/ScheduleItemApi.java b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/api/ScheduleItemApi.java
+index b5f4ef51..71305bf1 100644
+--- a/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/api/ScheduleItemApi.java
++++ b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/api/ScheduleItemApi.java
+@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.PutMapping;
+ import org.springframework.web.bind.annotation.RequestBody;
+ import org.springframework.web.bind.annotation.RequestMapping;
+ import org.springframework.web.bind.annotation.RequestParam;
++import org.springframework.web.bind.annotation.RequestHeader;
++import java.util.UUID;
+ import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
+ import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemResponse;
+ import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
+@@ -36,10 +38,12 @@ public interface ScheduleItemApi {
+             @ApiResponse(responseCode = "201", description = "Шаблон создан"),
+             @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
++            @ApiResponse(responseCode = "409", description = "Конфликт assignment fence или idempotency replay"),
+             @ApiResponse(responseCode = "503", description = "Academic Service недоступен")
+     })
+     @PostMapping
+     ResponseEntity<EntityModel<ScheduleItemResponse>> createScheduleItem(
++            @RequestHeader("Idempotency-Key") UUID idempotencyKey,
+             @Valid @RequestBody CreateScheduleItemRequest request);
+ 
+     @Operation(summary = "Получить шаблон по ID")
+diff --git a/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/CreateScheduleItemRequest.java b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/CreateScheduleItemRequest.java
+index 8a973e7d..7dfe2370 100644
+--- a/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/CreateScheduleItemRequest.java
++++ b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/CreateScheduleItemRequest.java
+@@ -19,6 +19,13 @@ import java.time.LocalTime;
+ @Schema(description = "Запрос на создание шаблона пары в расписании (повторяющийся слот)")
+ public record CreateScheduleItemRequest(
+ 
++        @Schema(description = "ID авторитетного назначения преподаватель–предмет–группа",
++                example = "501",
++                minimum = "1",
++                requiredMode = Schema.RequiredMode.REQUIRED)
++        @NotNull @jakarta.validation.constraints.Positive
++        Long assignmentId,
++
+         @Schema(description = "ID группы",
+                 example = "10",
+                 requiredMode = Schema.RequiredMode.REQUIRED)
+diff --git a/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/ScheduleItemResponse.java b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/ScheduleItemResponse.java
+index 5b4279c1..84c5dddf 100644
+--- a/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/ScheduleItemResponse.java
++++ b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/ScheduleItemResponse.java
+@@ -5,6 +5,7 @@ import org.springframework.hateoas.RepresentationModel;
+ import ru.rutcampustrack.schedule.contract.enums.WeekType;
+ 
+ import java.time.LocalTime;
++import java.time.LocalDate;
+ import java.time.OffsetDateTime;
+ 
+ /**
+@@ -19,6 +20,7 @@ import java.time.OffsetDateTime;
+ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemResponse> {
+ 
+     private Long id;
++    private Long assignmentId;
+     private Long groupId;
+     private Long subjectId;
+     private Long semesterId;
+@@ -30,6 +32,9 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
+     private String room;
+     private boolean active;
+     private OffsetDateTime createdAt;
++    private Long generatedCount;
++    private LocalDate generatedFrom;
++    private LocalDate generatedUntil;
+ 
+     public ScheduleItemResponse() {}
+ 
+@@ -51,10 +56,28 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
+         this.createdAt = createdAt;
+     }
+ 
++    public ScheduleItemResponse(Long id, Long assignmentId, Long groupId, Long subjectId,
++                                Long semesterId, Short dayOfWeek, Short lessonNumber,
++                                LocalTime startTime, LocalTime endTime, WeekType weekType,
++                                String room, boolean active, OffsetDateTime createdAt,
++                                Long generatedCount, LocalDate generatedFrom,
++                                LocalDate generatedUntil) {
++        this(id, groupId, subjectId, semesterId, dayOfWeek, lessonNumber,
++                startTime, endTime, weekType, room, active, createdAt);
++        this.assignmentId = assignmentId;
++        this.generatedCount = generatedCount;
++        this.generatedFrom = generatedFrom;
++        this.generatedUntil = generatedUntil;
++    }
++
+     public Long getId() {
+         return id;
+     }
+ 
++    public Long getAssignmentId() {
++        return assignmentId;
++    }
++
+     public Long getGroupId() {
+         return groupId;
+     }
+@@ -98,4 +121,16 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
+     public OffsetDateTime getCreatedAt() {
+         return createdAt;
+     }
++
++    public Long getGeneratedCount() {
++        return generatedCount;
++    }
++
++    public LocalDate getGeneratedFrom() {
++        return generatedFrom;
++    }
++
++    public LocalDate getGeneratedUntil() {
++        return generatedUntil;
++    }
+ }
+diff --git a/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/LessonResponse.java b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/LessonResponse.java
+index 3d751172..d666b713 100644
+--- a/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/LessonResponse.java
++++ b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/LessonResponse.java
+@@ -48,6 +48,14 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
+      */
+     private OffsetDateTime cancelledAt;
+     private OffsetDateTime createdAt;
++    private Long occurrenceId;
++    private Long assignmentId;
++    private Long semesterId;
++    private Long assignedTeacherId;
++    private String lessonType;
++    private Long generation;
++    private Long revision;
++    private boolean current;
+ 
+     public LessonResponse() {}
+ 
+@@ -104,6 +112,30 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
+         this.createdAt = createdAt;
+     }
+ 
++    public LessonResponse(Long id, Long scheduleItemId, Long groupId, Long subjectId,
++                           LocalDate date, LessonStatus status,
++                           Short dayOfWeek, Short lessonNumber, LocalTime startTime,
++                           LocalTime endTime, WeekType weekType, String room,
++                           boolean geoBlocked, boolean blockedByHeadman,
++                           Long blockedByUserId, OffsetDateTime blockedAt,
++                           String cancelReason, Long cancelledBy, OffsetDateTime cancelledAt,
++                           OffsetDateTime createdAt, Long occurrenceId, Long assignmentId,
++                           Long semesterId, Long assignedTeacherId, String lessonType,
++                           Long generation, Long revision, boolean current) {
++        this(id, scheduleItemId, groupId, subjectId, date, status,
++                dayOfWeek, lessonNumber, startTime, endTime, weekType, room,
++                geoBlocked, blockedByHeadman, blockedByUserId, blockedAt,
++                cancelReason, cancelledBy, cancelledAt, createdAt);
++        this.occurrenceId = occurrenceId;
++        this.assignmentId = assignmentId;
++        this.semesterId = semesterId;
++        this.assignedTeacherId = assignedTeacherId;
++        this.lessonType = lessonType;
++        this.generation = generation;
++        this.revision = revision;
++        this.current = current;
++    }
++
+     public Long getId() {
+         return id;
+     }
+@@ -183,4 +215,36 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
+     public OffsetDateTime getCreatedAt() {
+         return createdAt;
+     }
++
++    public Long getOccurrenceId() {
++        return occurrenceId;
++    }
++
++    public Long getAssignmentId() {
++        return assignmentId;
++    }
++
++    public Long getSemesterId() {
++        return semesterId;
++    }
++
++    public Long getAssignedTeacherId() {
++        return assignedTeacherId;
++    }
++
++    public String getLessonType() {
++        return lessonType;
++    }
++
++    public Long getGeneration() {
++        return generation;
++    }
++
++    public Long getRevision() {
++        return revision;
++    }
++
++    public boolean isCurrent() {
++        return current;
++    }
+ }
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/GlobalExceptionHandler.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/GlobalExceptionHandler.java
+index cf3f6f4f..30dfdd3b 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/GlobalExceptionHandler.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/GlobalExceptionHandler.java
+@@ -83,6 +83,22 @@ public class GlobalExceptionHandler {
+                 "Conflict", ex.getMessage(), request);
+     }
+ 
++    @ExceptionHandler(RecurringLifecycleNotReadyException.class)
++    public ResponseEntity<ErrorResponse> handleRecurringLifecycleNotReady(
++            RecurringLifecycleNotReadyException ex,
++            HttpServletRequest request) {
++        return problem(HttpStatus.CONFLICT, "lifecycle-not-ready",
++                "Schedule lifecycle is not ready", ex.getMessage(), request);
++    }
++
++    @ExceptionHandler(RecurringProtocolConflictException.class)
++    public ResponseEntity<ErrorResponse> handleRecurringProtocolConflict(
++            RecurringProtocolConflictException ex,
++            HttpServletRequest request) {
++        return problem(HttpStatus.CONFLICT, "recurring-protocol-conflict",
++                "Recurring request conflicts with durable authority", ex.getMessage(), request);
++    }
++
+     /**
+      * Schedule-custom {@link AccessDeniedException} (НЕ Spring Security).
+      * Spring Security AccessDeniedException обрабатывается shared handler'ом.
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AcademicGrpcClient.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AcademicGrpcClient.java
+index b76a8c58..c40bcfdb 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AcademicGrpcClient.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AcademicGrpcClient.java
+@@ -9,11 +9,14 @@ import ru.rutcampustrack.academic.grpc.GroupRequest;
+ import ru.rutcampustrack.academic.grpc.GroupResponse;
+ import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
+ import ru.rutcampustrack.academic.grpc.SemesterResponse;
++import ru.rutcampustrack.academic.grpc.AssignmentInfo;
++import ru.rutcampustrack.academic.grpc.AssignmentsByIdsRequest;
+ import ru.rutcampustrack.schedule.contract.enums.WeekType;
+ import ru.rutcampustrack.schedule.exception.AcademicServiceUnavailableException;
+ import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
+ 
+ import java.util.concurrent.TimeUnit;
++import java.util.List;
+ 
+ /**
+  * gRPC client wrapper for Academic Service.
+@@ -106,4 +109,25 @@ public class AcademicGrpcClient {
+             throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+         }
+     }
++
++    /**
++     * Reads the complete immutable assignment authority before any local
++     * recurring write begins. The wrapper keeps the deadline and failure
++     * translation in one place and does not expose the internal stub.
++     */
++    public List<AssignmentInfo> getAssignmentsByIds(List<Long> assignmentIds) {
++        try {
++            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
++                    .getAssignmentsByIds(AssignmentsByIdsRequest.newBuilder()
++                            .addAllAssignmentIds(assignmentIds)
++                            .build())
++                    .getAssignmentsList();
++        } catch (StatusRuntimeException e) {
++            if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
++                throw new ResourceNotFoundException("Assignment", "id", assignmentIds);
++            }
++            throw new AcademicServiceUnavailableException(
++                    "Academic Service unavailable: " + e.getStatus());
++        }
++    }
+ }
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java
+index 09a5d0af..9449a45b 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java
+@@ -53,8 +53,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
+         Lesson lesson = lessonRepository.findActiveLessonForGroup(request.getGroupId(), date)
+                 .orElseThrow(() -> new ResourceNotFoundException("Lesson", "group_id", request.getGroupId()));
+ 
+-        ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
+-                .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
++        ScheduleItem item = findTemplateForRead(lesson);
+ 
+         responseObserver.onNext(buildResponse(lesson, item));
+         responseObserver.onCompleted();
+@@ -70,8 +69,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
+         Lesson lesson = lessonRepository.findById(request.getLessonId())
+                 .orElseThrow(() -> new ResourceNotFoundException("Lesson", "id", request.getLessonId()));
+ 
+-        ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
+-                .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
++        ScheduleItem item = findTemplateForRead(lesson);
+ 
+         responseObserver.onNext(buildResponse(lesson, item));
+         responseObserver.onCompleted();
+@@ -92,29 +90,25 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
+             throw new IllegalArgumentException("date_from must not be after date_to");
+         }
+ 
+-        List<ScheduleItem> items = scheduleItemRepository
+-                .findByGroupIdAndSemesterIdAndIsActiveTrue(request.getGroupId(), request.getSemesterId());
+-
+-        if (items.isEmpty()) {
++        List<Lesson> lessons = lessonRepository.findByGroupIdAndSemesterIdAndDateBetweenAndStatusIn(
++                request.getGroupId(), request.getSemesterId(), from, to,
++                List.of("planned", "active", "closed", "cancelled"));
++        if (lessons.isEmpty()) {
+             responseObserver.onNext(LessonsResponse.newBuilder().build());
+             responseObserver.onCompleted();
+             return;
+         }
+-
+-        List<Long> itemIds = items.stream().map(ScheduleItem::getId).toList();
+-
+-        List<Lesson> lessons = lessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn(
+-                itemIds, from, to, List.of("planned", "active", "closed", "cancelled"));
+-
+-        Map<Long, ScheduleItem> itemById = items.stream()
++        Map<Long, ScheduleItem> itemById = scheduleItemRepository.findAllById(lessons.stream()
++                        .map(Lesson::getScheduleItemId)
++                        .filter(java.util.Objects::nonNull)
++                        .distinct().toList()).stream()
+                 .collect(Collectors.toMap(ScheduleItem::getId, i -> i));
+ 
+         List<LessonResponse> responses = lessons.stream()
+-                .filter(l -> itemById.containsKey(l.getScheduleItemId()))
+                 .map(l -> buildResponse(l, itemById.get(l.getScheduleItemId())))
+                 .toList();
+ 
+-        OffsetDateTime updatedAt = items.stream()
++        OffsetDateTime updatedAt = itemById.values().stream()
+                 .map(ScheduleItem::getCreatedAt)
+                 .filter(java.util.Objects::nonNull)
+                 .max(OffsetDateTime::compareTo)
+@@ -163,6 +157,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
+ 
+         List<Long> scheduleItemIds = lessons.stream()
+                 .map(Lesson::getScheduleItemId)
++                .filter(java.util.Objects::nonNull)
+                 .distinct()
+                 .toList();
+ 
+@@ -170,18 +165,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
+                 .collect(Collectors.toMap(ScheduleItem::getId, i -> i));
+ 
+         List<LessonInfo> infos = lessons.stream()
+-                .filter(l -> itemById.containsKey(l.getScheduleItemId()))
+-                .map(l -> {
+-                    ScheduleItem item = itemById.get(l.getScheduleItemId());
+-                    return LessonInfo.newBuilder()
+-                            .setLessonId(l.getId())
+-                            .setGroupId(item.getGroupId())
+-                            .setSubjectId(item.getSubjectId())
+-                            .setStartsAt(l.getDate().toString() + "T" + item.getStartTime().toString())
+-                            .setLessonNumber(item.getLessonNumber() != null ? item.getLessonNumber().intValue() : 0)
+-                            .setDate(l.getDate().toString())
+-                            .build();
+-                })
++                .map(l -> lessonInfo(l, itemById.get(l.getScheduleItemId())))
+                 .toList();
+ 
+         responseObserver.onNext(LessonsByIdsResponse.newBuilder().addAllLessons(infos).build());
+@@ -205,8 +189,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
+                         "group_id/date/lesson_number",
+                         request.getGroupId() + "/" + date + "/" + request.getLessonNumber()));
+ 
+-        ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
+-                .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
++        ScheduleItem item = findTemplateForRead(lesson);
+ 
+         responseObserver.onNext(buildResponse(lesson, item));
+         responseObserver.onCompleted();
+@@ -236,21 +219,71 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
+     }
+ 
+     private LessonResponse buildResponse(Lesson lesson, ScheduleItem item) {
++        Long groupId = lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId();
++        Long subjectId = lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId();
++        Short lessonNumber = lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber();
++        java.time.LocalTime start = lesson.getStartTime() != null ? lesson.getStartTime() : item.getStartTime();
++        java.time.LocalTime end = lesson.getEndTime() != null ? lesson.getEndTime() : item.getEndTime();
++        String room = lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item.getRoom();
+         return LessonResponse.newBuilder()
+                 .setId(lesson.getId())
+-                .setScheduleItemId(lesson.getScheduleItemId())
+-                .setGroupId(item.getGroupId())
+-                .setSubjectId(item.getSubjectId())
++                .setScheduleItemId(lesson.getScheduleItemId() == null ? 0 : lesson.getScheduleItemId())
++                .setGroupId(groupId)
++                .setSubjectId(subjectId)
+                 // D-16: teacher_id is reserved in schedule.proto — no setter generated
+                 .setDate(lesson.getDate().toString())
+-                .setLessonNumber(item.getLessonNumber())
+-                .setStartTime(item.getStartTime().toString())
+-                .setEndTime(item.getEndTime().toString())
++                .setLessonNumber(lessonNumber)
++                .setStartTime(start.toString())
++                .setEndTime(end.toString())
+                 .setStatus(lesson.getStatus().name().toLowerCase())
+                 .setIsGeoBlocked(lesson.isGeoBlocked())
+-                .setRoom(item.getRoom() != null ? item.getRoom() : "")
++                .setRoom(room != null ? room : "")
+                 .setIsBlockedByHeadman(lesson.isBlockedByHeadman())
+                 .setRoomChangeState("unknown")
++                .setOccurrenceId(lesson.getOccurrenceId() == null ? 0 : lesson.getOccurrenceId())
++                .setAssignmentId(lesson.getAssignmentId() == null ? 0 : lesson.getAssignmentId())
++                .setSemesterId(lesson.getSemesterId() == null ? 0 : lesson.getSemesterId())
++                .setAssignedTeacherId(lesson.getAssignedTeacherId() == null ? 0 : lesson.getAssignedTeacherId())
++                .setLessonType(lesson.getLessonType() == null ? "" : lesson.getLessonType())
++                .setGeneration(lesson.getGeneration() == null ? 0 : lesson.getGeneration())
++                .setRevision(lesson.getRevision() == null ? 0 : lesson.getRevision())
++                .setCurrent(lesson.isCurrent())
++                .build();
++    }
++
++    private LessonInfo lessonInfo(Lesson lesson, ScheduleItem item) {
++        Long groupId = lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId();
++        Long subjectId = lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId();
++        Short number = lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber();
++        java.time.LocalTime start = lesson.getStartTime() != null ? lesson.getStartTime() : item.getStartTime();
++        return LessonInfo.newBuilder()
++                .setLessonId(lesson.getId())
++                .setGroupId(groupId)
++                .setSubjectId(subjectId)
++                .setStartsAt(lesson.getDate() + "T" + start)
++                .setLessonNumber(number == null ? 0 : number.intValue())
++                .setDate(lesson.getDate().toString())
++                .setOccurrenceId(lesson.getOccurrenceId() == null ? 0 : lesson.getOccurrenceId())
++                .setAssignmentId(lesson.getAssignmentId() == null ? 0 : lesson.getAssignmentId())
++                .setSemesterId(lesson.getSemesterId() == null ? 0 : lesson.getSemesterId())
++                .setTeacherId(lesson.getAssignedTeacherId() == null ? 0 : lesson.getAssignedTeacherId())
++                .setLessonType(lesson.getLessonType() == null ? "" : lesson.getLessonType())
++                .setGeneration(lesson.getGeneration() == null ? 0 : lesson.getGeneration())
++                .setRevision(lesson.getRevision() == null ? 0 : lesson.getRevision())
++                .setStatus(lesson.getStatus().name().toLowerCase())
+                 .build();
+     }
++
++    /**
++     * Physical V17 rows carry their own identity snapshot. A read must remain
++     * valid when the mutable recurring template is inactive or when the row is
++     * a one-off with no schedule_item_id; the template is only a legacy
++     * fallback for pre-snapshot values.
++     */
++    private ScheduleItem findTemplateForRead(Lesson lesson) {
++        if (lesson.getScheduleItemId() == null) {
++            return null;
++        }
++        return scheduleItemRepository.findById(lesson.getScheduleItemId()).orElse(null);
++    }
+ }
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemAssembler.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemAssembler.java
+index b2510a05..dbe46f74 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemAssembler.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemAssembler.java
+@@ -21,6 +21,7 @@ public class ScheduleItemAssembler {
+     public EntityModel<ScheduleItemResponse> toModel(ScheduleItem item) {
+         ScheduleItemResponse response = new ScheduleItemResponse(
+                 item.getId(),
++                item.getAssignmentId(),
+                 item.getGroupId(),
+                 item.getSubjectId(),
+                 item.getSemesterId(),
+@@ -31,7 +32,10 @@ public class ScheduleItemAssembler {
+                 item.getWeekType(),
+                 item.getRoom(),
+                 item.isActive(),
+-                item.getCreatedAt()
++                item.getCreatedAt(),
++                item.getGeneratedCount(),
++                item.getGeneratedFrom(),
++                item.getGeneratedUntil()
+         );
+ 
+         return EntityModel.of(response,
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemController.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemController.java
+index 15969453..2a4f0803 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemController.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemController.java
+@@ -16,6 +16,8 @@ import ru.rutcampustrack.schedule.contract.enums.UserRole;
+ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+ import ru.rutcampustrack.schedule.security.RequireRole;
+ 
++import java.util.UUID;
++
+ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+ 
+@@ -39,8 +41,9 @@ public class ScheduleItemController implements ScheduleItemApi {
+     @Override
+     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
+     public ResponseEntity<EntityModel<ScheduleItemResponse>> createScheduleItem(
++            UUID idempotencyKey,
+             CreateScheduleItemRequest request) {
+-        ScheduleItem result = scheduleItemService.createScheduleItem(request);
++        ScheduleItem result = scheduleItemService.createScheduleItem(request, idempotencyKey);
+         return ResponseEntity.status(HttpStatus.CREATED).body(scheduleItemAssembler.toModel(result));
+     }
+ 
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemService.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemService.java
+index 606de01a..6ba13b71 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemService.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemService.java
+@@ -1,209 +1,133 @@
+ package ru.rutcampustrack.schedule.item;
+ 
++import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.data.domain.Page;
+ import org.springframework.data.domain.Pageable;
+ import org.springframework.stereotype.Service;
+ import org.springframework.transaction.annotation.Transactional;
+-import ru.rutcampustrack.academic.grpc.SemesterResponse;
+ import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
+ import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
+ import ru.rutcampustrack.schedule.contract.enums.UserRole;
+-import ru.rutcampustrack.schedule.contract.enums.WeekType;
+ import ru.rutcampustrack.schedule.exception.AccessDeniedException;
++import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
+ import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
+ import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
+ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
+ import ru.rutcampustrack.schedule.lesson.LessonGenerationService;
++import ru.rutcampustrack.schedule.recurring.RecurringScheduleItemCoordinator;
+ import ru.rutcampustrack.schedule.security.RequestContext;
+ 
+ import java.time.Clock;
+-import java.time.LocalDate;
+-import java.time.OffsetDateTime;
+-import java.util.Objects;
++import java.util.UUID;
+ 
+ /**
+- * Business logic for schedule template (ScheduleItem) CRUD.
+- * All write operations require headman authorization via gRPC group ownership check.
++ * Template access and lifecycle gates. Recurring creation delegates to a
++ * non-transactional authority coordinator and its separate local writer.
+  */
+ @Service
+-@Transactional
+ public class ScheduleItemService {
+ 
+     private final ScheduleItemRepository scheduleItemRepository;
+     private final AcademicGrpcClient academicGrpcClient;
+     private final RequestContext requestContext;
++    @SuppressWarnings("unused")
+     private final LessonGenerationService lessonGenerationService;
++    @SuppressWarnings("unused")
+     private final Clock clock;
++    private final RecurringScheduleItemCoordinator recurringCoordinator;
+ 
++    @Autowired
+     public ScheduleItemService(ScheduleItemRepository scheduleItemRepository,
+                                AcademicGrpcClient academicGrpcClient,
+                                RequestContext requestContext,
+                                LessonGenerationService lessonGenerationService,
+-                               Clock clock) {
++                               Clock clock,
++                               RecurringScheduleItemCoordinator recurringCoordinator) {
+         this.scheduleItemRepository = scheduleItemRepository;
+         this.academicGrpcClient = academicGrpcClient;
+         this.requestContext = requestContext;
+         this.lessonGenerationService = lessonGenerationService;
+         this.clock = clock;
++        this.recurringCoordinator = recurringCoordinator;
++    }
++
++    /** Compatibility constructor for narrow pre-recurring security fixtures. */
++    public ScheduleItemService(ScheduleItemRepository scheduleItemRepository,
++                               AcademicGrpcClient academicGrpcClient,
++                               RequestContext requestContext,
++                               LessonGenerationService lessonGenerationService,
++                               Clock clock) {
++        this(scheduleItemRepository, academicGrpcClient, requestContext,
++                lessonGenerationService, clock, null);
+     }
+ 
+-    /**
+-     * Verifies the current user is either ADMIN or headman of the target group.
+-     * ADMIN bypasses the check entirely (D-08/D-10).
+-     */
+     private void requireHeadmanForGroup(Long targetGroupId) {
+         UserRole role = requestContext.getRole();
+         if (role == UserRole.ADMIN) return;
+         if (!requestContext.isHeadman()) {
+             throw new AccessDeniedException("Only headman or admin can perform this action");
+         }
+-        boolean confirmed = academicGrpcClient.isHeadman(requestContext.getUserId(), targetGroupId);
+-        if (!confirmed) {
++        Long actor = requestContext.getUserId();
++        if (actor == null || !academicGrpcClient.isHeadman(actor, targetGroupId)) {
+             throw new AccessDeniedException("You are not headman of group " + targetGroupId);
+         }
+     }
+ 
+-    /**
+-     * M13 G9 — read-доступ. STUDENT видит template'ы только своей группы;
+-     * ADMIN/TEACHER — любые.
+-     */
+     private void requireGroupReadAccess(Long targetGroupId) {
+         UserRole role = requestContext.getRole();
+-        if (role == UserRole.ADMIN || role == UserRole.TEACHER) {
+-            return;
+-        }
++        if (role == UserRole.ADMIN || role == UserRole.TEACHER) return;
+         Long ownGroupId = requestContext.getGroupId();
+         if (ownGroupId == null || !ownGroupId.equals(targetGroupId)) {
+             throw new AccessDeniedException("Шаблон расписания принадлежит другой группе");
+         }
+     }
+ 
+-    /**
+-     * Creates a new schedule template.
+-     * Validates headman ownership, group existence, and active semester.
+-     */
++    /** Legacy direct entrypoint is retained only as a fail-closed gate. */
+     public ScheduleItem createScheduleItem(CreateScheduleItemRequest request) {
+         requireHeadmanForGroup(request.groupId());
+-        academicGrpcClient.validateGroup(request.groupId());
+-        SemesterResponse activeSemester = academicGrpcClient.getActiveSemester();
+-        if (activeSemester.getId() != request.semesterId()) {
+-            throw new IllegalArgumentException(
+-                    "Semester " + request.semesterId() + " is not the active semester");
+-        }
+-
+-        ScheduleItem item = new ScheduleItem();
+-        item.setGroupId(request.groupId());
+-        item.setSubjectId(request.subjectId());
+-        item.setSemesterId(request.semesterId());
+-        item.setDayOfWeek(request.dayOfWeek());
+-        item.setLessonNumber(request.lessonNumber());
+-        item.setStartTime(request.startTime());
+-        item.setEndTime(request.endTime());
+-        item.setWeekType(request.weekType());
+-        item.setRoom(request.room());
+-        item.setActive(true);
+-        item.setCreatedAt(OffsetDateTime.now());
+-
+-        ScheduleItem saved = scheduleItemRepository.save(item);
+-
+-        // LSSN-01: Synchronous lesson generation in same transaction (D-01)
+-        WeekType firstWeekType = academicGrpcClient.parseSemesterFirstWeekType(activeSemester);
+-        lessonGenerationService.generateLessons(
+-                saved,
+-                LocalDate.parse(activeSemester.getDateFrom()),
+-                LocalDate.parse(activeSemester.getDateTo()),
+-                firstWeekType);
++        throw new RecurringLifecycleNotReadyException("recurring create requires Idempotency-Key");
++    }
+ 
+-        return saved;
++    public ScheduleItem createScheduleItem(CreateScheduleItemRequest request, UUID idempotencyKey) {
++        if (recurringCoordinator == null) {
++            requireHeadmanForGroup(request.groupId());
++            throw new RecurringLifecycleNotReadyException("recurring coordinator unavailable");
++        }
++        return recurringCoordinator.create(request, idempotencyKey);
+     }
+ 
+-    /**
+-     * Returns a single schedule template by ID or throws 404.
+-     */
+     @Transactional(readOnly = true)
+     public ScheduleItem getScheduleItem(Long id) {
+         ScheduleItem item = scheduleItemRepository.findById(id)
+                 .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", id));
+-        // M13 G9 — STUDENT видит шаблон только своей группы
+         requireGroupReadAccess(item.getGroupId());
+         return item;
+     }
+ 
+-    /**
+-     * Returns active templates for a group and semester, paginated.
+-     */
+     @Transactional(readOnly = true)
+     public Page<ScheduleItem> listScheduleItems(Long groupId, Long semesterId, Pageable pageable) {
+-        // M13 G9 — STUDENT не может листать шаблоны чужой группы передавая чужой groupId
+         requireGroupReadAccess(groupId);
+         return scheduleItemRepository.findByGroupIdAndSemesterIdAndIsActiveTrue(groupId, semesterId, pageable);
+     }
+ 
+     /**
+-     * Full update (PUT) of a schedule template.
+-     * groupId and semesterId are immutable — taken from existing entity (D-09).
++     * Canonical recurring lifecycle has no update path yet. Resource and
++     * authorization checks happen first so a caller cannot use the gate to
++     * probe a foreign/nonexistent template.
+      */
+     public ScheduleItem updateScheduleItem(Long id, UpdateScheduleItemRequest request) {
+         ScheduleItem existing = scheduleItemRepository.findById(id)
+                 .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", id));
+         requireHeadmanForGroup(existing.getGroupId());
+-
+-        // Capture old values BEFORE applying updates (D-06, D-07)
+-        boolean scheduleAffected =
+-                !Objects.equals(existing.getDayOfWeek(), request.dayOfWeek())
+-                || !Objects.equals(existing.getWeekType(), request.weekType())
+-                || !Objects.equals(existing.getStartTime(), request.startTime())
+-                || !Objects.equals(existing.getEndTime(), request.endTime())
+-                || !Objects.equals(existing.getLessonNumber(), request.lessonNumber());
+-
+-        existing.setSubjectId(request.subjectId());
+-        existing.setDayOfWeek(request.dayOfWeek());
+-        existing.setLessonNumber(request.lessonNumber());
+-        existing.setStartTime(request.startTime());
+-        existing.setEndTime(request.endTime());
+-        existing.setWeekType(request.weekType());
+-        existing.setRoom(request.room());
+-
+-        ScheduleItem saved = scheduleItemRepository.save(existing);
+-
+-        // LSSN-01/LSSN-02: Re-generate future planned lessons if schedule fields changed (D-06)
+-        if (scheduleAffected) {
+-            SemesterResponse activeSemester = academicGrpcClient.getActiveSemester();
+-            WeekType firstWeekType = academicGrpcClient.parseSemesterFirstWeekType(activeSemester);
+-            LocalDate today = LocalDate.now(clock);
+-            lessonGenerationService.regenerateFromDate(
+-                    saved,
+-                    LocalDate.parse(activeSemester.getDateFrom()),
+-                    LocalDate.parse(activeSemester.getDateTo()),
+-                    firstWeekType,
+-                    today);
+-        }
+-
+-        return saved;
++        throw new RecurringLifecycleNotReadyException("updateScheduleItem");
+     }
+ 
+-    /**
+-     * Soft-deletes a schedule template (sets is_active = false) AND removes
+-     * its future PLANNED lessons from the calendar so the headman doesn't see
+-     * a deleted slot still occupying dates in `/headman/lessons` view.
+-     *
+-     * Past lessons (date < today) are kept untouched — they may already carry
+-     * attendance records; an explicit `cancelLesson` per-date is required to
+-     * change their status (HEADMAN can cancel CLOSED lessons since LSSN fix).
+-     *
+-     * Never physically deletes the ScheduleItem row — consistent with
+-     * project-wide soft delete convention (D-07).
+-     */
++    /** See {@link #updateScheduleItem(Long, UpdateScheduleItemRequest)}. */
+     public void deleteScheduleItem(Long id) {
+         ScheduleItem existing = scheduleItemRepository.findById(id)
+                 .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", id));
+         requireHeadmanForGroup(existing.getGroupId());
+-        existing.setActive(false);
+-        scheduleItemRepository.save(existing);
+-        // Cascade: drop future PLANNED lessons for this slot so they disappear
+-        // from the lessons view immediately (Bug: «удалил из матрицы — осталось
+-        // в "Парах на 2 недели"»).
+-        lessonGenerationService.deletePlannedLessonsFromToday(existing.getId());
++        throw new RecurringLifecycleNotReadyException("deleteScheduleItem");
+     }
+ }
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/entity/ScheduleItem.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/entity/ScheduleItem.java
+index 2f25edda..c2834282 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/entity/ScheduleItem.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/entity/ScheduleItem.java
+@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
+ import lombok.Setter;
+ import ru.rutcampustrack.schedule.contract.enums.WeekType;
+ 
++import java.time.LocalDate;
+ import java.time.LocalTime;
+ import java.time.OffsetDateTime;
+ 
+@@ -30,6 +31,10 @@ public class ScheduleItem {
+     @GeneratedValue(strategy = GenerationType.IDENTITY)
+     private Long id;
+ 
++    @Setter
++    @Column(name = "assignment_id", nullable = false, updatable = false)
++    private Long assignmentId;
++
+     @Setter
+     @Column(name = "group_id", nullable = false)
+     private Long groupId;
+@@ -76,4 +81,16 @@ public class ScheduleItem {
+     @Setter
+     @Column(name = "created_at", nullable = false, updatable = false)
+     private OffsetDateTime createdAt;
++
++    @Setter
++    @Column(name = "generated_count")
++    private Long generatedCount;
++
++    @Setter
++    @Column(name = "generated_from")
++    private LocalDate generatedFrom;
++
++    @Setter
++    @Column(name = "generated_until")
++    private LocalDate generatedUntil;
+ }
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/IsoParityReconciler.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/IsoParityReconciler.java
+index 9202c56a..645de8a1 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/IsoParityReconciler.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/IsoParityReconciler.java
+@@ -14,6 +14,7 @@ import ru.rutcampustrack.academic.grpc.SemesterResponse;
+ import ru.rutcampustrack.schedule.contract.enums.WeekType;
+ import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
+ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
++import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
+ 
+ import java.time.Clock;
+ import java.time.LocalDate;
+@@ -72,6 +73,10 @@ public class IsoParityReconciler {
+             Integer regenerated = txTemplate.execute(status -> doReconcile());
+             txTemplate.executeWithoutResult(status -> markExecuted(regenerated == null ? 0 : regenerated));
+             log.info("ISO parity reconciliation complete: {} schedule items regenerated", regenerated);
++        } catch (RecurringLifecycleNotReadyException e) {
++            // Canonical recurring history is retained; no marker or delete
++            // may be recorded while reconciliation remains gated.
++            log.info("ISO parity reconciliation is not ready for canonical history: {}", e.getMessage());
+         } catch (Exception e) {
+             // Any failure (no active semester, academic-service unreachable, etc.) is
+             // logged but not rethrown — the application must still start. Next healthy
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonAssembler.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonAssembler.java
+index fc64cc95..348d0894 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonAssembler.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonAssembler.java
+@@ -5,6 +5,7 @@ import org.springframework.hateoas.Link;
+ import org.springframework.stereotype.Component;
+ import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
+ import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
++import ru.rutcampustrack.schedule.contract.enums.WeekType;
+ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+ import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+ 
+@@ -26,19 +27,28 @@ public class LessonAssembler {
+     public LessonResponse toResponse(LessonWithItem lwi) {
+         Lesson l = lwi.lesson();
+         ScheduleItem si = lwi.scheduleItem();
++        Short dayOfWeek = l.getDayOfWeek() != null ? l.getDayOfWeek() : si.getDayOfWeek();
++        Short lessonNumber = l.getLessonNumber() != null ? l.getLessonNumber() : si.getLessonNumber();
++        java.time.LocalTime startTime = l.getStartTime() != null ? l.getStartTime() : si.getStartTime();
++        java.time.LocalTime endTime = l.getEndTime() != null ? l.getEndTime() : si.getEndTime();
++        WeekType weekType = l.getWeekTypeSnapshot() == null
++                ? si.getWeekType() : WeekType.valueOf(l.getWeekTypeSnapshot().toUpperCase());
++        String room = l.getRoomSnapshot() != null ? l.getRoomSnapshot() : si.getRoom();
++        Long groupId = l.getGroupId() != null ? l.getGroupId() : si.getGroupId();
++        Long subjectId = l.getSubjectId() != null ? l.getSubjectId() : si.getSubjectId();
+         return new LessonResponse(
+                 l.getId(),
+                 l.getScheduleItemId(),
+-                si.getGroupId(),
+-                si.getSubjectId(),
++                groupId,
++                subjectId,
+                 l.getDate(),
+                 l.getStatus(),
+-                si.getDayOfWeek(),
+-                si.getLessonNumber(),
+-                si.getStartTime(),
+-                si.getEndTime(),
+-                si.getWeekType(),
+-                si.getRoom(),
++                dayOfWeek,
++                lessonNumber,
++                startTime,
++                endTime,
++                weekType,
++                room,
+                 l.isGeoBlocked(),
+                 l.isBlockedByHeadman(),
+                 l.getBlockedByUserId(),
+@@ -46,7 +56,15 @@ public class LessonAssembler {
+                 l.getCancelReason(),
+                 l.getCancelledBy(),
+                 l.getCancelledAt(),
+-                l.getCreatedAt()
++                l.getCreatedAt(),
++                l.getOccurrenceId(),
++                l.getAssignmentId(),
++                l.getSemesterId(),
++                l.getAssignedTeacherId(),
++                l.getLessonType(),
++                l.getGeneration(),
++                l.getRevision(),
++                l.isCurrent()
+         );
+     }
+ 
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonGenerationService.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonGenerationService.java
+index ec2c4232..0f966973 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonGenerationService.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonGenerationService.java
+@@ -8,6 +8,7 @@ import ru.rutcampustrack.schedule.event.LessonDeletedEvent;
+ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+ import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+ import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
++import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
+ 
+ import java.time.Clock;
+ import java.time.DayOfWeek;
+@@ -129,12 +130,7 @@ public class LessonGenerationService {
+             LocalDate semesterEnd,
+             WeekType firstWeekType) {
+ 
+-        List<LocalDate> dates = computeLessonDates(
+-                semesterStart, semesterEnd, firstWeekType,
+-                item.getDayOfWeek(), item.getWeekType());
+-
+-        List<Lesson> lessons = buildLessons(item.getId(), dates);
+-        lessonRepository.saveAll(lessons);
++        throw new RecurringLifecycleNotReadyException("legacy generateLessons");
+     }
+ 
+     /**
+@@ -156,18 +152,7 @@ public class LessonGenerationService {
+             WeekType firstWeekType,
+             LocalDate fromDate) {
+ 
+-        List<Long> staleIds = lessonRepository.findPlannedIdsFromDate(item.getId(), fromDate);
+-        lessonRepository.deletePlannedFromDate(item.getId(), fromDate);
+-        publishDeleted(staleIds);
+-
+-        // Only generate dates >= fromDate (no backfill for already-passed dates)
+-        LocalDate effectiveStart = fromDate.isAfter(semesterStart) ? fromDate : semesterStart;
+-        List<LocalDate> dates = computeLessonDates(
+-                effectiveStart, semesterEnd, firstWeekType,
+-                item.getDayOfWeek(), item.getWeekType());
+-
+-        List<Lesson> lessons = buildLessons(item.getId(), dates);
+-        lessonRepository.saveAll(lessons);
++        throw new RecurringLifecycleNotReadyException("regenerateFromDate");
+     }
+ 
+     /**
+@@ -189,17 +174,7 @@ public class LessonGenerationService {
+             WeekType firstWeekType,
+             LocalDate fromDate) {
+ 
+-        List<Long> staleIds = lessonRepository.findPlannedOrCancelledIdsFromDate(item.getId(), fromDate);
+-        lessonRepository.deletePlannedOrCancelledFromDate(item.getId(), fromDate);
+-        publishDeleted(staleIds);
+-
+-        LocalDate effectiveStart = fromDate.isAfter(semesterStart) ? fromDate : semesterStart;
+-        List<LocalDate> dates = computeLessonDates(
+-                effectiveStart, semesterEnd, firstWeekType,
+-                item.getDayOfWeek(), item.getWeekType());
+-
+-        List<Lesson> lessons = buildLessons(item.getId(), dates);
+-        lessonRepository.saveAll(lessons);
++        throw new RecurringLifecycleNotReadyException("regenerateFromDateForReconciliation");
+     }
+ 
+     /**
+@@ -212,10 +187,7 @@ public class LessonGenerationService {
+      */
+     @Transactional
+     public void deletePlannedLessonsFromToday(Long scheduleItemId) {
+-        LocalDate today = LocalDate.now(clock);
+-        List<Long> staleIds = lessonRepository.findPlannedIdsFromDate(scheduleItemId, today);
+-        lessonRepository.deletePlannedFromDate(scheduleItemId, today);
+-        publishDeleted(staleIds);
++        throw new RecurringLifecycleNotReadyException("deletePlannedLessonsFromToday");
+     }
+ 
+     // -------------------------------------------------------------------------
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java
+index 5403c440..991a0dff 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java
+@@ -15,6 +15,7 @@ import ru.rutcampustrack.schedule.contract.enums.UserRole;
+ import ru.rutcampustrack.schedule.exception.AccessDeniedException;
+ import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
+ import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
++import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
+ import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
+ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
+@@ -93,7 +94,7 @@ public class LessonService {
+                 .orElseThrow(() -> new ResourceNotFoundException("Lesson", "id", lessonId));
+         ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
+                 .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
+-        requireHeadmanForGroup(item.getGroupId());
++        requireHeadmanForGroup(lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId());
+         return new LessonWithItem(lesson, item);
+     }
+ 
+@@ -125,10 +126,16 @@ public class LessonService {
+         lesson.setCancelledBy(requestContext.getUserId());
+         lesson.setCancelledAt(cancelledAt);
+         Lesson saved = lessonRepository.save(lesson);
++        java.time.LocalTime startTime = saved.getStartTime() != null
++                ? saved.getStartTime() : item.getStartTime();
++        java.time.LocalTime endTime = saved.getEndTime() != null
++                ? saved.getEndTime() : item.getEndTime();
+         eventPublisher.publishEvent(new LessonCancelledEvent(this,
+-                saved.getId(), item.getGroupId(), item.getSubjectId(),
+-                saved.getDate(), item.getStartTime(), item.getEndTime(),
+-                item.getLessonNumber() != null ? item.getLessonNumber().intValue() : null,
++                saved.getId(), saved.getGroupId() != null ? saved.getGroupId() : item.getGroupId(),
++                saved.getSubjectId() != null ? saved.getSubjectId() : item.getSubjectId(),
++                saved.getDate(), startTime, endTime,
++                saved.getLessonNumber() != null ? saved.getLessonNumber().intValue()
++                        : (item.getLessonNumber() != null ? item.getLessonNumber().intValue() : null),
+                 saved.getCancelReason(), saved.getCancelledBy(), saved.getCancelledAt()));
+         return new LessonWithItem(saved, item);
+     }
+@@ -143,6 +150,9 @@ public class LessonService {
+     public LessonWithItem restoreLesson(Long lessonId) {
+         LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
+         Lesson lesson = lwi.lesson();
++        if (lesson.getOccurrenceId() != null) {
++            throw new RecurringLifecycleNotReadyException("restore canonical recurring lesson");
++        }
+         if (lesson.getStatus() != LessonStatus.CANCELLED) {
+             throw new InvalidLessonStateException(
+                     "Only cancelled lessons can be restored, current status: " + lesson.getStatus());
+@@ -231,19 +241,17 @@ public class LessonService {
+                           LessonStatus.CLOSED.name().toLowerCase())
+                 : statuses.stream().map(s -> s.name().toLowerCase()).toList();
+ 
+-        List<ScheduleItem> items = scheduleItemRepository.findByGroupId(groupId);
+-        List<Long> itemIds = items.stream().map(ScheduleItem::getId).toList();
+-        if (itemIds.isEmpty()) {
+-            return Page.empty(pageable);
+-        }
+-
+         Page<Lesson> lessonPage = lessonRepository
+-                .pageByScheduleItemIdInAndDateBetweenAndStatusIn(
+-                        itemIds, from, to, effectiveStatuses, pageable);
++                .pageByGroupIdAndDateBetweenAndStatusIn(
++                        groupId, from, to,
++                        effectiveStatuses, pageable);
++
++        List<ScheduleItem> items = scheduleItemRepository.findByGroupId(groupId);
+ 
+         Map<Long, ScheduleItem> itemMap = items.stream()
+                 .collect(Collectors.toMap(ScheduleItem::getId, si -> si));
+ 
+         return lessonPage.map(l -> new LessonWithItem(l, itemMap.get(l.getScheduleItemId())));
+     }
++
+ }
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java
+index 178a76b1..d9218f8f 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java
+@@ -67,9 +67,9 @@ public class LessonStatusTransitionJob {
+                     .orElseThrow(() -> new IllegalStateException(
+                             "ScheduleItem not found for lesson " + lesson.getId()));
+             eventPublisher.publishEvent(new LessonStartedEvent(this,
+-                    lesson.getId(), item.getGroupId(), item.getSubjectId(),
+-                    item.getLessonNumber(),
+-                    item.getStartTime(), item.getEndTime(), item.getRoom()));
++                    lesson.getId(), snapshotGroup(lesson, item), snapshotSubject(lesson, item),
++                    snapshotLessonNumber(lesson, item),
++                    snapshotStart(lesson, item), snapshotEnd(lesson, item), snapshotRoom(lesson, item)));
+         }
+         lessonRepository.saveAll(toActivate);
+ 
+@@ -82,10 +82,34 @@ public class LessonStatusTransitionJob {
+                     .orElseThrow(() -> new IllegalStateException(
+                             "ScheduleItem not found for lesson " + lesson.getId()));
+             eventPublisher.publishEvent(new LessonClosedEvent(this,
+-                    lesson.getId(), item.getGroupId(), item.getSubjectId()));
++                    lesson.getId(), snapshotGroup(lesson, item), snapshotSubject(lesson, item)));
+         }
+         lessonRepository.saveAll(toClose);
+ 
+         log.info("Cron tick: activated={}, closed={}", toActivate.size(), toClose.size());
+     }
++
++    private static Long snapshotGroup(Lesson lesson, ScheduleItem item) {
++        return lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId();
++    }
++
++    private static Long snapshotSubject(Lesson lesson, ScheduleItem item) {
++        return lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId();
++    }
++
++    private static Short snapshotLessonNumber(Lesson lesson, ScheduleItem item) {
++        return lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber();
++    }
++
++    private static java.time.LocalTime snapshotStart(Lesson lesson, ScheduleItem item) {
++        return lesson.getStartTime() != null ? lesson.getStartTime() : item.getStartTime();
++    }
++
++    private static java.time.LocalTime snapshotEnd(Lesson lesson, ScheduleItem item) {
++        return lesson.getEndTime() != null ? lesson.getEndTime() : item.getEndTime();
++    }
++
++    private static String snapshotRoom(Lesson lesson, ScheduleItem item) {
++        return lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item.getRoom();
++    }
+ }
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java
+index f9c57f3e..bf4867c9 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java
+@@ -32,13 +32,81 @@ public class Lesson {
+     private Long id;
+ 
+     @Setter
+-    @Column(name = "schedule_item_id", nullable = false)
++    @Column(name = "schedule_item_id")
+     private Long scheduleItemId;
+ 
++    @Setter
++    @Column(name = "one_off_lesson_id")
++    private Long oneOffLessonId;
++
++    @Setter
++    @Column(name = "occurrence_id", nullable = false)
++    private Long occurrenceId;
++
++    @Setter
++    @Column(name = "assignment_id", nullable = false)
++    private Long assignmentId;
++
++    @Setter
++    @Column(name = "group_id", nullable = false)
++    private Long groupId;
++
++    @Setter
++    @Column(name = "subject_id", nullable = false)
++    private Long subjectId;
++
++    @Setter
++    @Column(name = "semester_id", nullable = false)
++    private Long semesterId;
++
++    @Setter
++    @Column(name = "assigned_teacher_id", nullable = false)
++    private Long assignedTeacherId;
++
++    @Setter
++    @Column(name = "lesson_type", nullable = false)
++    private String lessonType;
++
+     @Setter
+     @Column(nullable = false)
+     private LocalDate date;
+ 
++    @Setter
++    @Column(name = "lesson_number", nullable = false)
++    private Short lessonNumber;
++
++    @Setter
++    @Column(name = "day_of_week")
++    private Short dayOfWeek;
++
++    @Setter
++    @Column(name = "start_time")
++    private java.time.LocalTime startTime;
++
++    @Setter
++    @Column(name = "end_time")
++    private java.time.LocalTime endTime;
++
++    @Setter
++    @Column(name = "room_snapshot", length = 64)
++    private String roomSnapshot;
++
++    @Setter
++    @Column(name = "week_type_snapshot", length = 8)
++    private String weekTypeSnapshot;
++
++    @Setter
++    @Column(name = "generation", nullable = false)
++    private Long generation = 1L;
++
++    @Setter
++    @Column(name = "revision", nullable = false)
++    private Long revision = 1L;
++
++    /** Filled by snapshot readers; V17's current pointer is the durable source. */
++    @Transient
++    private boolean current = true;
++
+     @Setter
+     @Column(nullable = false)
+     private LessonStatus status = LessonStatus.PLANNED;
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java
+index a34473e4..7ac43c02 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java
+@@ -20,8 +20,8 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+     /**
+      * M05 Группа 2 — reference-pattern для NEW-143 (Spring Data projection).
+      *
+-     * <p>Один JOIN + SELECT subset полей вместо {@code findById(lessonId)}
+-     * + {@code findById(scheduleItemId)} (2 roundtrips). Alias columns
++     * <p>One snapshot SELECT avoids joining a mutable template for physical
++     * identity fields. Alias columns
+      * совпадают с getters в {@link LessonDetailsProjection} (case-insensitive).
+      *
+      * <p>Boolean {@code is_blocked_by_headman} выставляется с алиасом
+@@ -32,14 +32,13 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+                l.date            AS date,
+                l.status::text    AS status,
+                l.is_blocked_by_headman AS isBlockedByHeadman,
+-               si.group_id       AS groupId,
+-               si.subject_id     AS subjectId,
+-               si.lesson_number  AS lessonNumber,
+-               si.start_time     AS startTime,
+-               si.end_time       AS endTime,
+-               si.room           AS room
++               l.group_id        AS groupId,
++               l.subject_id      AS subjectId,
++               l.lesson_number   AS lessonNumber,
++               l.start_time      AS startTime,
++               l.end_time        AS endTime,
++               l.room_snapshot   AS room
+           FROM lessons l
+-          JOIN schedule_items si ON si.id = l.schedule_item_id
+          WHERE l.id = :lessonId
+         """, nativeQuery = true)
+     Optional<LessonDetailsProjection> findLessonDetails(@Param("lessonId") Long lessonId);
+@@ -94,6 +93,43 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+             @Param("statuses") List<String> statuses,
+             Pageable pageable);
+ 
++    @Query(value = "SELECT * FROM lessons WHERE group_id = :groupId AND semester_id = :semesterId "
++            + "AND date BETWEEN :from AND :to AND status::text IN :statuses "
++            + "ORDER BY date ASC, id ASC",
++           countQuery = "SELECT COUNT(*) FROM lessons WHERE group_id = :groupId AND semester_id = :semesterId "
++                   + "AND date BETWEEN :from AND :to AND status::text IN :statuses",
++           nativeQuery = true)
++    Page<Lesson> pageByGroupIdAndSemesterIdAndDateBetweenAndStatusIn(
++            @Param("groupId") Long groupId,
++            @Param("semesterId") Long semesterId,
++            @Param("from") LocalDate from,
++            @Param("to") LocalDate to,
++            @Param("statuses") List<String> statuses,
++            Pageable pageable);
++
++    @Query(value = "SELECT * FROM lessons WHERE group_id = :groupId AND semester_id = :semesterId "
++            + "AND date BETWEEN :from AND :to AND status::text IN :statuses ORDER BY date ASC, id ASC",
++            nativeQuery = true)
++    List<Lesson> findByGroupIdAndSemesterIdAndDateBetweenAndStatusIn(
++            @Param("groupId") Long groupId,
++            @Param("semesterId") Long semesterId,
++            @Param("from") LocalDate from,
++            @Param("to") LocalDate to,
++            @Param("statuses") List<String> statuses);
++
++    @Query(value = "SELECT * FROM lessons WHERE group_id = :groupId "
++            + "AND date BETWEEN :from AND :to AND status::text IN :statuses "
++            + "ORDER BY date ASC, id ASC",
++           countQuery = "SELECT COUNT(*) FROM lessons WHERE group_id = :groupId "
++                   + "AND date BETWEEN :from AND :to AND status::text IN :statuses",
++           nativeQuery = true)
++    Page<Lesson> pageByGroupIdAndDateBetweenAndStatusIn(
++            @Param("groupId") Long groupId,
++            @Param("from") LocalDate from,
++            @Param("to") LocalDate to,
++            @Param("statuses") List<String> statuses,
++            Pageable pageable);
++
+     /**
+      * Deletes all PLANNED lessons for a given schedule item starting from a given date.
+      * Used by LessonGenerationService.regenerateFromDate() to clear stale planned lessons
+@@ -154,11 +190,10 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+      */
+     @Query(value = """
+         SELECT l.* FROM lessons l
+-        JOIN schedule_items si ON si.id = l.schedule_item_id
+         WHERE l.status::text = 'active'
+-          AND si.group_id = :groupId
++          AND l.group_id = :groupId
+           AND l.date = CAST(:date AS date)
+-        ORDER BY si.lesson_number ASC
++        ORDER BY l.lesson_number ASC, l.id ASC
+         LIMIT 1
+         """, nativeQuery = true)
+     Optional<Lesson> findActiveLessonForGroup(
+@@ -172,9 +207,8 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+      */
+     @Query(value = """
+         SELECT l.* FROM lessons l
+-        JOIN schedule_items si ON si.id = l.schedule_item_id
+-        WHERE si.group_id = :groupId
+-          AND si.lesson_number = :lessonNumber
++        WHERE l.group_id = :groupId
++          AND l.lesson_number = :lessonNumber
+           AND l.date = CAST(:date AS date)
+           AND l.status::text IN ('planned','active','closed')
+         ORDER BY l.date
+@@ -193,10 +227,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+      */
+     @Query(value = """
+         SELECT l.* FROM lessons l
+-        JOIN schedule_items si ON si.id = l.schedule_item_id
+         WHERE l.status::text = 'planned'
+-          AND (l.date + si.start_time) <= CAST(:now AS timestamp)
+-        ORDER BY l.date, si.start_time
++          AND (l.date + l.start_time) <= CAST(:now AS timestamp)
++        ORDER BY l.date, l.start_time
+         """, nativeQuery = true)
+     List<Lesson> findPlannedDueForActivation(@Param("now") LocalDateTime now);
+ 
+@@ -205,10 +238,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+      */
+     @Query(value = """
+         SELECT l.* FROM lessons l
+-        JOIN schedule_items si ON si.id = l.schedule_item_id
+         WHERE l.status::text = 'active'
+-          AND (l.date + si.end_time + INTERVAL '5 minutes') <= CAST(:now AS timestamp)
+-        ORDER BY l.date, si.end_time
++          AND (l.date + l.end_time + INTERVAL '5 minutes') <= CAST(:now AS timestamp)
++        ORDER BY l.date, l.end_time
+         """, nativeQuery = true)
+     List<Lesson> findActiveDueForClosure(@Param("now") LocalDateTime now);
+ 
+@@ -223,24 +255,22 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+      */
+     @Query(value = """
+         SELECT l.* FROM lessons l
+-        JOIN schedule_items si ON si.id = l.schedule_item_id
+         WHERE l.status::text = 'active'
+           AND l.reminder_midpoint_sent_at IS NULL
+-          AND (l.date + si.start_time + (si.end_time - si.start_time) / 2)
++          AND (l.date + l.start_time + (l.end_time - l.start_time) / 2)
+                   <= CAST(:now AS timestamp)
+-          AND (l.date + si.end_time - INTERVAL '5 minutes') > CAST(:now AS timestamp)
+-        ORDER BY l.date, si.start_time
++          AND (l.date + l.end_time - INTERVAL '5 minutes') > CAST(:now AS timestamp)
++        ORDER BY l.date, l.start_time
+         """, nativeQuery = true)
+     List<Lesson> findActiveDueForMidpointReminder(@Param("now") LocalDateTime now);
+ 
+     @Query(value = """
+         SELECT l.* FROM lessons l
+-        JOIN schedule_items si ON si.id = l.schedule_item_id
+         WHERE l.status::text = 'active'
+           AND l.reminder_near_end_sent_at IS NULL
+-          AND (l.date + si.end_time - INTERVAL '5 minutes') <= CAST(:now AS timestamp)
+-          AND (l.date + si.end_time) > CAST(:now AS timestamp)
+-        ORDER BY l.date, si.end_time
++          AND (l.date + l.end_time - INTERVAL '5 minutes') <= CAST(:now AS timestamp)
++          AND (l.date + l.end_time) > CAST(:now AS timestamp)
++        ORDER BY l.date, l.end_time
+         """, nativeQuery = true)
+     List<Lesson> findActiveDueForNearEndReminder(@Param("now") LocalDateTime now);
+ 
+@@ -252,8 +282,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+      */
+     @Query(value = """
+         SELECT COUNT(l.id) FROM lessons l
+-        JOIN schedule_items si ON si.id = l.schedule_item_id
+-        WHERE si.subject_id = :subjectId
++        WHERE l.subject_id = :subjectId
+           AND l.status::text <> 'planned'
+         """, nativeQuery = true)
+     long countNonPlannedBySubjectId(@Param("subjectId") Long subjectId);
+@@ -264,11 +293,15 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+      */
+     @Query(value = """
+         SELECT COUNT(l.id) FROM lessons l
+-        JOIN schedule_items si ON si.id = l.schedule_item_id
+-        WHERE si.subject_id = :subjectId
++        WHERE l.subject_id = :subjectId
+         """, nativeQuery = true)
+     long countAllBySubjectId(@Param("subjectId") Long subjectId);
+ 
++    /** Canonical V17 history is retained; subject deletion must fail closed. */
++    @Query(value = "SELECT COUNT(l.id) FROM lessons l WHERE l.subject_id = :subjectId",
++            nativeQuery = true)
++    long countCanonicalReferencesBySubjectId(@Param("subjectId") Long subjectId);
++
+     /**
+      * Returns the ids of all lessons attached to any schedule_item of the subject.
+      * Used by the subject.deleted cascade to publish lesson.deleted BEFORE
+@@ -276,8 +309,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+      */
+     @Query(value = """
+         SELECT l.id FROM lessons l
+-        JOIN schedule_items si ON si.id = l.schedule_item_id
+-        WHERE si.subject_id = :subjectId
++        WHERE l.subject_id = :subjectId
+         """, nativeQuery = true)
+     List<Long> findIdsBySubjectId(@Param("subjectId") Long subjectId);
+ }
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/subject/SubjectDeletedCascadeService.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/subject/SubjectDeletedCascadeService.java
+index 4710f694..91e9d8b3 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/subject/SubjectDeletedCascadeService.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/subject/SubjectDeletedCascadeService.java
+@@ -12,6 +12,7 @@ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
+ import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+ import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
+ import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
++import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
+ 
+ import java.util.List;
+ 
+@@ -66,6 +67,10 @@ public class SubjectDeletedCascadeService {
+             return;
+         }
+ 
++        if (lessonRepository.countCanonicalReferencesBySubjectId(subjectId) > 0) {
++            throw new RecurringLifecycleNotReadyException("subject cascade with retained canonical history");
++        }
++
+         if (!lessonIds.isEmpty()) {
+             eventPublisher.publishEvent(new LessonDeletedEvent(this, lessonIds));
+         }
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AbstractScheduleIntegrationTest.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AbstractScheduleIntegrationTest.java
+index b72c7090..160774aa 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AbstractScheduleIntegrationTest.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AbstractScheduleIntegrationTest.java
+@@ -8,6 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
+ import org.springframework.test.context.DynamicPropertyRegistry;
+ import org.springframework.test.context.DynamicPropertySource;
+ import org.springframework.test.context.bean.override.mockito.MockitoBean;
++import org.springframework.jdbc.core.JdbcTemplate;
+ import org.springframework.transaction.PlatformTransactionManager;
+ import org.springframework.transaction.support.TransactionTemplate;
+ import org.testcontainers.containers.PostgreSQLContainer;
+@@ -40,6 +41,9 @@ public abstract class AbstractScheduleIntegrationTest {
+     @Autowired(required = false)
+     protected OutboxStorage outboxStorage;
+ 
++    @Autowired
++    protected JdbcTemplate jdbcTemplate;
++
+     @Autowired(required = false)
+     private PlatformTransactionManager transactionManager;
+ 
+@@ -56,6 +60,29 @@ public abstract class AbstractScheduleIntegrationTest {
+         });
+     }
+ 
++    /**
++     * V17/V18 retain physical lessons and reject ordinary DELETE statements.
++     * Integration fixtures use an isolated TRUNCATE reset instead of weakening
++     * the production retention trigger for test cleanup.
++     */
++    protected void resetScheduleData() {
++        jdbcTemplate.execute("""
++                TRUNCATE TABLE
++                    schedule_outbox,
++                    lesson_homework_bindings,
++                    schedule_transfer_replay,
++                    lesson_lifecycle_entries,
++                    lessons,
++                    lesson_occurrences,
++                    schedule_recurring_create_replay,
++                    schedule_assignment_fences,
++                    schedule_items,
++                    schedule_one_off_lessons,
++                    iso_parity_reconciliation
++                    RESTART IDENTITY CASCADE
++                """);
++    }
++
+     static final PostgreSQLContainer<?> POSTGRES;
+ 
+     static {
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java
+index 18de4b0c..3f5becd3 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java
+@@ -10,6 +10,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
+ import org.springframework.test.web.servlet.MockMvc;
+ import org.springframework.test.web.servlet.MvcResult;
+ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
++import ru.rutcampustrack.academic.grpc.AssignmentInfo;
+ import ru.rutcampustrack.academic.grpc.GroupResponse;
+ import ru.rutcampustrack.academic.grpc.SemesterResponse;
+ import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
+@@ -26,6 +27,7 @@ import java.time.LocalDate;
+ import java.time.LocalTime;
+ import java.time.OffsetDateTime;
+ import java.util.List;
++import java.util.UUID;
+ 
+ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.mockito.ArgumentMatchers.anyLong;
+@@ -58,6 +60,8 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
+     private static final Long SEMESTER_ID = 10L;
+     private static final Long SUBJECT_ID = 101L;
+     private static final Long USER_ID = 43L;
++    private static final Long ASSIGNMENT_ID = 501L;
++    private static final Long TEACHER_ID = 700L;
+ 
+     // Short 3-week semester: Feb 2 (Mon) to Feb 22 (Sun) 2026
+     // firstWeekType=ODD => week 0 (Feb 2-8) = ODD, week 1 (Feb 9-15) = EVEN, week 2 (Feb 16-22) = ODD
+@@ -86,8 +90,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
+ 
+     @BeforeEach
+     void setUp() {
+-        lessonRepository.deleteAll();
+-        scheduleItemRepository.deleteAll();
++        resetScheduleData();
+ 
+         when(academicGrpcClient.getActiveSemester()).thenReturn(MOCK_SEMESTER);
+         when(academicGrpcClient.parseSemesterFirstWeekType(MOCK_SEMESTER)).thenReturn(WeekType.ODD);
+@@ -98,6 +101,17 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
+                         .setIsActive(true)
+                         .build());
+         when(academicGrpcClient.isHeadman(anyLong(), anyLong())).thenReturn(true);
++        when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID)))
++                .thenReturn(List.of(AssignmentInfo.newBuilder()
++                        .setId(ASSIGNMENT_ID)
++                        .setTeacherId(TEACHER_ID)
++                        .setSubjectId(SUBJECT_ID)
++                        .setGroupId(GROUP_ID)
++                        .setSemesterId(SEMESTER_ID)
++                        .setLessonType("lecture")
++                        .setValidFrom("2026-02-02")
++                        .setValidUntilExclusive("2026-02-23")
++                        .build()));
+     }
+ 
+     // ---------- Header helpers ----------
+@@ -114,7 +128,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
+ 
+     private String createRequestJson(short dayOfWeek, WeekType weekType) throws Exception {
+         return objectMapper.writeValueAsString(new CreateScheduleItemRequest(
+-                GROUP_ID, SUBJECT_ID, SEMESTER_ID,
++                ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
+                 dayOfWeek, (short) 1,
+                 LocalTime.of(8, 30), LocalTime.of(10, 0),
+                 weekType, "A-101"
+@@ -134,6 +148,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
+     private Long createItemViaApi(short dayOfWeek, WeekType weekType) throws Exception {
+         MvcResult result = mockMvc.perform(withHeadmanHeaders(post("/schedule/items"))
+                 .contentType(MediaType.APPLICATION_JSON)
++                .header("Idempotency-Key", UUID.randomUUID().toString())
+                 .content(createRequestJson(dayOfWeek, weekType)))
+                 .andExpect(status().isCreated())
+                 .andReturn();
+@@ -197,7 +212,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
+         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(updateRequestJson((short) 3, WeekType.ALL, "A-101")))
+-                .andExpect(status().isOk());
++                .andExpect(status().isConflict());
+ 
+         // All PLANNED Tuesdays should be replaced by Wednesdays
+         // (assuming today > Feb 22, so regenerateFromDate uses today which is after semester end => no new lessons)
+@@ -236,7 +251,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
+         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(updateRequestJson((short) 2, WeekType.ALL, "NEW-ROOM")))
+-                .andExpect(status().isOk());
++                .andExpect(status().isConflict());
+ 
+         // Lesson count must remain exactly the same
+         assertThat(lessonRepository.count()).isEqualTo(countBefore);
+@@ -271,7 +286,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
+         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(updateRequestJson((short) 3, WeekType.ALL, "A-101")))
+-                .andExpect(status().isOk());
++                .andExpect(status().isConflict());
+ 
+         // The CANCELLED lesson must still exist (only PLANNED lessons are deleted by regenerateFromDate)
+         boolean cancelledLessonExists = lessonRepository.findById(cancelledLesson.getId()).isPresent();
+@@ -304,6 +319,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
+     @Test
+     void directDbSaveDoesNotTriggerGeneration() {
+         ScheduleItem item = new ScheduleItem();
++        item.setAssignmentId(ASSIGNMENT_ID);
+         item.setGroupId(GROUP_ID);
+         item.setSubjectId(SUBJECT_ID);
+         item.setSemesterId(SEMESTER_ID);
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java
+index 1fc95218..08de4673 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java
+@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
+ import org.springframework.test.context.bean.override.mockito.MockitoBean;
+ import org.springframework.test.web.servlet.MockMvc;
+ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
++import ru.rutcampustrack.academic.grpc.AssignmentInfo;
+ import ru.rutcampustrack.academic.grpc.GroupResponse;
+ import ru.rutcampustrack.academic.grpc.SemesterResponse;
+ import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
+@@ -22,6 +23,8 @@ import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+ 
+ import java.time.LocalTime;
+ import java.time.OffsetDateTime;
++import java.util.List;
++import java.util.UUID;
+ 
+ import static org.hamcrest.Matchers.containsString;
+ import static org.hamcrest.Matchers.is;
+@@ -44,6 +47,8 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+     private static final Long SEMESTER_ID = 10L;
+     private static final Long SUBJECT_ID = 100L;
+     private static final Long USER_ID = 42L;
++    private static final Long ASSIGNMENT_ID = 501L;
++    private static final Long TEACHER_ID = 700L;
+ 
+     @MockitoBean
+     AcademicGrpcClient academicGrpcClient;
+@@ -70,8 +75,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+ 
+     @BeforeEach
+     void setUp() {
+-        lessonRepository.deleteAll();
+-        scheduleItemRepository.deleteAll();
++        resetScheduleData();
+         lessonNumberCounter = 1;
+         // Configure mocks for happy path
+         when(academicGrpcClient.validateGroup(GROUP_ID))
+@@ -85,6 +89,17 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+         when(academicGrpcClient.parseSemesterFirstWeekType(MOCK_SEMESTER))
+                 .thenReturn(WeekType.ODD);
+         when(academicGrpcClient.isHeadman(USER_ID, GROUP_ID)).thenReturn(true);
++        when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID)))
++                .thenReturn(List.of(AssignmentInfo.newBuilder()
++                        .setId(ASSIGNMENT_ID)
++                        .setTeacherId(TEACHER_ID)
++                        .setSubjectId(SUBJECT_ID)
++                        .setGroupId(GROUP_ID)
++                        .setSemesterId(SEMESTER_ID)
++                        .setLessonType("lecture")
++                        .setValidFrom("2026-02-02")
++                        .setValidUntilExclusive("2026-07-01")
++                        .build()));
+     }
+ 
+     // ---------- Header helpers ----------
+@@ -115,7 +130,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+ 
+     private String createRequestJson() throws Exception {
+         return objectMapper.writeValueAsString(new CreateScheduleItemRequest(
+-                GROUP_ID, SUBJECT_ID, SEMESTER_ID,
++                ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
+                 (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(10, 0),
+                 WeekType.ALL, "A-101"
+         ));
+@@ -125,6 +140,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+ 
+     private ScheduleItem saveActiveItem() {
+         ScheduleItem item = new ScheduleItem();
++        item.setAssignmentId(ASSIGNMENT_ID);
+         item.setGroupId(GROUP_ID);
+         item.setSubjectId(SUBJECT_ID);
+         item.setSemesterId(SEMESTER_ID);
+@@ -145,6 +161,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+     void createTemplate_headman_success() throws Exception {
+         mockMvc.perform(withHeadmanHeaders(post("/schedule/items"))
+                         .contentType(MediaType.APPLICATION_JSON)
++                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                         .content(createRequestJson()))
+                 .andExpect(status().isCreated())
+                 .andExpect(jsonPath("$.id").exists())
+@@ -162,6 +179,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+         // ADMIN bypasses headman check — no isHeadman mock needed
+         mockMvc.perform(withAdminHeaders(post("/schedule/items"))
+                         .contentType(MediaType.APPLICATION_JSON)
++                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                         .content(createRequestJson()))
+                 .andExpect(status().isCreated())
+                 .andExpect(jsonPath("$.groupId", is(GROUP_ID.intValue())));
+@@ -171,6 +189,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+     void createTemplate_nonHeadmanStudent_returns403() throws Exception {
+         mockMvc.perform(withStudentHeaders(post("/schedule/items"))
+                         .contentType(MediaType.APPLICATION_JSON)
++                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                         .content(createRequestJson()))
+                 .andExpect(status().isForbidden());
+     }
+@@ -178,7 +197,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+     // ---------- TMPL-02: Update ----------
+ 
+     @Test
+-    void updateTemplate_headman_success() throws Exception {
++    void updateTemplate_headman_isGatedBeforeMutation() throws Exception {
+         ScheduleItem saved = saveActiveItem();
+ 
+         String updateJson = objectMapper.writeValueAsString(
+@@ -193,24 +212,24 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", saved.getId()))
+                         .contentType(MediaType.APPLICATION_JSON)
+                         .content(updateJson))
+-                .andExpect(status().isOk())
+-                .andExpect(jsonPath("$.room", is("B-202")))
+-                .andExpect(jsonPath("$.lessonNumber", is(2)))
+-                .andExpect(jsonPath("$.groupId", is(GROUP_ID.intValue())))
+-                .andExpect(jsonPath("$.semesterId", is(SEMESTER_ID.intValue())));
++                .andExpect(status().isConflict());
++
++        ScheduleItem unchanged = scheduleItemRepository.findById(saved.getId()).orElseThrow();
++        org.assertj.core.api.Assertions.assertThat(unchanged.getRoom()).isEqualTo("A-101");
++        org.assertj.core.api.Assertions.assertThat(unchanged.getLessonNumber()).isEqualTo((short) 1);
+     }
+ 
+     // ---------- TMPL-03: Soft delete ----------
+ 
+     @Test
+-    void deleteTemplate_softDelete() throws Exception {
++    void deleteTemplate_isGatedBeforeMutation() throws Exception {
+         ScheduleItem saved = saveActiveItem();
+ 
+         mockMvc.perform(withHeadmanHeaders(delete("/schedule/items/{id}", saved.getId())))
+-                .andExpect(status().isNoContent());
++                .andExpect(status().isConflict());
+ 
+         ScheduleItem fromDb = scheduleItemRepository.findById(saved.getId()).orElseThrow();
+-        org.assertj.core.api.Assertions.assertThat(fromDb.isActive()).isFalse();
++        org.assertj.core.api.Assertions.assertThat(fromDb.isActive()).isTrue();
+     }
+ 
+     // ---------- TMPL-04: List active only ----------
+@@ -242,6 +261,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+ 
+         mockMvc.perform(withHeadmanHeaders(post("/schedule/items"))
+                         .contentType(MediaType.APPLICATION_JSON)
++                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                         .content(createRequestJson()))
+                 .andExpect(status().isServiceUnavailable());
+     }
+@@ -249,7 +269,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+     @Test
+     void createTemplate_invalidGroupId_returns404() throws Exception {
+         String requestJson = objectMapper.writeValueAsString(new CreateScheduleItemRequest(
+-                999L, SUBJECT_ID, SEMESTER_ID,
++                501L, 999L, SUBJECT_ID, SEMESTER_ID,
+                 (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(10, 0),
+                 WeekType.ALL, "A-101"
+         ));
+@@ -259,6 +279,7 @@ class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
+ 
+         mockMvc.perform(withHeadmanHeaders(post("/schedule/items"))
+                         .contentType(MediaType.APPLICATION_JSON)
++                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                         .content(requestJson))
+                 .andExpect(status().isNotFound());
+     }
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java
+index 489cfc0d..fa09dd26 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java
+@@ -72,7 +72,7 @@ class ScheduleItemSecurityTest {
+ 
+     private CreateScheduleItemRequest buildRequest(Long groupId) {
+         return new CreateScheduleItemRequest(
+-                groupId, 500L, SEMESTER_ID,
++                501L, groupId, 500L, SEMESTER_ID,
+                 (short) 1, (short) 1,
+                 LocalTime.of(8, 30), LocalTime.of(10, 0),
+                 WeekType.ALL, "A-101");
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java
+index 03edc846..ff13bd03 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java
+@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
+ import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
+ import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.jdbc.core.JdbcTemplate;
+ import org.springframework.test.context.bean.override.mockito.MockitoBean;
+ import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
+ import ru.rutcampustrack.schedule.contract.enums.WeekType;
+@@ -53,6 +54,9 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
+     @Autowired
+     ScheduleItemRepository scheduleItemRepository;
+ 
++    @Autowired
++    JdbcTemplate jdbcTemplate;
++
+     @MockitoBean
+     Clock clock;
+ 
+@@ -61,6 +65,11 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
+ 
+     @BeforeEach
+     void configureClock() {
++        // The Testcontainers database is shared by integration classes; this
++        // class previously relied only on its @AfterEach cleanup. Reset before
++        // the first method too so a prior recurring test cannot leave fence
++        // 501 with a different group/subject/semester interval.
++        resetScheduleData();
+         // Default: Moscow 2026-04-03 10:00 (after a typical 08:30 start, before 10:05+5 end)
+         Instant fixedInstant = ZonedDateTime.of(2026, 4, 3, 10, 0, 0, 0, MOSCOW).toInstant();
+         when(clock.getZone()).thenReturn(MOSCOW);
+@@ -69,8 +78,7 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
+ 
+     @AfterEach
+     void cleanup() {
+-        lessonRepository.deleteAll();
+-        scheduleItemRepository.deleteAll();
++        resetScheduleData();
+         drainOutbox();
+     }
+ 
+@@ -229,6 +237,7 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
+ 
+     private ScheduleItem createScheduleItem(LocalTime startTime, LocalTime endTime) {
+         ScheduleItem item = new ScheduleItem();
++        item.setAssignmentId(501L);
+         item.setGroupId(1L);
+         item.setSubjectId(100L);
+         item.setSemesterId(1L);
+@@ -244,11 +253,47 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
+     }
+ 
+     private Lesson createLesson(Long scheduleItemId, LocalDate date, LessonStatus status) {
++        ScheduleItem item = scheduleItemRepository.findById(scheduleItemId).orElseThrow();
++        jdbcTemplate.update("""
++                INSERT INTO schedule_assignment_fences
++                    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
++                     lesson_type, valid_from, cap_until_exclusive, created_at)
++                VALUES (501, ?, ?, ?, 700, 'lecture', DATE '2026-04-01', DATE '2026-05-01', NOW())
++                ON CONFLICT (assignment_id) DO NOTHING
++                """, item.getGroupId(), item.getSubjectId(), item.getSemesterId());
++        Long occurrenceId = jdbcTemplate.queryForObject("""
++                INSERT INTO lesson_occurrences
++                    (schedule_item_id, occurrence_date, assignment_id, group_id,
++                     subject_id, semester_id, assigned_teacher_id, lesson_type,
++                     generation, revision, created_at)
++                VALUES (?, ?, 501, ?, ?, ?, 700, 'lecture', 1, 1, NOW())
++                RETURNING id
++                """, Long.class, scheduleItemId, date, item.getGroupId(),
++                item.getSubjectId(), item.getSemesterId());
++
+         Lesson lesson = new Lesson();
+         lesson.setScheduleItemId(scheduleItemId);
++        lesson.setOccurrenceId(occurrenceId);
++        lesson.setAssignmentId(501L);
++        lesson.setGroupId(item.getGroupId());
++        lesson.setSubjectId(item.getSubjectId());
++        lesson.setSemesterId(item.getSemesterId());
++        lesson.setAssignedTeacherId(700L);
++        lesson.setLessonType("lecture");
+         lesson.setDate(date);
++        lesson.setLessonNumber(item.getLessonNumber());
++        lesson.setDayOfWeek(item.getDayOfWeek());
++        lesson.setStartTime(item.getStartTime());
++        lesson.setEndTime(item.getEndTime());
++        lesson.setRoomSnapshot(item.getRoom());
++        lesson.setWeekTypeSnapshot("all");
++        lesson.setGeneration(1L);
++        lesson.setRevision(1L);
+         lesson.setStatus(status);
+         lesson.setCreatedAt(OffsetDateTime.now());
+-        return lessonRepository.save(lesson);
++        Lesson saved = lessonRepository.saveAndFlush(lesson);
++        jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?",
++                saved.getId(), occurrenceId);
++        return saved;
+     }
+ }
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java
+index ac3dbff0..661816a3 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java
+@@ -65,7 +65,7 @@ class StudentOccurrenceMigrationIT {
+         assertThat(flyway.info().pending()).isEmpty();
+         MigrationInfo current = flyway.info().current();
+         assertThat(current).isNotNull();
+-        assertThat(current.getVersion().getVersion()).isEqualTo("17");
++        assertThat(current.getVersion().getVersion()).isEqualTo("18");
+         flyway.validate();
+         assertThat(flyway.migrate().migrationsExecuted).isZero();
+     }
+@@ -145,6 +145,38 @@ class StudentOccurrenceMigrationIT {
+                         + " WHERE id = ?", sourceLessonId)).isInstanceOf(DataAccessException.class);
+     }
+ 
++    @Test
++    void populatedV17CanonicalRowsMigrateThroughV18WithoutGuessedSnapshots() {
++        String schema = newSchema();
++        flyway(schema, "17").migrate();
++        Long templateId = insertTemplate(schema, 9004L, 14L, 24L, 34L, 2, "09:00", "10:00");
++        Long occurrenceId = jdbc.queryForObject("INSERT INTO " + table(schema, "lesson_occurrences")
++                        + " (schedule_item_id, occurrence_date, assignment_id, group_id, subject_id,"
++                        + " semester_id, assigned_teacher_id, lesson_type)"
++                        + " VALUES (?, DATE '2026-03-02', 9004, 14, 24, 34, 44, 'lecture') RETURNING id",
++                Long.class, templateId);
++        Long lessonId = insertLesson(schema, templateId, occurrenceId, 9004, 14, 24, 34, 44,
++                "lecture", "2026-03-02", "cancelled", 2, "09:00", "10:00", 1, 1);
++        jdbc.update("UPDATE " + table(schema, "lesson_occurrences")
++                + " SET current_lesson_id = ? WHERE id = ?", lessonId, occurrenceId);
++
++        MigrateResult result = flyway(schema, null).migrate();
++
++        assertThat(result.success).isTrue();
++        assertThat(flyway(schema, null).info().current().getVersion().getVersion()).isEqualTo("18");
++        assertThat(jdbc.queryForObject("SELECT status::text FROM " + table(schema, "lessons")
++                + " WHERE id = ?", String.class, lessonId)).isEqualTo("cancelled");
++        assertThat(jdbc.queryForObject("SELECT current_lesson_id FROM "
++                + table(schema, "lesson_occurrences") + " WHERE id = ?", Long.class, occurrenceId))
++                .isEqualTo(lessonId);
++        assertThat(jdbc.queryForObject("SELECT day_of_week FROM " + table(schema, "lessons")
++                + " WHERE id = ?", Short.class, lessonId)).isNull();
++        assertThat(jdbc.queryForObject("SELECT week_type_snapshot FROM " + table(schema, "lessons")
++                + " WHERE id = ?", String.class, lessonId)).isNull();
++        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM "
++                + table(schema, "schedule_assignment_fences"), Integer.class)).isZero();
++    }
++
+     @Test
+     void lineageReplayAndOwnershipConstraintsRejectForeignOrMutableRows() {
+         String schema = newSchema();

@@ -1,0 +1,164 @@
+syntax = "proto3";
+
+package rutcampustrack.attendance;
+
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.attendance.grpc";
+
+// Internal JS-STUDENT-01-r1 boundary. Identity is a validated signed internal JWT
+// in gRPC metadata; client-supplied identity fields are deliberately absent.
+service AttendanceStudentGrpcService {
+  rpc GetStudentAttendanceSnapshot (StudentAttendanceSnapshotRequest)
+      returns (StudentAttendanceSnapshotResponse);
+  rpc Checkin (StudentCheckinCommand) returns (StudentCheckinResult);
+}
+
+message StudentAttendanceSnapshotRequest {
+  // The RPC fails the whole request when any lesson is missing or outside the
+  // authenticated student's group; it never returns a partial foreign snapshot.
+  repeated int64 lesson_ids = 1;
+}
+
+message StudentAttendanceSnapshotResponse {
+  // One entry per requested lesson, including lessons without an attendance mark.
+  repeated StudentAttendanceEntry entries = 1;
+  string server_now = 2;
+}
+
+message StudentAttendanceEntry {
+  int64 lesson_id = 1;
+  AttendanceStatus status = 2;
+  AttendanceSource source = 3;
+  optional string marked_at = 4;
+  AutomaticCheckinRequest request = 5;
+  optional string retry_at = 6;
+  StudentCheckinEligibility eligibility = 7;
+}
+
+enum AttendanceStatus {
+  ATTENDANCE_STATUS_UNSPECIFIED = 0;
+  ATTENDANCE_STATUS_PRESENT = 1;
+  ATTENDANCE_STATUS_ABSENT = 2;
+  ATTENDANCE_STATUS_EXCUSED = 3;
+}
+
+enum AttendanceSource {
+  ATTENDANCE_SOURCE_UNSPECIFIED = 0;
+  ATTENDANCE_SOURCE_STUDENT_GEO = 1;
+  ATTENDANCE_SOURCE_LATE_CHECKIN = 2;
+  ATTENDANCE_SOURCE_HEADMAN = 3;
+  ATTENDANCE_SOURCE_TEACHER = 4;
+  ATTENDANCE_SOURCE_SYSTEM = 5;
+}
+
+message StudentCheckinCommand {
+  int64 lesson_id = 1;
+  string idempotency_key = 2;
+  oneof geo {
+    Coordinates coordinates = 3;
+    GeoUnavailable unavailable = 4;
+  }
+}
+
+message Coordinates {
+  // Presence and finite/range validation are mandatory at the RPC boundary.
+  optional double latitude = 1;
+  optional double longitude = 2;
+}
+
+message GeoUnavailable {
+  GeoUnavailableReason reason = 1;
+}
+
+enum GeoUnavailableReason {
+  GEO_UNAVAILABLE_REASON_UNSPECIFIED = 0;
+  GEO_UNAVAILABLE_REASON_PERMISSION_DENIED = 1;
+  GEO_UNAVAILABLE_REASON_POSITION_UNAVAILABLE = 2;
+  GEO_UNAVAILABLE_REASON_TIMEOUT = 3;
+}
+
+message StudentCheckinResult {
+  CheckinOutcome outcome = 1;
+  int64 lesson_id = 2;
+  StudentAttendanceEntry attendance = 3;
+  AutomaticCheckinRequest request = 4;
+  optional string retry_at = 5;
+  string server_now = 6;
+}
+
+enum CheckinOutcome {
+  CHECKIN_OUTCOME_UNSPECIFIED = 0;
+  CHECKIN_OUTCOME_PRESENT = 1;
+  CHECKIN_OUTCOME_PENDING_CONFIRMATION = 2;
+}
+
+message StudentCheckinEligibility {
+  bool allowed = 1;
+  StudentCheckinEligibilityReason reason = 2;
+  optional string retry_at = 3;
+}
+
+enum StudentCheckinEligibilityReason {
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_UNSPECIFIED = 0;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_ELIGIBLE = 1;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_ALREADY_PRESENT = 2;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_LESSON_CANCELLED = 3;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_TOO_EARLY = 4;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_WINDOW_CLOSED = 5;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_GEO_BLOCKED = 6;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_PENDING_CONFIRMATION = 7;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_COOLDOWN = 8;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_HEADMAN_ABSENT_REQUIRES_APPEAL = 9;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_HEADMAN_USES_JOURNAL = 10;
+  STUDENT_CHECKIN_ELIGIBILITY_REASON_DEPENDENCY_UNAVAILABLE = 11;
+}
+
+message AutomaticCheckinRequest {
+  string id = 1;
+  AutomaticCheckinRequestStatus status = 2;
+  AutomaticCheckinRequestOrigin origin = 3;
+  AutomaticCheckinResolutionReason resolution_reason = 4;
+}
+
+enum AutomaticCheckinRequestStatus {
+  AUTOMATIC_CHECKIN_REQUEST_STATUS_UNSPECIFIED = 0;
+  AUTOMATIC_CHECKIN_REQUEST_STATUS_PENDING = 1;
+  AUTOMATIC_CHECKIN_REQUEST_STATUS_APPROVED = 2;
+  AUTOMATIC_CHECKIN_REQUEST_STATUS_REJECTED = 3;
+  AUTOMATIC_CHECKIN_REQUEST_STATUS_CANCELLED = 4;
+}
+
+enum AutomaticCheckinRequestOrigin {
+  AUTOMATIC_CHECKIN_REQUEST_ORIGIN_UNSPECIFIED = 0;
+  AUTOMATIC_CHECKIN_REQUEST_ORIGIN_AUTO_GEO_FAILURE = 1;
+}
+
+enum AutomaticCheckinResolutionReason {
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_UNSPECIFIED = 0;
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_GEO_CONFIRMED = 1;
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_APPROVED = 2;
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_REJECTED = 3;
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_STUDENT_CANCELLED = 4;
+}
+
+// Packed into gRPC status details. The BFF maps this stable code and retry_at
+// to the public Problem Details shape without parsing exception text.
+message StudentCheckinErrorDetail {
+  StudentCheckinErrorCode code = 1;
+  optional string retry_at = 2;
+}
+
+enum StudentCheckinErrorCode {
+  STUDENT_CHECKIN_ERROR_CODE_UNSPECIFIED = 0;
+  STUDENT_CHECKIN_ERROR_CODE_INVALID_REQUEST = 1;
+  STUDENT_CHECKIN_ERROR_CODE_INVALID_IDEMPOTENCY_KEY = 2;
+  STUDENT_CHECKIN_ERROR_CODE_INVALID_SESSION = 3;
+  STUDENT_CHECKIN_ERROR_CODE_WRONG_ROLE = 4;
+  STUDENT_CHECKIN_ERROR_CODE_OUT_OF_SCOPE = 5;
+  STUDENT_CHECKIN_ERROR_CODE_LESSON_NOT_FOUND = 6;
+  STUDENT_CHECKIN_ERROR_CODE_CHECKIN_COOLDOWN = 7;
+  STUDENT_CHECKIN_ERROR_CODE_MANUAL_ABSENCE_REQUIRES_APPEAL = 8;
+  STUDENT_CHECKIN_ERROR_CODE_IDEMPOTENCY_PAYLOAD_MISMATCH = 9;
+  STUDENT_CHECKIN_ERROR_CODE_CHECKIN_NOT_ELIGIBLE = 10;
+  STUDENT_CHECKIN_ERROR_CODE_DEPENDENCY_UNAVAILABLE = 11;
+}

@@ -1,0 +1,94 @@
+[
+  {
+    "path": "evidence.md",
+    "sha256": "E2273E532695BA30663CD53A318E94CA85AFF2541659F6760F19E26EF605F9B2"
+  },
+  {
+    "path": "run.log",
+    "sha256": "3C374462BF8F32AC8076C783C8D9A990C76CDAF143732B8F8496F78687DFD375"
+  },
+  {
+    "path": "visual-check.mjs",
+    "sha256": "5D50E5F5C5AF2A797E52106419B2D96F7D2B5E71CC58A96536A93B7BFA1B65FF"
+  },
+  {
+    "path": "visual-evidence.json",
+    "sha256": "7C3A99B0C1AF12E2571BB2E1E3045A8D5406261DCA304E519F1789CD6CDC9349"
+  },
+  {
+    "path": "screenshots\\01-open-current.png",
+    "sha256": "B185E111CF7C166E9DDE3FC8B84A106CAA9AB6C8EB4E2958AE43D3F5FB51DC9A"
+  },
+  {
+    "path": "screenshots\\02-expanded.png",
+    "sha256": "AB450288061A01563CA10D54917D0F0E484874C2EEF0CC3559960E1E4DDAA852"
+  },
+  {
+    "path": "screenshots\\03-completed-multiple.png",
+    "sha256": "6AF440DCE109A8EACA773808A3969EC65878A8A21FF00F438C1EE43AEDFCED9E"
+  },
+  {
+    "path": "screenshots\\04-historical.png",
+    "sha256": "FB5726AAA93331F13D99BB66BC52596B3567F3CD224E717FF71C9FDF4E6CAC56"
+  },
+  {
+    "path": "screenshots\\05-no-materials.png",
+    "sha256": "477E22F74820796B1C3181C4D15155151E3673673004BFCF77DF00862F6D3C7D"
+  },
+  {
+    "path": "screenshots\\06-failure-recovery.png",
+    "sha256": "37CB09990E2FA12185B97CE1A051FD07E259B99482ADC5C178FC1DD5A676C8DB"
+  },
+  {
+    "path": "screenshots\\07-offline.png",
+    "sha256": "A4028E45DE47122172E267CBD28486A0483110154B456DBC426C07CDF9575083"
+  },
+  {
+    "path": "screenshots\\matrix-dark-16.png",
+    "sha256": "B185E111CF7C166E9DDE3FC8B84A106CAA9AB6C8EB4E2958AE43D3F5FB51DC9A"
+  },
+  {
+    "path": "screenshots\\matrix-dark-20.png",
+    "sha256": "423AC6B2649B7E5CF6FCCA1BCE735414B50D3FAF714D534C562613787DEB387D"
+  },
+  {
+    "path": "screenshots\\matrix-dark-24.png",
+    "sha256": "4DD0AF68B54E0533F6C53A0EAFB835B530F12FCDAA809FEFF58E95B70588BB75"
+  },
+  {
+    "path": "screenshots\\matrix-light-16.png",
+    "sha256": "E24B65CB3CA8BCDECC31457FFFE390C8B4F47272CEEFFDFD1A22B739C931F656"
+  },
+  {
+    "path": "screenshots\\matrix-light-20.png",
+    "sha256": "EFA5B7FA3ABB0AF58668940E9882CB65B79CDD951D00EC2752CF2A03196EC445"
+  },
+  {
+    "path": "screenshots\\matrix-light-24.png",
+    "sha256": "F82D88DFD31807F5CE230856745BAF7CEEA7471A93F157AC3BC4F6A28B75B1AC"
+  },
+  {
+    "path": "screenshots\\matrix-no-preference-16.png",
+    "sha256": "E24B65CB3CA8BCDECC31457FFFE390C8B4F47272CEEFFDFD1A22B739C931F656"
+  },
+  {
+    "path": "screenshots\\matrix-no-preference-20.png",
+    "sha256": "EFA5B7FA3ABB0AF58668940E9882CB65B79CDD951D00EC2752CF2A03196EC445"
+  },
+  {
+    "path": "screenshots\\matrix-no-preference-24.png",
+    "sha256": "F82D88DFD31807F5CE230856745BAF7CEEA7471A93F157AC3BC4F6A28B75B1AC"
+  },
+  {
+    "path": "screenshots\\responsive-320.png",
+    "sha256": "0D34CCDFEA800EB7000F043DC7DABAD14F2C4C197B0BD69FB00AEBC9EAD0F3DC"
+  },
+  {
+    "path": "screenshots\\responsive-390.png",
+    "sha256": "B185E111CF7C166E9DDE3FC8B84A106CAA9AB6C8EB4E2958AE43D3F5FB51DC9A"
+  },
+  {
+    "path": "screenshots\\responsive-430.png",
+    "sha256": "DD1E54A8C7362A83139D93BF0C330BA16DA5364C9029DB3DE48D2B5D40BEC497"
+  }
+]

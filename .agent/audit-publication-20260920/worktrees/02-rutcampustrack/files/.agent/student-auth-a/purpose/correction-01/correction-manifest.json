@@ -1,0 +1,67 @@
+{
+  "correction": "purpose-junit-binary-copy-01",
+  "scope": "Evidence-only correction for purpose4 captured JUnit XML provenance",
+  "baselineRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "priorManifest": ".agent/student-auth-a/purpose/manifest.json",
+  "note": "Prior filter XML copy differed beyond CRLF normalization; parser copy differed by line endings. No assumption about reconstruction cause. New capture uses exact binary Copy-Item; old copies preserved.",
+  "artifacts": [
+    {
+      "originalPath": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+      "copyPath": ".agent/student-auth-a/purpose/correction-01/junit/TEST-ru.rutcampustrack.auth.service.JwtTokenPurposeTest.xml",
+      "originalSha256": "E1A5DCEAAB7F8D07ABF065616CF8F1FFBD5405EAA2CA668B5191BC697361B55F",
+      "copySha256": "E1A5DCEAAB7F8D07ABF065616CF8F1FFBD5405EAA2CA668B5191BC697361B55F",
+      "originalBytes": 1552,
+      "copyBytes": 1552,
+      "byteIdentical": true
+    },
+    {
+      "originalPath": "services/auth-service/auth-app/build/test-results/test/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml",
+      "copyPath": ".agent/student-auth-a/purpose/correction-01/junit/TEST-ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest.xml",
+      "originalSha256": "9903E9773A7C508BCA3886868A54DC6267620A2D2D17184BA6C3B414DF3BF217",
+      "copySha256": "9903E9773A7C508BCA3886868A54DC6267620A2D2D17184BA6C3B414DF3BF217",
+      "originalBytes": 1971,
+      "copyBytes": 1971,
+      "byteIdentical": true
+    }
+  ],
+  "productHashesUnchanged": [
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+      "sha256": "81429C4219EC00FD2207E11460C8AB03314787C7CDFB45EA28B3A18A72E1BD5D",
+      "bytes": 16164
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java",
+      "sha256": "A321630875C98B40DE20D30D8D220885C80AB35B871EE9207C2F10DA2EB864FA",
+      "bytes": 2513
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+      "sha256": "61E4DB92A8376452787C8467AE61FC8CEE75DE539C226C04BD5D558646867855",
+      "bytes": 9229
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+      "sha256": "F313EAF985473AC7205D21EB850014F4E4D6C762B9994F0285B361E25DB2F574",
+      "bytes": 6224
+    }
+  ],
+  "checks": [
+    {
+      "command": "PowerShell Get-FileHash SHA256 plus byte-length comparison for each original/copy pair",
+      "exitCode": 0,
+      "result": "PASS: 2 of 2 binary pairs equal"
+    },
+    {
+      "command": "PowerShell Get-FileHash SHA256 plus byte-length check for four product files",
+      "exitCode": 0,
+      "result": "PASS: 4 of 4 product hashes/byte lengths match prior manifest"
+    }
+  ],
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "gradleRerun": false,
+    "runtime": "N/A: evidence-only correction"
+  }
+}

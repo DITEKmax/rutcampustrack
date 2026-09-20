@@ -1,0 +1,110 @@
+# Агентный workflow RutCampusTrack
+
+✏️ 05.09.2026. Маршрутизация ниже — решение владельца проекта.
+Она не является обещанием качества/цены от OpenAI и не реализует свой scheduler.
+Control plane — текущий Codex; другие harness не запускают второе дерево управления.
+
+## Выбор модели
+
+| Работа | Model ID | Effort |
+|---|---|---|
+| Root orchestration | gpt-6-astra | low |
+| Архитектура, существенная неоднозначность, спор review | gpt-6-astra | medium |
+| Критическое архитектурное/финальное решение | gpt-6-astra | high |
+| Простой explorer, точный S0 developer, первичный log triage | gpt-5.6-luna | medium |
+| Сложный explorer, обычный developer, сложнее log triage | gpt-5.6-terra | medium |
+| Сложная реализация, обычный S1 review, ops-диагностика | gpt-5.6-terra | high |
+| Hard implementation/debug, важное review, security review | gpt-5.6-sol | high |
+| Исключительно сложный debug после обоснованной эскалации | gpt-5.6-sol | xhigh |
+
+Review по умолчанию для важной задачи — Sol high; для обычной S1 явно выбирается
+Terra high. Так разрешается неоднозначность между «default Sol» и «standard Terra»
+в исходном исследовании. Для простого поиска не наследуй Terra fallback случайно.
+Не используй max/ultra или Astra xhigh автоматически. Сравнивай результат на
+задачах проекта; заявления «дешевле/лучше» без измерения не являются evidence.
+
+## Минимально достаточный маршрут
+
+| Риск | Примеры | Workflow |
+|---|---|---|
+| S0 | механическая документация, rename, типы, известный lint fix | Luna medium developer → применимые checks → итог root |
+| S1 | обычный endpoint/component/bugfix по известному pattern | Luna/Terra explorer → Terra medium developer → checks/runtime → Terra high reviewer |
+| S2 | несколько модулей, contracts, сложный data flow/state | Terra medium explorer → Astra medium plan → Terra high или Sol high developer → checks/runtime → Sol high reviewer |
+| S3 | auth/authz/security, payments, concurrency, migration, production infra, data-loss | независимые read-only исследования по разным вопросам → Astra medium/high plan → Sol high developer → checks/runtime → Sol high reviewer + отдельное security/ops review → Astra final → разрешение на опасную операцию |
+
+Критический риск повышает класс независимо от количества строк. Механическая
+генерация файла миграции может быть подзадачей Luna, но проверка/применение
+миграции остаются S3. «Несколько файлов» само по себе не требует дорогой модели.
+S0 не требует обязательного scout/reviewer. Не создавай агента без полезной
+ограниченной работы. Лимит детей — потолок, не целевое заполнение слотов.
+
+## Как запускаются роли
+
+- Root задаётся `.codex/config.toml`; дочерние файлы — explorer/developer/reviewer.
+  Model и effort в них намеренно не закреплены: при каждом spawn передай оба
+  значения из таблицы и запиши причину выбора в task packet.
+- Architect — ограниченное read-only задание explorer на Astra medium/high.
+  Security reviewer — отдельный reviewer на Sol high. Visual reviewer — reviewer
+  с screenshots на Sol high; browser-прогоны/evidence выполняет developer.
+  Ops — ограниченная задача developer на Terra high/Sol high с нужными правами.
+  Эти назначения не создают постоянных ролей или второго orchestrator.
+- Если spawn API поддерживает model/effort и свежий контекст, используй их.
+  При полном наследовании истории некоторые поверхности сохраняют модель root;
+  передавай компактный packet в свежий контекст, а не текст «ты теперь Luna».
+- Если API не даёт выбора модели, зафиксируй BLOCKED routing и предложи
+  поддерживаемую поверхность/явный выбор в клиенте. Не создавай скрытый вложенный
+  CLI-orchestrator и не обещай переключение текущего root изменением файла.
+- Проверяй фактические параметры по runtime metadata. Самоописание модели
+  «я Sol» не доказательство. Файл config тоже не доказывает параметры старой сессии.
+- Эскалация: неопределённость после разведки, необъяснимый failing test,
+  пересечение архитектурной границы, подтверждённый серьёзный finding или
+  security/data-loss/concurrency риск. Цепочка Luna → Terra medium → Terra high
+  → Sol high → Sol xhigh → Astra high; ненужные ступени пропускай.
+- Judge не постоянный: только реальный спор с evidence. Сначала Astra medium,
+  high — критический случай. Два агента одной модели независимы по контексту,
+  но не по модельной семье; внешняя семья опциональна, не обязательный provider.
+
+## Task packet и состояние
+
+Developer получает Goal, Scope/allowed paths, Relevant files, Existing pattern,
+Required behavior, Forbidden changes, Acceptance criteria, Checks to run,
+Known risks, selected model/effort, base revision и назначение окружения.
+
+Для S1–S3 используй `.agent/current-task.md`, `.agent/evidence/`,
+`.agent/implementation-summary.md`, `.agent/checks.json`, `.agent/reviews/`.
+План и `.agent/decision.md` нужны при планировании/решении. Не создавай пустые
+файлы для видимости процесса. Writer сохраняет summaries read-only агентов.
+В evidence нет секретов, полных LLM transcripts и персональных данных.
+
+Planner фиксирует current/target behavior, files, invariants, contracts,
+migration order, test strategy, risks, rollback и acceptance criteria.
+Законченный этап передаётся компактным packet; длинная сессия допустима,
+но долговечное состояние не должно зависеть от её полного контекста.
+
+## Реальные права и приёмка
+
+AGENTS/TOML instructions регулируют поведение, но не обеспечивают запрет edit,
+доступа к secret или write MCP. Пакет не содержит вымышленных `edit: deny` ключей.
+Родительские live permissions наследуются; read-only root может лишить writer
+нужных прав. Для строгого разграничения нужен поддерживаемый профиль среды
+с ограничением инструментов; до его проверки не объявляй изоляцию включённой.
+Не смешивай `sandbox_mode` и `default_permissions` без проверки effective policy.
+
+В обычной задаче — один writer. Для большой задачи используй отдельную ветку/
+worktree, сохраняя чужие изменения. Для независимой параллельной записи нужны
+раздельные worktrees и runtime-ресурсы. Reviewer проверяет стабильный revision.
+
+Реальные checks и воспроизведение сильнее недоказанного мнения LLM; зелёный тест
+не отменяет требования и не закрывает подтверждённый дефект другого сценария.
+DONE: implementation + criteria + применимые mechanical/runtime checks +
+необходимое review + закрытые critical findings + чистый scope diff + нужные docs.
+S3 human gate относится к конкретной опасной операции, после подготовки результата;
+локальные безопасные проверки и исправления не требуют нового согласия.
+
+## Проверенные источники конфигурации
+
+Standalone роли и precedence настроек описаны в [Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents).
+Проектный config загружается для доверенного проекта; настройки сессии могут
+иметь больший приоритет: [Config basics](https://learn.chatgpt.com/docs/config-file/config-basic).
+Механизм поиска инструкций: [AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
+Короткие skills с name/description: [Build skills](https://learn.chatgpt.com/docs/build-skills).

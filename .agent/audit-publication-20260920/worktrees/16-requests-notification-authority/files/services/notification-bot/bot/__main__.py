@@ -1,0 +1,289 @@
+import asyncio
+import logging
+
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiohttp import web
+
+from bot.config import config, validate_startup_config
+from bot.consumers.event_consumer import start_consumer
+from bot.consumers.event_dispatcher import EventDispatcher
+from bot.grpc_client.academic_client import AcademicGrpcClient
+from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
+from bot.grpc_client.schedule_client import ScheduleGrpcClient
+from bot.handlers import (
+    excuse_router,
+    homework_router,
+    late_checkin_router,
+    login_router,
+    prefs_router,
+    start_router,
+    status_router,
+)
+from bot.handlers.prefs import keyboard_signature, main_keyboard
+from bot.middlewares import ObservabilityMiddleware
+from bot.observability import setup_observability
+from bot.services.academic_http_client import AcademicHttpClient
+from bot.services.attendance_http_client import AttendanceHttpClient
+from bot.services.auth_http_client import AuthHttpClient
+from bot.services.event_publisher import EventPublisher
+from bot.services.idempotency_guard import BotIdempotencyGuard
+from bot.services.jwt_redis_client import JwtRedisClient
+from bot.services.keyboard_sync import KeyboardSyncClient, sync_registered_keyboards
+from bot.services.notification_prefs import NotificationPrefsClient
+from bot.services.otp_message_tracker import OtpMessageTracker
+from bot.services.redis_client import ReminderRedisClient
+from bot.services.request_message_tracker import RequestMessageTracker
+from bot.services.send_queue import TelegramSendQueue
+
+# M04 Группа 7 — настраивает structlog JSON-рендер, OTLP tracing и
+# auto-instrumentation aio-pika/aiohttp/grpc/redis. Заменяет старый
+# logging.basicConfig (эффект-only функция).
+setup_observability()
+logger = logging.getLogger(__name__)
+
+# Global references for health check
+_consumer_task: asyncio.Task | None = None
+_bot_task: asyncio.Task | None = None
+_keyboard_sync_task: asyncio.Task | None = None
+
+
+async def health_handler(request: web.Request) -> web.Response:
+    """Health check endpoint — verifies watchdog task and bot polling are alive."""
+    if _consumer_task is None or _consumer_task.done():
+        raise web.HTTPServiceUnavailable(text='{"status":"DOWN","reason":"watchdog_dead"}')
+    if _bot_task is None or _bot_task.done():
+        raise web.HTTPServiceUnavailable(text='{"status":"DOWN","reason":"bot_dead"}')
+    return web.Response(text='{"status":"UP"}', content_type="application/json")
+
+
+async def run_health_server() -> None:
+    app = web.Application()
+    app.router.add_get("/health", health_handler)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", config.health_port)
+    await site.start()
+    logger.info("Health server started on port %d", config.health_port)
+
+
+async def run_with_watchdog(rabbitmq_url: str, dispatcher=None, idempotency_guard=None) -> None:
+    """
+    Watchdog loop — restarts start_consumer on failure or silent exit.
+    Propagates CancelledError to allow clean shutdown.
+    """
+    while True:
+        try:
+            await start_consumer(rabbitmq_url, dispatcher=dispatcher, idempotency_guard=idempotency_guard)
+            # start_consumer returned normally — silent consumer death, restart
+            logger.warning("Consumer exited normally (silent death) — restarting in 5s")
+        except asyncio.CancelledError:
+            logger.info("Watchdog cancelled, shutting down")
+            raise
+        except Exception:
+            logger.warning("Consumer failed with exception — restarting in 5s", exc_info=True)
+
+        await asyncio.sleep(5)
+
+
+async def create_clients():
+    """Create and start all service clients for bot handlers."""
+    academic_client = AcademicGrpcClient(config.academic_grpc_host, config.academic_grpc_port, config.grpc_secret)
+    schedule_client = ScheduleGrpcClient(config.schedule_grpc_host, config.schedule_grpc_port, config.grpc_secret)
+    jwt_redis = JwtRedisClient(
+        key_prefix=config.jwt_key_prefix,
+        ttl=config.jwt_ttl,
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+    auth_client = AuthHttpClient(base_url=f"http://{config.auth_service_host}:{config.auth_service_port}")
+    attendance_client = AttendanceHttpClient(base_url=config.api_gateway_url)
+    attendance_request_client = AttendanceRequestGrpcClient(
+        config.attendance_grpc_host, config.attendance_grpc_port, config.grpc_secret
+    )
+    academic_http_client = AcademicHttpClient(base_url=config.api_gateway_url)
+
+    # Start HTTP sessions (must be in async context — Pitfall 3)
+    await auth_client.start()
+    await attendance_client.start()
+    await academic_http_client.start()
+
+    return (academic_client, schedule_client, jwt_redis, auth_client, attendance_client,
+            academic_http_client, attendance_request_client)
+
+
+async def main() -> None:
+    global _consumer_task, _bot_task, _keyboard_sync_task
+
+    # M08 G8 (NEW-164) — kill process before any listener starts if secrets
+    # are missing. Without this, bot connects to gRPC with empty
+    # x-grpc-secret, every call returns UNAUTHENTICATED silently.
+    validate_startup_config(config)
+
+    await run_health_server()
+
+    # Create service clients
+    (
+        academic_client,
+        schedule_client,
+        jwt_redis,
+        auth_client,
+        attendance_client,
+        academic_http_client,
+        attendance_request_client,
+    ) = await create_clients()
+
+    # Create Bot and Dispatcher
+    bot = Bot(token=config.bot_token)
+    storage = MemoryStorage()
+    dp = Dispatcher(storage=storage)
+
+    # M04 Группа 7 — каждый update получает trace_id + user_id/callback_type
+    # в structlog contextvars. Регистрируется на update-уровне чтобы ловить
+    # все подтипы (message, callback_query, inline_query, …).
+    observability_mw = ObservabilityMiddleware()
+    dp.update.middleware(observability_mw)
+
+    # Notification on/off prefs (Redis-backed)
+    prefs_client = NotificationPrefsClient(
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+
+    keyboard_sync = KeyboardSyncClient(
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+
+    # OTP message tracker — shared between /login handler and otp.verified consumer
+    otp_tracker = OtpMessageTracker(
+        ttl_seconds=config.otp_ttl_seconds,
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+
+    # Inject dependencies via dp workflow data (Aiogram 3 DI pattern)
+    event_publisher = EventPublisher(config.rabbitmq_url)
+
+    # Трекер (chat_id, message_id) запросов — для sync TG ↔ Web при *.decided.
+    request_tracker = RequestMessageTracker(
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+
+    # M13 G8 — consumer-side dedup по event_id (Redis SET NX EX 3600).
+    idempotency_guard = BotIdempotencyGuard(
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+
+    dp["academic_client"] = academic_client
+    dp["schedule_client"] = schedule_client
+    dp["jwt_redis"] = jwt_redis
+    dp["auth_client"] = auth_client
+    dp["attendance_client"] = attendance_client
+    dp["academic_http_client"] = academic_http_client
+    dp["prefs_client"] = prefs_client
+    dp["keyboard_sync"] = keyboard_sync
+    dp["otp_tracker"] = otp_tracker
+    dp["event_publisher"] = event_publisher
+    dp["request_tracker"] = request_tracker
+
+    # Register routers
+    dp.include_router(start_router)
+    dp.include_router(login_router)
+    dp.include_router(homework_router)
+    dp.include_router(status_router)
+    dp.include_router(prefs_router)
+    dp.include_router(late_checkin_router)
+    dp.include_router(excuse_router)
+
+    # Create send queue and reminder redis client
+    send_queue = TelegramSendQueue(prefs_client=prefs_client)
+    send_queue.start()
+    redis_client = ReminderRedisClient(
+        key_template=config.reminder_key_template,
+        ttl=config.reminder_key_ttl,
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+
+    # Create event dispatcher with all dependencies. Midpoint/end reminders
+    # теперь публикуются schedule-service (lesson.reminder event) — bot их
+    # потребляет через handle_lesson_reminder, in-memory scheduler удалён.
+    dispatcher = EventDispatcher(
+        bot=bot,
+        academic_client=academic_client,
+        send_queue=send_queue,
+        redis_client=redis_client,
+        config=config,
+        otp_tracker=otp_tracker,
+        request_tracker=request_tracker,
+        attendance_client=attendance_request_client,
+    )
+
+    # Start watchdog with dispatcher
+    _consumer_task = asyncio.create_task(
+        run_with_watchdog(
+            config.rabbitmq_url,
+            dispatcher=dispatcher,
+            idempotency_guard=idempotency_guard,
+        )
+    )
+
+    _keyboard_sync_task = asyncio.create_task(
+        sync_registered_keyboards(
+            bot=bot,
+            keyboard_sync=keyboard_sync,
+            keyboard=main_keyboard(),
+            keyboard_version=keyboard_signature(),
+        )
+    )
+
+    # Start bot polling (handle_signals=False — Pitfall 5: signals managed by main loop)
+    _bot_task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))
+
+    logger.info("notification-bot started (health + watchdog + bot polling)")
+
+    try:
+        # Wait for either task to complete (whichever finishes first)
+        done, pending = await asyncio.wait(
+            [_consumer_task, _bot_task],
+            return_when=asyncio.FIRST_EXCEPTION,
+        )
+        for task in done:
+            if task.exception():
+                logger.exception("Task failed: %s", task.get_name(), exc_info=task.exception())
+    except asyncio.CancelledError:
+        logger.info("Main cancelled, shutting down")
+    finally:
+        # Cleanup
+        for task in [_consumer_task, _bot_task, _keyboard_sync_task]:
+            if task and not task.done():
+                task.cancel()
+        await send_queue.shutdown()
+        await redis_client.close()
+        await request_tracker.close()
+        await idempotency_guard.close()
+        await otp_tracker.close()
+        await auth_client.close()
+        await attendance_client.close()
+        await attendance_request_client.close()
+        await academic_http_client.close()
+        await jwt_redis.close()
+        await prefs_client.close()
+        await keyboard_sync.close()
+        await schedule_client.close()
+        await academic_client.close()
+        await event_publisher.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

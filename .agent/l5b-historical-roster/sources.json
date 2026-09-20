@@ -1,0 +1,62 @@
+{
+  "base_revision": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+  "source_count": 11,
+  "sources": [
+    {
+      "path": "proto/academic.proto",
+      "absolute_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-service-identity\\proto\\academic.proto",
+      "sha256": "5F85A6691F8C27769059B0A68D5173604B81756D20BDC19EF6BE3584BBC7A2BC"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "absolute_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-service-identity\\services\\academic-service\\academic-app\\src\\main\\java\\ru\\rutcampustrack\\academic\\grpc\\AcademicGrpcServiceImpl.java",
+      "sha256": "D2ED57BCCFFEB58711BEE1ABFB0D941CCFF5DC8C3D129761F610FD9C91AE3D34"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicReadService.java",
+      "absolute_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-service-identity\\services\\academic-service\\academic-app\\src\\main\\java\\ru\\rutcampustrack\\academic\\grpc\\AcademicReadService.java",
+      "sha256": "C7A5D3AF475CFA4E55A79FBB441D6433855735CADB6A025FD4502FC6F5DBA76D"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java",
+      "absolute_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-service-identity\\services\\academic-service\\academic-app\\src\\main\\java\\ru\\rutcampustrack\\academic\\repository\\UserRepository.java",
+      "sha256": "BBCFE0906B1E7901C6E2AE621AFE736A9C91B4AC18DEA99AF18E54486339E256"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/JdbcStudentProjectionQueryAdapter.java",
+      "absolute_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-service-identity\\services\\academic-service\\academic-app\\src\\main\\java\\ru\\rutcampustrack\\academic\\studentprojection\\JdbcStudentProjectionQueryAdapter.java",
+      "sha256": "706F1CD36C7B6C09703DD14A21FE08AE957F77556657697895BA9B509A50DD4C"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java",
+      "absolute_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-service-identity\\services\\academic-service\\academic-app\\src\\main\\java\\ru\\rutcampustrack\\academic\\user\\UserService.java",
+      "sha256": "6505A9D6EB9ED0FC8CCA65210F4AE029B0091BBD7FECD2A7AFCFCEA94609190C"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V1__baseline.sql",
+      "absolute_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-service-identity\\services\\academic-service\\academic-app\\src\\main\\resources\\db\\migration\\V1__baseline.sql",
+      "sha256": "E1311D5A942724CA39A60181BB4A67A418D829CA76C5436EA0D4B99A1A4FEA31"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+      "absolute_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-service-identity\\services\\academic-service\\academic-app\\src\\main\\resources\\db\\migration\\V24__auth_session_authority.sql",
+      "sha256": "A1CD09FBBF00D6C7D6ACA20A386040A2A77CD84BA36EC20C847096AC9B335FD5"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/StudentGroupHistory.java",
+      "absolute_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-service-identity\\services\\academic-service\\academic-app\\src\\main\\java\\ru\\rutcampustrack\\academic\\entity\\StudentGroupHistory.java",
+      "sha256": "7F35E9400C0688A6966C9864B3F2C35F139F63582D8F29426971307081E1AF3C"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/StudentGroupHistoryRepository.java",
+      "absolute_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-service-identity\\services\\academic-service\\academic-app\\src\\main\\java\\ru\\rutcampustrack\\academic\\repository\\StudentGroupHistoryRepository.java",
+      "sha256": "AC061FAADF39D333259D76BE2D90D8FEB2CE693CAE06CCDE2C670F9271C7D31E"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQueryAdapterIT.java",
+      "absolute_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-l5b-service-identity\\services\\academic-service\\academic-app\\src\\test\\java\\ru\\rutcampustrack\\academic\\studentprojection\\StudentProjectionQueryAdapterIT.java",
+      "sha256": "F57BB520BDEB2C9F1C88781335F1ED5B63B7E9D60EDDE68001959BBFE83BDF48"
+    }
+  ],
+  "verification": "Read-only originals and hashes. Runtime/test execution N/A; no historical completeness asserted."
+}

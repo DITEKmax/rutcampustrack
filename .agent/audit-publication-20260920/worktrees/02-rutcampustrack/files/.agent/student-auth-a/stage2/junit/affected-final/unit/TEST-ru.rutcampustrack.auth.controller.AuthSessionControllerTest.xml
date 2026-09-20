@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-11T10:08:40" hostname="DITEK-PK" time="8.262">
+  <properties/>
+  <testcase name="cookieLogoutAuthorityFailureReturns503WithoutClearingCookie()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="7.027"/>
+  <testcase name="logoutSupportsCookieOnlyAndBearerOnlyWithDurableServiceDelegation()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.29"/>
+  <testcase name="currentSessionUsesAuthoritativeIdentityAndNoStore()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.067"/>
+  <testcase name="currentPasswordInvalidIsAnHttp400ProblemWithoutCache()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.5"/>
+  <testcase name="successfulLogoutAllAndPasswordChangeInvalidateTicketsAfterDurableService()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.026"/>
+  <testcase name="foreignAuthenticatedPrincipalCannotRevokeAnotherSessionCookie()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.054"/>
+  <testcase name="bearerLogoutAuthorityFailureDoesNotInvalidateTicketsOrClearCookie()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.053"/>
+  <testcase name="publicAuthResponsesAreNoStoreAndTokenResponseKeepsTmaRefreshField()" classname="ru.rutcampustrack.auth.controller.AuthSessionControllerTest" time="0.227"/>
+  <system-out><![CDATA[13:08:44.378 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.2.Final
+13:08:47.102 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:08:47.102 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:08:47.112 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 9 ms
+13:08:48.342 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:08:48.343 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:08:48.345 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 2 ms
+13:08:48.843 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:08:48.844 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:08:48.844 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:08:48.898 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:08:48.898 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:08:48.899 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.15.11\a38b16385e867f59a641330f0362ebe742788ed8\byte-buddy-agent-1.15.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

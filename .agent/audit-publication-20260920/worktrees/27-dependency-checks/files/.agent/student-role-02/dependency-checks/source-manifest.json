@@ -1,0 +1,175 @@
+{
+  "schema": "rct.dependency-checks.source-manifest.v1",
+  "baseline": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "branch": "codex/student-role-02-dependency-checks",
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/student-role-02/dependency-checks",
+  "frozenInput": {
+    "manifest": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/student-role-02/dependency-review-source/manifest.json",
+    "sha256": "B4F2D0D344C0CBA851D4EEF6A2B1A36139CD7D63A5E0A99A11DD03B936EAF1EB",
+    "fileCount": 26,
+    "initialHashAndByteCheck": {
+      "exitCode": 0,
+      "result": "26/26 source-to-checkout file hashes and byte counts matched before implementation",
+      "evidence": "baseline.md"
+    }
+  },
+  "foreignImportedPaths": {
+    "count": 26,
+    "currentExactMatches": 25,
+    "mixedPath": {
+      "path": "build.gradle.kts",
+      "sourceSha256": "71F5BE0EB48124AF4CAE576E437FDD82EA216DA6D79BFF716AB34B5A935761C6",
+      "currentSha256": "C3A3E9BA5DDD96069877F5D4EF70FCC73F012D1E53D30D0B84D731EBA09BEE72",
+      "reason": "foreign dependency policy remains intact; this worker added only generated protobuf/gRPC JaCoCo source-provenance filtering"
+    },
+    "paths": [
+      "build.gradle.kts",
+      "gradle/libs.versions.toml",
+      "services/academic-service/academic-api-contract/build.gradle.kts",
+      "services/academic-service/academic-app/build.gradle.kts",
+      "services/api-gateway/build.gradle.kts",
+      "services/api-gateway/src/main/resources/application-prod.yml",
+      "services/api-gateway/src/main/resources/application.yml",
+      "services/attendance-service/attendance-api-contract/build.gradle.kts",
+      "services/attendance-service/attendance-app/build.gradle.kts",
+      "services/auth-service/auth-api-contract/build.gradle.kts",
+      "services/auth-service/auth-app/build.gradle.kts",
+      "services/document-renderer-service/document-renderer-app/build.gradle.kts",
+      "services/mobile-bff/mobile-bff-api-contract/build.gradle.kts",
+      "services/mobile-bff/mobile-bff-app/build.gradle.kts",
+      "services/notification-service/notification-api-contract/build.gradle.kts",
+      "services/notification-service/notification-app/build.gradle.kts",
+      "services/schedule-service/schedule-api-contract/build.gradle.kts",
+      "services/schedule-service/schedule-app/build.gradle.kts",
+      "services/shared/shared-events/build.gradle.kts",
+      "services/shared/shared-logback/build.gradle.kts",
+      "services/shared/shared-observability/build.gradle.kts",
+      "services/shared/shared-outbox/build.gradle.kts",
+      "services/shared/shared-security/build.gradle.kts",
+      "services/shared/shared-test-containers/build.gradle.kts",
+      "services/shared/shared-web-api/build.gradle.kts",
+      "services/shared/shared-web/build.gradle.kts"
+    ]
+  },
+  "ownedPaths": [
+    {
+      "path": "build.gradle.kts",
+      "classification": "mixed-provenance-hunk",
+      "bytes": 17498,
+      "sha256": "C3A3E9BA5DDD96069877F5D4EF70FCC73F012D1E53D30D0B84D731EBA09BEE72"
+    },
+    {
+      "path": "docs/openapi/academic.json",
+      "classification": "generated-no-semantic-delta",
+      "bytes": 216691,
+      "sha256": "44BAFCCAEB77EE671605285B470739F5046205C86447F48B8FA85062FD990D0C"
+    },
+    {
+      "path": "docs/openapi/attendance.json",
+      "classification": "generated-snapshot",
+      "bytes": 104545,
+      "sha256": "DF11209CC3234AC0310CD082F86A0E5F10953D77AC4726B96D81FFCD4C12AA3C"
+    },
+    {
+      "path": "docs/openapi/auth.json",
+      "classification": "generated-snapshot",
+      "bytes": 36691,
+      "sha256": "AD8EEB87B1AEA632E232A0687812D5489CA7AC8057A5A591E77515B8B7826532"
+    },
+    {
+      "path": "docs/openapi/mobile-bff.json",
+      "classification": "generated-snapshot",
+      "bytes": 34865,
+      "sha256": "E991067B2F7B5FECDA5BB1542F34586537E12771A83444733FB5D8F841B62B43"
+    },
+    {
+      "path": "docs/openapi/notification.json",
+      "classification": "generated-snapshot",
+      "bytes": 40359,
+      "sha256": "6BF02EC71AE915206467982FD0A44F3354F3FA3CA61BF44346E0014A43879152"
+    },
+    {
+      "path": "docs/openapi/schedule.json",
+      "classification": "generated-snapshot",
+      "bytes": 73495,
+      "sha256": "B6ED18E882FB6AC82A62D4C3F693BB288F36DFD15CD7328E8462276D545E6D61"
+    },
+    {
+      "path": "frontends/mobile-core/src/api/generated/mobile-bff.ts",
+      "classification": "generated-from-mobile-bff-snapshot",
+      "bytes": 26096,
+      "sha256": "3219B05A681F84191D8C882BC30C2076354EC7B7693512C844AD70BE0726B86D"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java",
+      "classification": "snapshot-helper"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+      "classification": "snapshot-helper"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+      "classification": "snapshot-helper"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/contractexport/OpenApiSnapshotIT.java",
+      "classification": "snapshot-helper"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java",
+      "classification": "dynamic-test-port"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHttpGrpcAuthIT.java",
+      "classification": "dynamic-test-port"
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java",
+      "classification": "existing-normalized-snapshot-helper"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java",
+      "classification": "snapshot-helper"
+    },
+    {
+      "path": "services/shared/shared-events/src/test/java/ru/rutcampustrack/shared/events/EventSchemaCoverageTest.java",
+      "classification": "event-schema-whitelist"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java",
+      "classification": "real-producer-schema-contract-test",
+      "bytes": 10993,
+      "sha256": "E034CE3333BC3DE17AFD6149B7581C2A9DC7BA6921EF178458C2BE84BF7E6AFB"
+    },
+    {
+      "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterTest.java",
+      "classification": "renderer-boundary-test",
+      "bytes": 7123,
+      "sha256": "1AE1DF61678AD4E588DEEB33BC7663DE1B1A04BE643E2CDA3E5644D48AC25165"
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java",
+      "classification": "real-loopback-web-push-compatibility-test",
+      "bytes": 7539,
+      "sha256": "4A5FAD1B8887A1709FDDE9484C4BFBBC5E927AFBCF9EEE7AB0039DF2A91FEF49"
+    }
+  ],
+  "generatedArtifacts": [
+    ".agent/student-role-02/dependency-checks/snapshot-baseline/academic.json",
+    ".agent/student-role-02/dependency-checks/snapshot-baseline/attendance.json",
+    ".agent/student-role-02/dependency-checks/snapshot-baseline/auth.json",
+    ".agent/student-role-02/dependency-checks/snapshot-baseline/mobile-bff.json",
+    ".agent/student-role-02/dependency-checks/snapshot-baseline/notification.json",
+    ".agent/student-role-02/dependency-checks/snapshot-baseline/schedule.json",
+    ".agent/student-role-02/dependency-checks/failed-evidence/push-library-aead-diagnostic.xml"
+  ],
+  "statusInventory": {
+    "command": "git status --porcelain=v1 --untracked-files=all",
+    "exitCode": 0,
+    "trackedDiffFiles": 40,
+    "statusRows": 61,
+    "stagedPaths": 0,
+    "note": "Foreign imported dependency paths and this worker's bounded paths coexist by design; no commit was made. Academic snapshot content is equal after EOL normalization and its status stat refresh could not write the shared Git object database in this environment."
+  }
+}

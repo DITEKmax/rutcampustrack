@@ -1,0 +1,5 @@
+# Map — root source evidence before implementation packet
+
+07.09.2026. Final4603:848832 explicitly empty floorplan viewer («Для этого этажа схема не загружена»), building5/floor3 illustrative selected state, one detail header/Back. Sources backend-conflictsR5:134 says no room registry/text alternative; R30:480 says unified PNG+SVG independent states/versioned records and server demand metric, no quiet replacement deleting previous plan. Final mobile scope needs student read/view, not admin upload UI. Figma component supports ready/loading/empty/error and zoom, no download.
+
+Root search services Java/proto/SQL excluding build found no floorplan subsystem. CampusSetting entity has only name/lat/lng/radius/update, not floors or plan registry. No actual plan image or authoritative building/floor catalog has been established. Do not invent campus data from a single mock. Current source supports honest no-plan state; fixture-only catalog can demonstrate selector but is not actual data. Minimal read projection/storage design needs freezing before writer; avoid duplicating futureR30 subsystem or creating unsolicited admin writes.

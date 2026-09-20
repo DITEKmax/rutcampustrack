@@ -1,0 +1,133 @@
+{
+  "kind": "PARTIAL_WIP_INTERRUPTED_NOT_SOURCE_DONE",
+  "base": "3d4115f3a4c4ddba473689e27ac1a0efb519a202",
+  "author": "/root/recurring_writer_impl_20sep",
+  "interrupted": true,
+  "productionCompletion": "unknown; no author reply",
+  "entries": [
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/api/ScheduleItemApi.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/CreateScheduleItemRequest.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/ScheduleItemResponse.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/LessonResponse.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/GlobalExceptionHandler.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AcademicGrpcClient.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemAssembler.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemController.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemService.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/entity/ScheduleItem.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/IsoParityReconciler.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonAssembler.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonGenerationService.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/subject/SubjectDeletedCascadeService.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java"
+    },
+    {
+      "status": " M",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java"
+    },
+    {
+      "status": "??",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/RecurringLifecycleNotReadyException.java"
+    },
+    {
+      "status": "??",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/RecurringProtocolConflictException.java"
+    },
+    {
+      "status": "??",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/recurring/RecurringAssignmentAuthority.java"
+    },
+    {
+      "status": "??",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/recurring/RecurringCreateResult.java"
+    },
+    {
+      "status": "??",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/recurring/RecurringDateCalculator.java"
+    },
+    {
+      "status": "??",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/recurring/RecurringScheduleItemCoordinator.java"
+    },
+    {
+      "status": "??",
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/recurring/RecurringScheduleItemWriter.java"
+    },
+    {
+      "status": "??",
+      "path": "services/schedule-service/schedule-app/src/main/resources/db/migration/V18__recurring_assignment_fence.sql"
+    },
+    {
+      "status": "??",
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringDateCalculatorTest.java"
+    }
+  ]
+}

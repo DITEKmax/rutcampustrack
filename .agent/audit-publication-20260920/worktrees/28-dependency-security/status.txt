@@ -1,0 +1,27 @@
+ M build.gradle.kts
+ M gradle/libs.versions.toml
+ M services/academic-service/academic-api-contract/build.gradle.kts
+ M services/academic-service/academic-app/build.gradle.kts
+ M services/api-gateway/build.gradle.kts
+ M services/api-gateway/src/main/resources/application-prod.yml
+ M services/api-gateway/src/main/resources/application.yml
+ M services/attendance-service/attendance-api-contract/build.gradle.kts
+ M services/attendance-service/attendance-app/build.gradle.kts
+ M services/auth-service/auth-api-contract/build.gradle.kts
+ M services/auth-service/auth-app/build.gradle.kts
+ M services/document-renderer-service/document-renderer-app/build.gradle.kts
+ M services/mobile-bff/mobile-bff-api-contract/build.gradle.kts
+ M services/mobile-bff/mobile-bff-app/build.gradle.kts
+ M services/notification-service/notification-api-contract/build.gradle.kts
+ M services/notification-service/notification-app/build.gradle.kts
+ M services/schedule-service/schedule-api-contract/build.gradle.kts
+ M services/schedule-service/schedule-app/build.gradle.kts
+ M services/shared/shared-events/build.gradle.kts
+ M services/shared/shared-logback/build.gradle.kts
+ M services/shared/shared-observability/build.gradle.kts
+ M services/shared/shared-outbox/build.gradle.kts
+ M services/shared/shared-security/build.gradle.kts
+ M services/shared/shared-test-containers/build.gradle.kts
+ M services/shared/shared-web-api/build.gradle.kts
+ M services/shared/shared-web/build.gradle.kts
+?? .agent/student-role-02/

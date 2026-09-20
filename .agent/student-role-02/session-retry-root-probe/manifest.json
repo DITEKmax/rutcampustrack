@@ -1,0 +1,14 @@
+[
+  {
+    "source": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\student-role-02\\homework-ui\\frontends\\mobile-core\\src\\api\\student-client.ts",
+    "snapshot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\student-role-02\\session-retry-root-probe\\src\\student-client.ts",
+    "sourceSha256": "E809768E0045B743CBC176E6509C0299D6A7EDEB179901638DC524420F6F0521",
+    "snapshotSha256": "E809768E0045B743CBC176E6509C0299D6A7EDEB179901638DC524420F6F0521"
+  },
+  {
+    "source": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\student-role-02\\homework-ui\\frontends\\pwa-vue\\src\\auth.ts",
+    "snapshot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\student-role-02\\session-retry-root-probe\\src\\pwa-auth.ts",
+    "sourceSha256": "4BE1D63F6A13E20FB804E461007DD2E1289E9776391D382852081A2F61D77AE3",
+    "snapshotSha256": "4BE1D63F6A13E20FB804E461007DD2E1289E9776391D382852081A2F61D77AE3"
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "startUtc": "2026-09-07T22:41:09.5300258Z",
+  "endUtc": "2026-09-07T22:41:56.0680422Z",
+  "command": ".\\gradlew.bat :services:attendance-service:attendance-app:test --tests '*AttendanceMetricCalculatorTest' --tests '*OwnRankCalculatorTest' --tests '*ReportDomainIsolationTest' --no-parallel --max-workers=1 --console=plain",
+  "exitCode": 0,
+  "log": ".agent/student-academic-b/evidence/gradle-leased-rerun.log"
+}

@@ -1,0 +1,100 @@
+{
+  "contractRevision": "JS-STUDENT-01-r1",
+  "lane": "frontend",
+  "model": "gpt-5.6-terra",
+  "effort": "high",
+  "scope": [
+    "frontends/mobile-core",
+    "frontends/pwa-vue",
+    "frontends/tma-vue"
+  ],
+  "criteria": [
+    "Typed Vue Today flow consumes frozen generated types and uses no offline mutation queue.",
+    "Fixture-only browser states cover a three-row default Today, pending geo escalation, and confirmed attendance without editing canonical contract fixtures.",
+    "A pre-existing user-partitioned PWA schedule snapshot remains visible after a transport failure or accepted expired session, but never after an HTTP 403 scope denial.",
+    "Fixture transport exposes two semester dates and exercises bootstrap's normal API failures after a prior normal cache write; it is not represented as service-worker integration.",
+    "PWA navigation never serves a stale cached index after a release; offline navigation may use a cached fallback.",
+    "A successful service-worker install precaches the generated hashed JS, CSS and font shell assets, so one normal online load can later render offline without an extra warm reload.",
+    "The test-only PWA diagnostics panel exposes service-worker registration/controller state and exact v3 precache coverage before an offline reload is evaluated.",
+    "Today visual comparison follows VISUAL-r3 source correction and awaits root browser geometry/screenshots."
+  ],
+  "checks": [
+    {
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "environment": "frontends workspace, Node/npm lock installed by root"
+    },
+    {
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "environment": "frontends workspace"
+    },
+    {
+      "command": "npm exec vitest -- run mobile-core/src/test-adapter/fixture-transport.test.ts mobile-core/src/domain/checkin.test.ts mobile-core/src/domain/offline-today.test.ts mobile-core/src/domain/recoverable-read.test.ts",
+      "exitCode": 0,
+      "evidence": "4 files, 10 tests passed; adapter proves default/pending/confirmed refetch, second schedule date, raw transport rejection, 401 retry into StudentApiError, and 403 exclusion from cached recovery."
+    },
+    {
+      "command": "node --check pwa-vue/public/sw.js",
+      "exitCode": 0,
+      "evidence": "Service worker syntax passes Node parser."
+    },
+    {
+      "command": "npm run typecheck --workspace @rct/pwa-vue && npm run lint --workspace @rct/pwa-vue",
+      "exitCode": 0,
+      "evidence": "Fixture-only root font, geolocation and API-failure controls remain compile-gated from production runtime."
+    }
+  ],
+  "runtime": {
+    "staleShellDefect": "Reproduced by root: previous cache-first navigation served stale index-CfD95XnI.js after build produced index-C5VM1heX.js, leaving a blank page.",
+    "fix": "sw.js v3 keeps network-first navigation/cache cleanup and imports a Vite-emitted sw-assets.js list. Its install cache.addAll atomically includes generated JS, CSS and font assets.",
+    "visual": "Root browser evidence PASS: 390×844 default has role 112×44 at y20, hero 358×171 at x16/y76, first row 358×94 at y294, dock 358×76 at x16/y752; 320 has no dock-item overlap; fixture root fonts 20/24 have no horizontal overflow and 24px labels wrap in bounds.",
+    "interaction": "Root browser evidence PASS: Tab reaches CTA with 2px outline/offset; Enter under fixtureGeo=unavailable ACKs PENDING at 05:00 with disabled CTA/lilac current row; fixtureGeo=coordinates ACKs confirmed raised/mint state.",
+    "offlineRecovery": "Root browser PASS: normal App bootstrap wrote the snapshot; reloads with fixtureApi=network and fixtureApi=unauthorized restored the read-only offline badge and disabled CTA while navigator.onLine remained true. The expanded selector showed the 7 September fixture date. This proves controller recovery, not production offline networking.",
+    "serviceWorker": "PASS: root built JS-DlvmuNdv/CSS-6KAUBy4L and the standalone headless system-Chrome checker (exit 0) loaded a fresh localhost origin once, observed active registration/controller and v3 cache 7/7, stopped its own server, then reloaded offline with appChildren=2, offline badge=true, Today rows=true and no task-origin failed requests. The fixture transport now rejects while browser navigator.onLine=false, so bootstrap reads the saved snapshot instead of falsely returning a fixture session.",
+    "browserFixture": "PASS: root browser normal bootstrap wrote the snapshot; fixtureApi=network and fixtureApi=unauthorized recovered read-only offline Today, and the expanded semester selector displayed the local 7 September row. These are controller fixture cases, not production network integration.",
+    "tma": "Mock-host PASS: check-in produced disabled “Отмечено” and PRESENT badge. Real Telegram injected host remains unverified.",
+    "cuaLimitation": "The CUA browser reload after server stop rendered an empty app despite active controller/cache 7/7, while the independent standard Chrome checker passed the same one-online-load→offline scenario. Record the CUA result as tool-environment divergence rather than a product failure; standard browser proof is the runtime evidence.",
+    "pending": "Fresh independent Sol review remains required by S3; real Telegram host remains a separate runtime gate."
+  },
+  "limitations": [
+    "VISUAL-r3 source correction is ready, but it is not visual-DONE until root records browser geometry and R002/R003/R004 screenshots.",
+    "Real Telegram host remains a separate runtime gate; fixture host is not presented as host integration.",
+    "The isolated worker's production fixture build was blocked by sandbox access to Vite's worktree config; root centralized the successful fixture build/runtime command.",
+    "Fixture schedule alignment changed only local adapter data: its 6 September rows now match the Today fixture and it retains the additional 7 September selector row."
+  ],
+  "diagnostics": [
+    {
+      "check": "fixture semester alignment test",
+      "exitCode": 1,
+      "link": "new local schedule projection",
+      "reproduction": "fixtureSchedule was initialized before fixturePendingToday, so the projection calling defaultProjection hit a JavaScript temporal-dead-zone error.",
+      "correction": "Moved fixtureSchedule initialization after all fixture casts and reran the complete focused suite.",
+      "recheck": "10 focused tests, strict typechecks, both lints, SW parser and diff check pass."
+    },
+    {
+      "check": "fresh-origin service-worker offline reload",
+      "exitCode": 1,
+      "link": "PWA offline shell after one normal authenticated load",
+      "reproduction": "Root loaded localhost:5177 online once, then stopped preview 57602; two reloads rendered an empty DOM. The v2 install list did not include Vite hashed JS/CSS/fonts, so successful install did not mean a complete shell cache.",
+      "correction": "Added a dependency-free Vite generateBundle plugin that emits sw-assets.js and changed sw v3 install to atomically cache that final generated list.",
+      "recheck": "Static PWA typecheck/lint, Node SW parser and diff check pass; fresh-origin runtime rebuild/reload remains pending root execution."
+    },
+    {
+      "check": "fixture diagnostic panel strict checks",
+      "exitCode": 1,
+      "link": "test-only service-worker observability panel",
+      "reproduction": "The initial exact generated-list parser passed an optional regex capture to JSON.parse, and the panel referenced a Vite define unknown to ESLint.",
+      "correction": "Guarded the capture before parsing and reported the equivalent fixture build flag from Vite environment values.",
+      "recheck": "PWA strict typecheck and lint, core checks, SW parser and diff check pass."
+    },
+    {
+      "check": "fresh standalone Chrome PWA shell verification",
+      "exitCode": 0,
+      "link": "PWA offline shell after one normal authenticated load",
+      "reproduction": "The earlier CUA reload was empty even though in-app diagnostics reported active registration/controller and cache 7/7. The standalone checker separated the browser automation environment from product behavior.",
+      "correction": "Vite emits the generated app-shell precache list; SW v3 installs it atomically. The fixture transport rejects when its browser is offline, allowing the tested PWA controller to recover IndexedDB snapshot data.",
+      "recheck": "Root standalone checker exit 0: active registration/controller, 7/7 shell cache, server stopped, offline app children=2, badge=true, Today rows=true and no task-origin failed requests."
+    }
+  ]
+}

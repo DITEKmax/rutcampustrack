@@ -1,0 +1,175 @@
+const imgIconPrevious = "https://www.figma.com/api/mcp/asset/e40ce109-4ac8-4a93-a22b-ace99f788f3d.svg";
+const imgIcon = "https://www.figma.com/api/mcp/asset/d2616e48-9956-4b99-854d-0fb4e0476ade.svg";
+const imgIcon1 = "https://www.figma.com/api/mcp/asset/a804a3be-e087-4a04-be8e-d8a91bb2bc47.svg";
+const imgIcon2 = "https://www.figma.com/api/mcp/asset/650fd30e-69ac-46a2-aec2-c0413812fcc2.svg";
+const imgIcon3 = "https://www.figma.com/api/mcp/asset/afe100cb-4d7f-4b46-9cc3-2cc8457b8f96.svg";
+const imgPendingMark = "https://www.figma.com/api/mcp/asset/6e2938a7-ad26-4da5-a4eb-8ee8e08a444e.svg";
+const imgProgress = "https://www.figma.com/api/mcp/asset/7e022036-08a9-4e3b-aa8b-c6d53b44974b.svg";
+
+function IconPrevious({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[16px]"} data-node-id="4597:3579" data-name="icon/previous">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIconPrevious} />
+    </div>
+  );
+}
+
+export default function Component10() {
+  return (
+    <div className="bg-[var(--color-surface-base,#0b0b0c)] overflow-clip relative rounded-[24px] size-full" data-node-id="4588:848409" data-name="10 · Сегодня / запрос старосте на рассмотрении">
+      <div className="absolute content-stretch flex flex-col gap-[12px] h-[844px] items-start left-[16px] overflow-clip pb-[16px] pt-[20px] top-0 w-[358px]" data-node-id="4588:848410" data-name="content">
+        <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-[358px]" data-node-id="4588:848411" data-name="header">
+          <div className="bg-[var(--color-surface-float,#292531)] relative rounded-[22px] shrink-0 size-[44px]" data-node-id="4749:465" data-name="back">
+            <IconPrevious className="absolute left-[14px] size-[16px] top-[14px]" />
+          </div>
+          <div className="[word-break:break-word] flex flex-[1_0_0] flex-col font-['Onest:SemiBold'] h-[32px] justify-center leading-[0] min-w-px not-italic relative text-[22px] text-[color:var(--color-text-primary,#edeaf3)]" data-node-id="4588:848412">
+            <p className="leading-[normal]">Запрос на отметку</p>
+          </div>
+        </div>
+        <div className="bg-[var(--color-accent-now,#b79cfa)] content-stretch flex flex-col gap-[10px] items-start p-[16px] relative rounded-[24px] shrink-0 w-full" data-node-id="4588:848415" data-name="current-lesson">
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[14px] text-[color:var(--color-accent-on-now,#0b0b0c)] whitespace-nowrap" data-node-id="4588:848416">
+            10:40–12:10
+          </p>
+          <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[20px] text-[color:var(--color-accent-on-now,#0b0b0c)] w-[326px]" data-node-id="4588:848417">
+            Основы программирования
+          </p>
+          <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-[326px]" data-node-id="4588:848418" data-name="hero-meta">
+            <div className="content-stretch flex gap-[var(--space-1,4px)] items-center relative shrink-0 w-[145px]" data-node-id="4588:848419" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4588:848420" data-name="icon">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] font-semibold h-[20px] leading-[normal] relative shrink-0 text-[13px] text-[color:var(--color-accent-on-now,#0b0b0c)] w-[121px]" data-node-id="4588:848421" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
+                А‑401
+              </p>
+            </div>
+            <div className="content-stretch flex gap-[var(--space-1,4px)] items-center relative shrink-0 w-[145px]" data-node-id="4588:848422" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4588:848423" data-name="icon">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon1} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] h-[20px] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-accent-on-now,#0b0b0c)] w-[121px]" data-node-id="4588:848424">
+                Лекция
+              </p>
+            </div>
+          </div>
+          <div className="bg-gradient-to-r content-stretch flex from-[#171229] items-center justify-center px-[16px] py-[13px] relative rounded-[24px] shrink-0 to-[#3b146b] via-[#29174d] via-[55%] w-[330px]" data-node-id="4588:848425" data-name="cta">
+            <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[15px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4588:848426">
+              Отметиться
+            </p>
+          </div>
+        </div>
+        <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[18px] text-[color:var(--color-text-primary,#edeaf3)] whitespace-nowrap" data-node-id="4588:848427">
+          Пары на сегодня
+        </p>
+        <div className="content-stretch flex gap-[8px] items-start relative shrink-0 w-[358px]" data-node-id="4588:848428" data-name="lesson-row">
+          <div className="[word-break:break-word] content-stretch flex flex-col gap-[2px] items-start leading-[normal] not-italic relative shrink-0 w-[54px] whitespace-nowrap" data-node-id="4588:848429" data-name="time-slot">
+            <p className="font-['Onest:SemiBold'] relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)]" data-node-id="4588:848430">
+              09:00
+            </p>
+            <p className="font-['Onest:Regular'] relative shrink-0 text-[12px] text-[color:var(--color-text-secondary,#c8c2d6)]" data-node-id="4588:848431">
+              10:30
+            </p>
+          </div>
+          <div className="bg-[var(--color-surface-raised,#1c1922)] content-stretch flex flex-col gap-[6px] items-start p-[12px] relative rounded-[16px] shrink-0 w-[296px]" data-node-id="4588:848432" data-name="lesson">
+            <div className="content-stretch flex items-center justify-between relative shrink-0 w-[272px]" data-node-id="4588:848433" data-name="lesson-head">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[14px] text-[color:var(--color-text-primary,#edeaf3)] w-[272px]" data-node-id="4588:848434">
+                Математический анализ
+              </p>
+            </div>
+            <div className="content-stretch flex gap-[var(--space-1,4px)] items-center relative shrink-0 w-[260px]" data-node-id="4588:848437" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4588:848438" data-name="icon">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon2} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] font-normal h-[20px] leading-[normal] relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] w-[236px]" data-node-id="4588:848439" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
+                А‑312
+              </p>
+            </div>
+            <div className="content-stretch flex gap-[var(--space-1,4px)] items-center relative shrink-0 w-[260px]" data-node-id="4588:848440" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4588:848441" data-name="icon">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon3} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] h-[20px] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-text-secondary,#c8c2d6)] w-[236px]" data-node-id="4588:848442">
+                Практика
+              </p>
+            </div>
+            <div className="content-stretch flex items-center relative shrink-0 w-full" data-node-id="4588:848468" data-name="request-sent">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-status-present-fill,#61dfb8)] whitespace-nowrap" data-node-id="4588:848471">
+                Запрос отправлен
+              </p>
+            </div>
+            <div className="absolute bg-[var(--color-status-absent-fill,#f27f7f)] content-stretch flex items-center justify-center left-[252px] rounded-[16px] size-[32px] top-[43px]" data-node-id="4588:848435" data-name="status-н">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--color-status-absent-on-fill,#0b0b0c)] whitespace-nowrap" data-node-id="4588:848436">
+                н
+              </p>
+              <div className="absolute left-[22px] size-[16px] top-[-6px]" data-node-id="4588:848466" data-name="pending-mark">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgPendingMark} />
+              </div>
+              <div className="absolute h-[8px] left-[25px] top-[-2px] w-[10px]" data-node-id="4588:848467" data-name="progress">
+                <div className="absolute inset-[-6.25%_-5%]">
+                  <img alt="" className="block max-w-none size-full" src={imgProgress} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[8px] items-start relative shrink-0 w-[358px]" data-node-id="4588:848448" data-name="lesson-row">
+          <div className="[word-break:break-word] content-stretch flex flex-col gap-[2px] items-start leading-[normal] not-italic relative shrink-0 w-[54px] whitespace-nowrap" data-node-id="4588:848449" data-name="time-slot">
+            <p className="font-['Onest:SemiBold'] relative shrink-0 text-[13px] text-[color:var(--color-text-primary,#edeaf3)]" data-node-id="4588:848450">
+              10:40
+            </p>
+            <p className="font-['Onest:Regular'] relative shrink-0 text-[12px] text-[color:var(--color-text-secondary,#c8c2d6)]" data-node-id="4588:848451">
+              12:10
+            </p>
+          </div>
+          <div className="bg-[var(--color-accent-now,#b79cfa)] content-stretch flex flex-col gap-[6px] items-start p-[12px] relative rounded-[16px] shrink-0 w-[296px]" data-node-id="4588:848452" data-name="lesson">
+            <div className="content-stretch flex items-center justify-between relative shrink-0 w-[272px]" data-node-id="4588:848453" data-name="lesson-head">
+              <p className="[word-break:break-word] font-['Onest:SemiBold'] leading-[normal] not-italic relative shrink-0 text-[14px] text-[color:var(--color-accent-on-now,#0b0b0c)] w-[272px]" data-node-id="4588:848454">
+                Основы программирования
+              </p>
+            </div>
+            <div className="content-stretch flex gap-[var(--space-1,4px)] items-center relative shrink-0 w-[260px]" data-node-id="4588:848455" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4588:848456" data-name="icon">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] font-normal h-[20px] leading-[normal] relative shrink-0 text-[13px] text-[color:var(--color-accent-on-now,#0b0b0c)] w-[236px]" data-node-id="4588:848457" style={{ fontVariationSettings: '"CTGR" 0, "wdth" 100' }}>
+                А‑401
+              </p>
+            </div>
+            <div className="content-stretch flex gap-[var(--space-1,4px)] items-center relative shrink-0 w-[260px]" data-node-id="4588:848458" data-name="meta">
+              <div className="relative shrink-0 size-[16px]" data-node-id="4588:848459" data-name="icon">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIcon1} />
+              </div>
+              <p className="[word-break:break-word] font-['Onest:Regular'] h-[20px] leading-[normal] not-italic relative shrink-0 text-[13px] text-[color:var(--color-accent-on-now,#0b0b0c)] w-[236px]" data-node-id="4588:848460">
+                Лекция
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## icon/previous
+**Node ID:** 4597:3579
+
+Временная локальная векторная заглушка смысла «предыдущий». Один stroke-вектор и метрика совпадают с icon/chevron-down; заменить финальной иконкой через instance swap.
+
+## Property 1=room
+**Node ID:** 4565:3068
+
+Навигация: текущий день и экран «Сегодня».
+
+## Property 1=lesson-type
+**Node ID:** 4570:143
+
+Навигация: текущий день и экран «Сегодня».
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

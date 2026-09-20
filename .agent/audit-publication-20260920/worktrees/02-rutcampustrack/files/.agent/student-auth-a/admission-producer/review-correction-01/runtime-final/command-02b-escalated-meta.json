@@ -1,0 +1,7 @@
+{
+  "StartedUtc": "2026-09-10T20:24:51.4192091Z",
+  "EndedUtc": "2026-09-10T20:25:47.8806097Z",
+  "ExitCode": 0,
+  "Log": ".agent\\student-auth-a\\admission-producer\\review-correction-01\\runtime-final\\command-02b-escalated-jwt-test.log",
+  "Scope": "exact corrected selector only; other three selector XML PASS preserved from failure-04"
+}

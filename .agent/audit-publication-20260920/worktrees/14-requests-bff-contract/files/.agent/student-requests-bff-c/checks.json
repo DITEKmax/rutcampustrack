@@ -1,0 +1,58 @@
+{
+  "scope": "student-requests-bff-c",
+  "revision": "d3c31acb8cce53791a4981e5858a37d44fdc9a0e",
+  "worktree": "C:/Users/maksd/.codex/worktrees/e31c/rutcampustrack/.agent/worktrees/requests-bff-contract",
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "timezone": "Europe/Moscow",
+    "runtime": "Gradle wrapper"
+  },
+  "runs": [
+    {
+      "name": "focused-mobile-bff-unit-tests",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:test --tests ru.rutcampustrack.mobilebff.grpc.MobileAttendanceClientErrorTest --tests ru.rutcampustrack.mobilebff.contract.StudentRequestDetailJsonTest --no-parallel --max-workers=1 --console=plain",
+      "startedAt": "2026-09-08T11:11:54.2693754+03:00",
+      "endedAt": "2026-09-08T11:13:21.9903189+03:00",
+      "exitCode": 0,
+      "result": "BUILD SUCCESSFUL; 39 actionable tasks: 39 executed",
+      "testXml": [
+        {
+          "path": "services/mobile-bff/mobile-bff-app/build/test-results/test/TEST-ru.rutcampustrack.mobilebff.grpc.MobileAttendanceClientErrorTest.xml",
+          "tests": 17,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "timestamp": "2026-09-08T08:13:13",
+          "sha256": "87098D308BE390CC907C71D4C3A8B824BE28F4D1B32319000B2A449AA7AA776F"
+        },
+        {
+          "path": "services/mobile-bff/mobile-bff-app/build/test-results/test/TEST-ru.rutcampustrack.mobilebff.contract.StudentRequestDetailJsonTest.xml",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "timestamp": "2026-09-08T08:13:13",
+          "sha256": "292DB928565C03F02777B0D934C6565475C9CD00728C7C587D3BC2EE16C33D54"
+        }
+      ],
+      "outputEvidence": "Gradle output ended with BUILD SUCCESSFUL and the selected test task completed."
+    },
+    {
+      "name": "git-diff-check",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "PASS; expected LF/CRLF warnings only"
+    },
+    {
+      "name": "immutable-import-guard",
+      "command": "guarded source/destination manifest verification from packet",
+      "exitCode": 0,
+      "result": "IMPORT_VERIFY_PASS productPaths=82 repairs=2"
+    }
+  ],
+  "runtime": {
+    "status": "N/A",
+    "reason": "Unit and serialization lane; no service, RPC, container, or external runtime was required or started."
+  }
+}

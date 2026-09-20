@@ -1,0 +1,7 @@
+{
+  "StartedUtc": "2026-09-10T20:17:30.8871365Z",
+  "EndedUtc": "2026-09-10T20:18:13.8669635Z",
+  "ExitCode": 0,
+  "Log": ".agent\\student-auth-a\\admission-producer\\review-correction-01\\runtime-final\\command-01-escalated-shared.log",
+  "PermissionEvidence": "sandbox javac AccessDenied on existing Gradle dependency-cache jar"
+}

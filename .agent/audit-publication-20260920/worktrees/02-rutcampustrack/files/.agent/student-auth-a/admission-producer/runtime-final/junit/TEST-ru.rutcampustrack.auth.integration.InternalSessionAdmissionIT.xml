@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-10T19:05:21" hostname="DITEK-PK" time="10.701">
+  <properties/>
+  <testcase name="httpAdmissionUsesRealSecretGuardAndReturnsSignedInternalToken()" classname="ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT" time="9.235"/>
+  <testcase name="rolesVersionAndSessionVersionChangesProduceStaleDenial()" classname="ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT" time="0.448"/>
+  <testcase name="httpSecretDenialStaysDistinctFromSessionDenialAndIsNotCached()" classname="ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT" time="0.255"/>
+  <testcase name="liveAdmissionThenCommittedRevokeIsDenied()" classname="ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT" time="0.419"/>
+  <testcase name="suspendedActiveGrantIsClearedAndDenied()" classname="ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT" time="0.336"/>
+  <system-out><![CDATA[22:05:05.176 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+22:05:05.221 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+22:05:05.307 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.20.4
+22:05:06.336 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+22:05:07.287 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+22:05:07.292 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+22:05:07.345 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.5.2
+  API Version: 1.51
+  Operating System: Docker Desktop
+  Total Memory: 11963 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+22:05:09.145 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Creating container for image: testcontainers/ryuk:0.11.0
+22:05:09.432 [Test worker] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+22:05:09.782 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 is starting: 086574fb56f4c9a93ddc8cadb0ec0a5efd73bef8a652eb0dfeb19d50e3090875
+22:05:10.819 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 started in PT1.6731431S
+22:05:10.832 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+22:05:10.832 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+22:05:10.834 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+22:05:10.836 [Test worker] INFO tc.postgres:16 -- Creating container for image: postgres:16
+22:05:11.014 [Test worker] INFO tc.postgres:16 -- Container postgres:16 is starting: ac2c415009ee07cf53513227ea55979b4e32462e02f980c881aca7f86ea33eff
+22:05:14.097 [Test worker] INFO tc.postgres:16 -- Container postgres:16 started in PT3.2616002S
+22:05:14.098 [Test worker] INFO tc.postgres:16 -- Container is started (JDBC URL: jdbc:postgresql://localhost:55775/rct_student_auth_admission?loggerLevel=OFF)
+22:05:15.752 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:55775/rct_student_auth_admission?loggerLevel=OFF (PostgreSQL 16.13)
+22:05:15.934 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+22:05:15.949 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 24 migrations (execution time 00:00.098s)
+22:05:16.000 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+22:05:16.225 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": << Empty Schema >>
+22:05:16.314 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "1 - baseline"
+22:05:16.518 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "2 - seed test data"
+22:05:16.572 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "3 - login sequences"
+22:05:16.617 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "4 - campus settings bigserial"
+22:05:16.661 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "5 - add enum casts"
+22:05:16.701 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "6 - add semester first week type"
+22:05:16.754 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "7 - add user avatar"
+22:05:16.794 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "8 - group unify name"
+22:05:16.838 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "9 - groups archived at"
+22:05:16.875 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "10 - semesters no overlap"
+22:05:16.971 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "11 - enum equality operators"
+22:05:17.024 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "12 - subjects group id"
+22:05:17.039 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+22:05:17.085 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "13 - homework lesson binding"
+22:05:17.127 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "14 - update campus coordinates"
+22:05:17.156 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "15 - shedlock table"
+22:05:17.191 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "16 - academic outbox"
+22:05:17.236 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "17 - add performance indexes"
+22:05:17.268 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "18 - event consumer processed"
+22:05:17.303 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "19 - audit log"
+22:05:17.338 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "20 - audit log indexes"
+22:05:17.375 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "21 - user name icu collation"
+22:05:17.411 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "22 - user name sort index"
+22:05:17.440 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "23 - homework notifications"
+22:05:17.481 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "24 - auth session authority"
+22:05:17.564 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 24 migrations to schema "public", now at version v24 (execution time 00:00.624s)
+22:05:26.456 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.2.Final
+22:05:28.975 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:05:28.976 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:05:28.988 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 10 ms
+22:05:30.412 [Test worker] WARN org.springframework.web.servlet.PageNotFound -- No mapping for POST /internal/issue-internal-jwt
+22:05:30.418 [Test worker] WARN org.springframework.web.servlet.PageNotFound -- No endpoint POST /internal/issue-internal-jwt.
+22:05:31.091 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:05:31.091 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:05:31.092 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+22:05:31.092 [Test worker] WARN ru.rutcampustrack.auth.security.InternalIssuerSecretFilter -- Missing X-Internal-Issuer-Secret header on /internal/auth/admit
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.15.11\a38b16385e867f59a641330f0362ebe742788ed8\byte-buddy-agent-1.15.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

@@ -1,0 +1,21 @@
+# Temporary project agent limit — restored
+
+07.09.2026. Owner explicitly rejected reusing completed agents: each new implementation must receive a fresh context and its own scope. Owner then authorized a temporary project setting adjustment if needed to create another fresh agent.
+
+Observed: fresh spawn continued to return `agent thread limit reached` after two child tasks completed. Archiving the completed homework_ui_visual app task did not free the runtime quota. No close-agent tool is exposed in this tool surface; no hidden orchestrator or direct runtime state mutation was attempted.
+
+Official source checked: https://learn.chatgpt.com/docs/agent-configuration/subagents and https://learn.chatgpt.com/docs/config-schema.json. agents.max_concurrent_threads_per_session limits open child threads, excluding root; integer minimum1.
+
+Root applied exactly one temporary project setting change in .codex/config.toml: max_concurrent_threads_per_session3→4, with approved escalation for protected file. Global config was untouched. BeforeSHA1CE988CB4230EDCBED60FCD3A96D583F809C8FE274F9B3277A3D3894704CEE28; temporarySHA A6ABEF82601FD9DB2F35682919E18E12F9A577E682BACE0408850297530EF441. Exact backup is project-config-before-temporary-agent-limit.toml.
+
+Then collaboration.spawn_agent succeeded as /root/requests_transport_fresh with explicit model gpt-5.6-luna, effort max, role developer, fork_turns none. Its packet references only the new Requests transport contract and necessary accepted source artifacts, not previous agent history. No former agent was repurposed.
+
+Immediately after successful dispatch, root restored exact original project config bytes, SHA1CE988CB4230EDCBED60FCD3A96D583F809C8FE274F9B3277A3D3894704CEE28, limit3. Both protected writes exit0. No persistent configuration change remains. Product runtime N/A for config adjustment; successful fresh spawn is the relevant runtime evidence. Current product work/acceptance remains separate.
+
+Subsequent bounded UI repair attempt: temporary project limit3→5, SHA82953BB0153A3A83F6BBD590884D8444C46846FE320A8F1D3EA2AE60F69944B8; spawn mobile_theme_visual_repair still returned thread limit. No UI agent created. Immediately restored original bytes/hash/limit3 again, exit0. Do not conclude that editing this setting guarantees more runtime slots or raise it repeatedly without a state change. Requests transport fresh remains running; theme repair queued.
+
+After the owner's next explicit instruction to raise the limit for independent parallel UI work, root repeated temporary3→5 in the new turn. Fresh mobile_theme_repair_fresh successfully spawned (explicit Luna/max/developer/fork_turns none), then root immediately restored the exact original config SHA/limit3, exit0. Current intended concurrency is root + three independent active writers in separate checkouts. This supersedes the UI-queued state above; earlier failed attempt remains recorded. No completed agent was reused and no global config was changed.
+
+After context transition at ~17:01 UTC, list_agents omitted the existing requests_transport_fresh writer and send_message returned agent thread limit reached. Root tried the previously authorized temporary project3→5 once to restore communication, not to start another writer. send_message still failed. Immediately restored original bytes SHA1CE988CB4230EDCBED60FCD3A96D583F809C8FE274F9B3277A3D3894704CEE28, exit0. Requests checkout remains reserved; communication unavailable does not prove task completion or release ownership. No replacement writer dispatched. Dependency writer resumed same unfinished scope; theme writer remains active.
+
+After dependency_security_implement's explicit stable handoff/completion at~17:25UTC, fresh dependency_checks_fresh successfully spawned with original project limit3 unchanged. Existing requests_transport_fresh then became reachable, status interrupted; root resumed its SAME unfinished Requests scope via followup_task. Thus communication blockade was temporary and is now cleared. No replacement writer and no further config mutation. Current intended active product writers: Requests transport, Homework theme/focus/retry repair, dependency-check reconciliation, each in its own checkout. Completed Requests consultant received only self-archive lifecycle instruction, never a new product/research scope.

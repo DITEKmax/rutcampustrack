@@ -1,0 +1,155 @@
+{
+  "agent": "/root/sql17_26_coverage_repair",
+  "date": "2026-09-10",
+  "baseRevision": "8002b9ea4356b10779c5bb9a6d99746d32d78ae2",
+  "risk": "S3",
+  "status": "SQL17_V26_EXACT4_ACCEPTED",
+  "scopeStatus": "RELEASED",
+  "sourceReady": "SOURCE_READY",
+  "runtime": {
+    "status": "SQL17_V26_EXACT4_ACCEPTED",
+    "priorStatus": "RUNTIME_PASS_BASELINE",
+    "priorAggregate": "25/25",
+    "newAggregate": "22/22",
+    "newAssertionsExecuted": true,
+    "gradleExecutedByRoot": true,
+    "docker": "empty",
+    "processesAndPorts": "clear",
+    "heavyLease": "RELEASED",
+    "runtimePassArtifact": {
+      "path": "runtime-pass-2026-09-10.md",
+      "sha256": "A7BAA020F03FDD292A7F8D5532A702738C656A0B15F6E55B7EC6C33B2C9117B5",
+      "bytes": 3597
+    },
+    "academic": {
+      "sessionId": "75913",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.migration.StudentFoundationMigrationIT --no-daemon --no-parallel --max-workers=1 --console=plain --continue",
+      "startedAt": "2026-09-10T19:46:54.4893287Z",
+      "endedAt": "2026-09-10T19:48:47.3402424Z",
+      "exitCode": 0,
+      "result": "BUILD SUCCESSFUL after 1m34; 37 tasks, 2 executed",
+      "xml": "services/academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.migration.StudentFoundationMigrationIT.xml",
+      "xmlSha256": "20715B9C9782407A9842AC0324C2CF9EE577445AD2001DCF2FEA89FCDE4C4254",
+      "xmlBytes": 94655,
+      "xmlMtime": "2026-09-10T19:48:36.4401730Z",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": 29.813,
+      "warnings": "two unrelated warnings in UserRepositorySearchIT and an unrelated unchecked note"
+    },
+    "schedule": {
+      "sessionId": "2390",
+      "command": ".\\gradlew.bat :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT --no-daemon --no-parallel --max-workers=1 --console=plain --continue",
+      "startedAt": "2026-09-10T19:48:53.6122527Z",
+      "endedAt": "2026-09-10T19:50:44.8751284Z",
+      "exitCode": 0,
+      "result": "BUILD SUCCESSFUL after 1m20; 37 tasks, 2 executed",
+      "xml": "services/schedule-service/schedule-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT.xml",
+      "xmlSha256": "7E316529DAD60FDB6814B9FDE3014B30B2137F47ADB39BF92505AFE9F509367F",
+      "xmlBytes": 36150,
+      "xmlMtime": "2026-09-10T19:50:19.0916824Z",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "timeSeconds": 14.026
+    },
+    "flyway": {
+      "status": "PRESERVED_PRIOR_PASS_NOT_RERUN",
+      "xml": "services/schedule-service/schedule-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.schedule.migration.FlywayMigrationIT.xml",
+      "currentXmlPresent": false,
+      "currentXmlAbsenceReason": "focused task cleanup after prior accepted runtime",
+      "xmlSha256": "36C4E903234ACF3158E0CFD716D08D82B176B4E18C8430AA274D5E9484340BAA",
+      "xmlBytes": 18743,
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "products": [
+    {
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "preSha256": "29433B97247AE23E8BFF9EA83AD94768DC80A329276E565AE3E3C5063F5928D2",
+      "preBytes": 23649,
+      "postSha256": "633285777706AF26FEF3B847B172BA1805C41E6607B5170025F4DE6A02AF1A68",
+      "postBytes": 28608
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/StudentFoundationMigrationIT.java",
+      "preSha256": "8A39EC859D8CF2BA2699295A0D60B8B10FA6988B2AA0DB8BCD3E2434115D446B",
+      "preBytes": 51464,
+      "postSha256": "14C68464CFBD29EDF20C87021D9353863C81E5B0044C193D09930FBBCEE7FB8B",
+      "postBytes": 58295
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql",
+      "preSha256": "8D02720F48B67E21C78373B214ADB414A2F435A8016C35987839D330B6042FCC",
+      "postSha256": "8D02720F48B67E21C78373B214ADB414A2F435A8016C35987839D330B6042FCC",
+      "preBytes": 18760,
+      "postBytes": 18760
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V26__campus_map.sql",
+      "preSha256": "21B3F522634BE7505FB73A613BF5BCB68C1584B7A1724BB45EBA5C767E4058A0",
+      "postSha256": "21B3F522634BE7505FB73A613BF5BCB68C1584B7A1724BB45EBA5C767E4058A0",
+      "preBytes": 17109,
+      "postBytes": 17109
+    }
+  ],
+  "changedMethods": [
+    "crossTemplateRecurringOriginIsRejectedEvenWhenSnapshotsMatch",
+    "crossOneOffOriginIsRejectedEvenWhenSnapshotsMatch",
+    "readyMapAssetsRequireExactMetadataAndRemainImmutable",
+    "publishedCampusMapFreezesPlanIdentityAndGraphButDraftTransitionsRemainAllowed",
+    "demandDedupeIsExactlyOnceAndIncrementsFloorDayAggregateOnce",
+    "assertExactSqlFailure",
+    "nestedSqlFailure"
+  ],
+  "independentReview": {
+    "reviewer": "/root/sql17_26_coverage_recheck",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "fork": "none",
+    "mode": "read-only",
+    "verdict": "FINAL PASS — SQL17_V26_COVERAGE_RECHECK_PASS",
+    "findings": [],
+    "artifact": "independent-recheck-pass-2026-09-10.md",
+    "artifactSha256": "FC223B4A026AC6F4A3A028537CDA6CC707CB4768118B063836A821E693637CA4",
+    "artifactBytes": 2613,
+    "focusedScopeAccepted": true,
+    "fullRoleAcceptance": "OPEN"
+  },
+  "checks": {
+    "revisionExitCode": 0,
+    "preWriteFourPathGuardExitCode": 0,
+    "postSqlHashGuardExitCode": 0,
+    "markerReadbackExitCode": 0,
+    "delimiterAndWhitespaceExitCode": 0,
+    "importSanityExitCode": 0,
+    "scopedDiffCheckExitCode": 0,
+    "runtimeXmlHashGuardExitCode": 0,
+    "runtimeReadbackExitCode": 0,
+    "manifestJsonExitCode": 0,
+    "independentReviewReadbackExitCode": 0
+  },
+  "evidence": {
+    "packet": "packet.md",
+    "sourceEvidence": "evidence.md",
+    "checks": "checks.md",
+    "diff": "diff.md",
+    "summary": "summary.md",
+    "runtimePass": "runtime-pass-2026-09-10.md",
+    "independentReviewPass": "independent-recheck-pass-2026-09-10.md"
+  },
+  "constraints": [
+    "tests-only product scope",
+    "no SQL/proto/repository/config/build changes",
+    "no Gradle/Docker/runtime in leaf",
+    "no stage/commit/reset/clean",
+    "no children",
+    "preserve foreign dirty work"
+  ]
+}

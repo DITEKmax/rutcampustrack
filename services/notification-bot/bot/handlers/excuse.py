@@ -26,11 +26,11 @@ logger = logging.getLogger(__name__)
 excuse_router = Router(name="excuse_callbacks")
 
 
-async def _verify_headman(callback: CallbackQuery, academic_client) -> bool:
-    """Проверяет, что caller — староста (`is_headman=True`).
+async def _resolve_headman(callback: CallbackQuery, academic_client):
+    """Возвращает проверенного старосту с положительным internal ``user_id``.
 
-    Возвращает True если caller авторизован и имеет is_headman; иначе
-    отвечает на callback «Недостаточно прав» и возвращает False.
+    Иначе отвечает на callback и возвращает ``None``. Один lookup сохраняет
+    связку Telegram caller → academic user для decision events.
 
     Ошибка gRPC → fail-closed: считаем не-старостой и возвращаем False.
     Это безопаснее fail-open (лучше отказать при сетевой проблеме, чем
@@ -39,17 +39,28 @@ async def _verify_headman(callback: CallbackQuery, academic_client) -> bool:
     if academic_client is None:
         logger.error("academic_client not injected into dispatcher workflow data")
         await callback.answer("Сервис временно недоступен", show_alert=True)
-        return False
+        return None
     try:
         user = await academic_client.get_user_by_telegram_id(callback.from_user.id)
     except Exception:
         logger.exception("academic_client.get_user_by_telegram_id failed — denying")
         await callback.answer("Не удалось проверить права, попробуйте ещё раз", show_alert=True)
-        return False
-    if not getattr(user, "found", False) or not getattr(user, "is_headman", False):
+        return None
+    user_id = getattr(user, "user_id", None)
+    if (
+        not getattr(user, "found", False)
+        or not getattr(user, "is_headman", False)
+        or not isinstance(user_id, int)
+        or user_id <= 0
+    ):
         await callback.answer("Недостаточно прав", show_alert=True)
-        return False
-    return True
+        return None
+    return user
+
+
+async def _verify_headman(callback: CallbackQuery, academic_client) -> bool:
+    """Совместимая bool-обёртка для существующего excuse callback flow."""
+    return await _resolve_headman(callback, academic_client) is not None
 
 
 @excuse_router.callback_query(F.data.startswith("ex:"))

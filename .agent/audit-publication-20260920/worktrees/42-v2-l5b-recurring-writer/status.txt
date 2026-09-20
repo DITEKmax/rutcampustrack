@@ -1,0 +1,41 @@
+ M docs/openapi/schedule.json
+ M frontends/pwa/src/api/generated/academic.types.ts
+ M frontends/pwa/src/api/generated/attendance.types.ts
+ M frontends/pwa/src/api/generated/auth.types.ts
+ M frontends/pwa/src/api/generated/schedule.types.ts
+ M frontends/web-panel/src/app/api/generated/academic.types.ts
+ M frontends/web-panel/src/app/api/generated/attendance.types.ts
+ M frontends/web-panel/src/app/api/generated/auth.types.ts
+ M frontends/web-panel/src/app/api/generated/schedule.types.ts
+ M services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/api/ScheduleItemApi.java
+ M services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/CreateScheduleItemRequest.java
+ M services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/item/ScheduleItemResponse.java
+ M services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/LessonResponse.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/GlobalExceptionHandler.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AcademicGrpcClient.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemAssembler.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemController.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemService.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/entity/ScheduleItem.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/IsoParityReconciler.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonAssembler.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonGenerationService.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/entity/Lesson.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java
+ M services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/subject/SubjectDeletedCascadeService.java
+ M services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AbstractScheduleIntegrationTest.java
+ M services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java
+ M services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java
+ M services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java
+ M services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java
+ M services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java
+?? .agent/l5b-recurring-writer/
+?? services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/RecurringLifecycleNotReadyException.java
+?? services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/RecurringProtocolConflictException.java
+?? services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/recurring/
+?? services/schedule-service/schedule-app/src/main/resources/db/migration/V18__recurring_assignment_fence.sql
+?? services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java
+?? services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/

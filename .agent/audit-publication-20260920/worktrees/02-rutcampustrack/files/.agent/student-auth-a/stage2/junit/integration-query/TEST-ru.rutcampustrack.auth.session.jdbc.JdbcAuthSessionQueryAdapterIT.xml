@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.session.jdbc.JdbcAuthSessionQueryAdapterIT" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-11T09:51:46" hostname="DITEK-PK" time="0.951">
+  <properties/>
+  <testcase name="loginAuthorityAndIdentityUseStoredRolesAndLabels()" classname="ru.rutcampustrack.auth.session.jdbc.JdbcAuthSessionQueryAdapterIT" time="0.345"/>
+  <testcase name="historyIsOwnKeysetAndMalformedCursorIsTyped()" classname="ru.rutcampustrack.auth.session.jdbc.JdbcAuthSessionQueryAdapterIT" time="0.284"/>
+  <testcase name="liveSessionsAreOwnAndUseCreatedAtSidKeyset()" classname="ru.rutcampustrack.auth.session.jdbc.JdbcAuthSessionQueryAdapterIT" time="0.321"/>
+  <system-out><![CDATA[12:51:38.535 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+12:51:38.554 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+12:51:38.611 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.20.4
+12:51:39.310 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+12:51:39.882 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+12:51:39.884 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+12:51:39.920 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.5.2
+  API Version: 1.51
+  Operating System: Docker Desktop
+  Total Memory: 11963 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+12:51:40.889 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Creating container for image: testcontainers/ryuk:0.11.0
+12:51:41.064 [Test worker] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+12:51:41.262 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 is starting: ca876d87ce069ec6b9e243d399152364021d655fa1a47815cce814772c799cd1
+12:51:41.899 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 started in PT1.0098095S
+12:51:41.913 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+12:51:41.913 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+12:51:41.915 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+12:51:41.915 [Test worker] INFO tc.postgres:16 -- Creating container for image: postgres:16
+12:51:42.069 [Test worker] INFO tc.postgres:16 -- Container postgres:16 is starting: 59d809f0f2eb06d87c6f770aa5670c059bdefdf4e07882e198597d9a316c916f
+12:51:43.994 [Test worker] INFO tc.postgres:16 -- Container postgres:16 started in PT2.0792017S
+12:51:43.996 [Test worker] INFO tc.postgres:16 -- Container is started (JDBC URL: jdbc:postgresql://localhost:59499/rct_auth_query?loggerLevel=OFF)
+12:51:45.203 [Test worker] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:59499/rct_auth_query?loggerLevel=OFF (PostgreSQL 16.13)
+12:51:45.386 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+12:51:45.399 [Test worker] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 24 migrations (execution time 00:00.123s)
+12:51:45.436 [Test worker] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+12:51:45.564 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": << Empty Schema >>
+12:51:45.605 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "1 - baseline"
+12:51:45.727 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "2 - seed test data"
+12:51:45.760 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "3 - login sequences"
+12:51:45.786 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "4 - campus settings bigserial"
+12:51:45.813 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "5 - add enum casts"
+12:51:45.838 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "6 - add semester first week type"
+12:51:45.864 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "7 - add user avatar"
+12:51:45.889 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "8 - group unify name"
+12:51:45.914 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "9 - groups archived at"
+12:51:45.936 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "10 - semesters no overlap"
+12:51:45.992 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "11 - enum equality operators"
+12:51:46.028 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "12 - subjects group id"
+12:51:46.038 [Test worker] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+12:51:46.060 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "13 - homework lesson binding"
+12:51:46.086 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "14 - update campus coordinates"
+12:51:46.105 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "15 - shedlock table"
+12:51:46.128 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "16 - academic outbox"
+12:51:46.151 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "17 - add performance indexes"
+12:51:46.171 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "18 - event consumer processed"
+12:51:46.192 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "19 - audit log"
+12:51:46.215 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "20 - audit log indexes"
+12:51:46.238 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "21 - user name icu collation"
+12:51:46.256 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "22 - user name sort index"
+12:51:46.274 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "23 - homework notifications"
+12:51:46.299 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "24 - auth session authority"
+12:51:46.347 [Test worker] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 24 migrations to schema "public", now at version v24 (execution time 00:00.353s)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

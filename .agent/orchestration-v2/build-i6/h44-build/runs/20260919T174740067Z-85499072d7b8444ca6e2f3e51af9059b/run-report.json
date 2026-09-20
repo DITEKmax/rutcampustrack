@@ -1,0 +1,139 @@
+{
+  "schema": "rct.i6-build-producer.v1",
+  "status": "FAIL",
+  "runId": "20260919T174740067Z-85499072d7b8444ca6e2f3e51af9059b",
+  "startedAt": "2026-09-19T17:47:40.0769029+00:00",
+  "finishedAt": "2026-09-19T17:51:00.8217776+00:00",
+  "unionRepo": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build",
+  "expectedRevision": "d7ec16572db325d944f1a1fbd3b4960b827d09c3",
+  "manifestPath": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\orchestration-v2\\build-i6\\h44-build\\requests-build-manifest.v1.json",
+  "manifestSha256": null,
+  "cleanBeforeBuild": true,
+  "cleanAfterBuild": null,
+  "environment": {
+    "gradle": "Gradle 8.12",
+    "hostOs": "Microsoft Windows NT 10.0.26200.0",
+    "java": "openjdk version \"21.0.10\" 2026-01-20 LTS",
+    "node": "v24.14.0",
+    "powershell": "7.6.5"
+  },
+  "commands": [
+    {
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build rev-parse HEAD",
+      "purpose": "resolve exact union revision",
+      "exitCode": 0,
+      "startedAt": "2026-09-19 17:47:40.4328487+00:00",
+      "finishedAt": "2026-09-19 17:47:40.5151063+00:00",
+      "stdout": "001-git-revision.stdout.log",
+      "stderr": "001-git-revision.stderr.log"
+    },
+    {
+      "command": "git -c safe.directory=C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build -C C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build status --porcelain=v1 --untracked-files=all",
+      "purpose": "verify clean union worktree",
+      "exitCode": 0,
+      "startedAt": "2026-09-19 17:47:40.5383458+00:00",
+      "finishedAt": "2026-09-19 17:47:40.6565761+00:00",
+      "stdout": "002-git-status.stdout.log",
+      "stderr": "002-git-status.stderr.log"
+    },
+    {
+      "command": ".\\gradlew.bat --version",
+      "purpose": "resolve actual Gradle environment",
+      "exitCode": 0,
+      "startedAt": "2026-09-19 17:47:40.8336617+00:00",
+      "finishedAt": "2026-09-19 17:47:41.6881136+00:00",
+      "stdout": "003-gradle-version.stdout.log",
+      "stderr": "003-gradle-version.stderr.log"
+    },
+    {
+      "command": "java -version",
+      "purpose": "resolve actual Java environment",
+      "exitCode": 0,
+      "startedAt": "2026-09-19 17:47:41.6901749+00:00",
+      "finishedAt": "2026-09-19 17:47:41.7609689+00:00",
+      "stdout": "004-java-version.stdout.log",
+      "stderr": "004-java-version.stderr.log"
+    },
+    {
+      "command": "node --version",
+      "purpose": "resolve actual Node environment",
+      "exitCode": 0,
+      "startedAt": "2026-09-19 17:47:41.7629687+00:00",
+      "finishedAt": "2026-09-19 17:47:41.8208682+00:00",
+      "stdout": "005-node-version.stdout.log",
+      "stderr": "005-node-version.stderr.log"
+    },
+    {
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "purpose": "build auth executable bootJar",
+      "exitCode": 0,
+      "startedAt": "2026-09-19 17:47:41.8854099+00:00",
+      "finishedAt": "2026-09-19 17:48:10.9614891+00:00",
+      "stdout": "006-gradle-auth.stdout.log",
+      "stderr": "006-gradle-auth.stderr.log"
+    },
+    {
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "purpose": "build academic executable bootJar",
+      "exitCode": 0,
+      "startedAt": "2026-09-19 17:48:10.9699656+00:00",
+      "finishedAt": "2026-09-19 17:48:47.7838983+00:00",
+      "stdout": "007-gradle-academic.stdout.log",
+      "stderr": "007-gradle-academic.stderr.log"
+    },
+    {
+      "command": ".\\gradlew.bat :services:schedule-service:schedule-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "purpose": "build schedule executable bootJar",
+      "exitCode": 0,
+      "startedAt": "2026-09-19 17:48:47.7867532+00:00",
+      "finishedAt": "2026-09-19 17:49:24.9555463+00:00",
+      "stdout": "008-gradle-schedule.stdout.log",
+      "stderr": "008-gradle-schedule.stderr.log"
+    },
+    {
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "purpose": "build attendance executable bootJar",
+      "exitCode": 0,
+      "startedAt": "2026-09-19 17:49:24.9603896+00:00",
+      "finishedAt": "2026-09-19 17:50:05.2074553+00:00",
+      "stdout": "009-gradle-attendance.stdout.log",
+      "stderr": "009-gradle-attendance.stderr.log"
+    },
+    {
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "purpose": "build mobile-bff executable bootJar",
+      "exitCode": 0,
+      "startedAt": "2026-09-19 17:50:05.2099491+00:00",
+      "finishedAt": "2026-09-19 17:50:32.6568386+00:00",
+      "stdout": "010-gradle-mobile-bff.stdout.log",
+      "stderr": "010-gradle-mobile-bff.stderr.log"
+    },
+    {
+      "command": ".\\gradlew.bat :services:api-gateway:bootJar --no-daemon --no-parallel --max-workers=1 --no-problems-report",
+      "purpose": "build api-gateway executable bootJar",
+      "exitCode": 0,
+      "startedAt": "2026-09-19 17:50:32.6585858+00:00",
+      "finishedAt": "2026-09-19 17:50:53.1217180+00:00",
+      "stdout": "011-gradle-api-gateway.stdout.log",
+      "stderr": "011-gradle-api-gateway.stderr.log"
+    },
+    {
+      "command": "npm run build --workspace @rct/pwa-vue",
+      "purpose": "build PWA with vue-tsc and Vite",
+      "exitCode": 2,
+      "startedAt": "2026-09-19 17:50:53.1246885+00:00",
+      "finishedAt": "2026-09-19 17:51:00.6777181+00:00",
+      "stdout": "012-npm-pwa-build.stdout.log",
+      "stderr": "012-npm-pwa-build.stderr.log"
+    }
+  ],
+  "artifacts": {},
+  "failure": {
+    "message": "PWA build failed with exit code 2"
+  },
+  "limitations": [
+    "Build producer is external evidence for the exact clean integration worktree; it does not start services or Docker.",
+    "A failed command stops the run and never emits a trusted build manifest.",
+    "No dependency install or cache copy is performed by this producer."
+  ]
+}

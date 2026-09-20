@@ -6,9 +6,11 @@ import type {
   RequestKind,
   RequestPendingRef,
   RequestStatus,
+  RequestSummary,
   RequestsDraft,
   RequestsDraftPatch,
 } from './types'
+import type { StudentFeatureScope } from '../../shared/session-owner'
 
 export const defaultRequestsDraft = (ownerId: string, sessionGeneration: string): RequestsDraft => ({
   ownerId,
@@ -192,4 +194,32 @@ export function updateSelectedLessonIds(
 /** Remove one stale or unavailable lesson from a retained draft selection. */
 export function removeSelectedLessonId(selectedIds: readonly string[], id: string): string[] {
   return updateSelectedLessonIds(selectedIds, id, false)
+}
+
+/**
+ * Cancellation is a local affordance projection. The BFF still owns the
+ * final decision and may reject a request that changed between reads.
+ */
+export function canCancelRequest(
+  summary: Pick<RequestSummary, 'id' | 'kind' | 'status'>,
+  scope: StudentFeatureScope | null,
+  context: { offline: boolean; readOnly: boolean },
+): boolean {
+  return Boolean(summary.id)
+    && summary.status === 'PENDING'
+    && (summary.kind === 'EXCUSE' || summary.kind === 'LATE_CHECKIN')
+    && scope?.activeRole === 'STUDENT'
+    && Boolean(scope.userId && scope.sessionId)
+    && !scope.readOnly
+    && !context.offline
+    && !context.readOnly
+}
+
+export function requestsSessionGeneration(scope: StudentFeatureScope): string {
+  return JSON.stringify([
+    scope.resetGeneration,
+    scope.sessionId,
+    scope.sessionVersion,
+    scope.rolesVersion,
+  ])
 }

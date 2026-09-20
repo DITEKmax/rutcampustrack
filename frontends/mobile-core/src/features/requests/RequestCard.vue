@@ -11,25 +11,28 @@ import {
   requestStatusTone,
   requestTime,
 } from './state'
-import type { RequestAttachment, RequestDetail, RequestLesson } from './types'
+import type { RequestAttachment, RequestAttachmentViewState, RequestDetail, RequestLesson } from './types'
 
 const props = withDefaults(defineProps<{
   detail: RequestDetail
   offline: boolean
   cancelling?: boolean
+  attachmentStates?: Readonly<Record<string, RequestAttachmentViewState | undefined>> | undefined
 }>(), {
   cancelling: false,
+  attachmentStates: undefined,
 })
 
 const emit = defineEmits<{
   cancel: [id: string]
-  openAttachment: [attachment: RequestAttachment]
+  openAttachment: [value: { requestId: string; attachment: RequestAttachment }]
 }>()
 
 const summary = computed(() => props.detail.summary)
 const lessons = computed(() => summary.value.lessons ?? [])
 const attachments = computed(() => props.detail.attachments ?? [])
 const showCancel = computed(() => summary.value.canCancel === true)
+const detailUnavailable = computed(() => props.detail.detailState !== undefined && props.detail.detailState !== 'ready')
 const statusTone = computed(() => requestStatusTone(summary.value.status))
 const decision = computed(() => props.detail.decision ?? null)
 const decisionComment = computed(() => props.detail.decision?.comment?.trim() || null)
@@ -58,6 +61,18 @@ function attachmentName(attachment: RequestAttachment): string {
 
 function attachmentIsExpired(attachment: RequestAttachment): boolean {
   return attachment.state === 'EXPIRED' || Boolean(attachment.expiredAt)
+}
+
+function attachmentStateKey(attachment: RequestAttachment): string {
+  return summary.value.id + '\u0000' + attachment.id
+}
+
+function attachmentActionState(attachment: RequestAttachment): RequestAttachmentViewState | null {
+  return props.attachmentStates?.[attachmentStateKey(attachment)] ?? null
+}
+
+function attachmentErrorId(attachment: RequestAttachment): string {
+  return 'request-attachment-error-' + summary.value.id + '-' + attachment.id
 }
 </script>
 
@@ -168,7 +183,15 @@ function attachmentIsExpired(attachment: RequestAttachment): boolean {
     </p>
 
     <p
-      v-if="decisionLabel"
+      v-if="detailUnavailable"
+      class="request-card__missing"
+      role="status"
+    >
+      Детали заявки недоступны{{ props.detail.detailError ? ': ' + props.detail.detailError : '.' }}
+    </p>
+
+    <p
+      v-if="!detailUnavailable && decisionLabel"
       class="request-card__decision"
       role="status"
     >
@@ -176,7 +199,7 @@ function attachmentIsExpired(attachment: RequestAttachment): boolean {
     </p>
 
     <ul
-      v-if="attachments.length > 0"
+      v-if="!detailUnavailable && attachments.length > 0"
       class="request-card__attachments"
       aria-label="Вложения"
     >
@@ -184,21 +207,39 @@ function attachmentIsExpired(attachment: RequestAttachment): boolean {
         v-for="attachment in attachments"
         :key="attachment.id"
       >
-        <span>{{ attachmentName(attachment) }}</span>
+        <span class="request-card__attachment-name">{{ attachmentName(attachment) }}</span>
         <span
           v-if="attachmentIsExpired(attachment)"
           class="request-card__attachment-state"
         >Срок истёк</span>
-        <button
-          v-else-if="attachment.state === 'ACTIVE'"
-          class="request-card__attachment-action"
-          type="button"
-          :disabled="offline"
-          :aria-label="'Открыть ' + attachmentName(attachment)"
-          @click="emit('openAttachment', attachment)"
+        <span
+          v-else-if="attachment.state !== 'ACTIVE'"
+          class="request-card__attachment-state"
+        >Недоступно</span>
+        <span
+          v-else
+          class="request-card__attachment-actions"
         >
-          Открыть
-        </button>
+          <button
+            class="request-card__attachment-action"
+            type="button"
+            :disabled="offline || attachmentActionState(attachment)?.status === 'pending'"
+            :aria-busy="attachmentActionState(attachment)?.status === 'pending' ? 'true' : undefined"
+            :aria-describedby="attachmentActionState(attachment)?.status === 'error' ? attachmentErrorId(attachment) : undefined"
+            :aria-label="(attachmentActionState(attachment)?.status === 'error' ? 'Повторить открытие ' : 'Открыть ') + attachmentName(attachment)"
+            @click="emit('openAttachment', { requestId: summary.id, attachment })"
+          >
+            {{ attachmentActionState(attachment)?.status === 'pending' ? 'Открываем…' : attachmentActionState(attachment)?.status === 'error' ? 'Повторить' : 'Открыть' }}
+          </button>
+          <span
+            v-if="attachmentActionState(attachment)?.status === 'error'"
+            :id="attachmentErrorId(attachment)"
+            class="request-card__attachment-error"
+            role="alert"
+          >
+            {{ attachmentActionState(attachment)?.error || 'Не удалось открыть вложение.' }}
+          </span>
+        </span>
       </li>
     </ul>
 

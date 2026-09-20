@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import RequestCard from './RequestCard.vue'
-import type { RequestAccessState, RequestAttachment, RequestBucket, RequestDetail } from './types'
+import type { RequestAccessState, RequestAttachment, RequestAttachmentViewState, RequestBucket, RequestDetail } from './types'
 
 const props = withDefaults(defineProps<{
   bucket: RequestBucket
@@ -9,12 +9,20 @@ const props = withDefaults(defineProps<{
   loading: boolean
   error: string | null
   offline: boolean
+  readOnly?: boolean
   access: RequestAccessState
   retrying?: boolean
   cancellingId?: string | null
+  hasNextPage?: boolean
+  loadingMore?: boolean
+  attachmentStates?: Readonly<Record<string, RequestAttachmentViewState | undefined>> | undefined
 }>(), {
   retrying: false,
   cancellingId: null,
+  readOnly: false,
+  hasNextPage: false,
+  loadingMore: false,
+  attachmentStates: undefined,
 })
 
 const emit = defineEmits<{
@@ -22,12 +30,13 @@ const emit = defineEmits<{
   newRequest: []
   retry: []
   cancel: [id: string]
-  openAttachment: [attachment: RequestAttachment]
+  openAttachment: [value: { requestId: string; attachment: RequestAttachment }]
+  loadMore: []
 }>()
 
 const isArchive = computed(() => props.bucket === 'archive')
 const accessBlocked = computed(() => props.access === 'forbidden' || (!isArchive.value && props.access === 'no-active-semester'))
-const canStartRequest = computed(() => !props.offline && props.access === 'allowed')
+const canStartRequest = computed(() => !props.offline && !props.readOnly && props.access === 'allowed')
 const emptyTitle = computed(() => isArchive.value ? 'Архив пуст' : 'Нет заявок на рассмотрении')
 const emptyDescription = computed(() => isArchive.value
   ? 'Здесь появятся заявки после принятого решения.'
@@ -36,6 +45,11 @@ const accessTitle = computed(() => props.access === 'forbidden' ? 'Раздел 
 const accessDescription = computed(() => props.access === 'forbidden'
   ? 'У тебя сейчас нет доступа к заявкам.'
   : 'Подать заявку можно только в активном семестре.')
+const actionHint = computed(() => props.readOnly
+  ? 'Подача заявок отключена в режиме только чтения.'
+  : props.offline
+    ? 'Подача заявок снова станет доступна онлайн.'
+    : accessDescription.value)
 </script>
 
 <template>
@@ -63,7 +77,7 @@ const accessDescription = computed(() => props.access === 'forbidden'
       id="requests-action-hint"
       class="requests-screen__hint"
     >
-      {{ offline ? 'Подача заявок снова станет доступна онлайн.' : accessDescription }}
+      {{ actionHint }}
     </p>
 
     <div
@@ -165,11 +179,21 @@ const accessDescription = computed(() => props.access === 'forbidden'
           :detail="request"
           :offline="offline"
           :cancelling="cancellingId === request.summary.id"
+          :attachment-states="attachmentStates"
           @cancel="emit('cancel', $event)"
           @open-attachment="emit('openAttachment', $event)"
         />
       </li>
     </ul>
+    <button
+      v-if="!loading && !error && requests.length > 0 && hasNextPage"
+      class="requests-secondary-action"
+      type="button"
+      :disabled="loadingMore"
+      @click="emit('loadMore')"
+    >
+      {{ loadingMore ? 'Загружаем…' : 'Показать ещё' }}
+    </button>
   </main>
 </template>
 

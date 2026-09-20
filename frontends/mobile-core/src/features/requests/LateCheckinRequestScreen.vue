@@ -20,6 +20,7 @@ const props = withDefaults(defineProps<{
   submitting?: boolean
   submitError?: string | null
   disabled?: boolean
+  ambiguous?: boolean
 }>(), {
   lessonsLoading: false,
   lessonsError: null,
@@ -27,12 +28,14 @@ const props = withDefaults(defineProps<{
   submitting: false,
   submitError: null,
   disabled: false,
+  ambiguous: false,
 })
 
 const emit = defineEmits<{
   back: []
   cancel: []
   retryLessons: []
+  abandon: []
   'update:lessonId': [lessonId: string | null]
   submit: [payload: LateCheckinRequestPayload]
 }>()
@@ -52,6 +55,7 @@ const canSubmit = computed(() => props.access === 'allowed'
   && !props.offline
   && !props.disabled
   && !props.submitting
+  && !props.ambiguous
   && !props.lessonsLoading
   && !props.lessonsError
   && Boolean(props.lessonId)
@@ -236,6 +240,14 @@ function onSubmit(): void {
         >
           {{ props.submitError }}
         </p>
+        <button
+          v-if="props.ambiguous"
+          class="requests-secondary-action"
+          type="button"
+          @click="emit('abandon')"
+        >
+          Отказаться от неподтверждённой отправки
+        </button>
         <button
           class="requests-submit-action"
           type="submit"

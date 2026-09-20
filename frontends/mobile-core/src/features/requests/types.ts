@@ -3,6 +3,12 @@ export type RequestKind = 'EXCUSE' | 'LATE_CHECKIN'
 export type RequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | (string & {})
 export type RequestOrigin = 'MANUAL' | 'AUTO_GEO_FAILURE' | (string & {})
 export type RequestAttachmentState = 'ACTIVE' | 'EXPIRED' | (string & {})
+export type RequestAttachmentActionStatus = 'idle' | 'pending' | 'error'
+
+export interface RequestAttachmentViewState {
+  status: RequestAttachmentActionStatus
+  error: string | null
+}
 
 /** Feature-local projection of StudentRequestApiModels.Lesson. */
 export interface RequestLesson {
@@ -51,6 +57,9 @@ export interface RequestDetail {
   comment?: string | null
   decision?: RequestDecision | null
   attachments?: readonly RequestAttachment[] | null
+  /** Detail hydration is best-effort; an unavailable detail stays visible as such. */
+  detailState?: 'ready' | 'unavailable' | 'error'
+  detailError?: string | null
 }
 
 export interface RequestReasonOption {

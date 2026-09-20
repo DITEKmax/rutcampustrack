@@ -3,7 +3,7 @@ import { renderToString } from '@vue/server-renderer'
 import { describe, expect, it } from 'vitest'
 import ExcuseRequestScreen from './ExcuseRequestScreen.vue'
 import RequestsScreen from './RequestsScreen.vue'
-import type { RequestDetail, RequestLessonOption, RequestReasonOption } from './types'
+import type { RequestAttachmentViewState, RequestDetail, RequestLessonOption, RequestReasonOption } from './types'
 
 const pendingRequest: RequestDetail = {
   summary: {
@@ -35,6 +35,7 @@ async function renderScreen(overrides: Partial<{
   error: string | null
   offline: boolean
   access: 'allowed' | 'forbidden' | 'no-active-semester'
+  attachmentStates: Readonly<Record<string, RequestAttachmentViewState | undefined>>
 }> = {}): Promise<string> {
   const props = {
     bucket: 'open' as const,
@@ -43,6 +44,7 @@ async function renderScreen(overrides: Partial<{
     error: null,
     offline: false,
     access: 'allowed' as const,
+    attachmentStates: undefined,
     ...overrides,
   }
   return renderToString(createSSRApp(RequestsScreen, props))
@@ -104,6 +106,32 @@ describe('RequestsScreen rendered states', () => {
     expect(offline).toContain('Офлайн · показываем сохранённые данные')
     expect(offline).toContain('Подача заявок снова станет доступна онлайн.')
     expect(offline).toContain('disabled')
+  })
+
+  it('renders per-attachment pending and retryable error states', async () => {
+    const requestWithAttachment: RequestDetail = {
+      ...pendingRequest,
+      attachments: [{ id: 'attachment-1', name: 'справка.pdf', state: 'ACTIVE' }],
+    }
+    const error = await renderScreen({
+      requests: [requestWithAttachment],
+      attachmentStates: {
+        'request-1\u0000attachment-1': { status: 'error', error: 'Вложение больше недоступно.' },
+      },
+    })
+    expect(error).toContain('Вложение больше недоступно.')
+    expect(error).toContain('Повторить')
+    expect(error).toContain('request-card__attachment-error')
+
+    const pending = await renderScreen({
+      requests: [requestWithAttachment],
+      attachmentStates: {
+        'request-1\u0000attachment-1': { status: 'pending', error: null },
+      },
+    })
+    expect(pending).toContain('Открываем…')
+    expect(pending).toContain('aria-busy="true"')
+    expect(pending).toMatch(/request-card__attachment-action[^>]*disabled/)
   })
 
 

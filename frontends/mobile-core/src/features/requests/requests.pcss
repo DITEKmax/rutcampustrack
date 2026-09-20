@@ -331,8 +331,30 @@
   padding-block-start: 0.5rem;
 }
 
+.request-card__attachment-name {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.request-card__attachment-actions {
+  display: grid;
+  flex: 0 1 auto;
+  justify-items: end;
+  min-inline-size: 0;
+  gap: 0.25rem;
+}
+
 .request-card__attachment-state {
   color: var(--requests-muted);
+  text-align: end;
+}
+
+.request-card__attachment-error {
+  max-inline-size: 14rem;
+  color: var(--requests-danger);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  text-align: end;
 }
 
 .request-card__attachment-action {

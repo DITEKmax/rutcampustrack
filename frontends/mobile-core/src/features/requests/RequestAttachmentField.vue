@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { acceptsRequestFile, requestAttachmentFormatHint } from './attachment-validation'
 import type { RequestFileLimits, RequestFileRef } from './types'
 
 const props = withDefaults(defineProps<{
@@ -52,24 +53,6 @@ function fileWord(value: number): string {
   return 'файлов'
 }
 
-function fileExtension(name: string): string {
-  const point = name.lastIndexOf('.')
-  return point >= 0 ? name.slice(point).toLowerCase() : ''
-}
-
-function acceptsType(file: File): boolean {
-  const types = props.limits?.contentTypes ?? []
-  const extensions = (props.limits?.extensions ?? []).map((item) => {
-    const normalized = item.toLowerCase()
-    return normalized.startsWith('.') ? normalized : '.' + normalized
-  })
-  if (types.length === 0 && extensions.length === 0) return true
-  const typeMatches = types.some((accepted) => accepted.endsWith('/*')
-    ? file.type.startsWith(accepted.slice(0, -1))
-    : file.type === accepted)
-  return typeMatches || extensions.includes(fileExtension(file.name))
-}
-
 function fileId(file: File): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID()
   return file.name + '-' + file.size + '-' + file.lastModified
@@ -80,9 +63,10 @@ function validateFile(file: File): string | null {
   if (limits?.maxBytesPerFile !== null && limits?.maxBytesPerFile !== undefined && file.size > limits.maxBytesPerFile) {
     return file.name + ': размер больше ' + formatBytes(limits.maxBytesPerFile) + '.'
   }
-  if (!acceptsType(file)) {
+  if (!acceptsRequestFile(file, limits)) {
     const accepted = [...(limits?.contentTypes ?? []), ...(limits?.extensions ?? [])].join(', ')
-    return file.name + ': формат не поддерживается' + (accepted ? ' (' + accepted + ')' : '') + '.'
+    const hint = requestAttachmentFormatHint(limits)
+    return file.name + ': формат не поддерживается' + (accepted ? ' (' + accepted + ')' : '') + (hint ? '. ' + hint : '.')
   }
   return null
 }

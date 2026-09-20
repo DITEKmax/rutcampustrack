@@ -61,6 +61,25 @@ public class StudentApiController implements StudentApi {
     }
 
     @Override
+    public ResponseEntity<StudentAttendanceResponse> getAttendance(String semesterId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(queries.attendance(Long.parseLong(semesterId)));
+    }
+
+    @Override
+    public ResponseEntity<StudentStatisticsResponse> getStatistics(String semesterId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(queries.statistics(Long.parseLong(semesterId)));
+    }
+
+    @Override
+    public ResponseEntity<StudentStatisticsSubjectDetailResponse> getStatisticsSubject(
+            String subjectId, String semesterId, String range, List<String> types) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(queries.statisticsSubject(Long.parseLong(semesterId), Long.parseLong(subjectId), range, types));
+    }
+
+    @Override
     public ResponseEntity<HomeworkResponse> getHomework(String from, String to) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(queries.homework(from, to));
     }

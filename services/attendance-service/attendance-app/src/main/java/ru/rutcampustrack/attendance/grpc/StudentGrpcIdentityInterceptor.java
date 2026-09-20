@@ -35,8 +35,11 @@ public class StudentGrpcIdentityInterceptor implements ServerInterceptor {
             return next.startCall(call, headers);
         }
         try {
-            InternalJwtClaims claims = validator.validate(headers.get(INTERNAL_TOKEN));
-            Context context = Context.current().withValue(StudentGrpcIdentity.CLAIMS, claims);
+            String token = headers.get(INTERNAL_TOKEN);
+            InternalJwtClaims claims = validator.validate(token);
+            Context context = Context.current()
+                    .withValue(StudentGrpcIdentity.CLAIMS, claims)
+                    .withValue(StudentGrpcIdentity.TOKEN, token);
             return Contexts.interceptCall(context, call, headers, next);
         } catch (InternalJwtException error) {
             call.close(Status.UNAUTHENTICATED.withDescription("Invalid internal identity"), new Metadata());

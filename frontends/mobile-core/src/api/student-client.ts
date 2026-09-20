@@ -14,6 +14,9 @@ import type {
   StudentRequestOptions,
   StudentRequestPage,
   StudentToday,
+  StudentAttendanceResponse,
+  StudentStatisticsOverviewResponse,
+  StudentStatisticsSubjectDetailResponse,
 } from './types'
 
 export class StudentApiError extends Error {
@@ -69,6 +72,31 @@ export class StudentApi {
           etag: response.headers.get('ETag'),
         }
       })
+  }
+
+  getAttendance(semesterId: string, signal?: AbortSignal): Promise<StudentAttendanceResponse> {
+    const params = new URLSearchParams({ semesterId })
+    return this.request(`/api/v1/student/attendance?${params.toString()}`, signal ? { signal } : undefined)
+  }
+
+  getStatistics(semesterId: string, signal?: AbortSignal): Promise<StudentStatisticsOverviewResponse> {
+    const params = new URLSearchParams({ semesterId })
+    return this.request(`/api/v1/student/statistics?${params.toString()}`, signal ? { signal } : undefined)
+  }
+
+  getStatisticsSubject(
+    subjectId: string,
+    semesterId: string,
+    range: 'days' | 'weeks',
+    types: readonly string[] = [],
+    signal?: AbortSignal,
+  ): Promise<StudentStatisticsSubjectDetailResponse> {
+    const params = new URLSearchParams({ semesterId, range })
+    for (const type of types) params.append('types', type)
+    return this.request(
+      `/api/v1/student/statistics/subjects/${encodeURIComponent(subjectId)}?${params.toString()}`,
+      signal ? { signal } : undefined,
+    )
   }
 
   getHomework(from?: string, to?: string): Promise<StudentHomework> {

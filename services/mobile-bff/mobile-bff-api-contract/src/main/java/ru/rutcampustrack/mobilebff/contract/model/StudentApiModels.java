@@ -32,6 +32,12 @@ public final class StudentApiModels {
     public enum Capability { TODAY, GEO_CHECKIN, OFFLINE_SEMESTER_SCHEDULE }
     public enum LessonType { LECTURE, PRACTICE, LAB }
     public enum LessonStatus { PLANNED, ACTIVE, CLOSED, CANCELLED }
+    public enum StudentAttendanceLessonStatus {
+        PRESENT, ABSENT, EXCUSED, ACTIVE, FUTURE, NO_DATA, CANCELLED
+    }
+    public enum StudentAttendanceHistoryStatus { PRESENT, ABSENT, EXCUSED, FUTURE, NO_DATA }
+    public enum StudentAttendanceDayState { PAST, CURRENT, FUTURE }
+    public enum StudentAttendanceGraphState { DATA, NO_DATA, FUTURE }
     public enum RoomChangeState { UNCHANGED, CHANGED, UNKNOWN }
     public enum AttendanceStatus { PRESENT, ABSENT, EXCUSED }
     public enum AttendanceSource { STUDENT_GEO, LATE_CHECKIN, HEADMAN, TEACHER, SYSTEM }
@@ -215,6 +221,181 @@ public final class StudentApiModels {
             Instant updatedAt,
             List<LessonScheduleProjection> lessons,
             @JsonProperty("_links") Map<String, Link> links
+    ) {
+    }
+
+    @Schema(name = "StudentAttendanceMetricValue", requiredProperties = {"count", "percent"})
+    public record StudentAttendanceMetricValue(int count, @Schema(nullable = true) Double percent) {
+    }
+
+    @Schema(name = "StudentAttendanceMetricSet", requiredProperties = {
+            "present", "presentOrExcused", "excused", "absent", "held", "planned"
+    })
+    public record StudentAttendanceMetricSet(
+            StudentAttendanceMetricValue present,
+            StudentAttendanceMetricValue presentOrExcused,
+            StudentAttendanceMetricValue excused,
+            StudentAttendanceMetricValue absent,
+            int held,
+            int planned
+    ) {
+    }
+
+    @Schema(name = "StudentAttendanceRequestOption", requiredProperties = {"id", "kind", "label", "enabled"})
+    public record StudentAttendanceRequestOption(
+            String id,
+            String kind,
+            String label,
+            boolean enabled,
+            @Schema(nullable = true) String reason
+    ) {
+    }
+
+    @Schema(name = "StudentAttendanceLesson", requiredProperties = {
+            "id", "date", "number", "subject", "type", "schedule", "status", "requestOptions"
+    })
+    public record StudentAttendanceLesson(
+            String id,
+            LocalDate date,
+            String number,
+            SubjectProjection subject,
+            LessonType type,
+            AttendanceLessonSchedule schedule,
+            StudentAttendanceLessonStatus status,
+            List<StudentAttendanceRequestOption> requestOptions
+    ) {
+    }
+
+    @Schema(name = "StudentAttendanceLessonSchedule", requiredProperties = {"startsAt", "endsAt", "room"})
+    public record AttendanceLessonSchedule(
+            LocalTime startsAt,
+            LocalTime endsAt,
+            @Schema(nullable = true) String room
+    ) {
+    }
+
+    @Schema(name = "StudentAttendanceDay", requiredProperties = {
+            "date", "weekday", "dayNumber", "state", "lessons"
+    })
+    public record StudentAttendanceDay(
+            LocalDate date,
+            String weekday,
+            String dayNumber,
+            StudentAttendanceDayState state,
+            List<StudentAttendanceLesson> lessons
+    ) {
+    }
+
+    @Schema(name = "StudentAttendanceHistorySegment", requiredProperties = {"id", "status"})
+    public record StudentAttendanceHistorySegment(
+            String id,
+            StudentAttendanceHistoryStatus status
+    ) {
+    }
+
+    @Schema(name = "StudentAttendanceTypeCard", requiredProperties = {"type", "metrics", "history"})
+    public record StudentAttendanceTypeCard(
+            LessonType type,
+            StudentAttendanceMetricSet metrics,
+            List<StudentAttendanceHistorySegment> history
+    ) {
+    }
+
+    @Schema(name = "StudentAttendanceSubject", requiredProperties = {
+            "id", "name", "typeCards"
+    })
+    public record StudentAttendanceSubject(
+            String id,
+            String name,
+            StudentAttendanceMetricSet metrics,
+            List<LessonType> availableTypes,
+            List<LessonType> selectedTypes,
+            StudentAttendanceMetricSet selectedAggregate,
+            List<StudentAttendanceTypeCard> typeCards,
+            List<StudentAttendanceSeriesPoint> series
+    ) {
+    }
+
+    @Schema(name = "StudentAttendanceSeriesPoint", requiredProperties = {
+            "id", "label", "dateFrom", "dateTo", "state", "metrics"
+    })
+    public record StudentAttendanceSeriesPoint(
+            String id,
+            String label,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            StudentAttendanceGraphState state,
+            StudentAttendanceMetricSet metrics
+    ) {
+    }
+
+    @Schema(name = "StudentAttendanceGraph", requiredProperties = {"days", "weeks"})
+    public record StudentAttendanceGraph(
+            List<StudentAttendanceSeriesPoint> days,
+            List<StudentAttendanceSeriesPoint> weeks
+    ) {
+    }
+
+    @Schema(name = "StudentAttendanceOwnRank", requiredProperties = {
+            "position", "participantCount", "available"
+    })
+    public record StudentAttendanceOwnRank(
+            @Schema(nullable = true) Integer position,
+            int participantCount,
+            boolean available
+    ) {
+    }
+
+    @Schema(name = "StudentAttendance", requiredProperties = {
+            "semester", "dateFrom", "dateTo", "serverNow", "terminalReadOnly",
+            "metrics", "days", "subjects", "graph", "ownRank", "_links"
+    })
+    public record StudentAttendanceResponse(
+            SemesterSummary semester,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            Instant serverNow,
+            boolean terminalReadOnly,
+            StudentAttendanceMetricSet metrics,
+            List<StudentAttendanceDay> days,
+            List<StudentAttendanceSubject> subjects,
+            StudentAttendanceGraph graph,
+            StudentAttendanceOwnRank ownRank,
+            @JsonProperty("_links") Map<String, Link> links
+    ) {
+    }
+
+    @Schema(name = "StudentStatisticsSubject", requiredProperties = {"id", "name", "metrics"})
+    public record StudentStatisticsSubject(
+            String id,
+            String name,
+            StudentAttendanceMetricSet metrics
+    ) {
+    }
+
+    @Schema(name = "StudentStatistics", requiredProperties = {
+            "metrics", "ownRank", "semesterSeries", "subjects", "_links"
+    })
+    public record StudentStatisticsResponse(
+            StudentAttendanceMetricSet metrics,
+            StudentAttendanceOwnRank ownRank,
+            List<StudentAttendanceSeriesPoint> semesterSeries,
+            List<StudentStatisticsSubject> subjects,
+            @JsonProperty("_links") Map<String, Link> links
+    ) {
+    }
+
+    @Schema(name = "StudentStatisticsSubjectDetail", requiredProperties = {
+            "subjectId", "name", "availableTypes", "selectedTypes", "selectedAggregate", "series", "typeCards"
+    })
+    public record StudentStatisticsSubjectDetailResponse(
+            String subjectId,
+            String name,
+            List<LessonType> availableTypes,
+            List<LessonType> selectedTypes,
+            StudentAttendanceMetricSet selectedAggregate,
+            List<StudentAttendanceSeriesPoint> series,
+            List<StudentAttendanceTypeCard> typeCards
     ) {
     }
 

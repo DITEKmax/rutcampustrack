@@ -31,3 +31,155 @@ export type UnavailableReason = Extract<
   components['schemas']['GeoInput'],
   { kind: 'UNAVAILABLE' }
 >['reason']
+
+/**
+ * The student read projections are intentionally hand-written until the
+ * additive BFF contract is merged into the generated OpenAPI document.  They
+ * mirror the frozen mobile contract and keep generated sources owned by the
+ * backend integration writer.
+ */
+export type StudentLessonType = 'LECTURE' | 'PRACTICE' | 'LAB'
+export type StudentAttendanceLessonStatus =
+  | 'PRESENT'
+  | 'ABSENT'
+  | 'EXCUSED'
+  | 'ACTIVE'
+  | 'FUTURE'
+  | 'NO_DATA'
+  | 'CANCELLED'
+export type StudentAttendanceHistoryStatus = Exclude<StudentAttendanceLessonStatus, 'ACTIVE' | 'CANCELLED'>
+export type StudentProjectionState = 'PAST' | 'CURRENT' | 'FUTURE'
+export type StudentSeriesState = 'DATA' | 'NO_DATA' | 'FUTURE'
+
+export interface StudentAttendanceMetricValue {
+  readonly count: number
+  readonly percent: number | null
+}
+
+export interface StudentAttendanceMetricSet {
+  readonly present: StudentAttendanceMetricValue
+  readonly presentOrExcused: StudentAttendanceMetricValue
+  readonly excused: StudentAttendanceMetricValue
+  readonly absent: StudentAttendanceMetricValue
+  readonly held: number
+  readonly planned: number
+}
+
+export interface StudentAttendanceRequestOption {
+  readonly id: string
+  readonly kind: 'EXCUSE' | 'LATE_CHECKIN'
+  readonly label: string
+  readonly enabled: boolean
+  readonly reason?: string | null
+}
+
+export interface StudentAttendanceLesson {
+  readonly id: string
+  readonly date: string
+  readonly number: string
+  readonly subject: { readonly id: string; readonly name: string }
+  readonly type: StudentLessonType
+  readonly schedule: {
+    readonly startsAt: string
+    readonly endsAt: string
+    readonly room: string | null
+  }
+  readonly status: StudentAttendanceLessonStatus
+  readonly requestOptions: readonly StudentAttendanceRequestOption[]
+}
+
+export interface StudentAttendanceDay {
+  readonly date: string
+  readonly weekday: string
+  readonly dayNumber: string
+  readonly state: StudentProjectionState
+  readonly lessons: readonly StudentAttendanceLesson[]
+}
+
+export interface StudentAttendanceHistorySegment {
+  readonly id: string
+  readonly status: StudentAttendanceHistoryStatus
+}
+
+export interface StudentAttendanceTypeCard {
+  readonly type: StudentLessonType
+  readonly metrics: StudentAttendanceMetricSet
+  readonly history: readonly StudentAttendanceHistorySegment[]
+}
+
+export interface StudentAttendanceSubject {
+  readonly id: string
+  readonly name: string
+  readonly typeCards: readonly StudentAttendanceTypeCard[]
+}
+
+export interface StudentAttendanceSeriesPoint {
+  readonly id: string
+  readonly label: string
+  readonly dateFrom: string
+  readonly dateTo: string
+  readonly state: StudentSeriesState
+  readonly metrics: StudentAttendanceMetricSet
+}
+
+export interface StudentAttendanceResponse {
+  readonly semester: {
+    readonly id: string
+    readonly name: string
+    readonly dateFrom: string
+    readonly dateTo: string
+  }
+  readonly serverNow: string
+  readonly terminalReadOnly: boolean
+  readonly metrics: StudentAttendanceMetricSet
+  readonly days: readonly StudentAttendanceDay[]
+  readonly subjects: readonly StudentAttendanceSubject[]
+  readonly graph: {
+    readonly days: readonly StudentAttendanceSeriesPoint[]
+    readonly weeks: readonly StudentAttendanceSeriesPoint[]
+  }
+}
+
+export interface StudentStatisticsOwnRank {
+  readonly position: number | null
+  readonly participantCount: number
+  readonly available: boolean
+}
+
+export interface StudentStatisticsSeriesPoint {
+  readonly id: string
+  readonly label: string
+  readonly dateFrom: string
+  readonly dateTo: string
+  readonly state: StudentSeriesState
+  readonly metrics: StudentAttendanceMetricSet
+}
+
+export interface StudentStatisticsSubjectSummary {
+  readonly id: string
+  readonly name: string
+  readonly metrics: StudentAttendanceMetricSet
+}
+
+export interface StudentStatisticsOverviewResponse {
+  readonly metrics: StudentAttendanceMetricSet
+  readonly ownRank: StudentStatisticsOwnRank
+  readonly semesterSeries: readonly StudentStatisticsSeriesPoint[]
+  readonly subjects: readonly StudentStatisticsSubjectSummary[]
+}
+
+export interface StudentStatisticsTypeCard {
+  readonly type: StudentLessonType
+  readonly metrics: StudentAttendanceMetricSet
+  readonly history: readonly StudentAttendanceHistorySegment[]
+}
+
+export interface StudentStatisticsSubjectDetailResponse {
+  readonly subjectId: number | string
+  readonly name: string
+  readonly availableTypes: readonly StudentLessonType[]
+  readonly selectedTypes: readonly StudentLessonType[]
+  readonly selectedAggregate: StudentAttendanceMetricSet
+  readonly series: readonly StudentStatisticsSeriesPoint[]
+  readonly typeCards: readonly StudentStatisticsTypeCard[]
+}

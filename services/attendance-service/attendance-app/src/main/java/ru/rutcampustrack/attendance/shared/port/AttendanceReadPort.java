@@ -2,7 +2,9 @@ package ru.rutcampustrack.attendance.shared.port;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Read port interface for cross-domain data access (D-14, D-15).
@@ -20,6 +22,20 @@ public interface AttendanceReadPort {
      * Find all attendance records for a student in a semester.
      */
     List<AttendanceRecord> findByUserId(Long userId, Long semesterId);
+
+    /**
+     * Find marks for several roster members in one semester.  The default
+     * implementation keeps existing adapters and focused mocks source
+     * compatible; the Mongo adapter overrides it with one $in query.
+     */
+    default Map<Long, List<AttendanceRecord>> findByUserIds(List<Long> userIds, Long semesterId) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
+        }
+        return userIds.stream().distinct().collect(Collectors.toUnmodifiableMap(
+                userId -> userId,
+                userId -> List.copyOf(findByUserId(userId, semesterId))));
+    }
 
     /**
      * Find attendance records for a group/subject within a date range (both boundaries inclusive).

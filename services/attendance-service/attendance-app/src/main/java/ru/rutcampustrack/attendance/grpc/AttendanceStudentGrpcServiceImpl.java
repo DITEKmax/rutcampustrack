@@ -16,6 +16,9 @@ import ru.rutcampustrack.attendance.student.StudentAttendanceSnapshotService;
 import ru.rutcampustrack.attendance.student.StudentCheckinException;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels;
 import ru.rutcampustrack.attendance.student.StudentCheckinService;
+import ru.rutcampustrack.attendance.report.studentprojection.AttendanceMetricCalculator;
+import ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionService;
+import ru.rutcampustrack.attendance.report.studentprojection.StudentProjectionException;
 import ru.rutcampustrack.attendance.studentrequest.RequestBucket;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
@@ -24,7 +27,9 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @GrpcService
 public class AttendanceStudentGrpcServiceImpl
@@ -36,6 +41,7 @@ public class AttendanceStudentGrpcServiceImpl
     private final AcademicGrpcClient academicGrpcClient;
     private final SemesterCacheService semesterCacheService;
     private final StudentRequestService requestService;
+    private final StudentAttendanceProjectionService projectionService;
 
     public AttendanceStudentGrpcServiceImpl(
             StudentCheckinService checkinService,
@@ -45,7 +51,19 @@ public class AttendanceStudentGrpcServiceImpl
             SemesterCacheService semesterCacheService
     ) {
         this(checkinService, snapshotService, scheduleGrpcClient, academicGrpcClient,
-                semesterCacheService, null);
+                semesterCacheService, null, null);
+    }
+
+    public AttendanceStudentGrpcServiceImpl(
+            StudentCheckinService checkinService,
+            StudentAttendanceSnapshotService snapshotService,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AcademicGrpcClient academicGrpcClient,
+            SemesterCacheService semesterCacheService,
+            StudentRequestService requestService
+    ) {
+        this(checkinService, snapshotService, scheduleGrpcClient, academicGrpcClient,
+                semesterCacheService, requestService, null);
     }
 
     @Autowired
@@ -55,7 +73,8 @@ public class AttendanceStudentGrpcServiceImpl
             ScheduleGrpcClient scheduleGrpcClient,
             AcademicGrpcClient academicGrpcClient,
             SemesterCacheService semesterCacheService,
-            StudentRequestService requestService
+            StudentRequestService requestService,
+            StudentAttendanceProjectionService projectionService
     ) {
         this.checkinService = checkinService;
         this.snapshotService = snapshotService;
@@ -63,6 +82,29 @@ public class AttendanceStudentGrpcServiceImpl
         this.academicGrpcClient = academicGrpcClient;
         this.semesterCacheService = semesterCacheService;
         this.requestService = requestService;
+        this.projectionService = projectionService;
+    }
+
+    @Override
+    public void getStudentAttendanceProjection(
+            StudentAttendanceProjectionRequest request,
+            StreamObserver<StudentAttendanceProjectionResponse> observer) {
+        try {
+            if (projectionService == null) {
+                throw new AcademicServiceUnavailableException("Student attendance projection is not configured");
+            }
+            InternalJwtClaims claims = requireClaims();
+            var projection = projectionService.project(
+                    claims,
+                    request.getSemesterId(),
+                    request.hasSubjectId() ? request.getSubjectId() : null,
+                    request.getRange(),
+                    request.getLessonTypesList());
+            observer.onNext(toProto(projection, projectionRequestOptions(claims, request, projection)));
+            observer.onCompleted();
+        } catch (RuntimeException error) {
+            observer.onError(mapError(error));
+        }
     }
 
     @Override
@@ -367,6 +409,173 @@ public class AttendanceStudentGrpcServiceImpl
         return result.build();
     }
 
+    private static StudentAttendanceProjectionResponse toProto(
+            StudentAttendanceProjectionService.Projection projection) {
+        return toProto(projection, Map.of());
+    }
+
+    private static StudentAttendanceProjectionResponse toProto(
+            StudentAttendanceProjectionService.Projection projection,
+            Map<Long, List<StudentAttendanceRequestOption>> requestOptions) {
+        StudentAttendanceProjectionResponse.Builder result = StudentAttendanceProjectionResponse.newBuilder()
+                .setStudentId(projection.studentId())
+                .setSemesterId(projection.semesterId())
+                .setDateFrom(projection.dateFrom().toString())
+                .setDateTo(projection.dateTo().toString())
+                .setServerNow(projection.serverNow().toString())
+                .setTerminalReadOnly(projection.terminalReadOnly())
+                .setMetrics(toProto(projection.metrics()))
+                .setGraph(toProto(projection.graph()))
+                .setOwnRank(toProto(projection.ownRank()));
+        projection.days().forEach(day -> result.addDays(toProto(day, requestOptions)));
+        projection.subjects().forEach(subject -> result.addSubjects(toProto(subject)));
+        return result.build();
+    }
+
+    private static StudentAttendanceDay toProto(
+            StudentAttendanceProjectionService.Day day,
+            Map<Long, List<StudentAttendanceRequestOption>> requestOptions) {
+        StudentAttendanceDay.Builder result = StudentAttendanceDay.newBuilder()
+                .setDate(day.date().toString())
+                .setWeekday(day.weekday())
+                .setDayNumber(day.dayNumber())
+                .setState(day.state());
+        day.lessons().forEach(lesson -> result.addLessons(toProto(lesson, requestOptions)));
+        return result.build();
+    }
+
+    private static StudentAttendanceLesson toProto(
+            StudentAttendanceProjectionService.Lesson lesson,
+            Map<Long, List<StudentAttendanceRequestOption>> requestOptions) {
+        StudentAttendanceLesson.Builder result = StudentAttendanceLesson.newBuilder()
+                .setLessonId(lesson.lessonId())
+                .setDate(lesson.date().toString())
+                .setLessonNumber(lesson.lessonNumber())
+                .setSubjectId(lesson.subjectId())
+                .setSubjectName(lesson.subjectName())
+                .setLessonType(lesson.lessonType())
+                .setStartsAt(lesson.startsAt().toString())
+                .setEndsAt(lesson.endsAt().toString())
+                .setStatus(lesson.uiStatus())
+                .addAllRequestOptions(requestOptions.getOrDefault(lesson.lessonId(), List.of()));
+        if (lesson.room() != null) result.setRoom(lesson.room());
+        return result.build();
+    }
+
+    private Map<Long, List<StudentAttendanceRequestOption>> projectionRequestOptions(
+            InternalJwtClaims claims,
+            StudentAttendanceProjectionRequest request,
+            StudentAttendanceProjectionService.Projection projection) {
+        if (requestService == null || claims.readOnly() || projection.terminalReadOnly()
+                || !java.util.Objects.equals(semesterCacheService.getActiveSemesterId(), request.getSemesterId())) {
+            return Map.of();
+        }
+        try {
+            StudentRequestModels.RequestOptions options = requestService.options(requestIdentity(claims));
+            Map<Long, List<StudentAttendanceRequestOption>> result = new HashMap<>();
+            for (StudentRequestModels.LessonOption option : options.lessons()) {
+                List<StudentAttendanceRequestOption> mapped = List.of(
+                        StudentAttendanceRequestOption.newBuilder()
+                                .setId("EXCUSE")
+                                .setKind("EXCUSE")
+                                .setLabel("Уважительная причина")
+                                .setEnabled(option.excuseEligible())
+                                .build(),
+                        StudentAttendanceRequestOption.newBuilder()
+                                .setId("LATE_CHECKIN")
+                                .setKind("LATE_CHECKIN")
+                                .setLabel("Поздняя отметка")
+                                .setEnabled(option.lateCheckinEligible())
+                                .build());
+                result.put(option.lesson().lessonId(), mapped);
+            }
+            return result;
+        } catch (RuntimeException unavailable) {
+            // Request actions are optional decoration of the read projection;
+            // an unavailable options dependency fails closed to no actions.
+            return Map.of();
+        }
+    }
+
+    private static StudentAttendanceSubject toProto(StudentAttendanceProjectionService.Subject subject) {
+        StudentAttendanceSubject.Builder result = StudentAttendanceSubject.newBuilder()
+                .setSubjectId(subject.subjectId())
+                .setName(subject.name())
+                .setMetrics(toProto(subject.metrics()))
+                .addAllAvailableTypes(subject.availableTypes())
+                .addAllSelectedTypes(subject.selectedTypes())
+                .setSelectedAggregate(toProto(subject.selectedAggregate()))
+                .addAllTypeCards(subject.typeCards().stream()
+                        .map(AttendanceStudentGrpcServiceImpl::toProto)
+                        .toList())
+                .addAllSeries(subject.series().stream()
+                        .map(AttendanceStudentGrpcServiceImpl::toProto)
+                        .toList());
+        return result.build();
+    }
+
+    private static StudentAttendanceTypeCard toProto(
+            StudentAttendanceProjectionService.TypeCard card) {
+        return StudentAttendanceTypeCard.newBuilder()
+                .setLessonType(card.lessonType())
+                .setMetrics(toProto(card.metrics()))
+                .addAllHistory(card.history().stream()
+                        .map(history -> StudentAttendanceHistorySegment.newBuilder()
+                                .setId(history.id()).setStatus(history.status()).build())
+                        .toList())
+                .build();
+    }
+
+    private static StudentAttendanceGraph toProto(StudentAttendanceProjectionService.Graph graph) {
+        return StudentAttendanceGraph.newBuilder()
+                .addAllDays(graph.days().stream()
+                        .map(AttendanceStudentGrpcServiceImpl::toProto)
+                        .toList())
+                .addAllWeeks(graph.weeks().stream()
+                        .map(AttendanceStudentGrpcServiceImpl::toProto)
+                        .toList())
+                .build();
+    }
+
+    private static StudentAttendanceSeriesPoint toProto(
+            StudentAttendanceProjectionService.SeriesPoint point) {
+        return StudentAttendanceSeriesPoint.newBuilder()
+                .setId(point.id())
+                .setLabel(point.label())
+                .setDateFrom(point.dateFrom().toString())
+                .setDateTo(point.dateTo().toString())
+                .setState(point.state())
+                .setMetrics(toProto(point.metrics()))
+                .build();
+    }
+
+    private static StudentAttendanceOwnRank toProto(StudentAttendanceProjectionService.Rank rank) {
+        StudentAttendanceOwnRank.Builder result = StudentAttendanceOwnRank.newBuilder()
+                .setParticipantCount(rank.participantCount())
+                .setAvailable(rank.available());
+        if (rank.position() != null) result.setPosition(rank.position());
+        return result.build();
+    }
+
+    private static StudentAttendanceMetricSet toProto(AttendanceMetricCalculator.Metrics metrics) {
+        return StudentAttendanceMetricSet.newBuilder()
+                .setPresent(toProto(metrics.present()))
+                .setPresentOrExcused(toProto(metrics.presentOrExcused()))
+                .setExcused(toProto(metrics.excused()))
+                .setAbsent(toProto(metrics.absent()))
+                .setHeld(metrics.heldCount())
+                .setPlanned(metrics.plannedCount())
+                .setMissingClosed(metrics.missingClosedCount())
+                .build();
+    }
+
+    private static StudentAttendanceMetric toProto(AttendanceMetricCalculator.Metric metric) {
+        StudentAttendanceMetric.Builder result = StudentAttendanceMetric.newBuilder()
+                .setCount(metric.count());
+        if (metric.percent() != null) result.setPercent(metric.percent().doubleValue());
+        return result.build();
+    }
+
     private static AutomaticCheckinRequest toProto(
             ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest request) {
         AutomaticCheckinRequest.Builder result = AutomaticCheckinRequest.newBuilder()
@@ -437,6 +646,11 @@ public class AttendanceStudentGrpcServiceImpl
             return StudentCheckinGrpcErrors.toStatus(new StudentCheckinException(
                     StudentCheckinException.Code.DEPENDENCY_UNAVAILABLE,
                     "Обязательный сервис временно недоступен"));
+        }
+        if (error instanceof StudentProjectionException) {
+            return StudentCheckinGrpcErrors.toStatus(new StudentCheckinException(
+                    StudentCheckinException.Code.DEPENDENCY_UNAVAILABLE,
+                    "Attendance projection data is inconsistent or unavailable"));
         }
         return io.grpc.Status.INTERNAL.withDescription("Student attendance command failed")
                 .withCause(error).asRuntimeException();

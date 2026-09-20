@@ -12,6 +12,7 @@ import ru.rutcampustrack.academic.grpc.UserResponse;
 import ru.rutcampustrack.attendance.grpc.AutomaticCheckinRequest;
 import ru.rutcampustrack.attendance.grpc.StudentAttendanceEntry;
 import ru.rutcampustrack.attendance.grpc.StudentAttendanceSnapshotResponse;
+import ru.rutcampustrack.attendance.grpc.StudentAttendanceProjectionResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.*;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
 import ru.rutcampustrack.mobilebff.grpc.MobileAcademicClient;
@@ -114,6 +115,43 @@ public class StudentQueryService {
                         "today", "/api/v1/student/today"));
     }
 
+    public StudentAttendanceResponse attendance(long requestedSemesterId) {
+        SemesterResponse active = requireActiveSemester(requestedSemesterId);
+        StudentAttendanceProjectionResponse response = attendance.projection(
+                requestedSemesterId, null, "days", List.of());
+        return attendanceResponse(response, active);
+    }
+
+    public StudentStatisticsResponse statistics(long requestedSemesterId) {
+        SemesterResponse active = requireActiveSemester(requestedSemesterId);
+        StudentAttendanceProjectionResponse response = attendance.projection(
+                requestedSemesterId, null, "weeks", List.of());
+        return statisticsResponse(response, active);
+    }
+
+    public StudentStatisticsSubjectDetailResponse statisticsSubject(
+            long requestedSemesterId,
+            long subjectId,
+            String range,
+            List<String> types) {
+        SemesterResponse active = requireActiveSemester(requestedSemesterId);
+        StudentAttendanceProjectionResponse response = attendance.projection(
+                requestedSemesterId, subjectId, range, types == null ? List.of() : types);
+        ru.rutcampustrack.attendance.grpc.StudentAttendanceSubject subject = response.getSubjectsList().stream()
+                .filter(value -> value.getSubjectId() == subjectId)
+                .findFirst()
+                .orElseThrow(() -> new MobileBffException(HttpStatus.NOT_FOUND,
+                        ProblemCode.LESSON_NOT_FOUND, "Предмет не найден"));
+        return new StudentStatisticsSubjectDetailResponse(
+                Long.toString(subject.getSubjectId()),
+                subject.getName(),
+                subject.getAvailableTypesList().stream().map(StudentQueryService::lessonType).toList(),
+                subject.getSelectedTypesList().stream().map(StudentQueryService::lessonType).toList(),
+                metricSet(subject.getSelectedAggregate()),
+                subject.getSeriesList().stream().map(StudentQueryService::seriesPoint).toList(),
+                subject.getTypeCardsList().stream().map(StudentQueryService::typeCard).toList());
+    }
+
     public HomeworkResponse homework(String fromRaw, String toRaw) {
         InternalJwtClaims claims = requireStudent(true);
         SemesterResponse active = academic.activeSemesterForHomework();
@@ -187,6 +225,16 @@ public class StudentQueryService {
                     "Не хватает student/group scope");
         }
         return claims;
+    }
+
+    private SemesterResponse requireActiveSemester(long requestedSemesterId) {
+        requireStudent(false);
+        SemesterResponse active = academic.activeSemester();
+        if (active.getId() != requestedSemesterId) {
+            throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE,
+                    "Семестр не входит в scope студента");
+        }
+        return active;
     }
 
     private Map<Long, SubjectInfo> subjects(List<LessonResponse> lessons) {
@@ -319,6 +367,131 @@ public class StudentQueryService {
     private static SemesterSummary semester(SemesterResponse semester) {
         return new SemesterSummary(Long.toString(semester.getId()), semester.getName(),
                 LocalDate.parse(semester.getDateFrom()), LocalDate.parse(semester.getDateTo()));
+    }
+
+    private static StudentAttendanceResponse attendanceResponse(
+            StudentAttendanceProjectionResponse response,
+            SemesterResponse semester) {
+        return new StudentAttendanceResponse(
+                semester(semester),
+                LocalDate.parse(response.getDateFrom()),
+                LocalDate.parse(response.getDateTo()),
+                Instant.parse(response.getServerNow()),
+                response.getTerminalReadOnly(),
+                metricSet(response.getMetrics()),
+                response.getDaysList().stream().map(StudentQueryService::day).toList(),
+                response.getSubjectsList().stream().map(StudentQueryService::subject).toList(),
+                graph(response.getGraph()),
+                rank(response.getOwnRank()),
+                links("self", "/api/v1/student/attendance?semesterId=" + response.getSemesterId(),
+                        "statistics", "/api/v1/student/statistics?semesterId=" + response.getSemesterId()));
+    }
+
+    private static StudentStatisticsResponse statisticsResponse(
+            StudentAttendanceProjectionResponse response,
+            SemesterResponse semester) {
+        return new StudentStatisticsResponse(
+                metricSet(response.getMetrics()),
+                rank(response.getOwnRank()),
+                response.getGraph().getWeeksList().stream().map(StudentQueryService::seriesPoint).toList(),
+                response.getSubjectsList().stream()
+                        .map(subject -> new StudentStatisticsSubject(
+                                Long.toString(subject.getSubjectId()), subject.getName(), metricSet(subject.getMetrics())))
+                        .toList(),
+                links("self", "/api/v1/student/statistics?semesterId=" + response.getSemesterId(),
+                        "attendance", "/api/v1/student/attendance?semesterId=" + response.getSemesterId()));
+    }
+
+    private static StudentAttendanceDay day(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceDay source) {
+        return new StudentAttendanceDay(
+                LocalDate.parse(source.getDate()), source.getWeekday(), source.getDayNumber(),
+                StudentAttendanceDayState.valueOf(source.getState()),
+                source.getLessonsList().stream().map(StudentQueryService::lesson).toList());
+    }
+
+    private static StudentAttendanceLesson lesson(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceLesson source) {
+        return new StudentAttendanceLesson(
+                Long.toString(source.getLessonId()), LocalDate.parse(source.getDate()),
+                Integer.toString(source.getLessonNumber()),
+                new SubjectProjection(Long.toString(source.getSubjectId()), source.getSubjectName(),
+                        lessonType(source.getLessonType())),
+                lessonType(source.getLessonType()),
+                new AttendanceLessonSchedule(LocalTime.parse(source.getStartsAt()),
+                        LocalTime.parse(source.getEndsAt()), source.hasRoom() ? source.getRoom() : null),
+                StudentAttendanceLessonStatus.valueOf(source.getStatus()),
+                source.getRequestOptionsList().stream().map(option ->
+                        new StudentAttendanceRequestOption(option.getId(), option.getKind(), option.getLabel(),
+                                option.getEnabled(), option.hasReason() ? option.getReason() : null)).toList());
+    }
+
+    private static StudentAttendanceSubject subject(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceSubject source) {
+        return new StudentAttendanceSubject(
+                Long.toString(source.getSubjectId()), source.getName(), metricSet(source.getMetrics()),
+                source.getAvailableTypesList().stream().map(StudentQueryService::lessonType).toList(),
+                source.getSelectedTypesList().stream().map(StudentQueryService::lessonType).toList(),
+                metricSet(source.getSelectedAggregate()),
+                source.getTypeCardsList().stream().map(StudentQueryService::typeCard).toList(),
+                source.getSeriesList().stream().map(StudentQueryService::seriesPoint).toList());
+    }
+
+    private static StudentAttendanceTypeCard typeCard(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceTypeCard source) {
+        return new StudentAttendanceTypeCard(
+                lessonType(source.getLessonType()), metricSet(source.getMetrics()),
+                source.getHistoryList().stream().map(StudentQueryService::history).toList());
+    }
+
+    private static StudentAttendanceHistorySegment history(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceHistorySegment source) {
+        return new StudentAttendanceHistorySegment(
+                source.getId(), StudentAttendanceHistoryStatus.valueOf(source.getStatus()));
+    }
+
+    private static StudentAttendanceGraph graph(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceGraph source) {
+        return new StudentAttendanceGraph(
+                source.getDaysList().stream().map(StudentQueryService::seriesPoint).toList(),
+                source.getWeeksList().stream().map(StudentQueryService::seriesPoint).toList());
+    }
+
+    private static StudentAttendanceSeriesPoint seriesPoint(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceSeriesPoint source) {
+        return new StudentAttendanceSeriesPoint(
+                source.getId(), source.getLabel(), LocalDate.parse(source.getDateFrom()),
+                LocalDate.parse(source.getDateTo()),
+                StudentAttendanceGraphState.valueOf(source.getState()), metricSet(source.getMetrics()));
+    }
+
+    private static StudentAttendanceOwnRank rank(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceOwnRank source) {
+        return new StudentAttendanceOwnRank(
+                source.hasPosition() ? source.getPosition() : null,
+                source.getParticipantCount(), source.getAvailable());
+    }
+
+    private static StudentAttendanceMetricSet metricSet(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceMetricSet source) {
+        return new StudentAttendanceMetricSet(
+                metric(source.getPresent()), metric(source.getPresentOrExcused()),
+                metric(source.getExcused()), metric(source.getAbsent()),
+                source.getHeld(), source.getPlanned());
+    }
+
+    private static StudentAttendanceMetricValue metric(
+            ru.rutcampustrack.attendance.grpc.StudentAttendanceMetric source) {
+        return new StudentAttendanceMetricValue(source.getCount(), source.hasPercent() ? source.getPercent() : null);
+    }
+
+    private static LessonType lessonType(String value) {
+        try {
+            return LessonType.valueOf(value.trim().toUpperCase());
+        } catch (RuntimeException error) {
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
+                    ProblemCode.DEPENDENCY_UNAVAILABLE, "Attendance Service вернул неизвестный тип пары");
+        }
     }
 
     private static Map<String, Link> links(String... values) {

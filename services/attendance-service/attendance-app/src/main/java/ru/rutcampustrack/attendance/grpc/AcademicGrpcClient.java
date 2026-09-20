@@ -1,6 +1,8 @@
 package ru.rutcampustrack.attendance.grpc;
 
 import io.grpc.StatusRuntimeException;
+import io.grpc.Metadata;
+import io.grpc.stub.MetadataUtils;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
@@ -16,12 +18,15 @@ import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.academic.grpc.SubjectInfo;
 import ru.rutcampustrack.academic.grpc.SubjectsByIdsRequest;
 import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
+import ru.rutcampustrack.academic.grpc.StudentProjectionScopeRequest;
+import ru.rutcampustrack.academic.grpc.StudentProjectionScopeResponse;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsRequest;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
 import ru.rutcampustrack.academic.grpc.UserRequest;
 import ru.rutcampustrack.academic.grpc.UserResponse;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
+import ru.rutcampustrack.attendance.student.StudentCheckinException;
 
 import java.util.List;
 import java.util.Map;
@@ -183,6 +188,47 @@ public class AcademicGrpcClient {
                             (a, b) -> a));
         } catch (StatusRuntimeException e) {
             throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+        }
+    }
+
+    /**
+     * Resolve the signed student's historical membership and rank cohort.  The
+     * original validated JWT is forwarded to Academic so its authority
+     * service re-checks the same actor and session; claims are never rebuilt
+     * into a weaker synthetic header.
+     */
+    public StudentProjectionScopeResponse resolveStudentProjectionScope(long semesterId) {
+        if (semesterId <= 0) {
+            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
+                    "semester_id должен быть положительным");
+        }
+        String token = StudentGrpcIdentity.token();
+        if (token == null || token.isBlank()) {
+            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_SESSION,
+                    "Подписанная student-сессия отсутствует");
+        }
+        Metadata metadata = new Metadata();
+        metadata.put(StudentGrpcIdentityInterceptor.INTERNAL_TOKEN, token);
+        try {
+            return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .resolveStudentProjectionScope(StudentProjectionScopeRequest.newBuilder()
+                            .setSemesterId(semesterId)
+                            .build());
+        } catch (StatusRuntimeException error) {
+            switch (error.getStatus().getCode()) {
+                case UNAUTHENTICATED -> throw new StudentCheckinException(
+                        StudentCheckinException.Code.INVALID_SESSION,
+                        "Academic Service отклонил student-сессию");
+                case PERMISSION_DENIED -> throw new StudentCheckinException(
+                        StudentCheckinException.Code.OUT_OF_SCOPE,
+                        "Семестр не входит в подписанный student scope");
+                case INVALID_ARGUMENT -> throw new StudentCheckinException(
+                        StudentCheckinException.Code.INVALID_REQUEST,
+                        "Academic Service отклонил semester_id");
+                default -> throw new AcademicServiceUnavailableException(
+                        "Academic Service unavailable: " + error.getStatus());
+            }
         }
     }
 

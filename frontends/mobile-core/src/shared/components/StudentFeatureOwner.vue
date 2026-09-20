@@ -10,6 +10,9 @@ import type {
   TodayLesson,
 } from '../../api/types'
 import { CheckinCommandRecovery } from '../../domain/checkin'
+import AttendanceScreen from '../../features/attendance/AttendanceScreen.vue'
+import type { AttendanceGraphRange, AttendanceLesson, AttendanceMode } from '../../features/attendance/attendance-view-model'
+import { useAttendance } from '../../features/attendance/use-attendance'
 import HomeworkScreen from '../../features/homework/HomeworkScreen.vue'
 import { useHomework } from '../../features/homework/use-homework'
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue'
@@ -33,6 +36,8 @@ import { requestsSessionGeneration, getOrCreateRequestsDraft, purgeRequestsDraft
 import { useRequests } from '../../features/requests/use-requests'
 import { shouldLoadRequestOptions } from '../../features/requests/requests-controller'
 import type { RequestAttachmentViewState, RequestBucket, RequestFileRef, RequestKind, RequestTypeChoice } from '../../features/requests/types'
+import StatisticsScreen from '../../features/statistics/StatisticsScreen.vue'
+import { useStatistics } from '../../features/statistics/use-statistics'
 import MobileShell from './MobileShell.vue'
 import { canRunProfileNetworkAction, profileOwnerStaleMessage } from '../profile-owner-status'
 import {
@@ -96,7 +101,17 @@ const offline = computed(() => props.offline || props.api === null)
 const navigation: MobileNavigationStack = createMobileNavigationStack(rootRoute('today'))
 const route = ref<MobileRoute>(navigation.current)
 const selectedDate = ref(new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }))
-const navItems = computed<MobileBottomNavItems>(() => createStudentNavigationItems({ homeworkEnabled: true, moreEnabled: true, profileEnabled: props.profilePort !== null }))
+const attendanceSelectedDate = ref(new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }))
+const attendanceMode = ref<AttendanceMode>('days')
+const attendanceGraphRange = ref<AttendanceGraphRange>('days')
+const attendanceExpandedSubjectId = ref<string | null>(null)
+const attendanceActionLessonId = ref<string | null>(null)
+const navItems = computed<MobileBottomNavItems>(() => createStudentNavigationItems({
+  homeworkEnabled: true,
+  attendanceEnabled: true,
+  moreEnabled: true,
+  profileEnabled: props.profilePort !== null,
+}))
 const checkinRecovery = new CheckinCommandRecovery()
 const profileState = props.profilePort ? new ProfileState(props.profilePort) : null
 const profilePendingRole = ref<ProfileRole | null>(null)
@@ -124,6 +139,8 @@ const requests = useRequests(api, scope, {
   offline,
   readOnly: computed(() => props.readOnly),
 })
+const attendance = useAttendance(api.value, scope, offline)
+const statistics = useStatistics(api.value, scope, offline)
 const stopRequestsScope = watch(
   () => props.scope,
   (value, previous) => {
@@ -143,6 +160,7 @@ const stopNavigation = navigation.subscribe(() => {
 watch(() => route.value, (value) => {
   ensureProfileRoute(value)
   ensureRequestsRoute(value)
+  if (value.id !== 'more/statistics') statistics.closeSubject()
 }, { immediate: true })
 
 const displayToday = computed(() => offline.value
@@ -164,6 +182,24 @@ const homeworkError = computed(() => {
 const todayLoading = computed(() => !displayToday.value && props.api !== null && !offline.value && today.query.isPending.value)
 const homeworkLoading = computed(() => !displayHomework.value && props.api !== null && !offline.value && homework.query.isPending.value)
 const ownerIdentity = computed(() => scope.value ? studentFeatureScopeIdentity(scope.value) : null)
+watch(ownerIdentity, (identity, previous) => {
+  if (identity === previous) return
+  statistics.closeSubject()
+  attendanceActionLessonId.value = null
+  attendanceExpandedSubjectId.value = null
+  const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })
+  attendanceSelectedDate.value = todayDate
+})
+watch(
+  () => attendance.data.value?.days,
+  (days) => {
+    if (!days || days.length === 0) return
+    if (!days.some((day) => day.date === attendanceSelectedDate.value)) {
+      attendanceSelectedDate.value = days[0]!.date
+    }
+  },
+  { immediate: true },
+)
 const reportedAuthErrors = new Set<unknown>()
 const profilePublication = createProfileViewPublication(
   () => profileState?.view ?? null,
@@ -486,6 +522,18 @@ watch(
 )
 
 watch(
+  () => [attendance.query.error.value, statistics.query.error.value, statistics.detailQuery.error.value] as const,
+  (errors) => {
+    if (disposed || !scope.value) return
+    const error = errors.map((value) => terminalAuthError(value)).find((value): value is unknown => value !== null) ?? null
+    if (!error || reportedAuthErrors.has(error)) return
+    reportedAuthErrors.add(error)
+    emit('ownerError', error)
+  },
+  { flush: 'sync' },
+)
+
+watch(
   () => homework.query.data.value,
   (value) => {
     if (value && scope.value) emit('homeworkLoaded', value)
@@ -493,10 +541,76 @@ watch(
 )
 
 function navigateMore(routeName: ProfileRoute): void {
+  if (routeName === 'statistics') {
+    navigation.push(nestedRoute('more', 'more/statistics', 'overview'))
+    return
+  }
   if (routeName !== 'requests') return
   requests.selectBucket('open')
   updateRequestDraft({ bucket: 'open', view: 'inbox' })
   navigation.push(requestRoute('overview'))
+}
+
+function retryAttendance(): void {
+  if (offline.value) return
+  void attendance.query.refetch()
+}
+
+function setAttendanceMode(mode: AttendanceMode): void {
+  attendanceMode.value = mode
+  attendanceActionLessonId.value = null
+}
+
+function toggleAttendanceSubject(subjectId: string): void {
+  attendanceExpandedSubjectId.value = attendanceExpandedSubjectId.value === subjectId ? null : subjectId
+}
+
+function toggleAttendanceActions(lessonId: string): void {
+  attendanceActionLessonId.value = attendanceActionLessonId.value === lessonId ? null : lessonId
+}
+
+function openAttendanceRequest(lesson: AttendanceLesson, option: { kind: 'EXCUSE' | 'LATE_CHECKIN'; enabled: boolean }): void {
+  if (offline.value || props.readOnly || !option.enabled) return
+  attendanceActionLessonId.value = null
+  requests.selectBucket('open')
+  requestSubmitError.value = null
+  if (option.kind === 'EXCUSE') {
+    updateRequestDraft({
+      bucket: 'open',
+      view: 'excuse',
+      excuseLessonIds: [lesson.id],
+      excuseReason: null,
+      excuseComment: '',
+      excuseFiles: [],
+    })
+    navigation.push(requestRoute('excuse'))
+  } else {
+    updateRequestDraft({ bucket: 'open', view: 'late', lateLessonId: lesson.id })
+    navigation.push(requestRoute('late'))
+  }
+  ensureRequestOptions()
+}
+
+function retryStatistics(): void {
+  if (offline.value) return
+  void statistics.query.refetch()
+}
+
+function openStatisticsSubject(subjectId: string): void {
+  statistics.openSubject(subjectId)
+}
+
+function backStatistics(): void {
+  if (statistics.selectedSubjectId.value !== null) {
+    statistics.closeSubject()
+    return
+  }
+  navigation.back()
+}
+
+function retryStatisticsDetail(): void {
+  if (offline.value) return
+  void statistics.detailQuery.refetch()
 }
 
 function newRequest(): void {
@@ -633,6 +747,7 @@ async function submitExcuse(payload: Parameters<typeof requests.submitExcuse>[0]
     await requests.submitExcuse(payload)
     updateRequestDraft({ view: 'inbox', excuseLessonIds: [], excuseReason: null, excuseComment: '', excuseFiles: [] })
     requests.selectBucket('open')
+    void attendance.query.refetch()
     navigation.replace(requestRoute('overview'))
   } catch (error) {
     requestSubmitError.value = requestErrorText(error)
@@ -646,6 +761,7 @@ async function submitLateCheckin(payload: Parameters<typeof requests.submitLateC
     await requests.submitLateCheckin(payload)
     updateRequestDraft({ view: 'inbox', lateLessonId: null })
     requests.selectBucket('open')
+    void attendance.query.refetch()
     navigation.replace(requestRoute('overview'))
   } catch (error) {
     requestSubmitError.value = requestErrorText(error)
@@ -762,6 +878,33 @@ onBeforeUnmount(() => {
     @navigate="navigate"
   />
   <MobileShell
+    v-else-if="route.root === 'attendance'"
+    :route="route"
+    :navigation="navigation"
+    :nav-items="navItems"
+    :active-id="'attendance'"
+    :host="host"
+  >
+    <template #back />
+    <AttendanceScreen
+      :state="attendance.state.value"
+      :selected-date="attendanceSelectedDate"
+      :mode="attendanceMode"
+      :graph-range="attendanceGraphRange"
+      :expanded-subject-id="attendanceExpandedSubjectId"
+      :action-lesson-id="attendanceActionLessonId"
+      :terminal="offline || props.readOnly || attendance.terminalReadOnly.value"
+      :theme="resolvedTheme"
+      @select-date="attendanceSelectedDate = $event"
+      @set-mode="setAttendanceMode"
+      @set-graph-range="attendanceGraphRange = $event"
+      @toggle-subject="toggleAttendanceSubject"
+      @toggle-actions="toggleAttendanceActions"
+      @open-request="openAttendanceRequest"
+      @retry="retryAttendance"
+    />
+  </MobileShell>
+  <MobileShell
     v-else-if="route.root === 'profile'"
     :route="route"
     :navigation="navigation"
@@ -855,6 +998,21 @@ onBeforeUnmount(() => {
       v-if="route.kind === 'root'"
       :theme="resolvedTheme"
       :on-navigate="navigateMore"
+    />
+    <StatisticsScreen
+      v-else-if="route.id === 'more/statistics'"
+      :state="statistics.overviewState.value"
+      :selected-subject-id="statistics.selectedSubjectId.value"
+      :detail-state="statistics.detailState.value"
+      :range="statistics.range.value"
+      :terminal="offline || props.readOnly"
+      :theme="resolvedTheme"
+      @open-subject="openStatisticsSubject"
+      @set-range="statistics.setRange"
+      @set-types="statistics.setTypes"
+      @back="backStatistics"
+      @retry="retryStatistics"
+      @detail-retry="retryStatisticsDetail"
     />
     <RequestsScreen
       v-else-if="route.id === 'more/requests'"

@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<{
 })
 
 const routes = [
-  { route: 'statistics', label: 'Статистика', icon: moreStatistics, disabled: true, disabledReason: 'Раздел пока недоступен' },
+  { route: 'statistics', label: 'Статистика', icon: moreStatistics, disabled: false, disabledReason: null },
   { route: 'map', label: 'Карта', icon: moreMap, disabled: true, disabledReason: 'Раздел пока недоступен' },
   { route: 'requests', label: 'Заявки', icon: moreRequests, disabled: false, disabledReason: null },
 ] as const satisfies readonly { route: Extract<ProfileRoute, 'statistics' | 'map' | 'requests'>; label: string; icon: string; disabled: boolean; disabledReason: string | null }[]

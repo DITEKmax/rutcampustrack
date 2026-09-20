@@ -19,6 +19,8 @@ service AttendanceStudentGrpcService {
   rpc CancelStudentRequest (StudentRequestId) returns (StudentRequestDetail);
   rpc DownloadStudentRequestAttachment (StudentRequestAttachmentId)
       returns (StudentRequestAttachmentDownload);
+  rpc GetStudentAttendanceProjection (StudentAttendanceProjectionRequest)
+      returns (StudentAttendanceProjectionResponse);
 }
 
 // Separate service for notification-bot attachment reads. It has its own
@@ -40,6 +42,118 @@ message StudentAttendanceSnapshotResponse {
   // One entry per requested lesson, including lessons without an attendance mark.
   repeated StudentAttendanceEntry entries = 1;
   string server_now = 2;
+}
+
+// Server-owned student attendance/statistics read model.  The request carries
+// only a semester and optional view filters; identity and all authorization
+// come from the signed internal JWT at the gRPC boundary.
+message StudentAttendanceProjectionRequest {
+  int64 semester_id = 1;
+  optional int64 subject_id = 2;
+  string range = 3; // days or weeks for a subject detail request
+  repeated string lesson_types = 4;
+}
+
+message StudentAttendanceProjectionResponse {
+  int64 student_id = 1;
+  int64 semester_id = 2;
+  string date_from = 3;
+  string date_to = 4;
+  string server_now = 5;
+  bool terminal_read_only = 6;
+  StudentAttendanceMetricSet metrics = 7;
+  repeated StudentAttendanceDay days = 8;
+  repeated StudentAttendanceSubject subjects = 9;
+  StudentAttendanceGraph graph = 10;
+  StudentAttendanceOwnRank own_rank = 11;
+  optional string semester_name = 12;
+}
+
+message StudentAttendanceMetricSet {
+  StudentAttendanceMetric present = 1;
+  StudentAttendanceMetric present_or_excused = 2;
+  StudentAttendanceMetric excused = 3;
+  StudentAttendanceMetric absent = 4;
+  int32 held = 5;
+  int32 planned = 6;
+  int32 missing_closed = 7;
+}
+
+message StudentAttendanceMetric {
+  int32 count = 1;
+  optional double percent = 2;
+}
+
+message StudentAttendanceDay {
+  string date = 1;
+  string weekday = 2;
+  string day_number = 3;
+  string state = 4; // PAST, CURRENT, FUTURE
+  repeated StudentAttendanceLesson lessons = 5;
+}
+
+message StudentAttendanceLesson {
+  int64 lesson_id = 1;
+  string date = 2;
+  int32 lesson_number = 3;
+  int64 subject_id = 4;
+  string subject_name = 5;
+  string lesson_type = 6;
+  string starts_at = 7;
+  string ends_at = 8;
+  optional string room = 9;
+  string status = 10; // PRESENT, ABSENT, EXCUSED, ACTIVE, FUTURE, NO_DATA, CANCELLED
+  repeated StudentAttendanceRequestOption request_options = 11;
+}
+
+message StudentAttendanceRequestOption {
+  string id = 1;
+  string kind = 2;
+  string label = 3;
+  bool enabled = 4;
+  optional string reason = 5;
+}
+
+message StudentAttendanceSubject {
+  int64 subject_id = 1;
+  string name = 2;
+  StudentAttendanceMetricSet metrics = 3;
+  repeated string available_types = 4;
+  repeated string selected_types = 5;
+  StudentAttendanceMetricSet selected_aggregate = 6;
+  repeated StudentAttendanceTypeCard type_cards = 7;
+  repeated StudentAttendanceSeriesPoint series = 8;
+}
+
+message StudentAttendanceTypeCard {
+  string lesson_type = 1;
+  StudentAttendanceMetricSet metrics = 2;
+  repeated StudentAttendanceHistorySegment history = 3;
+}
+
+message StudentAttendanceHistorySegment {
+  string id = 1;
+  string status = 2; // PRESENT, ABSENT, EXCUSED, FUTURE, NO_DATA
+}
+
+message StudentAttendanceGraph {
+  repeated StudentAttendanceSeriesPoint days = 1;
+  repeated StudentAttendanceSeriesPoint weeks = 2;
+}
+
+message StudentAttendanceSeriesPoint {
+  string id = 1;
+  string label = 2;
+  string date_from = 3;
+  string date_to = 4;
+  string state = 5; // DATA, NO_DATA, FUTURE
+  StudentAttendanceMetricSet metrics = 6;
+}
+
+message StudentAttendanceOwnRank {
+  optional int32 position = 1;
+  int32 participant_count = 2;
+  bool available = 3;
 }
 
 message StudentAttendanceEntry {

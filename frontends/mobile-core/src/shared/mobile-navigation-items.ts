@@ -7,6 +7,7 @@ import type { MobileBottomNavItems } from './navigation'
 
 export interface StudentNavigationOptions {
   homeworkEnabled?: boolean
+  attendanceEnabled?: boolean
   moreEnabled?: boolean
   profileEnabled?: boolean
 }
@@ -18,6 +19,7 @@ export interface StudentNavigationOptions {
  */
 export function createStudentNavigationItems(options: StudentNavigationOptions = {}): MobileBottomNavItems {
   const homeworkEnabled = options.homeworkEnabled === true
+  const attendanceEnabled = options.attendanceEnabled === true
   const moreEnabled = options.moreEnabled === true
   const profileEnabled = options.profileEnabled === true
   return [
@@ -29,7 +31,14 @@ export function createStudentNavigationItems(options: StudentNavigationOptions =
       route: 'homework',
       ...(homeworkEnabled ? {} : { disabled: true, disabledReason: 'Раздел пока недоступен' }),
     },
-    { id: 'attendance', label: 'Учёт', accessibleLabel: 'Посещаемость', icon: attendanceTab, route: 'attendance', disabled: true, disabledReason: 'Раздел пока недоступен' },
+    {
+      id: 'attendance',
+      label: 'Учёт',
+      accessibleLabel: 'Посещаемость',
+      icon: attendanceTab,
+      route: 'attendance',
+      ...(attendanceEnabled ? {} : { disabled: true, disabledReason: 'Раздел пока недоступен' }),
+    },
     {
       id: 'more',
       label: 'Ещё',

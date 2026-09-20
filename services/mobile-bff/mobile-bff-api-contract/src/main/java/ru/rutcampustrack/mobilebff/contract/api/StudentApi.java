@@ -33,6 +33,9 @@ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.HomeworkRespo
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.MobileProblemDetails;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ScheduleResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.SessionResponse;
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentAttendanceResponse;
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentStatisticsResponse;
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentStatisticsSubjectDetailResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.TodayResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels;
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Bucket;
@@ -113,6 +116,75 @@ public interface StudentApi {
             @Pattern(regexp = "^[1-9][0-9]*$")
             String semesterId,
             @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch
+    );
+
+    @Operation(summary = "Student attendance projection")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Server-calculated attendance projection",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = StudentAttendanceResponse.class)),
+                    headers = @Header(name = "Cache-Control", description = "Always no-store")),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired session",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class))),
+            @ApiResponse(responseCode = "403", description = "Semester or student scope is unavailable",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class))),
+            @ApiResponse(responseCode = "503", description = "Mandatory dependency unavailable",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class)))
+    })
+    @GetMapping("/attendance")
+    ResponseEntity<StudentAttendanceResponse> getAttendance(
+            @RequestParam @Pattern(regexp = "^[1-9][0-9]*$") String semesterId
+    );
+
+    @Operation(summary = "Student attendance statistics overview")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Server-calculated semester statistics",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = StudentStatisticsResponse.class)),
+                    headers = @Header(name = "Cache-Control", description = "Always no-store")),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired session",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class))),
+            @ApiResponse(responseCode = "403", description = "Semester or student scope is unavailable",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class))),
+            @ApiResponse(responseCode = "503", description = "Mandatory dependency unavailable",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class)))
+    })
+    @GetMapping("/statistics")
+    ResponseEntity<StudentStatisticsResponse> getStatistics(
+            @RequestParam @Pattern(regexp = "^[1-9][0-9]*$") String semesterId
+    );
+
+    @Operation(summary = "Student statistics for one subject")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Server-calculated subject statistics",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = StudentStatisticsSubjectDetailResponse.class)),
+                    headers = @Header(name = "Cache-Control", description = "Always no-store")),
+            @ApiResponse(responseCode = "400", description = "Invalid range or lesson type filter",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class))),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired session",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class))),
+            @ApiResponse(responseCode = "403", description = "Subject or semester is outside signed scope",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class))),
+            @ApiResponse(responseCode = "503", description = "Mandatory dependency unavailable",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class)))
+    })
+    @GetMapping("/statistics/subjects/{subjectId}")
+    ResponseEntity<StudentStatisticsSubjectDetailResponse> getStatisticsSubject(
+            @PathVariable @Pattern(regexp = "^[1-9][0-9]*$") String subjectId,
+            @RequestParam @Pattern(regexp = "^[1-9][0-9]*$") String semesterId,
+            @RequestParam(defaultValue = "weeks") @Pattern(regexp = "^(days|weeks)$") String range,
+            @RequestParam(name = "types", required = false) List<String> types
     );
 
     @Operation(

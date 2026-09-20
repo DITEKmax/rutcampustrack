@@ -31,7 +31,21 @@ public class MobileAttendanceClient {
     public StudentAttendanceSnapshotResponse snapshot(List<Long> lessonIds) {
         return call(() -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getStudentAttendanceSnapshot(StudentAttendanceSnapshotRequest.newBuilder()
-                        .addAllLessonIds(lessonIds).build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
+                .addAllLessonIds(lessonIds).build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
+    }
+
+    public StudentAttendanceProjectionResponse projection(
+            long semesterId,
+            Long subjectId,
+            String range,
+            List<String> lessonTypes) {
+        StudentAttendanceProjectionRequest.Builder request = StudentAttendanceProjectionRequest.newBuilder()
+                .setSemesterId(semesterId)
+                .setRange(range == null ? "" : range);
+        if (subjectId != null) request.setSubjectId(subjectId);
+        if (lessonTypes != null) request.addAllLessonTypes(lessonTypes);
+        return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
+                .getStudentAttendanceProjection(request.build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
     public StudentCheckinResult checkin(StudentCheckinCommand command) {

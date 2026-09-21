@@ -30,6 +30,8 @@ import java.time.Instant;
 public class MobileIdentityFilter extends OncePerRequestFilter {
     private static final PathPattern STUDENT_API_PATTERN =
             PathPatternParser.defaultInstance.parse("/api/v1/student/**");
+    private static final PathPattern MAP_API_PATTERN =
+            PathPatternParser.defaultInstance.parse("/api/v1/map/**");
     private static final PathPattern HOMEWORK_COMPLETION_PATTERN =
             PathPatternParser.defaultInstance.parse("/api/v1/student/homework/{homeworkId}/completion");
     private static final PathPattern CHECKIN_PATTERN =
@@ -58,7 +60,8 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !STUDENT_API_PATTERN.matches(pathContainer(request));
+        PathContainer path = pathContainer(request);
+        return !STUDENT_API_PATTERN.matches(path) && !MAP_API_PATTERN.matches(path);
     }
 
     @Override

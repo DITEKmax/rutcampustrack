@@ -53,6 +53,7 @@ import static ru.rutcampustrack.academic.map.CampusMapReadModels.PlanResult;
 @Service
 public class CampusMapReadService {
     private static final String STUDENT = "STUDENT";
+    private static final String TEACHER = "TEACHER";
     private static final String ACTIVE = "ACTIVE";
     private static final String EXPELLED = "EXPELLED";
     private static final String GRADUATED = "GRADUATED";
@@ -235,21 +236,27 @@ public class CampusMapReadService {
     }
 
     private void authorize(InternalJwtClaims claims) {
-        if (claims == null
-                || claims.userId() <= 0
-                || claims.groupId() == null
-                || claims.groupId() <= 0
-                || !STUDENT.equalsIgnoreCase(claims.domainRole())
-                || claims.sessionId() == null
-                || claims.sessionVersion() <= 0
-                || claims.rolesVersion() <= 0
-                || !allowedStatus(claims.status(), claims.readOnly())) {
-            throw failure(PERMISSION_DENIED, "signed student identity is not allowed");
+        boolean student = claims != null && STUDENT.equalsIgnoreCase(claims.domainRole());
+        boolean teacher = claims != null && TEACHER.equalsIgnoreCase(claims.domainRole());
+        boolean validCommonClaims = claims != null
+                && claims.userId() > 0
+                && claims.sessionId() != null
+                && claims.sessionVersion() > 0
+                && claims.rolesVersion() > 0;
+        boolean validStudentClaims = student
+                && claims.groupId() != null
+                && claims.groupId() > 0
+                && allowedStatus(claims.status(), claims.readOnly());
+        boolean validTeacherClaims = teacher
+                && !claims.readOnly()
+                && ACTIVE.equalsIgnoreCase(claims.status());
+        if (!validCommonClaims || (!validStudentClaims && !validTeacherClaims)) {
+            throw failure(PERMISSION_DENIED, "signed campus-map identity is not allowed");
         }
         try {
             Optional<User> user = userRepository.findByIdIncludingArchived(claims.userId());
             if (user == null || user.isEmpty()) {
-                throw failure(PERMISSION_DENIED, "signed student identity is not allowed");
+                throw failure(PERMISSION_DENIED, "signed campus-map identity is not allowed");
             }
         } catch (DataAccessException error) {
             throw failure(CampusMapReadException.Code.INTERNAL,

@@ -14,6 +14,7 @@ export type StudentCheckinAck = components['schemas']['StudentCheckinAck']
 export type MobileProblemDetails =
   components['schemas']['MobileProblemDetails']
 export * from './api/student-client'
+export * from './api/map-client'
 export * from './api/types'
 export * from './domain/checkin'
 export * from './domain/offline-today'
@@ -32,6 +33,8 @@ export { default as HomeworkScreen } from './features/homework/HomeworkScreen.vu
 export type * from './features/profile/profile-types'
 export * from './features/schedule/headman-schedule-client'
 export { default as HeadmanScheduleScreen } from './features/schedule/HeadmanScheduleScreen.vue'
+export { default as MapScreen } from './features/map/MapScreen.vue'
+export { default as AdminMapScreen } from './features/admin-map/AdminMapScreen.vue'
 export * from './features/headman-journal/headman-journal-client'
 export { default as HeadmanJournalScreen } from './features/headman-journal/HeadmanJournalScreen.vue'
 export { ProfileRequestError } from './features/profile/profile-types'

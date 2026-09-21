@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { ProfileResolvedTheme, ProfileRoute } from './profile-types'
 import moreMap from './assets/more-map.svg'
 import moreRequests from './assets/more-requests.svg'
@@ -7,20 +8,28 @@ import './profile-screen.pcss'
 
 const props = withDefaults(defineProps<{
   onNavigate?: ((route: ProfileRoute) => void | Promise<void>) | undefined
+  mapEnabled?: boolean
   theme?: ProfileResolvedTheme
 }>(), {
   onNavigate: undefined,
+  mapEnabled: false,
   theme: 'dark',
 })
 
-const routes = [
-  { route: 'statistics', label: 'Статистика', icon: moreStatistics, disabled: false, disabledReason: null },
-  { route: 'map', label: 'Карта', icon: moreMap, disabled: true, disabledReason: 'Раздел пока недоступен' },
-  { route: 'requests', label: 'Заявки', icon: moreRequests, disabled: false, disabledReason: null },
-] as const satisfies readonly { route: Extract<ProfileRoute, 'statistics' | 'map' | 'requests'>; label: string; icon: string; disabled: boolean; disabledReason: string | null }[]
+const routes = computed(() => [
+  { route: 'statistics' as const, label: 'Статистика', icon: moreStatistics, disabled: false, disabledReason: null },
+  {
+    route: 'map' as const,
+    label: 'Карта',
+    icon: moreMap,
+    disabled: !props.mapEnabled,
+    disabledReason: props.mapEnabled ? null : 'Раздел пока недоступен',
+  },
+  { route: 'requests' as const, label: 'Заявки', icon: moreRequests, disabled: false, disabledReason: null },
+])
 
 function navigate(route: ProfileRoute): void {
-  if (routes.find((item) => item.route === route)?.disabled) return
+  if (routes.value.find((item) => item.route === route)?.disabled) return
   void props.onNavigate?.(route)
 }
 </script>

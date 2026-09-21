@@ -27,6 +27,69 @@ export type StudentRequestReasonOption = components['schemas']['StudentRequestRe
 export type StudentRequestSummary = components['schemas']['StudentRequestSummary']
 export type MobileProblemDetails = components['schemas']['MobileProblemDetails']
 export type StudentRequestBucket = 'OPEN' | 'ARCHIVE'
+
+export type MapFormat = 'png' | 'svg'
+export type MapFormatState = 'absent' | 'processing' | 'ready' | 'failed'
+
+export interface MapFormatSlot {
+  readonly format: MapFormat
+  readonly state: MapFormatState
+  readonly contentType: 'image/png' | 'image/svg+xml'
+  readonly id: string | null
+  readonly bytes: number
+  readonly sha256: string | null
+  readonly width: number | null
+  readonly height: number | null
+  readonly viewBox: readonly number[] | null
+}
+
+export interface MapPlan {
+  readonly buildingId: string
+  readonly floorId: string
+  readonly version: string
+  readonly label: string
+  readonly png: MapFormatSlot
+  readonly svg: MapFormatSlot
+}
+
+export interface MapFloor {
+  readonly id: string
+  readonly label: string
+  readonly plan: MapPlan | null
+}
+
+export interface MapBuilding {
+  readonly id: string
+  readonly label: string
+  readonly floors: readonly MapFloor[]
+}
+
+export interface MapManifest {
+  readonly schemaVersion: number
+  readonly validationPolicyVersion: number
+  readonly revision: string
+  readonly buildings: readonly MapBuilding[]
+}
+
+export interface AdminMapPlan extends MapPlan {
+  readonly catalogRevision: string
+}
+
+export interface AdminMapFloorResponse {
+  readonly id: string
+  readonly buildingId: string
+  readonly code: string
+  readonly label: string
+  readonly currentPlan: AdminMapPlan | null
+}
+
+export interface AdminMapBuildingResponse {
+  readonly id: string
+  readonly code: string
+  readonly label: string
+  readonly floors: readonly AdminMapFloorResponse[]
+}
+
 export type UnavailableReason = Extract<
   components['schemas']['GeoInput'],
   { kind: 'UNAVAILABLE' }

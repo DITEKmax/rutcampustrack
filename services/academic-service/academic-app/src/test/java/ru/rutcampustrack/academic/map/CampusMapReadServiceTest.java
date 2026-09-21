@@ -146,11 +146,23 @@ class CampusMapReadServiceTest {
     }
 
     @Test
-    void suspendedOrForeignSignedIdentityIsDeniedBeforeMapLookup() {
+    void suspendedStudentIdentityIsDeniedBeforeMapLookup() {
         assertCode(PERMISSION_DENIED, () -> service.readManifest(0L, claims("SUSPENDED", false)));
-        assertCode(PERMISSION_DENIED, () -> service.readManifest(0L,
-                new InternalJwtClaims(100L, SESSION_ID, 1L, 1L, "TEACHER", "ACTIVE", 10L, false, false)));
         verify(repository, never()).findCurrentCatalogs();
+    }
+
+    @Test
+    void activeTeacherIdentityCanReadTheSameManifest() {
+        when(repository.findCurrentCatalogs()).thenReturn(List.of(new Catalog(1L, 9L, 2, 3, true)));
+        when(repository.findActiveBuildings()).thenReturn(List.of());
+        when(repository.findActiveFloors()).thenReturn(List.of());
+        when(repository.findCurrentPlans()).thenReturn(List.of());
+
+        InternalJwtClaims teacher = new InternalJwtClaims(
+                100L, SESSION_ID, 1L, 1L, "TEACHER", "ACTIVE", null, false, false);
+
+        assertThatCode(() -> service.readManifest(0L, teacher)).doesNotThrowAnyException();
+        verify(users).findByIdIncludingArchived(100L);
     }
 
     @ParameterizedTest(name = "{0}")
@@ -593,7 +605,7 @@ class CampusMapReadServiceTest {
                 arguments("missing session", claim(100L, null, 1L, 1L, "STUDENT", "ACTIVE", 10L, false)),
                 arguments("zero session version", claim(100L, SESSION_ID, 0L, 1L, "STUDENT", "ACTIVE", 10L, false)),
                 arguments("zero roles version", claim(100L, SESSION_ID, 1L, 0L, "STUDENT", "ACTIVE", 10L, false)),
-                arguments("foreign role", claim(100L, SESSION_ID, 1L, 1L, "TEACHER", "ACTIVE", 10L, false)),
+                arguments("foreign role", claim(100L, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", 10L, false)),
                 arguments("missing role", claim(100L, SESSION_ID, 1L, 1L, null, "ACTIVE", 10L, false)),
                 arguments("missing status", claim(100L, SESSION_ID, 1L, 1L, "STUDENT", null, 10L, false)),
                 arguments("unknown status", claim(100L, SESSION_ID, 1L, 1L, "STUDENT", "UNKNOWN", 10L, false)));

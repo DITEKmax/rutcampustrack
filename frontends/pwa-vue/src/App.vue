@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, toRaw } from 'vue'
 import {
+  AdminMapClient,
+  AdminMapScreen,
+  CampusMapClient,
   SemesterSnapshotStore,
   HeadmanScheduleApiError,
   HeadmanJournalApiError,
   HeadmanScheduleScreen,
+  MapScreen,
   StudentApi,
   StudentApiError,
   StudentFeatureOwner,
@@ -44,6 +48,16 @@ const fixtureDiagnosticsMode = fixtureMode && new URLSearchParams(window.locatio
 const fixtureServiceWorkerBuildEnabled = import.meta.env.PROD
 const fixtureTransport = fixtureMode ? createFixtureTransport() : undefined
 const auth = usePwaAuth(fixtureTransport ? { fetcher: fixtureTransport } : undefined)
+const mapClient = new CampusMapClient({
+  accessToken: () => auth.accessToken.value,
+  onUnauthorized: () => auth.refreshFor(auth.currentGeneration()),
+  fetcher: fixtureTransport ?? undefined,
+})
+const adminMapClient = new AdminMapClient({
+  accessToken: () => auth.accessToken.value,
+  onUnauthorized: () => auth.refreshFor(auth.currentGeneration()),
+  fetcher: fixtureTransport ?? undefined,
+})
 const host = new PwaHostAdapter()
 const theme = typeof document === 'undefined' ? null : createMobileTheme()
 const snapshotStore = new SemesterSnapshotStore()
@@ -62,7 +76,7 @@ const readOnly = ref(false)
 const sessionReady = ref(false)
 const bootstrapping = ref(false)
 const bootstrapError = ref<string | null>(null)
-const authView = ref<'login' | 'role' | 'student' | 'headman'>('login')
+const authView = ref<'login' | 'role' | 'student' | 'headman' | 'map' | 'admin-map'>('login')
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null)
 const authError = shallowRef<ProfileRequestError | null>(null)
 const authLoading = ref(false)
@@ -83,7 +97,10 @@ const cachedToday = computed(() => {
 })
 const cachedHomework = computed(() => snapshot.value?.homework ?? null)
 const displayedSemesterSchedule = computed(() => offline.value ? semesterSchedule.value : onlineSemesterSchedule.value)
-const featureVisible = computed(() => api.value !== null || headmanApi.value !== null || snapshot.value !== null)
+const mapViewVisible = computed(() => authView.value === 'map')
+const adminMapViewVisible = computed(() => authView.value === 'admin-map')
+const featureVisible = computed(() => api.value !== null || headmanApi.value !== null || snapshot.value !== null
+  || mapViewVisible.value || adminMapViewVisible.value)
 const studentViewVisible = computed(() => authView.value === 'student' && featureVisible.value)
 const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
 const headmanGroupId = ref<number | null>(null)
@@ -449,6 +466,17 @@ async function activateHeadmanCandidate(candidate: HeadmanCandidate): Promise<vo
   ownerRevision.value += 1
 }
 
+async function activateMapRole(profile: ProfileSnapshot): Promise<void> {
+  const previous = invalidateOwnerSynchronously({ clearAuth: false })
+  await clearOwnerSnapshot(previous)
+  authSnapshot.value = profile
+  offline.value = false
+  readOnly.value = profile.readOnly
+  bootstrapError.value = null
+  ownerRevision.value += 1
+  authView.value = profile.activeRole === 'ADMIN' ? 'admin-map' : 'map'
+}
+
 function assertCandidateCurrent(generation: number): void {
   if (!auth.isCurrent(generation)) throw new StaleSessionGenerationError()
 }
@@ -467,12 +495,16 @@ async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
       authView.value = 'headman'
       sessionReady.value = true
     } else if (authCandidate.profile.activeRole !== 'STUDENT') {
-      const previous = invalidateOwnerSynchronously({ clearAuth: false })
-      await clearOwnerSnapshot(previous)
-      authView.value = 'role'
-      offline.value = false
-      readOnly.value = true
-      bootstrapError.value = null
+      if (authCandidate.profile.activeRole === 'TEACHER' || authCandidate.profile.activeRole === 'ADMIN') {
+        await activateMapRole(authCandidate.profile)
+      } else {
+        const previous = invalidateOwnerSynchronously({ clearAuth: false })
+        await clearOwnerSnapshot(previous)
+        authView.value = 'role'
+        offline.value = false
+        readOnly.value = true
+        bootstrapError.value = null
+      }
     } else {
       const candidate = await fetchStudentCandidate(authCandidate.generation, authCandidate.profile)
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль студента недоступна')
@@ -551,7 +583,8 @@ async function submitLogin(input: { login: string; password: string }): Promise<
     const result = await auth.login(input)
     const profile = await auth.getSessionFor(result.generation)
     authSnapshot.value = profile
-    if (profile.activeRole !== 'STUDENT' && profile.activeRole !== 'HEADMAN') {
+    if (profile.activeRole !== 'STUDENT' && profile.activeRole !== 'HEADMAN'
+      && profile.activeRole !== 'TEACHER' && profile.activeRole !== 'ADMIN') {
       authView.value = 'role'
       readOnly.value = true
       sessionReady.value = true
@@ -562,6 +595,8 @@ async function submitLogin(input: { login: string; password: string }): Promise<
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль старосты недоступна')
       await activateHeadmanCandidate(candidate)
       authView.value = 'headman'
+    } else if (profile.activeRole === 'TEACHER' || profile.activeRole === 'ADMIN') {
+      await activateMapRole(profile)
     } else {
       const candidate = await fetchStudentCandidate(result.generation, profile)
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль студента недоступна')
@@ -603,6 +638,8 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль студента недоступна')
       await activateCandidate(candidate)
       authView.value = 'student'
+    } else if (selection.session.activeRole === 'TEACHER' || selection.session.activeRole === 'ADMIN') {
+      await activateMapRole(selection.session)
     } else {
       throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Выбранная роль недоступна в этом приложении')
     }
@@ -859,8 +896,19 @@ onBeforeUnmount(() => {
     :offline="offline"
     :read-only="readOnly"
     :host="host"
+    :map-client="mapClient"
     :on-role-switch="openRoleSwitch"
     @error="onOwnerError"
+  />
+  <MapScreen
+    v-else-if="mapViewVisible"
+    :client="mapClient"
+    theme="dark"
+  />
+  <AdminMapScreen
+    v-else-if="adminMapViewVisible"
+    :client="adminMapClient"
+    theme="dark"
   />
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
@@ -876,6 +924,7 @@ onBeforeUnmount(() => {
     :host="host"
     :profile-port="profilePort"
     :profile-role-select="selectRole"
+    :map-client="mapClient"
     :theme-controller="theme"
     :acquire-checkin-command="acquireCheckinCommand"
     :open-material="openMaterial"
@@ -883,7 +932,7 @@ onBeforeUnmount(() => {
     @owner-error="onOwnerError"
   />
   <button
-    v-if="(authView === 'student' && session) || authView === 'headman'"
+    v-if="(authView === 'student' && session) || authView === 'headman' || mapViewVisible || adminMapViewVisible"
     class="pwa-logout"
     type="button"
     :disabled="authLoading"

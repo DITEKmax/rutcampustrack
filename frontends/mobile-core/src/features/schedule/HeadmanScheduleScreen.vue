@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import MobileShell from '../../shared/components/MobileShell.vue'
+import type { CampusMapClient } from '../../api/map-client'
+import MapScreen from '../map/MapScreen.vue'
 import { createStudentNavigationItems } from '../../shared/mobile-navigation-items'
 import {
   createMobileNavigationStack,
@@ -28,6 +30,7 @@ const props = withDefaults(defineProps<{
   journalApi?: HeadmanJournalApi | null
   profile: ProfileSnapshot | null
   groupId: number | null
+  mapClient?: CampusMapClient | null
   offline?: boolean
   readOnly?: boolean
   host?: MobileHostAdapter | null
@@ -35,6 +38,7 @@ const props = withDefaults(defineProps<{
   onRoleSwitch?: (() => void | Promise<void>) | undefined
 }>(), {
   journalApi: null,
+  mapClient: null,
   offline: false,
   readOnly: false,
   host: null,
@@ -158,6 +162,11 @@ function openJournal(): void {
   if (!props.journalApi || props.groupId === null) return
   journalOpen.value = true
   navigation.push(nestedRoute('more', journalRouteId, 'task'))
+}
+
+function openMap(): void {
+  if (!props.mapClient || props.offline) return
+  navigation.push(nestedRoute('more', 'more/map', 'overview'))
 }
 
 function validTime(value: string): boolean {
@@ -300,8 +309,12 @@ onBeforeUnmount(() => {
     :host="host"
     back-label="Назад"
   >
+    <MapScreen
+      v-if="route.id === 'more/map' && props.mapClient"
+      :client="props.mapClient"
+    />
     <HeadmanJournalScreen
-      v-if="journalOpen"
+      v-else-if="journalOpen"
       :api="journalApi"
       :group-id="groupId"
       :offline="offline"
@@ -364,6 +377,15 @@ onBeforeUnmount(() => {
         @click="openJournal"
       >
         Открыть журнал посещаемости
+      </button>
+      <button
+        v-if="mapClient"
+        class="headman-schedule__journal"
+        type="button"
+        :disabled="offline"
+        @click="openMap"
+      >
+        Открыть карту кампуса
       </button>
 
       <section

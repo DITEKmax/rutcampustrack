@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue'
+import type { CampusMapClient } from '../../api/map-client'
 import { StudentApi, StudentApiError } from '../../api/student-client'
 import type {
   StudentCheckinCommand,
@@ -18,6 +19,7 @@ import { useHomework } from '../../features/homework/use-homework'
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue'
 import AppearanceScreen from '../../features/profile/AppearanceScreen.vue'
 import MoreScreen from '../../features/profile/MoreScreen.vue'
+import MapScreen from '../../features/map/MapScreen.vue'
 import ProfileScreen from '../../features/profile/ProfileScreen.vue'
 import { ProfileState } from '../../features/profile/profile-state'
 import RoleSwitchScreen from '../../features/profile/RoleSwitchScreen.vue'
@@ -65,6 +67,7 @@ const props = withDefaults(defineProps<{
   semesterSchedule?: StudentSemesterSchedule | null
   updatedAt?: string | null
   host?: MobileHostAdapter | null
+  mapClient?: CampusMapClient | null
   profilePort?: ProfilePort | null
   profileRoleSelect?: ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>) | undefined
   themeController?: MobileThemeController | null
@@ -77,6 +80,7 @@ const props = withDefaults(defineProps<{
   semesterSchedule: null,
   updatedAt: null,
   host: null,
+  mapClient: null,
   profilePort: null,
   profileRoleSelect: undefined,
   themeController: null,
@@ -545,6 +549,11 @@ function navigateMore(routeName: ProfileRoute): void {
     navigation.push(nestedRoute('more', 'more/statistics', 'overview'))
     return
   }
+  if (routeName === 'map') {
+    if (!props.mapClient || offline.value) return
+    navigation.push(nestedRoute('more', 'more/map', 'overview'))
+    return
+  }
   if (routeName !== 'requests') return
   requests.selectBucket('open')
   updateRequestDraft({ bucket: 'open', view: 'inbox' })
@@ -997,6 +1006,7 @@ onBeforeUnmount(() => {
     <MoreScreen
       v-if="route.kind === 'root'"
       :theme="resolvedTheme"
+      :map-enabled="Boolean(props.mapClient) && !offline"
       :on-navigate="navigateMore"
     />
     <StatisticsScreen
@@ -1013,6 +1023,11 @@ onBeforeUnmount(() => {
       @back="backStatistics"
       @retry="retryStatistics"
       @detail-retry="retryStatisticsDetail"
+    />
+    <MapScreen
+      v-else-if="route.id === 'more/map' && props.mapClient"
+      :client="props.mapClient"
+      :theme="resolvedTheme"
     />
     <RequestsScreen
       v-else-if="route.id === 'more/requests'"

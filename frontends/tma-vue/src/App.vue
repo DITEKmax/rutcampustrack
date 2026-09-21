@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import {
+  AdminMapClient,
+  AdminMapScreen,
+  CampusMapClient,
   HeadmanScheduleApiError,
   HeadmanJournalApiError,
   HeadmanScheduleScreen,
+  MapScreen,
   ProfileRequestError,
   RoleSwitchScreen,
   StaleSessionGenerationError,
@@ -36,6 +40,16 @@ const sessionOwner = useTmaSession({
   getInitData: () => host.start(),
 })
 const theme = typeof document === 'undefined' ? null : createMobileTheme()
+const mapClient = new CampusMapClient({
+  accessToken: () => sessionOwner.accessToken.value,
+  onUnauthorized: () => sessionOwner.authenticateFor(sessionOwner.currentGeneration()),
+  fetcher: fixtureTransport ?? nativeFetcher,
+})
+const adminMapClient = new AdminMapClient({
+  accessToken: () => sessionOwner.accessToken.value,
+  onUnauthorized: () => sessionOwner.authenticateFor(sessionOwner.currentGeneration()),
+  fetcher: fixtureTransport ?? nativeFetcher,
+})
 
 const api = shallowRef<StudentApi | null>(null)
 const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
@@ -49,12 +63,15 @@ const offline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false
 const error = ref<string | null>(null)
 const bootstrapping = ref(false)
 const ownerRevision = ref(0)
-const authView = ref<'role' | 'student' | 'headman'>('role')
+const authView = ref<'role' | 'student' | 'headman' | 'map' | 'admin-map'>('role')
 const pendingRole = ref<ProfileRole | null>(null)
 const roleError = shallowRef<ProfileRequestError | null>(null)
 const roleLoading = ref(false)
 
-const featureVisible = computed(() => api.value !== null || headmanApi.value !== null)
+const mapViewVisible = computed(() => authView.value === 'map')
+const adminMapViewVisible = computed(() => authView.value === 'admin-map')
+const featureVisible = computed(() => api.value !== null || headmanApi.value !== null
+  || mapViewVisible.value || adminMapViewVisible.value)
 const studentViewVisible = computed(() => authView.value === 'student' && api.value !== null)
 const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
 const ownerKey = computed(() => `${scope.value ? studentFeatureScopeIdentity(scope.value) : 'tma-unavailable'}|${ownerRevision.value}`)
@@ -138,6 +155,15 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
   ownerRevision.value += 1
 }
 
+function activateMapRole(value: ProfileSnapshot): void {
+  invalidateOwnerSynchronously({ clearAuth: false })
+  profile.value = value
+  offline.value = false
+  error.value = null
+  ownerRevision.value += 1
+  authView.value = value.activeRole === 'ADMIN' ? 'admin-map' : 'map'
+}
+
 async function bootstrap(): Promise<void> {
   if (bootstrapping.value) return
   if (browserIsOffline()) {
@@ -182,6 +208,8 @@ async function bootstrap(): Promise<void> {
       scope.value = nextScope
       authView.value = 'student'
       if (needsFreshOwner) ownerRevision.value += 1
+    } else if (candidateProfile.profile.activeRole === 'TEACHER' || candidateProfile.profile.activeRole === 'ADMIN') {
+      activateMapRole(candidateProfile.profile)
     } else {
       invalidateOwnerSynchronously({ clearAuth: false })
       profile.value = candidateProfile.profile
@@ -208,7 +236,7 @@ async function bootstrap(): Promise<void> {
 
 async function selectRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
   if (roleLoading.value || offline.value || !profile.value) return
-  if (role !== 'STUDENT' && role !== 'HEADMAN') return
+  if (role !== 'STUDENT' && role !== 'HEADMAN' && role !== 'TEACHER' && role !== 'ADMIN') return
   const grant = profile.value.roles.find((candidate) => candidate.role === role)
   if (!grant?.selectable) return
   roleLoading.value = true
@@ -230,6 +258,8 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       headmanGroupId.value = groupId
       authView.value = 'headman'
       ownerRevision.value += 1
+    } else if (role === 'TEACHER' || role === 'ADMIN') {
+      activateMapRole(selection.session)
     } else {
       const candidateApi = sessionOwner.createApi(currentFetcher())
       const candidateSession = await candidateApi.getSession()
@@ -337,8 +367,19 @@ onBeforeUnmount(() => {
     :offline="offline"
     :read-only="profile?.readOnly ?? true"
     :host="host"
+    :map-client="mapClient"
     :on-role-switch="openRoleSwitch"
     @error="onOwnerError"
+  />
+  <MapScreen
+    v-else-if="mapViewVisible"
+    :client="mapClient"
+    theme="dark"
+  />
+  <AdminMapScreen
+    v-else-if="adminMapViewVisible"
+    :client="adminMapClient"
+    theme="dark"
   />
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
@@ -352,6 +393,7 @@ onBeforeUnmount(() => {
     :semester-schedule="null"
     :updated-at="null"
     :host="host"
+    :map-client="mapClient"
     :acquire-checkin-command="acquireCheckinCommand"
     :open-material="openMaterial"
     @owner-error="onOwnerError"

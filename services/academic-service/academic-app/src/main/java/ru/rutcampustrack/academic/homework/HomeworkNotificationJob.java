@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.HomeworkCompletion;
@@ -104,8 +105,9 @@ public class HomeworkNotificationJob {
             }
 
             List<Homework> weekHomeworks = homeworkRepository
-                    .findByGroupIdAndSemesterIdAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
-                            group.getId(), semester.getId(), weekStart, weekEnd);
+                    .findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
+                            group.getId(), semester.getId(), HomeworkPublicationState.ACTIVE,
+                            weekStart, weekEnd);
             Map<Long, String> subjectNames = subjectNames(weekHomeworks);
 
             for (User student : activeStudents(group.getId())) {
@@ -153,8 +155,8 @@ public class HomeworkNotificationJob {
                 .map(Group::getId)
                 .collect(Collectors.toSet());
         List<Homework> dueHomeworks = homeworkRepository
-                .findBySemesterIdAndLessonDateAndDueReminderSentAtIsNullOrderByGroupIdAscLessonNumberAscIdAsc(
-                        semester.getId(), dueDate).stream()
+                .findBySemesterIdAndPublicationStateAndLessonDateAndDueReminderSentAtIsNullOrderByGroupIdAscLessonNumberAscIdAsc(
+                        semester.getId(), HomeworkPublicationState.ACTIVE, dueDate).stream()
                 .filter(hw -> activeGroupIds.contains(hw.getGroupId()))
                 .toList();
         if (dueHomeworks.isEmpty()) {

@@ -1,6 +1,8 @@
 package ru.rutcampustrack.academic.contract.api;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.HomeworkResponse;
+import ru.rutcampustrack.academic.contract.dto.homework.HomeworkPublicationPendingResponse;
 import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
 
 /**
@@ -29,14 +32,18 @@ import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
 @RequestMapping("/academic/homeworks")
 public interface HomeworkApi {
 
-    @Operation(summary = "Создать домашнее задание (HEADMAN)")
+    @Operation(summary = "Создать домашнее задание (HEADMAN или помощник с manage_homework)")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Задание создано"),
+            @ApiResponse(responseCode = "202",
+                    description = "Задание сохранено, привязка ожидает подтверждения; повторить с тем же requestKey",
+                    content = @Content(schema = @Schema(implementation = HomeworkPublicationPendingResponse.class))),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "503", description = "Schedule временно недоступен до сохранения содержимого")
     })
     @PostMapping
-    ResponseEntity<EntityModel<HomeworkResponse>> createHomework(
+    ResponseEntity<?> createHomework(
             @Valid @RequestBody CreateHomeworkRequest request);
 
     @Operation(summary = "Получить задание по ID")
@@ -68,7 +75,7 @@ public interface HomeworkApi {
             @PathVariable Long id,
             @Valid @RequestBody UpdateHomeworkRequest request);
 
-    @Operation(summary = "Удалить задание (HEADMAN, только автор)")
+    @Operation(summary = "Архивировать задание (HEADMAN или помощник с manage_homework)")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Задание удалено"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.HomeworkCompletion;
@@ -63,6 +64,7 @@ class HomeworkStudentServiceTest {
         lenient().when(homework.getId()).thenReturn(HOMEWORK_ID);
         lenient().when(homework.getGroupId()).thenReturn(GROUP_ID);
         lenient().when(homework.getSemesterId()).thenReturn(SEMESTER_ID);
+        lenient().when(homework.getPublicationState()).thenReturn(HomeworkPublicationState.ACTIVE);
     }
 
     @Test

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.HomeworkCompletion;
@@ -80,6 +81,9 @@ public class HomeworkStudentService {
         if (!active.getId().equals(homework.getSemesterId())) {
             throw new AccessDeniedException("ДЗ принадлежит неактивному семестру");
         }
+        if (homework.getPublicationState() != HomeworkPublicationState.ACTIVE) {
+            throw new ResourceNotFoundException("Homework", "id", homeworkId);
+        }
 
         if (completed) {
             completionRepository.insertIfAbsent(homework.getId(), studentId);
@@ -102,7 +106,7 @@ public class HomeworkStudentService {
     }
 
     private static Long requireStudent(InternalJwtClaims claims) {
-        if (claims == null || !"STUDENT".equalsIgnoreCase(claims.domainRole())
+        if (claims == null || !"STUDENT".equalsIgnoreCase(claims.role())
                 || claims.userId() <= 0
                 || claims.groupId() == null || claims.groupId() <= 0) {
             throw new AccessDeniedException("Нужен scope активного STUDENT");

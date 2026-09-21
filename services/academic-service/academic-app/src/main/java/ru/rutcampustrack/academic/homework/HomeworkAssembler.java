@@ -30,6 +30,8 @@ public class HomeworkAssembler implements RepresentationModelAssembler<Homework,
         response.setGroupId(homework.getGroupId());
         response.setSemesterId(homework.getSemesterId());
         response.setPublishedBy(homework.getPublishedBy());
+        response.setBindingId(homework.getBindingId());
+        response.setRequestKey(homework.getRequestKey());
         response.setCompleted(completed);
         response.setCreatedAt(homework.getCreatedAt());
         response.setLessonDate(homework.getLessonDate());

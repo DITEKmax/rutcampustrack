@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.User;
@@ -186,8 +187,9 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
         when(homework.getSubjectId()).thenReturn(701L);
         when(homework.getLessonDate()).thenReturn(LocalDate.of(2026, 3, 2));
         when(homework.getLessonNumber()).thenReturn(1);
-        when(homeworks.findByGroupIdAndSemesterIdAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
-                10L, 20L, LocalDate.of(2026, 3, 2), LocalDate.of(2026, 3, 2)))
+        when(homeworks.findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
+                10L, 20L, HomeworkPublicationState.ACTIVE,
+                LocalDate.of(2026, 3, 2), LocalDate.of(2026, 3, 2)))
                 .thenReturn(List.of(homework));
         when(completions.findByHomeworkIdInAndStudentId(List.of(700L), 100L)).thenReturn(List.of());
         when(subjects.findAllById(Set.of(701L))).thenReturn(List.of());

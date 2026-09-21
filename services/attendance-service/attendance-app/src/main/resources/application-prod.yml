@@ -13,3 +13,14 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
+# Schedule's binding and lesson RPCs use the same authenticated TLS channel in
+# prod. Trust material is supplied by the deployment, with no plaintext
+# fallback when the prod profile is active.
+grpc:
+  client:
+    schedule-service:
+      negotiation-type: TLS
+      security:
+        trust-cert-collection: ${SCHEDULE_GRPC_TRUST_CERT_COLLECTION}
+        authority-override: ${SCHEDULE_GRPC_TLS_AUTHORITY:schedule-service}

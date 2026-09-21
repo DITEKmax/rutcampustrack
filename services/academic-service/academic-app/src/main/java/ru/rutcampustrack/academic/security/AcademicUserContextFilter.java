@@ -1,6 +1,9 @@
 package ru.rutcampustrack.academic.security;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
@@ -8,6 +11,8 @@ import ru.rutcampustrack.shared.security.DualModeUserContextFilter;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.InternalJwtProperties;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
+
+import java.io.IOException;
 
 /**
  * M03a: academic-service adaptation of {@link DualModeUserContextFilter}.
@@ -20,6 +25,7 @@ import ru.rutcampustrack.shared.security.InternalJwtValidator;
 public class AcademicUserContextFilter extends DualModeUserContextFilter {
 
     private final RequestContext requestContext;
+    private final InternalJwtProperties properties;
 
     public AcademicUserContextFilter(InternalJwtValidator validator,
                                      InternalJwtProperties properties,
@@ -27,6 +33,18 @@ public class AcademicUserContextFilter extends DualModeUserContextFilter {
                                      BusinessMetrics businessMetrics) {
         super(validator, properties, businessMetrics);
         this.requestContext = requestContext;
+        this.properties = properties;
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain) throws ServletException, IOException {
+        // Forward only the exact signed token accepted at the HTTP boundary.
+        // Schedule validates the signature and frozen claims independently;
+        // legacy X-User-* headers never become a binding actor identity.
+        requestContext.setInternalToken(request.getHeader(properties.headerName()));
+        super.doFilterInternal(request, response, chain);
     }
 
     @Override

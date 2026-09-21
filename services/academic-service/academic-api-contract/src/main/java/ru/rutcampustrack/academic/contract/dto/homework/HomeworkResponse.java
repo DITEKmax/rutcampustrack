@@ -5,6 +5,7 @@ import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
  * Response DTO for a homework assignment with HATEOAS links.
@@ -24,6 +25,9 @@ public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
     private Long groupId;
     private Long semesterId;
     private Long publishedBy;
+    /** Schedule-owned immutable location identity persisted with the content. */
+    private Long bindingId;
+    private UUID requestKey;
     /** Per-student completion flag populated from HomeworkCompletion table. */
     private boolean completed;
     private OffsetDateTime createdAt;
@@ -73,6 +77,12 @@ public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
 
     public Long getPublishedBy() { return publishedBy; }
     public void setPublishedBy(Long publishedBy) { this.publishedBy = publishedBy; }
+
+    public Long getBindingId() { return bindingId; }
+    public void setBindingId(Long bindingId) { this.bindingId = bindingId; }
+
+    public UUID getRequestKey() { return requestKey; }
+    public void setRequestKey(UUID requestKey) { this.requestKey = requestKey; }
 
     public boolean isCompleted() { return completed; }
     public void setCompleted(boolean completed) { this.completed = completed; }

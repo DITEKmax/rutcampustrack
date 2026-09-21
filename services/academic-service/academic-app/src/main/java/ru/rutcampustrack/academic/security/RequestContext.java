@@ -7,7 +7,8 @@ import ru.rutcampustrack.academic.contract.enums.UserRole;
 
 /**
  * Request-scoped bean that holds the authenticated user context injected by
- * API Gateway via X-User-Id / X-User-Role / X-Group-Id / X-Is-Headman headers.
+ * API Gateway via the validated Internal JWT (or the temporary legacy headers
+ * during the configured migration window).
  *
  * CRITICAL: proxyMode = ScopedProxyMode.TARGET_CLASS is mandatory so that
  * singleton beans (e.g. RoleCheckAspect) receive a properly scoped proxy
@@ -21,6 +22,7 @@ public class RequestContext {
     private UserRole role;
     private Long groupId;
     private boolean headman;
+    private String internalToken;
 
     public Long getUserId() {
         return userId;
@@ -52,5 +54,18 @@ public class RequestContext {
 
     public void setHeadman(boolean headman) {
         this.headman = headman;
+    }
+
+    /**
+     * The exact signed token accepted by the HTTP boundary.  It is forwarded
+     * unchanged to Schedule for binding RPCs, where Schedule validates the
+     * signature and all frozen claims again.
+     */
+    public String getInternalToken() {
+        return internalToken;
+    }
+
+    public void setInternalToken(String internalToken) {
+        this.internalToken = internalToken;
     }
 }

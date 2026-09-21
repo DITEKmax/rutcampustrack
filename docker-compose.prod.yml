@@ -249,8 +249,12 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       GRPC_SECRET: ${GRPC_SECRET}
+      ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:?ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN must be set}
+      SCHEDULE_GRPC_TRUST_CERT_COLLECTION: /run/rct-schedule-tls/schedule-server.crt
       # M09 G7 (NEW-157).
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+    volumes:
+      - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
     expose:
       - "9091"
     networks:
@@ -287,9 +291,14 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       GRPC_SECRET: ${GRPC_SECRET}
+      ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:?ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN must be set}
+      SCHEDULE_GRPC_CERTIFICATE_CHAIN: /run/rct-schedule-tls/schedule-server.crt
+      SCHEDULE_GRPC_PRIVATE_KEY: /run/rct-schedule-tls/schedule-server.key
       TZ: Europe/Moscow
       # M09 G7 (NEW-157).
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+    volumes:
+      - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}:/run/rct-schedule-tls:ro
     expose:
       - "9092"
     networks:
@@ -328,10 +337,13 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       GRPC_SECRET: ${GRPC_SECRET}
+      SCHEDULE_GRPC_TRUST_CERT_COLLECTION: /run/rct-schedule-tls/schedule-server.crt
       # M18 hotfix: weekly DOCX export killed prod attendance-service under
       # 512m/75% heap; gateway saw PrematureClose BEFORE response. Keep heap
       # lower and leave room for JVM native memory + DOCX zip buffers.
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=30.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+    volumes:
+      - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
     expose:
       - "9093"
     networks:
@@ -474,6 +486,8 @@ services:
       SCHEDULE_GRPC_HOST: schedule-service
       SCHEDULE_GRPC_PORT: "19092"
       GRPC_SECRET: ${GRPC_SECRET}
+      SCHEDULE_GRPC_TLS_ENABLED: "true"
+      SCHEDULE_GRPC_TLS_CA_PATH: /run/rct-schedule-tls/schedule-server.crt
       AUTH_SERVICE_HOST: auth-service
       AUTH_SERVICE_PORT: "9090"
       API_GATEWAY_URL: http://api-gateway:8080
@@ -487,6 +501,8 @@ services:
       # форвардить alert.fired. "0" = disabled.
       ADMIN_TELEGRAM_IDS: ${ADMIN_TELEGRAM_IDS:-0}
       TZ: Europe/Moscow
+    volumes:
+      - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
     networks:
       - private_net
     depends_on:

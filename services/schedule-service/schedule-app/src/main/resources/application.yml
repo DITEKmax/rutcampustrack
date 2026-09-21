@@ -59,6 +59,8 @@ grpc:
     port: 19092
   auth:
     secret: ${GRPC_SECRET:}
+  service-identity:
+    academic-to-schedule-token: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:}
   client:
     academic-service:
       address: static://academic-service:19091
@@ -67,7 +69,7 @@ grpc:
 rutcampustrack:
   security:
     # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
-    required-env-vars: POSTGRES_SCHEDULE_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET
+    required-env-vars: POSTGRES_SCHEDULE_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET,ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN
     internal-jwt:
       # M03a: pull RSA public key from auth-service /auth/public-key.
       auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}

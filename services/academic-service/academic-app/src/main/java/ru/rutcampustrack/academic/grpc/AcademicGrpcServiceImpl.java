@@ -14,6 +14,7 @@ import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.entity.TeacherSubjectGroup;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
@@ -935,8 +936,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
 
         Map<Long, Homework> homeworksById = new LinkedHashMap<>();
         homeworkRepository
-                .findByGroupIdAndSemesterIdAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
-                        request.getGroupId(), request.getSemesterId(), from, to)
+                .findByGroupIdAndSemesterIdAndPublicationStateAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
+                        request.getGroupId(), request.getSemesterId(), HomeworkPublicationState.ACTIVE, from, to)
                 .forEach(homework -> homeworksById.put(homework.getId(), homework));
 
         if (completedToday != null) {
@@ -951,6 +952,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 homeworkRepository.findAllById(completedTodayHomeworkIds).stream()
                         .filter(homework -> request.getGroupId() == homework.getGroupId())
                         .filter(homework -> request.getSemesterId() == homework.getSemesterId())
+                        .filter(homework -> homework.getPublicationState() == HomeworkPublicationState.ACTIVE)
                         .forEach(homework -> homeworksById.put(homework.getId(), homework));
             }
         }
@@ -1105,7 +1107,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     }
 
     private static boolean isOwnHomeworkRequest(HomeworksForWeekRequest request, InternalJwtClaims claims) {
-        return "STUDENT".equalsIgnoreCase(claims.domainRole())
+        return "STUDENT".equalsIgnoreCase(claims.role())
                 && claims.userId() > 0
                 && claims.groupId() != null
                 && claims.groupId() > 0
@@ -1114,7 +1116,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     }
 
     private static boolean canReadHomework(InternalJwtClaims claims) {
-        if (!"STUDENT".equalsIgnoreCase(claims.domainRole())
+        if (!"STUDENT".equalsIgnoreCase(claims.role())
                 || claims.userId() <= 0
                 || claims.groupId() == null
                 || claims.groupId() <= 0) {

@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * Request DTO for creating a new homework assignment.
@@ -68,5 +69,17 @@ public record CreateHomeworkRequest(
         @NotNull(message = "Номер пары обязателен")
         @Min(value = 1, message = "Номер пары должен быть в диапазоне 1..8")
         @Max(value = 8, message = "Номер пары должен быть в диапазоне 1..8")
-        Integer lessonNumber
-) {}
+        Integer lessonNumber,
+
+        @Schema(description = "Ключ идемпотентности команды (повтор запроса продолжает ту же публикацию)",
+                example = "4d1f2f1f-42f0-4e9a-a9d4-fd5cbf9f9e1f")
+        UUID requestKey
+) {
+    /** Backward-compatible source constructor for clients that omit the key. */
+    public CreateHomeworkRequest(String title, String description, String link,
+                                 Long subjectId, Long groupId, Long semesterId,
+                                 LocalDate lessonDate, Integer lessonNumber) {
+        this(title, description, link, subjectId, groupId, semesterId,
+                lessonDate, lessonNumber, null);
+    }
+}

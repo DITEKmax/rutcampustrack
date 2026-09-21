@@ -1,0 +1,10 @@
+# Schedule's prod gRPC endpoint is TLS-only. Keep the trust bundle and
+# authority explicit so a missing deployment input cannot silently downgrade
+# this consumer to plaintext.
+grpc:
+  client:
+    schedule-service:
+      negotiation-type: TLS
+      security:
+        trust-cert-collection: ${SCHEDULE_GRPC_TRUST_CERT_COLLECTION}
+        authority-override: ${SCHEDULE_GRPC_TLS_AUTHORITY:schedule-service}

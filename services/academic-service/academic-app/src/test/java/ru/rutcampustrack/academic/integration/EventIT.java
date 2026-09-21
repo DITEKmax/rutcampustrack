@@ -49,6 +49,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -187,9 +188,21 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                         ru.rutcampustrack.schedule.grpc.LessonResponse.newBuilder()
                                 .setGroupId(groupA.getId())
                                 .setSubjectId(testSubject.getId())
+                                .setSemesterId(testSemester.getId())
                                 .setLessonNumber(1)
+                                .setDate(LocalDate.now().plusDays(1).toString())
+                                .setOccurrenceId(9001L)
+                                .setRevision(1L)
                                 .setStatus("planned")
                                 .build()));
+        when(scheduleGrpcClient.reserveHomeworkBinding(anyLong(), any(UUID.class), anyLong(), any(byte[].class)))
+                .thenAnswer(invocation -> homeworkBindingResponse(
+                        9101L, 9001L, null,
+                        ru.rutcampustrack.schedule.grpc.HomeworkBindingState.HOMEWORK_BINDING_STATE_PENDING));
+        when(scheduleGrpcClient.confirmHomeworkBinding(anyLong(), anyLong(), any(UUID.class)))
+                .thenAnswer(invocation -> homeworkBindingResponse(
+                        9101L, 9001L, (Long) invocation.getArgument(1),
+                        ru.rutcampustrack.schedule.grpc.HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE));
         when(scheduleGrpcClient.countSubjectReferences(anyLong()))
                 .thenReturn(ru.rutcampustrack.schedule.grpc.CountSubjectReferencesResponse
                         .getDefaultInstance());
@@ -427,7 +440,8 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         Homework homework = new Homework(
                 groupA.getId(), testSubject.getId(), testSemester.getId(),
                 "Original Title", "description", null, testUser.getId(),
-                java.time.LocalDate.now().plusDays(1), 1
+                java.time.LocalDate.now().plusDays(1), 1,
+                9201L, testUser.getId(), UUID.randomUUID(), new byte[32]
         );
         homework = homeworkRepository.save(homework);
 
@@ -457,5 +471,42 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         assertThat(payload.get("lesson_date").asText()).isEqualTo(LocalDate.now().plusDays(1).toString());
         assertThat(payload.get("lesson_number").asInt()).isEqualTo(1);
         assertThat(payload.get("has_link").asBoolean()).isTrue();
+    }
+
+    private ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse homeworkBindingResponse(
+            long bindingId, long occurrenceId, Long homeworkId,
+            ru.rutcampustrack.schedule.grpc.HomeworkBindingState state) {
+        ru.rutcampustrack.schedule.grpc.LessonInfo lesson =
+                ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
+                        .setLessonId(9002L)
+                        .setGroupId(groupA.getId())
+                        .setSubjectId(testSubject.getId())
+                        .setStartsAt(LocalDate.now().plusDays(1) + "T09:00")
+                        .setLessonNumber(1)
+                        .setDate(LocalDate.now().plusDays(1).toString())
+                        .setOccurrenceId(occurrenceId)
+                        .setAssignmentId(1L)
+                        .setSemesterId(testSemester.getId())
+                        .setTeacherId(1L)
+                        .setLessonType("lecture")
+                        .setGeneration(1L)
+                        .setRevision(1L)
+                        .setStatus("planned")
+                        .build();
+        var builder = ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse.newBuilder()
+                .setBindingId(bindingId)
+                .setOccurrenceId(occurrenceId)
+                .setCurrentLesson(lesson)
+                .setState(state)
+                .setRevision(state == ru.rutcampustrack.schedule.grpc.HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE ? 2L : 1L)
+                .setGroupId(groupA.getId())
+                .setSubjectId(testSubject.getId())
+                .setSemesterId(testSemester.getId())
+                .setDate(LocalDate.now().plusDays(1).toString())
+                .setLessonNumber(1);
+        if (homeworkId != null) {
+            builder.setHomeworkId(homeworkId);
+        }
+        return builder.build();
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.history.HistoricalMembershipException;
+import ru.rutcampustrack.academic.contract.dto.homework.HomeworkPublicationPendingResponse;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 import java.time.Instant;
@@ -66,7 +67,9 @@ public class GlobalExceptionHandler {
             "groups_name_key", "name",
             "semesters_no_overlap", "dates",
             "assignments_no_same_teacher_overlap", "validFrom",
-            "assignments_validity_chk", "validUntilExclusive"
+            "assignments_validity_chk", "validUntilExclusive",
+            "homeworks_binding_uq", "bindingId",
+            "homeworks_actor_request_uq", "requestKey"
     );
 
     /** Matches {@code constraint "xxx"} fragment in PG/Hibernate error messages. */
@@ -82,7 +85,9 @@ public class GlobalExceptionHandler {
             "name", "Название уже используется",
             "dates", "Даты семестра пересекаются с существующим",
             "validFrom", "Период назначения пересекается с существующим",
-            "validUntilExclusive", "Недопустимые границы периода назначения"
+            "validUntilExclusive", "Недопустимые границы периода назначения",
+            "bindingId", "Привязка домашнего задания уже используется",
+            "requestKey", "Ключ идемпотентности уже использован"
     );
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -121,6 +126,12 @@ public class GlobalExceptionHandler {
                                                         HttpServletRequest request) {
         return problem(HttpStatus.CONFLICT, "conflict",
                 "Конфликт данных", ex.getMessage(), request, ex.getField(), ex.getExtras());
+    }
+
+    @ExceptionHandler(HomeworkPublicationPendingException.class)
+    public ResponseEntity<HomeworkPublicationPendingResponse> handleHomeworkPublicationPending(
+            HomeworkPublicationPendingException ex) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(ex.getResponse());
     }
 
     @ExceptionHandler(HistoricalMembershipException.class)

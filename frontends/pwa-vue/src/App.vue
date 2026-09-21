@@ -51,12 +51,12 @@ const auth = usePwaAuth(fixtureTransport ? { fetcher: fixtureTransport } : undef
 const mapClient = new CampusMapClient({
   accessToken: () => auth.accessToken.value,
   onUnauthorized: () => auth.refreshFor(auth.currentGeneration()),
-  fetcher: fixtureTransport ?? undefined,
+  ...(fixtureTransport ? { fetcher: fixtureTransport } : {}),
 })
 const adminMapClient = new AdminMapClient({
   accessToken: () => auth.accessToken.value,
   onUnauthorized: () => auth.refreshFor(auth.currentGeneration()),
-  fetcher: fixtureTransport ?? undefined,
+  ...(fixtureTransport ? { fetcher: fixtureTransport } : {}),
 })
 const host = new PwaHostAdapter()
 const theme = typeof document === 'undefined' ? null : createMobileTheme()

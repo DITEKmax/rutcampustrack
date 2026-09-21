@@ -4,9 +4,13 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "homeworks")
@@ -50,6 +54,27 @@ public class Homework {
     @Column(name = "published_by", nullable = false)
     private Long publishedBy;
 
+    /** Immutable binding identity returned by schedule-service. */
+    @Column(name = "binding_id", nullable = false, updatable = false)
+    private Long bindingId;
+
+    /** Actor identity used by the Schedule binding authority. */
+    @Column(name = "actor_id", nullable = false, updatable = false)
+    private Long actorId;
+
+    /** Idempotency key shared by Academic and Schedule for this command. */
+    @Column(name = "request_key", nullable = false, updatable = false)
+    private UUID requestKey;
+
+    /** Server-computed canonical command hash. */
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    @Column(name = "payload_hash", nullable = false, updatable = false, columnDefinition = "bytea")
+    private byte[] payloadHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "publication_state", nullable = false)
+    private HomeworkPublicationState publicationState = HomeworkPublicationState.PENDING;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -73,6 +98,39 @@ public class Homework {
         this.publishedBy = publishedBy;
         this.lessonDate = lessonDate;
         this.lessonNumber = lessonNumber;
+        // Kept for source compatibility with old fixture-only constructors.
+        // The live creation path must use the binding-aware constructor below.
+        this.actorId = publishedBy;
+    }
+
+    public Homework(Long groupId, Long subjectId, Long semesterId,
+                    String title, String description, String link, Long publishedBy,
+                    LocalDate lessonDate, Integer lessonNumber,
+                    Long bindingId, Long actorId, UUID requestKey, byte[] payloadHash) {
+        this(groupId, subjectId, semesterId, title, description, link, publishedBy,
+                lessonDate, lessonNumber);
+        this.bindingId = bindingId;
+        this.actorId = actorId;
+        this.requestKey = requestKey;
+        this.payloadHash = payloadHash == null ? null : payloadHash.clone();
+    }
+
+    public byte[] getPayloadHash() {
+        return payloadHash == null ? null : payloadHash.clone();
+    }
+
+    public void activatePublication() {
+        if (publicationState == HomeworkPublicationState.ARCHIVED) {
+            throw new IllegalStateException("archived homework cannot be published again");
+        }
+        if (publicationState == HomeworkPublicationState.ACTIVE) {
+            return;
+        }
+        publicationState = HomeworkPublicationState.ACTIVE;
+    }
+
+    public void archivePublication() {
+        publicationState = HomeworkPublicationState.ARCHIVED;
     }
 
     @PrePersist

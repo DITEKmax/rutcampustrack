@@ -2,7 +2,9 @@ package ru.rutcampustrack.schedule.grpc;
 
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
+import ru.rutcampustrack.schedule.homework.HomeworkBindingService;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
@@ -32,13 +34,24 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
     private final LessonRepository lessonRepository;
     private final ScheduleItemRepository scheduleItemRepository;
     private final OneOffLessonRepository oneOffLessonRepository;
+    private final HomeworkBindingService homeworkBindingService;
 
+    /** Legacy constructor kept for focused tests of the pre-V17 read RPCs. */
     public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
                                    ScheduleItemRepository scheduleItemRepository,
                                    OneOffLessonRepository oneOffLessonRepository) {
+        this(lessonRepository, scheduleItemRepository, oneOffLessonRepository, null);
+    }
+
+    @Autowired
+    public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
+                                   ScheduleItemRepository scheduleItemRepository,
+                                   OneOffLessonRepository oneOffLessonRepository,
+                                   HomeworkBindingService homeworkBindingService) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.oneOffLessonRepository = oneOffLessonRepository;
+        this.homeworkBindingService = homeworkBindingService;
     }
 
     /**
@@ -180,6 +193,14 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
     @Override
     public void resolveLesson(ResolveLessonRequest request,
                               StreamObserver<LessonResponse> responseObserver) {
+        // The V17 resolver is the authoritative source for immutable occurrence
+        // identity and current physical snapshots used by HomeworkService.
+        // Focused legacy read tests still use the three-argument constructor.
+        if (homeworkBindingService != null) {
+            responseObserver.onNext(homeworkBindingService.resolveLesson(request));
+            responseObserver.onCompleted();
+            return;
+        }
         LocalDate date = LocalDate.parse(request.getDate());
 
         Lesson lesson = lessonRepository
@@ -193,6 +214,43 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
 
         responseObserver.onNext(buildResponse(lesson, item));
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void reserveHomeworkBinding(ReserveHomeworkBindingRequest request,
+                                       StreamObserver<HomeworkBindingResponse> responseObserver) {
+        responseObserver.onNext(requireHomeworkBindingService().reserve(request));
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void confirmHomeworkBinding(ConfirmHomeworkBindingRequest request,
+                                       StreamObserver<HomeworkBindingResponse> responseObserver) {
+        responseObserver.onNext(requireHomeworkBindingService().confirm(request));
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getHomeworkBindings(HomeworkBindingsRequest request,
+                                    StreamObserver<HomeworkBindingsResponse> responseObserver) {
+        responseObserver.onNext(HomeworkBindingsResponse.newBuilder()
+                .addAllBindings(requireHomeworkBindingService().getBindings(request))
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void archiveHomeworkBinding(ArchiveHomeworkBindingRequest request,
+                                       StreamObserver<HomeworkBindingResponse> responseObserver) {
+        responseObserver.onNext(requireHomeworkBindingService().archive(request));
+        responseObserver.onCompleted();
+    }
+
+    private HomeworkBindingService requireHomeworkBindingService() {
+        if (homeworkBindingService == null) {
+            throw new IllegalStateException("homework binding store is not configured");
+        }
+        return homeworkBindingService;
     }
 
     /**

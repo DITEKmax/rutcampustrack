@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     # Schedule Service gRPC
     schedule_grpc_host: str = "schedule-service"
     schedule_grpc_port: int = 19092
+    schedule_grpc_tls_enabled: bool = False
+    schedule_grpc_tls_ca_path: str = ""
 
     # Attendance request attachment gRPC (bot-only shared-secret boundary)
     attendance_grpc_host: str = "attendance-service"

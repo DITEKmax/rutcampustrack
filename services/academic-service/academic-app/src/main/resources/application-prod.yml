@@ -13,3 +13,13 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
+# The Schedule binding contract is admitted only over TLS. The trust bundle
+# and authority are explicit deployment inputs; no prod plaintext fallback.
+grpc:
+  client:
+    schedule-service:
+      negotiation-type: TLS
+      security:
+        trust-cert-collection: ${SCHEDULE_GRPC_TRUST_CERT_COLLECTION}
+        authority-override: ${SCHEDULE_GRPC_TLS_AUTHORITY:schedule-service}

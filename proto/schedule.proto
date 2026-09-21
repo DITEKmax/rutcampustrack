@@ -38,6 +38,10 @@ service ScheduleGrpcService {
   // Подтвердить привязку домашней работы после публикации.
   rpc ConfirmHomeworkBinding (ConfirmHomeworkBindingRequest) returns (HomeworkBindingResponse);
 
+  // Архивировать привязку вместе с терминальным удалением содержимого в Academic.
+  // Повтор с тем же binding_id/homework_id/request_key возвращает ARCHIVED.
+  rpc ArchiveHomeworkBinding (ArchiveHomeworkBindingRequest) returns (HomeworkBindingResponse);
+
   // Прочитать текущие привязки домашних работ для occurrences.
   rpc GetHomeworkBindings (HomeworkBindingsRequest) returns (HomeworkBindingsResponse);
 }
@@ -185,6 +189,12 @@ message ReserveHomeworkBindingRequest {
 }
 
 message ConfirmHomeworkBindingRequest {
+  int64 binding_id = 1;
+  int64 homework_id = 2;
+  string request_key = 3;
+}
+
+message ArchiveHomeworkBindingRequest {
   int64 binding_id = 1;
   int64 homework_id = 2;
   string request_key = 3;

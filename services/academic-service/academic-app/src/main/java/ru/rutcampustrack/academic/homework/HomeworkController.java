@@ -30,7 +30,7 @@ public class HomeworkController implements HomeworkApi {
 
     @Override
     @RequireRole({UserRole.STUDENT})
-    public ResponseEntity<EntityModel<HomeworkResponse>> createHomework(CreateHomeworkRequest request) {
+    public ResponseEntity<?> createHomework(CreateHomeworkRequest request) {
         Homework homework = homeworkService.createHomework(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(homeworkAssembler.toModel(homework));
     }

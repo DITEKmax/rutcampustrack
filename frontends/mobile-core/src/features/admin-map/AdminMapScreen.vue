@@ -92,7 +92,10 @@ async function upload(): Promise<void> {
     return
   }
   await runSave(async () => {
-    await props.client.uploadVersion(selectedFloorId.value!, { png: png.value, svg: svg.value })
+    await props.client.uploadVersion(selectedFloorId.value!, {
+      ...(png.value ? { png: png.value } : {}),
+      ...(svg.value ? { svg: svg.value } : {}),
+    })
     png.value = undefined
     svg.value = undefined
     notice.value = 'Новая версия опубликована. Отсутствующий формат сохранён как отдельное состояние.'

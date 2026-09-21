@@ -13,3 +13,14 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
+# Binding RPCs require an authenticated TLS transport before the directed
+# Academic service credential is accepted. Certificate paths are deployment
+# inputs; an absent path must fail the prod profile instead of falling back to
+# plaintext.
+grpc:
+  server:
+    security:
+      enabled: true
+      certificate-chain: ${SCHEDULE_GRPC_CERTIFICATE_CHAIN}
+      private-key: ${SCHEDULE_GRPC_PRIVATE_KEY}

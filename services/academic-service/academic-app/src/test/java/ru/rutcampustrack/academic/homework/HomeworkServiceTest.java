@@ -5,10 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.util.ReflectionTestUtils;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
@@ -21,12 +23,16 @@ import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse;
+import ru.rutcampustrack.schedule.grpc.HomeworkBindingState;
+import ru.rutcampustrack.schedule.grpc.LessonInfo;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -170,7 +176,18 @@ class HomeworkServiceTest {
         stubHeadman();
         when(scheduleGrpcClient.resolveLesson(GROUP_ID, TOMORROW, LESSON_NUMBER))
                 .thenReturn(Optional.of(lessonWithSubject(SUBJECT_ID)));
-        when(homeworkRepository.save(any(Homework.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(scheduleGrpcClient.reserveHomeworkBinding(anyLong(), any(UUID.class), anyLong(), any(byte[].class)))
+                .thenReturn(binding(8101L, null, HomeworkBindingState.HOMEWORK_BINDING_STATE_PENDING));
+        when(scheduleGrpcClient.confirmHomeworkBinding(anyLong(), anyLong(), any(UUID.class)))
+                .thenAnswer(invocation -> binding(8101L, (Long) invocation.getArgument(1),
+                        HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE));
+        when(homeworkRepository.save(any(Homework.class))).thenAnswer(inv -> {
+            Homework homework = inv.getArgument(0);
+            if (homework.getId() == null) {
+                ReflectionTestUtils.setField(homework, "id", 1L);
+            }
+            return homework;
+        });
 
         Homework saved = service.createHomework(validRequest(TOMORROW));
 
@@ -183,8 +200,37 @@ class HomeworkServiceTest {
         verify(eventPublisher).publishEvent(any());
     }
 
+    @Test
+    void createHomework_hashEncodingSeparatesNewlinePayloads() {
+        stubHeadman();
+        when(scheduleGrpcClient.resolveLesson(GROUP_ID, TOMORROW, LESSON_NUMBER))
+                .thenReturn(Optional.of(lessonWithSubject(SUBJECT_ID)));
+        when(scheduleGrpcClient.reserveHomeworkBinding(anyLong(), any(UUID.class), anyLong(), any(byte[].class)))
+                .thenReturn(binding(8101L, null, HomeworkBindingState.HOMEWORK_BINDING_STATE_PENDING));
+        when(scheduleGrpcClient.confirmHomeworkBinding(anyLong(), anyLong(), any(UUID.class)))
+                .thenAnswer(invocation -> binding(8101L, (Long) invocation.getArgument(1),
+                        HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE));
+        when(homeworkRepository.save(any(Homework.class))).thenAnswer(inv -> {
+            Homework homework = inv.getArgument(0);
+            ReflectionTestUtils.setField(homework, "id", System.nanoTime());
+            return homework;
+        });
+
+        service.createHomework(new CreateHomeworkRequest(
+                "A\nB", "C", null, SUBJECT_ID, GROUP_ID, SEMESTER_ID,
+                TOMORROW, LESSON_NUMBER));
+        service.createHomework(new CreateHomeworkRequest(
+                "A", "B\nC", null, SUBJECT_ID, GROUP_ID, SEMESTER_ID,
+                TOMORROW, LESSON_NUMBER));
+
+        ArgumentCaptor<byte[]> hashes = ArgumentCaptor.forClass(byte[].class);
+        verify(scheduleGrpcClient, org.mockito.Mockito.times(2))
+                .reserveHomeworkBinding(anyLong(), any(UUID.class), anyLong(), hashes.capture());
+        assertThat(hashes.getAllValues().get(0)).isNotEqualTo(hashes.getAllValues().get(1));
+    }
+
     // =========================================================================
-    // D-05: только автор редактирует / удаляет
+    // D-05: только автор редактирует; archive is permission-scoped
     // =========================================================================
 
     @Test
@@ -203,15 +249,17 @@ class HomeworkServiceTest {
     }
 
     @Test
-    void deleteHomework_throwsForbidden_whenNotAuthor() {
+    void deleteHomework_succeeds_forAuthorizedNonAuthor() {
         stubHeadman();
         Homework hw = existingHomework(OTHER_USER_ID);
         when(homeworkRepository.findById(1L)).thenReturn(Optional.of(hw));
+        when(homeworkRepository.save(any(Homework.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        assertThatThrownBy(() -> service.deleteHomework(1L))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessageContaining("автор");
+        service.deleteHomework(1L);
 
+        assertThat(hw.getPublicationState()).isEqualTo(
+                ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState.ARCHIVED);
+        verify(homeworkRepository).save(hw);
         verify(homeworkRepository, never()).delete(any());
     }
 
@@ -237,10 +285,14 @@ class HomeworkServiceTest {
         stubHeadman();
         Homework hw = existingHomework(HEADMAN_ID);
         when(homeworkRepository.findById(1L)).thenReturn(Optional.of(hw));
+        when(homeworkRepository.save(any(Homework.class))).thenAnswer(inv -> inv.getArgument(0));
 
         service.deleteHomework(1L);
 
-        verify(homeworkRepository).delete(hw);
+        assertThat(hw.getPublicationState()).isEqualTo(
+                ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState.ARCHIVED);
+        verify(homeworkRepository).save(hw);
+        verify(homeworkRepository, never()).delete(any());
     }
 
     // =========================================================================
@@ -265,15 +317,56 @@ class HomeworkServiceTest {
         return LessonResponse.newBuilder()
                 .setGroupId(GROUP_ID)
                 .setSubjectId(subjectId)
+                .setSemesterId(SEMESTER_ID)
                 .setLessonNumber(LESSON_NUMBER)
+                .setDate(TOMORROW.toString())
+                .setOccurrenceId(8100L)
+                .setRevision(1L)
                 .setStatus("planned")
                 .build();
     }
 
+    private HomeworkBindingResponse binding(long bindingId, Long homeworkId,
+                                            HomeworkBindingState state) {
+        LessonInfo current = LessonInfo.newBuilder()
+                .setLessonId(8102L)
+                .setGroupId(GROUP_ID)
+                .setSubjectId(SUBJECT_ID)
+                .setStartsAt(TOMORROW + "T09:00")
+                .setLessonNumber(LESSON_NUMBER)
+                .setDate(TOMORROW.toString())
+                .setOccurrenceId(8100L)
+                .setAssignmentId(1L)
+                .setSemesterId(SEMESTER_ID)
+                .setTeacherId(1L)
+                .setLessonType("lecture")
+                .setGeneration(1L)
+                .setRevision(1L)
+                .setStatus("planned")
+                .build();
+        HomeworkBindingResponse.Builder response = HomeworkBindingResponse.newBuilder()
+                .setBindingId(bindingId)
+                .setOccurrenceId(8100L)
+                .setCurrentLesson(current)
+                .setState(state)
+                .setRevision(state == HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE ? 2L : 1L)
+                .setGroupId(GROUP_ID)
+                .setSubjectId(SUBJECT_ID)
+                .setSemesterId(SEMESTER_ID)
+                .setDate(TOMORROW.toString())
+                .setLessonNumber(LESSON_NUMBER);
+        if (homeworkId != null) {
+            response.setHomeworkId(homeworkId);
+        }
+        return response.build();
+    }
+
     private Homework existingHomework(Long publishedBy) {
-        return new Homework(
+        Homework homework = new Homework(
                 GROUP_ID, SUBJECT_ID, SEMESTER_ID,
                 "old", "desc", null, publishedBy,
                 TOMORROW, LESSON_NUMBER);
+        homework.activatePublication();
+        return homework;
     }
 }

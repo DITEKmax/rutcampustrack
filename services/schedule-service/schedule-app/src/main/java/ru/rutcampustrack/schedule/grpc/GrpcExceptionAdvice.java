@@ -6,6 +6,8 @@ import net.devh.boot.grpc.server.advice.GrpcExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
+import ru.rutcampustrack.schedule.exception.ConflictException;
+import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 
 @GrpcAdvice
 public class GrpcExceptionAdvice {
@@ -19,6 +21,16 @@ public class GrpcExceptionAdvice {
     @GrpcExceptionHandler(IllegalArgumentException.class)
     public Status handleBadRequest(IllegalArgumentException e) {
         return Status.INVALID_ARGUMENT.withDescription(e.getMessage()).withCause(e);
+    }
+
+    @GrpcExceptionHandler(ConflictException.class)
+    public Status handleConflict(ConflictException e) {
+        return Status.ABORTED.withDescription(e.getMessage()).withCause(e);
+    }
+
+    @GrpcExceptionHandler(AccessDeniedException.class)
+    public Status handleAccessDenied(AccessDeniedException e) {
+        return Status.PERMISSION_DENIED.withDescription(e.getMessage()).withCause(e);
     }
 
     @GrpcExceptionHandler(Exception.class)

@@ -14,6 +14,9 @@
     "name" : "Groups",
     "description" : "Управление учебными группами"
   }, {
+    "name" : "Campus map",
+    "description" : "Управление корпусами, этажами и схемами"
+  }, {
     "name" : "Subjects",
     "description" : "Управление предметами"
   }, {
@@ -841,7 +844,7 @@
       },
       "put" : {
         "tags" : [ "Subjects" ],
-        "summary" : "Полное обновление предмета (PUT, HEADMAN/ADMIN)",
+        "summary" : "Полное обновление предмета (PUT, HEADMAN)",
         "operationId" : "updateSubject",
         "parameters" : [ {
           "name" : "id",
@@ -947,8 +950,8 @@
       },
       "delete" : {
         "tags" : [ "Subjects" ],
-        "summary" : "Удалить предмет (HEADMAN/ADMIN)",
-        "description" : "Если у предмета есть уроки с историей посещаемости, возвращается 409 со счётчиками в extras. Повторный запрос с force=true пропускает pre-check и удаляет данные каскадно.",
+        "summary" : "Удалить предмет (HEADMAN)",
+        "description" : "Удаление отклоняется при наличии назначений или ссылок расписания; force не обходит историю.",
         "operationId" : "deleteSubject",
         "parameters" : [ {
           "name" : "id",
@@ -1553,7 +1556,7 @@
       },
       "delete" : {
         "tags" : [ "Homeworks" ],
-        "summary" : "Удалить задание (HEADMAN, только автор)",
+        "summary" : "Архивировать задание (HEADMAN или помощник с manage_homework)",
         "operationId" : "deleteHomework",
         "parameters" : [ {
           "name" : "id",
@@ -2374,7 +2377,7 @@
       },
       "post" : {
         "tags" : [ "Subjects" ],
-        "summary" : "Создать предмет (HEADMAN/ADMIN)",
+        "summary" : "Создать предмет (HEADMAN)",
         "operationId" : "createSubject",
         "requestBody" : {
           "content" : {
@@ -2473,7 +2476,7 @@
     "/academic/subjects/{id}/teachers/{teacherId}" : {
       "post" : {
         "tags" : [ "Subjects" ],
-        "summary" : "Добавить преподавателя к предмету (HEADMAN/ADMIN)",
+        "summary" : "Добавить преподавателя к предмету (HEADMAN)",
         "operationId" : "addTeacher",
         "parameters" : [ {
           "name" : "id",
@@ -2492,16 +2495,33 @@
             "format" : "int64"
           }
         } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AddSubjectTeacherRequest"
+              }
+            }
+          },
+          "required" : true
+        },
         "responses" : {
           "201" : {
-            "description" : "Преподаватель добавлен"
+            "description" : "Преподаватель добавлен",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelAssignmentResponse"
+                }
+              }
+            }
           },
           "403" : {
             "description" : "Нет прав доступа",
             "content" : {
-              "application/problem+json" : {
+              "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
+                  "$ref" : "#/components/schemas/EntityModelAssignmentResponse"
                 }
               }
             }
@@ -2509,9 +2529,9 @@
           "404" : {
             "description" : "Предмет не найден",
             "content" : {
-              "application/problem+json" : {
+              "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
+                  "$ref" : "#/components/schemas/EntityModelAssignmentResponse"
                 }
               }
             }
@@ -2519,9 +2539,9 @@
           "409" : {
             "description" : "Преподаватель уже назначен",
             "content" : {
-              "application/problem+json" : {
+              "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
+                  "$ref" : "#/components/schemas/EntityModelAssignmentResponse"
                 }
               }
             }
@@ -2570,7 +2590,8 @@
       },
       "delete" : {
         "tags" : [ "Subjects" ],
-        "summary" : "Удалить преподавателя из предмета (HEADMAN/ADMIN)",
+        "summary" : "Закрыть назначение преподавателя (HEADMAN)",
+        "description" : "До активации общего lifecycle fence операция возвращает typed 409 без мутаций.",
         "operationId" : "removeTeacher",
         "parameters" : [ {
           "name" : "id",
@@ -2588,10 +2609,33 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "assignmentId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "validUntilExclusive",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
         } ],
         "responses" : {
-          "204" : {
-            "description" : "Преподаватель удалён"
+          "409" : {
+            "description" : "Закрытие назначения пока недоступно",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "403" : {
             "description" : "Нет прав доступа",
@@ -2625,16 +2669,6 @@
           },
           "401" : {
             "description" : "Требуется аутентификация",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -2867,6 +2901,526 @@
         }
       }
     },
+    "/academic/map/floors" : {
+      "get" : {
+        "tags" : [ "Campus map" ],
+        "summary" : "Список этажей корпуса",
+        "operationId" : "listFloors",
+        "parameters" : [ {
+          "name" : "buildingId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ordered floor inventory",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CampusMapFloor"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Campus map" ],
+        "summary" : "Добавить этаж",
+        "operationId" : "createFloor",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CampusMapCreateFloorRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Этаж создан",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapFloor"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Нужна роль ADMIN",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapFloor"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Корпус не найден",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapFloor"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Этаж с таким кодом уже существует",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapFloor"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/academic/map/floors/{floorId}/versions" : {
+      "post" : {
+        "tags" : [ "Campus map" ],
+        "summary" : "Загрузить новую версию схемы этажа",
+        "operationId" : "uploadVersion",
+        "parameters" : [ {
+          "name" : "floorId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "label" : {
+                    "type" : "string"
+                  },
+                  "png" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  },
+                  "svg" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Версия опубликована; отсутствующий формат остаётся explicit absent",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapPlan"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Файл не прошёл MIME/signature/SVG validation",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapPlan"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Нужна роль ADMIN",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapPlan"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Этаж не найден",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapPlan"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт публикации",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapPlan"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/academic/map/buildings" : {
+      "get" : {
+        "tags" : [ "Campus map" ],
+        "summary" : "Список корпусов и этажей",
+        "operationId" : "listBuildings",
+        "responses" : {
+          "200" : {
+            "description" : "Ordered campus map inventory",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CampusMapBuilding"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Campus map" ],
+        "summary" : "Добавить корпус",
+        "operationId" : "createBuilding",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CampusMapCreateBuildingRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Корпус создан",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapBuilding"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Нужна роль ADMIN",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapBuilding"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Код корпуса уже используется",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapBuilding"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/academic/homeworks" : {
       "get" : {
         "tags" : [ "Homeworks" ],
@@ -2988,7 +3542,7 @@
       },
       "post" : {
         "tags" : [ "Homeworks" ],
-        "summary" : "Создать домашнее задание (HEADMAN)",
+        "summary" : "Создать домашнее задание (HEADMAN или помощник с manage_homework)",
         "operationId" : "createHomework",
         "requestBody" : {
           "content" : {
@@ -3006,7 +3560,17 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelHomeworkResponse"
+                  "type" : "object"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Задание сохранено, привязка ожидает подтверждения; повторить с тем же requestKey",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HomeworkPublicationPendingResponse"
                 }
               }
             }
@@ -3016,7 +3580,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelHomeworkResponse"
+                  "type" : "object"
                 }
               }
             }
@@ -3026,7 +3590,17 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelHomeworkResponse"
+                  "type" : "object"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Schedule временно недоступен до сохранения содержимого",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object"
                 }
               }
             }
@@ -3984,7 +4558,7 @@
       },
       "post" : {
         "tags" : [ "Assignments" ],
-        "summary" : "Назначить преподавателя на предмет/группу/семестр (HEADMAN/ADMIN)",
+        "summary" : "Назначить преподавателя на предмет/группу/семестр (HEADMAN)",
         "operationId" : "assignTeacher",
         "requestBody" : {
           "content" : {
@@ -4995,6 +5569,237 @@
         }
       }
     },
+    "/academic/map/floors/{floorId}/versions/{version}" : {
+      "get" : {
+        "tags" : [ "Campus map" ],
+        "summary" : "Прочитать версию схемы",
+        "operationId" : "getVersion",
+        "parameters" : [ {
+          "name" : "floorId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "version",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Version metadata",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapPlan"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Версия не найдена",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CampusMapPlan"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/academic/map/floors/{floorId}/versions/{version}/assets/{format}/{assetId}" : {
+      "get" : {
+        "tags" : [ "Campus map" ],
+        "summary" : "Скачать администраторскую копию ассета",
+        "operationId" : "downloadAsset",
+        "parameters" : [ {
+          "name" : "floorId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "version",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "format",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "assetId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Validated asset bytes",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ассет не найден",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Ассет не готов",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/academic/groups/my/members" : {
       "get" : {
         "tags" : [ "Groups" ],
@@ -5388,7 +6193,8 @@
     "/academic/assignments/{id}" : {
       "delete" : {
         "tags" : [ "Assignments" ],
-        "summary" : "Удалить назначение (HEADMAN/ADMIN)",
+        "summary" : "Закрыть назначение (HEADMAN)",
+        "description" : "До активации общего lifecycle fence операция возвращает typed 409 без мутаций.",
         "operationId" : "removeAssignment",
         "parameters" : [ {
           "name" : "id",
@@ -5398,10 +6204,25 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "validUntilExclusive",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
         } ],
         "responses" : {
-          "204" : {
-            "description" : "Назначение удалено"
+          "409" : {
+            "description" : "Закрытие назначения пока недоступно",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "403" : {
             "description" : "Нет прав доступа",
@@ -5435,16 +6256,6 @@
           },
           "401" : {
             "description" : "Требуется аутентификация",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -5647,9 +6458,46 @@
             "description" : "Тип предмета (LECTURE / PRACTICE / LAB)",
             "enum" : [ "LECTURE", "PRACTICE", "LAB" ],
             "example" : "LECTURE"
+          },
+          "lessonTypes" : {
+            "type" : "array",
+            "description" : "Канонические типы занятий; отсутствие означает singleton type",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+            }
           }
         },
         "required" : [ "name", "type" ]
+      },
+      "AssignmentSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "teacherId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonType" : {
+            "type" : "string",
+            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+          },
+          "validFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "validUntilExclusive" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
       },
       "EntityModelSubjectResponse" : {
         "type" : "object",
@@ -5669,7 +6517,27 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "lessonTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+            }
+          },
           "teacherIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "assignments" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AssignmentSummaryResponse"
+            }
+          },
+          "createdAssignmentIds" : {
             "type" : "array",
             "items" : {
               "type" : "integer",
@@ -5799,6 +6667,14 @@
           "publishedBy" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "bindingId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "requestKey" : {
+            "type" : "string",
+            "format" : "uuid"
           },
           "completed" : {
             "type" : "boolean"
@@ -6004,17 +6880,129 @@
             "enum" : [ "LECTURE", "PRACTICE", "LAB" ],
             "example" : "LECTURE"
           },
+          "lessonTypes" : {
+            "type" : "array",
+            "description" : "Канонические типы занятий (1-3)",
+            "example" : [ "LECTURE", "PRACTICE" ],
+            "items" : {
+              "type" : "string",
+              "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+            }
+          },
+          "initialAssignments" : {
+            "type" : "array",
+            "description" : "Начальные назначения, создаваемые атомарно",
+            "items" : {
+              "$ref" : "#/components/schemas/InitialAssignmentRequest"
+            }
+          },
           "teacherIds" : {
             "type" : "array",
-            "description" : "ID преподавателей-наблюдателей (может быть пустым, но не null)",
-            "example" : [ 42, 43 ],
+            "description" : "Устаревший список преподавателей; непустой список отклоняется",
             "items" : {
               "type" : "integer",
               "format" : "int64"
             }
           }
         },
-        "required" : [ "name", "teacherIds", "type" ]
+        "required" : [ "name", "type" ]
+      },
+      "InitialAssignmentRequest" : {
+        "type" : "object",
+        "properties" : {
+          "teacherId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonType" : {
+            "type" : "string",
+            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+          },
+          "validFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "validUntilExclusive" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        },
+        "required" : [ "lessonType", "semesterId", "teacherId", "validFrom" ]
+      },
+      "AddSubjectTeacherRequest" : {
+        "type" : "object",
+        "properties" : {
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonType" : {
+            "type" : "string",
+            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+          },
+          "validFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "validUntilExclusive" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        },
+        "required" : [ "lessonType", "semesterId", "validFrom" ]
+      },
+      "EntityModelAssignmentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "teacherId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "teacherName" : {
+            "type" : "string"
+          },
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subjectName" : {
+            "type" : "string"
+          },
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "groupName" : {
+            "type" : "string"
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonType" : {
+            "type" : "string",
+            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+          },
+          "validFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "validUntilExclusive" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
       },
       "CreateSemesterRequest" : {
         "type" : "object",
@@ -6040,6 +7028,149 @@
           }
         },
         "required" : [ "dateFrom", "dateTo", "name" ]
+      },
+      "CampusMapCreateFloorRequest" : {
+        "type" : "object",
+        "properties" : {
+          "buildingId" : {
+            "type" : "string",
+            "description" : "Owning building id",
+            "example" : 1
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "Numeric floor code",
+            "example" : 2,
+            "minLength" : 1,
+            "pattern" : "[1-9][0-9]*"
+          },
+          "label" : {
+            "type" : "string",
+            "description" : "Human-readable label; defaults to the code",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "buildingId", "code" ]
+      },
+      "CampusMapFloor" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "buildingId" : {
+            "type" : "string"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "currentPlan" : {
+            "$ref" : "#/components/schemas/CampusMapPlan"
+          }
+        }
+      },
+      "CampusMapFormatSlot" : {
+        "type" : "object",
+        "properties" : {
+          "format" : {
+            "type" : "string",
+            "enum" : [ "png", "svg" ]
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "absent", "processing", "ready", "failed" ]
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "bytes" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "sha256" : {
+            "type" : "string"
+          },
+          "width" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "height" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "CampusMapPlan" : {
+        "type" : "object",
+        "properties" : {
+          "buildingId" : {
+            "type" : "string"
+          },
+          "floorId" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "catalogRevision" : {
+            "type" : "string"
+          },
+          "png" : {
+            "$ref" : "#/components/schemas/CampusMapFormatSlot"
+          },
+          "svg" : {
+            "$ref" : "#/components/schemas/CampusMapFormatSlot"
+          }
+        }
+      },
+      "CampusMapCreateBuildingRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "description" : "Numeric campus building code",
+            "example" : 20,
+            "minLength" : 1,
+            "pattern" : "[1-9][0-9]*"
+          },
+          "label" : {
+            "type" : "string",
+            "description" : "Human-readable label; defaults to the code",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "code" ]
+      },
+      "CampusMapBuilding" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "floors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CampusMapFloor"
+            }
+          }
+        }
       },
       "CreateHomeworkRequest" : {
         "type" : "object",
@@ -6097,9 +7228,34 @@
             "example" : 3,
             "maximum" : 8,
             "minimum" : 1
+          },
+          "requestKey" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Ключ идемпотентности команды (повтор запроса продолжает ту же публикацию)",
+            "example" : "4d1f2f1f-42f0-4e9a-a9d4-fd5cbf9f9e1f"
           }
         },
         "required" : [ "groupId", "lessonDate", "lessonNumber", "semesterId", "subjectId", "title" ]
+      },
+      "HomeworkPublicationPendingResponse" : {
+        "type" : "object",
+        "properties" : {
+          "homeworkId" : {
+            "type" : "string"
+          },
+          "bindingId" : {
+            "type" : "string"
+          },
+          "requestKey" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "ACTIVE", "ARCHIVED" ]
+          }
+        }
       },
       "CreateGroupRequest" : {
         "type" : "object",
@@ -6293,46 +7449,25 @@
             "format" : "int64",
             "description" : "ID семестра",
             "example" : 42
+          },
+          "lessonType" : {
+            "type" : "string",
+            "description" : "Тип занятия",
+            "enum" : [ "LECTURE", "PRACTICE", "LAB" ],
+            "example" : "LECTURE"
+          },
+          "validFrom" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Дата начала действия назначения"
+          },
+          "validUntilExclusive" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Дата окончания действия назначения (исключительно)"
           }
         },
-        "required" : [ "employeeNumber", "groupId", "semesterId", "subjectId" ]
-      },
-      "EntityModelAssignmentResponse" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "teacherId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "teacherName" : {
-            "type" : "string"
-          },
-          "subjectId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "subjectName" : {
-            "type" : "string"
-          },
-          "groupId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "groupName" : {
-            "type" : "string"
-          },
-          "semesterId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "_links" : {
-            "$ref" : "#/components/schemas/Links"
-          }
-        }
+        "required" : [ "employeeNumber", "groupId", "lessonType", "semesterId", "subjectId", "validFrom" ]
       },
       "PatchUserRequest" : {
         "type" : "object",

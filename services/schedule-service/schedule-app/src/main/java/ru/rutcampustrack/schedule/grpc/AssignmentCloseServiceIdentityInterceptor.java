@@ -19,6 +19,14 @@ public final class AssignmentCloseServiceIdentityInterceptor implements ServerIn
 
     static final String PROTECTED_METHOD =
             ServiceIdentityServerInterceptor.SCHEDULE_INSTALL_ASSIGNMENT_CLOSE_CAP;
+    static final String RESERVE_HOMEWORK_METHOD =
+            ScheduleGrpcServiceGrpc.SERVICE_NAME + "/ReserveHomeworkBinding";
+    static final String CONFIRM_HOMEWORK_METHOD =
+            ScheduleGrpcServiceGrpc.SERVICE_NAME + "/ConfirmHomeworkBinding";
+    static final String ARCHIVE_HOMEWORK_METHOD =
+            ScheduleGrpcServiceGrpc.SERVICE_NAME + "/ArchiveHomeworkBinding";
+    static final String GET_HOMEWORK_METHOD =
+            ScheduleGrpcServiceGrpc.SERVICE_NAME + "/GetHomeworkBindings";
 
     private final ServiceIdentityServerInterceptor delegate;
 
@@ -30,7 +38,12 @@ public final class AssignmentCloseServiceIdentityInterceptor implements ServerIn
                 .orElseGet(List::of);
         this.delegate = new ServiceIdentityServerInterceptor(
                 ServicePrincipal.SCHEDULE_SERVICE,
-                Map.of(PROTECTED_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
+                Map.of(
+                        PROTECTED_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+                        RESERVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+                        CONFIRM_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+                        ARCHIVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+                        GET_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
                 credentials);
     }
 

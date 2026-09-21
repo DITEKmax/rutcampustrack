@@ -76,7 +76,7 @@ grpc:
   client:
     # Phase 61 D-04: резолв пары по (group, date, lessonNumber) для валидации ДЗ
     schedule-service:
-      address: static://schedule-service:19092
+      address: dns:///schedule-service:19092
       negotiation-type: plaintext
 
 rutcampustrack:

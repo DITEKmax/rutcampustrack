@@ -15,14 +15,14 @@ grpc:
     secret: ${GRPC_SECRET:}
   client:
     attendance-service:
-      address: ${ATTENDANCE_GRPC_ADDRESS:static://attendance-service:19093}
+      address: ${ATTENDANCE_GRPC_ADDRESS:dns:///attendance-service:19093}
       negotiation-type: plaintext
       max-inbound-message-size: 25165824
     schedule-service:
-      address: ${SCHEDULE_GRPC_ADDRESS:static://schedule-service:19092}
+      address: ${SCHEDULE_GRPC_ADDRESS:dns:///schedule-service:19092}
       negotiation-type: plaintext
     academic-service:
-      address: ${ACADEMIC_GRPC_ADDRESS:static://academic-service:19091}
+      address: ${ACADEMIC_GRPC_ADDRESS:dns:///academic-service:19091}
       negotiation-type: plaintext
 
 rutcampustrack:

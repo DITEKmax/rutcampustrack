@@ -63,7 +63,7 @@ grpc:
     academic-to-schedule-token: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:}
   client:
     academic-service:
-      address: static://academic-service:19091
+      address: dns:///academic-service:19091
       negotiation-type: plaintext
 
 rutcampustrack:

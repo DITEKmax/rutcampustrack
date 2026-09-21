@@ -37,13 +37,13 @@ grpc:
     secret: ${GRPC_SECRET:}
   client:
     schedule-service:
-      address: static://schedule-service:19092
+      address: dns:///schedule-service:19092
       negotiation-type: plaintext
     academic-service:
-      address: static://academic-service:19091
+      address: dns:///academic-service:19091
       negotiation-type: plaintext
     document-renderer-service:
-      address: static://document-renderer-service:19095
+      address: dns:///document-renderer-service:19095
       negotiation-type: plaintext
 
 springdoc:

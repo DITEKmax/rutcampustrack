@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -64,6 +65,24 @@ public class AttendanceDocument {
 
     @Field("excuse_reason")
     private String excuseReason;
+
+    @Field("excuse_type")
+    private ExcuseType excuseType;
+
+    @Field("excuse_comment")
+    private String excuseComment;
+
+    @Field("attachment_id")
+    private String attachmentId;
+
+    @Field("attachment_name")
+    private String attachmentName;
+
+    @Field("attachment_content_type")
+    private String attachmentContentType;
+
+    @Field("attachment_size")
+    private Long attachmentSize;
 
     @Field("created_at")
     private Instant createdAt;

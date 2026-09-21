@@ -19,5 +19,20 @@ public record AttendanceRecord(
         Integer lessonNumber,
         AttendanceStatus status,
         AttendanceSource source,
-        String excuseReason
-) {}
+        String excuseReason,
+        String excuseType,
+        String excuseComment,
+        String attachmentId,
+        String attachmentName,
+        String attachmentContentType,
+        Long attachmentSize
+) {
+    /** Source-compatible constructor for existing read adapters and focused tests. */
+    public AttendanceRecord(Long lessonId, Long userId, Long groupId, Long subjectId,
+                            LocalDate lessonDate, Integer lessonNumber,
+                            AttendanceStatus status, AttendanceSource source,
+                            String excuseReason) {
+        this(lessonId, userId, groupId, subjectId, lessonDate, lessonNumber,
+                status, source, excuseReason, null, null, null, null, null, null);
+    }
+}

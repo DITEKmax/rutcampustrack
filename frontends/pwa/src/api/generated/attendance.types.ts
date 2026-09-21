@@ -15,9 +15,13 @@ export interface paths {
          * Ручная отметка посещаемости
          * @description Староста устанавливает статус посещаемости для студента на паре.
          */
-        put: operations["mark"];
+        put: operations["markWithFile"];
         post?: never;
-        delete?: never;
+        /**
+         * Снять индивидуальную отметку
+         * @description Удаляет запись отметки для пары и студента после повторной проверки scope.
+         */
+        delete: operations["clear"];
         options?: never;
         head?: never;
         patch?: never;
@@ -300,6 +304,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/attendance/lessons/{lessonId}/students/{userId}/attachment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Скачать вложение индивидуальной отметки */
+        get: operations["downloadAttachment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/attendance/late-checkin/pending": {
         parameters: {
             query?: never;
@@ -427,7 +448,38 @@ export interface components {
              * @example PRESENT
              * @enum {string}
              */
-            status: "PRESENT" | "ABSENT" | "EXCUSED" | "FREE_ATTENDANCE" | "CANCELLED";
+            status: "PRESENT" | "ABSENT" | "EXCUSED";
+            /**
+             * @description Тип уважительной причины; обязателен для EXCUSED
+             * @example ILLNESS
+             * @enum {string}
+             */
+            excuseType?: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "SUMMONS" | "UNIVERSITY_ORDER" | "EXEMPTION" | "FREE_ATTENDANCE" | "OTHER";
+            /** @description Комментарий старосты (до 1000 символов) */
+            comment?: string;
+        };
+        EntityModelMarkResponse: {
+            /** @enum {string} */
+            status?: "PRESENT" | "ABSENT" | "EXCUSED" | "FREE_ATTENDANCE" | "CANCELLED";
+            /** Format: int64 */
+            lessonId?: number;
+            /** Format: int64 */
+            userId?: number;
+            /** Format: date-time */
+            timestamp?: string;
+            _links?: components["schemas"]["Links"];
+        };
+        /** @description Результат ручной отметки посещаемости: присвоенный статус, ID пары, ID студента, время */
+        MarkResponse: {
+            /** @enum {string} */
+            status?: "PRESENT" | "ABSENT" | "EXCUSED" | "FREE_ATTENDANCE" | "CANCELLED";
+            /** Format: int64 */
+            lessonId?: number;
+            /** Format: int64 */
+            userId?: number;
+            /** Format: date-time */
+            timestamp?: string;
+            _links?: components["schemas"]["Links"];
         };
         /** @description Стандартный формат ошибки API (RFC 9457 Problem Details) */
         ErrorResponse: {
@@ -482,7 +534,7 @@ export interface components {
              *     }
              */
             extras?: {
-                [key: string]: Record<string, never>;
+                [key: string]: unknown;
             };
         };
         /** @description Ошибка валидации одного поля DTO (RFC 9457 Extension Member) */
@@ -493,35 +545,12 @@ export interface components {
              */
             field?: string;
             /** @description Отклонённое значение */
-            rejectedValue?: Record<string, never>;
+            rejectedValue?: unknown;
             /**
              * @description Локализованное сообщение об ошибке
              * @example Имя не может быть пустым
              */
             message?: string;
-        };
-        EntityModelMarkResponse: {
-            /** @enum {string} */
-            status?: "PRESENT" | "ABSENT" | "EXCUSED" | "FREE_ATTENDANCE" | "CANCELLED";
-            /** Format: int64 */
-            lessonId?: number;
-            /** Format: int64 */
-            userId?: number;
-            /** Format: date-time */
-            timestamp?: string;
-            _links?: components["schemas"]["Links"];
-        };
-        /** @description Результат ручной отметки посещаемости: присвоенный статус, ID пары, ID студента, время */
-        MarkResponse: {
-            /** @enum {string} */
-            status?: "PRESENT" | "ABSENT" | "EXCUSED" | "FREE_ATTENDANCE" | "CANCELLED";
-            /** Format: int64 */
-            lessonId?: number;
-            /** Format: int64 */
-            userId?: number;
-            /** Format: date-time */
-            timestamp?: string;
-            _links?: components["schemas"]["Links"];
         };
         /** @description Request for exporting one or more headman weekly reports */
         HeadmanWeeklyExportRequest: {
@@ -614,7 +643,7 @@ export interface components {
              * @example MEDICAL
              * @enum {string}
              */
-            excuseType: "ILLNESS" | "SUMMONS" | "UNIVERSITY_ORDER" | "EXEMPTION" | "FREE_ATTENDANCE" | "OTHER";
+            excuseType: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "SUMMONS" | "UNIVERSITY_ORDER" | "EXEMPTION" | "FREE_ATTENDANCE" | "OTHER";
             /**
              * @description Комментарий студента (до 1000 символов)
              * @example Болезнь
@@ -630,7 +659,7 @@ export interface components {
             studentName?: string;
             lessonIds?: number[];
             /** @enum {string} */
-            excuseType?: "ILLNESS" | "SUMMONS" | "UNIVERSITY_ORDER" | "EXEMPTION" | "FREE_ATTENDANCE" | "OTHER";
+            excuseType?: "ILLNESS" | "MEDICAL_EXAMINATION" | "COMPETITION_PARTICIPATION" | "FAMILY_CIRCUMSTANCES" | "SUMMONS" | "UNIVERSITY_ORDER" | "EXEMPTION" | "FREE_ATTENDANCE" | "OTHER";
             comment?: string;
             status?: string;
             /** Format: int64 */
@@ -787,6 +816,10 @@ export interface components {
             /** Format: int64 */
             subjectId?: number;
             lessonDate?: string;
+            /** Format: int64 */
+            semesterId?: number;
+            lessonStatus?: string;
+            editable?: boolean;
             entries?: components["schemas"]["StudentAttendanceEntry"][];
             _links?: components["schemas"]["Links"];
         };
@@ -799,6 +832,15 @@ export interface components {
             symbol?: string;
             source?: string;
             excuseReason?: string;
+            excuseType?: string;
+            comment?: string;
+            attachmentId?: string;
+            attachmentName?: string;
+            attachmentContentType?: string;
+            /** Format: int64 */
+            attachmentSize?: number;
+            editable?: boolean;
+            editBlockedReason?: string;
         };
         EntityModelJournalResponse: {
             /** Format: int64 */
@@ -910,7 +952,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    mark: {
+    markWithFile: {
         parameters: {
             query?: never;
             header?: never;
@@ -922,6 +964,11 @@ export interface operations {
         };
         requestBody: {
             content: {
+                "multipart/form-data": {
+                    request: components["schemas"]["MarkRequest"];
+                    /** Format: binary */
+                    file?: string;
+                };
                 "application/json": components["schemas"]["MarkRequest"];
             };
         };
@@ -954,6 +1001,90 @@ export interface operations {
                 };
             };
             /** @description Доступ запрещён — не старosta */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Пара или студент не найдены */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    clear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lessonId: number;
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Отметка снята */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2364,6 +2495,92 @@ export interface operations {
             };
         };
     };
+    downloadAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lessonId: number;
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Вложение */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": unknown;
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Вложение не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     listPending: {
         parameters: {
             query?: never;
@@ -2707,7 +2924,7 @@ export interface operations {
         parameters: {
             query: {
                 pageable: components["schemas"]["Pageable"];
-                status?: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED";
+                status?: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED";
             };
             header?: never;
             path?: never;
@@ -2793,7 +3010,7 @@ export interface operations {
         parameters: {
             query: {
                 pageable: components["schemas"]["Pageable"];
-                status?: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED";
+                status?: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED";
             };
             header?: never;
             path: {

@@ -1,11 +1,13 @@
 import { ref } from 'vue'
 import {
   createGenerationBoundHeadmanScheduleApi,
+  createGenerationBoundHeadmanJournalApi,
   createGenerationBoundStudentApi,
   StaleSessionGenerationError,
 } from '@rct/mobile-core'
 import type {
   HeadmanScheduleApi,
+  HeadmanJournalApi,
   ProfileRole,
   ProfileRoleGrant,
   ProfileRoleSelection,
@@ -80,6 +82,14 @@ export function useTmaSession(options: TmaSessionOptions) {
     }, fetcher)
   }
 
+  function createHeadmanJournalApi(fetcher?: typeof fetch): HeadmanJournalApi {
+    return createGenerationBoundHeadmanJournalApi({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor: authenticateFor,
+    }, fetcher)
+  }
+
   async function getProfileFor(generation: number): Promise<ProfileSnapshot> {
     assertCurrent(generation)
     const response = await authenticatedRequest('/api/auth/session', generation)
@@ -134,6 +144,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     authenticateFor,
     createApi,
     createHeadmanApi,
+    createHeadmanJournalApi,
     getProfileFor,
     selectRoleFor,
     clear,

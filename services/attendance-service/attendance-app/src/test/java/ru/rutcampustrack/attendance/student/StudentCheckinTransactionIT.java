@@ -3,6 +3,7 @@ package ru.rutcampustrack.attendance.student;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.Counter;
 import com.networknt.schema.ValidationMessage;
+import org.bson.types.Binary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
@@ -41,8 +42,12 @@ import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinService;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.marking.MarkingService;
+import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.attendance.studentrequest.AttachmentState;
+import ru.rutcampustrack.attendance.studentrequest.RequestAttachmentRepository;
+import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkRequest;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
@@ -83,6 +88,7 @@ import static org.mockito.Mockito.*;
         AttendanceWritePortImpl.class,
         LateCheckinService.class,
         MarkingService.class,
+        AttendanceAttachmentService.class,
         StudentCheckinTransactionIT.TestConfig.class
 })
 class StudentCheckinTransactionIT {
@@ -155,6 +161,10 @@ class StudentCheckinTransactionIT {
     LateCheckinService lateCheckinService;
     @jakarta.annotation.Resource
     MarkingService markingService;
+    @jakarta.annotation.Resource
+    AttendanceWritePortImpl attendanceWritePort;
+    @jakarta.annotation.Resource
+    RequestAttachmentRepository attachmentRepository;
 
     @MockitoBean
     GeofenceService geofence;
@@ -182,6 +192,7 @@ class StudentCheckinTransactionIT {
         mongoTemplate.dropCollection("student_checkin_pairs");
         mongoTemplate.dropCollection("student_checkin_receipts");
         mongoTemplate.dropCollection("attendance_outbox");
+        mongoTemplate.dropCollection("request_attachments");
         mongoTemplate.indexOps(AttendanceDocument.class).ensureIndex(new Index()
                 .on("lesson_id", Sort.Direction.ASC).on("user_id", Sort.Direction.ASC)
                 .unique().named("uniq_lesson_user"));
@@ -200,7 +211,7 @@ class StudentCheckinTransactionIT {
         when(metrics.checkinCounter(anyString())).thenReturn(mock(Counter.class));
         when(metrics.lateCheckinCreatedCounter()).thenReturn(mock(Counter.class));
         when(scheduleGrpcClient.getLessonById(1L)).thenReturn(LessonResponse.newBuilder()
-                .setId(1L).setGroupId(10L).setSubjectId(20L).setLessonNumber(2)
+                .setId(1L).setGroupId(10L).setSubjectId(20L).setSemesterId(30L).setLessonNumber(2)
                 .setDate("2026-09-06").setStartTime("10:00").setEndTime("11:00")
                 .setStatus("active").build());
         when(academicGrpcClient.getSubjectsByIds(List.of(20L))).thenReturn(java.util.Map.of(20L, "Предмет"));
@@ -567,6 +578,11 @@ class StudentCheckinTransactionIT {
         when(requestContext.getGroupId()).thenReturn(10L);
         when(academicGrpcClient.getGroupMembers(10L)).thenReturn(GroupMembersResponse.newBuilder()
                 .addStudents(StudentInfo.newBuilder().setUserId(100L).build()).build());
+        when(academicGrpcClient.getGroupMembers(10L,
+                LocalDate.of(2026, 9, 6), 30L)).thenReturn(
+                GroupMembersResponse.newBuilder()
+                        .setAsOfDate("2026-09-06").setSemesterId(30L)
+                        .addStudents(StudentInfo.newBuilder().setUserId(100L).build()).build());
 
         runConcurrent(
                 () -> service.checkin(student, lesson(), "key-000000000001", new Coordinates(55.75, 37.61)),
@@ -583,6 +599,143 @@ class StudentCheckinTransactionIT {
             assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);
             assertThat(attendance.getMarkedBy()).isNull();
         }
+    }
+
+    @Test
+    void manualDecisionAndGeoWritersClearJournalBlobButRetainRequestOwnedEvidence() {
+        Instant now = clock.instant();
+        String pairKey = PairWriteCoordinator.pairId(100L, 1L);
+        RequestAttachmentDocument requestOwned = attachment("request-owned", "ticket-1", now);
+        RequestAttachmentDocument journalManual = attachment("journal-manual", pairKey, now);
+        attachmentRepository.save(requestOwned);
+        attachmentRepository.save(journalManual);
+        attendanceRepository.save(excusedAttendance("journal-manual", now));
+
+        when(requestContext.isHeadman()).thenReturn(true);
+        when(requestContext.getUserId()).thenReturn(777L);
+        when(requestContext.getGroupId()).thenReturn(10L);
+        when(academicGrpcClient.getGroupMembers(10L,
+                LocalDate.of(2026, 9, 6), 30L)).thenReturn(
+                GroupMembersResponse.newBuilder()
+                        .setAsOfDate("2026-09-06").setSemesterId(30L)
+                        .addStudents(StudentInfo.newBuilder().setUserId(100L).build()).build());
+        markingService.markAttendance(1L, 100L, new MarkRequest(AttendanceStatus.PRESENT));
+
+        assertThat(attachmentRepository.findById("journal-manual")).isEmpty();
+        assertThat(attachmentRepository.findById("request-owned")).isPresent();
+        assertThat(attendanceRepository.findByLessonIdAndUserId(1L, 100L)).get()
+                .satisfies(document -> {
+                    assertThat(document.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+                    assertThat(document.getAttachmentId()).isNull();
+                    assertThat(document.getExcuseReason()).isNull();
+                });
+
+        RequestAttachmentDocument journalPortClear = attachment("journal-port-clear", pairKey, now);
+        attachmentRepository.save(journalPortClear);
+        restorePresentAttendanceWithAttachment("journal-port-clear", now);
+        attendanceWritePort.markWithLesson(
+                100L, 1L, 10L, 20L, 30L, 2, LocalDate.of(2026, 9, 6),
+                AttendanceStatus.EXCUSED, AttendanceSource.HEADMAN_EXCUSE, 777L);
+        assertThat(attachmentRepository.findById("journal-port-clear")).isEmpty();
+        assertThat(attendanceRepository.findByLessonIdAndUserId(1L, 100L)).get()
+                .satisfies(document -> {
+                    assertThat(document.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
+                    assertThat(document.getAttachmentId()).isNull();
+                    assertThat(document.getAttachmentName()).isNull();
+                });
+
+        RequestAttachmentDocument journalDecision = attachment("journal-decision", pairKey, now);
+        attachmentRepository.save(journalDecision);
+        restoreExcusedAttendance("journal-decision", now);
+        attendanceWritePort.markWithLesson(
+                100L, 1L, 10L, 20L, 30L, 2, LocalDate.of(2026, 9, 6),
+                AttendanceStatus.EXCUSED, AttendanceSource.HEADMAN_EXCUSE, 777L);
+        assertThat(attachmentRepository.findById("journal-decision")).isPresent();
+        markingService.markAttendance(1L, 100L,
+                new MarkRequest(AttendanceStatus.EXCUSED,
+                        ru.rutcampustrack.attendance.contract.enums.ExcuseType.ILLNESS,
+                        "Причина обновлена"));
+        assertThat(attachmentRepository.findById("journal-decision")).isPresent();
+        LateCheckinRequest pending = LateCheckinRequest.builder()
+                .id("late-decision")
+                .studentId(100L).groupId(10L).lessonId(1L)
+                .subjectId(20L).semesterId(30L).lessonNumber(2)
+                .lessonDate(LocalDate.of(2026, 9, 6)).studentName("Иван Иванов")
+                .status(LateCheckinRequestStatus.PENDING)
+                .createdAt(now).updatedAt(now).build();
+        lateCheckinRepository.save(pending);
+        lateCheckinService.applyDecision("late-decision", 777L, true);
+
+        assertThat(attachmentRepository.findById("journal-decision")).isEmpty();
+        assertThat(attachmentRepository.findById("request-owned")).isPresent();
+        assertThat(attendanceRepository.findByLessonIdAndUserId(1L, 100L)).get()
+                .satisfies(document -> assertThat(document.getAttachmentId()).isNull());
+
+        RequestAttachmentDocument journalGeo = attachment("journal-geo", pairKey, now);
+        attachmentRepository.save(journalGeo);
+        restoreExcusedAttendance("journal-geo", now);
+        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+        service.checkin(student, lesson(), "journal-geo-key-0001", new Coordinates(55.75, 37.61));
+
+        assertThat(attachmentRepository.findById("journal-geo")).isEmpty();
+        assertThat(attachmentRepository.findById("request-owned")).isPresent();
+        assertThat(attendanceRepository.findByLessonIdAndUserId(1L, 100L)).get()
+                .satisfies(document -> {
+                    assertThat(document.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+                    assertThat(document.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);
+                    assertThat(document.getAttachmentId()).isNull();
+                    assertThat(document.getExcuseType()).isNull();
+                    assertThat(document.getExcuseComment()).isNull();
+                });
+    }
+
+    private void restorePresentAttendanceWithAttachment(String attachmentId, Instant now) {
+        AttendanceDocument document = attendanceRepository.findByLessonIdAndUserId(1L, 100L).orElseThrow();
+        document.setStatus(AttendanceStatus.PRESENT);
+        document.setSource(AttendanceSource.HEADMAN);
+        document.setExcuseReason(null);
+        document.setExcuseType(null);
+        document.setExcuseComment(null);
+        document.setAttachmentId(attachmentId);
+        document.setAttachmentName(attachmentId + ".pdf");
+        document.setAttachmentContentType("application/pdf");
+        document.setAttachmentSize(4L);
+        document.setUpdatedAt(now);
+        attendanceRepository.save(document);
+    }
+
+    private RequestAttachmentDocument attachment(String id, String requestId, Instant now) {
+        return RequestAttachmentDocument.builder()
+                .id(id).requestId(requestId).ownerStudentId(100L).groupId(10L).position(0)
+                .name(id + ".pdf").contentType("application/pdf").size(4L).sha256("hash")
+                .state(AttachmentState.ACTIVE).data(new Binary(new byte[]{'%', 'P', 'D', 'F'}))
+                .uploadedAt(now).expiresAt(now.plus(Duration.ofDays(1))).build();
+    }
+
+    private void restoreExcusedAttendance(String attachmentId, Instant now) {
+        AttendanceDocument document = attendanceRepository.findByLessonIdAndUserId(1L, 100L).orElseThrow();
+        document.setStatus(AttendanceStatus.EXCUSED);
+        document.setSource(AttendanceSource.HEADMAN);
+        document.setExcuseReason("ILLNESS");
+        document.setExcuseType(ru.rutcampustrack.attendance.contract.enums.ExcuseType.ILLNESS);
+        document.setAttachmentId(attachmentId);
+        document.setAttachmentName(attachmentId + ".pdf");
+        document.setAttachmentContentType("application/pdf");
+        document.setAttachmentSize(4L);
+        document.setUpdatedAt(now);
+        attendanceRepository.save(document);
+    }
+
+    private AttendanceDocument excusedAttendance(String attachmentId, Instant now) {
+        return AttendanceDocument.builder()
+                .lessonId(1L).userId(100L).groupId(10L).subjectId(20L).semesterId(30L)
+                .lessonNumber(2).lessonDate(LocalDate.of(2026, 9, 6))
+                .status(AttendanceStatus.EXCUSED).source(AttendanceSource.HEADMAN)
+                .excuseReason("ILLNESS")
+                .excuseType(ru.rutcampustrack.attendance.contract.enums.ExcuseType.ILLNESS)
+                .attachmentId(attachmentId).attachmentName(attachmentId + ".pdf")
+                .attachmentContentType("application/pdf").attachmentSize(4L)
+                .createdAt(now).updatedAt(now).build();
     }
 
     @Test

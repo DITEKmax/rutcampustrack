@@ -26,7 +26,7 @@
         "tags" : [ "Marking" ],
         "summary" : "Ручная отметка посещаемости",
         "description" : "Староста устанавливает статус посещаемости для студента на паре.",
-        "operationId" : "mark",
+        "operationId" : "markWithFile",
         "parameters" : [ {
           "name" : "lessonId",
           "in" : "path",
@@ -46,6 +46,21 @@
         } ],
         "requestBody" : {
           "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "request" : {
+                    "$ref" : "#/components/schemas/MarkRequest"
+                  },
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "request" ]
+              }
+            },
             "application/json" : {
               "schema" : {
                 "$ref" : "#/components/schemas/MarkRequest"
@@ -89,6 +104,104 @@
             "description" : "Пара или студент не найдены",
             "content" : {
               "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Marking" ],
+        "summary" : "Снять индивидуальную отметку",
+        "description" : "Удаляет запись отметки для пары и студента после повторной проверки scope.",
+        "operationId" : "clear",
+        "parameters" : [ {
+          "name" : "lessonId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Отметка снята"
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Пара или студент не найдены",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ErrorResponse"
                 }
@@ -1758,6 +1871,108 @@
         }
       }
     },
+    "/attendance/lessons/{lessonId}/students/{userId}/attachment" : {
+      "get" : {
+        "tags" : [ "Marking" ],
+        "summary" : "Скачать вложение индивидуальной отметки",
+        "operationId" : "downloadAttachment",
+        "parameters" : [ {
+          "name" : "lessonId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Вложение",
+            "content" : {
+              "application/octet-stream" : { }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Вложение не найдено",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/attendance/late-checkin/pending" : {
       "get" : {
         "tags" : [ "Late Check-in" ],
@@ -2167,7 +2382,7 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "DRAFT", "SUBMITTED", "APPROVED", "REJECTED" ]
+            "enum" : [ "DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "CANCELLED" ]
           }
         } ],
         "responses" : {
@@ -2281,7 +2496,7 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "DRAFT", "SUBMITTED", "APPROVED", "REJECTED" ]
+            "enum" : [ "DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "CANCELLED" ]
           }
         } ],
         "responses" : {
@@ -2378,11 +2593,72 @@
           "status" : {
             "type" : "string",
             "description" : "Статус посещаемости",
-            "enum" : [ "PRESENT", "ABSENT", "EXCUSED", "FREE_ATTENDANCE", "CANCELLED" ],
+            "enum" : [ "PRESENT", "ABSENT", "EXCUSED" ],
             "example" : "PRESENT"
+          },
+          "excuseType" : {
+            "type" : "string",
+            "description" : "Тип уважительной причины; обязателен для EXCUSED",
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "SUMMONS", "UNIVERSITY_ORDER", "EXEMPTION", "FREE_ATTENDANCE", "OTHER" ],
+            "example" : "ILLNESS"
+          },
+          "comment" : {
+            "type" : "string",
+            "description" : "Комментарий старосты (до 1000 символов)",
+            "maxLength" : 1000,
+            "minLength" : 0
           }
         },
         "required" : [ "status" ]
+      },
+      "EntityModelMarkResponse" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "ABSENT", "EXCUSED", "FREE_ATTENDANCE", "CANCELLED" ]
+          },
+          "lessonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "MarkResponse" : {
+        "type" : "object",
+        "description" : "Результат ручной отметки посещаемости: присвоенный статус, ID пары, ID студента, время",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "ABSENT", "EXCUSED", "FREE_ATTENDANCE", "CANCELLED" ]
+          },
+          "lessonId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
       },
       "ErrorResponse" : {
         "type" : "object",
@@ -2439,9 +2715,7 @@
           },
           "extras" : {
             "type" : "object",
-            "additionalProperties" : {
-              "type" : "object"
-            },
+            "additionalProperties" : { },
             "description" : "Дополнительные данные для клиента (счётчики каскадного удаления, retry-after, и т.п.)",
             "example" : {
               "scheduleItemsCount" : 3
@@ -2459,62 +2733,12 @@
             "example" : "displayName"
           },
           "rejectedValue" : {
-            "type" : "object",
             "description" : "Отклонённое значение"
           },
           "message" : {
             "type" : "string",
             "description" : "Локализованное сообщение об ошибке",
             "example" : "Имя не может быть пустым"
-          }
-        }
-      },
-      "EntityModelMarkResponse" : {
-        "type" : "object",
-        "properties" : {
-          "status" : {
-            "type" : "string",
-            "enum" : [ "PRESENT", "ABSENT", "EXCUSED", "FREE_ATTENDANCE", "CANCELLED" ]
-          },
-          "lessonId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "timestamp" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "_links" : {
-            "$ref" : "#/components/schemas/Links"
-          }
-        }
-      },
-      "MarkResponse" : {
-        "type" : "object",
-        "description" : "Результат ручной отметки посещаемости: присвоенный статус, ID пары, ID студента, время",
-        "properties" : {
-          "status" : {
-            "type" : "string",
-            "enum" : [ "PRESENT", "ABSENT", "EXCUSED", "FREE_ATTENDANCE", "CANCELLED" ]
-          },
-          "lessonId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "timestamp" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "_links" : {
-            "$ref" : "#/components/schemas/Links"
           }
         }
       },
@@ -2680,7 +2904,7 @@
           "excuseType" : {
             "type" : "string",
             "description" : "Тип уважительной причины",
-            "enum" : [ "ILLNESS", "SUMMONS", "UNIVERSITY_ORDER", "EXEMPTION", "FREE_ATTENDANCE", "OTHER" ],
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "SUMMONS", "UNIVERSITY_ORDER", "EXEMPTION", "FREE_ATTENDANCE", "OTHER" ],
             "example" : "MEDICAL"
           },
           "comment" : {
@@ -2719,7 +2943,7 @@
           },
           "excuseType" : {
             "type" : "string",
-            "enum" : [ "ILLNESS", "SUMMONS", "UNIVERSITY_ORDER", "EXEMPTION", "FREE_ATTENDANCE", "OTHER" ]
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "SUMMONS", "UNIVERSITY_ORDER", "EXEMPTION", "FREE_ATTENDANCE", "OTHER" ]
           },
           "comment" : {
             "type" : "string"
@@ -3062,6 +3286,16 @@
           "lessonDate" : {
             "type" : "string"
           },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonStatus" : {
+            "type" : "string"
+          },
+          "editable" : {
+            "type" : "boolean"
+          },
           "entries" : {
             "type" : "array",
             "items" : {
@@ -3094,6 +3328,31 @@
             "type" : "string"
           },
           "excuseReason" : {
+            "type" : "string"
+          },
+          "excuseType" : {
+            "type" : "string"
+          },
+          "comment" : {
+            "type" : "string"
+          },
+          "attachmentId" : {
+            "type" : "string"
+          },
+          "attachmentName" : {
+            "type" : "string"
+          },
+          "attachmentContentType" : {
+            "type" : "string"
+          },
+          "attachmentSize" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "editable" : {
+            "type" : "boolean"
+          },
+          "editBlockedReason" : {
             "type" : "string"
           }
         }

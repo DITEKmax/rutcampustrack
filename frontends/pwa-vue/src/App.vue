@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, toRaw } from 'vu
 import {
   SemesterSnapshotStore,
   HeadmanScheduleApiError,
+  HeadmanJournalApiError,
   HeadmanScheduleScreen,
   StudentApi,
   StudentApiError,
@@ -27,6 +28,7 @@ import {
   type StudentSemesterSchedule,
   type StudentSession,
   type HeadmanScheduleApi,
+  type HeadmanJournalApi,
 } from '@rct/mobile-core'
 import type { ProfilePort, ProfileRole, ProfileSnapshot } from '@rct/mobile-core'
 import { AuthRequestError } from './auth-client'
@@ -48,6 +50,7 @@ const snapshotStore = new SemesterSnapshotStore()
 
 const api = shallowRef<StudentApi | null>(null)
 const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
+const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
 const profilePort = shallowRef<ProfilePort | null>(null)
@@ -97,6 +100,7 @@ function authDenialStatus(error: unknown): number | null {
   if (error instanceof AuthRequestError) return error.status ?? null
   if (error instanceof StudentApiError) return error.response.status
   if (error instanceof HeadmanScheduleApiError) return error.response.status
+  if (error instanceof HeadmanJournalApiError) return error.response.status
   return null
 }
 
@@ -165,6 +169,7 @@ async function loadOfflineSnapshot(): Promise<boolean> {
   scope.value = null
   api.value = null
   headmanApi.value = null
+  headmanJournalApi.value = null
   headmanGroupId.value = null
   session.value = null
   authSnapshot.value = null
@@ -218,6 +223,7 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): St
   if (options.clearAuth !== false) auth.clear()
   profilePort.value = null
   headmanApi.value = null
+  headmanJournalApi.value = null
   headmanGroupId.value = null
   scope.value = null
   api.value = null
@@ -309,6 +315,7 @@ async function fetchStudentCandidate(
 type HeadmanCandidate = {
   generation: number
   api: HeadmanScheduleApi
+  journalApi: HeadmanJournalApi
   profile: ProfileSnapshot
   groupId: number
 }
@@ -331,8 +338,9 @@ async function fetchHeadmanCandidate(
     throw new ProfileRequestError('BOOTSTRAP_SCOPE_DENIED', 'Для роли старосты не определена учебная группа')
   }
   const candidateApi = auth.createHeadmanApi(currentFetcher())
+  const candidateJournalApi = auth.createHeadmanJournalApi(currentFetcher())
   assertCandidateCurrent(generation)
-  return { generation, api: candidateApi, profile, groupId }
+  return { generation, api: candidateApi, journalApi: candidateJournalApi, profile, groupId }
 }
 
 type StudentCandidate = {
@@ -432,6 +440,7 @@ async function activateHeadmanCandidate(candidate: HeadmanCandidate): Promise<vo
   await clearOwnerSnapshot(previous)
   assertCandidateCurrent(candidate.generation)
   headmanApi.value = candidate.api
+  headmanJournalApi.value = candidate.journalApi
   headmanGroupId.value = candidate.groupId
   authSnapshot.value = candidate.profile
   offline.value = false
@@ -844,6 +853,7 @@ onBeforeUnmount(() => {
     v-else-if="headmanViewVisible"
     :key="`headman-${ownerRevision}`"
     :api="headmanApi"
+    :journal-api="headmanJournalApi"
     :profile="authSnapshot"
     :group-id="headmanGroupId"
     :offline="offline"

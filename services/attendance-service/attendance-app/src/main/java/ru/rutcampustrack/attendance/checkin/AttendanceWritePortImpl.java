@@ -1,9 +1,11 @@
 package ru.rutcampustrack.attendance.checkin;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
+import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 
 import java.time.Clock;
@@ -31,13 +33,24 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
     private final AttendanceRepository attendanceRepository;
     private final PairWriteCoordinator pairWriteCoordinator;
     private final Clock clock;
+    private final JournalAttachmentPort journalAttachmentPort;
 
+    @Autowired
     public AttendanceWritePortImpl(AttendanceRepository attendanceRepository,
                                    PairWriteCoordinator pairWriteCoordinator,
-                                   Clock clock) {
+                                   Clock clock,
+                                   JournalAttachmentPort journalAttachmentPort) {
         this.attendanceRepository = attendanceRepository;
         this.pairWriteCoordinator = pairWriteCoordinator;
         this.clock = clock;
+        this.journalAttachmentPort = journalAttachmentPort;
+    }
+
+    /** Source-compatible constructor for focused tests without attachment storage. */
+    public AttendanceWritePortImpl(AttendanceRepository attendanceRepository,
+                                   PairWriteCoordinator pairWriteCoordinator,
+                                   Clock clock) {
+        this(attendanceRepository, pairWriteCoordinator, clock, null);
     }
 
     @Override
@@ -60,9 +73,12 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
 
         if (existing.isPresent()) {
             AttendanceDocument doc = existing.get();
+            applyJournalAttachmentTransition(doc, status, studentId, lessonId);
             doc.setStatus(status);
             doc.setSource(source);
             doc.setExcuseReason(excuseReason);
+            doc.setExcuseType(null);
+            doc.setExcuseComment(null);
             doc.setUpdatedAt(now);
             attendanceRepository.save(doc);
             return;
@@ -75,9 +91,12 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
                 .status(status)
                 .source(source)
                 .excuseReason(excuseReason)
+                .excuseType(null)
+                .excuseComment(null)
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
+        applyJournalAttachmentTransition(fresh, status, studentId, lessonId);
         attendanceRepository.save(fresh);
     }
 
@@ -97,11 +116,34 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
         doc.setSemesterId(semesterId);
         doc.setLessonNumber(lessonNumber);
         doc.setLessonDate(lessonDate);
+        applyJournalAttachmentTransition(doc, status, studentId, lessonId);
         doc.setStatus(status);
         doc.setSource(source);
         doc.setMarkedBy(markedBy);
         doc.setExcuseReason(null);
+        doc.setExcuseType(null);
+        doc.setExcuseComment(null);
         doc.setUpdatedAt(now);
         attendanceRepository.save(doc);
+    }
+
+    private void applyJournalAttachmentTransition(AttendanceDocument document,
+                                                  AttendanceStatus nextStatus,
+                                                  Long studentId,
+                                                  Long lessonId) {
+        boolean retain = nextStatus == AttendanceStatus.EXCUSED
+                && document.getStatus() == AttendanceStatus.EXCUSED
+                && document.getAttachmentId() != null
+                && journalAttachmentPort != null
+                && journalAttachmentPort.isAvailable(lessonId, studentId, document.getAttachmentId());
+        if (!retain) {
+            if (journalAttachmentPort != null) {
+                journalAttachmentPort.delete(lessonId, studentId);
+            }
+            document.setAttachmentId(null);
+            document.setAttachmentName(null);
+            document.setAttachmentContentType(null);
+            document.setAttachmentSize(null);
+        }
     }
 }

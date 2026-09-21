@@ -109,7 +109,13 @@ public class AttendanceReadPortImpl implements AttendanceReadPort {
                 doc.getLessonNumber(),
                 doc.getStatus(),
                 doc.getSource(),
-                doc.getExcuseReason()
+                doc.getExcuseReason(),
+                doc.getExcuseType() == null ? null : doc.getExcuseType().name(),
+                doc.getExcuseComment(),
+                doc.getAttachmentId(),
+                doc.getAttachmentName(),
+                doc.getAttachmentContentType(),
+                doc.getAttachmentSize()
         );
     }
 }

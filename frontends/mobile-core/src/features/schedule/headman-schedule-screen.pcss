@@ -143,7 +143,21 @@
   @mixin rct-focus-ring;
 }
 
+.headman-schedule__journal {
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-accent-now);
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-3) var(--rct-space-4);
+  color: var(--rct-color-accent-now);
+  background: transparent;
+  font: inherit;
+  font-weight: var(--rct-font-weight-medium);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
 .headman-schedule__primary:disabled,
+.headman-schedule__journal:disabled,
 .headman-schedule__role-button:disabled,
 .headman-schedule__secondary:disabled,
 .headman-schedule__day:disabled,

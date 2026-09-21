@@ -32,6 +32,8 @@ export { default as HomeworkScreen } from './features/homework/HomeworkScreen.vu
 export type * from './features/profile/profile-types'
 export * from './features/schedule/headman-schedule-client'
 export { default as HeadmanScheduleScreen } from './features/schedule/HeadmanScheduleScreen.vue'
+export * from './features/headman-journal/headman-journal-client'
+export { default as HeadmanJournalScreen } from './features/headman-journal/HeadmanJournalScreen.vue'
 export { ProfileRequestError } from './features/profile/profile-types'
 export { ProfileState } from './features/profile/profile-state'
 export type { ProfileStateView, ProfileResourceStatus } from './features/profile/profile-state'

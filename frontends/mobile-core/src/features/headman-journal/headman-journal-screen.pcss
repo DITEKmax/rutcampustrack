@@ -1,0 +1,373 @@
+@import '../../styles/tokens.pcss';
+
+.headman-journal {
+  display: grid;
+  gap: var(--rct-space-4);
+  max-inline-size: var(--rct-mobile-content-width);
+  margin-inline: auto;
+  padding: var(--rct-space-5) var(--rct-space-4) 8rem;
+  color: var(--rct-color-text-primary);
+}
+
+.headman-journal h1,
+.headman-journal h2,
+.headman-journal p,
+.headman-journal ol {
+  margin: 0;
+}
+
+.headman-journal__header,
+.headman-journal__section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+
+.headman-journal__eyebrow {
+  margin-block-end: var(--rct-space-1) !important;
+  color: var(--rct-color-accent-now);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-medium);
+}
+
+.headman-journal h1 {
+  font-size: var(--rct-font-size-title-screen);
+  line-height: var(--rct-leading-tight);
+}
+
+.headman-journal h2 {
+  font-size: var(--rct-font-size-title);
+  line-height: var(--rct-leading-tight);
+}
+
+.headman-journal__date,
+.headman-journal__section-header p,
+.headman-journal__lesson-copy span,
+.headman-journal__row-meta,
+.headman-journal__row-status {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-journal__date {
+  margin-block-start: var(--rct-space-1) !important;
+  text-transform: capitalize;
+}
+
+.headman-journal__today,
+.headman-journal__date-nav button,
+.headman-journal__lesson,
+.headman-journal__current,
+.headman-journal__picker button {
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.headman-journal__today {
+  flex: 0 0 auto;
+  padding-inline: var(--rct-space-3);
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-journal__today:disabled,
+.headman-journal__date-nav button:disabled,
+.headman-journal__lesson:disabled,
+.headman-journal__current:disabled,
+.headman-journal__picker button:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
+.headman-journal__date-nav {
+  display: grid;
+  grid-template-columns: var(--rct-control-min-touch) minmax(0, 1fr) var(--rct-control-min-touch);
+  align-items: center;
+  gap: var(--rct-space-2);
+}
+
+.headman-journal__date-nav button {
+  padding: 0;
+  font-size: 1.25rem;
+}
+
+.headman-journal__date-nav output {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.headman-journal__state,
+.headman-journal__empty {
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-4);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-raised);
+}
+
+.headman-journal__state--error,
+.headman-journal__row-status--error {
+  color: var(--rct-color-danger-text);
+}
+
+.headman-journal__state--notice {
+  color: var(--rct-color-warning-text);
+}
+
+.headman-journal__lessons,
+.headman-journal__roster {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+.headman-journal__lesson-list,
+.headman-journal__roster-list {
+  display: grid;
+  gap: var(--rct-space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.headman-journal__lesson {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  gap: var(--rct-space-3);
+  inline-size: 100%;
+  padding: var(--rct-space-3);
+  text-align: start;
+}
+
+.headman-journal__lesson[data-selected='true'] {
+  border-color: var(--rct-color-accent-now);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+
+.headman-journal__lesson-number {
+  display: grid;
+  place-items: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+.headman-journal__lesson[data-selected='true'] .headman-journal__lesson-number {
+  color: var(--rct-color-accent-now);
+  background: var(--rct-color-accent-on-now);
+}
+
+.headman-journal__lesson-copy {
+  display: grid;
+  gap: var(--rct-space-1);
+  min-inline-size: 0;
+}
+
+.headman-journal__lesson-copy strong {
+  font-size: var(--rct-font-size-body);
+}
+
+.headman-journal__lesson[data-selected='true'] .headman-journal__lesson-copy span {
+  color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+.headman-journal__section-header {
+  align-items: center;
+}
+
+.headman-journal__server-flag {
+  max-inline-size: 9rem;
+  color: var(--rct-color-success-text);
+  font-size: var(--rct-font-size-micro);
+  text-align: end;
+}
+
+.headman-journal__roster-list {
+  gap: var(--rct-space-3);
+}
+
+.headman-journal__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--rct-space-2);
+  align-items: start;
+  border-block-start: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  padding-block-start: var(--rct-space-3);
+}
+
+.headman-journal__row-main {
+  display: grid;
+  gap: var(--rct-space-1);
+  min-inline-size: 0;
+}
+
+.headman-journal__row-name {
+  overflow-wrap: anywhere;
+  font-weight: var(--rct-font-weight-medium);
+}
+
+.headman-journal__row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rct-space-1) var(--rct-space-2);
+  align-items: center;
+}
+
+.headman-journal__badge {
+  color: var(--rct-color-text-primary);
+  font-weight: var(--rct-font-weight-medium);
+}
+
+.headman-journal__attachment {
+  border: 0;
+  padding: 0;
+  color: var(--rct-color-accent-now);
+  background: transparent;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.headman-journal__reason-edit {
+  border: 0;
+  padding: 0;
+  color: var(--rct-color-accent-now);
+  background: transparent;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.headman-journal__reason-edit:disabled {
+  color: var(--rct-color-disabled-text);
+  cursor: not-allowed;
+}
+
+.headman-journal__attachment:disabled {
+  color: var(--rct-color-disabled-text);
+  cursor: not-allowed;
+}
+
+.headman-journal__attachment-error {
+  color: var(--rct-color-danger-text);
+}
+
+.headman-journal__current {
+  display: grid;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  padding: 0;
+  font-size: var(--rct-font-size-body);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+.headman-journal__picker {
+  display: flex;
+  gap: var(--rct-space-1);
+}
+
+.headman-journal__picker button {
+  inline-size: var(--rct-control-min-touch);
+  padding: 0;
+  font-weight: var(--rct-font-weight-bold);
+}
+
+.headman-journal__row-status {
+  grid-column: 1 / -1;
+  padding-block-end: var(--rct-space-1);
+}
+
+.headman-journal__excuse-form {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: var(--rct-space-2);
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-3);
+  background: var(--rct-color-surface-raised);
+}
+
+.headman-journal__excuse-form label {
+  display: grid;
+  gap: var(--rct-space-1);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-journal__excuse-form select,
+.headman-journal__excuse-form textarea,
+.headman-journal__excuse-form input[type='file'] {
+  min-block-size: var(--rct-control-min-touch);
+  inline-size: 100%;
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+  font: inherit;
+  @mixin rct-focus-ring;
+}
+
+.headman-journal__excuse-form textarea {
+  min-block-size: 5rem;
+  resize: vertical;
+}
+
+.headman-journal__excuse-form p {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  overflow-wrap: anywhere;
+}
+
+.headman-journal__excuse-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rct-space-2);
+}
+
+.headman-journal__excuse-actions button {
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding-inline: var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.headman-journal__excuse-actions button[type='submit'] {
+  border-color: var(--rct-color-accent-now);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+
+.headman-journal__excuse-actions button:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
+@media (max-width: 24rem) {
+  .headman-journal__header,
+  .headman-journal__section-header {
+    flex-direction: column;
+  }
+
+  .headman-journal__server-flag {
+    max-inline-size: none;
+    text-align: start;
+  }
+}

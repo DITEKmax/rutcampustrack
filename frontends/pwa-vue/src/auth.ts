@@ -1,7 +1,9 @@
 import { ref } from 'vue'
 import { createGenerationBoundHeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
+import { createGenerationBoundHeadmanJournalApi } from '../../mobile-core/src/features/headman-journal/headman-journal-client'
 import { createGenerationBoundStudentApi, StaleSessionGenerationError } from '../../mobile-core/src/shared/session-owner'
 import type { HeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
+import type { HeadmanJournalApi } from '../../mobile-core/src/features/headman-journal/headman-journal-client'
 import type { StudentApi } from '../../mobile-core/src/api/student-client'
 import {
   AuthRequestError,
@@ -192,6 +194,14 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     }, fetcher)
   }
 
+  function createHeadmanJournalApi(fetcher?: typeof fetch): HeadmanJournalApi {
+    return createGenerationBoundHeadmanJournalApi({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor,
+    }, fetcher)
+  }
+
   function createProfilePort(generation = currentGeneration(), options: PwaProfilePortOptions = {}): ProfilePort {
     function assertPortCurrent(): void {
       assertCurrent(generation)
@@ -296,6 +306,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     selectRoleFor,
     createApi,
     createHeadmanApi,
+    createHeadmanJournalApi,
     createProfilePort,
     setToken,
     clear,

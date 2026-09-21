@@ -13,6 +13,7 @@ import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
+import ru.rutcampustrack.academic.repository.AssignmentRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 
 import java.lang.reflect.Field;
@@ -33,7 +34,7 @@ import static org.mockito.Mockito.when;
  *
  * Covers:
  * <ul>
- *   <li>{@code create}: dateFrom&lt;today → 400, overlap → 409 "dates".</li>
+ *   <li>{@code create}: fully completed range → 400, overlap → 409 "dates".</li>
  *   <li>{@code update}: dateTo&lt;today → 409 "status", overlap → 409 "dates".</li>
  *   <li>{@code checkOverlap}: dry-run endpoint used by async validator.</li>
  * </ul>
@@ -45,22 +46,41 @@ class SemesterServiceTest {
     @Mock private SemesterAssembler semesterAssembler;
     @Mock private EntityManager entityManager;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private AssignmentRepository assignmentRepository;
 
     @InjectMocks private SemesterService semesterService;
 
     // ---------- create ----------
 
     @Test
-    void createSemester_dateFromInPast_throwsBadRequest() {
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        LocalDate future = LocalDate.now().plusMonths(5);
-        CreateSemesterRequest req = new CreateSemesterRequest("Past", yesterday, future);
+    void createSemester_fullyCompletedRange_throwsBadRequest() {
+        LocalDate yesterday = LocalDate.now().minusDays(2);
+        LocalDate completed = LocalDate.now().minusDays(1);
+        CreateSemesterRequest req = new CreateSemesterRequest("Past", yesterday, completed);
 
         assertThatThrownBy(() -> semesterService.createSemester(req))
                 .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Нельзя создать семестр в прошлом");
+                .hasMessageContaining("Нельзя создать завершённый семестр");
 
         verify(semesterRepository, never()).save(any());
+    }
+
+    @Test
+    void createSemester_startedInPastAndStillCurrent_savesAndReturns() {
+        LocalDate from = LocalDate.now().minusDays(10);
+        LocalDate to = LocalDate.now().plusMonths(4);
+        CreateSemesterRequest req = new CreateSemesterRequest("Current", from, to);
+
+        when(semesterRepository.findFirstOverlapping(from, to, null))
+                .thenReturn(Optional.empty());
+        when(semesterRepository.save(any(Semester.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        Semester saved = semesterService.createSemester(req);
+
+        assertThat(saved.getDateFrom()).isEqualTo(from);
+        assertThat(saved.getDateTo()).isEqualTo(to);
+        assertThat(saved.isActive()).isFalse();
     }
 
     @Test
@@ -109,7 +129,7 @@ class SemesterServiceTest {
         Semester completed = newSemester(id, "Fall 2020");
         completed.setDateFrom(LocalDate.now().minusYears(5));
         completed.setDateTo(LocalDate.now().minusYears(4));  // dateTo in the past
-        when(semesterRepository.findById(id)).thenReturn(Optional.of(completed));
+        when(semesterRepository.findByIdForUpdate(id)).thenReturn(Optional.of(completed));
 
         UpdateSemesterRequest req = new UpdateSemesterRequest(
                 "Fall 2020 (edit)",
@@ -132,7 +152,7 @@ class SemesterServiceTest {
         LocalDate today = LocalDate.now();
         active.setDateFrom(today.plusDays(10));
         active.setDateTo(today.plusMonths(4));
-        when(semesterRepository.findById(id)).thenReturn(Optional.of(active));
+        when(semesterRepository.findByIdForUpdate(id)).thenReturn(Optional.of(active));
 
         LocalDate newFrom = today.plusDays(5);
         LocalDate newTo = today.plusMonths(5);
@@ -156,7 +176,7 @@ class SemesterServiceTest {
         LocalDate today = LocalDate.now();
         active.setDateFrom(today.plusDays(10));
         active.setDateTo(today.plusMonths(4));
-        when(semesterRepository.findById(id)).thenReturn(Optional.of(active));
+        when(semesterRepository.findByIdForUpdate(id)).thenReturn(Optional.of(active));
 
         LocalDate newFrom = today.plusDays(5);
         LocalDate newTo = today.plusMonths(5);

@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import {
   HeadmanScheduleApiError,
+  HeadmanJournalApiError,
   HeadmanScheduleScreen,
   ProfileRequestError,
   RoleSwitchScreen,
@@ -17,6 +18,7 @@ import {
   type StudentFeatureScope,
   type StudentSession,
   type HeadmanScheduleApi,
+  type HeadmanJournalApi,
   type ProfileRole,
   type ProfileSnapshot,
 } from '@rct/mobile-core'
@@ -37,6 +39,7 @@ const theme = typeof document === 'undefined' ? null : createMobileTheme()
 
 const api = shallowRef<StudentApi | null>(null)
 const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
+const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
 const profile = shallowRef<ProfileSnapshot | null>(null)
@@ -73,11 +76,13 @@ function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof TmaAuthError) return cause.status
   if (cause instanceof StudentApiError) return cause.response.status
   if (cause instanceof HeadmanScheduleApiError) return cause.response.status
+  if (cause instanceof HeadmanJournalApiError) return cause.response.status
   return null
 }
 
 function isAuthDenied(cause: unknown): boolean {
-  if (cause instanceof HeadmanScheduleApiError && cause.response.status === 403) return false
+  if ((cause instanceof HeadmanScheduleApiError || cause instanceof HeadmanJournalApiError)
+    && cause.response.status === 403) return false
   const status = authDenialStatus(cause)
   return status === 401 || status === 403
 }
@@ -124,6 +129,7 @@ function asProfileError(cause: unknown): ProfileRequestError {
 function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): void {
   if (options.clearAuth !== false) sessionOwner.clear()
   headmanApi.value = null
+  headmanJournalApi.value = null
   headmanGroupId.value = null
   scope.value = null
   api.value = null
@@ -152,6 +158,7 @@ async function bootstrap(): Promise<void> {
       session.value = null
       scope.value = null
       headmanApi.value = sessionOwner.createHeadmanApi(currentFetcher())
+      headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
       headmanGroupId.value = groupId
       authView.value = 'headman'
       ownerRevision.value += 1
@@ -168,6 +175,7 @@ async function bootstrap(): Promise<void> {
       // check-in retains its command and idempotency key across reconnect.
       const needsFreshOwner = !sameOwner || api.value === null
       headmanApi.value = null
+      headmanJournalApi.value = null
       headmanGroupId.value = null
       api.value = needsFreshOwner ? candidate.api : api.value
       session.value = candidate.session
@@ -218,6 +226,7 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       session.value = null
       scope.value = null
       headmanApi.value = sessionOwner.createHeadmanApi(currentFetcher())
+      headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
       headmanGroupId.value = groupId
       authView.value = 'headman'
       ownerRevision.value += 1
@@ -226,6 +235,7 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       const candidateSession = await candidateApi.getSession()
       if (!sessionOwner.isCurrent(selection.generation)) throw new Error('Сессия сменилась во время входа')
       headmanApi.value = null
+      headmanJournalApi.value = null
       headmanGroupId.value = null
       api.value = candidateApi
       session.value = candidateSession
@@ -321,6 +331,7 @@ onBeforeUnmount(() => {
     v-else-if="headmanViewVisible"
     :key="`headman-${ownerRevision}`"
     :api="headmanApi"
+    :journal-api="headmanJournalApi"
     :profile="profile"
     :group-id="headmanGroupId"
     :offline="offline"

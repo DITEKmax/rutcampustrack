@@ -17,6 +17,7 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
@@ -24,9 +25,12 @@ import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
+import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +41,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -62,6 +67,12 @@ class ReportServiceTest {
     @Mock
     private RequestContext requestContext;
 
+    @Mock
+    private Clock clock;
+
+    @Mock
+    private JournalAttachmentPort journalAttachmentPort;
+
     @InjectMocks
     private ReportService reportService;
 
@@ -79,6 +90,7 @@ class ReportServiceTest {
         lenient().when(requestContext.isHeadman()).thenReturn(true);
         lenient().when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         lenient().when(semesterCacheService.getActiveSemesterId()).thenReturn(SEMESTER_ID);
+        lenient().when(clock.instant()).thenReturn(Instant.parse("2026-04-01T09:00:00Z"));
         lenient().when(academicGrpcClient.getSubjectsByIds(any()))
                 .thenReturn(Map.of(SUBJECT_ID_1, "Math", SUBJECT_ID_2, "Physics"));
         lenient().when(academicGrpcClient.getSubjectDetailsByIds(any()))
@@ -303,18 +315,24 @@ class ReportServiceTest {
                 .setId(LESSON_ID)
                 .setGroupId(GROUP_ID)
                 .setSubjectId(SUBJECT_ID_1)
+                .setSemesterId(SEMESTER_ID)
                 .setDate("2026-04-01")
                 .setLessonNumber(1)
+                .setStartTime("08:00")
+                .setEndTime("09:30")
                 .setStatus("closed")
                 .build();
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson);
 
         GroupMembersResponse members = GroupMembersResponse.newBuilder()
+                .setAsOfDate("2026-04-01")
+                .setSemesterId(SEMESTER_ID)
                 .addStudents(StudentInfo.newBuilder().setUserId(100L).setDisplayName("Student A").build())
                 .addStudents(StudentInfo.newBuilder().setUserId(101L).setDisplayName("Student B").build())
                 .addStudents(StudentInfo.newBuilder().setUserId(102L).setDisplayName("Student C").build())
                 .build();
-        when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(members);
+        when(academicGrpcClient.getGroupMembers(
+                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID)).thenReturn(members);
 
         when(attendanceReadPort.findByLessonId(LESSON_ID))
                 .thenReturn(List.of(
@@ -333,8 +351,98 @@ class ReportServiceTest {
 
         var entry102 = response.getEntries().stream()
                 .filter(e -> e.getUserId().equals(102L)).findFirst().orElseThrow();
-        assertThat(entry102.getStatus()).isEqualTo("absent");
-        assertThat(entry102.getSymbol()).isEqualTo("н");
+        assertThat(entry102.getStatus()).isNull();
+        assertThat(entry102.getSymbol()).isNull();
+    }
+
+    @Test
+    void lessonAttendance_hidesExpiredJournalAttachmentMetadata() {
+        LessonResponse lesson = LessonResponse.newBuilder()
+                .setId(LESSON_ID)
+                .setGroupId(GROUP_ID)
+                .setSubjectId(SUBJECT_ID_1)
+                .setSemesterId(SEMESTER_ID)
+                .setDate("2026-04-01")
+                .setLessonNumber(1)
+                .setStartTime("08:00")
+                .setEndTime("09:30")
+                .setStatus("closed")
+                .build();
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson);
+        when(academicGrpcClient.getGroupMembers(
+                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
+                .thenReturn(GroupMembersResponse.newBuilder()
+                        .setAsOfDate("2026-04-01")
+                        .setSemesterId(SEMESTER_ID)
+                        .addStudents(StudentInfo.newBuilder().setUserId(USER_ID).build())
+                        .build());
+        when(attendanceReadPort.findByLessonId(LESSON_ID)).thenReturn(List.of(
+                new AttendanceRecord(LESSON_ID, USER_ID, GROUP_ID, SUBJECT_ID_1,
+                        LocalDate.of(2026, 4, 1), 1, AttendanceStatus.EXCUSED,
+                        AttendanceSource.HEADMAN_EXCUSE, "Болезнь", "ILLNESS", null,
+                        "expired-id", "proof.pdf", "application/pdf", 12L)));
+        when(journalAttachmentPort.isAvailable(LESSON_ID, USER_ID, "expired-id"))
+                .thenReturn(false);
+
+        LessonAttendanceResponse response = reportService.getLessonAttendance(LESSON_ID);
+
+        var entry = response.getEntries().getFirst();
+        assertThat(entry.getStatus()).isEqualTo("excused");
+        assertThat(entry.getExcuseReason()).isEqualTo("Болезнь");
+        assertThat(entry.getAttachmentId()).isNull();
+        assertThat(entry.getAttachmentName()).isNull();
+        assertThat(entry.getAttachmentContentType()).isNull();
+        assertThat(entry.getAttachmentSize()).isNull();
+    }
+
+    @Test
+    void lessonAttendance_sameDayBeforeStart_isNotEditable() {
+        LessonResponse lesson = LessonResponse.newBuilder()
+                .setId(LESSON_ID)
+                .setGroupId(GROUP_ID)
+                .setSubjectId(SUBJECT_ID_1)
+                .setSemesterId(SEMESTER_ID)
+                .setDate("2026-04-01")
+                .setStartTime("10:00")
+                .setEndTime("11:30")
+                .setStatus("planned")
+                .build();
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson);
+        when(academicGrpcClient.getGroupMembers(
+                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
+                .thenReturn(GroupMembersResponse.newBuilder()
+                        .setAsOfDate("2026-04-01")
+                        .setSemesterId(SEMESTER_ID)
+                        .addStudents(StudentInfo.newBuilder().setUserId(USER_ID).build())
+                        .build());
+        when(attendanceReadPort.findByLessonId(LESSON_ID)).thenReturn(List.of());
+        when(clock.instant()).thenReturn(Instant.parse("2026-04-01T06:30:00Z"));
+
+        LessonAttendanceResponse response = reportService.getLessonAttendance(LESSON_ID);
+
+        assertThat(response.isEditable()).isFalse();
+        assertThat(response.getEntries().get(0).isEditable()).isFalse();
+        assertThat(response.getEntries().get(0).getEditBlockedReason())
+                .isEqualTo("Пара ещё не началась");
+    }
+
+    @Test
+    void lessonAttendance_missingSemester_failsClosedWithoutCurrentRosterFallback() {
+        LessonResponse lesson = LessonResponse.newBuilder()
+                .setId(LESSON_ID)
+                .setGroupId(GROUP_ID)
+                .setSubjectId(SUBJECT_ID_1)
+                .setDate("2026-04-01")
+                .setStartTime("08:00")
+                .setEndTime("09:30")
+                .setStatus("closed")
+                .build();
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson);
+
+        assertThatThrownBy(() -> reportService.getLessonAttendance(LESSON_ID))
+                .isInstanceOf(AcademicServiceUnavailableException.class);
+
+        verify(academicGrpcClient, never()).getGroupMembers(GROUP_ID);
     }
 
     // -------------------------------------------------------------------------
@@ -398,10 +506,20 @@ class ReportServiceTest {
                         .addSubjects(TeacherSubjectInfo.newBuilder()
                                 .setSubjectId(SUBJECT_ID_1)
                                 .setGroupId(GROUP_ID)
+                                .setAssignmentId(900L)
+                                .setSemesterId(SEMESTER_ID)
+                                .setLessonType("lecture")
+                                .setValidFrom("2026-01-01")
+                                .setValidUntilExclusive("2026-07-01")
                                 .build())
                         .build());
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson(SUBJECT_ID_1, GROUP_ID));
-        when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(GroupMembersResponse.getDefaultInstance());
+        when(academicGrpcClient.getGroupMembers(
+                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
+                .thenReturn(GroupMembersResponse.newBuilder()
+                        .setAsOfDate("2026-04-01")
+                        .setSemesterId(SEMESTER_ID)
+                        .build());
         when(attendanceReadPort.findByLessonId(LESSON_ID)).thenReturn(List.of());
 
         LessonAttendanceResponse response = reportService.getLessonAttendance(LESSON_ID);
@@ -411,10 +529,20 @@ class ReportServiceTest {
     }
 
     @Test
-    void authorizeTeacherWithEmptyAcademicResponseDeniesLesson() {
+    void authorizeTeacherWithConflictingAssignmentDeniesLesson() {
         when(requestContext.getRole()).thenReturn(UserRole.TEACHER);
         when(academicGrpcClient.getTeacherSubjects(USER_ID, SEMESTER_ID))
-                .thenReturn(TeacherSubjectsResponse.getDefaultInstance());
+                .thenReturn(TeacherSubjectsResponse.newBuilder()
+                        .addSubjects(TeacherSubjectInfo.newBuilder()
+                                .setSubjectId(SUBJECT_ID_2)
+                                .setGroupId(GROUP_ID)
+                                .setAssignmentId(900L)
+                                .setSemesterId(SEMESTER_ID)
+                                .setLessonType("lecture")
+                                .setValidFrom("2026-01-01")
+                                .setValidUntilExclusive("2026-07-01")
+                                .build())
+                        .build());
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson(SUBJECT_ID_1, GROUP_ID));
 
         assertThatThrownBy(() -> reportService.getLessonAttendance(LESSON_ID))
@@ -430,6 +558,11 @@ class ReportServiceTest {
                         .addSubjects(TeacherSubjectInfo.newBuilder()
                                 .setSubjectId(SUBJECT_ID_2)
                                 .setGroupId(GROUP_ID)
+                                .setAssignmentId(900L)
+                                .setSemesterId(SEMESTER_ID)
+                                .setLessonType("lecture")
+                                .setValidFrom("2026-01-01")
+                                .setValidUntilExclusive("2026-07-01")
                                 .build())
                         .build());
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson(SUBJECT_ID_1, GROUP_ID));
@@ -446,6 +579,11 @@ class ReportServiceTest {
                         .addSubjects(TeacherSubjectInfo.newBuilder()
                                 .setSubjectId(SUBJECT_ID_1)
                                 .setGroupId(GROUP_ID + 1)
+                                .setAssignmentId(900L)
+                                .setSemesterId(SEMESTER_ID)
+                                .setLessonType("lecture")
+                                .setValidFrom("2026-01-01")
+                                .setValidUntilExclusive("2026-07-01")
                                 .build())
                         .build());
         when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson(SUBJECT_ID_1, GROUP_ID));
@@ -459,9 +597,15 @@ class ReportServiceTest {
                 .setId(LESSON_ID)
                 .setGroupId(groupId)
                 .setSubjectId(subjectId)
+                .setSemesterId(SEMESTER_ID)
                 .setDate("2026-04-01")
                 .setLessonNumber(1)
+                .setStartTime("08:00")
+                .setEndTime("09:30")
                 .setStatus("active")
+                .setAssignmentId(900L)
+                .setAssignedTeacherId(USER_ID)
+                .setLessonType("lecture")
                 .build();
     }
 

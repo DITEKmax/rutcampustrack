@@ -27,7 +27,9 @@ import ru.rutcampustrack.attendance.student.StudentCheckinModels.Lesson;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Outcome;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Request;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Resolution;
+import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -56,7 +58,38 @@ public class StudentCheckinService {
     private final BusinessMetrics businessMetrics;
     private final TransactionTemplate transactionTemplate;
     private final Clock clock;
+    private final JournalAttachmentPort journalAttachmentPort;
 
+    @Autowired
+    public StudentCheckinService(
+            AttendanceRepository attendanceRepository,
+            CheckinPairStateRepository pairRepository,
+            StudentCheckinReceiptRepository receiptRepository,
+            LateCheckinRepository lateCheckinRepository,
+            PairWriteCoordinator pairCoordinator,
+            GeofenceService geofenceService,
+            AttendanceEventPublisher attendanceEventPublisher,
+            LateCheckinEventPublisher lateCheckinEventPublisher,
+            BusinessMetrics businessMetrics,
+            TransactionTemplate transactionTemplate,
+            Clock clock,
+            JournalAttachmentPort journalAttachmentPort
+    ) {
+        this.attendanceRepository = attendanceRepository;
+        this.pairRepository = pairRepository;
+        this.receiptRepository = receiptRepository;
+        this.lateCheckinRepository = lateCheckinRepository;
+        this.pairCoordinator = pairCoordinator;
+        this.geofenceService = geofenceService;
+        this.attendanceEventPublisher = attendanceEventPublisher;
+        this.lateCheckinEventPublisher = lateCheckinEventPublisher;
+        this.businessMetrics = businessMetrics;
+        this.transactionTemplate = transactionTemplate;
+        this.clock = clock;
+        this.journalAttachmentPort = journalAttachmentPort;
+    }
+
+    /** Source-compatible constructor for focused tests without attachment storage. */
     public StudentCheckinService(
             AttendanceRepository attendanceRepository,
             CheckinPairStateRepository pairRepository,
@@ -70,17 +103,9 @@ public class StudentCheckinService {
             TransactionTemplate transactionTemplate,
             Clock clock
     ) {
-        this.attendanceRepository = attendanceRepository;
-        this.pairRepository = pairRepository;
-        this.receiptRepository = receiptRepository;
-        this.lateCheckinRepository = lateCheckinRepository;
-        this.pairCoordinator = pairCoordinator;
-        this.geofenceService = geofenceService;
-        this.attendanceEventPublisher = attendanceEventPublisher;
-        this.lateCheckinEventPublisher = lateCheckinEventPublisher;
-        this.businessMetrics = businessMetrics;
-        this.transactionTemplate = transactionTemplate;
-        this.clock = clock;
+        this(attendanceRepository, pairRepository, receiptRepository, lateCheckinRepository,
+                pairCoordinator, geofenceService, attendanceEventPublisher,
+                lateCheckinEventPublisher, businessMetrics, transactionTemplate, clock, null);
     }
 
     public Ack checkin(Identity identity, Lesson lesson, String idempotencyKey, Geo geo) {
@@ -211,6 +236,16 @@ public class StudentCheckinService {
         attendance.setStatus(AttendanceStatus.PRESENT);
         attendance.setSource(AttendanceSource.STUDENT_GEO);
         attendance.setMarkedBy(null);
+        if (journalAttachmentPort != null) {
+            journalAttachmentPort.delete(lesson.id(), identity.userId());
+        }
+        attendance.setExcuseReason(null);
+        attendance.setExcuseType(null);
+        attendance.setExcuseComment(null);
+        attendance.setAttachmentId(null);
+        attendance.setAttachmentName(null);
+        attendance.setAttachmentContentType(null);
+        attendance.setAttachmentSize(null);
         attendance.setUpdatedAt(now);
         AttendanceDocument saved = attendanceRepository.save(attendance);
 

@@ -3,6 +3,8 @@ package ru.rutcampustrack.attendance.report;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.StudentInfo;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectInfo;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.AttendanceRecordEntry;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalCell;
@@ -21,22 +23,28 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.journal.JournalLessonPolicy;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
+import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -68,6 +76,8 @@ public class ReportService {
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final SemesterCacheService semesterCacheService;
     private final RequestContext requestContext;
+    private final Clock clock;
+    private final JournalAttachmentPort journalAttachmentPort;
 
     private String statusSymbol(AttendanceStatus s) {
         return STATUS_SYMBOLS.getOrDefault(s, "?");
@@ -85,9 +95,17 @@ public class ReportService {
      */
     public LessonAttendanceResponse getLessonAttendance(Long lessonId) {
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
-        authorizeHeadmanOrTeacher(lesson.getGroupId(), lesson.getSubjectId());
+        if (lesson == null) {
+            throw new BadRequestException("Пара недоступна");
+        }
+        authorizeHeadmanOrTeacher(lesson);
 
-        GroupMembersResponse members = academicGrpcClient.getGroupMembers(lesson.getGroupId());
+        JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
+        GroupMembersResponse members = membersForLesson(lesson);
+        String lessonStatus = timing.status();
+        boolean editable = !"CANCELLED".equals(lessonStatus)
+                && timing.hasStarted(clock.instant());
+        String blockedReason = editBlockedReason(timing, clock.instant());
 
         List<AttendanceRecord> records = attendanceReadPort.findByLessonId(lessonId);
         Map<Long, AttendanceRecord> recordsByUserId = records.stream()
@@ -97,13 +115,26 @@ public class ReportService {
                 .map(student -> {
                     Long uid = student.getUserId();
                     AttendanceRecord rec = recordsByUserId.get(uid);
-                    AttendanceStatus status = (rec != null) ? rec.status() : AttendanceStatus.ABSENT;
+                    AttendanceStatus status = rec == null ? null : rec.status();
                     String source = (rec != null && rec.source() != null)
                             ? rec.source().name().toLowerCase()
                             : null;
-                    String excuseReason = (rec != null) ? rec.excuseReason() : null;
+                    boolean excuse = rec != null && rec.status() == AttendanceStatus.EXCUSED;
+                    String excuseReason = excuse ? rec.excuseReason() : null;
+                    String excuseType = excuse ? rec.excuseType() : null;
+                    String comment = excuse ? rec.excuseComment() : null;
+                    boolean attachmentAvailable = excuse
+                            && journalAttachmentPort != null
+                            && journalAttachmentPort.isAvailable(lessonId, uid, rec.attachmentId());
+                    String attachmentId = attachmentAvailable ? rec.attachmentId() : null;
+                    String attachmentName = attachmentAvailable ? rec.attachmentName() : null;
+                    String attachmentContentType = attachmentAvailable ? rec.attachmentContentType() : null;
+                    Long attachmentSize = attachmentAvailable ? rec.attachmentSize() : null;
                     return new StudentAttendanceEntry(uid, student.getDisplayName(),
-                            status.name().toLowerCase(), statusSymbol(status), source, excuseReason);
+                            status == null ? null : status.name().toLowerCase(),
+                            status == null ? null : statusSymbol(status), source, excuseReason,
+                            excuseType, comment, attachmentId, attachmentName,
+                            attachmentContentType, attachmentSize, editable, blockedReason);
                 })
                 .toList();
 
@@ -112,8 +143,54 @@ public class ReportService {
                 lesson.getGroupId(),
                 lesson.getSubjectId(),
                 lesson.getDate(),
+                lesson.getSemesterId() > 0 ? lesson.getSemesterId() : null,
+                lessonStatus,
+                editable,
                 entries
         );
+    }
+
+    private GroupMembersResponse membersForLesson(LessonResponse lesson) {
+        if (lesson.getSemesterId() <= 0) {
+            throw new AcademicServiceUnavailableException(
+                    "Schedule returned a lesson without a positive semester");
+        }
+        LocalDate lessonDate = parseLessonDate(lesson.getDate());
+        GroupMembersResponse response = academicGrpcClient.getGroupMembers(
+                lesson.getGroupId(), lessonDate, lesson.getSemesterId());
+        validateHistoricalRoster(response, lessonDate, lesson.getSemesterId());
+        return response;
+    }
+
+    private static void validateHistoricalRoster(GroupMembersResponse members,
+                                                 LocalDate lessonDate, long semesterId) {
+        if (members == null || !members.hasAsOfDate() || !members.hasSemesterId()
+                || !lessonDate.toString().equals(members.getAsOfDate())
+                || members.getSemesterId() != semesterId) {
+            throw new AcademicServiceUnavailableException(
+                    "Academic returned a missing or mismatched historical roster echo");
+        }
+        java.util.Set<Long> ids = new java.util.HashSet<>();
+        for (StudentInfo student : members.getStudentsList()) {
+            if (student.getUserId() <= 0 || !ids.add(student.getUserId())) {
+                throw new AcademicServiceUnavailableException(
+                        "Academic returned duplicate or invalid historical student identity");
+            }
+        }
+    }
+
+    private static LocalDate parseLessonDate(String value) {
+        try {
+            return LocalDate.parse(value);
+        } catch (RuntimeException ex) {
+            throw new BadRequestException("Дата пары недоступна");
+        }
+    }
+
+    private static String editBlockedReason(JournalLessonPolicy.Timing timing, java.time.Instant now) {
+        if ("CANCELLED".equals(timing.status())) return "Пара отменена";
+        if (!timing.hasStarted(now)) return "Пара ещё не началась";
+        return null;
     }
 
     // -------------------------------------------------------------------------
@@ -510,6 +587,90 @@ public class ReportService {
             }
         } else {
             throw new AccessDeniedException("Access denied");
+        }
+    }
+
+    /**
+     * Authorizes a concrete lesson read. The Schedule snapshot carries the
+     * historical assignment identity; a rich Academic assignment projection is
+     * matched when it is available so a current assignment cannot cross into a
+     * different date/type/semester.
+     */
+    private void authorizeHeadmanOrTeacher(LessonResponse lesson) {
+        Long groupId = lesson.getGroupId();
+        Long subjectId = lesson.getSubjectId();
+        UserRole role = requestContext.getRole();
+        if (role == UserRole.STUDENT) {
+            if (!requestContext.isHeadman()) {
+                throw new AccessDeniedException("Only headmen can view group reports");
+            }
+            if (!Objects.equals(requestContext.getGroupId(), groupId)) {
+                throw new AccessDeniedException("Cannot view data for another group");
+            }
+            return;
+        }
+        if (role != UserRole.TEACHER) {
+            throw new AccessDeniedException("Access denied");
+        }
+
+        JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
+        long semesterId = lesson.getSemesterId();
+        long assignmentId = lesson.getAssignmentId();
+        long assignedTeacherId = lesson.getAssignedTeacherId();
+        String lessonType = lesson.getLessonType();
+        Long teacherId = requestContext.getUserId();
+        if (assignmentId <= 0 || assignedTeacherId <= 0 || teacherId == null
+                || !Objects.equals(teacherId, assignedTeacherId)
+                || lessonType == null || lessonType.isBlank()) {
+            throw new AccessDeniedException("Teacher is not assigned to this lesson");
+        }
+
+        TeacherSubjectsResponse response = academicGrpcClient.getTeacherSubjects(teacherId, semesterId);
+        if (response == null) {
+            throw new AccessDeniedException("Teacher assignment authority is unavailable");
+        }
+        boolean exactAssignment = response != null && response.getSubjectsList().stream()
+                .anyMatch(info -> matchesAssignment(info, lesson, timing.date()));
+        if (exactAssignment) {
+            return;
+        }
+
+        // The immutable Schedule snapshot is the authority for this concrete
+        // historical pair. A current unrelated assignment must not revoke the
+        // teacher's right to read the old pair. If Academic still exposes the
+        // same assignment id, however, a mismatch is a fail-closed conflict.
+        boolean conflictingSameAssignment = response.getSubjectsList().stream()
+                .anyMatch(info -> info != null && info.getAssignmentId() == assignmentId);
+        boolean malformedProjection = response.getSubjectsList().stream()
+                .anyMatch(info -> info == null || info.getAssignmentId() <= 0);
+        if (conflictingSameAssignment || malformedProjection) {
+            throw new AccessDeniedException("Teacher is not assigned to this lesson");
+        }
+        return;
+    }
+
+    private static boolean matchesAssignment(TeacherSubjectInfo info,
+                                             LessonResponse lesson,
+                                             LocalDate lessonDate) {
+        if (info == null || info.getAssignmentId() <= 0
+                || info.getAssignmentId() != lesson.getAssignmentId()
+                || info.getSemesterId() != lesson.getSemesterId()
+                || info.getSubjectId() != lesson.getSubjectId()
+                || info.getGroupId() != lesson.getGroupId()) {
+            return false;
+        }
+        String actualType = lesson.getLessonType();
+        String assignedType = info.getLessonType();
+        if (actualType == null || actualType.isBlank() || assignedType == null
+                || assignedType.isBlank() || !actualType.equalsIgnoreCase(assignedType)) {
+            return false;
+        }
+        try {
+            LocalDate validFrom = LocalDate.parse(info.getValidFrom());
+            LocalDate validUntilExclusive = LocalDate.parse(info.getValidUntilExclusive());
+            return !lessonDate.isBefore(validFrom) && lessonDate.isBefore(validUntilExclusive);
+        } catch (RuntimeException ex) {
+            return false;
         }
     }
 }

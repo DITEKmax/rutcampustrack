@@ -1,6 +1,6 @@
 package ru.rutcampustrack.attendance.marking;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -11,22 +11,28 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchItem;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchRequest;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
+import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.journal.JournalLessonPolicy;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.AsyncGrpcUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.time.Clock;
@@ -37,6 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -56,15 +63,13 @@ import java.util.stream.Collectors;
  * Events (INFRA-06): publishes attendance.marked after successful upsert.
  */
 @Service
-@RequiredArgsConstructor
 public class MarkingService {
 
     /** Statuses that a headman is allowed to set. CANCELLED is system-only. */
     private static final Set<AttendanceStatus> ALLOWED_STATUSES = Set.of(
             AttendanceStatus.PRESENT,
             AttendanceStatus.ABSENT,
-            AttendanceStatus.EXCUSED,
-            AttendanceStatus.FREE_ATTENDANCE
+            AttendanceStatus.EXCUSED
     );
 
     private final ScheduleGrpcClient scheduleGrpcClient;
@@ -77,6 +82,45 @@ public class MarkingService {
     private final Clock clock;
     @Qualifier("grpcTaskExecutor")
     private final TaskExecutor grpcTaskExecutor;
+    private final AttendanceAttachmentService attachmentService;
+
+    @Autowired
+    public MarkingService(ScheduleGrpcClient scheduleGrpcClient,
+                          AcademicGrpcClient academicGrpcClient,
+                          MongoTemplate mongoTemplate,
+                          AttendanceEventPublisher eventPublisher,
+                          SemesterCacheService semesterCacheService,
+                          RequestContext requestContext,
+                          PairWriteCoordinator pairWriteCoordinator,
+                          Clock clock,
+                          @Qualifier("grpcTaskExecutor") TaskExecutor grpcTaskExecutor,
+                          AttendanceAttachmentService attachmentService) {
+        this.scheduleGrpcClient = scheduleGrpcClient;
+        this.academicGrpcClient = academicGrpcClient;
+        this.mongoTemplate = mongoTemplate;
+        this.eventPublisher = eventPublisher;
+        this.semesterCacheService = semesterCacheService;
+        this.requestContext = requestContext;
+        this.pairWriteCoordinator = pairWriteCoordinator;
+        this.clock = clock;
+        this.grpcTaskExecutor = grpcTaskExecutor;
+        this.attachmentService = attachmentService;
+    }
+
+    /** Source-compatible constructor for focused unit tests that do not exercise attachments. */
+    public MarkingService(ScheduleGrpcClient scheduleGrpcClient,
+                          AcademicGrpcClient academicGrpcClient,
+                          MongoTemplate mongoTemplate,
+                          AttendanceEventPublisher eventPublisher,
+                          SemesterCacheService semesterCacheService,
+                          RequestContext requestContext,
+                          PairWriteCoordinator pairWriteCoordinator,
+                          Clock clock,
+                          TaskExecutor grpcTaskExecutor) {
+        this(scheduleGrpcClient, academicGrpcClient, mongoTemplate, eventPublisher,
+                semesterCacheService, requestContext, pairWriteCoordinator, clock,
+                grpcTaskExecutor, null);
+    }
 
     /**
      * Marks attendance for a student on a lesson.
@@ -88,39 +132,38 @@ public class MarkingService {
      */
     @Transactional
     public AttendanceDocument markAttendance(Long lessonId, Long userId, MarkRequest request) {
-        // D-14: Validate that status is not CANCELLED (system-only)
-        if (!ALLOWED_STATUSES.contains(request.status())) {
-            throw new BadRequestException(
-                    "Недопустимый статус: " + request.status() + ". CANCELLED устанавливается только системой");
-        }
+        return markAttendance(lessonId, userId, request, null);
+    }
 
-        // D-12: Only headman can mark attendance
-        if (!requestContext.isHeadman()) {
-            throw new AccessDeniedException("Только староста может отмечать посещаемость");
-        }
-
-        // D-12: Get the lesson and verify it belongs to the headman's group
-        LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
-        if (!requestContext.getGroupId().equals(lesson.getGroupId())) {
-            throw new AccessDeniedException("Нельзя отмечать студентов чужой группы");
-        }
-
-        // D-13: Verify target student is a member of the headman's group
-        GroupMembersResponse members = academicGrpcClient.getGroupMembers(requestContext.getGroupId());
-        boolean studentInGroup = members.getStudentsList().stream()
-                .anyMatch(s -> s.getUserId() == userId);
-        if (!studentInGroup) {
-            throw new AccessDeniedException("Студент не принадлежит вашей группе");
-        }
+    @Transactional
+    public AttendanceDocument markAttendance(Long lessonId, Long userId,
+                                             MarkRequest request, MultipartFile file) {
+        validateManualRequest(request, file);
+        LessonResponse lesson = requireWritableLesson(lessonId);
+        requireStudentInRoster(membersForLesson(lesson), userId);
 
         Instant now = clock.instant();
         pairWriteCoordinator.lock(userId, lessonId, lesson.getGroupId(), now);
+        Query filter = pairFilter(lessonId, userId);
+        AttendanceDocument existing = mongoTemplate.findOne(filter, AttendanceDocument.class);
+        boolean retainExistingAttachment = request.status() == AttendanceStatus.EXCUSED
+                && file == null
+                && existing != null
+                && existing.getStatus() == AttendanceStatus.EXCUSED
+                && existing.getAttachmentId() != null
+                && attachmentService != null
+                && attachmentService.isAvailable(lessonId, userId, existing.getAttachmentId());
 
-        // D-15: Upsert with $set (mutable) / $setOnInsert (immutable)
-        Query filter = Query.query(
-                Criteria.where("lesson_id").is(lessonId)
-                        .and("user_id").is(userId)
-        );
+        AttendanceAttachmentService.StoredAttachment attachment = null;
+        if (file != null) {
+            if (attachmentService == null) {
+                throw new IllegalStateException("Attendance attachment storage is unavailable");
+            }
+            attachment = attachmentService.replace(lessonId, userId, lesson.getGroupId(), file);
+        } else if (!retainExistingAttachment && attachmentService != null) {
+            attachmentService.delete(lessonId, userId);
+        }
+
         Update update = new Update()
                 .set("status", request.status())
                 .set("source", AttendanceSource.HEADMAN)
@@ -130,24 +173,144 @@ public class MarkingService {
                 .setOnInsert("user_id", userId)
                 .setOnInsert("group_id", lesson.getGroupId())
                 .setOnInsert("subject_id", lesson.getSubjectId())
-                .setOnInsert("semester_id", semesterCacheService.getActiveSemesterId())
+                .setOnInsert("semester_id", lesson.getSemesterId())
                 .setOnInsert("lesson_number", lesson.getLessonNumber())
                 .setOnInsert("lesson_date", LocalDate.parse(lesson.getDate()))
                 .setOnInsert("created_at", now);
 
+        if (request.status() == AttendanceStatus.EXCUSED) {
+            update.set("excuse_reason", request.excuseType().name())
+                    .set("excuse_type", request.excuseType())
+                    .set("excuse_comment", normalizeComment(request.comment()));
+            if (attachment != null) {
+                update.set("attachment_id", attachment.id())
+                        .set("attachment_name", attachment.name())
+                        .set("attachment_content_type", attachment.contentType())
+                        .set("attachment_size", attachment.size());
+            } else if (!retainExistingAttachment) {
+                update.unset("attachment_id")
+                        .unset("attachment_name")
+                        .unset("attachment_content_type")
+                        .unset("attachment_size");
+            }
+        } else {
+            update.unset("excuse_reason")
+                    .unset("excuse_type")
+                    .unset("excuse_comment")
+                    .unset("attachment_id")
+                    .unset("attachment_name")
+                    .unset("attachment_content_type")
+                    .unset("attachment_size");
+        }
+
         mongoTemplate.upsert(filter, update, AttendanceDocument.class);
-
-        // Read back the document for event publishing and response construction
         AttendanceDocument doc = mongoTemplate.findOne(filter, AttendanceDocument.class);
+        if (doc == null) {
+            throw new IllegalStateException("Attendance mark was not persisted");
+        }
 
-        // INFRA-06: Publish attendance.marked event. NOTIF unification:
-        // обогащаем payload именем предмета — bot/PWA/web-panel показывают
-        // студенту "Староста поставил «Х» на паре №N {Предмет}". Если gRPC
-        // упадёт, шлём событие без subject_name (graceful degradation).
         String subjectName = resolveSubjectName(lesson.getSubjectId());
         eventPublisher.publishMarked(doc, subjectName);
-
         return doc;
+    }
+
+    @Transactional
+    public void clearAttendance(Long lessonId, Long userId) {
+        LessonResponse lesson = requireWritableLesson(lessonId);
+        requireStudentInRoster(membersForLesson(lesson), userId);
+        pairWriteCoordinator.lock(userId, lessonId, lesson.getGroupId(), clock.instant());
+        mongoTemplate.remove(pairFilter(lessonId, userId), AttendanceDocument.class);
+        if (attachmentService != null) {
+            attachmentService.delete(lessonId, userId);
+        }
+    }
+
+    public AttendanceAttachmentService.AttachmentDownload downloadAttachment(Long lessonId, Long userId) {
+        LessonResponse lesson = requireWritableLesson(lessonId);
+        requireStudentInRoster(membersForLesson(lesson), userId);
+        AttendanceDocument document = mongoTemplate.findOne(pairFilter(lessonId, userId), AttendanceDocument.class);
+        if (document == null || document.getAttachmentId() == null || attachmentService == null) {
+            throw new ResourceNotFoundException("AttendanceAttachment", "lessonId", lessonId);
+        }
+        return attachmentService.download(lessonId, userId, document.getAttachmentId());
+    }
+
+    private void validateManualRequest(MarkRequest request, MultipartFile file) {
+        if (request == null || request.status() == null || !ALLOWED_STATUSES.contains(request.status())) {
+            throw new BadRequestException("Допустимые ручные статусы: PRESENT, ABSENT или EXCUSED");
+        }
+        String comment = normalizeComment(request.comment());
+        if (comment != null && comment.length() > 1000) {
+            throw new BadRequestException("Комментарий не должен превышать 1000 символов");
+        }
+        if (request.status() == AttendanceStatus.EXCUSED) {
+            if (request.excuseType() == null || request.excuseType() == ExcuseType.FREE_ATTENDANCE) {
+                throw new BadRequestException("Для EXCUSED требуется поддерживаемый тип причины");
+            }
+            return;
+        }
+        if (request.excuseType() != null || comment != null || file != null) {
+            throw new BadRequestException("Причина, комментарий и файл допустимы только для EXCUSED");
+        }
+    }
+
+    private LessonResponse requireWritableLesson(Long lessonId) {
+        if (!requestContext.isHeadman()) {
+            throw new AccessDeniedException("Только староста может изменять посещаемость");
+        }
+        LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
+        if (lesson == null || !Objects.equals(requestContext.getGroupId(), lesson.getGroupId())) {
+            throw new AccessDeniedException("Нельзя изменять студентов чужой группы");
+        }
+        JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
+        JournalLessonPolicy.requireStarted(timing, clock);
+        return lesson;
+    }
+
+    private GroupMembersResponse membersForLesson(LessonResponse lesson) {
+        if (lesson.getSemesterId() <= 0) {
+            throw new AcademicServiceUnavailableException(
+                    "Schedule returned a lesson without a positive semester");
+        }
+        LocalDate lessonDate = LocalDate.parse(lesson.getDate());
+        GroupMembersResponse response = academicGrpcClient.getGroupMembers(
+                lesson.getGroupId(), lessonDate, lesson.getSemesterId());
+        validateHistoricalRoster(response, lessonDate, lesson.getSemesterId());
+        return response;
+    }
+
+    private static void validateHistoricalRoster(GroupMembersResponse members,
+                                                 LocalDate lessonDate, long semesterId) {
+        if (members == null || !members.hasAsOfDate() || !members.hasSemesterId()
+                || !lessonDate.toString().equals(members.getAsOfDate())
+                || members.getSemesterId() != semesterId) {
+            throw new AcademicServiceUnavailableException(
+                    "Academic returned a missing or mismatched historical roster echo");
+        }
+        Set<Long> ids = new HashSet<>();
+        for (StudentInfo student : members.getStudentsList()) {
+            if (student.getUserId() <= 0 || !ids.add(student.getUserId())) {
+                throw new AcademicServiceUnavailableException(
+                        "Academic returned duplicate or invalid historical student identity");
+            }
+        }
+    }
+
+    private static void requireStudentInRoster(GroupMembersResponse members, Long userId) {
+        if (members == null || members.getStudentsList().stream()
+                .noneMatch(student -> student.getUserId() == userId)) {
+            throw new AccessDeniedException("Студент не принадлежит составу группы на дату пары");
+        }
+    }
+
+    private static Query pairFilter(Long lessonId, Long userId) {
+        return Query.query(Criteria.where("lesson_id").is(lessonId).and("user_id").is(userId));
+    }
+
+    private static String normalizeComment(String comment) {
+        if (comment == null) return null;
+        String normalized = comment.strip();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     /** Best-effort gRPC lookup; на ошибку — null, payload без subject_name. */
@@ -286,6 +449,16 @@ public class MarkingService {
             Query filter = Query.query(
                     Criteria.where("lesson_id").is(item.lessonId())
                             .and("user_id").is(item.userId()));
+            AttendanceDocument existing = mongoTemplate.findOne(filter, AttendanceDocument.class);
+            boolean retainExistingAttachment = item.status() == AttendanceStatus.EXCUSED
+                    && existing != null
+                    && existing.getStatus() == AttendanceStatus.EXCUSED
+                    && existing.getAttachmentId() != null
+                    && attachmentService != null
+                    && attachmentService.isAvailable(item.lessonId(), item.userId(), existing.getAttachmentId());
+            if (!retainExistingAttachment && attachmentService != null) {
+                attachmentService.delete(item.lessonId(), item.userId());
+            }
             Update update = new Update()
                     .set("status", item.status())
                     .set("source", AttendanceSource.HEADMAN)
@@ -299,6 +472,17 @@ public class MarkingService {
                     .setOnInsert("lesson_number", lesson.getLessonNumber())
                     .setOnInsert("lesson_date", LocalDate.parse(lesson.getDate()))
                     .setOnInsert("created_at", now);
+            if (item.status() != AttendanceStatus.EXCUSED || !retainExistingAttachment) {
+                update.unset("attachment_id")
+                        .unset("attachment_name")
+                        .unset("attachment_content_type")
+                        .unset("attachment_size");
+            }
+            if (item.status() != AttendanceStatus.EXCUSED) {
+                update.unset("excuse_reason")
+                        .unset("excuse_type")
+                        .unset("excuse_comment");
+            }
             AttendanceDocument doc = mongoTemplate.findAndModify(
                     filter, update, opts, AttendanceDocument.class);
             result.add(doc);

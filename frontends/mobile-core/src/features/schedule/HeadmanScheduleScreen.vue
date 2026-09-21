@@ -11,6 +11,8 @@ import {
 } from '../../shared/navigation'
 import type { MobileHostAdapter } from '../../shared/host'
 import type { ProfileSnapshot } from '../profile/profile-types'
+import HeadmanJournalScreen from '../headman-journal/HeadmanJournalScreen.vue'
+import type { HeadmanJournalApi } from '../headman-journal/headman-journal-client'
 import {
   HeadmanScheduleApiError,
   type HeadmanScheduleApi,
@@ -23,6 +25,7 @@ import './headman-schedule-screen.pcss'
 
 const props = withDefaults(defineProps<{
   api: HeadmanScheduleApi | null
+  journalApi?: HeadmanJournalApi | null
   profile: ProfileSnapshot | null
   groupId: number | null
   offline?: boolean
@@ -31,6 +34,7 @@ const props = withDefaults(defineProps<{
   navItems?: MobileBottomNavItems
   onRoleSwitch?: (() => void | Promise<void>) | undefined
 }>(), {
+  journalApi: null,
   offline: false,
   readOnly: false,
   host: null,
@@ -55,6 +59,7 @@ const scheduleItems = shallowRef<readonly HeadmanScheduleItem[]>([])
 const semester = shallowRef<HeadmanScheduleSemester | null>(null)
 const selectedDay = ref(1)
 const formOpen = ref(false)
+const journalOpen = ref(false)
 const formBusy = ref(false)
 const formError = ref<string | null>(null)
 const notice = ref<string | null>(null)
@@ -66,6 +71,7 @@ const startTime = ref('')
 const endTime = ref('')
 const room = ref('')
 const commandFingerprint = ref<string | null>(null)
+const journalRouteId = 'more/headman-journal/journal' as const
 let loadRevision = 0
 let stopNavigation = navigation.subscribe(() => {
   const next = navigation.current
@@ -73,10 +79,16 @@ let stopNavigation = navigation.subscribe(() => {
   route.value = next
   if (next.kind === 'root' && previous.kind === 'nested') {
     formOpen.value = false
+    journalOpen.value = false
     void props.onRoleSwitch?.()
+  } else if (next.id === journalRouteId) {
+    formOpen.value = false
+    journalOpen.value = true
   } else if (next.id === 'more/headman-schedule/list') {
     formOpen.value = false
+    journalOpen.value = false
   } else if (next.id === 'more/headman-schedule/form') {
+    journalOpen.value = false
     formOpen.value = true
   }
 })
@@ -140,6 +152,12 @@ function openForm(): void {
 function closeForm(): void {
   if (formBusy.value) return
   navigation.replace(nestedRoute('more', 'more/headman-schedule/list', 'task'))
+}
+
+function openJournal(): void {
+  if (!props.journalApi || props.groupId === null) return
+  journalOpen.value = true
+  navigation.push(nestedRoute('more', journalRouteId, 'task'))
 }
 
 function validTime(value: string): boolean {
@@ -282,7 +300,16 @@ onBeforeUnmount(() => {
     :host="host"
     back-label="Назад"
   >
+    <HeadmanJournalScreen
+      v-if="journalOpen"
+      :api="journalApi"
+      :group-id="groupId"
+      :offline="offline"
+      :read-only="readOnly"
+      @error="emit('error', $event)"
+    />
     <main
+      v-else
       class="headman-schedule"
       aria-labelledby="headman-schedule-title"
     >
@@ -328,6 +355,16 @@ onBeforeUnmount(() => {
       >
         {{ notice }}
       </p>
+
+      <button
+        v-if="journalApi && groupId !== null"
+        class="headman-schedule__journal"
+        type="button"
+        :disabled="offline"
+        @click="openJournal"
+      >
+        Открыть журнал посещаемости
+      </button>
 
       <section
         v-if="loading"

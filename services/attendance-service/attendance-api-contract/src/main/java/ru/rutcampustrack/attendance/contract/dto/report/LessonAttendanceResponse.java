@@ -17,14 +17,28 @@ public class LessonAttendanceResponse extends RepresentationModel<LessonAttendan
     private final Long groupId;
     private final Long subjectId;
     private final String lessonDate;
+    private final Long semesterId;
+    /** Uppercase schedule state: PLANNED, ACTIVE, CLOSED, or CANCELLED. */
+    private final String lessonStatus;
+    /** Server-side editability derived from lesson state and server clock. */
+    private final boolean editable;
     private final List<StudentAttendanceEntry> entries;
 
     public LessonAttendanceResponse(Long lessonId, Long groupId, Long subjectId, String lessonDate,
                                      List<StudentAttendanceEntry> entries) {
+        this(lessonId, groupId, subjectId, lessonDate, null, null, false, entries);
+    }
+
+    public LessonAttendanceResponse(Long lessonId, Long groupId, Long subjectId, String lessonDate,
+                                    Long semesterId, String lessonStatus, boolean editable,
+                                    List<StudentAttendanceEntry> entries) {
         this.lessonId = lessonId;
         this.groupId = groupId;
         this.subjectId = subjectId;
         this.lessonDate = lessonDate;
+        this.semesterId = semesterId;
+        this.lessonStatus = lessonStatus;
+        this.editable = editable;
         this.entries = entries;
     }
 
@@ -42,6 +56,18 @@ public class LessonAttendanceResponse extends RepresentationModel<LessonAttendan
 
     public String getLessonDate() {
         return lessonDate;
+    }
+
+    public Long getSemesterId() {
+        return semesterId;
+    }
+
+    public String getLessonStatus() {
+        return lessonStatus;
+    }
+
+    public boolean isEditable() {
+        return editable;
     }
 
     public List<StudentAttendanceEntry> getEntries() {

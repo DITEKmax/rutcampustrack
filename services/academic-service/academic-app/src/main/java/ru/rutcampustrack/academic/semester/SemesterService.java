@@ -112,14 +112,14 @@ public class SemesterService {
     }
 
     /**
-     * Structured pre-check for date sanity. On create we additionally enforce
-     * {@code dateFrom >= today} per BUG-006-7; on update we allow the existing
-     * past-starting semester to be renamed as long as {@code dateTo >= today}
-     * (handled separately in {@link #updateSemester}).
+     * Structured pre-check for date sanity. A newly created semester may start
+     * in the past when it is the current semester, but a fully completed
+     * semester is still rejected. On update the existing completed-semester
+     * guard is handled separately in {@link #updateSemester}.
      */
     private void validateDates(LocalDate from, LocalDate to, boolean requireFutureStart) {
-        if (requireFutureStart && from.isBefore(LocalDate.now())) {
-            throw new BadRequestException("dateFrom", "Нельзя создать семестр в прошлом");
+        if (requireFutureStart && to.isBefore(LocalDate.now())) {
+            throw new BadRequestException("dateTo", "Нельзя создать завершённый семестр");
         }
         if (to.isBefore(from)) {
             throw new BadRequestException("dateTo", "Дата окончания раньше даты начала");

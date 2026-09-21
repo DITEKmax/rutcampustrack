@@ -17,6 +17,7 @@ import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
@@ -59,6 +60,7 @@ class StudentRequestServiceAuthorizationTest {
     private final PairWriteCoordinator pairWriteCoordinator = mock(PairWriteCoordinator.class);
     private final ExcuseEventPublisher excuseEventPublisher = mock(ExcuseEventPublisher.class);
     private final LateCheckinEventPublisher lateCheckinEventPublisher = mock(LateCheckinEventPublisher.class);
+    private final JournalAttachmentPort journalAttachmentPort = mock(JournalAttachmentPort.class);
     private final MongoTemplate mongoTemplate = mock(MongoTemplate.class);
     private final TransactionTemplate transactionTemplate = mock(TransactionTemplate.class);
     private StudentRequestService service;
@@ -75,7 +77,8 @@ class StudentRequestServiceAuthorizationTest {
                 scheduleGrpcClient, academicGrpcClient,
                 semesterCacheService, pairWriteCoordinator, excuseEventPublisher,
                 lateCheckinEventPublisher, mongoTemplate, transactionTemplate,
-                Clock.fixed(Instant.parse("2026-09-07T08:00:00Z"), ZoneOffset.UTC));
+                Clock.fixed(Instant.parse("2026-09-07T08:00:00Z"), ZoneOffset.UTC),
+                journalAttachmentPort);
     }
 
     @Test

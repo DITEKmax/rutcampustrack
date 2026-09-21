@@ -20,8 +20,10 @@ import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchRequest;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
@@ -88,14 +90,27 @@ class MarkingServiceTest {
                 .setId(LESSON_ID)
                 .setGroupId(groupId)
                 .setSubjectId(SUBJECT_ID)
+                .setSemesterId(SEMESTER_ID)
                 .setDate("2026-04-01")
                 .setLessonNumber(1)
+                .setStartTime("08:00")
+                .setEndTime("09:30")
                 .setStatus("started")
                 .build();
     }
 
     private GroupMembersResponse buildGroupMembers(Long... userIds) {
         GroupMembersResponse.Builder builder = GroupMembersResponse.newBuilder();
+        for (Long uid : userIds) {
+            builder.addStudents(StudentInfo.newBuilder().setUserId(uid).build());
+        }
+        return builder.build();
+    }
+
+    private GroupMembersResponse buildHistoricalGroupMembers(Long semesterId, Long... userIds) {
+        GroupMembersResponse.Builder builder = GroupMembersResponse.newBuilder()
+                .setAsOfDate("2026-04-01")
+                .setSemesterId(semesterId);
         for (Long uid : userIds) {
             builder.addStudents(StudentInfo.newBuilder().setUserId(uid).build());
         }
@@ -138,6 +153,9 @@ class MarkingServiceTest {
         lenient().when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(buildLesson(GROUP_ID));
         // Student 99 is in group 10
         lenient().when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(buildGroupMembers(USER_ID, 100L));
+        lenient().when(academicGrpcClient.getGroupMembers(
+                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
+                .thenReturn(buildHistoricalGroupMembers(SEMESTER_ID, USER_ID, 100L));
         lenient().when(semesterCacheService.getActiveSemesterId()).thenReturn(SEMESTER_ID);
         // mongoTemplate.findOne returns the document after upsert (single-mark path)
         lenient().when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class)))
@@ -205,12 +223,14 @@ class MarkingServiceTest {
     @Test
     void markAttendance_studentNotInGroup_throwsAccessDeniedException() {
         // group members does NOT include userId 99
-        when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(buildGroupMembers(100L, 101L));
+        when(academicGrpcClient.getGroupMembers(
+                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
+                .thenReturn(buildHistoricalGroupMembers(SEMESTER_ID, 100L, 101L));
 
         assertThatThrownBy(() -> markingService.markAttendance(
                 LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT)))
                 .isInstanceOf(AccessDeniedException.class)
-                .hasMessageContaining("группе");
+                .hasMessageContaining("составу группы");
 
         verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
     }
@@ -224,8 +244,51 @@ class MarkingServiceTest {
         assertThatThrownBy(() -> markingService.markAttendance(
                 LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.CANCELLED)))
                 .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("CANCELLED");
+                .hasMessageContaining("Допустимые ручные статусы");
 
+        verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
+    }
+
+    @Test
+    void markAttendance_sameDayBeforeStart_throwsWithoutRosterOrWrite() {
+        markingService = new MarkingService(
+                scheduleGrpcClient, academicGrpcClient, mongoTemplate,
+                eventPublisher, semesterCacheService, requestContext,
+                pairWriteCoordinator,
+                Clock.fixed(Instant.parse("2026-04-01T06:30:00Z"), ZoneOffset.UTC),
+                new SyncTaskExecutor());
+        when(scheduleGrpcClient.getLessonById(LESSON_ID))
+                .thenReturn(buildLesson(GROUP_ID).toBuilder().setStartTime("10:00").build());
+
+        assertThatThrownBy(() -> markingService.markAttendance(
+                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT)))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("до начала");
+
+        verify(academicGrpcClient, never()).getGroupMembers(
+                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID);
+        verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
+    }
+
+    @Test
+    void markAttendance_missingSemester_failsClosedWithoutUndatedRoster() {
+        LessonResponse missingSemester = LessonResponse.newBuilder()
+                .setId(LESSON_ID)
+                .setGroupId(GROUP_ID)
+                .setSubjectId(SUBJECT_ID)
+                .setDate("2026-04-01")
+                .setLessonNumber(1)
+                .setStartTime("08:00")
+                .setEndTime("09:30")
+                .setStatus("started")
+                .build();
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(missingSemester);
+
+        assertThatThrownBy(() -> markingService.markAttendance(
+                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT)))
+                .isInstanceOf(AcademicServiceUnavailableException.class);
+
+        verify(academicGrpcClient, never()).getGroupMembers(GROUP_ID);
         verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
     }
 
@@ -256,7 +319,8 @@ class MarkingServiceTest {
     @Test
     void markAttendance_successfulMark_publishesMarkedEvent() {
         AttendanceDocument result = markingService.markAttendance(
-                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.EXCUSED));
+                LESSON_ID, USER_ID,
+                new MarkRequest(AttendanceStatus.EXCUSED, ExcuseType.ILLNESS, "test reason"));
 
         verify(eventPublisher).publishMarked(eq(result), any());
     }

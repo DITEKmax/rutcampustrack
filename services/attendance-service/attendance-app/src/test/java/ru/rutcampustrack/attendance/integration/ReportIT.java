@@ -20,6 +20,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,17 +54,24 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
         lenient().when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(
                 LessonResponse.newBuilder()
                         .setId(LESSON_ID).setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID)
-                        .setDate("2026-04-01").setLessonNumber(1).setStatus("closed")
+                        .setSemesterId(SEMESTER_ID)
+                        .setDate("2026-04-01").setLessonNumber(1)
+                        .setStartTime("08:00").setEndTime("09:30").setStatus("closed")
                         .build()
         );
 
-        lenient().when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(
-                GroupMembersResponse.newBuilder()
+        GroupMembersResponse reportRoster = GroupMembersResponse.newBuilder()
+                        .setAsOfDate("2026-04-01")
+                        .setSemesterId(SEMESTER_ID)
                         .addStudents(StudentInfo.newBuilder().setUserId(100L).setDisplayName("Student A").build())
                         .addStudents(StudentInfo.newBuilder().setUserId(101L).setDisplayName("Student B").build())
                         .addStudents(StudentInfo.newBuilder().setUserId(102L).setDisplayName("Student C").build())
-                        .build()
-        );
+                        .build();
+        lenient().when(academicGrpcClient.getGroupMembers(
+                GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID)).thenReturn(reportRoster);
+        // Journal grid predates the concrete-lesson endpoint and keeps its
+        // existing group roster call.
+        lenient().when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(reportRoster);
 
         // D-13: subject name resolution via gRPC batch call
         lenient().when(academicGrpcClient.getSubjectsByIds(any()))
@@ -115,7 +124,7 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
     void getLessonAttendance_headman_returnsAllGroupMembers() throws Exception {
         insertAttendance(LESSON_ID, 100L, AttendanceStatus.PRESENT);
         insertAttendance(LESSON_ID, 101L, AttendanceStatus.EXCUSED);
-        // userId 102 has no record — should default to ABSENT
+        // userId 102 has no record — an empty status remains empty.
 
         mockMvc.perform(get("/attendance/reports/lesson/{lessonId}", LESSON_ID)
                         .header("X-User-Id", HEADMAN_USER_ID.toString())
@@ -127,8 +136,8 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
                 .andExpect(jsonPath("$.entries.length()").value(3))
                 .andExpect(jsonPath("$.entries[?(@.userId == 100)].status").value("present"))
                 .andExpect(jsonPath("$.entries[?(@.userId == 100)].symbol").value("+"))
-                .andExpect(jsonPath("$.entries[?(@.userId == 102)].status").value("absent"))
-                .andExpect(jsonPath("$.entries[?(@.userId == 102)].symbol").value("н"));
+                .andExpect(jsonPath("$.entries[?(@.userId == 102)].status").value(hasItem(nullValue())))
+                .andExpect(jsonPath("$.entries[?(@.userId == 102)].symbol").value(hasItem(nullValue())));
     }
 
     // -------------------------------------------------------------------------

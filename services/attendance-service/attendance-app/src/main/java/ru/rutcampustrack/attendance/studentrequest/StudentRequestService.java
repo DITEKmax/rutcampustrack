@@ -43,6 +43,7 @@ import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentDescriptor;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentDownload;
@@ -151,6 +152,7 @@ public class StudentRequestService {
     private final MongoTemplate mongoTemplate;
     private final TransactionTemplate transactionTemplate;
     private final Clock clock;
+    private final JournalAttachmentPort journalAttachmentPort;
 
     public StudentRequestService(
             ExcuseRepository excuseRepository,
@@ -167,7 +169,8 @@ public class StudentRequestService {
             LateCheckinEventPublisher lateCheckinEventPublisher,
             MongoTemplate mongoTemplate,
             TransactionTemplate transactionTemplate,
-            Clock clock
+            Clock clock,
+            JournalAttachmentPort journalAttachmentPort
     ) {
         this.excuseRepository = excuseRepository;
         this.lateCheckinRepository = lateCheckinRepository;
@@ -184,6 +187,7 @@ public class StudentRequestService {
         this.mongoTemplate = mongoTemplate;
         this.transactionTemplate = transactionTemplate;
         this.clock = clock;
+        this.journalAttachmentPort = journalAttachmentPort;
     }
 
     /** Submit an EXCUSE package and return the public detail projection. */
@@ -1410,6 +1414,7 @@ public class StudentRequestService {
                                        AttendanceDocument current,
                                        Instant now) {
         AttendanceDocument document = current == null ? new AttendanceDocument() : current;
+        AttendanceStatus previousStatus = document.getStatus();
         if (document.getCreatedAt() == null) {
             document.setCreatedAt(now);
         }
@@ -1429,6 +1434,7 @@ public class StudentRequestService {
         document.setStatus(AttendanceStatus.EXCUSED);
         document.setSource(AttendanceSource.HEADMAN_EXCUSE);
         document.setExcuseReason(reasonText(ticket));
+        applyJournalAttachmentTransition(document, previousStatus, AttendanceStatus.EXCUSED);
         document.setUpdatedAt(now);
         attendanceRepository.save(document);
     }
@@ -1453,8 +1459,39 @@ public class StudentRequestService {
         document.setSource(AttendanceSource.LATE_CHECKIN);
         document.setMarkedBy(markedBy);
         document.setExcuseReason(null);
+        document.setExcuseType(null);
+        document.setExcuseComment(null);
+        if (journalAttachmentPort != null) {
+            journalAttachmentPort.delete(request.getLessonId(), request.getStudentId());
+        }
+        clearJournalAttachmentMetadata(document);
         document.setUpdatedAt(now);
         attendanceRepository.save(document);
+    }
+
+    private void applyJournalAttachmentTransition(AttendanceDocument document,
+                                                  AttendanceStatus previousStatus,
+                                                  AttendanceStatus nextStatus) {
+        long lessonId = document.getLessonId() == null ? 0L : document.getLessonId();
+        long studentId = document.getUserId() == null ? 0L : document.getUserId();
+        boolean retain = nextStatus == AttendanceStatus.EXCUSED
+                && previousStatus == AttendanceStatus.EXCUSED
+                && document.getAttachmentId() != null
+                && journalAttachmentPort != null
+                && journalAttachmentPort.isAvailable(lessonId, studentId, document.getAttachmentId());
+        if (!retain) {
+            if (journalAttachmentPort != null && lessonId > 0 && studentId > 0) {
+                journalAttachmentPort.delete(lessonId, studentId);
+            }
+            clearJournalAttachmentMetadata(document);
+        }
+    }
+
+    private static void clearJournalAttachmentMetadata(AttendanceDocument document) {
+        document.setAttachmentId(null);
+        document.setAttachmentName(null);
+        document.setAttachmentContentType(null);
+        document.setAttachmentSize(null);
     }
 
     private static String reasonText(ExcuseTicket ticket) {

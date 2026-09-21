@@ -12,6 +12,9 @@ import {
   StudentApi,
   StudentApiError,
   StudentFeatureOwner,
+  TeacherApi,
+  TeacherApiError,
+  TeacherFeatureOwner,
   ProfileRequestError,
   RoleSwitchScreen,
   StaleSessionGenerationError,
@@ -63,6 +66,8 @@ const theme = typeof document === 'undefined' ? null : createMobileTheme()
 const snapshotStore = new SemesterSnapshotStore()
 
 const api = shallowRef<StudentApi | null>(null)
+const teacherApi = shallowRef<TeacherApi | null>(null)
+const teacherSemesterId = ref<number | null>(null)
 const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
 const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const session = shallowRef<StudentSession | null>(null)
@@ -76,7 +81,7 @@ const readOnly = ref(false)
 const sessionReady = ref(false)
 const bootstrapping = ref(false)
 const bootstrapError = ref<string | null>(null)
-const authView = ref<'login' | 'role' | 'student' | 'headman' | 'map' | 'admin-map'>('login')
+const authView = ref<'login' | 'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-map'>('login')
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null)
 const authError = shallowRef<ProfileRequestError | null>(null)
 const authLoading = ref(false)
@@ -100,8 +105,9 @@ const displayedSemesterSchedule = computed(() => offline.value ? semesterSchedul
 const mapViewVisible = computed(() => authView.value === 'map')
 const adminMapViewVisible = computed(() => authView.value === 'admin-map')
 const featureVisible = computed(() => api.value !== null || headmanApi.value !== null || snapshot.value !== null
-  || mapViewVisible.value || adminMapViewVisible.value)
+  || teacherApi.value !== null || mapViewVisible.value || adminMapViewVisible.value)
 const studentViewVisible = computed(() => authView.value === 'student' && featureVisible.value)
+const teacherViewVisible = computed(() => authView.value === 'teacher' && teacherApi.value !== null)
 const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
 const headmanGroupId = ref<number | null>(null)
 const ownerKey = computed(() => scope.value
@@ -116,6 +122,7 @@ function authDenialStatus(error: unknown): number | null {
   if (error instanceof PwaAuthError) return error.status
   if (error instanceof AuthRequestError) return error.status ?? null
   if (error instanceof StudentApiError) return error.response.status
+  if (error instanceof TeacherApiError) return error.response.status
   if (error instanceof HeadmanScheduleApiError) return error.response.status
   if (error instanceof HeadmanJournalApiError) return error.response.status
   return null
@@ -178,13 +185,15 @@ function isPersistedSnapshot(value: SemesterSnapshot | null): value is SemesterS
 }
 
 async function loadOfflineSnapshot(): Promise<boolean> {
-  if (authView.value === 'headman') return false
+  if (authView.value === 'headman' || authView.value === 'teacher') return false
   const generation = auth.currentGeneration()
   // Do not keep a previous online query model alive while deciding whether a
   // committed snapshot can be used. This also prevents a late query result
   // from becoming the offline view after a reconnect failure.
   scope.value = null
   api.value = null
+  teacherApi.value = null
+  teacherSemesterId.value = null
   headmanApi.value = null
   headmanJournalApi.value = null
   headmanGroupId.value = null
@@ -218,6 +227,8 @@ async function loadOfflineSnapshot(): Promise<boolean> {
       resetGeneration: auth.currentGeneration(),
     }
     api.value = null
+    teacherApi.value = null
+    teacherSemesterId.value = null
     session.value = null
     offline.value = true
     readOnly.value = true
@@ -242,6 +253,8 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): St
   headmanApi.value = null
   headmanJournalApi.value = null
   headmanGroupId.value = null
+  teacherApi.value = null
+  teacherSemesterId.value = null
   scope.value = null
   api.value = null
   session.value = null
@@ -360,6 +373,24 @@ async function fetchHeadmanCandidate(
   return { generation, api: candidateApi, journalApi: candidateJournalApi, profile, groupId }
 }
 
+type TeacherCandidate = {
+  generation: number
+  api: TeacherApi
+  semesterId: number
+  profile: ProfileSnapshot
+}
+
+async function fetchTeacherCandidate(
+  generation: number,
+  profile: ProfileSnapshot,
+): Promise<TeacherCandidate | null> {
+  if (profile.activeRole !== 'TEACHER') return null
+  const candidateApi = auth.createTeacherApi(currentFetcher())
+  const semester = await candidateApi.semester()
+  assertCandidateCurrent(generation)
+  return { generation, api: candidateApi, semesterId: semester.id, profile }
+}
+
 type StudentCandidate = {
   generation: number
   api: StudentApi
@@ -466,6 +497,18 @@ async function activateHeadmanCandidate(candidate: HeadmanCandidate): Promise<vo
   ownerRevision.value += 1
 }
 
+async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<void> {
+  invalidateOwnerSynchronously({ clearAuth: false })
+  assertCandidateCurrent(candidate.generation)
+  teacherApi.value = candidate.api
+  teacherSemesterId.value = candidate.semesterId
+  authSnapshot.value = candidate.profile
+  offline.value = false
+  readOnly.value = candidate.profile.readOnly
+  bootstrapError.value = null
+  ownerRevision.value += 1
+}
+
 async function activateMapRole(profile: ProfileSnapshot): Promise<void> {
   const previous = invalidateOwnerSynchronously({ clearAuth: false })
   await clearOwnerSnapshot(previous)
@@ -495,7 +538,12 @@ async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
       authView.value = 'headman'
       sessionReady.value = true
     } else if (authCandidate.profile.activeRole !== 'STUDENT') {
-      if (authCandidate.profile.activeRole === 'TEACHER' || authCandidate.profile.activeRole === 'ADMIN') {
+      if (authCandidate.profile.activeRole === 'TEACHER') {
+        const candidate = await fetchTeacherCandidate(authCandidate.generation, authCandidate.profile)
+        if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль преподавателя недоступна')
+        await activateTeacherCandidate(candidate)
+        authView.value = 'teacher'
+      } else if (authCandidate.profile.activeRole === 'ADMIN') {
         await activateMapRole(authCandidate.profile)
       } else {
         const previous = invalidateOwnerSynchronously({ clearAuth: false })
@@ -595,7 +643,12 @@ async function submitLogin(input: { login: string; password: string }): Promise<
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль старосты недоступна')
       await activateHeadmanCandidate(candidate)
       authView.value = 'headman'
-    } else if (profile.activeRole === 'TEACHER' || profile.activeRole === 'ADMIN') {
+    } else if (profile.activeRole === 'TEACHER') {
+      const candidate = await fetchTeacherCandidate(result.generation, profile)
+      if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль преподавателя недоступна')
+      await activateTeacherCandidate(candidate)
+      authView.value = 'teacher'
+    } else if (profile.activeRole === 'ADMIN') {
       await activateMapRole(profile)
     } else {
       const candidate = await fetchStudentCandidate(result.generation, profile)
@@ -638,7 +691,12 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль студента недоступна')
       await activateCandidate(candidate)
       authView.value = 'student'
-    } else if (selection.session.activeRole === 'TEACHER' || selection.session.activeRole === 'ADMIN') {
+    } else if (selection.session.activeRole === 'TEACHER') {
+      const candidate = await fetchTeacherCandidate(selection.generation, selection.session)
+      if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль преподавателя недоступна')
+      await activateTeacherCandidate(candidate)
+      authView.value = 'teacher'
+    } else if (selection.session.activeRole === 'ADMIN') {
       await activateMapRole(selection.session)
     } else {
       throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Выбранная роль недоступна в этом приложении')
@@ -685,11 +743,14 @@ function handleExternalInvalidation(reason: PwaAuthInvalidationReason = 'externa
     const wasHeadman = authView.value === 'headman'
       || headmanApi.value !== null
       || authSnapshot.value?.activeRole === 'HEADMAN'
+    const wasTeacher = authView.value === 'teacher'
+      || teacherApi.value !== null
+      || authSnapshot.value?.activeRole === 'TEACHER'
     invalidateOwnerSynchronously({ clearAuth: false })
     authSnapshot.value = null
     authError.value = null
     bootstrapError.value = null
-    authView.value = wasHeadman ? 'headman' : 'student'
+    authView.value = wasHeadman ? 'headman' : wasTeacher ? 'teacher' : 'student'
     sessionReady.value = false
     offline.value = true
     readOnly.value = true
@@ -862,7 +923,7 @@ onBeforeUnmount(() => {
 
 <template>
   <section
-    v-if="!featureVisible && !sessionReady && authView === 'student'"
+    v-if="!featureVisible && !sessionReady && (authView === 'student' || authView === 'teacher')"
     class="today-state"
     aria-live="polite"
   >
@@ -900,6 +961,13 @@ onBeforeUnmount(() => {
     :on-role-switch="openRoleSwitch"
     @error="onOwnerError"
   />
+  <TeacherFeatureOwner
+    v-else-if="teacherViewVisible"
+    :key="`teacher-${ownerRevision}`"
+    :api="teacherApi"
+    :semester-id="teacherSemesterId"
+    @owner-error="onOwnerError"
+  />
   <MapScreen
     v-else-if="mapViewVisible"
     :client="mapClient"
@@ -932,7 +1000,7 @@ onBeforeUnmount(() => {
     @owner-error="onOwnerError"
   />
   <button
-    v-if="(authView === 'student' && session) || authView === 'headman' || mapViewVisible || adminMapViewVisible"
+    v-if="(authView === 'student' && session) || authView === 'teacher' || authView === 'headman' || mapViewVisible || adminMapViewVisible"
     class="pwa-logout"
     type="button"
     :disabled="authLoading"
@@ -958,7 +1026,7 @@ onBeforeUnmount(() => {
     </button>
   </section>
   <section
-    v-if="(studentViewVisible || headmanViewVisible) && bootstrapError"
+    v-if="(studentViewVisible || teacherViewVisible || headmanViewVisible) && bootstrapError"
     class="today-state today-state--error"
     role="alert"
     aria-live="polite"

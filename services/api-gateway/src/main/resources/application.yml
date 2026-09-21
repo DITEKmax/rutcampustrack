@@ -215,6 +215,18 @@ spring:
                     redis-rate-limiter.requestedTokens: 1
                     key-resolver: "#{@ipKeyResolver}"
 
+            - id: mobile-bff-teacher
+              uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+              predicates:
+                - Path=/api/v1/teacher/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 600
+                    redis-rate-limiter.burstCapacity: 600
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
+
             - id: mobile-bff-map
               uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
               predicates:

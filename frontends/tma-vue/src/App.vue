@@ -14,6 +14,9 @@ import {
   StudentApi,
   StudentApiError,
   StudentFeatureOwner,
+  TeacherApi,
+  TeacherApiError,
+  TeacherFeatureOwner,
   createFixtureTransport,
   createMobileTheme,
   studentFeatureScope,
@@ -52,6 +55,8 @@ const adminMapClient = new AdminMapClient({
 })
 
 const api = shallowRef<StudentApi | null>(null)
+const teacherApi = shallowRef<TeacherApi | null>(null)
+const teacherSemesterId = ref<number | null>(null)
 const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
 const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const session = shallowRef<StudentSession | null>(null)
@@ -63,7 +68,7 @@ const offline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false
 const error = ref<string | null>(null)
 const bootstrapping = ref(false)
 const ownerRevision = ref(0)
-const authView = ref<'role' | 'student' | 'headman' | 'map' | 'admin-map'>('role')
+const authView = ref<'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-map'>('role')
 const pendingRole = ref<ProfileRole | null>(null)
 const roleError = shallowRef<ProfileRequestError | null>(null)
 const roleLoading = ref(false)
@@ -71,8 +76,9 @@ const roleLoading = ref(false)
 const mapViewVisible = computed(() => authView.value === 'map')
 const adminMapViewVisible = computed(() => authView.value === 'admin-map')
 const featureVisible = computed(() => api.value !== null || headmanApi.value !== null
-  || mapViewVisible.value || adminMapViewVisible.value)
+  || teacherApi.value !== null || mapViewVisible.value || adminMapViewVisible.value)
 const studentViewVisible = computed(() => authView.value === 'student' && api.value !== null)
+const teacherViewVisible = computed(() => authView.value === 'teacher' && teacherApi.value !== null)
 const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
 const ownerKey = computed(() => `${scope.value ? studentFeatureScopeIdentity(scope.value) : 'tma-unavailable'}|${ownerRevision.value}`)
 
@@ -92,6 +98,7 @@ function currentFetcher(): typeof fetch | undefined {
 function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof TmaAuthError) return cause.status
   if (cause instanceof StudentApiError) return cause.response.status
+  if (cause instanceof TeacherApiError) return cause.response.status
   if (cause instanceof HeadmanScheduleApiError) return cause.response.status
   if (cause instanceof HeadmanJournalApiError) return cause.response.status
   return null
@@ -138,6 +145,24 @@ function authorizedHeadmanGroupId(value: ProfileSnapshot): number | null {
   return Number.isSafeInteger(groupId) && groupId > 0 ? groupId : null
 }
 
+type TeacherCandidate = {
+  generation: number
+  api: TeacherApi
+  semesterId: number
+  profile: ProfileSnapshot
+}
+
+async function fetchTeacherCandidate(
+  generation: number,
+  value: ProfileSnapshot,
+): Promise<TeacherCandidate | null> {
+  if (value.activeRole !== 'TEACHER') return null
+  const candidateApi = sessionOwner.createTeacherApi(currentFetcher())
+  const semester = await candidateApi.semester()
+  if (!sessionOwner.isCurrent(generation)) throw new StaleSessionGenerationError()
+  return { generation, api: candidateApi, semesterId: semester.id, profile: value }
+}
+
 function asProfileError(cause: unknown): ProfileRequestError {
   if (cause instanceof ProfileRequestError) return cause
   return new ProfileRequestError('UNKNOWN', cause instanceof Error ? cause.message : 'Не удалось сменить роль')
@@ -145,6 +170,8 @@ function asProfileError(cause: unknown): ProfileRequestError {
 
 function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): void {
   if (options.clearAuth !== false) sessionOwner.clear()
+  teacherApi.value = null
+  teacherSemesterId.value = null
   headmanApi.value = null
   headmanJournalApi.value = null
   headmanGroupId.value = null
@@ -162,6 +189,18 @@ function activateMapRole(value: ProfileSnapshot): void {
   error.value = null
   ownerRevision.value += 1
   authView.value = value.activeRole === 'ADMIN' ? 'admin-map' : 'map'
+}
+
+async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<void> {
+  invalidateOwnerSynchronously({ clearAuth: false })
+  if (!sessionOwner.isCurrent(candidate.generation)) throw new StaleSessionGenerationError()
+  teacherApi.value = candidate.api
+  teacherSemesterId.value = candidate.semesterId
+  profile.value = candidate.profile
+  offline.value = false
+  error.value = null
+  ownerRevision.value += 1
+  authView.value = 'teacher'
 }
 
 async function bootstrap(): Promise<void> {
@@ -208,7 +247,11 @@ async function bootstrap(): Promise<void> {
       scope.value = nextScope
       authView.value = 'student'
       if (needsFreshOwner) ownerRevision.value += 1
-    } else if (candidateProfile.profile.activeRole === 'TEACHER' || candidateProfile.profile.activeRole === 'ADMIN') {
+    } else if (candidateProfile.profile.activeRole === 'TEACHER') {
+      const candidate = await fetchTeacherCandidate(candidateProfile.generation, candidateProfile.profile)
+      if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль преподавателя недоступна')
+      await activateTeacherCandidate(candidate)
+    } else if (candidateProfile.profile.activeRole === 'ADMIN') {
       activateMapRole(candidateProfile.profile)
     } else {
       invalidateOwnerSynchronously({ clearAuth: false })
@@ -258,7 +301,11 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       headmanGroupId.value = groupId
       authView.value = 'headman'
       ownerRevision.value += 1
-    } else if (role === 'TEACHER' || role === 'ADMIN') {
+    } else if (role === 'TEACHER') {
+      const candidate = await fetchTeacherCandidate(selection.generation, selection.session)
+      if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль преподавателя недоступна')
+      await activateTeacherCandidate(candidate)
+    } else if (role === 'ADMIN') {
       activateMapRole(selection.session)
     } else {
       const candidateApi = sessionOwner.createApi(currentFetcher())
@@ -370,6 +417,13 @@ onBeforeUnmount(() => {
     :map-client="mapClient"
     :on-role-switch="openRoleSwitch"
     @error="onOwnerError"
+  />
+  <TeacherFeatureOwner
+    v-else-if="teacherViewVisible"
+    :key="`teacher-${ownerRevision}`"
+    :api="teacherApi"
+    :semester-id="teacherSemesterId"
+    @owner-error="onOwnerError"
   />
   <MapScreen
     v-else-if="mapViewVisible"

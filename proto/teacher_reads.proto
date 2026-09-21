@@ -1,0 +1,192 @@
+syntax = "proto3";
+
+package rutcampustrack.teacher;
+
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.teacher.grpc";
+
+// Additive teacher read boundary.  Identity is taken from the validated
+// signed internal JWT at the gRPC boundary; request messages intentionally do
+// not carry a caller supplied teacher id.
+service TeacherAcademicReadService {
+  rpc GetTeacherActiveSemester(TeacherActiveSemesterRequest)
+      returns (TeacherSemesterResponse);
+  rpc ListTeacherAssignments(TeacherAssignmentsRequest)
+      returns (TeacherAssignmentsResponse);
+}
+
+// Additive attendance read boundary for the teacher PWA/TMA.  All lesson,
+// journal and excuse reads are authorized against the signed teacher identity
+// and the concrete assignment represented by the schedule snapshot.
+service TeacherAttendanceReadService {
+  rpc GetTeacherLesson(TeacherLessonRequest) returns (TeacherLessonResponse);
+  rpc GetTeacherJournal(TeacherJournalRequest) returns (TeacherJournalResponse);
+  rpc GetTeacherExcuse(TeacherExcuseRequest) returns (TeacherExcuseResponse);
+  rpc DownloadTeacherExcuseAttachment(TeacherExcuseAttachmentRequest)
+      returns (TeacherAttachmentDownload);
+}
+
+message TeacherActiveSemesterRequest {}
+
+message TeacherSemesterResponse {
+  int64 semester_id = 1;
+  string name = 2;
+  string date_from = 3;
+  string date_to = 4;
+}
+
+message TeacherAssignmentsRequest {
+  int64 semester_id = 1;
+  string date_from = 2; // ISO-8601 date, inclusive
+  string date_to = 3; // ISO-8601 date, inclusive
+  // When true, the Academic service derives the complete semester range.
+  bool full_semester = 4;
+}
+
+message TeacherAssignmentsResponse {
+  repeated TeacherAssignment assignments = 1;
+  string server_now = 2;
+}
+
+message TeacherAssignment {
+  int64 assignment_id = 1;
+  int64 teacher_id = 2;
+  int64 group_id = 3;
+  string group_name = 4;
+  int64 subject_id = 5;
+  string subject_name = 6;
+  int64 semester_id = 7;
+  string lesson_type = 8;
+  string valid_from = 9;
+  string valid_until_exclusive = 10;
+}
+
+message TeacherLessonRequest {
+  int64 lesson_id = 1;
+}
+
+message TeacherLessonResponse {
+  TeacherLessonSummary lesson = 1;
+  repeated TeacherRosterEntry roster = 2;
+  string server_now = 3;
+}
+
+message TeacherRosterEntry {
+  int64 student_id = 1;
+  string display_name = 2;
+  string status = 3;
+  string symbol = 4;
+  string source = 5;
+  // False means the group roster has no attendance document for this student.
+  bool record_present = 6;
+  bool pending_ticket = 7;
+  // True only for a persisted ABSENT record with source AUTO_SCHEDULER.
+  bool auto_absent = 8;
+  string ticket_id = 9;
+  string excuse_type = 10;
+  string excuse_reason = 11;
+  string excuse_comment = 12;
+  string attachment_id = 13;
+  string attachment_name = 14;
+  string attachment_content_type = 15;
+  int64 attachment_size = 16;
+}
+
+message TeacherJournalRequest {
+  repeated int64 lesson_ids = 1;
+}
+
+message TeacherJournalResponse {
+  repeated TeacherLessonSummary lessons = 1;
+  repeated TeacherJournalStudent students = 2;
+  string server_now = 3;
+}
+
+message TeacherJournalStudent {
+  int64 student_id = 1;
+  string display_name = 2;
+  repeated TeacherJournalCell cells = 3;
+}
+
+message TeacherJournalCell {
+  int64 lesson_id = 1;
+  string status = 2;
+  string symbol = 3;
+  string source = 4;
+  bool record_present = 5; // false means no attendance document exists
+  bool pending_ticket = 6;
+  bool auto_absent = 7; // persisted ABSENT with source AUTO_SCHEDULER
+  string ticket_id = 8;
+  string excuse_type = 9;
+  string excuse_reason = 10;
+}
+
+message TeacherExcuseRequest {
+  string request_id = 1;
+}
+
+message TeacherExcuseResponse {
+  string request_id = 1;
+  string request_kind = 2;
+  string status = 3;
+  int64 student_id = 4;
+  string student_name = 5;
+  int64 group_id = 6;
+  string group_name = 7;
+  string created_at = 8;
+  int64 decision_by = 9;
+  string decision_at = 10;
+  string decision_comment = 11;
+  string excuse_type = 12;
+  string reason = 13;
+  string comment = 14;
+  repeated TeacherLessonSummary lessons = 15;
+  repeated TeacherExcuseAttachment attachments = 16;
+  string server_now = 17;
+}
+
+message TeacherExcuseAttachment {
+  string attachment_id = 1;
+  string file_name = 2;
+  string content_type = 3;
+  int64 size = 4;
+  string uploaded_at = 5;
+  string expires_at = 6;
+}
+
+message TeacherExcuseAttachmentRequest {
+  string request_id = 1;
+  string attachment_id = 2;
+}
+
+message TeacherAttachmentDownload {
+  string file_name = 1;
+  string content_type = 2;
+  int64 size = 3;
+  bytes data = 4;
+}
+
+message TeacherLessonSummary {
+  int64 lesson_id = 1;
+  int64 schedule_item_id = 2;
+  int64 group_id = 3;
+  string group_name = 4;
+  int64 subject_id = 5;
+  string subject_name = 6;
+  int64 semester_id = 7;
+  int64 assignment_id = 8;
+  int64 assigned_teacher_id = 9;
+  string lesson_type = 10;
+  string lesson_date = 11;
+  int32 lesson_number = 12;
+  string start_time = 13;
+  string end_time = 14;
+  string room = 15;
+  string status = 16;
+  string occurrence_id = 17;
+  int32 generation = 18;
+  int32 revision = 19;
+  bool one_off = 20;
+  bool moved = 21;
+  bool cancelled = 22;
+}

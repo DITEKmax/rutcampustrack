@@ -32,6 +32,8 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
             PathPatternParser.defaultInstance.parse("/api/v1/student/**");
     private static final PathPattern MAP_API_PATTERN =
             PathPatternParser.defaultInstance.parse("/api/v1/map/**");
+    private static final PathPattern TEACHER_API_PATTERN =
+            PathPatternParser.defaultInstance.parse("/api/v1/teacher/**");
     private static final PathPattern HOMEWORK_COMPLETION_PATTERN =
             PathPatternParser.defaultInstance.parse("/api/v1/student/homework/{homeworkId}/completion");
     private static final PathPattern CHECKIN_PATTERN =
@@ -61,7 +63,9 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         PathContainer path = pathContainer(request);
-        return !STUDENT_API_PATTERN.matches(path) && !MAP_API_PATTERN.matches(path);
+        return !STUDENT_API_PATTERN.matches(path)
+                && !MAP_API_PATTERN.matches(path)
+                && !TEACHER_API_PATTERN.matches(path);
     }
 
     @Override

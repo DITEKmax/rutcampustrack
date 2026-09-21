@@ -15,6 +15,12 @@ import java.util.List;
  */
 public interface ExcuseRepository extends MongoRepository<ExcuseTicket, String> {
 
+    /** Read-side lookup for roster pending/approved ticket indicators. */
+    List<ExcuseTicket> findByLessonIdsInAndStatusIn(
+            List<Long> lessonIds,
+            List<ExcuseTicketStatus> statuses
+    );
+
     /**
      * D-11 duplicate check: does this student already have an active ticket
      * (status in {SUBMITTED, APPROVED}) containing any of these lessonIds?

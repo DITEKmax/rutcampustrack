@@ -7,6 +7,11 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.grpc.*;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
+import ru.rutcampustrack.teacher.grpc.TeacherAcademicReadServiceGrpc;
+import ru.rutcampustrack.teacher.grpc.TeacherActiveSemesterRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherSemesterResponse;
 
 import java.util.List;
 import java.util.Map;
@@ -17,6 +22,8 @@ import java.util.stream.Collectors;
 public class MobileAcademicClient {
     @GrpcClient("academic-service")
     private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
+    @GrpcClient("academic-service")
+    private TeacherAcademicReadServiceGrpc.TeacherAcademicReadServiceBlockingStub teacherStub;
     private final MobileGrpcAuth auth;
 
     public MobileAcademicClient(MobileGrpcAuth auth) { this.auth = auth; }
@@ -40,6 +47,31 @@ public class MobileAcademicClient {
         return call(() -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getActiveSemester(Empty.getDefaultInstance()),
                 HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE);
+    }
+
+    public TeacherSemesterResponse teacherActiveSemester() {
+        return call(() -> auth.attach(teacherStub).withDeadlineAfter(3, TimeUnit.SECONDS)
+                .getTeacherActiveSemester(TeacherActiveSemesterRequest.getDefaultInstance()),
+                HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE);
+    }
+
+    public TeacherAssignmentsResponse teacherAssignments(long semesterId,
+                                                         String dateFrom,
+                                                         String dateTo) {
+        return call(() -> auth.attach(teacherStub).withDeadlineAfter(3, TimeUnit.SECONDS)
+                .listTeacherAssignments(TeacherAssignmentsRequest.newBuilder()
+                        .setSemesterId(semesterId)
+                        .setDateFrom(dateFrom)
+                        .setDateTo(dateTo)
+                        .build()), HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE);
+    }
+
+    public TeacherAssignmentsResponse teacherAssignmentsForSemester(long semesterId) {
+        return call(() -> auth.attach(teacherStub).withDeadlineAfter(3, TimeUnit.SECONDS)
+                .listTeacherAssignments(TeacherAssignmentsRequest.newBuilder()
+                        .setSemesterId(semesterId)
+                        .setFullSemester(true)
+                        .build()), HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE);
     }
 
     public Map<Long, SubjectInfo> subjects(List<Long> ids) {

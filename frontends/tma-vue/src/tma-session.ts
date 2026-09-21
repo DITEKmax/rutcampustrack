@@ -3,6 +3,7 @@ import {
   createGenerationBoundHeadmanScheduleApi,
   createGenerationBoundHeadmanJournalApi,
   createGenerationBoundStudentApi,
+  createGenerationBoundTeacherApi,
   StaleSessionGenerationError,
 } from '@rct/mobile-core'
 import type {
@@ -13,6 +14,7 @@ import type {
   ProfileRoleSelection,
   ProfileSnapshot,
   StudentApi,
+  TeacherApi,
   authComponents,
 } from '@rct/mobile-core'
 import { authenticateTma, TmaAuthError } from './tma-auth'
@@ -90,6 +92,14 @@ export function useTmaSession(options: TmaSessionOptions) {
     }, fetcher)
   }
 
+  function createTeacherApi(fetcher?: typeof fetch): TeacherApi {
+    return createGenerationBoundTeacherApi({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor: authenticateFor,
+    }, fetcher)
+  }
+
   async function getProfileFor(generation: number): Promise<ProfileSnapshot> {
     assertCurrent(generation)
     const response = await authenticatedRequest('/api/auth/session', generation)
@@ -145,6 +155,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     createApi,
     createHeadmanApi,
     createHeadmanJournalApi,
+    createTeacherApi,
     getProfileFor,
     selectRoleFor,
     clear,

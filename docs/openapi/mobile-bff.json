@@ -8,8 +8,377 @@
   "tags" : [ {
     "name" : "Student mobile",
     "description" : "PWA/TMA student read model and geo check-in"
+  }, {
+    "name" : "Campus map",
+    "description" : "Authorized campus map metadata and private assets"
   } ],
   "paths" : {
+    "/api/v1/student/homework/{id}/completion" : {
+      "put" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Set homework completion state",
+        "description" : "Desired-state mutation for the authenticated student; repeated requests are safe.",
+        "operationId" : "setHomeworkCompletion",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/StudentHomeworkCompletionCommand"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Completion state",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentHomeworkCompletion"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Wrong role, group or semester scope",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Homework not found",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Academic dependency unavailable",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/{id}/cancel" : {
+      "post" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Cancel a pending student request",
+        "operationId" : "cancelRequest",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{24}$",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Cancelled or replayed request",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Request not found",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Request is already decided",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/late-checkin" : {
+      "post" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Submit a manual late-checkin request",
+        "operationId" : "submitLateCheckin",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "maxLength" : 128,
+            "minLength" : 16,
+            "pattern" : "^[\\x21-\\x7E]+$",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/StudentLateCheckinRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Created or replayed request",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestDetail"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request or key",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Request conflict",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/excuse" : {
+      "post" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Submit a student excuse request",
+        "operationId" : "submitExcuse",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "maxLength" : 128,
+            "minLength" : 16,
+            "pattern" : "^[\\x21-\\x7E]+$",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "required" : [ "request" ],
+                "type" : "object",
+                "properties" : {
+                  "request" : {
+                    "$ref" : "#/components/schemas/StudentExcuseRequest"
+                  },
+                  "files" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string",
+                      "format" : "binary"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Created or replayed request",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestDetail"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request, file or key",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Request conflict",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "Payload too large",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/student/lessons/{lessonId}/checkin" : {
       "post" : {
         "tags" : [ "Student mobile" ],
@@ -139,6 +508,277 @@
         } ]
       }
     },
+    "/api/v1/teacher/semester" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Teacher active semester bootstrap",
+        "operationId" : "semester",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeacherSemester"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/lessons/{lessonId}" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Concrete lesson read-only roster",
+        "operationId" : "lesson",
+        "parameters" : [ {
+          "name" : "lessonId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeacherLesson"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/journal" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Concrete lesson journal",
+        "operationId" : "journal",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "groupId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "subjectId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "lessonType",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "0"
+          }
+        }, {
+          "name" : "pageSize",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "100"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeacherJournal"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/excuses/{requestId}" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Server-scoped excuse detail",
+        "operationId" : "excuse",
+        "parameters" : [ {
+          "name" : "requestId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeacherExcuse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/excuses/{requestId}/attachments/{attachmentId}" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Server-scoped excuse attachment",
+        "operationId" : "excuseAttachment",
+        "parameters" : [ {
+          "name" : "requestId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "attachmentId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/day" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Teacher cross-group day schedule",
+        "operationId" : "day",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "date",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeacherDay"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/teacher/assignments" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Teacher assignments in a dated semester range",
+        "operationId" : "assignments",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dateFrom",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dateTo",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TeacherAssignment"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/student/today" : {
       "get" : {
         "tags" : [ "Student mobile" ],
@@ -183,6 +823,177 @@
           },
           "503" : {
             "description" : "Mandatory dependency unavailable; eligibility fails closed",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/statistics" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Student attendance statistics overview",
+        "operationId" : "getStatistics",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Server-calculated semester statistics",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentStatistics"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Semester or student scope is unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Mandatory dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/statistics/subjects/{subjectId}" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Student statistics for one subject",
+        "operationId" : "getStatisticsSubject",
+        "parameters" : [ {
+          "name" : "subjectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "range",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "pattern" : "^(days|weeks)$",
+            "type" : "string",
+            "default" : "weeks"
+          }
+        }, {
+          "name" : "types",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Server-calculated subject statistics",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentStatisticsSubjectDetail"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid range or lesson type filter",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Subject or semester is outside signed scope",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Mandatory dependency unavailable",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -342,10 +1153,1098 @@
           "bearerAuth" : [ ]
         } ]
       }
+    },
+    "/api/v1/student/requests" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "List the authenticated student's requests",
+        "operationId" : "listRequests",
+        "parameters" : [ {
+          "name" : "bucket",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "OPEN",
+            "enum" : [ "OPEN", "ARCHIVE" ]
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Request page",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestPage"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid page parameters",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Wrong role or group scope",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/{id}" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Get one of the authenticated student's requests",
+        "operationId" : "getRequest",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{24}$",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Request detail",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestDetail"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request id",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Request not found",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/{id}/attachments/{attachmentId}" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Download a request attachment",
+        "operationId" : "downloadRequestAttachment",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{24}$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "attachmentId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{24}$",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Attachment bytes",
+            "content" : {
+              "application/octet-stream" : { }
+            }
+          },
+          "403" : {
+            "description" : "Attachment is outside the student's scope",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Attachment not found",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "410" : {
+            "description" : "Attachment expired",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/requests/options" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Get request submission options",
+        "operationId" : "requestOptions",
+        "responses" : {
+          "200" : {
+            "description" : "Request options",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentRequestOptions"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/map/manifest" : {
+      "get" : {
+        "tags" : [ "student-map-compatibility-controller" ],
+        "operationId" : "getManifest",
+        "parameters" : [ {
+          "name" : "If-None-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapManifest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/student/map/buildings/{buildingId}/floors/{floorId}/plans/{version}/assets/{format}/{assetId}" : {
+      "get" : {
+        "tags" : [ "student-map-compatibility-controller" ],
+        "operationId" : "readAsset",
+        "parameters" : [ {
+          "name" : "buildingId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "floorId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "version",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "format",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "png", "svg" ]
+          }
+        }, {
+          "name" : "assetId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/student/map/buildings/{buildingId}/floors/{floorId}/plan" : {
+      "get" : {
+        "tags" : [ "student-map-compatibility-controller" ],
+        "operationId" : "getFloorPlan",
+        "parameters" : [ {
+          "name" : "buildingId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "floorId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapPlanResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/student/homework" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Student homework feed",
+        "description" : "Active-semester homework for the authenticated student's own group. Missing bounds default to Moscow today through semester end.",
+        "operationId" : "getHomework",
+        "parameters" : [ {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "pattern" : "^\\d{4}-\\d{2}-\\d{2}$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "pattern" : "^\\d{4}-\\d{2}-\\d{2}$",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Homework feed",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentHomework"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid or out-of-semester date range",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Wrong role or group scope",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Homework scope was not found",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Academic dependency unavailable",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student/attendance" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Student attendance projection",
+        "operationId" : "getAttendance",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Server-calculated attendance projection",
+            "headers" : {
+              "Cache-Control" : {
+                "description" : "Always no-store",
+                "style" : "simple"
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentAttendance"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Semester or student scope is unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Mandatory dependency unavailable",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/map/manifest" : {
+      "get" : {
+        "tags" : [ "Campus map" ],
+        "summary" : "Read the authorized campus map manifest",
+        "operationId" : "getManifest_1",
+        "parameters" : [ {
+          "name" : "If-None-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ordered campus map manifest",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapManifest"
+                }
+              }
+            }
+          },
+          "304" : {
+            "description" : "Manifest unchanged",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapManifest"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapManifest"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Role is outside the campus-map scope",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapManifest"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Map catalog unavailable",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapManifest"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/map/buildings/{buildingId}/floors/{floorId}/plans/{version}/assets/{format}/{assetId}" : {
+      "get" : {
+        "tags" : [ "Campus map" ],
+        "summary" : "Stream one validated private map asset",
+        "operationId" : "readAsset_1",
+        "parameters" : [ {
+          "name" : "buildingId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "floorId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "version",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "format",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "png", "svg" ]
+          }
+        }, {
+          "name" : "assetId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Validated asset bytes",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Asset is outside the current role scope",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Asset not found",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Asset is incomplete or failed validation",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/map/buildings/{buildingId}/floors/{floorId}/plan" : {
+      "get" : {
+        "tags" : [ "Campus map" ],
+        "summary" : "Read the current plan metadata for one authorized floor",
+        "operationId" : "getFloorPlan_1",
+        "parameters" : [ {
+          "name" : "buildingId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "floorId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Plan metadata, including independent format states",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapPlanResponse"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "No plan published for the floor",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapPlanResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired session",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapPlanResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Floor is outside the current role scope",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapPlanResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Building or floor not found",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapPlanResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Map catalog unavailable",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StudentMapPlanResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
     }
   },
   "components" : {
     "schemas" : {
+      "StudentHomeworkCompletionCommand" : {
+        "required" : [ "completed" ],
+        "type" : "object",
+        "properties" : {
+          "completed" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "StudentHomeworkCompletion" : {
+        "required" : [ "completed", "completedAt", "id" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "completed" : {
+            "type" : "boolean"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          }
+        }
+      },
+      "MobileProblemDetails" : {
+        "required" : [ "code", "detail", "instance", "status", "timestamp", "title", "type" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "type" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "traceId" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "code" : {
+            "type" : "string",
+            "enum" : [ "INVALID_REQUEST", "INVALID_IDEMPOTENCY_KEY", "INVALID_SESSION", "WRONG_ROLE", "OUT_OF_SCOPE", "ROLE_READ_ONLY", "HOMEWORK_NOT_FOUND", "LESSON_NOT_FOUND", "REQUEST_NOT_FOUND", "ATTACHMENT_NOT_FOUND", "REQUEST_CONFLICT", "ATTACHMENT_EXPIRED", "PAYLOAD_TOO_LARGE", "CHECKIN_COOLDOWN", "MANUAL_ABSENCE_REQUIRES_APPEAL", "IDEMPOTENCY_PAYLOAD_MISMATCH", "CHECKIN_NOT_ELIGIBLE", "DEPENDENCY_UNAVAILABLE", "INTERNAL_ERROR" ]
+          },
+          "retryAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "extras" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string",
+              "nullable" : true
+            },
+            "nullable" : true
+          }
+        },
+        "description" : "RFC 9457 Problem Details with a stable machine code"
+      },
+      "StudentRequestAttachment" : {
+        "required" : [ "contentType", "expiredAt", "expiresAt", "id", "name", "sha256", "sizeBytes", "state", "uploadedAt" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "sizeBytes" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "sha256" : {
+            "type" : "string"
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "ACTIVE", "EXPIRED" ]
+          },
+          "uploadedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "expiredAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          }
+        }
+      },
+      "StudentRequestDecision" : {
+        "required" : [ "comment", "decidedAt" ],
+        "type" : "object",
+        "properties" : {
+          "comment" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "decidedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          }
+        },
+        "nullable" : true
+      },
+      "StudentRequestDetail" : {
+        "required" : [ "attachments", "comment", "decision", "reason", "summary" ],
+        "type" : "object",
+        "properties" : {
+          "summary" : {
+            "$ref" : "#/components/schemas/StudentRequestSummary"
+          },
+          "reason" : {
+            "type" : "string",
+            "nullable" : true,
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
+          },
+          "comment" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "decision" : {
+            "$ref" : "#/components/schemas/StudentRequestDecision"
+          },
+          "attachments" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestAttachment"
+            }
+          }
+        }
+      },
+      "StudentRequestLesson" : {
+        "required" : [ "blocked", "id", "lessonNumber", "status" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "lessonNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "blocked" : {
+            "type" : "boolean"
+          },
+          "subjectId" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "subjectName" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "subjectType" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "semesterId" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date",
+            "nullable" : true
+          },
+          "startsAt" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "endsAt" : {
+            "type" : "string",
+            "nullable" : true
+          }
+        }
+      },
+      "StudentRequestSummary" : {
+        "required" : [ "createdAt", "id", "kind", "lessons", "origin", "status", "updatedAt" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "EXCUSE", "LATE_CHECKIN" ]
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
+          },
+          "origin" : {
+            "type" : "string",
+            "enum" : [ "MANUAL", "AUTO_GEO_FAILURE" ]
+          },
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestLesson"
+            }
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "StudentLateCheckinRequest" : {
+        "required" : [ "lessonId" ],
+        "type" : "object",
+        "properties" : {
+          "lessonId" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        }
+      },
+      "StudentExcuseRequest" : {
+        "required" : [ "lessonIds", "reason" ],
+        "type" : "object",
+        "properties" : {
+          "lessonIds" : {
+            "maxItems" : 2147483647,
+            "minItems" : 1,
+            "type" : "array",
+            "items" : {
+              "pattern" : "^[1-9][0-9]*$",
+              "type" : "string"
+            }
+          },
+          "reason" : {
+            "type" : "string",
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
+          },
+          "comment" : {
+            "maxLength" : 1000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
       "CoordinatesGeo" : {
         "required" : [ "kind", "latitude", "longitude" ],
         "type" : "object",
@@ -448,7 +2347,7 @@
           "resolutionReason" : {
             "type" : "string",
             "nullable" : true,
-            "enum" : [ "GEO_CONFIRMED", "HEADMAN_APPROVED", "HEADMAN_REJECTED", "STUDENT_CANCELLED" ]
+            "enum" : [ "GEO_CONFIRMED", "HEADMAN_APPROVED", "HEADMAN_REJECTED", "STUDENT_CANCELLED", "PRESENT_PRIORITY" ]
           }
         },
         "nullable" : true
@@ -503,55 +2402,392 @@
           }
         }
       },
-      "MobileProblemDetails" : {
-        "required" : [ "code", "detail", "instance", "status", "timestamp", "title", "type" ],
+      "TeacherSemester" : {
         "type" : "object",
         "properties" : {
-          "status" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "dateFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dateTo" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "TeacherDayLesson" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "assignmentId" : {
+            "type" : "string"
+          },
+          "groupId" : {
+            "type" : "string"
+          },
+          "groupName" : {
+            "type" : "string"
+          },
+          "subjectId" : {
+            "type" : "string"
+          },
+          "subjectName" : {
+            "type" : "string"
+          },
+          "semesterId" : {
+            "type" : "string"
+          },
+          "lessonType" : {
+            "type" : "string"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lessonNumber" : {
             "type" : "integer",
             "format" : "int32"
           },
-          "type" : {
-            "type" : "string",
-            "format" : "uri"
-          },
-          "title" : {
+          "startsAt" : {
             "type" : "string"
           },
-          "detail" : {
+          "endsAt" : {
             "type" : "string"
           },
-          "instance" : {
-            "type" : "string",
-            "format" : "uri"
+          "room" : {
+            "type" : "string"
           },
-          "timestamp" : {
+          "status" : {
+            "type" : "string"
+          },
+          "oneOff" : {
+            "type" : "boolean"
+          },
+          "moved" : {
+            "type" : "boolean"
+          },
+          "cancelled" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "TeacherLesson" : {
+        "type" : "object",
+        "properties" : {
+          "lesson" : {
+            "$ref" : "#/components/schemas/TeacherDayLesson"
+          },
+          "roster" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherRosterEntry"
+            }
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "TeacherRosterEntry" : {
+        "type" : "object",
+        "properties" : {
+          "studentId" : {
+            "type" : "string"
+          },
+          "displayName" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "symbol" : {
+            "type" : "string"
+          },
+          "source" : {
+            "type" : "string"
+          },
+          "recordPresent" : {
+            "type" : "boolean"
+          },
+          "pendingTicket" : {
+            "type" : "boolean"
+          },
+          "autoAbsent" : {
+            "type" : "boolean"
+          },
+          "ticketId" : {
+            "type" : "string"
+          },
+          "excuseType" : {
+            "type" : "string"
+          },
+          "excuseReason" : {
+            "type" : "string"
+          },
+          "excuseComment" : {
+            "type" : "string"
+          },
+          "attachmentId" : {
+            "type" : "string"
+          },
+          "attachmentName" : {
+            "type" : "string"
+          },
+          "attachmentContentType" : {
+            "type" : "string"
+          },
+          "attachmentSize" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "TeacherJournal" : {
+        "type" : "object",
+        "properties" : {
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherDayLesson"
+            }
+          },
+          "students" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherJournalStudent"
+            }
+          },
+          "serverNow" : {
             "type" : "string",
             "format" : "date-time"
           },
-          "traceId" : {
-            "type" : "string",
-            "nullable" : true
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
           },
-          "code" : {
-            "type" : "string",
-            "enum" : [ "INVALID_REQUEST", "INVALID_IDEMPOTENCY_KEY", "INVALID_SESSION", "WRONG_ROLE", "OUT_OF_SCOPE", "LESSON_NOT_FOUND", "CHECKIN_COOLDOWN", "MANUAL_ABSENCE_REQUIRES_APPEAL", "IDEMPOTENCY_PAYLOAD_MISMATCH", "CHECKIN_NOT_ELIGIBLE", "DEPENDENCY_UNAVAILABLE" ]
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
           },
-          "retryAt" : {
-            "type" : "string",
-            "format" : "date-time",
-            "nullable" : true
+          "totalLessons" : {
+            "type" : "integer",
+            "format" : "int32"
           },
-          "extras" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "string",
-              "nullable" : true
-            },
-            "nullable" : true
+          "hasMore" : {
+            "type" : "boolean"
           }
-        },
-        "description" : "RFC 9457 Problem Details with a stable machine code"
+        }
+      },
+      "TeacherJournalCell" : {
+        "type" : "object",
+        "properties" : {
+          "lessonId" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "symbol" : {
+            "type" : "string"
+          },
+          "source" : {
+            "type" : "string"
+          },
+          "recordPresent" : {
+            "type" : "boolean"
+          },
+          "pendingTicket" : {
+            "type" : "boolean"
+          },
+          "autoAbsent" : {
+            "type" : "boolean"
+          },
+          "ticketId" : {
+            "type" : "string"
+          },
+          "excuseType" : {
+            "type" : "string"
+          },
+          "excuseReason" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TeacherJournalStudent" : {
+        "type" : "object",
+        "properties" : {
+          "studentId" : {
+            "type" : "string"
+          },
+          "displayName" : {
+            "type" : "string"
+          },
+          "cells" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherJournalCell"
+            }
+          }
+        }
+      },
+      "TeacherExcuse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "studentId" : {
+            "type" : "string"
+          },
+          "studentName" : {
+            "type" : "string"
+          },
+          "groupId" : {
+            "type" : "string"
+          },
+          "groupName" : {
+            "type" : "string"
+          },
+          "excuseType" : {
+            "type" : "string"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "comment" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "decisionBy" : {
+            "type" : "string"
+          },
+          "decisionAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "decisionComment" : {
+            "type" : "string"
+          },
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherDayLesson"
+            }
+          },
+          "attachments" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherExcuseAttachment"
+            }
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "TeacherExcuseAttachment" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "fileName" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "uploadedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "TeacherDay" : {
+        "type" : "object",
+        "properties" : {
+          "semesterId" : {
+            "type" : "string"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherDayLesson"
+            }
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "TeacherAssignment" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "teacherId" : {
+            "type" : "string"
+          },
+          "groupId" : {
+            "type" : "string"
+          },
+          "groupName" : {
+            "type" : "string"
+          },
+          "subjectId" : {
+            "type" : "string"
+          },
+          "subjectName" : {
+            "type" : "string"
+          },
+          "semesterId" : {
+            "type" : "string"
+          },
+          "lessonType" : {
+            "type" : "string"
+          },
+          "validFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "validUntilExclusive" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
       },
       "CheckinEligibility" : {
         "required" : [ "allowed", "reason", "retryAt" ],
@@ -587,12 +2823,10 @@
             "format" : "int32"
           },
           "startsAt" : {
-            "type" : "string",
-            "example" : "14:30:00"
+            "type" : "string"
           },
           "endsAt" : {
-            "type" : "string",
-            "example" : "14:30:00"
+            "type" : "string"
           },
           "status" : {
             "type" : "string",
@@ -693,6 +2927,210 @@
           }
         }
       },
+      "StudentAttendanceMetricSet" : {
+        "required" : [ "absent", "excused", "held", "planned", "present", "presentOrExcused" ],
+        "type" : "object",
+        "properties" : {
+          "present" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricValue"
+          },
+          "presentOrExcused" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricValue"
+          },
+          "excused" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricValue"
+          },
+          "absent" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricValue"
+          },
+          "held" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "planned" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "StudentAttendanceMetricValue" : {
+        "required" : [ "count", "percent" ],
+        "type" : "object",
+        "properties" : {
+          "count" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "percent" : {
+            "type" : "number",
+            "format" : "double",
+            "nullable" : true
+          }
+        }
+      },
+      "StudentAttendanceOwnRank" : {
+        "required" : [ "available", "participantCount", "position" ],
+        "type" : "object",
+        "properties" : {
+          "position" : {
+            "type" : "integer",
+            "format" : "int32",
+            "nullable" : true
+          },
+          "participantCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "available" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "StudentAttendanceSeriesPoint" : {
+        "required" : [ "dateFrom", "dateTo", "id", "label", "metrics", "state" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "dateFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dateTo" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "DATA", "NO_DATA", "FUTURE" ]
+          },
+          "metrics" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricSet"
+          }
+        }
+      },
+      "StudentStatistics" : {
+        "required" : [ "_links", "metrics", "ownRank", "semesterSeries", "subjects" ],
+        "type" : "object",
+        "properties" : {
+          "metrics" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricSet"
+          },
+          "ownRank" : {
+            "$ref" : "#/components/schemas/StudentAttendanceOwnRank"
+          },
+          "semesterSeries" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceSeriesPoint"
+            }
+          },
+          "subjects" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentStatisticsSubject"
+            }
+          },
+          "_links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "$ref" : "#/components/schemas/Link"
+            }
+          }
+        }
+      },
+      "StudentStatisticsSubject" : {
+        "required" : [ "id", "metrics", "name" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "metrics" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricSet"
+          }
+        }
+      },
+      "StudentAttendanceHistorySegment" : {
+        "required" : [ "id", "status" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "ABSENT", "EXCUSED", "FUTURE", "NO_DATA" ]
+          }
+        }
+      },
+      "StudentAttendanceTypeCard" : {
+        "required" : [ "history", "metrics", "type" ],
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+          },
+          "metrics" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricSet"
+          },
+          "history" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceHistorySegment"
+            }
+          }
+        }
+      },
+      "StudentStatisticsSubjectDetail" : {
+        "required" : [ "availableTypes", "name", "selectedAggregate", "selectedTypes", "series", "subjectId", "typeCards" ],
+        "type" : "object",
+        "properties" : {
+          "subjectId" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "availableTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+            }
+          },
+          "selectedTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+            }
+          },
+          "selectedAggregate" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricSet"
+          },
+          "series" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceSeriesPoint"
+            }
+          },
+          "typeCards" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceTypeCard"
+            }
+          }
+        }
+      },
       "GroupSummary" : {
         "required" : [ "id", "name" ],
         "type" : "object",
@@ -727,9 +3165,28 @@
         }
       },
       "StudentSession" : {
-        "required" : [ "_links", "activeRole", "capabilities", "group", "semester", "serverNow", "user" ],
+        "required" : [ "_links", "activeRole", "capabilities", "group", "readOnly", "rolesVersion", "semester", "serverNow", "sessionId", "sessionVersion", "user" ],
         "type" : "object",
         "properties" : {
+          "sessionId" : {
+            "minLength" : 1,
+            "pattern" : "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "sessionVersion" : {
+            "minLength" : 1,
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          },
+          "rolesVersion" : {
+            "minLength" : 1,
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          },
+          "readOnly" : {
+            "type" : "boolean"
+          },
           "user" : {
             "$ref" : "#/components/schemas/StudentUser"
           },
@@ -809,6 +3266,611 @@
             "type" : "object",
             "additionalProperties" : {
               "$ref" : "#/components/schemas/Link"
+            }
+          }
+        }
+      },
+      "StudentRequestPage" : {
+        "required" : [ "content", "page", "size", "totalElements", "totalPages" ],
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestSummary"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "StudentRequestBudget" : {
+        "required" : [ "limit", "remaining", "semesterId", "used" ],
+        "type" : "object",
+        "properties" : {
+          "semesterId" : {
+            "type" : "string"
+          },
+          "limit" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "used" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "remaining" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "StudentRequestFileLimits" : {
+        "required" : [ "contentTypes", "extensions", "maxBytesPerFile", "maxBytesTotal", "maxFiles" ],
+        "type" : "object",
+        "properties" : {
+          "maxFiles" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxBytesPerFile" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "maxBytesTotal" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "contentTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "extensions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "StudentRequestLessonOption" : {
+        "required" : [ "excuseEligible", "lateCheckinEligible", "lesson", "pendingRequests" ],
+        "type" : "object",
+        "properties" : {
+          "lesson" : {
+            "$ref" : "#/components/schemas/StudentRequestLesson"
+          },
+          "excuseEligible" : {
+            "type" : "boolean"
+          },
+          "lateCheckinEligible" : {
+            "type" : "boolean"
+          },
+          "pendingRequests" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestPendingRef"
+            }
+          }
+        }
+      },
+      "StudentRequestOptions" : {
+        "required" : [ "budget", "files", "lessons", "reasons" ],
+        "type" : "object",
+        "properties" : {
+          "reasons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestReasonOption"
+            }
+          },
+          "files" : {
+            "$ref" : "#/components/schemas/StudentRequestFileLimits"
+          },
+          "budget" : {
+            "$ref" : "#/components/schemas/StudentRequestBudget"
+          },
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentRequestLessonOption"
+            }
+          }
+        }
+      },
+      "StudentRequestPendingRef" : {
+        "required" : [ "id", "kind", "origin" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "EXCUSE", "LATE_CHECKIN" ]
+          },
+          "origin" : {
+            "type" : "string",
+            "enum" : [ "MANUAL", "AUTO_GEO_FAILURE" ]
+          }
+        }
+      },
+      "StudentRequestReasonOption" : {
+        "required" : [ "code", "commentRequired", "label" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "enum" : [ "ILLNESS", "MEDICAL_EXAMINATION", "COMPETITION_PARTICIPATION", "FAMILY_CIRCUMSTANCES", "OTHER" ]
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "commentRequired" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "StudentMapBuilding" : {
+        "required" : [ "floors", "id", "label" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "floors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentMapFloor"
+            }
+          }
+        }
+      },
+      "StudentMapFloor" : {
+        "required" : [ "id", "label", "plan" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "plan" : {
+            "$ref" : "#/components/schemas/StudentMapPlan"
+          }
+        }
+      },
+      "StudentMapFormatSlot" : {
+        "required" : [ "bytes", "contentType", "format", "id", "sha256", "state" ],
+        "type" : "object",
+        "properties" : {
+          "format" : {
+            "type" : "string",
+            "enum" : [ "png", "svg" ]
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "absent", "processing", "ready", "failed" ]
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "bytes" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "sha256" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "width" : {
+            "type" : "integer",
+            "format" : "int32",
+            "nullable" : true
+          },
+          "height" : {
+            "type" : "integer",
+            "format" : "int32",
+            "nullable" : true
+          },
+          "viewBox" : {
+            "type" : "array",
+            "nullable" : true,
+            "items" : {
+              "type" : "number",
+              "format" : "double",
+              "nullable" : true
+            }
+          }
+        }
+      },
+      "StudentMapManifest" : {
+        "required" : [ "buildings", "revision", "schemaVersion", "validationPolicyVersion" ],
+        "type" : "object",
+        "properties" : {
+          "schemaVersion" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "validationPolicyVersion" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "revision" : {
+            "type" : "string"
+          },
+          "buildings" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentMapBuilding"
+            }
+          }
+        }
+      },
+      "StudentMapPlan" : {
+        "required" : [ "buildingId", "floorId", "label", "png", "svg", "version" ],
+        "type" : "object",
+        "properties" : {
+          "buildingId" : {
+            "type" : "string"
+          },
+          "floorId" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "png" : {
+            "$ref" : "#/components/schemas/StudentMapFormatSlot"
+          },
+          "svg" : {
+            "$ref" : "#/components/schemas/StudentMapFormatSlot"
+          }
+        },
+        "nullable" : true
+      },
+      "StudentMapPlanResponse" : {
+        "required" : [ "plan" ],
+        "type" : "object",
+        "properties" : {
+          "plan" : {
+            "$ref" : "#/components/schemas/StudentMapPlan"
+          }
+        }
+      },
+      "StudentHomework" : {
+        "required" : [ "from", "items", "semester", "serverNow", "to" ],
+        "type" : "object",
+        "properties" : {
+          "semester" : {
+            "$ref" : "#/components/schemas/StudentHomeworkSemester"
+          },
+          "from" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "to" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentHomeworkItem"
+            }
+          }
+        }
+      },
+      "StudentHomeworkItem" : {
+        "required" : [ "completed", "completedAt", "description", "id", "lessonDate", "lessonNumber", "link", "subject", "title" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/StudentHomeworkSubject"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "link" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "lessonDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lessonNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "completed" : {
+            "type" : "boolean"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          }
+        }
+      },
+      "StudentHomeworkSemester" : {
+        "required" : [ "dateFrom", "dateTo", "id", "name" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "dateFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dateTo" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "StudentHomeworkSubject" : {
+        "required" : [ "id", "name" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "StudentAttendance" : {
+        "required" : [ "_links", "dateFrom", "dateTo", "days", "graph", "metrics", "ownRank", "semester", "serverNow", "subjects", "terminalReadOnly" ],
+        "type" : "object",
+        "properties" : {
+          "semester" : {
+            "$ref" : "#/components/schemas/SemesterSummary"
+          },
+          "dateFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dateTo" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "serverNow" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "terminalReadOnly" : {
+            "type" : "boolean"
+          },
+          "metrics" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricSet"
+          },
+          "days" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceDay"
+            }
+          },
+          "subjects" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceSubject"
+            }
+          },
+          "graph" : {
+            "$ref" : "#/components/schemas/StudentAttendanceGraph"
+          },
+          "ownRank" : {
+            "$ref" : "#/components/schemas/StudentAttendanceOwnRank"
+          },
+          "_links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "$ref" : "#/components/schemas/Link"
+            }
+          }
+        }
+      },
+      "StudentAttendanceDay" : {
+        "required" : [ "date", "dayNumber", "lessons", "state", "weekday" ],
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "weekday" : {
+            "type" : "string"
+          },
+          "dayNumber" : {
+            "type" : "string"
+          },
+          "state" : {
+            "type" : "string",
+            "enum" : [ "PAST", "CURRENT", "FUTURE" ]
+          },
+          "lessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceLesson"
+            }
+          }
+        }
+      },
+      "StudentAttendanceGraph" : {
+        "required" : [ "days", "weeks" ],
+        "type" : "object",
+        "properties" : {
+          "days" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceSeriesPoint"
+            }
+          },
+          "weeks" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceSeriesPoint"
+            }
+          }
+        }
+      },
+      "StudentAttendanceLesson" : {
+        "required" : [ "date", "id", "number", "requestOptions", "schedule", "status", "subject", "type" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "number" : {
+            "type" : "string"
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/Subject"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+          },
+          "schedule" : {
+            "$ref" : "#/components/schemas/StudentAttendanceLessonSchedule"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "ABSENT", "EXCUSED", "ACTIVE", "FUTURE", "NO_DATA", "CANCELLED" ]
+          },
+          "requestOptions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceRequestOption"
+            }
+          }
+        }
+      },
+      "StudentAttendanceLessonSchedule" : {
+        "required" : [ "endsAt", "room", "startsAt" ],
+        "type" : "object",
+        "properties" : {
+          "startsAt" : {
+            "type" : "string"
+          },
+          "endsAt" : {
+            "type" : "string"
+          },
+          "room" : {
+            "type" : "string",
+            "nullable" : true
+          }
+        }
+      },
+      "StudentAttendanceRequestOption" : {
+        "required" : [ "enabled", "id", "kind", "label" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "enabled" : {
+            "type" : "boolean"
+          },
+          "reason" : {
+            "type" : "string",
+            "nullable" : true
+          }
+        }
+      },
+      "StudentAttendanceSubject" : {
+        "required" : [ "id", "name", "typeCards" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "metrics" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricSet"
+          },
+          "availableTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+            }
+          },
+          "selectedTypes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "LECTURE", "PRACTICE", "LAB" ]
+            }
+          },
+          "selectedAggregate" : {
+            "$ref" : "#/components/schemas/StudentAttendanceMetricSet"
+          },
+          "typeCards" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceTypeCard"
+            }
+          },
+          "series" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceSeriesPoint"
             }
           }
         }

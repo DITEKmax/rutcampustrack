@@ -11,6 +11,15 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.grpc.*;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
+import ru.rutcampustrack.teacher.grpc.TeacherAttachmentDownload;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceReadServiceGrpc;
+import ru.rutcampustrack.teacher.grpc.TeacherExcuseAttachmentRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherExcuseRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherExcuseResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherJournalRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherLessonRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,6 +33,8 @@ public class MobileAttendanceClient {
 
     @GrpcClient("attendance-service")
     private AttendanceStudentGrpcServiceGrpc.AttendanceStudentGrpcServiceBlockingStub stub;
+    @GrpcClient("attendance-service")
+    private TeacherAttendanceReadServiceGrpc.TeacherAttendanceReadServiceBlockingStub teacherStub;
     private final MobileGrpcAuth auth;
 
     public MobileAttendanceClient(MobileGrpcAuth auth) { this.auth = auth; }
@@ -46,6 +57,31 @@ public class MobileAttendanceClient {
         if (lessonTypes != null) request.addAllLessonTypes(lessonTypes);
         return call(() -> auth.attach(stub).withDeadlineAfter(5, TimeUnit.SECONDS)
                 .getStudentAttendanceProjection(request.build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
+    }
+
+    public TeacherLessonResponse teacherLesson(long lessonId) {
+        return call(() -> auth.attach(teacherStub).withDeadlineAfter(5, TimeUnit.SECONDS)
+                .getTeacherLesson(TeacherLessonRequest.newBuilder().setLessonId(lessonId).build()),
+                ProblemCode.LESSON_NOT_FOUND);
+    }
+
+    public TeacherJournalResponse teacherJournal(List<Long> lessonIds) {
+        return call(() -> auth.attach(teacherStub).withDeadlineAfter(10, TimeUnit.SECONDS)
+                .getTeacherJournal(TeacherJournalRequest.newBuilder().addAllLessonIds(lessonIds).build()),
+                ProblemCode.LESSON_NOT_FOUND);
+    }
+
+    public TeacherExcuseResponse teacherExcuse(String requestId) {
+        return call(() -> auth.attach(teacherStub).withDeadlineAfter(5, TimeUnit.SECONDS)
+                .getTeacherExcuse(TeacherExcuseRequest.newBuilder().setRequestId(requestId).build()),
+                ProblemCode.REQUEST_NOT_FOUND);
+    }
+
+    public TeacherAttachmentDownload teacherExcuseAttachment(String requestId, String attachmentId) {
+        return call(() -> auth.attach(teacherStub).withDeadlineAfter(10, TimeUnit.SECONDS)
+                .downloadTeacherExcuseAttachment(TeacherExcuseAttachmentRequest.newBuilder()
+                        .setRequestId(requestId).setAttachmentId(attachmentId).build()),
+                ProblemCode.ATTACHMENT_NOT_FOUND);
     }
 
     public StudentCheckinResult checkin(StudentCheckinCommand command) {

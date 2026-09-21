@@ -100,6 +100,27 @@ public class ReportService {
         }
         authorizeHeadmanOrTeacher(lesson);
 
+        return buildLessonAttendance(lesson);
+    }
+
+    /**
+     * Reads one concrete lesson for a teacher identity supplied by the
+     * dedicated teacher gRPC boundary. The schedule snapshot remains the
+     * historical lesson authority; this method reuses the existing exact
+     * assignment and historical fallback gate below.
+     */
+    public LessonAttendanceResponse getTeacherLessonAttendance(Long lessonId, long teacherId) {
+        LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
+        if (lesson == null) {
+            throw new BadRequestException("Пара недоступна");
+        }
+        authorizeTeacherLesson(lesson, teacherId);
+        return buildLessonAttendance(lesson);
+    }
+
+    private LessonAttendanceResponse buildLessonAttendance(LessonResponse lesson) {
+        Long lessonId = lesson.getId();
+
         JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
         GroupMembersResponse members = membersForLesson(lesson);
         String lessonStatus = timing.status();
@@ -613,12 +634,21 @@ public class ReportService {
             throw new AccessDeniedException("Access denied");
         }
 
+        authorizeTeacherLesson(lesson, requestContext.getUserId());
+    }
+
+    /**
+     * Reusable concrete-lesson gate for the dedicated teacher read boundary.
+     * The legacy current-date projection is used only as the existing exact
+     * assignment check; an absent exact projection still permits an immutable
+     * schedule snapshot when there is no conflicting assignment projection.
+     */
+    public void authorizeTeacherLesson(LessonResponse lesson, Long teacherId) {
         JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
         long semesterId = lesson.getSemesterId();
         long assignmentId = lesson.getAssignmentId();
         long assignedTeacherId = lesson.getAssignedTeacherId();
         String lessonType = lesson.getLessonType();
-        Long teacherId = requestContext.getUserId();
         if (assignmentId <= 0 || assignedTeacherId <= 0 || teacherId == null
                 || !Objects.equals(teacherId, assignedTeacherId)
                 || lessonType == null || lessonType.isBlank()) {

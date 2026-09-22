@@ -1,0 +1,199 @@
+@import '../../styles/tokens.pcss';
+
+.admin-semester-screen {
+  min-block-size: 100dvh;
+  max-inline-size: 26.625rem;
+  margin-inline: auto;
+  padding: calc(env(safe-area-inset-top) + var(--rct-space-5)) var(--rct-space-4) calc(env(safe-area-inset-bottom) + var(--rct-space-5));
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+  font-family: var(--rct-font-family-sans);
+  @mixin rct-type-body;
+}
+
+.admin-semester-screen__header,
+.admin-semester-screen__content,
+.admin-semester-card,
+.admin-semester-form,
+.admin-semester-group {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+.admin-semester-screen__header {
+  gap: var(--rct-space-1);
+  margin-block-end: var(--rct-space-5);
+}
+
+.admin-semester-screen__header p,
+.admin-semester-screen h1,
+.admin-semester-screen h2,
+.admin-semester-screen h3,
+.admin-semester-card p {
+  margin: 0;
+}
+
+.admin-semester-screen__header > p,
+.admin-semester-screen__description,
+.admin-semester-form__hint {
+  color: var(--rct-color-text-muted);
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-semester-screen__heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+
+.admin-semester-screen h1 {
+  font-size: var(--rct-font-size-title-screen);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+.admin-semester-screen h2 {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.admin-semester-screen h3 {
+  font-size: var(--rct-font-size-title);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+.admin-semester-screen__new,
+.admin-semester-action {
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  font: inherit;
+  font-weight: var(--rct-font-weight-bold);
+  cursor: pointer;
+}
+
+.admin-semester-screen__new {
+  flex: 0 0 auto;
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-semester-card {
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  background: var(--rct-color-surface-raised);
+}
+
+.admin-semester-card--active {
+  background: var(--rct-color-success-surface);
+}
+
+.admin-semester-card__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+
+.admin-semester-card__period {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-dense);
+}
+
+.admin-semester-status {
+  flex: 0 0 auto;
+  color: var(--rct-color-text-muted);
+  font-size: var(--rct-font-size-caption);
+  white-space: nowrap;
+}
+
+.admin-semester-status--active {
+  color: var(--rct-color-success-text);
+}
+
+.admin-semester-form {
+  margin-block-end: var(--rct-space-5);
+}
+
+.admin-semester-form label {
+  display: grid;
+  gap: var(--rct-space-1);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-semester-form input {
+  min-block-size: var(--rct-control-min-touch);
+  inline-size: 100%;
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding: 0 var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+  font: inherit;
+}
+
+.admin-semester-form__dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rct-space-3);
+}
+
+.admin-semester-form__hint {
+  margin: 0;
+}
+
+.admin-semester-action--secondary {
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+}
+
+.admin-semester-action:disabled,
+.admin-semester-screen__new:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: default;
+}
+
+.admin-semester-state {
+  margin: 0;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-3);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-raised);
+}
+
+.admin-semester-state--error {
+  color: var(--rct-color-danger-text);
+}
+
+.admin-semester-state--success {
+  color: var(--rct-color-success-text);
+}
+
+.admin-semester-state--warning {
+  color: var(--rct-color-warning-text);
+}
+
+.admin-semester-screen__new:focus-visible,
+.admin-semester-action:focus-visible,
+.admin-semester-form input:focus-visible {
+  outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+  outline-offset: var(--rct-focus-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-semester-screen *,
+  .admin-semester-screen *::before,
+  .admin-semester-screen *::after {
+    scroll-behavior: auto;
+    transition-duration: 0ms;
+    animation-duration: 0ms;
+  }
+}

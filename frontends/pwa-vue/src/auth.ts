@@ -1,8 +1,13 @@
 import { ref } from 'vue'
 import { createGenerationBoundHeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
 import { createGenerationBoundHeadmanJournalApi } from '../../mobile-core/src/features/headman-journal/headman-journal-client'
-import { createGenerationBoundStudentApi, StaleSessionGenerationError } from '../../mobile-core/src/shared/session-owner'
+import {
+  createGenerationBoundAdminSemesterClient,
+  createGenerationBoundStudentApi,
+  StaleSessionGenerationError,
+} from '../../mobile-core/src/shared/session-owner'
 import { createGenerationBoundTeacherApi } from '../../mobile-core/src/features/teacher/teacher-client'
+import type { AdminSemesterClient } from '../../mobile-core/src/features/admin-semester/admin-semester-client'
 import type { HeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
 import type { HeadmanJournalApi } from '../../mobile-core/src/features/headman-journal/headman-journal-client'
 import type { StudentApi } from '../../mobile-core/src/api/student-client'
@@ -212,6 +217,14 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     }, fetcher)
   }
 
+  function createAdminSemesterApi(fetcher?: typeof fetch): AdminSemesterClient {
+    return createGenerationBoundAdminSemesterClient({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor,
+    }, fetcher)
+  }
+
   function createProfilePort(generation = currentGeneration(), options: PwaProfilePortOptions = {}): ProfilePort {
     function assertPortCurrent(): void {
       assertCurrent(generation)
@@ -318,6 +331,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     createHeadmanApi,
     createHeadmanJournalApi,
     createTeacherApi,
+    createAdminSemesterApi,
     createProfilePort,
     setToken,
     clear,

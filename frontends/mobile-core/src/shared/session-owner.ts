@@ -1,5 +1,9 @@
 import { StudentApi } from '../api/student-client'
 import type { StudentSession } from '../api/types'
+import {
+  AdminSemesterClient,
+  type AdminSemesterApiGenerationOwner,
+} from '../features/admin-semester/admin-semester-client'
 
 /** A request that outlives its authenticated owner must fail closed. */
 export class StaleSessionGenerationError extends Error {
@@ -34,6 +38,29 @@ export function createGenerationBoundStudentApi(
       assertCurrent(owner, generation)
       await owner.refreshFor(generation)
       assertCurrent(owner, generation)
+    },
+    ...(fetcher ? { fetcher } : {}),
+  })
+}
+
+export function createGenerationBoundAdminSemesterClient(
+  owner: AdminSemesterApiGenerationOwner,
+  fetcher?: typeof fetch,
+): AdminSemesterClient {
+  const generation = owner.currentGeneration()
+  const assertCurrent = (): void => {
+    if (generation !== owner.currentGeneration()) throw new StaleSessionGenerationError()
+  }
+  return new AdminSemesterClient({
+    assertCurrent,
+    accessToken: () => {
+      assertCurrent()
+      return owner.accessTokenFor(generation)
+    },
+    onUnauthorized: async () => {
+      assertCurrent()
+      await owner.refreshFor(generation)
+      assertCurrent()
     },
     ...(fetcher ? { fetcher } : {}),
   })

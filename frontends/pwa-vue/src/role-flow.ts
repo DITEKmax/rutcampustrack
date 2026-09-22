@@ -15,15 +15,21 @@ export interface PwaTeacherRoleSelectionRequest {
   readonly expectedSessionVersion: string
 }
 
+export interface PwaAdminRoleSelectionRequest {
+  readonly role: 'ADMIN'
+  readonly expectedSessionVersion: string
+}
+
 export type PwaRoleSelectionRequest = PwaStudentRoleSelectionRequest
   | PwaHeadmanRoleSelectionRequest
   | PwaTeacherRoleSelectionRequest
+  | PwaAdminRoleSelectionRequest
 
 export function createPwaRoleSelection(
   role: ProfileRole,
   expectedSessionVersion: string,
 ): PwaRoleSelectionRequest | null {
-  if (role !== 'STUDENT' && role !== 'HEADMAN' && role !== 'TEACHER') return null
+  if (role !== 'STUDENT' && role !== 'HEADMAN' && role !== 'TEACHER' && role !== 'ADMIN') return null
   return { role, expectedSessionVersion }
 }
 

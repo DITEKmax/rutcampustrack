@@ -3,6 +3,9 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import {
   AdminMapClient,
   AdminMapScreen,
+  AdminSemesterApiError,
+  AdminSemesterScreen,
+  AdminRoleNavigation,
   CampusMapClient,
   HeadmanScheduleApiError,
   HeadmanJournalApiError,
@@ -28,6 +31,7 @@ import {
   type HeadmanJournalApi,
   type ProfileRole,
   type ProfileSnapshot,
+  type AdminSemesterClient,
 } from '@rct/mobile-core'
 import { installFixtureTelegramHost, TelegramHost } from './telegram'
 import { useTmaSession } from './tma-session'
@@ -59,6 +63,7 @@ const teacherApi = shallowRef<TeacherApi | null>(null)
 const teacherSemesterId = ref<number | null>(null)
 const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
 const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
+const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null)
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
 const profile = shallowRef<ProfileSnapshot | null>(null)
@@ -68,15 +73,16 @@ const offline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false
 const error = ref<string | null>(null)
 const bootstrapping = ref(false)
 const ownerRevision = ref(0)
-const authView = ref<'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-map'>('role')
+const authView = ref<'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-map' | 'admin-semesters'>('role')
 const pendingRole = ref<ProfileRole | null>(null)
 const roleError = shallowRef<ProfileRequestError | null>(null)
 const roleLoading = ref(false)
 
 const mapViewVisible = computed(() => authView.value === 'map')
 const adminMapViewVisible = computed(() => authView.value === 'admin-map')
+const adminSemesterViewVisible = computed(() => authView.value === 'admin-semesters')
 const featureVisible = computed(() => api.value !== null || headmanApi.value !== null
-  || teacherApi.value !== null || mapViewVisible.value || adminMapViewVisible.value)
+  || teacherApi.value !== null || mapViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value)
 const studentViewVisible = computed(() => authView.value === 'student' && api.value !== null)
 const teacherViewVisible = computed(() => authView.value === 'teacher' && teacherApi.value !== null)
 const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
@@ -101,6 +107,7 @@ function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof TeacherApiError) return cause.response.status
   if (cause instanceof HeadmanScheduleApiError) return cause.response.status
   if (cause instanceof HeadmanJournalApiError) return cause.response.status
+  if (cause instanceof AdminSemesterApiError) return cause.response.status
   return null
 }
 
@@ -174,6 +181,7 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
   teacherSemesterId.value = null
   headmanApi.value = null
   headmanJournalApi.value = null
+  adminSemesterApi.value = null
   headmanGroupId.value = null
   scope.value = null
   api.value = null
@@ -185,10 +193,18 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
 function activateMapRole(value: ProfileSnapshot): void {
   invalidateOwnerSynchronously({ clearAuth: false })
   profile.value = value
+  adminSemesterApi.value = value.activeRole === 'ADMIN'
+    ? sessionOwner.createAdminSemesterApi(currentFetcher())
+    : null
   offline.value = false
   error.value = null
   ownerRevision.value += 1
   authView.value = value.activeRole === 'ADMIN' ? 'admin-map' : 'map'
+}
+
+function navigateAdmin(route: 'map' | 'semesters'): void {
+  if (profile.value?.activeRole !== 'ADMIN' || !adminSemesterApi.value) return
+  authView.value = route === 'map' ? 'admin-map' : 'admin-semesters'
 }
 
 async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<void> {
@@ -430,11 +446,27 @@ onBeforeUnmount(() => {
     :client="mapClient"
     theme="dark"
   />
-  <AdminMapScreen
-    v-else-if="adminMapViewVisible"
-    :client="adminMapClient"
-    theme="dark"
-  />
+  <template v-else-if="adminMapViewVisible">
+    <AdminRoleNavigation
+      active="map"
+      @navigate="navigateAdmin"
+    />
+    <AdminMapScreen
+      :client="adminMapClient"
+      theme="dark"
+    />
+  </template>
+  <template v-else-if="adminSemesterViewVisible && adminSemesterApi">
+    <AdminRoleNavigation
+      active="semesters"
+      @navigate="navigateAdmin"
+    />
+    <AdminSemesterScreen
+      :client="adminSemesterApi"
+      theme="dark"
+      @owner-error="onOwnerError"
+    />
+  </template>
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
     :key="ownerKey"

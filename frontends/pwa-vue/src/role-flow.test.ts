@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { ProfileRole } from '../../mobile-core/src/features/profile/profile-types'
-import { createPwaStudentRoleSelection } from './role-flow'
+import { createPwaRoleSelection, createPwaStudentRoleSelection } from './role-flow'
 
 describe('PWA student role flow', () => {
   it('does not create Auth PUT input for non-student grants', () => {
@@ -23,5 +23,12 @@ describe('PWA student role flow', () => {
 
     expect(authPut).toHaveBeenCalledOnce()
     expect(authPut).toHaveBeenCalledWith({ role: 'STUDENT', expectedSessionVersion: '7' })
+  })
+
+  it('admits the ADMIN Auth PUT input with the current session version', () => {
+    expect(createPwaRoleSelection('ADMIN', '7')).toEqual({
+      role: 'ADMIN',
+      expectedSessionVersion: '7',
+    })
   })
 })

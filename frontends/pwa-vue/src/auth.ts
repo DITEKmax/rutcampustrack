@@ -4,6 +4,7 @@ import { createGenerationBoundHeadmanJournalApi } from '../../mobile-core/src/fe
 import { createGenerationBoundHeadmanRequestsApi } from '../../mobile-core/src/features/headman-requests/headman-requests-client'
 import { createGenerationBoundHeadmanGroupApi } from '../../mobile-core/src/features/headman-group/headman-group-client'
 import { createGenerationBoundHeadmanHomeworkApi } from '../../mobile-core/src/features/homework/headman-homework-client'
+import { createGenerationBoundHeadmanSubjectsApi } from '../../mobile-core/src/features/headman-subjects/headman-subjects-client'
 import {
   createGenerationBoundAdminSemesterClient,
   createGenerationBoundAdminGroupsClient,
@@ -20,6 +21,7 @@ import type { HeadmanJournalApi } from '../../mobile-core/src/features/headman-j
 import type { HeadmanRequestsApi } from '../../mobile-core/src/features/headman-requests/headman-requests-client'
 import type { HeadmanGroupApi } from '../../mobile-core/src/features/headman-group/headman-group-client'
 import type { HeadmanHomeworkApi } from '../../mobile-core/src/features/homework/headman-homework-client'
+import type { HeadmanSubjectsApi } from '../../mobile-core/src/features/headman-subjects/headman-subjects-client'
 import type { StudentApi } from '../../mobile-core/src/api/student-client'
 import type { TeacherApi } from '../../mobile-core/src/features/teacher/teacher-client'
 import {
@@ -243,6 +245,14 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     }, fetcher)
   }
 
+  function createHeadmanSubjectsApi(fetcher?: typeof fetch): HeadmanSubjectsApi {
+    return createGenerationBoundHeadmanSubjectsApi({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor,
+    }, fetcher)
+  }
+
   function createTeacherApi(fetcher?: typeof fetch): TeacherApi {
     return createGenerationBoundTeacherApi({
       currentGeneration,
@@ -383,6 +393,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     createHeadmanRequestsApi,
     createHeadmanGroupApi,
     createHeadmanHomeworkApi,
+    createHeadmanSubjectsApi,
     createTeacherApi,
     createAdminSemesterApi,
     createAdminUsersApi,

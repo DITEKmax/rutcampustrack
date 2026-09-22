@@ -17,6 +17,7 @@ import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserSummaryResponse;
+import ru.rutcampustrack.academic.contract.dto.user.TeacherLookupResponse;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
@@ -147,6 +148,19 @@ public class UserController implements UserApi {
                 .map(userAssembler::toModel)
                 .toList();
         return ResponseEntity.ok(CollectionModel.of(models));
+    }
+
+    @Override
+    @RequireRole({STUDENT})
+    public ResponseEntity<PagedModel<EntityModel<TeacherLookupResponse>>> searchTeachers(
+            String search,
+            org.springframework.data.domain.Pageable pageable,
+            PagedResourcesAssembler<TeacherLookupResponse> assembler) {
+        Page<User> page = userService.searchActiveTeachers(search, pageable);
+        Page<TeacherLookupResponse> responsePage = page.map(u -> new TeacherLookupResponse(
+                u.getId(), u.getDisplayName(), u.getEmployeeNumber()));
+        return ResponseEntity.ok(assembler.toModel(responsePage,
+                response -> EntityModel.of(response)));
     }
 
     @Override

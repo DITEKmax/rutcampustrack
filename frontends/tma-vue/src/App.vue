@@ -15,6 +15,7 @@ import {
   HeadmanJournalApiError,
   HeadmanRequestsApiError,
   HeadmanGroupApiError,
+  HeadmanSubjectsApiError,
   HeadmanScheduleScreen,
   MapScreen,
   ProfileRequestError,
@@ -38,6 +39,7 @@ import {
   type HeadmanRequestsApi,
   type HeadmanGroupApi,
   type HeadmanHomeworkApi,
+  type HeadmanSubjectsApi,
   type HeadmanAssistantPermission,
   type ProfileRole,
   type ProfileSnapshot,
@@ -78,6 +80,7 @@ const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
 const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const headmanGroupApi = shallowRef<HeadmanGroupApi | null>(null)
+const headmanSubjectsApi = shallowRef<HeadmanSubjectsApi | null>(null)
 const assistantJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const assistantRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const assistantHomeworkApi = shallowRef<HeadmanHomeworkApi | null>(null)
@@ -128,6 +131,7 @@ function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof TmaAuthError) return cause.status
   if (cause instanceof StudentApiError) return cause.response.status
   if (cause instanceof TeacherApiError) return cause.response.status
+  if (cause instanceof HeadmanSubjectsApiError) return cause.response.status
   if (cause instanceof HeadmanScheduleApiError) return cause.response.status
   if (cause instanceof HeadmanJournalApiError) return cause.response.status
   if (cause instanceof HeadmanRequestsApiError) return cause.response.status
@@ -231,6 +235,7 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
   headmanJournalApi.value = null
   headmanRequestsApi.value = null
   headmanGroupApi.value = null
+  headmanSubjectsApi.value = null
   assistantJournalApi.value = null
   assistantRequestsApi.value = null
   assistantHomeworkApi.value = null
@@ -307,6 +312,7 @@ async function bootstrap(): Promise<void> {
       headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
       headmanRequestsApi.value = sessionOwner.createHeadmanRequestsApi(currentFetcher())
       headmanGroupApi.value = sessionOwner.createHeadmanGroupApi(currentFetcher())
+      headmanSubjectsApi.value = sessionOwner.createHeadmanSubjectsApi(currentFetcher())
       headmanGroupId.value = groupId
       authView.value = 'headman'
       ownerRevision.value += 1
@@ -327,6 +333,7 @@ async function bootstrap(): Promise<void> {
       headmanJournalApi.value = null
       headmanRequestsApi.value = null
       headmanGroupApi.value = null
+      headmanSubjectsApi.value = null
       headmanGroupId.value = null
       assistantJournalApi.value = assistant.journalApi
       assistantRequestsApi.value = assistant.requestsApi
@@ -390,6 +397,7 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
       headmanRequestsApi.value = sessionOwner.createHeadmanRequestsApi(currentFetcher())
       headmanGroupApi.value = sessionOwner.createHeadmanGroupApi(currentFetcher())
+      headmanSubjectsApi.value = sessionOwner.createHeadmanSubjectsApi(currentFetcher())
       headmanGroupId.value = groupId
       authView.value = 'headman'
       ownerRevision.value += 1
@@ -408,6 +416,7 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       headmanJournalApi.value = null
       headmanRequestsApi.value = null
       headmanGroupApi.value = null
+      headmanSubjectsApi.value = null
       headmanGroupId.value = null
       assistantJournalApi.value = assistant.journalApi
       assistantRequestsApi.value = assistant.requestsApi
@@ -510,6 +519,7 @@ onBeforeUnmount(() => {
     :journal-api="headmanJournalApi"
     :requests-api="headmanRequestsApi"
     :group-api="headmanGroupApi"
+    :subjects-api="headmanSubjectsApi"
     :profile="profile"
     :group-id="headmanGroupId"
     :offline="offline"

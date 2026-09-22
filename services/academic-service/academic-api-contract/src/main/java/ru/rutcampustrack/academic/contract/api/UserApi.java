@@ -30,6 +30,7 @@ import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserSummaryResponse;
+import ru.rutcampustrack.academic.contract.dto.user.TeacherLookupResponse;
 
 import java.util.List;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
@@ -161,6 +162,20 @@ public interface UserApi {
     @ApiResponse(responseCode = "200", description = "Список преподавателей")
     @GetMapping("/teachers")
     ResponseEntity<CollectionModel<EntityModel<UserResponse>>> listTeachers();
+
+    @Operation(summary = "Поиск преподавателей для предмета",
+            description = "Постраничный поиск по фрагменту ФИО или табельного номера. " +
+                    "Возвращает только пользователей с действующим durable TEACHER grant; доступно студентам.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Страница преподавателей"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+    })
+    @GetMapping("/teachers/search")
+    ResponseEntity<PagedModel<EntityModel<TeacherLookupResponse>>> searchTeachers(
+            @Parameter(description = "Фрагмент ФИО или табельного номера")
+            @RequestParam(required = false) String search,
+            Pageable pageable,
+            PagedResourcesAssembler<TeacherLookupResponse> assembler);
 
     @Operation(
             summary = "Batch-резолв display-имён пользователей по ID",

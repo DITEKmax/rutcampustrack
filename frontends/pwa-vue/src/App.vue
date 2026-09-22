@@ -16,6 +16,7 @@ import {
   HeadmanJournalApiError,
   HeadmanRequestsApiError,
   HeadmanGroupApiError,
+  HeadmanSubjectsApiError,
   HeadmanScheduleScreen,
   MapScreen,
   StudentApi,
@@ -48,6 +49,7 @@ import {
   type HeadmanRequestsApi,
   type HeadmanGroupApi,
   type HeadmanHomeworkApi,
+  type HeadmanSubjectsApi,
   type HeadmanAssistantPermission,
   type AdminSemesterClient,
   type AdminGroupsClient,
@@ -93,6 +95,7 @@ const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
 const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const headmanGroupApi = shallowRef<HeadmanGroupApi | null>(null)
+const headmanSubjectsApi = shallowRef<HeadmanSubjectsApi | null>(null)
 const assistantJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const assistantRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const assistantHomeworkApi = shallowRef<HeadmanHomeworkApi | null>(null)
@@ -160,6 +163,7 @@ function authDenialStatus(error: unknown): number | null {
   if (error instanceof HeadmanJournalApiError) return error.response.status
   if (error instanceof HeadmanRequestsApiError) return error.response.status
   if (error instanceof HeadmanGroupApiError) return error.response.status
+  if (error instanceof HeadmanSubjectsApiError) return error.response.status
   if (error instanceof AdminSemesterApiError) return error.response.status
   if (error instanceof AdminGroupsApiError) return error.response.status
   if (error instanceof AdminUsersApiError) return error.response.status
@@ -236,6 +240,7 @@ async function loadOfflineSnapshot(): Promise<boolean> {
   headmanJournalApi.value = null
   headmanRequestsApi.value = null
   headmanGroupApi.value = null
+  headmanSubjectsApi.value = null
   assistantJournalApi.value = null
   assistantRequestsApi.value = null
   assistantHomeworkApi.value = null
@@ -301,6 +306,7 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): St
   headmanJournalApi.value = null
   headmanRequestsApi.value = null
   headmanGroupApi.value = null
+  headmanSubjectsApi.value = null
   assistantJournalApi.value = null
   assistantRequestsApi.value = null
   assistantHomeworkApi.value = null
@@ -430,6 +436,7 @@ type HeadmanCandidate = {
   journalApi: HeadmanJournalApi
   requestsApi: HeadmanRequestsApi
   groupApi: HeadmanGroupApi
+  subjectsApi: HeadmanSubjectsApi
   profile: ProfileSnapshot
   groupId: number
 }
@@ -455,6 +462,7 @@ async function fetchHeadmanCandidate(
   const candidateJournalApi = auth.createHeadmanJournalApi(currentFetcher())
   const candidateRequestsApi = auth.createHeadmanRequestsApi(currentFetcher())
   const candidateGroupApi = auth.createHeadmanGroupApi(currentFetcher())
+  const candidateSubjectsApi = auth.createHeadmanSubjectsApi(currentFetcher())
   assertCandidateCurrent(generation)
   return {
     generation,
@@ -462,6 +470,7 @@ async function fetchHeadmanCandidate(
     journalApi: candidateJournalApi,
     requestsApi: candidateRequestsApi,
     groupApi: candidateGroupApi,
+    subjectsApi: candidateSubjectsApi,
     profile,
     groupId,
   }
@@ -593,6 +602,7 @@ async function activateHeadmanCandidate(candidate: HeadmanCandidate): Promise<vo
   headmanJournalApi.value = candidate.journalApi
   headmanRequestsApi.value = candidate.requestsApi
   headmanGroupApi.value = candidate.groupApi
+  headmanSubjectsApi.value = candidate.subjectsApi
   headmanGroupId.value = candidate.groupId
   authSnapshot.value = candidate.profile
   offline.value = false
@@ -1078,6 +1088,7 @@ onBeforeUnmount(() => {
     :journal-api="headmanJournalApi"
     :requests-api="headmanRequestsApi"
     :group-api="headmanGroupApi"
+    :subjects-api="headmanSubjectsApi"
     :profile="authSnapshot"
     :group-id="headmanGroupId"
     :offline="offline"

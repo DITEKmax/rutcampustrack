@@ -385,6 +385,27 @@ public class UserService {
     }
 
     /**
+     * Bounded teacher lookup for headman subject assignment.  The durable grant
+     * is authoritative: a mixed-role account with an active TEACHER grant is a
+     * candidate even when its legacy scalar role belongs to another role.
+     */
+    public Page<User> searchActiveTeachers(String search, Pageable pageable) {
+        int pageSize = Math.max(1, Math.min(pageable.getPageSize(), 20));
+        Pageable bounded = org.springframework.data.domain.PageRequest.of(
+                pageable.getPageNumber(),
+                pageSize,
+                org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Order.asc("lastName"),
+                        org.springframework.data.domain.Sort.Order.asc("firstName"),
+                        org.springframework.data.domain.Sort.Order.asc("middleName"),
+                        org.springframework.data.domain.Sort.Order.asc("id")));
+        Specification<User> specification = Specification
+                .where(UserSpecifications.matchesTeacherLookup(search))
+                .and(UserSpecifications.matchesGrant("TEACHER", "ACTIVE"));
+        return userRepository.findAll(specification, bounded);
+    }
+
+    /**
      * Batch-резолв display-имён по списку ID (для STUDENT/TEACHER аудитных мест).
      * Cap на size — 100 ids, защита от abuse через query string. Несуществующие
      * ID молча пропускаются (downstream caller сам решит fallback по отсутствующему).

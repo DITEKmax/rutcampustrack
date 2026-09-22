@@ -45,6 +45,24 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
                         "('srch_ptrv', 'x', 'Петров', 'Пётр',     'Петрович',   'student', 'active', false, false, NOW(), NOW())," +
                         "('srch_sdrv', 'x', 'Сидоров','Семён',    NULL,         'student', 'active', false, false, NOW(), NOW())"
         );
+
+        Long activeTeacherId = jdbcTemplate.queryForObject(
+                "INSERT INTO users (login, password_hash, last_name, first_name, middle_name, " +
+                        "role, status, is_headman, employee_number, password_changed, created_at, updated_at) " +
+                        "VALUES ('srch_teacher_active', 'x', 'Иванов', 'Иван', 'Преподаватель', " +
+                        "'student', 'active', false, 'EMP-SRCH-01', false, NOW(), NOW()) RETURNING id",
+                Long.class);
+        Long suspendedTeacherId = jdbcTemplate.queryForObject(
+                "INSERT INTO users (login, password_hash, last_name, first_name, middle_name, " +
+                        "role, status, is_headman, employee_number, password_changed, created_at, updated_at) " +
+                        "VALUES ('srch_teacher_suspended', 'x', 'Иванов', 'Иван', 'Скрытый', " +
+                        "'teacher', 'active', false, 'EMP-SRCH-02', false, NOW(), NOW()) RETURNING id",
+                Long.class);
+        jdbcTemplate.update(
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) " +
+                        "VALUES (?, 'teacher', 'active', NULL, NOW(), NOW()), " +
+                        "       (?, 'teacher', 'suspended', NULL, NOW(), NOW())",
+                activeTeacherId, suspendedTeacherId);
     }
 
     private org.springframework.test.web.servlet.ResultActions listAs(String searchParam) throws Exception {
@@ -92,6 +110,30 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
         listAs("xyzNoSuchUserExists")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.totalElements", is(0)));
+    }
+
+    @Test
+    void teacherLookup_usesFullNameActiveGrantAndSafePagedDto() throws Exception {
+        Long studentId = jdbcTemplate.queryForObject(
+                "SELECT id FROM users WHERE login = 'student'", Long.class);
+
+        mockMvc.perform(get("/academic/users/teachers/search")
+                        .header("X-User-Id", studentId)
+                        .header("X-User-Role", "STUDENT")
+                        .header("X-Group-Id", "")
+                        .header("X-Is-Headman", "false")
+                        .param("search", "Иванов Иван")
+                        .param("size", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements", is(1)))
+                .andExpect(jsonPath("$._embedded.teacherLookupResponseList[0].fullName",
+                        is("Иванов Иван Преподаватель")))
+                .andExpect(jsonPath("$._embedded.teacherLookupResponseList[0].employeeNumber",
+                        is("EMP-SRCH-01")))
+                .andExpect(jsonPath("$._embedded.teacherLookupResponseList[0].login")
+                        .doesNotExist())
+                .andExpect(jsonPath("$._embedded.teacherLookupResponseList[0].roles")
+                        .doesNotExist());
     }
 
     @Test

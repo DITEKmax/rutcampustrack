@@ -64,6 +64,29 @@ public final class UserSpecifications {
         };
     }
 
+    /**
+     * Search surface for the subject teacher picker.  Unlike the admin search,
+     * this predicate deliberately does not inspect login or telegram id and
+     * treats the displayed full name as one searchable string, so a query such
+     * as "Иванов Иван" works as the user sees it.
+     */
+    public static Specification<User> matchesTeacherLookup(String q) {
+        if (q == null || q.isBlank()) return null;
+        String pattern = "%" + escapeLike(q.trim().toLowerCase()) + "%";
+        return (root, query, cb) -> {
+            Expression<String> middle = cb.coalesce(root.get("middleName"), "");
+            Expression<String> fullName = cb.concat(
+                    cb.concat(root.get("lastName"), " "),
+                    cb.concat(root.get("firstName"), cb.concat(" ", middle)));
+            Predicate byName = cb.like(cb.lower(fullName), pattern, ESCAPE_CHAR);
+            Predicate byEmployeeNumber = cb.like(
+                    cb.lower(cb.coalesce(root.get("employeeNumber"), "")),
+                    pattern,
+                    ESCAPE_CHAR);
+            return cb.or(byName, byEmployeeNumber);
+        };
+    }
+
     /** Filters users by a durable grant rather than the legacy scalar role. */
     public static Specification<User> matchesGrant(String role, String status) {
         if (role == null || role.isBlank()) return null;

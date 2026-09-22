@@ -325,6 +325,26 @@ class MarkingServiceTest {
         verify(eventPublisher).publishMarked(eq(result), any());
     }
 
+    @Test
+    void assistantWithOnlyMarkPermissionCannotReplaceExistingExcusedMark() {
+        when(requestContext.isHeadman()).thenReturn(false);
+        AttendanceDocument existing = buildSavedDoc();
+        existing.setStatus(AttendanceStatus.EXCUSED);
+        when(mongoTemplate.findOne(any(Query.class), eq(AttendanceDocument.class))).thenReturn(existing);
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MARK_ATTENDANCE"))
+                .thenReturn(true);
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES"))
+                .thenReturn(false);
+
+        assertThatThrownBy(() -> markingService.markAttendance(
+                LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT)))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("MANAGE_EXCUSES");
+
+        verify(academicGrpcClient).hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES");
+        verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
+    }
+
     // -------------------------------------------------------------------------
     // Batch-tests (M05 D7 / P2-10/4)
     // -------------------------------------------------------------------------

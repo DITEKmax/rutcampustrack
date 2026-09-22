@@ -587,11 +587,12 @@ public class ReportService {
     private void authorizeHeadmanOrTeacher(Long groupId, Long subjectId) {
         UserRole role = requestContext.getRole();
         if (role == UserRole.STUDENT) {
-            if (!requestContext.isHeadman()) {
-                throw new AccessDeniedException("Only headmen can view group reports");
-            }
             if (!requestContext.getGroupId().equals(groupId)) {
                 throw new AccessDeniedException("Cannot view data for another group");
+            }
+            if (!requestContext.isHeadman()
+                    && !academicGrpcClient.hasAssistantPermission(groupId, "VIEW_STATS")) {
+                throw new AccessDeniedException("Отсутствует право VIEW_STATS");
             }
         } else if (role == UserRole.TEACHER) {
             Long semId = semesterCacheService.getActiveSemesterId();
@@ -622,11 +623,13 @@ public class ReportService {
         Long subjectId = lesson.getSubjectId();
         UserRole role = requestContext.getRole();
         if (role == UserRole.STUDENT) {
-            if (!requestContext.isHeadman()) {
-                throw new AccessDeniedException("Only headmen can view group reports");
-            }
             if (!Objects.equals(requestContext.getGroupId(), groupId)) {
                 throw new AccessDeniedException("Cannot view data for another group");
+            }
+            if (!requestContext.isHeadman()
+                    && !academicGrpcClient.hasAssistantPermission(groupId, "VIEW_STATS")
+                    && !academicGrpcClient.hasAssistantPermission(groupId, "MARK_ATTENDANCE")) {
+                throw new AccessDeniedException("Отсутствует право VIEW_STATS");
             }
             return;
         }

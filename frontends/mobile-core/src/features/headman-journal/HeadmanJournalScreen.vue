@@ -13,14 +13,17 @@ import {
   type HeadmanJournalReport,
   type HeadmanJournalRosterEntry,
 } from './headman-journal-client'
+import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
 import './headman-journal-screen.pcss'
 
 const props = withDefaults(defineProps<{
   api: HeadmanJournalApi | null
   groupId: number | null
+  assistantPermissions?: readonly HeadmanAssistantPermission[] | null
   offline?: boolean
   readOnly?: boolean
 }>(), {
+  assistantPermissions: null,
   offline: false,
   readOnly: false,
 })
@@ -49,11 +52,15 @@ const excuseUserId = ref<number | null>(null)
 const excuseType = ref<HeadmanJournalExcuseType>('OTHER')
 const excuseComment = ref('')
 const excuseFile = ref<File | null>(null)
+const cancelReason = ref('')
+const lessonActionBusy = ref(false)
 const attachmentStates = ref<Readonly<Record<number, RequestAttachmentViewState>>>({})
 const attachmentOwnerIdentity = ref<string | null>(props.api ? 'headman-journal' : null)
 const attachmentOwnerGeneration = ref(0)
 let lessonsRevision = 0
 let reportRevision = 0
+let lessonActionRevision = 0
+let disposed = false
 let attachmentDisposed = false
 const attachmentPopups = new Set<RequestAttachmentPopup>()
 const attachmentObjectUrls = new Set<string>()
@@ -134,7 +141,8 @@ function setToday(): void {
 function selectLesson(lessonId: number): void {
   if (selectedLessonId.value === lessonId && report.value?.lessonId === lessonId) return
   selectedLessonId.value = lessonId
-  void loadReport(lessonId)
+  if (canViewReport()) void loadReport(lessonId)
+  else report.value = null
 }
 
 function clearRowError(userId: number): void {
@@ -159,8 +167,84 @@ function toggleExpanded(userId: number): void {
   expandedUserIds.value = next
 }
 
+function hasAssistantPermission(permission: HeadmanAssistantPermission): boolean {
+  return props.assistantPermissions === null || props.assistantPermissions.includes(permission)
+}
+
+function canViewReport(): boolean {
+  return hasAssistantPermission('MARK_ATTENDANCE') || hasAssistantPermission('VIEW_STATS')
+}
+
+function canCancelLessons(): boolean {
+  return Boolean(props.api && !props.offline && !props.readOnly && hasAssistantPermission('CANCEL_LESSONS'))
+}
+
+function canManageExcuses(): boolean {
+  return hasAssistantPermission('MANAGE_EXCUSES')
+}
+
 function canWrite(entry: HeadmanJournalRosterEntry): boolean {
-  return Boolean(props.api?.writable && entry.editable && !props.offline && !props.readOnly && selectedLessonId.value !== null)
+  const required = entry.status === 'EXCUSED' ? 'MANAGE_EXCUSES' : 'MARK_ATTENDANCE'
+  return Boolean(props.api?.writable && entry.editable && !props.offline && !props.readOnly
+    && selectedLessonId.value !== null && hasAssistantPermission(required))
+}
+
+function canWriteExcuse(entry: HeadmanJournalRosterEntry): boolean {
+  return canManageExcuses() && canWrite(entry)
+}
+
+async function cancelSelectedLesson(): Promise<void> {
+  const api = props.api
+  const lesson = selectedLesson.value
+  if (lessonActionBusy.value || !api || !lesson || !canCancelLessons()) return
+  const reason = cancelReason.value.trim()
+  if (!reason) {
+    notice.value = 'Укажи причину отмены пары.'
+    return
+  }
+  if (Array.from(reason).length > 512) {
+    notice.value = 'Причина отмены не может быть длиннее 512 символов.'
+    return
+  }
+  const revision = ++lessonActionRevision
+  lessonActionBusy.value = true
+  error.value = null
+  notice.value = null
+  try {
+    await api.cancelLesson(lesson.id, reason)
+    if (disposed || revision !== lessonActionRevision) return
+    notice.value = 'Пара отменена. Список обновлён с сервера.'
+    cancelReason.value = ''
+    await loadLessons()
+  } catch (cause) {
+    if (disposed || revision !== lessonActionRevision || cause instanceof StaleSessionGenerationError) return
+    error.value = cause instanceof Error ? cause.message : 'Не удалось отменить пару.'
+    emit('error', cause)
+  } finally {
+    if (!disposed && revision === lessonActionRevision) lessonActionBusy.value = false
+  }
+}
+
+async function restoreSelectedLesson(): Promise<void> {
+  const api = props.api
+  const lesson = selectedLesson.value
+  if (lessonActionBusy.value || !api || !lesson || !canCancelLessons()) return
+  const revision = ++lessonActionRevision
+  lessonActionBusy.value = true
+  error.value = null
+  notice.value = null
+  try {
+    await api.restoreLesson(lesson.id)
+    if (disposed || revision !== lessonActionRevision) return
+    notice.value = 'Пара восстановлена. Список обновлён с сервера.'
+    await loadLessons()
+  } catch (cause) {
+    if (disposed || revision !== lessonActionRevision || cause instanceof StaleSessionGenerationError) return
+    error.value = cause instanceof Error ? cause.message : 'Не удалось восстановить пару.'
+    emit('error', cause)
+  } finally {
+    if (!disposed && revision === lessonActionRevision) lessonActionBusy.value = false
+  }
 }
 
 function writeUnavailableMessage(entry: HeadmanJournalRosterEntry): string {
@@ -197,7 +281,8 @@ function closeAttachmentPopup(popup: RequestAttachmentPopup): void {
 function openAttachment(entry: HeadmanJournalRosterEntry): void {
   const lessonId = selectedLessonId.value
   const api = props.api
-  if (props.offline || !api || lessonId === null || !entry.attachmentId || attachmentState(entry)?.status === 'pending') return
+  if (props.offline || !api || lessonId === null || !entry.attachmentId || !canManageExcuses()
+    || attachmentState(entry)?.status === 'pending') return
   const ownerIdentityAtStart = attachmentOwnerIdentity.value
   const ownerGenerationAtStart = attachmentOwnerGeneration.value
   runRequestAttachmentOpen({
@@ -239,7 +324,7 @@ function openAttachment(entry: HeadmanJournalRosterEntry): void {
 }
 
 function openExcuseForm(entry: HeadmanJournalRosterEntry): void {
-  if (!canWrite(entry)) {
+  if (!canWriteExcuse(entry)) {
     notice.value = writeUnavailableMessage(entry)
     return
   }
@@ -265,7 +350,7 @@ function chooseExcuseFile(event: Event): void {
 }
 
 async function submitExcuse(entry: HeadmanJournalRosterEntry): Promise<void> {
-  if (pendingUserId.value !== null || excuseUserId.value !== entry.userId || !canWrite(entry)) return
+  if (pendingUserId.value !== null || excuseUserId.value !== entry.userId || !canWriteExcuse(entry)) return
   const lessonId = selectedLessonId.value
   const api = props.api
   if (!api || lessonId === null) return
@@ -298,7 +383,7 @@ async function submitExcuse(entry: HeadmanJournalRosterEntry): Promise<void> {
 async function clearExcuse(entry: HeadmanJournalRosterEntry): Promise<void> {
   if (pendingUserId.value !== null
     || (excuseUserId.value !== null && excuseUserId.value !== entry.userId)
-    || !canWrite(entry)) return
+    || !canWriteExcuse(entry)) return
   pendingUserId.value = entry.userId
   notice.value = null
   clearRowError(entry.userId)
@@ -356,6 +441,10 @@ async function clearEntry(entry: HeadmanJournalRosterEntry): Promise<void> {
 
 function onStatusClick(entry: HeadmanJournalRosterEntry, status: 'PRESENT' | 'ABSENT' | 'EXCUSED'): void {
   if (status === 'EXCUSED') {
+    if (!canWriteExcuse(entry)) {
+      notice.value = 'Для уважительной причины нужно право «Обрабатывать уважительные причины».'
+      return
+    }
     if (entry.status === 'EXCUSED' && isExpanded(entry.userId)) {
       void clearExcuse(entry)
       return
@@ -425,9 +514,12 @@ async function loadLessons(): Promise<void> {
     if (revision !== lessonsRevision) return
     lessons.value = next
     const first = next[0]
-    if (first) {
+    if (first && canViewReport()) {
       selectedLessonId.value = first.id
       await loadReport(first.id)
+    } else if (first) {
+      selectedLessonId.value = first.id
+      report.value = null
     }
   } catch (cause) {
     if (revision !== lessonsRevision) return
@@ -442,7 +534,7 @@ async function loadLessons(): Promise<void> {
 }
 
 watch(
-  () => [props.api, props.groupId, props.offline, selectedDate.value] as const,
+  () => [props.api, props.groupId, props.offline, selectedDate.value, props.assistantPermissions] as const,
   () => { void loadLessons() },
   { immediate: true },
 )
@@ -458,6 +550,8 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  disposed = true
+  lessonActionRevision += 1
   attachmentDisposed = true
   lessonsRevision += 1
   reportRevision += 1
@@ -607,21 +701,60 @@ onBeforeUnmount(() => {
         </span>
       </header>
 
+      <section
+        v-if="canCancelLessons()"
+        class="headman-journal__lesson-actions"
+        aria-labelledby="headman-journal-lesson-actions-title"
+      >
+        <h3 id="headman-journal-lesson-actions-title">
+          Управление парой
+        </h3>
+        <template v-if="selectedLesson.status === 'CANCELLED'">
+          <p>Пара отменена сервером.</p>
+          <button
+            type="button"
+            :disabled="lessonActionBusy || offline || readOnly"
+            @click="restoreSelectedLesson"
+          >
+            {{ lessonActionBusy ? 'Восстанавливаем…' : 'Восстановить пару' }}
+          </button>
+        </template>
+        <template v-else>
+          <label>
+            <span>Причина отмены</span>
+            <input
+              v-model="cancelReason"
+              type="text"
+              maxlength="512"
+              :disabled="lessonActionBusy || offline || readOnly"
+              placeholder="Например, преподаватель болен"
+            >
+          </label>
+          <button
+            type="button"
+            :disabled="lessonActionBusy || offline || readOnly || !cancelReason.trim()"
+            @click="cancelSelectedLesson"
+          >
+            {{ lessonActionBusy ? 'Отменяем…' : 'Отменить пару' }}
+          </button>
+        </template>
+      </section>
+
       <p
-        v-if="loadingReport"
+        v-if="canViewReport() && loadingReport"
         class="headman-journal__state"
         role="status"
       >
         Загружаем состав и отметки…
       </p>
       <p
-        v-else-if="report && report.entries.length === 0"
+        v-else-if="canViewReport() && report && report.entries.length === 0"
         class="headman-journal__empty"
       >
         Сервер вернул пустой состав группы.
       </p>
       <ol
-        v-else-if="report"
+        v-else-if="canViewReport() && report"
         class="headman-journal__roster-list"
       >
         <li
@@ -647,7 +780,7 @@ onBeforeUnmount(() => {
               >
                 Изменить причину
               </button>
-              <span v-if="entry.attachmentId">
+              <span v-if="entry.attachmentId && canManageExcuses()">
                 <button
                   class="headman-journal__attachment"
                   type="button"
@@ -697,6 +830,7 @@ onBeforeUnmount(() => {
               type="button"
               :disabled="pendingUserId !== null"
               :aria-label="`Отметить «уважительная причина»: ${entry.displayName}`"
+              v-if="canManageExcuses()"
               @click="onStatusClick(entry, 'EXCUSED')"
             >
               у

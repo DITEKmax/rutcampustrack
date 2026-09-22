@@ -198,12 +198,7 @@ public class ExcuseService {
      * D-06 + D-14: headman views tickets of THEIR OWN group. Non-headman or wrong group → 403.
      */
     public Page<ExcuseTicket> getGroupTickets(Long groupId, Pageable pageable, ExcuseTicketStatus status) {
-        if (!requestContext.isHeadman()) {
-            throw new AccessDeniedException("Только староста может просматривать тикеты группы");
-        }
-        if (!groupId.equals(requestContext.getGroupId())) {
-            throw new AccessDeniedException("Нельзя просматривать тикеты чужой группы");
-        }
+        requireExcuseManagement(groupId);
         if (status != null) {
             return excuseRepository.findByGroupIdAndStatus(groupId, status, pageable);
         }
@@ -219,8 +214,9 @@ public class ExcuseService {
                 .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
 
         boolean isOwner = ticket.getStudentId().equals(requestContext.getUserId());
-        boolean isGroupHeadman = requestContext.isHeadman()
-                && ticket.getGroupId().equals(requestContext.getGroupId());
+        boolean isGroupHeadman = !isOwner
+                && ticket.getGroupId().equals(requestContext.getGroupId())
+                && hasExcuseManagement(ticket.getGroupId());
 
         if (!isOwner && !isGroupHeadman) {
             throw new AccessDeniedException("Доступ к тикету запрещён");
@@ -250,13 +246,8 @@ public class ExcuseService {
             throw new BadRequestException("Допустимые статусы: APPROVED или REJECTED");
         }
 
-        // D-07/D-14: must be headman of the ticket's group
-        if (!requestContext.isHeadman()) {
-            throw new AccessDeniedException("Только староста может принимать решение по тикету");
-        }
-        if (!ticket.getGroupId().equals(requestContext.getGroupId())) {
-            throw new AccessDeniedException("Нельзя принимать решение по тикету чужой группы");
-        }
+        // D-07/D-14: must be a durable headman or MANAGE_EXCUSES assistant
+        requireExcuseManagement(ticket.getGroupId());
 
         // D-13: cannot self-approve/reject
         if (ticket.getStudentId().equals(requestContext.getUserId())) {
@@ -351,6 +342,22 @@ public class ExcuseService {
         }
 
         excuseEventPublisher.publishDecided(saved);
+    }
+
+    private void requireExcuseManagement(Long targetGroupId) {
+        if (targetGroupId == null || !targetGroupId.equals(requestContext.getGroupId())) {
+            throw new AccessDeniedException("Нельзя управлять тикетами чужой группы");
+        }
+        if (!hasExcuseManagement(targetGroupId)) {
+            throw new AccessDeniedException("Отсутствует право MANAGE_EXCUSES");
+        }
+    }
+
+    private boolean hasExcuseManagement(Long targetGroupId) {
+        if (requestContext.isHeadman()) {
+            return academicGrpcClient.isHeadman(requestContext.getUserId(), targetGroupId).getIsHeadman();
+        }
+        return academicGrpcClient.hasAssistantPermission(targetGroupId, "MANAGE_EXCUSES");
     }
 
     /**

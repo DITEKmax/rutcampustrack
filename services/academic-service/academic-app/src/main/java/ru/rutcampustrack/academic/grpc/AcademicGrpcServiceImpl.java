@@ -16,6 +16,7 @@ import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.assistant.AssistantPermissionAuthority;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.history.HistoricalMembershipException;
@@ -98,6 +99,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     private final CampusMapReadService campusMapReadService;
     private final CampusMapUsageService campusMapUsageService;
     private final StudentProjectionScopeService studentProjectionScopeService;
+    private final AssistantPermissionAuthority assistantPermissionAuthority;
 
     @Autowired
     public AcademicGrpcServiceImpl(
@@ -114,7 +116,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             HomeworkStudentService homeworkStudentService,
             StudentProjectionScopeService studentProjectionScopeService,
             CampusMapReadService campusMapReadService,
-            CampusMapUsageService campusMapUsageService) {
+            CampusMapUsageService campusMapUsageService,
+            AssistantPermissionAuthority assistantPermissionAuthority) {
         this.academicReadService = academicReadService;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
@@ -130,6 +133,30 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.studentProjectionScopeService = studentProjectionScopeService;
         this.campusMapReadService = campusMapReadService;
         this.campusMapUsageService = campusMapUsageService;
+        this.assistantPermissionAuthority = assistantPermissionAuthority;
+    }
+
+    /** Source-compatible constructor for focused tests predating assistant RPC. */
+    public AcademicGrpcServiceImpl(
+            AcademicReadService academicReadService,
+            GroupRepository groupRepository,
+            UserRepository userRepository,
+            SubjectRepository subjectRepository,
+            AssignmentRepository assignmentRepository,
+            SemesterRepository semesterRepository,
+            UserRoleGrantRepository grantRepository,
+            HomeworkRepository homeworkRepository,
+            HomeworkCompletionRepository completionRepository,
+            HeadmanRateLimiter headmanRateLimiter,
+            HomeworkStudentService homeworkStudentService,
+            StudentProjectionScopeService studentProjectionScopeService,
+            CampusMapReadService campusMapReadService,
+            CampusMapUsageService campusMapUsageService) {
+        this(academicReadService, groupRepository, userRepository, subjectRepository,
+                assignmentRepository, semesterRepository, grantRepository,
+                homeworkRepository, completionRepository, headmanRateLimiter,
+                homeworkStudentService, studentProjectionScopeService,
+                campusMapReadService, campusMapUsageService, null);
     }
 
     /** Compatibility constructor retained for source-era assignment tests. */
@@ -148,7 +175,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this(academicReadService, groupRepository, userRepository, subjectRepository,
                 assignmentRepository, semesterRepository, grantRepository,
                 homeworkRepository, completionRepository, headmanRateLimiter,
-                homeworkStudentService, null, null, null);
+                homeworkStudentService, null, null, null, null);
     }
 
     /** Compatibility constructor retained for existing map/projection and identity tests. */
@@ -179,6 +206,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.studentProjectionScopeService = studentProjectionScopeService;
         this.campusMapReadService = campusMapReadService;
         this.campusMapUsageService = null;
+        this.assistantPermissionAuthority = null;
     }
 
     /** Compatibility constructor retained for source-era identity tests. */
@@ -207,6 +235,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.studentProjectionScopeService = null;
         this.campusMapReadService = null;
         this.campusMapUsageService = null;
+        this.assistantPermissionAuthority = null;
     }
 
     /**
@@ -455,6 +484,42 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
+
+    /**
+     * Checks one assistant capability against the current durable grants.
+     * The actor is bound by {@link StudentHomeworkGrpcIdentityInterceptor};
+     * request fields cannot select another user or group.
+     */
+    @Override
+    public void checkAssistantPermission(AssistantPermissionCheckRequest request,
+                                         StreamObserver<AssistantPermissionCheckResponse> responseObserver) {
+        final InternalJwtClaims claims;
+        try {
+            claims = StudentHomeworkGrpcIdentity.requireClaims();
+        } catch (IllegalStateException error) {
+            responseObserver.onError(Status.UNAUTHENTICATED
+                    .withDescription("signed internal identity is required")
+                    .asRuntimeException());
+            return;
+        }
+
+        try {
+            boolean allowed = assistantPermissionAuthority != null
+                    && assistantPermissionAuthority.allows(
+                    claims, request.getGroupId(), request.getPermission());
+            responseObserver.onNext(AssistantPermissionCheckResponse.newBuilder()
+                    .setAllowed(allowed)
+                    .build());
+            responseObserver.onCompleted();
+        } catch (RuntimeException error) {
+            // Repository/transport failure must remain distinguishable from a
+            // legitimate deny; consumers map UNAVAILABLE to HTTP 503.
+            responseObserver.onError(Status.UNAVAILABLE
+                    .withDescription("assistant permission authority unavailable")
+                    .withCause(error)
+                    .asRuntimeException());
+        }
     }
 
     /**

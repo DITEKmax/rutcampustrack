@@ -15,6 +15,7 @@ import {
   HeadmanScheduleApiError,
   HeadmanJournalApiError,
   HeadmanRequestsApiError,
+  HeadmanGroupApiError,
   HeadmanScheduleScreen,
   MapScreen,
   StudentApi,
@@ -45,6 +46,9 @@ import {
   type HeadmanScheduleApi,
   type HeadmanJournalApi,
   type HeadmanRequestsApi,
+  type HeadmanGroupApi,
+  type HeadmanHomeworkApi,
+  type HeadmanAssistantPermission,
   type AdminSemesterClient,
   type AdminGroupsClient,
   type AdminUsersClient,
@@ -88,6 +92,11 @@ const teacherSemesterId = ref<number | null>(null)
 const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
 const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
+const headmanGroupApi = shallowRef<HeadmanGroupApi | null>(null)
+const assistantJournalApi = shallowRef<HeadmanJournalApi | null>(null)
+const assistantRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
+const assistantHomeworkApi = shallowRef<HeadmanHomeworkApi | null>(null)
+const assistantPermissions = shallowRef<readonly HeadmanAssistantPermission[]>([])
 const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null)
 const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
@@ -150,6 +159,7 @@ function authDenialStatus(error: unknown): number | null {
   if (error instanceof HeadmanScheduleApiError) return error.response.status
   if (error instanceof HeadmanJournalApiError) return error.response.status
   if (error instanceof HeadmanRequestsApiError) return error.response.status
+  if (error instanceof HeadmanGroupApiError) return error.response.status
   if (error instanceof AdminSemesterApiError) return error.response.status
   if (error instanceof AdminGroupsApiError) return error.response.status
   if (error instanceof AdminUsersApiError) return error.response.status
@@ -225,6 +235,11 @@ async function loadOfflineSnapshot(): Promise<boolean> {
   headmanApi.value = null
   headmanJournalApi.value = null
   headmanRequestsApi.value = null
+  headmanGroupApi.value = null
+  assistantJournalApi.value = null
+  assistantRequestsApi.value = null
+  assistantHomeworkApi.value = null
+  assistantPermissions.value = []
   adminSemesterApi.value = null
   adminUsersApi.value = null
   adminGroupsApi.value = null
@@ -285,6 +300,11 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): St
   headmanApi.value = null
   headmanJournalApi.value = null
   headmanRequestsApi.value = null
+  headmanGroupApi.value = null
+  assistantJournalApi.value = null
+  assistantRequestsApi.value = null
+  assistantHomeworkApi.value = null
+  assistantPermissions.value = []
   adminSemesterApi.value = null
   adminUsersApi.value = null
   adminGroupsApi.value = null
@@ -369,13 +389,39 @@ async function fetchAuthForCurrentGeneration(options: { refresh?: boolean } = {}
 async function fetchStudentCandidate(
   generation: number,
   profile: ProfileSnapshot,
-): Promise<{ generation: number; api: StudentApi; session: StudentSession; profile: ProfileSnapshot } | null> {
+): Promise<{
+  generation: number
+  api: StudentApi
+  session: StudentSession
+  profile: ProfileSnapshot
+  assistantJournalApi: HeadmanJournalApi
+  assistantRequestsApi: HeadmanRequestsApi
+  assistantHomeworkApi: HeadmanHomeworkApi
+  assistantPermissions: readonly HeadmanAssistantPermission[]
+} | null> {
   if (profile.activeRole !== 'STUDENT') return null
   const candidateApi = auth.createApi(currentFetcher())
   const candidateSession = await candidateApi.getSession()
+  const candidateGroupApi = auth.createHeadmanGroupApi(currentFetcher())
+  const candidateJournalApi = auth.createHeadmanJournalApi(currentFetcher())
+  const candidateRequestsApi = auth.createHeadmanRequestsApi(currentFetcher())
+  const candidateHomeworkApi = auth.createHeadmanHomeworkApi(currentFetcher())
+  const groupId = candidateSession.group?.id ? Number(candidateSession.group.id) : null
+  const permissions = groupId !== null && Number.isSafeInteger(groupId) && groupId > 0
+    ? (await candidateGroupApi.listMyPermissions()).map((option) => option.code)
+    : []
   assertCandidateCurrent(generation)
   assertAuthBffCoherence(profile, candidateSession)
-  return { generation, api: candidateApi, session: candidateSession, profile }
+  return {
+    generation,
+    api: candidateApi,
+    session: candidateSession,
+    profile,
+    assistantJournalApi: candidateJournalApi,
+    assistantRequestsApi: candidateRequestsApi,
+    assistantHomeworkApi: candidateHomeworkApi,
+    assistantPermissions: permissions,
+  }
 }
 
 type HeadmanCandidate = {
@@ -383,6 +429,7 @@ type HeadmanCandidate = {
   api: HeadmanScheduleApi
   journalApi: HeadmanJournalApi
   requestsApi: HeadmanRequestsApi
+  groupApi: HeadmanGroupApi
   profile: ProfileSnapshot
   groupId: number
 }
@@ -407,8 +454,17 @@ async function fetchHeadmanCandidate(
   const candidateApi = auth.createHeadmanApi(currentFetcher())
   const candidateJournalApi = auth.createHeadmanJournalApi(currentFetcher())
   const candidateRequestsApi = auth.createHeadmanRequestsApi(currentFetcher())
+  const candidateGroupApi = auth.createHeadmanGroupApi(currentFetcher())
   assertCandidateCurrent(generation)
-  return { generation, api: candidateApi, journalApi: candidateJournalApi, requestsApi: candidateRequestsApi, profile, groupId }
+  return {
+    generation,
+    api: candidateApi,
+    journalApi: candidateJournalApi,
+    requestsApi: candidateRequestsApi,
+    groupApi: candidateGroupApi,
+    profile,
+    groupId,
+  }
 }
 
 type TeacherCandidate = {
@@ -434,6 +490,10 @@ type StudentCandidate = {
   api: StudentApi
   session: StudentSession
   profile: ProfileSnapshot
+  assistantJournalApi: HeadmanJournalApi
+  assistantRequestsApi: HeadmanRequestsApi
+  assistantHomeworkApi: HeadmanHomeworkApi
+  assistantPermissions: readonly HeadmanAssistantPermission[]
 }
 
 async function activateCandidate(candidate: StudentCandidate): Promise<void> {
@@ -507,6 +567,10 @@ async function activateCandidate(candidate: StudentCandidate): Promise<void> {
 
   assertCandidateCurrent(candidate.generation)
   api.value = needsFreshOwner ? candidate.api : api.value
+  assistantJournalApi.value = candidate.assistantJournalApi
+  assistantRequestsApi.value = candidate.assistantRequestsApi
+  assistantHomeworkApi.value = candidate.assistantHomeworkApi
+  assistantPermissions.value = candidate.assistantPermissions
   session.value = candidate.session
   scope.value = nextScope
   if (!sameOwner || profilePort.value === null) {
@@ -528,6 +592,7 @@ async function activateHeadmanCandidate(candidate: HeadmanCandidate): Promise<vo
   headmanApi.value = candidate.api
   headmanJournalApi.value = candidate.journalApi
   headmanRequestsApi.value = candidate.requestsApi
+  headmanGroupApi.value = candidate.groupApi
   headmanGroupId.value = candidate.groupId
   authSnapshot.value = candidate.profile
   offline.value = false
@@ -1012,6 +1077,7 @@ onBeforeUnmount(() => {
     :api="headmanApi"
     :journal-api="headmanJournalApi"
     :requests-api="headmanRequestsApi"
+    :group-api="headmanGroupApi"
     :profile="authSnapshot"
     :group-id="headmanGroupId"
     :offline="offline"
@@ -1090,6 +1156,10 @@ onBeforeUnmount(() => {
     :host="host"
     :profile-port="profilePort"
     :profile-role-select="selectRole"
+    :assistant-permissions="assistantPermissions"
+    :assistant-journal-api="assistantJournalApi"
+    :assistant-requests-api="assistantRequestsApi"
+    :assistant-homework-api="assistantHomeworkApi"
     :map-client="mapClient"
     :theme-controller="theme"
     :acquire-checkin-command="acquireCheckinCommand"

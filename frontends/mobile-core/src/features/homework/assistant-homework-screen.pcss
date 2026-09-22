@@ -1,0 +1,193 @@
+@import '../../styles/tokens.pcss';
+
+.assistant-homework {
+  display: grid;
+  gap: var(--rct-space-4);
+  max-inline-size: var(--rct-mobile-content-width);
+  margin-inline: auto;
+  padding: var(--rct-space-5) var(--rct-space-4) 8rem;
+  color: var(--rct-color-text-primary);
+}
+
+.assistant-homework h1,
+.assistant-homework h2,
+.assistant-homework h3,
+.assistant-homework p {
+  margin: 0;
+}
+
+.assistant-homework__header,
+.assistant-homework__section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+
+.assistant-homework__eyebrow {
+  margin-block-end: var(--rct-space-1) !important;
+  color: var(--rct-color-accent-now);
+  font-size: var(--rct-font-size-caption);
+}
+
+.assistant-homework h1 {
+  font-size: var(--rct-font-size-title-screen);
+  line-height: var(--rct-leading-tight);
+}
+
+.assistant-homework h2 {
+  font-size: var(--rct-font-size-title);
+  line-height: var(--rct-leading-tight);
+}
+
+.assistant-homework h3 {
+  font-size: var(--rct-font-size-body);
+}
+
+.assistant-homework__date,
+.assistant-homework__section-header p,
+.assistant-homework__item p,
+.assistant-homework__item a {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.assistant-homework__date {
+  margin-block-start: var(--rct-space-1) !important;
+  text-transform: capitalize;
+}
+
+.assistant-homework__date-nav {
+  display: flex;
+  gap: var(--rct-space-2);
+}
+
+.assistant-homework__date-nav button,
+.assistant-homework__lesson,
+.assistant-homework__section-header button,
+.assistant-homework__item-actions button,
+.assistant-homework__form-actions button {
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding-inline: var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.assistant-homework__section-header button,
+.assistant-homework__form-actions button:last-child {
+  border-color: var(--rct-color-accent-now);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+
+.assistant-homework__date-nav button:disabled,
+.assistant-homework__lesson:disabled,
+.assistant-homework__section-header button:disabled,
+.assistant-homework__item-actions button:disabled,
+.assistant-homework__form-actions button:disabled,
+.assistant-homework__form input:disabled,
+.assistant-homework__form textarea:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
+.assistant-homework__lessons,
+.assistant-homework__items {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+.assistant-homework__lesson-list {
+  display: grid;
+  gap: var(--rct-space-2);
+}
+
+.assistant-homework__lesson {
+  inline-size: 100%;
+  text-align: start;
+}
+
+.assistant-homework__lesson[data-selected='true'] {
+  border-color: var(--rct-color-accent-now);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+
+.assistant-homework__state,
+.assistant-homework__empty {
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-4);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-raised);
+}
+
+.assistant-homework__state--error,
+.assistant-homework__form-error {
+  color: var(--rct-color-danger-text);
+}
+
+.assistant-homework__state--notice {
+  color: var(--rct-color-success-text);
+}
+
+.assistant-homework__item {
+  display: grid;
+  gap: var(--rct-space-2);
+  border-block-start: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  padding-block-start: var(--rct-space-3);
+}
+
+.assistant-homework__item > div:first-child {
+  display: grid;
+  gap: var(--rct-space-1);
+}
+
+.assistant-homework__item a {
+  color: var(--rct-color-accent-now);
+  text-decoration: underline;
+}
+
+.assistant-homework__item-actions,
+.assistant-homework__form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rct-space-2);
+}
+
+.assistant-homework__item-actions button:last-child {
+  color: var(--rct-color-danger-text);
+}
+
+.assistant-homework__form {
+  display: grid;
+  gap: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-accent-now);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-3);
+  background: var(--rct-color-surface-raised);
+}
+
+.assistant-homework__form label {
+  display: grid;
+  gap: var(--rct-space-1);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.assistant-homework__form input,
+.assistant-homework__form textarea {
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  @mixin rct-focus-ring;
+}

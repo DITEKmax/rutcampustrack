@@ -21,6 +21,7 @@ public class RequestContext {
     private UserRole role;
     private Long groupId;
     private boolean headman;
+    private String internalToken;
 
     public Long getUserId() {
         return userId;
@@ -52,5 +53,14 @@ public class RequestContext {
 
     public void setHeadman(boolean headman) {
         this.headman = headman;
+    }
+
+    /** Exact signed token accepted by the HTTP boundary, request-scoped only. */
+    public String getInternalToken() {
+        return internalToken;
+    }
+
+    public void setInternalToken(String internalToken) {
+        this.internalToken = internalToken;
     }
 }

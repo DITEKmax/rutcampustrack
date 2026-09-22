@@ -133,6 +133,30 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     return blob
   }
 
+  async cancelLesson(lessonId: number, reason: string): Promise<HeadmanJournalLesson> {
+    assertPositiveInteger(lessonId, 'lessonId')
+    const normalizedReason = reason.trim()
+    if (!normalizedReason) throw new RangeError('Причина отмены обязательна')
+    if (Array.from(normalizedReason).length > 512) throw new RangeError('Причина отмены не может быть длиннее 512 символов')
+    const value = await this.request<unknown>(`/api/schedule/lessons/${lessonId}/cancel`, {
+      method: 'PATCH',
+      body: JSON.stringify({ reason: normalizedReason }),
+    })
+    const lesson = normalizeLesson(value)
+    if (!lesson) throw new Error('Сервер вернул неполную пару после отмены')
+    return lesson
+  }
+
+  async restoreLesson(lessonId: number): Promise<HeadmanJournalLesson> {
+    assertPositiveInteger(lessonId, 'lessonId')
+    const value = await this.request<unknown>(`/api/schedule/lessons/${lessonId}/restore`, {
+      method: 'PATCH',
+    })
+    const lesson = normalizeLesson(value)
+    if (!lesson) throw new Error('Сервер вернул неполную пару после восстановления')
+    return lesson
+  }
+
   mark(lessonId: number, userId: number, command: HeadmanJournalMarkCommand): Promise<HeadmanJournalMarkAck> {
     if (this.writePort) return this.writePort.mark(lessonId, userId, command)
     assertPositiveInteger(lessonId, 'lessonId')

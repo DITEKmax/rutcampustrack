@@ -15,12 +15,14 @@ import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Homework;
+import ru.rutcampustrack.academic.entity.UserRoleGrant;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
 import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
+import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse;
@@ -40,6 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -71,6 +74,7 @@ class HomeworkServiceTest {
     @Mock private RequestContext requestContext;
     @Mock private ApplicationEventPublisher eventPublisher;
     @Mock private ScheduleGrpcClient scheduleGrpcClient;
+    @Mock private UserRoleGrantRepository grantRepository;
 
     private Clock clock;
 
@@ -86,7 +90,9 @@ class HomeworkServiceTest {
                 requestContext,
                 eventPublisher,
                 scheduleGrpcClient,
-                clock);
+                clock,
+                null,
+                grantRepository);
     }
 
     // =========================================================================
@@ -99,7 +105,7 @@ class HomeworkServiceTest {
         when(requestContext.isHeadman()).thenReturn(false);
         when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         when(requestContext.getUserId()).thenReturn(OTHER_USER_ID);
-        when(assistantRepository.findByGroupIdAndStudentId(anyLong(), anyLong()))
+        when(assistantRepository.findByGroupIdAndStudentIdAndIsActiveTrue(anyLong(), anyLong()))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.createHomework(validRequest(TOMORROW)))
@@ -304,6 +310,10 @@ class HomeworkServiceTest {
         when(requestContext.isHeadman()).thenReturn(true);
         when(requestContext.getUserId()).thenReturn(HEADMAN_ID);
         when(requestContext.getGroupId()).thenReturn(GROUP_ID);
+        UserRoleGrant grant = mock(UserRoleGrant.class);
+        when(grant.getGroupId()).thenReturn(GROUP_ID);
+        when(grantRepository.findByUserIdAndRoleAndStatus(HEADMAN_ID, "headman", "active"))
+                .thenReturn(java.util.List.of(grant));
     }
 
     private CreateHomeworkRequest validRequest(LocalDate date) {

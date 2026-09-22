@@ -2,7 +2,7 @@ export type ProfileRole = 'STUDENT' | 'HEADMAN' | 'TEACHER' | 'ADMIN'
 export type ProfileRoleStatus = 'ACTIVE' | 'SUSPENDED' | 'EXPELLED' | 'GRADUATED' | 'DISMISSED' | 'ARCHIVED'
 export type ProfileTheme = 'light' | 'dark' | 'system'
 export type ProfileResolvedTheme = 'light' | 'dark'
-export type ProfileRoute = 'statistics' | 'map' | 'requests' | 'profile' | 'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'
+export type ProfileRoute = 'statistics' | 'map' | 'requests' | 'assistant' | 'profile' | 'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'
 export type ProfileAuthMethod = 'PASSWORD' | 'OTP' | 'TMA'
 export type ProfileHistoryType = 'LOGIN' | 'ROLE_CHANGED' | 'CURRENT_LOGOUT' | 'LOGOUT_ALL' | 'PASSWORD_CHANGED' | 'SECURITY_REVOKED'
 

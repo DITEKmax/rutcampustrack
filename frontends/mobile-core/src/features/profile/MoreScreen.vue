@@ -8,10 +8,12 @@ import './profile-screen.pcss'
 
 const props = withDefaults(defineProps<{
   onNavigate?: ((route: ProfileRoute) => void | Promise<void>) | undefined
+  assistantEnabled?: boolean
   mapEnabled?: boolean
   theme?: ProfileResolvedTheme
 }>(), {
   onNavigate: undefined,
+  assistantEnabled: false,
   mapEnabled: false,
   theme: 'dark',
 })
@@ -26,6 +28,9 @@ const routes = computed(() => [
     disabledReason: props.mapEnabled ? null : 'Раздел пока недоступен',
   },
   { route: 'requests' as const, label: 'Заявки', icon: moreRequests, disabled: false, disabledReason: null },
+  ...(props.assistantEnabled
+    ? [{ route: 'assistant' as const, label: 'Действия помощника', icon: moreRequests, disabled: false, disabledReason: null }]
+    : []),
 ])
 
 function navigate(route: ProfileRoute): void {

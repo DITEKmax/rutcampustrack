@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssistantResponse;
+import ru.rutcampustrack.academic.contract.dto.assistant.AssistantPermissionOption;
 import ru.rutcampustrack.academic.contract.dto.assistant.UpdateAssistantPermissionsRequest;
+
+import java.util.List;
 
 /**
  * REST API contract for headman assistant management.
@@ -44,6 +47,16 @@ public interface AssistantApi {
     @GetMapping
     ResponseEntity<CollectionModel<EntityModel<AssistantResponse>>> listAssistants(
             @RequestParam Long groupId);
+
+    @Operation(summary = "Каталог прав помощника")
+    @ApiResponse(responseCode = "200", description = "Допустимые права и подписи")
+    @GetMapping("/permissions")
+    ResponseEntity<List<AssistantPermissionOption>> listPermissionCatalog();
+
+    @Operation(summary = "Текущие права помощника для signed пользователя")
+    @ApiResponse(responseCode = "200", description = "Фактически разрешённые действия")
+    @GetMapping("/me/permissions")
+    ResponseEntity<List<AssistantPermissionOption>> listMyPermissionCatalog();
 
     @Operation(summary = "Обновить права помощника (HEADMAN/ADMIN)")
     @ApiResponses({

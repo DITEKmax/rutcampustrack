@@ -17,6 +17,9 @@ import HeadmanJournalScreen from '../headman-journal/HeadmanJournalScreen.vue'
 import type { HeadmanJournalApi } from '../headman-journal/headman-journal-client'
 import HeadmanRequestsScreen from '../headman-requests/HeadmanRequestsScreen.vue'
 import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
+import HeadmanGroupScreen from '../headman-group/HeadmanGroupScreen.vue'
+import type { HeadmanGroupApi } from '../headman-group/headman-group-client'
+import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
 import {
   HeadmanScheduleApiError,
   type HeadmanScheduleApi,
@@ -31,6 +34,8 @@ const props = withDefaults(defineProps<{
   api: HeadmanScheduleApi | null
   journalApi?: HeadmanJournalApi | null
   requestsApi?: HeadmanRequestsApi | null
+  groupApi?: HeadmanGroupApi | null
+  assistantPermissions?: readonly HeadmanAssistantPermission[] | null
   profile: ProfileSnapshot | null
   groupId: number | null
   mapClient?: CampusMapClient | null
@@ -42,6 +47,8 @@ const props = withDefaults(defineProps<{
 }>(), {
   journalApi: null,
   requestsApi: null,
+  groupApi: null,
+  assistantPermissions: null,
   mapClient: null,
   offline: false,
   readOnly: false,
@@ -69,6 +76,7 @@ const selectedDay = ref(1)
 const formOpen = ref(false)
 const journalOpen = ref(false)
 const requestsOpen = ref(false)
+const groupOpen = ref(false)
 const formBusy = ref(false)
 const formError = ref<string | null>(null)
 const notice = ref<string | null>(null)
@@ -82,6 +90,7 @@ const room = ref('')
 const commandFingerprint = ref<string | null>(null)
 const journalRouteId = 'more/headman-journal/journal' as const
 const requestsRouteId = 'more/headman-requests/list' as const
+const groupRouteId = 'more/headman-group/list' as const
 let loadRevision = 0
 let stopNavigation = navigation.subscribe(() => {
   const next = navigation.current
@@ -91,19 +100,28 @@ let stopNavigation = navigation.subscribe(() => {
     formOpen.value = false
     journalOpen.value = false
     requestsOpen.value = false
+    groupOpen.value = false
     void props.onRoleSwitch?.()
   } else if (next.id === journalRouteId) {
     formOpen.value = false
     journalOpen.value = true
     requestsOpen.value = false
+    groupOpen.value = false
   } else if (next.id === requestsRouteId) {
     formOpen.value = false
     journalOpen.value = false
     requestsOpen.value = true
+    groupOpen.value = false
+  } else if (next.id === groupRouteId) {
+    formOpen.value = false
+    journalOpen.value = false
+    requestsOpen.value = false
+    groupOpen.value = true
   } else if (next.id === 'more/headman-schedule/list') {
     formOpen.value = false
     journalOpen.value = false
     requestsOpen.value = false
+    groupOpen.value = false
   } else if (next.id === 'more/headman-schedule/form') {
     journalOpen.value = false
     requestsOpen.value = false
@@ -182,6 +200,12 @@ function openRequests(): void {
   if (!props.requestsApi || props.offline) return
   requestsOpen.value = true
   navigation.push(nestedRoute('more', requestsRouteId, 'task'))
+}
+
+function openGroup(): void {
+  if (!props.groupApi || props.groupId === null || props.offline) return
+  groupOpen.value = true
+  navigation.push(nestedRoute('more', groupRouteId, 'task'))
 }
 
 function closeRequests(): void {
@@ -341,6 +365,7 @@ onBeforeUnmount(() => {
       v-else-if="journalOpen"
       :api="journalApi"
       :group-id="groupId"
+      :assistant-permissions="assistantPermissions"
       :offline="offline"
       :read-only="readOnly"
       @error="emit('error', $event)"
@@ -348,9 +373,19 @@ onBeforeUnmount(() => {
     <HeadmanRequestsScreen
       v-else-if="requestsOpen"
       :api="requestsApi"
+      :assistant-permissions="assistantPermissions"
       :offline="offline"
       :read-only="readOnly"
       @back="closeRequests"
+      @error="emit('error', $event)"
+    />
+    <HeadmanGroupScreen
+      v-else-if="groupOpen"
+      :api="groupApi"
+      :group-id="groupId"
+      :assistant-permissions="assistantPermissions"
+      :offline="offline"
+      :read-only="readOnly"
       @error="emit('error', $event)"
     />
     <main
@@ -418,6 +453,15 @@ onBeforeUnmount(() => {
         @click="openRequests"
       >
         Открыть заявки группы
+      </button>
+      <button
+        v-if="groupApi && groupId !== null"
+        class="headman-schedule__journal"
+        type="button"
+        :disabled="offline"
+        @click="openGroup"
+      >
+        Управление помощниками
       </button>
       <button
         v-if="mapClient"

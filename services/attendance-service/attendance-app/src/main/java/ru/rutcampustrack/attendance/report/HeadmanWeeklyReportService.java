@@ -360,11 +360,13 @@ public class HeadmanWeeklyReportService {
     }
 
     private void ensureHeadman() {
-        if (!requestContext.isHeadman()) {
-            throw new AccessDeniedException("Only a group headman can export weekly reports");
-        }
         if (requestContext.getGroupId() == null) {
             throw new AccessDeniedException("Headman group is not available in request context");
+        }
+        if (!requestContext.isHeadman()
+                && !academicGrpcClient.hasAssistantPermission(
+                requestContext.getGroupId(), "VIEW_STATS")) {
+            throw new AccessDeniedException("Отсутствует право VIEW_STATS");
         }
     }
 

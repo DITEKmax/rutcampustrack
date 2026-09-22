@@ -9,13 +9,16 @@ import type {
   HeadmanRequestsApi,
 } from './headman-requests-client'
 import { HeadmanRequestsApiError } from './headman-requests-client'
+import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
 import './headman-requests-screen.pcss'
 
 const props = withDefaults(defineProps<{
   api: HeadmanRequestsApi | null
+  assistantPermissions?: readonly HeadmanAssistantPermission[] | null
   offline?: boolean
   readOnly?: boolean
 }>(), {
+  assistantPermissions: null,
   offline: false,
   readOnly: false,
 })
@@ -42,6 +45,10 @@ const decisionError = ref<Record<string, string>>({})
 let loadRevision = 0
 
 const pageCount = () => page.value?.totalPages ?? 0
+
+function canManageExcuses(): boolean {
+  return props.assistantPermissions === null || props.assistantPermissions.includes('MANAGE_EXCUSES')
+}
 
 async function load(): Promise<void> {
   const revision = ++loadRevision
@@ -289,7 +296,7 @@ onBeforeUnmount(() => { loadRevision += 1 })
           </template>
         </div>
 
-        <div v-if="item.status === 'PENDING' && !readOnly" class="headman-requests__actions">
+        <div v-if="item.status === 'PENDING' && !readOnly && canManageExcuses()" class="headman-requests__actions">
           <label>
             <span>Причина отклонения</span>
             <textarea v-model="rejectReasons[item.id]" rows="2" maxlength="1000" placeholder="Обязательна только для отклонения" />

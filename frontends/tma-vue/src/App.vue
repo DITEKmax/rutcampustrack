@@ -14,6 +14,7 @@ import {
   HeadmanScheduleApiError,
   HeadmanJournalApiError,
   HeadmanRequestsApiError,
+  HeadmanGroupApiError,
   HeadmanScheduleScreen,
   MapScreen,
   ProfileRequestError,
@@ -35,6 +36,9 @@ import {
   type HeadmanScheduleApi,
   type HeadmanJournalApi,
   type HeadmanRequestsApi,
+  type HeadmanGroupApi,
+  type HeadmanHomeworkApi,
+  type HeadmanAssistantPermission,
   type ProfileRole,
   type ProfileSnapshot,
   type AdminSemesterClient,
@@ -73,6 +77,11 @@ const teacherSemesterId = ref<number | null>(null)
 const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
 const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
+const headmanGroupApi = shallowRef<HeadmanGroupApi | null>(null)
+const assistantJournalApi = shallowRef<HeadmanJournalApi | null>(null)
+const assistantRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
+const assistantHomeworkApi = shallowRef<HeadmanHomeworkApi | null>(null)
+const assistantPermissions = shallowRef<readonly HeadmanAssistantPermission[]>([])
 const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null)
 const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
@@ -122,6 +131,7 @@ function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof HeadmanScheduleApiError) return cause.response.status
   if (cause instanceof HeadmanJournalApiError) return cause.response.status
   if (cause instanceof HeadmanRequestsApiError) return cause.response.status
+  if (cause instanceof HeadmanGroupApiError) return cause.response.status
   if (cause instanceof AdminSemesterApiError) return cause.response.status
   if (cause instanceof AdminGroupsApiError) return cause.response.status
   if (cause instanceof AdminUsersApiError) return cause.response.status
@@ -150,6 +160,27 @@ async function fetchSessionForCurrentGeneration(): Promise<{
   const candidateSession = await candidateApi.getSession()
   if (!sessionOwner.isCurrent(generation)) throw new Error('Сессия сменилась во время входа')
   return { generation, api: candidateApi, session: candidateSession }
+}
+
+async function fetchAssistantCapabilities(
+  generation: number,
+  studentSession: StudentSession,
+): Promise<{
+  journalApi: HeadmanJournalApi
+  requestsApi: HeadmanRequestsApi
+  homeworkApi: HeadmanHomeworkApi
+  permissions: readonly HeadmanAssistantPermission[]
+}> {
+  const groupApi = sessionOwner.createHeadmanGroupApi(currentFetcher())
+  const journalApi = sessionOwner.createHeadmanJournalApi(currentFetcher())
+  const requestsApi = sessionOwner.createHeadmanRequestsApi(currentFetcher())
+  const homeworkApi = sessionOwner.createHeadmanHomeworkApi(currentFetcher())
+  const groupId = studentSession.group?.id ? Number(studentSession.group.id) : null
+  const permissions = groupId !== null && Number.isSafeInteger(groupId) && groupId > 0
+    ? (await groupApi.listMyPermissions()).map((option) => option.code)
+    : []
+  if (!sessionOwner.isCurrent(generation)) throw new StaleSessionGenerationError()
+  return { journalApi, requestsApi, homeworkApi, permissions }
 }
 
 async function fetchProfileForCurrentGeneration(): Promise<{ generation: number; profile: ProfileSnapshot }> {
@@ -199,6 +230,11 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
   headmanApi.value = null
   headmanJournalApi.value = null
   headmanRequestsApi.value = null
+  headmanGroupApi.value = null
+  assistantJournalApi.value = null
+  assistantRequestsApi.value = null
+  assistantHomeworkApi.value = null
+  assistantPermissions.value = []
   adminSemesterApi.value = null
   adminUsersApi.value = null
   adminGroupsApi.value = null
@@ -270,11 +306,13 @@ async function bootstrap(): Promise<void> {
       headmanApi.value = sessionOwner.createHeadmanApi(currentFetcher())
       headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
       headmanRequestsApi.value = sessionOwner.createHeadmanRequestsApi(currentFetcher())
+      headmanGroupApi.value = sessionOwner.createHeadmanGroupApi(currentFetcher())
       headmanGroupId.value = groupId
       authView.value = 'headman'
       ownerRevision.value += 1
     } else if (candidateProfile.profile.activeRole === 'STUDENT') {
       const candidate = await fetchSessionForCurrentGeneration()
+      const assistant = await fetchAssistantCapabilities(candidate.generation, candidate.session)
       if (session.value && sessionIdentity(session.value) !== sessionIdentity(candidate.session)) {
         invalidateOwnerSynchronously()
         profile.value = candidateProfile.profile
@@ -288,7 +326,12 @@ async function bootstrap(): Promise<void> {
       headmanApi.value = null
       headmanJournalApi.value = null
       headmanRequestsApi.value = null
+      headmanGroupApi.value = null
       headmanGroupId.value = null
+      assistantJournalApi.value = assistant.journalApi
+      assistantRequestsApi.value = assistant.requestsApi
+      assistantHomeworkApi.value = assistant.homeworkApi
+      assistantPermissions.value = assistant.permissions
       api.value = needsFreshOwner ? candidate.api : api.value
       session.value = candidate.session
       scope.value = nextScope
@@ -346,6 +389,7 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       headmanApi.value = sessionOwner.createHeadmanApi(currentFetcher())
       headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
       headmanRequestsApi.value = sessionOwner.createHeadmanRequestsApi(currentFetcher())
+      headmanGroupApi.value = sessionOwner.createHeadmanGroupApi(currentFetcher())
       headmanGroupId.value = groupId
       authView.value = 'headman'
       ownerRevision.value += 1
@@ -359,10 +403,16 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       const candidateApi = sessionOwner.createApi(currentFetcher())
       const candidateSession = await candidateApi.getSession()
       if (!sessionOwner.isCurrent(selection.generation)) throw new Error('Сессия сменилась во время входа')
+      const assistant = await fetchAssistantCapabilities(selection.generation, candidateSession)
       headmanApi.value = null
       headmanJournalApi.value = null
       headmanRequestsApi.value = null
+      headmanGroupApi.value = null
       headmanGroupId.value = null
+      assistantJournalApi.value = assistant.journalApi
+      assistantRequestsApi.value = assistant.requestsApi
+      assistantHomeworkApi.value = assistant.homeworkApi
+      assistantPermissions.value = assistant.permissions
       api.value = candidateApi
       session.value = candidateSession
       scope.value = studentFeatureScope(candidateSession, selection.generation)
@@ -459,6 +509,7 @@ onBeforeUnmount(() => {
     :api="headmanApi"
     :journal-api="headmanJournalApi"
     :requests-api="headmanRequestsApi"
+    :group-api="headmanGroupApi"
     :profile="profile"
     :group-id="headmanGroupId"
     :offline="offline"
@@ -538,6 +589,10 @@ onBeforeUnmount(() => {
     :map-client="mapClient"
     :acquire-checkin-command="acquireCheckinCommand"
     :open-material="openMaterial"
+    :assistant-permissions="assistantPermissions"
+    :assistant-journal-api="assistantJournalApi"
+    :assistant-requests-api="assistantRequestsApi"
+    :assistant-homework-api="assistantHomeworkApi"
     @owner-error="onOwnerError"
   />
   <section

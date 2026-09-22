@@ -2,6 +2,8 @@ package ru.rutcampustrack.academic.integration;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.grpc.Metadata;
+import io.grpc.stub.MetadataUtils;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +14,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
+import ru.rutcampustrack.academic.grpc.AssistantPermissionCheckRequest;
+import ru.rutcampustrack.academic.grpc.AssistantPermissionCheckResponse;
 import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
@@ -29,6 +33,7 @@ import ru.rutcampustrack.academic.grpc.UserByTelegramIdRequest;
 import ru.rutcampustrack.academic.grpc.UserByTelegramIdResponse;
 import ru.rutcampustrack.academic.grpc.UserRequest;
 import ru.rutcampustrack.academic.grpc.UserResponse;
+import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -76,6 +81,9 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private InternalJwtTestFactory internalJwtTestFactory;
 
     private Long subjectId;
     private Long archivedUserId;
@@ -380,6 +388,83 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
     }
 
     // =====================================================================
+    // GRPC-04a: durable assistant permission authority
+    // =====================================================================
+
+    @Test
+    void checkAssistantPermission_usesSignedIdentityAndFreshDurableGrant() {
+        String login = "grpc-assist-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        long assistantId = jdbcTemplate.queryForObject(
+                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
+                        + "is_headman, group_id, password_changed, created_at, updated_at) "
+                        + "VALUES (?, NULL, 'Grpc', 'Assistant', 'student', 'active', false, ?, true, NOW(), NOW()) "
+                        + "RETURNING id",
+                Long.class, login, GROUP_ID);
+        jdbcTemplate.update(
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
+                        + "VALUES (?, 'student', 'active', ?, NOW(), NOW()) "
+                        + "ON CONFLICT (user_id, role) DO UPDATE SET status = 'active', group_id = EXCLUDED.group_id, updated_at = NOW()",
+                assistantId, GROUP_ID);
+        long assistantAssignmentId = jdbcTemplate.queryForObject(
+                "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by, is_active, assigned_at) "
+                        + "VALUES (?, ?, ARRAY['mark_attendance', 'manage_excuses']::varchar(64)[], ?, true, NOW()) "
+                        + "RETURNING id",
+                Long.class, GROUP_ID, assistantId, STUDENT_ID);
+        try {
+            String activeToken = internalJwtTestFactory.validToken(
+                    assistantId, UUID.randomUUID(), 1L, 1L,
+                    "STUDENT", "ACTIVE", GROUP_ID, false, false);
+
+            AssistantPermissionCheckRequest markAttendance = AssistantPermissionCheckRequest.newBuilder()
+                    .setGroupId(GROUP_ID)
+                    .setPermission("MARK_ATTENDANCE")
+                    .build();
+            assertThat(withInternalToken(activeToken)
+                    .checkAssistantPermission(markAttendance)
+                    .getAllowed()).isTrue();
+
+            // The same signed actor is denied a different capability and a
+            // foreign target group; request payload has no actor override.
+            assertThat(withInternalToken(activeToken)
+                    .checkAssistantPermission(markAttendance.toBuilder()
+                            .setPermission("CANCEL_LESSONS")
+                            .build())
+                    .getAllowed()).isFalse();
+            assertThat(withInternalToken(activeToken)
+                    .checkAssistantPermission(markAttendance.toBuilder()
+                            .setGroupId(GROUP_ID + 10_000)
+                            .build())
+                    .getAllowed()).isFalse();
+
+            // Revocation is visible on the next uncached RPC.
+            jdbcTemplate.update(
+                    "UPDATE headman_assistants SET is_active = false, revoked_at = NOW() WHERE id = ?",
+                    assistantAssignmentId);
+            assertThat(withInternalToken(activeToken)
+                    .checkAssistantPermission(markAttendance)
+                    .getAllowed()).isFalse();
+
+            // A terminal/read-only signed identity cannot use a still-present
+            // assistant row after account disablement.
+            String disabledToken = internalJwtTestFactory.validToken(
+                    assistantId, UUID.randomUUID(), 2L, 2L,
+                    "STUDENT", "EXPELLED", GROUP_ID, false, true);
+            assertThat(withInternalToken(disabledToken)
+                    .checkAssistantPermission(markAttendance)
+                    .getAllowed()).isFalse();
+
+            assertThatThrownBy(() -> stub.checkAssistantPermission(markAttendance))
+                    .isInstanceOfSatisfying(StatusRuntimeException.class,
+                            error -> assertThat(error.getStatus().getCode())
+                                    .isEqualTo(Status.Code.UNAUTHENTICATED));
+        } finally {
+            jdbcTemplate.update("DELETE FROM headman_assistants WHERE id = ?", assistantAssignmentId);
+            jdbcTemplate.update("DELETE FROM user_role_grants WHERE user_id = ?", assistantId);
+            jdbcTemplate.update("DELETE FROM users WHERE id = ?", assistantId);
+        }
+    }
+
+    // =====================================================================
     // GRPC-05: GetActiveSemester
     // =====================================================================
 
@@ -411,6 +496,12 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
             // Restore active semester for subsequent tests
             jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", testSemesterId);
         }
+    }
+
+    private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub withInternalToken(String token) {
+        Metadata metadata = new Metadata();
+        metadata.put(Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER), token);
+        return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata));
     }
 
     // =====================================================================

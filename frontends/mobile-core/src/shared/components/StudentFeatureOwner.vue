@@ -15,10 +15,16 @@ import AttendanceScreen from '../../features/attendance/AttendanceScreen.vue'
 import type { AttendanceGraphRange, AttendanceLesson, AttendanceMode } from '../../features/attendance/attendance-view-model'
 import { useAttendance } from '../../features/attendance/use-attendance'
 import HomeworkScreen from '../../features/homework/HomeworkScreen.vue'
+import AssistantHomeworkScreen from '../../features/homework/AssistantHomeworkScreen.vue'
+import type { HeadmanHomeworkApi } from '../../features/homework/headman-homework-client'
 import { useHomework } from '../../features/homework/use-homework'
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue'
 import AppearanceScreen from '../../features/profile/AppearanceScreen.vue'
 import MoreScreen from '../../features/profile/MoreScreen.vue'
+import AssistantActionsScreen from '../../features/headman-group/AssistantActionsScreen.vue'
+import type { HeadmanAssistantPermission } from '../../features/headman-group/headman-group-client'
+import type { HeadmanJournalApi } from '../../features/headman-journal/headman-journal-client'
+import type { HeadmanRequestsApi } from '../../features/headman-requests/headman-requests-client'
 import MapScreen from '../../features/map/MapScreen.vue'
 import ProfileScreen from '../../features/profile/ProfileScreen.vue'
 import { ProfileState } from '../../features/profile/profile-state'
@@ -73,6 +79,10 @@ const props = withDefaults(defineProps<{
   themeController?: MobileThemeController | null
   acquireCheckinCommand: () => Promise<StudentCheckinCommand>
   openMaterial: (url: string, item: StudentHomeworkItem) => void
+  assistantPermissions?: readonly HeadmanAssistantPermission[]
+  assistantJournalApi?: HeadmanJournalApi | null
+  assistantRequestsApi?: HeadmanRequestsApi | null
+  assistantHomeworkApi?: HeadmanHomeworkApi | null
 }>(), {
   readOnly: false,
   todayFallback: null,
@@ -84,6 +94,10 @@ const props = withDefaults(defineProps<{
   profilePort: null,
   profileRoleSelect: undefined,
   themeController: null,
+  assistantPermissions: () => [],
+  assistantJournalApi: null,
+  assistantRequestsApi: null,
+  assistantHomeworkApi: null,
 })
 
 const emit = defineEmits<{
@@ -554,6 +568,11 @@ function navigateMore(routeName: ProfileRoute): void {
     navigation.push(nestedRoute('more', 'more/map', 'overview'))
     return
   }
+  if (routeName === 'assistant') {
+    if (!props.assistantPermissions?.length || offline.value) return
+    navigation.push(nestedRoute('more', 'more/assistant', 'task'))
+    return
+  }
   if (routeName !== 'requests') return
   requests.selectBucket('open')
   updateRequestDraft({ bucket: 'open', view: 'inbox' })
@@ -1007,7 +1026,20 @@ onBeforeUnmount(() => {
       v-if="route.kind === 'root'"
       :theme="resolvedTheme"
       :map-enabled="Boolean(props.mapClient) && !offline"
+      :assistant-enabled="Boolean(props.assistantPermissions?.length) && !offline"
       :on-navigate="navigateMore"
+    />
+    <AssistantActionsScreen
+      v-else-if="route.id === 'more/assistant'"
+      :permissions="assistantPermissions ?? []"
+      :group-id="scope?.groupId ? Number(scope.groupId) : null"
+      :journal-api="assistantJournalApi ?? null"
+      :requests-api="assistantRequestsApi ?? null"
+      :homework-api="assistantHomeworkApi ?? null"
+      :user-id="scope?.userId ? Number(scope.userId) : null"
+      :offline="offline"
+      :read-only="props.readOnly"
+      @error="emit('ownerError', $event)"
     />
     <StatisticsScreen
       v-else-if="route.id === 'more/statistics'"

@@ -185,6 +185,66 @@
   align-items: center;
 }
 
+.headman-journal__lesson-actions {
+  display: grid;
+  gap: var(--rct-space-2);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-3);
+  background: var(--rct-color-surface-raised);
+}
+
+.headman-journal__lesson-actions h3,
+.headman-journal__lesson-actions p {
+  margin: 0;
+}
+
+.headman-journal__lesson-actions h3 {
+  font-size: var(--rct-font-size-body);
+}
+
+.headman-journal__lesson-actions p {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-journal__lesson-actions label {
+  display: grid;
+  gap: var(--rct-space-1);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-journal__lesson-actions input {
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding-inline: var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  @mixin rct-focus-ring;
+}
+
+.headman-journal__lesson-actions button {
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  padding-inline: var(--rct-space-3);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.headman-journal__lesson-actions button:disabled,
+.headman-journal__lesson-actions input:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
 .headman-journal__server-flag {
   max-inline-size: 9rem;
   color: var(--rct-color-success-text);

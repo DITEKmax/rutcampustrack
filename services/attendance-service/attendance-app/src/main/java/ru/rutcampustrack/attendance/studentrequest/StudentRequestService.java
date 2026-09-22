@@ -1516,15 +1516,16 @@ public class StudentRequestService {
 
     private long requireDecisionAuthority(Identity identity, Long resourceGroupId) {
         long caller = requireAuthenticatedScope(identity);
-        if (!identity.headman()) {
-            throw new AccessDeniedException("Решение доступно только старосте группы");
-        }
         if (resourceGroupId == null || !Objects.equals(resourceGroupId, identity.groupId())) {
             throw new AccessDeniedException("Нельзя принимать решение по чужой группе");
         }
-        var authority = academicGrpcClient.isHeadman(caller, resourceGroupId);
-        if (authority == null || !authority.getIsHeadman()) {
-            throw new AccessDeniedException("Староста не подтверждён для группы заявки");
+        if (identity.headman()) {
+            var authority = academicGrpcClient.isHeadman(caller, resourceGroupId);
+            if (authority == null || !authority.getIsHeadman()) {
+                throw new AccessDeniedException("Староста не подтверждён для группы заявки");
+            }
+        } else if (!academicGrpcClient.hasAssistantPermission(resourceGroupId, "MANAGE_EXCUSES")) {
+            throw new AccessDeniedException("Отсутствует право MANAGE_EXCUSES");
         }
         return caller;
     }

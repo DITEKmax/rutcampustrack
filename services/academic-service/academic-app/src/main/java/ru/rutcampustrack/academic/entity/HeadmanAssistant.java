@@ -9,8 +9,7 @@ import org.hibernate.type.SqlTypes;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "headman_assistants",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"group_id", "student_id"}))
+@Table(name = "headman_assistants")
 @Getter
 @NoArgsConstructor
 public class HeadmanAssistant {

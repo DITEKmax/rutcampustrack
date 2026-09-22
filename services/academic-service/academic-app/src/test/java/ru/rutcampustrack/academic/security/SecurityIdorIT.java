@@ -12,17 +12,21 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
 import ru.rutcampustrack.academic.contract.dto.assistant.UpdateAssistantPermissionsRequest;
+import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.enums.AssistantPermission;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * M13 G9 (NEW-31) — IDOR-проверки academic-service.
@@ -110,9 +114,11 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
         // Homework группы B (опубликованный headman'ом B)
         homeworkBId = jdbc.queryForObject(
                 "INSERT INTO homeworks (group_id, subject_id, semester_id, title, description, " +
-                "published_by, lesson_date, lesson_number, created_at, updated_at) " +
-                "VALUES (?, ?, ?, 'IDOR HW B', 'desc', ?, '2041-10-15', 1, NOW(), NOW()) RETURNING id",
-                Long.class, groupBId, subjectBId, semesterId, headmanBId);
+                "published_by, lesson_date, lesson_number, binding_id, actor_id, request_key, payload_hash, " +
+                "created_at, updated_at) " +
+                "VALUES (?, ?, ?, 'IDOR HW B', 'desc', ?, '2041-10-15', 1, ?, ?, ?, decode(repeat('ab', 32), 'hex'), NOW(), NOW()) RETURNING id",
+                Long.class, groupBId, subjectBId, semesterId, headmanBId,
+                Math.abs(System.nanoTime()), headmanBId, UUID.randomUUID());
 
         // Assistant группы B
         assistantBId = jdbc.queryForObject(
@@ -150,6 +156,20 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
                 .header("X-User-Role", "STUDENT")
                 .header("X-Group-Id", groupAId)
                 .header("X-Is-Headman", "true");
+    }
+
+    private MockHttpServletRequestBuilder asHeadmanB(MockHttpServletRequestBuilder b) {
+        return b.header("X-User-Id", headmanBId)
+                .header("X-User-Role", "STUDENT")
+                .header("X-Group-Id", groupBId)
+                .header("X-Is-Headman", "true");
+    }
+
+    private MockHttpServletRequestBuilder asStudentB(MockHttpServletRequestBuilder b) {
+        return b.header("X-User-Id", studentBId)
+                .header("X-User-Role", "STUDENT")
+                .header("X-Group-Id", groupBId)
+                .header("X-Is-Headman", "false");
     }
 
     // ============================================================
@@ -218,6 +238,106 @@ class SecurityIdorIT extends AbstractAcademicIntegrationTest {
     @Test
     void revokeAssistant_foreignAssistant_returns403() throws Exception {
         mockMvc.perform(asHeadmanA(delete("/academic/assistants/{id}", assistantBId)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void assignRevokeAssign_preservesHistoryAndCannotUpdateRevokedRow() throws Exception {
+        jdbc.update(
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
+                        + "VALUES (?, 'headman', 'active', ?, NOW(), NOW())",
+                headmanAId, groupAId);
+        jdbc.update(
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
+                        + "VALUES (?, 'student', 'active', ?, NOW(), NOW())",
+                studentAId, groupAId);
+
+        AssignAssistantRequest request = new AssignAssistantRequest(
+                studentAId, groupAId, List.of(AssistantPermission.MANAGE_HOMEWORK));
+        String requestJson = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(asHeadmanA(post("/academic/assistants")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson)))
+                .andExpect(status().isCreated());
+        Long firstAssignmentId = jdbc.queryForObject(
+                "SELECT id FROM headman_assistants WHERE group_id = ? AND student_id = ? AND is_active = true",
+                Long.class, groupAId, studentAId);
+
+        mockMvc.perform(asHeadmanA(delete("/academic/assistants/{id}", firstAssignmentId)))
+                .andExpect(status().isNoContent());
+
+        UpdateAssistantPermissionsRequest update = new UpdateAssistantPermissionsRequest(
+                List.of(AssistantPermission.MARK_ATTENDANCE));
+        mockMvc.perform(asHeadmanA(patch("/academic/assistants/{id}/permissions", firstAssignmentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update))))
+                .andExpect(status().isConflict());
+        assertThat(jdbc.queryForObject(
+                "SELECT is_active FROM headman_assistants WHERE id = ?", Boolean.class, firstAssignmentId))
+                .isFalse();
+
+        mockMvc.perform(asHeadmanA(post("/academic/assistants")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson)))
+                .andExpect(status().isCreated());
+
+        assertThat(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM headman_assistants WHERE group_id = ? AND student_id = ?",
+                Integer.class, groupAId, studentAId)).isEqualTo(2);
+        assertThat(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM headman_assistants WHERE group_id = ? AND student_id = ? AND is_active = true",
+                Integer.class, groupAId, studentAId)).isEqualTo(1);
+    }
+
+    @Test
+    void staleHeadmanAndStudentGrantCannotCreateUpdateOrDeleteHomework() throws Exception {
+        jdbc.update(
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
+                        + "VALUES (?, 'headman', 'active', ?, NOW(), NOW())",
+                headmanBId, groupBId);
+        jdbc.update(
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
+                        + "VALUES (?, 'student', 'active', ?, NOW(), NOW())",
+                studentBId, groupBId);
+
+        CreateHomeworkRequest create = new CreateHomeworkRequest(
+                "stale grant", "must be denied", null, subjectBId, groupBId, semesterId,
+                LocalDate.of(2041, 10, 16), 1);
+        String createJson = objectMapper.writeValueAsString(create);
+
+        // The old HEADMAN session still carries X-Is-Headman=true, but its
+        // durable grant has been suspended before every mutation.
+        jdbc.update("UPDATE user_role_grants SET status = 'suspended' "
+                        + "WHERE user_id = ? AND role = 'headman'", headmanBId);
+        assertHomeworkMutationsDenied(this::asHeadmanB, createJson);
+
+        // The old STUDENT session still carries group B, but the durable
+        // membership moved to group A; the active assistant row alone cannot
+        // authorize the stale group-B request.
+        jdbc.update("UPDATE user_role_grants SET group_id = ? "
+                        + "WHERE user_id = ? AND role = 'student'", groupAId, studentBId);
+        assertHomeworkMutationsDenied(this::asStudentB, createJson);
+
+        // A subsequent suspension is also visible immediately to all three
+        // existing mutations; no cached role or assistant row can survive it.
+        jdbc.update("UPDATE user_role_grants SET status = 'suspended' "
+                        + "WHERE user_id = ? AND role = 'student'", studentBId);
+        assertHomeworkMutationsDenied(this::asStudentB, createJson);
+    }
+
+    private void assertHomeworkMutationsDenied(
+            java.util.function.Function<MockHttpServletRequestBuilder, MockHttpServletRequestBuilder> actor,
+            String createJson) throws Exception {
+        mockMvc.perform(actor.apply(post("/academic/homeworks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createJson)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(actor.apply(put("/academic/homeworks/{id}", homeworkBId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"stale\",\"description\":\"denied\"}")))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(actor.apply(delete("/academic/homeworks/{id}", homeworkBId)))
                 .andExpect(status().isForbidden());
     }
 

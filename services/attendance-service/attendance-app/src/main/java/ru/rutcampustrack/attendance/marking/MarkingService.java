@@ -146,6 +146,9 @@ public class MarkingService {
         pairWriteCoordinator.lock(userId, lessonId, lesson.getGroupId(), now);
         Query filter = pairFilter(lessonId, userId);
         AttendanceDocument existing = mongoTemplate.findOne(filter, AttendanceDocument.class);
+        requireAttendancePermission(lesson.getGroupId(), request.status() == AttendanceStatus.EXCUSED
+                || (existing != null && existing.getStatus() == AttendanceStatus.EXCUSED)
+                ? "MANAGE_EXCUSES" : "MARK_ATTENDANCE");
         boolean retainExistingAttachment = request.status() == AttendanceStatus.EXCUSED
                 && file == null
                 && existing != null
@@ -219,6 +222,9 @@ public class MarkingService {
         LessonResponse lesson = requireWritableLesson(lessonId);
         requireStudentInRoster(membersForLesson(lesson), userId);
         pairWriteCoordinator.lock(userId, lessonId, lesson.getGroupId(), clock.instant());
+        AttendanceDocument existing = mongoTemplate.findOne(pairFilter(lessonId, userId), AttendanceDocument.class);
+        requireAttendancePermission(lesson.getGroupId(), existing != null
+                && existing.getStatus() == AttendanceStatus.EXCUSED ? "MANAGE_EXCUSES" : "MARK_ATTENDANCE");
         mongoTemplate.remove(pairFilter(lessonId, userId), AttendanceDocument.class);
         if (attachmentService != null) {
             attachmentService.delete(lessonId, userId);
@@ -227,6 +233,7 @@ public class MarkingService {
 
     public AttendanceAttachmentService.AttachmentDownload downloadAttachment(Long lessonId, Long userId) {
         LessonResponse lesson = requireWritableLesson(lessonId);
+        requireAttendancePermission(lesson.getGroupId(), "MANAGE_EXCUSES");
         requireStudentInRoster(membersForLesson(lesson), userId);
         AttendanceDocument document = mongoTemplate.findOne(pairFilter(lessonId, userId), AttendanceDocument.class);
         if (document == null || document.getAttachmentId() == null || attachmentService == null) {
@@ -255,9 +262,6 @@ public class MarkingService {
     }
 
     private LessonResponse requireWritableLesson(Long lessonId) {
-        if (!requestContext.isHeadman()) {
-            throw new AccessDeniedException("Только староста может изменять посещаемость");
-        }
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
         if (lesson == null || !Objects.equals(requestContext.getGroupId(), lesson.getGroupId())) {
             throw new AccessDeniedException("Нельзя изменять студентов чужой группы");
@@ -265,6 +269,21 @@ public class MarkingService {
         JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
         JournalLessonPolicy.requireStarted(timing, clock);
         return lesson;
+    }
+
+    private void requireAttendancePermission(Long targetGroupId, String permission) {
+        if (targetGroupId == null || !Objects.equals(targetGroupId, requestContext.getGroupId())) {
+            throw new AccessDeniedException("Нельзя изменять студентов чужой группы");
+        }
+        if (requestContext.isHeadman()) {
+            if (!academicGrpcClient.isHeadman(requestContext.getUserId(), targetGroupId).getIsHeadman()) {
+                throw new AccessDeniedException("Только староста может отмечать посещаемость");
+            }
+            return;
+        }
+        if (!academicGrpcClient.hasAssistantPermission(targetGroupId, permission)) {
+            throw new AccessDeniedException("Отсутствует право " + permission);
+        }
     }
 
     private GroupMembersResponse membersForLesson(LessonResponse lesson) {
@@ -365,23 +384,7 @@ public class MarkingService {
             }
         }
 
-        // D-12: headman role (из JWT claim'а)
-        if (!requestContext.isHeadman()) {
-            throw new AccessDeniedException("Только староста может отмечать посещаемость");
-        }
-
         Long headmanGroupId = requestContext.getGroupId();
-        Long callerId = requestContext.getUserId();
-
-        // M05 audit fix (security #2): re-check isHeadman через source-of-truth
-        // (academic-service). JWT claim is_headman валиден до истечения токена
-        // (~15 мин), revoke в academic не виден здесь без cross-service
-        // invalidation. Re-check обслуживается rbac-кэшем → ~O(60s) window,
-        // приемлемый компромисс между latency и RBAC-freshness.
-        if (!academicGrpcClient.isHeadman(callerId, headmanGroupId).getIsHeadman()) {
-            throw new AccessDeniedException("Только староста может отмечать посещаемость");
-        }
-
         // M05 G8: N уникальных getLessonById + 1 getGroupMembers fan-out
         // параллельно через grpcTaskExecutor. Deadline 3s enforced на stub.
         Set<Long> uniqueLessonIds = items.stream()
@@ -443,6 +446,21 @@ public class MarkingService {
                         .thenComparing(MarkBatchItem::lessonId))
                 .forEach(item -> pairWriteCoordinator.lock(
                         item.userId(), item.lessonId(), lessonsById.get(item.lessonId()).getGroupId(), now));
+
+        boolean requiresExcusePermission = items.stream().anyMatch(item -> item.status() == AttendanceStatus.EXCUSED);
+        if (!requiresExcusePermission) {
+            for (MarkBatchItem item : items) {
+                AttendanceDocument existing = mongoTemplate.findOne(
+                        Query.query(Criteria.where("lesson_id").is(item.lessonId())
+                                .and("user_id").is(item.userId())), AttendanceDocument.class);
+                if (existing != null && existing.getStatus() == AttendanceStatus.EXCUSED) {
+                    requiresExcusePermission = true;
+                    break;
+                }
+            }
+        }
+        requireAttendancePermission(headmanGroupId, "MARK_ATTENDANCE");
+        if (requiresExcusePermission) requireAttendancePermission(headmanGroupId, "MANAGE_EXCUSES");
 
         for (MarkBatchItem item : items) {
             LessonResponse lesson = lessonsById.get(item.lessonId());

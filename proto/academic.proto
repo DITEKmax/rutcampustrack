@@ -22,6 +22,11 @@ service AcademicGrpcService {
   // Проверить, является ли пользователь старостой группы
   rpc IsHeadman (HeadmanCheckRequest) returns (HeadmanCheckResponse);
 
+  // Проверить актуальное durable право помощника в пределах его группы.
+  // Actor identity берётся только из signed internal JWT metadata.
+  rpc CheckAssistantPermission (AssistantPermissionCheckRequest)
+      returns (AssistantPermissionCheckResponse);
+
   // Получить активный семестр
   rpc GetActiveSemester (Empty) returns (SemesterResponse);
 
@@ -138,6 +143,15 @@ message HeadmanCheckRequest {
 
 message HeadmanCheckResponse {
   bool is_headman = 1;
+}
+
+message AssistantPermissionCheckRequest {
+  int64 group_id = 1;
+  string permission = 2;
+}
+
+message AssistantPermissionCheckResponse {
+  bool allowed = 1;
 }
 
 message SemesterResponse {

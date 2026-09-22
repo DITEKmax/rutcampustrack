@@ -64,7 +64,7 @@ public abstract class DualModeUserContextFilter extends OncePerRequestFilter {
         if (internalToken != null && !internalToken.isBlank()) {
             try {
                 InternalJwtClaims claims = validator.validate(internalToken);
-                applyInternalJwt(claims);
+                applyInternalJwt(claims, internalToken);
                 chain.doFilter(request, response);
                 return;
             } catch (InternalJwtException e) {
@@ -108,6 +108,16 @@ public abstract class DualModeUserContextFilter extends OncePerRequestFilter {
      * Hook for downstream service to write claims into service-specific RequestContext.
      */
     protected abstract void applyInternalJwt(InternalJwtClaims claims);
+
+    /**
+     * Variant that exposes the exact validated token to request-scoped
+     * downstream context.  Existing service filters keep overriding the
+     * one-argument hook; the default delegates to it so this remains source
+     * compatible while preventing legacy headers from becoming an RPC actor.
+     */
+    protected void applyInternalJwt(InternalJwtClaims claims, String rawToken) {
+        applyInternalJwt(claims);
+    }
 
     /**
      * Hook for downstream service to parse legacy X-User-* headers into RequestContext.

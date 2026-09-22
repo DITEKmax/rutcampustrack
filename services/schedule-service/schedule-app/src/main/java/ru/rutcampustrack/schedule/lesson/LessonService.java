@@ -60,10 +60,19 @@ public class LessonService {
      * ADMIN bypasses the check entirely (D-08/D-10).
      */
     private void requireHeadmanForGroup(Long targetGroupId) {
+        requireHeadmanForGroup(targetGroupId, null);
+    }
+
+    private void requireHeadmanForGroup(Long targetGroupId, String assistantPermission) {
         UserRole role = requestContext.getRole();
         if (role == UserRole.ADMIN) return;
         if (!requestContext.isHeadman()) {
-            throw new AccessDeniedException("Only headman or admin can perform this action");
+            if (assistantPermission == null
+                    || !java.util.Objects.equals(requestContext.getGroupId(), targetGroupId)
+                    || !academicGrpcClient.hasAssistantPermission(targetGroupId, assistantPermission)) {
+                throw new AccessDeniedException("Only headman or authorized assistant can perform this action");
+            }
+            return;
         }
         boolean confirmed = academicGrpcClient.isHeadman(requestContext.getUserId(), targetGroupId);
         if (!confirmed) {
@@ -90,11 +99,16 @@ public class LessonService {
      * Resolves a lesson by ID and validates headman ownership for the lesson's group.
      */
     private LessonWithItem findLessonAndValidateGroup(Long lessonId) {
+        return findLessonAndValidateGroup(lessonId, null);
+    }
+
+    private LessonWithItem findLessonAndValidateGroup(Long lessonId, String assistantPermission) {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson", "id", lessonId));
         ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
-        requireHeadmanForGroup(lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId());
+        requireHeadmanForGroup(lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId(),
+                assistantPermission);
         return new LessonWithItem(lesson, item);
     }
 
@@ -109,7 +123,7 @@ public class LessonService {
      * Cancelled lessons can be restored via {@link #restoreLesson(Long)}.
      */
     public LessonWithItem cancelLesson(Long lessonId, CancelLessonRequest request) {
-        LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
+        LessonWithItem lwi = findLessonAndValidateGroup(lessonId, "CANCEL_LESSONS");
         Lesson lesson = lwi.lesson();
         ScheduleItem item = lwi.scheduleItem();
         if (lesson.getStatus() == LessonStatus.CANCELLED) {
@@ -148,7 +162,7 @@ public class LessonService {
      * already passed. Clears cancel_reason on restore.
      */
     public LessonWithItem restoreLesson(Long lessonId) {
-        LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
+        LessonWithItem lwi = findLessonAndValidateGroup(lessonId, "CANCEL_LESSONS");
         Lesson lesson = lwi.lesson();
         if (lesson.getOccurrenceId() != null) {
             throw new RecurringLifecycleNotReadyException("restore canonical recurring lesson");

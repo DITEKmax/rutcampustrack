@@ -24,6 +24,7 @@ import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
 import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
+import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse;
 import ru.rutcampustrack.schedule.grpc.HomeworkBindingState;
@@ -55,6 +56,7 @@ public class HomeworkService {
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final Clock clock;
     private final HomeworkPublicationPersistence publicationPersistence;
+    private final UserRoleGrantRepository grantRepository;
 
     /** Spring constructor. The persistence bean supplies real transaction boundaries. */
     @Autowired
@@ -65,7 +67,8 @@ public class HomeworkService {
                             ApplicationEventPublisher eventPublisher,
                             ScheduleGrpcClient scheduleGrpcClient,
                             Clock clock,
-                            HomeworkPublicationPersistence publicationPersistence) {
+                            HomeworkPublicationPersistence publicationPersistence,
+                            UserRoleGrantRepository grantRepository) {
         this.homeworkRepository = homeworkRepository;
         this.completionRepository = completionRepository;
         this.assistantRepository = assistantRepository;
@@ -74,6 +77,7 @@ public class HomeworkService {
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.clock = clock;
         this.publicationPersistence = publicationPersistence;
+        this.grantRepository = grantRepository;
     }
 
     /** Source-compatible constructor for focused service unit tests. */
@@ -85,7 +89,7 @@ public class HomeworkService {
                            ScheduleGrpcClient scheduleGrpcClient,
                            Clock clock) {
         this(homeworkRepository, completionRepository, assistantRepository, requestContext,
-                eventPublisher, scheduleGrpcClient, clock, null);
+                eventPublisher, scheduleGrpcClient, clock, null, null);
     }
 
     /**
@@ -98,19 +102,39 @@ public class HomeworkService {
      * для ASSISTANT — ADMIN же блокируется однозначно).
      */
     private void requireHeadmanOrManageHomework() {
-        if (requestContext.getRole() != UserRole.STUDENT) {
+        Long actorId = requestContext.getUserId();
+        Long groupId = requestContext.getGroupId();
+        if (actorId == null || actorId <= 0 || groupId == null || groupId <= 0
+                || grantRepository == null) {
             throw new AccessDeniedException(
                     "Управлять ДЗ может только староста или помощник с manage_homework");
         }
-        if (!requestContext.isHeadman()) {
-            var assistant = assistantRepository
-                    .findByGroupIdAndStudentId(requestContext.getGroupId(), requestContext.getUserId())
-                    .filter(a -> a.isActive())
-                    .orElseThrow(() -> new AccessDeniedException("Не является старостой или помощником"));
-            boolean hasPermission = Arrays.asList(assistant.getPermissions()).contains("manage_homework");
-            if (!hasPermission) {
-                throw new AccessDeniedException("Отсутствует право MANAGE_HOMEWORK");
-            }
+
+        boolean currentHeadman = grantRepository
+                .findByUserIdAndRoleAndStatus(actorId, "headman", "active")
+                .stream()
+                .anyMatch(grant -> groupId.equals(grant.getGroupId()));
+        if (currentHeadman) {
+            return;
+        }
+
+        boolean currentStudent = grantRepository
+                .findByUserIdAndRoleAndStatus(actorId, "student", "active")
+                .stream()
+                .anyMatch(grant -> groupId.equals(grant.getGroupId()));
+        if (!currentStudent) {
+            throw new AccessDeniedException("Не является старостой или помощником");
+        }
+
+        var assistant = assistantRepository
+                .findByGroupIdAndStudentIdAndIsActiveTrue(groupId, actorId)
+                .orElseThrow(() -> new AccessDeniedException("Не является старостой или помощником"));
+        boolean hasPermission = assistant.getPermissions() != null
+                && Arrays.stream(assistant.getPermissions())
+                .filter(Objects::nonNull)
+                .anyMatch(permission -> "manage_homework".equalsIgnoreCase(permission.trim()));
+        if (!hasPermission) {
+            throw new AccessDeniedException("Отсутствует право MANAGE_HOMEWORK");
         }
     }
 

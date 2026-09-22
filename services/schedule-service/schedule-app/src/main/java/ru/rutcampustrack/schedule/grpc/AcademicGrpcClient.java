@@ -1,9 +1,15 @@
 package ru.rutcampustrack.schedule.grpc;
 
+import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.MetadataUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
+import ru.rutcampustrack.academic.grpc.AssistantPermissionCheckRequest;
 import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GroupRequest;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
@@ -14,6 +20,7 @@ import ru.rutcampustrack.academic.grpc.AssignmentsByIdsRequest;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
+import ru.rutcampustrack.schedule.security.RequestContext;
 
 import java.util.concurrent.TimeUnit;
 import java.util.List;
@@ -27,8 +34,14 @@ import java.util.List;
 @Component
 public class AcademicGrpcClient {
 
+    private static final Metadata.Key<String> INTERNAL_TOKEN =
+            Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER);
+
     @GrpcClient("academic-service")
     private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
+
+    @Autowired
+    private RequestContext requestContext;
 
     /**
      * Validates that a group exists and is active.
@@ -107,6 +120,37 @@ public class AcademicGrpcClient {
                     .getIsHeadman();
         } catch (StatusRuntimeException e) {
             throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+        }
+    }
+
+    /** Checks one assistant capability against fresh Academic authority. */
+    public boolean hasAssistantPermission(Long groupId, String permission) {
+        if (groupId == null || groupId <= 0 || permission == null || permission.isBlank()) {
+            return false;
+        }
+        String token = requestContext == null ? null : requestContext.getInternalToken();
+        if (token == null || token.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Подписанная internal-сессия отсутствует");
+        }
+        Metadata metadata = new Metadata();
+        metadata.put(INTERNAL_TOKEN, token);
+        try {
+            return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .checkAssistantPermission(AssistantPermissionCheckRequest.newBuilder()
+                            .setGroupId(groupId)
+                            .setPermission(permission)
+                            .build())
+                    .getAllowed();
+        } catch (StatusRuntimeException error) {
+            switch (error.getStatus().getCode()) {
+                case PERMISSION_DENIED -> { return false; }
+                case UNAUTHENTICATED -> throw new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, "Academic Service отклонил internal-сессию");
+                default -> throw new AcademicServiceUnavailableException(
+                        "Academic Service unavailable: " + error.getStatus());
+            }
         }
     }
 

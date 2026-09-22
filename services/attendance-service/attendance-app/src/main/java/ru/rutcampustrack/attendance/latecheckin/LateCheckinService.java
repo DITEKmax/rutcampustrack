@@ -167,13 +167,11 @@ public class LateCheckinService {
      * is_headman flag defensively so the query can never leak requests from another group.
      */
     public List<LateCheckinRequest> listPendingForHeadman() {
-        if (!requestContext.isHeadman()) {
-            throw new AccessDeniedException("Список запросов доступен только старосте группы");
-        }
         Long groupId = requestContext.getGroupId();
         if (groupId == null) {
             throw new AccessDeniedException("Староста не привязан к группе");
         }
+        requireExcuseManagement(groupId);
         return repository.findByGroupIdAndStatusOrderByCreatedAtAsc(
                 groupId, LateCheckinRequestStatus.PENDING);
     }
@@ -188,15 +186,13 @@ public class LateCheckinService {
             Pageable pageable,
             LateCheckinRequestStatus status
     ) {
-        if (!requestContext.isHeadman()) {
-            throw new AccessDeniedException("РЎРїРёСЃРѕРє Р·Р°РїСЂРѕСЃРѕРІ РґРѕСЃС‚СѓРїРµРЅ С‚РѕР»СЊРєРѕ СЃС‚Р°СЂРѕСЃС‚Рµ РіСЂСѓРїРїС‹");
-        }
         if (groupId == null || requestContext.getGroupId() == null) {
             throw new AccessDeniedException("РЎС‚Р°СЂРѕСЃС‚Р° РЅРµ РїСЂРёРІСЏР·Р°РЅ Рє РіСЂСѓРїРїРµ");
         }
         if (!Objects.equals(groupId, requestContext.getGroupId())) {
             throw new AccessDeniedException("РќРµР»СЊР·СЏ РїСЂРѕСЃРјР°С‚СЂРёРІР°С‚СЊ Р·Р°РїСЂРѕСЃС‹ С‡СѓР¶РѕР№ РіСЂСѓРїРїС‹");
         }
+        requireExcuseManagement(groupId);
 
         Pageable effectivePageable = withDefaultSort(pageable);
         Instant cutoff = clock.instant().minus(HEADMAN_HISTORY_DAYS, ChronoUnit.DAYS);
@@ -239,16 +235,26 @@ public class LateCheckinService {
      */
     @Transactional
     public LateCheckinRequest applyDecisionFromWeb(String requestId, boolean approved) {
-        if (!requestContext.isHeadman()) {
-            throw new AccessDeniedException("Решение может принимать только староста");
-        }
         LateCheckinRequest request = repository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
         if (!Objects.equals(request.getGroupId(), requestContext.getGroupId())) {
             throw new AccessDeniedException("Запрос принадлежит другой группе");
         }
+        requireExcuseManagement(request.getGroupId());
         applyAuthorizedDecision(requestId, requestContext.getUserId(), approved);
         return repository.findById(requestId).orElse(request);
+    }
+
+    private void requireExcuseManagement(Long targetGroupId) {
+        if (targetGroupId == null || !Objects.equals(targetGroupId, requestContext.getGroupId())) {
+            throw new AccessDeniedException("Нельзя управлять запросами чужой группы");
+        }
+        if (requestContext.isHeadman()) {
+            return;
+        }
+        if (!academicGrpcClient.hasAssistantPermission(targetGroupId, "MANAGE_EXCUSES")) {
+            throw new AccessDeniedException("Отсутствует право MANAGE_EXCUSES");
+        }
     }
 
     /**

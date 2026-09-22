@@ -35,6 +35,12 @@ public class AttendanceUserContextFilter extends DualModeUserContextFilter {
     }
 
     @Override
+    protected void applyInternalJwt(InternalJwtClaims claims, String rawToken) {
+        applyInternalJwt(claims);
+        requestContext.setInternalToken(rawToken);
+    }
+
+    @Override
     protected void applyLegacyHeaders(HttpServletRequest request) {
         String userIdHeader = request.getHeader("X-User-Id");
         requestContext.setUserId(Long.parseLong(userIdHeader));
@@ -44,5 +50,6 @@ public class AttendanceUserContextFilter extends DualModeUserContextFilter {
             requestContext.setGroupId(Long.parseLong(groupIdHeader));
         }
         requestContext.setHeadman(Boolean.parseBoolean(request.getHeader("X-Is-Headman")));
+        requestContext.setInternalToken(null);
     }
 }

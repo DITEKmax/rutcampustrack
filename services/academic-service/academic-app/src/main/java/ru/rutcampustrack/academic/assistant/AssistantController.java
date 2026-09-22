@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.academic.contract.api.AssistantApi;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssistantResponse;
+import ru.rutcampustrack.academic.contract.dto.assistant.AssistantPermissionOption;
 import ru.rutcampustrack.academic.contract.dto.assistant.UpdateAssistantPermissionsRequest;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.HeadmanAssistant;
@@ -42,6 +43,18 @@ public class AssistantController implements AssistantApi {
         CollectionModel<EntityModel<AssistantResponse>> models = assistantAssembler.toCollectionModel(assistants);
         models.add(linkTo(methodOn(AssistantController.class).listAssistants(groupId)).withSelfRel());
         return ResponseEntity.ok(models);
+    }
+
+    @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<List<AssistantPermissionOption>> listPermissionCatalog() {
+        return ResponseEntity.ok(assistantService.listPermissionCatalog());
+    }
+
+    @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<List<AssistantPermissionOption>> listMyPermissionCatalog() {
+        return ResponseEntity.ok(assistantService.listMyPermissionCatalog());
     }
 
     @Override

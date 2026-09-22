@@ -9,6 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.academic.contract.api.GroupApi;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.group.AdminGroupRegistryResponse;
+import ru.rutcampustrack.academic.contract.dto.group.AdminGroupResponse;
+import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
@@ -53,6 +57,13 @@ public class GroupController implements GroupApi {
     }
 
     @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<AdminGroupResponse> createAdminGroup(CreateAdminGroupRequest request) {
+        Group group = groupService.createAdminGroup(request);
+        return ResponseEntity.status(201).body(groupAssembler.toCreatedRegistryResponse(group));
+    }
+
+    @Override
     public ResponseEntity<EntityModel<GroupResponse>> getGroup(Long id) {
         Group group = groupService.findGroupById(id);
         return ResponseEntity.ok(groupAssembler.toModel(group));
@@ -94,6 +105,24 @@ public class GroupController implements GroupApi {
         Page<GroupResponse> responsePage = page.map(groupAssembler::toResponse);
         return ResponseEntity.ok(assembler.toModel(responsePage,
                 response -> EntityModel.of(response)));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public AdminGroupRegistryResponse listAdminGroups(
+            AdminGroupStatus status, String search, Pageable pageable) {
+        GroupService.GroupRegistryPage result = groupService.listAdminGroups(status, search, pageable);
+        var items = result.page().getContent().stream()
+                .map(groupAssembler::toRegistryResponse)
+                .toList();
+        var counts = result.counts();
+        return new AdminGroupRegistryResponse(
+                items,
+                result.page().getNumber(),
+                result.page().getSize(),
+                result.page().getTotalElements(),
+                result.page().getTotalPages(),
+                counts.activeCount(), counts.draftCount(), counts.archivedCount());
     }
 
     @Override

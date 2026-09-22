@@ -15,9 +15,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEvent;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.event.GroupRenamedEvent;
 import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
@@ -59,6 +61,7 @@ class GroupServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private RequestContext requestContext;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private GroupArchivalService archivalService;
     @Mock private SemesterRepository semesterRepository;
     @Mock private GroupHistoryCoverageRepository coverageRepository;
     // 58-06: real parser, чтобы GroupService.createGroup мог извлечь тип программы
@@ -194,6 +197,91 @@ class GroupServiceTest {
         verify(groupRepository, never()).save(any());
     }
 
+    @Test
+    void createGroup_invalidLegacyCourse_staysNameBadRequest() {
+        when(groupRepository.existsByName("ИВТ-011")).thenReturn(false);
+
+        assertThatThrownBy(() -> groupService.createGroup(new CreateGroupRequest("ИВТ-011")))
+                .isInstanceOf(BadRequestException.class)
+                .satisfies(error -> assertThat(((BadRequestException) error).getField())
+                        .isEqualTo("name"));
+
+        verify(groupRepository, never()).save(any());
+    }
+
+    @Test
+    void createGroup_normalizedDuplicateKeepsLegacyNameField() {
+        when(groupRepository.existsByName("Ивт-311")).thenReturn(false);
+        when(groupRepository.existsByAlphabeticCodeAndNumericCodeAndIsActiveTrue(
+                "ИВТ", "311")).thenReturn(true);
+
+        assertThatThrownBy(() -> groupService.createGroup(new CreateGroupRequest("Ивт-311")))
+                .isInstanceOf(ConflictException.class)
+                .satisfies(error -> assertThat(((ConflictException) error).getField())
+                        .isEqualTo("name"));
+
+        verify(groupRepository, never()).save(any());
+    }
+
+    @Test
+    void createAdminGroup_derivesCourseAndKeepsCoverageInSameWriterPath() {
+        when(groupRepository.existsByAlphabeticCodeAndNumericCodeAndIsActiveTrue("ИВТ", "311"))
+                .thenReturn(false);
+        when(groupRepository.existsByName("ИВТ-311")).thenReturn(false);
+        when(groupRepository.save(any(Group.class))).thenAnswer(invocation -> {
+            Group group = invocation.getArgument(0);
+            try {
+                Field idField = Group.class.getDeclaredField("id");
+                idField.setAccessible(true);
+                idField.set(group, 901L);
+            } catch (ReflectiveOperationException error) {
+                throw new AssertionError(error);
+            }
+            return group;
+        });
+
+        Group created = groupService.createAdminGroup(
+                new CreateAdminGroupRequest("Ивт", "311", 4));
+
+        assertThat(created.getName()).isEqualTo("ИВТ-311");
+        assertThat(created.getAlphabeticCode()).isEqualTo("ИВТ");
+        assertThat(created.getNumericCode()).isEqualTo("311");
+        assertThat(created.getCurrentCourse()).isEqualTo(3);
+        assertThat(created.getTrainingDurationYears()).isEqualTo(4);
+        assertThat(created.getDurationStatus()).isEqualTo("KNOWN");
+        ArgumentCaptor<GroupHistoryCoverage> coverage =
+                ArgumentCaptor.forClass(GroupHistoryCoverage.class);
+        verify(coverageRepository).save(coverage.capture());
+        assertThat(coverage.getValue().getGroupId()).isEqualTo(901L);
+        assertThat(coverage.getValue().getCoverageFrom()).isEqualTo(LocalDate.of(2026, 9, 1));
+    }
+
+    @Test
+    void createAdminGroup_rejectsCourseBeyondTrainingDurationBeforeSave() {
+        assertThatThrownBy(() -> groupService.createAdminGroup(
+                new CreateAdminGroupRequest("ИВТ", "511", 4)))
+                .isInstanceOf(BadRequestException.class)
+                .satisfies(error -> assertThat(((BadRequestException) error).getField())
+                        .isEqualTo("numericCode"));
+
+        verify(groupRepository, never()).save(any());
+        verify(coverageRepository, never()).save(any());
+    }
+
+    @Test
+    void createAdminGroup_duplicateCodePair_isConflict() {
+        when(groupRepository.existsByAlphabeticCodeAndNumericCodeAndIsActiveTrue("ИВТ", "311"))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> groupService.createAdminGroup(
+                new CreateAdminGroupRequest("ИВТ", "311", 4)))
+                .isInstanceOf(ConflictException.class)
+                .satisfies(error -> assertThat(((ConflictException) error).getField())
+                        .isEqualTo("numericCode"));
+
+        verify(groupRepository, never()).save(any());
+    }
+
     // =========================================================================
     // 58-07 / BUG-006-6 — GroupRenamedEvent публикуется при изменении name
     // =========================================================================
@@ -228,6 +316,10 @@ class GroupServiceTest {
         assertThat(captor.getAllValues())
                 .anyMatch(ev -> ev instanceof GroupRenamedEvent gre
                         && ((GroupRenamedEvent.Payload) gre.getPayload()).groupId().equals(77L));
+        assertThat(existing.getAlphabeticCode()).isEqualTo("УИТ");
+        assertThat(existing.getNumericCode()).isEqualTo("311");
+        assertThat(existing.getCurrentCourse()).isEqualTo(3);
+        assertThat(existing.getTrainingDurationYears()).isEqualTo(4);
     }
 
     @Test
@@ -244,6 +336,46 @@ class GroupServiceTest {
         assertThat(captor.getAllValues()).noneMatch(ev -> ev instanceof GroupRenamedEvent);
         // GroupUpdatedEvent по-прежнему публикуется (state-change invalidation).
         assertThat(captor.getAllValues()).anyMatch(ev -> ev instanceof GroupUpdatedEvent);
+    }
+
+    @Test
+    void updateGroup_preservesExplicitDurationWhenAdvancingCode() {
+        Group existing = makeActiveGroup(80L, "УИТ-111");
+        existing.setTrainingDurationYears(2);
+        when(groupRepository.findById(80L)).thenReturn(java.util.Optional.of(existing));
+        when(groupRepository.existsByName("УИТ-211")).thenReturn(false);
+        when(groupRepository.save(any(Group.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        groupService.updateGroup(80L, new UpdateGroupRequest("УИТ-211", true));
+
+        assertThat(existing.getName()).isEqualTo("УИТ-211");
+        assertThat(existing.getAlphabeticCode()).isEqualTo("УИТ");
+        assertThat(existing.getNumericCode()).isEqualTo("211");
+        assertThat(existing.getCurrentCourse()).isEqualTo(2);
+        assertThat(existing.getTrainingDurationYears()).isEqualTo(2);
+    }
+
+    @Test
+    void updateGroup_deactivationDelegatesToArchivalServiceAfterCodeSync() {
+        Group existing = makeActiveGroup(81L, "УИТ-311");
+        when(groupRepository.findById(81L)).thenReturn(java.util.Optional.of(existing));
+        when(groupRepository.save(any(Group.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        org.mockito.Mockito.doAnswer(invocation -> {
+            Group archived = invocation.getArgument(0);
+            archived.setActive(false);
+            archived.setArchivedAt(OffsetDateTime.parse("2026-09-01T00:00:00Z"));
+            archived.setName(archived.getName() + " (выпуск 2026)");
+            return null;
+        }).when(archivalService).archive(existing);
+
+        groupService.updateGroup(81L, new UpdateGroupRequest("УИТ-311", false));
+
+        verify(archivalService).archive(existing);
+        assertThat(existing.isActive()).isFalse();
+        assertThat(existing.getName()).isEqualTo("УИТ-311 (выпуск 2026)");
+        assertThat(existing.getAlphabeticCode()).isEqualTo("УИТ");
+        assertThat(existing.getNumericCode()).isEqualTo("311");
+        assertThat(existing.getCurrentCourse()).isEqualTo(3);
     }
 
     @Test

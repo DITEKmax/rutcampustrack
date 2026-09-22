@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import './admin-role-navigation.pcss'
 
-export type AdminRoleRoute = 'map' | 'semesters' | 'users'
+export type AdminRoleRoute = 'map' | 'semesters' | 'users' | 'groups'
 
 defineProps<{
   active: AdminRoleRoute
@@ -40,6 +40,14 @@ const emit = defineEmits<{
       @click="emit('navigate', 'users')"
     >
       Пользователи
+    </button>
+    <button
+      type="button"
+      :aria-current="active === 'groups' ? 'page' : undefined"
+      :class="{ 'admin-role-navigation__item--active': active === 'groups' }"
+      @click="emit('navigate', 'groups')"
+    >
+      Группы
     </button>
   </nav>
 </template>

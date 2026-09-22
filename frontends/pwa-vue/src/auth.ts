@@ -4,6 +4,7 @@ import { createGenerationBoundHeadmanJournalApi } from '../../mobile-core/src/fe
 import { createGenerationBoundHeadmanRequestsApi } from '../../mobile-core/src/features/headman-requests/headman-requests-client'
 import {
   createGenerationBoundAdminSemesterClient,
+  createGenerationBoundAdminGroupsClient,
   createGenerationBoundAdminUsersClient,
   createGenerationBoundStudentApi,
   StaleSessionGenerationError,
@@ -11,6 +12,7 @@ import {
 import { createGenerationBoundTeacherApi } from '../../mobile-core/src/features/teacher/teacher-client'
 import type { AdminSemesterClient } from '../../mobile-core/src/features/admin-semester/admin-semester-client'
 import type { AdminUsersClient } from '../../mobile-core/src/features/admin-users/admin-users-client'
+import type { AdminGroupsClient } from '../../mobile-core/src/features/admin-groups/admin-groups-client'
 import type { HeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
 import type { HeadmanJournalApi } from '../../mobile-core/src/features/headman-journal/headman-journal-client'
 import type { HeadmanRequestsApi } from '../../mobile-core/src/features/headman-requests/headman-requests-client'
@@ -245,6 +247,14 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     }, fetcher)
   }
 
+  function createAdminGroupsApi(fetcher?: typeof fetch): AdminGroupsClient {
+    return createGenerationBoundAdminGroupsClient({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor,
+    }, fetcher)
+  }
+
   function createProfilePort(generation = currentGeneration(), options: PwaProfilePortOptions = {}): ProfilePort {
     function assertPortCurrent(): void {
       assertCurrent(generation)
@@ -354,6 +364,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     createTeacherApi,
     createAdminSemesterApi,
     createAdminUsersApi,
+    createAdminGroupsApi,
     createProfilePort,
     setToken,
     clear,

@@ -19,6 +19,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.group.AdminGroupRegistryResponse;
+import ru.rutcampustrack.academic.contract.dto.group.AdminGroupResponse;
+import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
@@ -42,6 +46,18 @@ public interface GroupApi {
     @PostMapping
     ResponseEntity<EntityModel<GroupResponse>> createGroup(
             @Valid @RequestBody CreateGroupRequest request);
+
+    /** Additive ADMIN registry create contract; the server assembles name/status. */
+    @Operation(summary = "Создать группу в реестре ADMIN")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Группа создана как черновик"),
+            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "409", description = "Код группы уже существует")
+    })
+    @PostMapping("/registry")
+    ResponseEntity<AdminGroupResponse> createAdminGroup(
+            @Valid @RequestBody CreateAdminGroupRequest request);
 
     @Operation(summary = "Получить группу по ID")
     @ApiResponses({
@@ -72,6 +88,18 @@ public interface GroupApi {
             @RequestParam(required = false) String search,
             Pageable pageable,
             PagedResourcesAssembler<GroupResponse> assembler);
+
+    /** Server-computed ACTIVE/DRAFT/ARCHIVED registry with tab counts. */
+    @Operation(summary = "Реестр групп ADMIN")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Страница реестра групп"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+    })
+    @GetMapping("/registry")
+    AdminGroupRegistryResponse listAdminGroups(
+            @RequestParam(defaultValue = "ACTIVE") AdminGroupStatus status,
+            @RequestParam(required = false) String search,
+            Pageable pageable);
 
     /**
      * 58-06 / BUG-006-6: Dry-run промоушена групп. Возвращает {@link PromotionSummary}

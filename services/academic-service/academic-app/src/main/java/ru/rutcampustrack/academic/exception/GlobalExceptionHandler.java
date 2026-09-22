@@ -59,17 +59,18 @@ public class GlobalExceptionHandler {
      * (BUG-006-2, D-05). Names follow the default Postgres convention
      * {@code <table>_<column>_key} for implicit unique constraints.
      */
-    private static final Map<String, String> CONSTRAINT_TO_FIELD = Map.of(
-            "users_login_key", "login",
-            "users_email_key", "email",
-            "users_telegram_id_key", "telegramId",
-            "users_employee_number_key", "employeeNumber",
-            "groups_name_key", "name",
-            "semesters_no_overlap", "dates",
-            "assignments_no_same_teacher_overlap", "validFrom",
-            "assignments_validity_chk", "validUntilExclusive",
-            "homeworks_binding_uq", "bindingId",
-            "homeworks_actor_request_uq", "requestKey"
+    private static final Map<String, String> CONSTRAINT_TO_FIELD = Map.ofEntries(
+            Map.entry("users_login_key", "login"),
+            Map.entry("users_email_key", "email"),
+            Map.entry("users_telegram_id_key", "telegramId"),
+            Map.entry("users_employee_number_key", "employeeNumber"),
+            Map.entry("groups_name_key", "name"),
+            Map.entry("groups_code_pair_uq", "numericCode"),
+            Map.entry("semesters_no_overlap", "dates"),
+            Map.entry("assignments_no_same_teacher_overlap", "validFrom"),
+            Map.entry("assignments_validity_chk", "validUntilExclusive"),
+            Map.entry("homeworks_binding_uq", "bindingId"),
+            Map.entry("homeworks_actor_request_uq", "requestKey")
     );
 
     /** Matches {@code constraint "xxx"} fragment in PG/Hibernate error messages. */
@@ -77,17 +78,18 @@ public class GlobalExceptionHandler {
             Pattern.compile("constraint\\s+\"([^\"]+)\"");
 
     /** Russian, user-facing details per field (DSL: leak only the field name). */
-    private static final Map<String, String> FIELD_DETAIL = Map.of(
-            "login", "Логин уже используется. Выберите другой",
-            "email", "Email уже зарегистрирован",
-            "telegramId", "Telegram ID уже привязан к другой учётной записи",
-            "employeeNumber", "Табельный номер уже используется",
-            "name", "Название уже используется",
-            "dates", "Даты семестра пересекаются с существующим",
-            "validFrom", "Период назначения пересекается с существующим",
-            "validUntilExclusive", "Недопустимые границы периода назначения",
-            "bindingId", "Привязка домашнего задания уже используется",
-            "requestKey", "Ключ идемпотентности уже использован"
+    private static final Map<String, String> FIELD_DETAIL = Map.ofEntries(
+            Map.entry("login", "Логин уже используется. Выберите другой"),
+            Map.entry("email", "Email уже зарегистрирован"),
+            Map.entry("telegramId", "Telegram ID уже привязан к другой учётной записи"),
+            Map.entry("employeeNumber", "Табельный номер уже используется"),
+            Map.entry("name", "Название уже используется"),
+            Map.entry("numericCode", "Код группы уже используется"),
+            Map.entry("dates", "Даты семестров пересекаются с существующим"),
+            Map.entry("validFrom", "Период назначения пересекается с существующим"),
+            Map.entry("validUntilExclusive", "Недопустимые границы периода назначения"),
+            Map.entry("bindingId", "Привязка домашнего задания уже используется"),
+            Map.entry("requestKey", "Ключ идемпотентности уже использован")
     );
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -169,6 +171,14 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
         String constraintName = extractConstraintName(ex);
         String field = constraintName == null ? null : CONSTRAINT_TO_FIELD.get(constraintName);
+        // The legacy POST contract reports a normalized code collision as a
+        // name conflict; the additive registry endpoint owns the split-code
+        // field.  Keep the distinction even when the pre-check loses a race
+        // with the database unique index.
+        if ("groups_name_key".equals(constraintName)
+                || "groups_code_pair_uq".equals(constraintName)) {
+            field = isRegistryRequest(request) ? "numericCode" : "name";
+        }
 
         if (field != null) {
             String detail = FIELD_DETAIL.getOrDefault(field, "Значение поля уже используется");
@@ -198,6 +208,11 @@ public class GlobalExceptionHandler {
             t = t.getCause();
         }
         return null;
+    }
+
+    private static boolean isRegistryRequest(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri != null && uri.contains("/academic/groups/registry");
     }
 
     /**

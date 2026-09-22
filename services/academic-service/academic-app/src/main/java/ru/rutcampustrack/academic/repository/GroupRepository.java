@@ -24,6 +24,8 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
     long countByIsActive(boolean isActive);
     Optional<Group> findByName(String name);
     boolean existsByName(String name);
+    boolean existsByAlphabeticCodeAndNumericCodeAndIsActiveTrue(String alphabeticCode,
+                                                                String numericCode);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select g from Group g where g.id = :id")

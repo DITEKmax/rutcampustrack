@@ -121,23 +121,22 @@ public class GroupPromotionService {
         //    имя считается "освобождающимся", если группа с этим именем либо архивируется,
         //    либо переименовывается (новое имя ≠ старое).
         java.util.Set<String> freeing = new java.util.HashSet<>();
-        // 2) Сначала проверить unknown_type — он абортит префикс вне зависимости от имён.
+        // 2) Validate every code with the same canonical rule used by create/PUT.
+        //    An unknown type still aborts the whole prefix; an invalid stored
+        //    duration/code is also kept readable and blocks unsafe promotion.
         for (Group g : groups) {
-            GroupNameParser.ParsedName parsed;
             try {
-                parsed = parser.parse(g.getName());
-            } catch (IllegalArgumentException e) {
-                // Внутри prefix-ветки такого быть не должно (парсинг сделан выше),
-                // но подстрахуемся.
-                return new PrefixConflict(prefix, "parse_error",
-                        "Не удалось распознать имя: " + g.getName(), List.of(g.getId()));
-            }
-            try {
-                ProgramType.fromDigit(parsed.type());
+                GroupCodeRules.fromName(g.getName(), g.getTrainingDurationYears());
             } catch (UnknownProgramTypeException e) {
                 return new PrefixConflict(
                         prefix, "unknown_type",
                         "Неизвестный тип программы (цифра " + e.getDigit() + ") в префиксе " + prefix,
+                        groups.stream().map(Group::getId).toList()
+                );
+            } catch (GroupCodeRules.InvalidCodeException e) {
+                return new PrefixConflict(
+                        prefix, "invalid_code",
+                        "Некорректный код группы '" + g.getName() + "': " + e.getMessage(),
                         groups.stream().map(Group::getId).toList()
                 );
             }
@@ -147,23 +146,23 @@ public class GroupPromotionService {
         // 3) Посчитать новый план: rename или archive.
         Map<String, Long> newNameOwners = new HashMap<>();
         for (Group g : groups) {
-            GroupNameParser.ParsedName parsed = parser.parse(g.getName());
-            ProgramType type = ProgramType.fromDigit(parsed.type());
-            GroupNameParser.PromoteResult result = parser.promote(g.getName(), type);
+            GroupCodeRules.CanonicalCode current =
+                    GroupCodeRules.fromName(g.getName(), g.getTrainingDurationYears());
+            GroupCodeRules.CanonicalCode next = current.next();
 
-            if (result instanceof GroupNameParser.PromoteResult.Renamed r) {
+            if (next != null) {
                 // Конфликт: новое имя либо занято другой группой, которая НЕ освобождает его,
                 // либо два разных источника дают одинаковое новое имя.
-                if (newNameOwners.containsKey(r.newName())) {
+                if (newNameOwners.containsKey(next.name())) {
                     return new PrefixConflict(
                             prefix, "name_conflict",
-                            "Два источника претендуют на одно имя: " + r.newName(),
+                            "Два источника претендуют на одно имя: " + next.name(),
                             groups.stream().map(Group::getId).toList()
                     );
                 }
-                newNameOwners.put(r.newName(), g.getId());
+                newNameOwners.put(next.name(), g.getId());
                 prefixPromote.add(new PromotionPreviewItem(
-                        g.getId(), g.getName(), r.newName(), Action.PROMOTE));
+                        g.getId(), g.getName(), next.name(), Action.PROMOTE));
             } else {
                 prefixArchive.add(new PromotionPreviewItem(
                         g.getId(), g.getName(), null, Action.ARCHIVE));
@@ -198,14 +197,18 @@ public class GroupPromotionService {
 
         // Сначала архивация — освобождает старшие имена (УИТ-4XX).
         for (PromotionPreviewItem item : archive) {
-            archivalService.archive(byId.get(item.getId()));
+            Group group = byId.get(item.getId());
+            GroupCodeRules.apply(group,
+                    GroupCodeRules.fromName(group.getName(), group.getTrainingDurationYears()));
+            archivalService.archive(group);
         }
         // Затем переименования по курсу DESC (from 3→4, потом 2→3, потом 1→2),
         // чтобы имя-назначение всегда было свободным на момент save.
         promote.sort(Comparator.comparing(PromotionPreviewItem::getFrom).reversed());
         for (PromotionPreviewItem item : promote) {
             Group g = byId.get(item.getId());
-            g.setName(item.getTo());
+            GroupCodeRules.apply(g,
+                    GroupCodeRules.fromName(item.getTo(), g.getTrainingDurationYears()));
             publisher.publishEvent(new GroupRenamedEvent(this, g.getId(), g.getName()));
         }
     }

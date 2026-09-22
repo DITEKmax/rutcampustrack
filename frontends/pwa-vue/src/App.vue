@@ -5,6 +5,8 @@ import {
   AdminMapScreen,
   AdminSemesterApiError,
   AdminSemesterScreen,
+  AdminGroupsApiError,
+  AdminGroupsScreen,
   AdminUsersApiError,
   AdminUsersScreen,
   AdminRoleNavigation,
@@ -44,6 +46,7 @@ import {
   type HeadmanJournalApi,
   type HeadmanRequestsApi,
   type AdminSemesterClient,
+  type AdminGroupsClient,
   type AdminUsersClient,
 } from '@rct/mobile-core'
 import type { ProfilePort, ProfileRole, ProfileSnapshot } from '@rct/mobile-core'
@@ -87,6 +90,7 @@ const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null)
 const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
+const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
 const profilePort = shallowRef<ProfilePort | null>(null)
@@ -98,7 +102,7 @@ const readOnly = ref(false)
 const sessionReady = ref(false)
 const bootstrapping = ref(false)
 const bootstrapError = ref<string | null>(null)
-const authView = ref<'login' | 'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-map' | 'admin-semesters' | 'admin-users'>('login')
+const authView = ref<'login' | 'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-map' | 'admin-semesters' | 'admin-users' | 'admin-groups'>('login')
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null)
 const authError = shallowRef<ProfileRequestError | null>(null)
 const authLoading = ref(false)
@@ -123,8 +127,9 @@ const mapViewVisible = computed(() => authView.value === 'map')
 const adminMapViewVisible = computed(() => authView.value === 'admin-map')
 const adminSemesterViewVisible = computed(() => authView.value === 'admin-semesters')
 const adminUsersViewVisible = computed(() => authView.value === 'admin-users')
+const adminGroupsViewVisible = computed(() => authView.value === 'admin-groups')
 const featureVisible = computed(() => api.value !== null || headmanApi.value !== null || snapshot.value !== null
-  || teacherApi.value !== null || mapViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value || adminUsersViewVisible.value)
+  || teacherApi.value !== null || mapViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value || adminUsersViewVisible.value || adminGroupsViewVisible.value)
 const studentViewVisible = computed(() => authView.value === 'student' && featureVisible.value)
 const teacherViewVisible = computed(() => authView.value === 'teacher' && teacherApi.value !== null)
 const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
@@ -146,6 +151,7 @@ function authDenialStatus(error: unknown): number | null {
   if (error instanceof HeadmanJournalApiError) return error.response.status
   if (error instanceof HeadmanRequestsApiError) return error.response.status
   if (error instanceof AdminSemesterApiError) return error.response.status
+  if (error instanceof AdminGroupsApiError) return error.response.status
   if (error instanceof AdminUsersApiError) return error.response.status
   return null
 }
@@ -221,6 +227,7 @@ async function loadOfflineSnapshot(): Promise<boolean> {
   headmanRequestsApi.value = null
   adminSemesterApi.value = null
   adminUsersApi.value = null
+  adminGroupsApi.value = null
   headmanGroupId.value = null
   session.value = null
   authSnapshot.value = null
@@ -280,6 +287,7 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): St
   headmanRequestsApi.value = null
   adminSemesterApi.value = null
   adminUsersApi.value = null
+  adminGroupsApi.value = null
   headmanGroupId.value = null
   teacherApi.value = null
   teacherSemesterId.value = null
@@ -552,6 +560,9 @@ async function activateMapRole(profile: ProfileSnapshot, generation: number): Pr
   adminUsersApi.value = profile.activeRole === 'ADMIN'
     ? auth.createAdminUsersApi(currentFetcher())
     : null
+  adminGroupsApi.value = profile.activeRole === 'ADMIN'
+    ? auth.createAdminGroupsApi(currentFetcher())
+    : null
   offline.value = false
   readOnly.value = profile.readOnly
   bootstrapError.value = null
@@ -559,9 +570,12 @@ async function activateMapRole(profile: ProfileSnapshot, generation: number): Pr
   authView.value = profile.activeRole === 'ADMIN' ? 'admin-map' : 'map'
 }
 
-function navigateAdmin(route: 'map' | 'semesters' | 'users'): void {
-  if (authSnapshot.value?.activeRole !== 'ADMIN' || !adminSemesterApi.value || !adminUsersApi.value) return
-  authView.value = route === 'map' ? 'admin-map' : route === 'semesters' ? 'admin-semesters' : 'admin-users'
+function navigateAdmin(route: 'map' | 'semesters' | 'users' | 'groups'): void {
+  if (authSnapshot.value?.activeRole !== 'ADMIN'
+    || !adminSemesterApi.value || !adminUsersApi.value || !adminGroupsApi.value) return
+  authView.value = route === 'map' ? 'admin-map'
+    : route === 'semesters' ? 'admin-semesters'
+      : route === 'users' ? 'admin-users' : 'admin-groups'
 }
 
 function assertCandidateCurrent(generation: number): void {
@@ -1047,6 +1061,17 @@ onBeforeUnmount(() => {
     />
     <AdminUsersScreen
       :client="adminUsersApi"
+      theme="dark"
+      @owner-error="onOwnerError"
+    />
+  </template>
+  <template v-else-if="adminGroupsViewVisible && adminGroupsApi">
+    <AdminRoleNavigation
+      active="groups"
+      @navigate="navigateAdmin"
+    />
+    <AdminGroupsScreen
+      :client="adminGroupsApi"
       theme="dark"
       @owner-error="onOwnerError"
     />

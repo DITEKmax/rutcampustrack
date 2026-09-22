@@ -140,6 +140,28 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void groupConstraintRaceUsesRouteSpecificField() {
+        DataIntegrityViolationException nameRace = new DataIntegrityViolationException(
+                "could not execute statement",
+                new RuntimeException("duplicate key value violates unique constraint \"groups_name_key\""));
+        DataIntegrityViolationException pairRace = new DataIntegrityViolationException(
+                "could not execute statement",
+                new RuntimeException("duplicate key value violates unique constraint \"groups_code_pair_uq\""));
+
+        when(request.getRequestURI()).thenReturn("/api/academic/groups/registry");
+        assertThat(handler.handleDataIntegrityViolation(nameRace, request).getBody().field())
+                .isEqualTo("numericCode");
+        assertThat(handler.handleDataIntegrityViolation(pairRace, request).getBody().field())
+                .isEqualTo("numericCode");
+
+        when(request.getRequestURI()).thenReturn("/api/academic/groups");
+        assertThat(handler.handleDataIntegrityViolation(nameRace, request).getBody().field())
+                .isEqualTo("name");
+        assertThat(handler.handleDataIntegrityViolation(pairRace, request).getBody().field())
+                .isEqualTo("name");
+    }
+
+    @Test
     void dataIntegrityViolationWithUnknownConstraintReturns500() {
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "foo",

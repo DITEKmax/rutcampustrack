@@ -200,6 +200,10 @@ class GroupPromotionServiceTest {
         assertThat(g.getName()).isEqualTo("УИТ-411 (выпуск 2026)");
         assertThat(g.isActive()).isFalse();
         assertThat(g.getArchivedAt()).isNotNull();
+        assertThat(g.getAlphabeticCode()).isEqualTo("УИТ");
+        assertThat(g.getNumericCode()).isEqualTo("411");
+        assertThat(g.getCurrentCourse()).isEqualTo(4);
+        assertThat(g.getTrainingDurationYears()).isEqualTo(4);
 
         ArgumentCaptor<org.springframework.context.ApplicationEvent> events =
                 ArgumentCaptor.forClass(org.springframework.context.ApplicationEvent.class);
@@ -207,6 +211,37 @@ class GroupPromotionServiceTest {
                 .publishEvent(events.capture());
         assertThat(events.getAllValues())
                 .anyMatch(e -> e instanceof GroupArchivedEvent);
+    }
+
+    @Test
+    void execute_respectsStoredDurationInsteadOfProgramTypeDefault() {
+        Group g = group("УИТ-211");
+        g.setTrainingDurationYears(2);
+        seed(g);
+
+        service.execute();
+
+        assertThat(g.isActive()).isFalse();
+        assertThat(g.getName()).isEqualTo("УИТ-211 (выпуск 2026)");
+        assertThat(g.getAlphabeticCode()).isEqualTo("УИТ");
+        assertThat(g.getNumericCode()).isEqualTo("211");
+        assertThat(g.getCurrentCourse()).isEqualTo(2);
+        assertThat(g.getTrainingDurationYears()).isEqualTo(2);
+    }
+
+    @Test
+    void execute_renamedGroupSynchronizesSplitCodeAndCourse() {
+        Group g = group("УИТ-111");
+        g.setTrainingDurationYears(4);
+        seed(g);
+
+        service.execute();
+
+        assertThat(g.getName()).isEqualTo("УИТ-211");
+        assertThat(g.getAlphabeticCode()).isEqualTo("УИТ");
+        assertThat(g.getNumericCode()).isEqualTo("211");
+        assertThat(g.getCurrentCourse()).isEqualTo(2);
+        assertThat(g.getTrainingDurationYears()).isEqualTo(4);
     }
 
     @Test

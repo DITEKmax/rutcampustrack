@@ -1,15 +1,16 @@
 package ru.rutcampustrack.auth.session.model;
 
 /**
- * Status belongs to one role grant. Terminal statuses remain selectable for
- * the owner's read-only view; suspended grants are fail-closed.
+ * Status belongs to one role grant. Only ACTIVE is selectable; terminal and
+ * suspended grants remain visible for the owner's read-only view.
  */
 public enum RoleStatus {
     ACTIVE(false, true),
-    EXPELLED(true, true),
-    GRADUATED(true, true),
-    SUSPENDED(false, false),
-    ARCHIVED(true, true);
+    EXPELLED(true, false),
+    GRADUATED(true, false),
+    SUSPENDED(true, false),
+    DISMISSED(true, false),
+    ARCHIVED(true, false);
 
     private final boolean readOnly;
     private final boolean selectable;

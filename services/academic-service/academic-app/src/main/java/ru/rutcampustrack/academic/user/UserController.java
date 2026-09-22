@@ -20,6 +20,7 @@ import ru.rutcampustrack.academic.contract.dto.user.UserSummaryResponse;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
 import ru.rutcampustrack.academic.security.RequireRole;
 import ru.rutcampustrack.shared.web.audit.AdminAction;
 
@@ -39,10 +40,14 @@ public class UserController implements UserApi {
 
     private final UserService userService;
     private final UserAssembler userAssembler;
+    private final UserRoleGrantReader grantReader;
 
-    public UserController(UserService userService, UserAssembler userAssembler) {
+    public UserController(UserService userService,
+                          UserAssembler userAssembler,
+                          UserRoleGrantReader grantReader) {
         this.userService = userService;
         this.userAssembler = userAssembler;
+        this.grantReader = grantReader;
     }
 
     @Override
@@ -64,15 +69,28 @@ public class UserController implements UserApi {
     @RequireRole({ADMIN})
     public ResponseEntity<PagedModel<EntityModel<UserResponse>>> listUsers(
             String search,
-            UserRole role,
+            String role,
             AccountStatus status,
+            String roleStatus,
             Pageable pageable,
             PagedResourcesAssembler<UserResponse> assembler) {
-        Page<User> page = userService.listUsers(search, role, status, pageable);
-        // BUG-006: ADMIN видит initialPassword в выдаче списка.
-        Page<UserResponse> responsePage = page.map(u -> userAssembler.toResponse(u, true));
+        Page<User> page = userService.listUsers(search, role, status, roleStatus, pageable);
+        var grants = grantReader.findByUserIds(page.getContent().stream().map(User::getId).toList());
+        Page<UserResponse> responsePage = page.map(u -> userAssembler.toResponse(
+                u, false, grants.getOrDefault(u.getId(), java.util.List.of())));
         return ResponseEntity.ok(assembler.toModel(responsePage,
                 response -> EntityModel.of(response)));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    @AdminAction("user.role.update")
+    public ResponseEntity<EntityModel<UserResponse>> updateRoleGrant(
+            Long id,
+            String role,
+            ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest request) {
+        User user = userService.updateRoleGrant(id, role, request);
+        return ResponseEntity.ok(userAssembler.toAdminModel(user));
     }
 
     @Override

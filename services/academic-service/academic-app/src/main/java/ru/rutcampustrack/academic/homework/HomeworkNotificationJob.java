@@ -199,9 +199,7 @@ public class HomeworkNotificationJob {
     }
 
     private List<User> activeStudents(Long groupId) {
-        return userRepository.findByGroupId(groupId).stream()
-                .filter(u -> u.getRole() == UserRole.STUDENT)
-                .toList();
+        return userRepository.findActiveStudentsByGrantGroupId(groupId);
     }
 
     private List<HomeworkNotificationItem> incompleteItemsForStudent(List<Homework> homeworks,

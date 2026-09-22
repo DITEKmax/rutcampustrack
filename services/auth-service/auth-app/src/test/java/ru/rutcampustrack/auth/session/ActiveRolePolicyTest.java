@@ -26,7 +26,7 @@ class ActiveRolePolicyTest {
         assertThat(result.succeeded()).isTrue();
         assertThat(result.defaultGrant()).isEqualTo(student);
         assertThat(result.defaultGrant().isReadOnly()).isTrue();
-        assertThat(result.defaultGrant().isSelectable()).isTrue();
+        assertThat(result.defaultGrant().isSelectable()).isFalse();
     }
 
     @Test

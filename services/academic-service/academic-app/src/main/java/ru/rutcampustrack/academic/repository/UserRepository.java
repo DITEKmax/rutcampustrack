@@ -48,6 +48,31 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             nativeQuery = true)
     List<User> findByGroupId(@Param("groupId") Long groupId);
 
+    /** Student roster source for mixed-role accounts: authority comes from the grant. */
+    @Query(value = "SELECT u.* FROM users u "
+            + "JOIN user_role_grants g ON g.user_id = u.id "
+            + "WHERE g.role = 'student' AND g.status = 'active' AND g.group_id = :groupId "
+            + "AND u.status <> 'archived' "
+            + "ORDER BY u.last_name COLLATE \"ru_icu\", u.first_name COLLATE \"ru_icu\", u.middle_name COLLATE \"ru_icu\"",
+            nativeQuery = true)
+    List<User> findActiveStudentsByGrantGroupId(@Param("groupId") Long groupId);
+
+    @Query(value = "SELECT u.* FROM users u "
+            + "JOIN user_role_grants g ON g.user_id = u.id "
+            + "WHERE g.role = 'student' AND g.status = 'active' AND g.group_id = :groupId "
+            + "AND u.status <> 'archived' "
+            + "ORDER BY u.last_name COLLATE \"ru_icu\", u.first_name COLLATE \"ru_icu\", u.middle_name COLLATE \"ru_icu\"",
+            countQuery = "SELECT COUNT(*) FROM users u JOIN user_role_grants g ON g.user_id = u.id "
+                    + "WHERE g.role = 'student' AND g.status = 'active' AND g.group_id = :groupId "
+                    + "AND u.status <> 'archived'",
+            nativeQuery = true)
+    Page<User> findActiveStudentsByGrantGroupId(@Param("groupId") Long groupId, Pageable pageable);
+
+    @Query(value = "SELECT g.group_id FROM user_role_grants g "
+            + "WHERE g.user_id = :userId AND g.role = 'student' AND g.status = 'active'",
+            nativeQuery = true)
+    Optional<Long> findActiveStudentGrantGroupId(@Param("userId") Long userId);
+
     @Query(value = "SELECT * FROM users WHERE group_id = :groupId AND status <> 'archived' "
             + "ORDER BY last_name COLLATE \"ru_icu\", first_name COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
             countQuery = "SELECT COUNT(*) FROM users WHERE group_id = :groupId AND status <> 'archived'",

@@ -6,6 +6,7 @@ import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Response DTO returned when a new user is created.
@@ -31,6 +32,7 @@ public class UserCreatedResponse extends RepresentationModel<UserCreatedResponse
 
     /** One-time initial password shown only on creation. Never returned again. */
     private String initialPassword;
+    private List<RoleGrantViewResponse> roles = List.of();
 
     public UserCreatedResponse() {}
 
@@ -94,4 +96,9 @@ public class UserCreatedResponse extends RepresentationModel<UserCreatedResponse
             example = "Kx9mQ7wP2n")
     public String getInitialPassword() { return initialPassword; }
     public void setInitialPassword(String initialPassword) { this.initialPassword = initialPassword; }
+
+    public List<RoleGrantViewResponse> getRoles() { return roles; }
+    public void setRoles(List<RoleGrantViewResponse> roles) {
+        this.roles = roles == null ? List.of() : List.copyOf(roles);
+    }
 }

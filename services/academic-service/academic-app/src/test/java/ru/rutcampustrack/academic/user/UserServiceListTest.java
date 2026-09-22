@@ -16,6 +16,7 @@ import org.springframework.data.jpa.domain.Specification;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
 import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
@@ -27,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link UserService#listUsers(String, UserRole, AccountStatus, Pageable)}.
@@ -111,5 +113,23 @@ class UserServiceListTest {
     void matchesRoleAndStatus_null_returnsNullSpec() {
         assertThat(UserSpecifications.matchesRole(null)).isNull();
         assertThat(UserSpecifications.matchesStatus(null)).isNull();
+    }
+
+    @Test
+    void roleStatusFilterRejectsStatusFromAnotherRole() {
+        assertThatThrownBy(() -> service.listUsers(
+                null, "STUDENT", null, "DISMISSED", pageable))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("не применим");
+    }
+
+    @Test
+    void archivedRoleStatusRemainsFilterableAsReadOnlyHistory() {
+        when(userRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of()));
+
+        service.listUsers(null, "TEACHER", null, "ARCHIVED", pageable);
+
+        verify(userRepository).findAll(any(Specification.class), any(Pageable.class));
     }
 }

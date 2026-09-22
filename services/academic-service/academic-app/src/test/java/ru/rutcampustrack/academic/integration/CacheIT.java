@@ -144,6 +144,37 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         assertThat(redisTemplate.keys("group_members::*")).isNotEmpty();
     }
 
+    @Test
+    void createStudent_invalidatesGroupMembersAfterCommit() {
+        Long managedGroupId = groupService.createGroup(
+                new CreateGroupRequest(firstAvailableManagedGroupName("УИТ"))).getId();
+        GroupMembersRequest request = GroupMembersRequest.newBuilder()
+                .setGroupId(managedGroupId)
+                .build();
+        stub.getGroupMembers(request);
+        String key = "group_members::" + managedGroupId;
+        assertThat(redisTemplate.hasKey(key)).isTrue();
+
+        Long createdId = null;
+        try {
+            createdId = userService.createUser(new CreateUserRequest(
+                    "Cache", "RoleGrantCreateTest", null, UserRole.STUDENT,
+                    managedGroupId, null, Math.floorMod(System.nanoTime(), 9_000_000_000L) + 100_000L))
+                    .getContent()
+                    .getId();
+
+            assertThat(redisTemplate.hasKey(key)).isFalse();
+        } finally {
+            if (createdId != null) {
+                jdbcTemplate.update("DELETE FROM student_group_history WHERE user_id = ?", createdId);
+                jdbcTemplate.update("DELETE FROM user_role_grants WHERE user_id = ?", createdId);
+                jdbcTemplate.update("DELETE FROM users WHERE id = ?", createdId);
+            }
+            jdbcTemplate.update("DELETE FROM group_history_coverage WHERE group_id = ?", managedGroupId);
+            jdbcTemplate.update("DELETE FROM groups WHERE id = ?", managedGroupId);
+        }
+    }
+
     /**
      * CACHE-01 / GRPC-05: Two consecutive GetActiveSemester calls must trigger
      * only ONE DB query (semesterRepository.findByIsActiveTrue).

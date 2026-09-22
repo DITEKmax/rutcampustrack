@@ -559,7 +559,7 @@ function adaptRole(value: unknown, operation: string): ProfileRole {
 }
 
 function isRoleStatus(value: unknown): value is ProfileRoleStatus {
-  return value === 'ACTIVE' || value === 'SUSPENDED' || value === 'EXPELLED' || value === 'GRADUATED' || value === 'ARCHIVED'
+  return value === 'ACTIVE' || value === 'SUSPENDED' || value === 'EXPELLED' || value === 'GRADUATED' || value === 'DISMISSED' || value === 'ARCHIVED'
 }
 
 function isDecimalId(value: unknown): value is string {

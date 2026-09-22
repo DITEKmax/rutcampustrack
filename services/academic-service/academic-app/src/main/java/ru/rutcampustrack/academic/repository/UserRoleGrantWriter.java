@@ -9,6 +9,7 @@ import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -43,6 +44,12 @@ public class UserRoleGrantWriter {
             WHERE user_id = ? AND role = 'headman'
             """;
 
+    private static final String SELECT_GRANT_STATUS_SQL = """
+            SELECT status
+            FROM user_role_grants
+            WHERE user_id = ? AND role = ?
+            """;
+
     private static final String ARCHIVE_GRANTS_SQL = """
             UPDATE user_role_grants
             SET status = 'archived', updated_at = ?
@@ -68,15 +75,13 @@ public class UserRoleGrantWriter {
         jdbcTemplate.queryForObject(LOCK_USER_SQL, Long.class, userId);
 
         OffsetDateTime now = OffsetDateTime.now();
-        upsertGrant(userId,
-                user.getRole().name().toLowerCase(Locale.ROOT),
-                grantStatus(user.getStatus()),
-                user.getGroupId(),
-                now);
+        String baseRole = user.getRole().name().toLowerCase(Locale.ROOT);
+        String baseStatus = synchronizedBaseStatus(userId, baseRole, grantStatus(user.getStatus()));
+        upsertGrant(userId, baseRole, baseStatus, user.getGroupId(), now);
 
         boolean activeHeadman = user.getRole() == UserRole.STUDENT
                 && user.isHeadman()
-                && user.getStatus() == AccountStatus.ACTIVE;
+                && "active".equals(baseStatus);
         if (activeHeadman) {
             upsertGrant(userId, "headman", "active", user.getGroupId(), now);
         } else if (user.getRole() == UserRole.STUDENT && user.isHeadman()) {
@@ -86,6 +91,33 @@ public class UserRoleGrantWriter {
             // Keep the durable row for audit/session foreign keys; revoke only
             // its selectable authority and preserve its former group scope.
             jdbcTemplate.update(SUSPEND_HEADMAN_SQL, now, userId);
+        }
+    }
+
+    /**
+     * Atomically writes one managed base-role grant while leaving every other
+     * grant row untouched. The caller owns the surrounding user transaction;
+     * this method takes the same user lock as Auth's session authority.
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void upsertRole(Long userId, String role, String status, Long groupId) {
+        Objects.requireNonNull(userId, "userId");
+        Objects.requireNonNull(role, "role");
+        Objects.requireNonNull(status, "status");
+        jdbcTemplate.queryForObject(LOCK_USER_SQL, Long.class, userId);
+        upsertGrant(userId, role.toLowerCase(Locale.ROOT), status.toLowerCase(Locale.ROOT),
+                groupId, OffsetDateTime.now());
+    }
+
+    /** Keeps derived HEADMAN authority aligned when the STUDENT grant changes. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void synchronizeDerivedHeadman(Long userId, boolean shouldBeActive, Long groupId) {
+        Objects.requireNonNull(userId, "userId");
+        jdbcTemplate.queryForObject(LOCK_USER_SQL, Long.class, userId);
+        if (shouldBeActive) {
+            upsertGrant(userId, "headman", "active", groupId, OffsetDateTime.now());
+        } else {
+            jdbcTemplate.update(SUSPEND_HEADMAN_SQL, OffsetDateTime.now(), userId);
         }
     }
 
@@ -114,6 +146,18 @@ public class UserRoleGrantWriter {
                              Long groupId,
                              OffsetDateTime now) {
         jdbcTemplate.update(UPSERT_GRANT_SQL, userId, role, status, groupId, now, now);
+    }
+
+    private String synchronizedBaseStatus(Long userId, String role, String desiredStatus) {
+        if (!"active".equals(desiredStatus)) return desiredStatus;
+        List<String> existing = jdbcTemplate.query(
+                SELECT_GRANT_STATUS_SQL,
+                ps -> {
+                    ps.setLong(1, userId);
+                    ps.setString(2, role);
+                },
+                (rs, rowNum) -> rs.getString(1));
+        return existing == null || existing.isEmpty() ? desiredStatus : existing.get(0);
     }
 
     private static String grantStatus(AccountStatus status) {

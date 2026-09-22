@@ -3,6 +3,7 @@ package ru.rutcampustrack.academic.contract.dto.user;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 
@@ -35,6 +36,7 @@ public record CreateUserRequest(
         UserRole role,
 
         @Schema(description = "ID группы (обязателен для STUDENT)", example = "42")
+        @Positive(message = "ID группы должен быть положительным")
         Long groupId,
 
         @Schema(description = "Табельный номер (обязателен для TEACHER)", example = "EMP-00123")
@@ -42,5 +44,6 @@ public record CreateUserRequest(
 
         @Schema(description = "Telegram user ID (опционально, для OTP и бот-уведомлений)",
                 example = "123456789")
+        @Positive(message = "Telegram ID должен быть положительным")
         Long telegramId
 ) {}

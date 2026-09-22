@@ -4,6 +4,10 @@ import {
   AdminSemesterClient,
   type AdminSemesterApiGenerationOwner,
 } from '../features/admin-semester/admin-semester-client'
+import {
+  AdminUsersClient,
+  type AdminUsersApiOptions,
+} from '../features/admin-users/admin-users-client'
 
 /** A request that outlives its authenticated owner must fail closed. */
 export class StaleSessionGenerationError extends Error {
@@ -64,6 +68,30 @@ export function createGenerationBoundAdminSemesterClient(
     },
     ...(fetcher ? { fetcher } : {}),
   })
+}
+
+export function createGenerationBoundAdminUsersClient(
+  owner: AdminSemesterApiGenerationOwner,
+  fetcher?: typeof fetch,
+): AdminUsersClient {
+  const generation = owner.currentGeneration()
+  const assertCurrent = (): void => {
+    if (generation !== owner.currentGeneration()) throw new StaleSessionGenerationError()
+  }
+  const options: AdminUsersApiOptions = {
+    assertCurrent,
+    accessToken: () => {
+      assertCurrent()
+      return owner.accessTokenFor(generation)
+    },
+    onUnauthorized: async () => {
+      assertCurrent()
+      await owner.refreshFor(generation)
+      assertCurrent()
+    },
+    ...(fetcher ? { fetcher } : {}),
+  }
+  return new AdminUsersClient(options)
 }
 
 /**

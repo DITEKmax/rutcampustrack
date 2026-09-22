@@ -1,5 +1,5 @@
 export type ProfileRole = 'STUDENT' | 'HEADMAN' | 'TEACHER' | 'ADMIN'
-export type ProfileRoleStatus = 'ACTIVE' | 'SUSPENDED' | 'EXPELLED' | 'GRADUATED' | 'ARCHIVED'
+export type ProfileRoleStatus = 'ACTIVE' | 'SUSPENDED' | 'EXPELLED' | 'GRADUATED' | 'DISMISSED' | 'ARCHIVED'
 export type ProfileTheme = 'light' | 'dark' | 'system'
 export type ProfileResolvedTheme = 'light' | 'dark'
 export type ProfileRoute = 'statistics' | 'map' | 'requests' | 'profile' | 'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'
@@ -146,6 +146,7 @@ const STATUS_LABELS: Record<ProfileRoleStatus, string> = {
   SUSPENDED: 'Приостановлена',
   EXPELLED: 'Отчислен',
   GRADUATED: 'Выпустился',
+  DISMISSED: 'Уволен',
   ARCHIVED: 'Архивная',
 }
 

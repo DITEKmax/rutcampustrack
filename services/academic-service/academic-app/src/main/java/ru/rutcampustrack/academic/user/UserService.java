@@ -17,12 +17,14 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
+import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
 import org.springframework.hateoas.EntityModel;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.StudentGroupHistory;
@@ -42,6 +44,7 @@ import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
+import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
 import ru.rutcampustrack.academic.security.RequestContext;
 
 import java.security.SecureRandom;
@@ -49,6 +52,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -78,6 +82,7 @@ public class UserService {
     private final SemesterRepository semesterRepository;
     private final GroupHistoryCoverageRepository coverageRepository;
     private final UserRoleGrantWriter roleGrantWriter;
+    private final UserRoleGrantReader roleGrantReader;
 
     @Autowired
     public UserService(UserRepository userRepository,
@@ -90,7 +95,8 @@ public class UserService {
                        GroupRepository groupRepository,
                        SemesterRepository semesterRepository,
                        GroupHistoryCoverageRepository coverageRepository,
-                       UserRoleGrantWriter roleGrantWriter) {
+                       UserRoleGrantWriter roleGrantWriter,
+                       UserRoleGrantReader roleGrantReader) {
         this.userRepository = userRepository;
         this.headmanAssistantRepository = headmanAssistantRepository;
         this.studentGroupHistoryRepository = studentGroupHistoryRepository;
@@ -102,6 +108,7 @@ public class UserService {
         this.semesterRepository = semesterRepository;
         this.coverageRepository = coverageRepository;
         this.roleGrantWriter = roleGrantWriter;
+        this.roleGrantReader = roleGrantReader;
     }
 
     /** Compatibility constructor for source-era unit tests that do not mutate membership. */
@@ -114,33 +121,27 @@ public class UserService {
                        ApplicationEventPublisher eventPublisher) {
         this(userRepository, headmanAssistantRepository, studentGroupHistoryRepository,
                 requestContext, userAssembler, cacheManager, eventPublisher,
-                null, null, null, null);
+                null, null, null, null, null);
     }
 
     @Transactional
     public EntityModel<UserCreatedResponse> createUser(CreateUserRequest request) {
-        // BUG-006-3 / D-08..D-11: STUDENT role requires telegramId (staroste/boto
-        // notifications won't work without it). TEACHER/ADMIN keep it optional.
-        // Guard runs before any repo access so it's cheap and deterministic.
-        validateTelegramForRole(request);
+        validateCreateRoleData(request);
 
         // Lock and validate the group/semester before creating a STUDENT.  The
         // returned semester is captured once and becomes the authoritative
-        // joined_at value for this transaction.
-        EnrollmentContext enrollment = request.role() == UserRole.STUDENT && request.groupId() != null
+        // joined_at value for this transaction. Role-specific validation above
+        // guarantees that a STUDENT always has a real group here.
+        EnrollmentContext enrollment = request.role() == UserRole.STUDENT
                 ? prepareInitialEnrollment(request.groupId())
                 : null;
 
-        // Generate login based on role
-        String login = generateLogin(request.role());
+        // One account keeps one login even when later role grants are added.
+        String login = generateLogin(request);
 
         // BUG-006-2 / D-07: Pre-check unique fields before save to surface
         // field-specific 409 Conflict responses. The DataIntegrityViolation
         // handler is kept as a race-condition backstop (T-58-02-02).
-        if (userRepository.existsByLogin(login)) {
-            throw new ConflictException("login", login,
-                    "Логин уже используется. Выберите другой");
-        }
         if (request.telegramId() != null
                 && userRepository.existsByTelegramId(request.telegramId())) {
             throw new ConflictException("telegramId", request.telegramId(),
@@ -191,6 +192,7 @@ public class UserService {
             history.setCreatedAt(now);
             history.setReason("initial-enrollment");
             studentGroupHistoryRepository.save(history);
+            evictGroupMembersAfterCommit(enrollment.group().getId());
         }
         return userAssembler.toCreatedModel(user, plainPassword);
     }
@@ -206,16 +208,15 @@ public class UserService {
      * Пустые параметры → без ограничений (backward compatible).
      */
     public Page<User> listUsers(String search,
-                                UserRole roleFilter,
+                                String roleFilter,
                                 AccountStatus statusFilter,
+                                String roleStatusFilter,
                                 Pageable pageable) {
+        validateRoleFilter(roleFilter, roleStatusFilter);
         Specification<User> spec = Specification
                 .where(UserSpecifications.matchesSearch(search))
-                .and(UserSpecifications.matchesRole(roleFilter))
-                .and(UserSpecifications.matchesStatus(statusFilter));
-        // Default sort by surname when caller did not specify one. JPA Specification
-        // can't apply COLLATE, so this is ASCII-order — Ё ends up at the end. Acceptable
-        // for the admin-only screen; group/journal lists use ICU via native ORDER BY.
+                .and(UserSpecifications.matchesGrant(roleFilter, roleStatusFilter))
+                .and(roleStatusFilter == null ? UserSpecifications.matchesStatus(statusFilter) : null);
         Pageable effective = pageable.getSort().isSorted()
                 ? pageable
                 : org.springframework.data.domain.PageRequest.of(
@@ -225,9 +226,154 @@ public class UserService {
         return userRepository.findAll(spec, effective);
     }
 
+    /** Legacy overload retained for source-era callers and tests. */
+    public Page<User> listUsers(String search,
+                                UserRole roleFilter,
+                                AccountStatus statusFilter,
+                                Pageable pageable) {
+        return listUsers(search, roleFilter == null ? null : roleFilter.name(),
+                statusFilter, null, pageable);
+    }
+
     /** Backward-compatible overload for internal callers (e.g. gRPC service). */
     public Page<User> listUsers(UserRole roleFilter, Pageable pageable) {
         return listUsers(null, roleFilter, null, pageable);
+    }
+
+    @CacheEvict(value = "users", key = "#id")
+    @Transactional
+    public User updateRoleGrant(Long id, String roleName, RoleGrantUpdateRequest request) {
+        if (roleGrantReader == null || roleGrantWriter == null) {
+            throw HistoricalMembershipException.precondition("Role grant writer is unavailable");
+        }
+        UserRole role = parseManagedRole(roleName);
+        User user = userRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        var current = roleGrantReader.findByUserId(id).stream()
+                .filter(grant -> role.name().equals(grant.role()))
+                .findFirst();
+        validateRoleGrantData(role, request, current.isPresent());
+        RoleGrantStatus status = request.status();
+        validateRoleStatus(role, status);
+        String previousStatus = current.map(grant -> grant.status().toUpperCase(java.util.Locale.ROOT))
+                .orElse(null);
+        if ("ARCHIVED".equals(previousStatus)) {
+            throw new BadRequestException("Архивную роль нельзя изменить через этот endpoint");
+        }
+
+        if (role == UserRole.ADMIN && current.isPresent() && !"ACTIVE".equals(current.get().status())) {
+            throw new BadRequestException("Неактивную роль ADMIN нельзя реактивировать в этом пакете");
+        }
+
+        Long grantGroupId = current.map(grant -> grant.groupId()).orElse(null);
+        if (role == UserRole.STUDENT && grantGroupId == null && current.isPresent()
+                && user.getRole() == UserRole.STUDENT) {
+            grantGroupId = user.getGroupId();
+        }
+        boolean createdStudentHistory = false;
+        if (role == UserRole.STUDENT) {
+            if (current.isPresent()) {
+                if (request.groupId() != null && !java.util.Objects.equals(request.groupId(), grantGroupId)) {
+                    throw HistoricalMembershipException.unsupported(
+                        "Изменение группы выполняется только через перевод с причиной");
+                }
+                if (status == RoleGrantStatus.ACTIVE) {
+                    if (grantGroupId == null) {
+                        throw new BadRequestException("Активная STUDENT роль требует группу; используй перевод с историей");
+                    }
+                    Long telegramId = request.telegramId() != null ? request.telegramId() : user.getTelegramId();
+                    applyStudentTelegram(user, telegramId);
+                } else if (request.telegramId() != null) {
+                    applyStudentTelegram(user, request.telegramId());
+                }
+            } else {
+                if (request.groupId() == null || request.telegramId() == null) {
+                    throw new BadRequestException("Для добавления STUDENT нужны группа и Telegram ID");
+                }
+                EnrollmentContext enrollment = prepareInitialEnrollment(request.groupId());
+                grantGroupId = enrollment.group().getId();
+                applyStudentTelegram(user, request.telegramId());
+                StudentGroupHistory history = new StudentGroupHistory();
+                history.setUserId(user.getId());
+                history.setGroupId(grantGroupId);
+                history.setJoinedAt(enrollment.semester().getDateFrom());
+                history.setCreatedAt(OffsetDateTime.now());
+                history.setReason("initial-enrollment");
+                studentGroupHistoryRepository.save(history);
+                createdStudentHistory = true;
+            }
+        } else if (role == UserRole.TEACHER) {
+            if (current.isEmpty()) {
+                if (request.employeeNumber() == null || request.employeeNumber().isBlank()) {
+                    throw new BadRequestException("Для добавления TEACHER нужен табельный номер");
+                }
+                ensureEmployeeAvailable(user, request.employeeNumber());
+                if (user.getEmployeeNumber() == null) user.setEmployeeNumber(request.employeeNumber());
+            } else if (request.employeeNumber() != null
+                    && !request.employeeNumber().isBlank()
+                    && !request.employeeNumber().equals(user.getEmployeeNumber())) {
+                ensureEmployeeAvailable(user, request.employeeNumber());
+                user.setEmployeeNumber(request.employeeNumber());
+            }
+            if (status == RoleGrantStatus.ACTIVE
+                    && (user.getEmployeeNumber() == null || user.getEmployeeNumber().isBlank())) {
+                throw new BadRequestException("Активная TEACHER роль требует табельный номер");
+            }
+        } else {
+            if (request.groupId() != null || request.employeeNumber() != null || request.telegramId() != null) {
+                throw new BadRequestException("Для ADMIN role-data не поддерживается этим пакетом");
+            }
+        }
+
+        if (role == UserRole.STUDENT && status != RoleGrantStatus.ACTIVE && user.isHeadman()) {
+            if (user.getGroupId() != null) {
+                headmanAssistantRepository.revokeAllByGroupId(user.getGroupId());
+            }
+            user.setHeadman(false);
+        }
+        // Keep the legacy scalar aligned when this is the user's base role.
+        // GRADUATED/DISMISSED have no legacy AccountStatus value; ACTIVE is a
+        // deliberate neutral marker so synchronize() preserves the durable
+        // role-specific status instead of reactivating or rewriting it.
+        if (role == user.getRole()) {
+            switch (status) {
+                case ACTIVE -> user.setStatus(AccountStatus.ACTIVE);
+                case EXPELLED -> user.setStatus(AccountStatus.EXPELLED);
+                case SUSPENDED -> user.setStatus(AccountStatus.SUSPENDED);
+                case GRADUATED, DISMISSED -> user.setStatus(AccountStatus.ACTIVE);
+                case ARCHIVED -> throw new BadRequestException("ARCHIVED не применим к управляемой роли");
+            }
+        }
+
+        if (role == UserRole.STUDENT) {
+            if (createdStudentHistory && isTerminalStudentGrantStatus(status)) {
+                closeOpenMembershipOnTerminalStatus(id, LocalDate.now(MOSCOW));
+            } else if (current.isPresent()
+                    && isTerminalStudentGrantStatus(status)
+                    && !isTerminalStudentGrantStatus(previousStatus)) {
+                closeOpenMembershipOnTerminalStatus(id, LocalDate.now(MOSCOW));
+            } else if (current.isPresent()
+                    && status == RoleGrantStatus.ACTIVE
+                    && isTerminalStudentGrantStatus(previousStatus)) {
+                openMembershipOnStudentReactivation(id, grantGroupId, LocalDate.now(MOSCOW));
+            }
+        }
+        user.setUpdatedAt(OffsetDateTime.now());
+        User saved = userRepository.save(user);
+        userRepository.flush();
+        roleGrantWriter.upsertRole(
+                id,
+                role.name().toLowerCase(java.util.Locale.ROOT),
+                status.name().toLowerCase(java.util.Locale.ROOT),
+                grantGroupId);
+        if (role == UserRole.STUDENT) {
+            roleGrantWriter.synchronizeDerivedHeadman(
+                    id,
+                    status == RoleGrantStatus.ACTIVE && saved.isHeadman(),
+                    grantGroupId);
+            evictGroupMembersAfterCommit(grantGroupId);
+        }
+        return saved;
     }
 
     public List<User> listTeachers() {
@@ -274,6 +420,147 @@ public class UserService {
         userRepository.flush();
         synchronizeRoleGrants(saved);
         return saved;
+    }
+
+    private void validateRoleFilter(String roleFilter, String roleStatusFilter) {
+        if (roleStatusFilter != null && !roleStatusFilter.isBlank()
+                && (roleFilter == null || roleFilter.isBlank())) {
+            throw new BadRequestException("Фильтр статуса роли требует фильтр роли");
+        }
+        if (roleFilter == null || roleFilter.isBlank()) return;
+        String normalized = roleFilter.trim().toUpperCase(java.util.Locale.ROOT);
+        if (!List.of("STUDENT", "TEACHER", "ADMIN", "HEADMAN").contains(normalized)) {
+            throw new BadRequestException("Недопустимая роль: " + roleFilter);
+        }
+        if (roleStatusFilter != null && !roleStatusFilter.isBlank()) {
+            RoleGrantStatus status;
+            try {
+                status = RoleGrantStatus.valueOf(roleStatusFilter.trim().toUpperCase(java.util.Locale.ROOT));
+            } catch (IllegalArgumentException ex) {
+                throw new BadRequestException("Недопустимый статус роли: " + roleStatusFilter);
+            }
+            if (!isApplicableRoleStatus(normalized, status)) {
+                throw new BadRequestException("Статус " + status + " не применим к роли " + normalized);
+            }
+        }
+    }
+
+    private static UserRole parseManagedRole(String roleName) {
+        if (roleName == null) throw new BadRequestException("Роль обязательна");
+        try {
+            UserRole role = UserRole.valueOf(roleName.trim().toUpperCase(java.util.Locale.ROOT));
+            if (role == UserRole.ADMIN || role == UserRole.STUDENT || role == UserRole.TEACHER) return role;
+        } catch (IllegalArgumentException ignored) {
+            // Use the same domain error for unknown and derived roles.
+        }
+        throw new BadRequestException("Роль нельзя изменить через этот endpoint: " + roleName);
+    }
+
+    private static void validateRoleStatus(UserRole role, RoleGrantStatus status) {
+        if (status == null) throw new BadRequestException("Статус роли обязателен");
+        boolean valid = isApplicableRoleStatus(role.name(), status)
+                && status != RoleGrantStatus.ARCHIVED;
+        if (!valid) throw new BadRequestException("Статус не применим к роли " + role);
+    }
+
+    private static boolean isApplicableRoleStatus(String role, RoleGrantStatus status) {
+        return switch (role) {
+            case "STUDENT" -> status == RoleGrantStatus.ACTIVE
+                    || status == RoleGrantStatus.EXPELLED
+                    || status == RoleGrantStatus.GRADUATED
+                    || status == RoleGrantStatus.SUSPENDED
+                    || status == RoleGrantStatus.ARCHIVED;
+            case "TEACHER" -> status == RoleGrantStatus.ACTIVE
+                    || status == RoleGrantStatus.DISMISSED
+                    || status == RoleGrantStatus.SUSPENDED
+                    || status == RoleGrantStatus.ARCHIVED;
+            case "ADMIN" -> status == RoleGrantStatus.ACTIVE
+                    || status == RoleGrantStatus.ARCHIVED;
+            case "HEADMAN" -> status == RoleGrantStatus.ACTIVE
+                    || status == RoleGrantStatus.SUSPENDED
+                    || status == RoleGrantStatus.ARCHIVED;
+            default -> false;
+        };
+    }
+
+    private static void validateRoleGrantData(UserRole role,
+                                              RoleGrantUpdateRequest request,
+                                              boolean existingGrant) {
+        if (request == null) throw new BadRequestException("Данные роли обязательны");
+        if (request.groupId() != null && request.groupId() <= 0) {
+            throw new BadRequestException("groupId", "ID группы должен быть положительным");
+        }
+        if (request.telegramId() != null && request.telegramId() <= 0) {
+            throw new BadRequestException("telegramId", "Telegram ID должен быть положительным");
+        }
+        boolean hasEmployeeNumber = request.employeeNumber() != null
+                && !request.employeeNumber().isBlank();
+        switch (role) {
+            case STUDENT -> {
+                if (hasEmployeeNumber) {
+                    throw new BadRequestException("employeeNumber",
+                            "Табельный номер не применим к роли STUDENT");
+                }
+                if (!existingGrant && (request.groupId() == null || request.telegramId() == null)) {
+                    throw new BadRequestException(
+                            "Для добавления STUDENT нужны группа и Telegram ID");
+                }
+            }
+            case TEACHER -> {
+                if (request.groupId() != null) {
+                    throw new BadRequestException("groupId", "Группа не применима к роли TEACHER");
+                }
+                if (request.telegramId() != null) {
+                    throw new BadRequestException("telegramId", "Telegram ID не изменяется через роль TEACHER");
+                }
+                if (!existingGrant && !hasEmployeeNumber) {
+                    throw new BadRequestException("employeeNumber", "Для добавления TEACHER нужен табельный номер");
+                }
+            }
+            case ADMIN -> {
+                if (request.groupId() != null) {
+                    throw new BadRequestException("groupId", "Группа не применима к роли ADMIN");
+                }
+                if (hasEmployeeNumber) {
+                    throw new BadRequestException("employeeNumber", "Табельный номер не применим к роли ADMIN");
+                }
+                if (request.telegramId() != null) {
+                    throw new BadRequestException("telegramId", "Telegram ID не изменяется через роль ADMIN");
+                }
+            }
+        }
+    }
+
+    private void ensureTelegramAvailable(User current, Long telegramId) {
+        if (telegramId == null || telegramId <= 0) {
+            throw new BadRequestException("Telegram ID должен быть положительным");
+        }
+        userRepository.findByTelegramId(telegramId).ifPresent(existing -> {
+            if (!existing.getId().equals(current.getId())) {
+                throw new ConflictException("telegramId", telegramId,
+                        "Telegram ID уже привязан к другой учётной записи");
+            }
+        });
+    }
+
+    private void applyStudentTelegram(User user, Long telegramId) {
+        ensureTelegramAvailable(user, telegramId);
+        if (user.getTelegramId() != null && !user.getTelegramId().equals(telegramId)) {
+            throw new BadRequestException("Telegram ID уже привязан к этой учётной записи");
+        }
+        if (user.getTelegramId() == null) user.setTelegramId(telegramId);
+    }
+
+    private void ensureEmployeeAvailable(User current, String employeeNumber) {
+        if (employeeNumber == null || employeeNumber.isBlank()) {
+            throw new BadRequestException("Табельный номер обязателен");
+        }
+        userRepository.findByEmployeeNumber(employeeNumber).ifPresent(existing -> {
+            if (!existing.getId().equals(current.getId())) {
+                throw new ConflictException("employeeNumber", employeeNumber,
+                        "Табельный номер уже используется");
+            }
+        });
     }
 
     @CacheEvict(value = "users", key = "#id")
@@ -413,11 +700,19 @@ public class UserService {
     public User transferStudent(Long id, TransferStudentRequest request) {
         User user = userRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        if (user.getRole() != UserRole.STUDENT) {
+        var studentGrant = roleGrantReader == null ? java.util.Optional.<ru.rutcampustrack.academic.contract.dto.user.RoleGrantViewResponse>empty()
+                : roleGrantReader.findByUserId(id).stream()
+                .filter(grant -> "STUDENT".equals(grant.role()))
+                .findFirst();
+        boolean legacyStudent = user.getRole() == UserRole.STUDENT;
+        if (!legacyStudent && studentGrant.isEmpty()) {
             throw new BadRequestException("Перевод возможен только для студентов");
         }
 
-        Long oldGroupId = user.getGroupId();
+        Long oldGroupId = studentGrant.map(grant -> grant.groupId()).orElse(user.getGroupId());
+        if (studentGrant.isPresent() && !"ACTIVE".equals(studentGrant.get().status())) {
+            throw new BadRequestException("Перевод доступен только для активного STUDENT");
+        }
         Long newGroupId = request.newGroupId();
         if (newGroupId == null || newGroupId <= 0 || oldGroupId == null) {
             throw HistoricalMembershipException.precondition(
@@ -476,7 +771,9 @@ public class UserService {
         studentGroupHistoryRepository.save(newHistory);
 
         // Update user's current group
-        user.setGroupId(newGroupId);
+        if (legacyStudent) {
+            user.setGroupId(newGroupId);
+        }
 
         // If user was headman in old group — cascade revoke (same as D-13)
         if (user.isHeadman() && oldGroupId != null) {
@@ -505,6 +802,13 @@ public class UserService {
         User saved = userRepository.save(user);
         userRepository.flush();
         synchronizeRoleGrants(saved);
+        if (!legacyStudent && studentGrant.isPresent()) {
+            roleGrantWriter.upsertRole(
+                    id,
+                    "student",
+                    studentGrant.get().status().toLowerCase(java.util.Locale.ROOT),
+                    newGroupId);
+        }
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, oldGroupId));
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, newGroupId));
         return saved;
@@ -617,6 +921,14 @@ public class UserService {
         return status == AccountStatus.EXPELLED || status == AccountStatus.ARCHIVED;
     }
 
+    private static boolean isTerminalStudentGrantStatus(RoleGrantStatus status) {
+        return status == RoleGrantStatus.EXPELLED || status == RoleGrantStatus.GRADUATED;
+    }
+
+    private static boolean isTerminalStudentGrantStatus(String status) {
+        return "EXPELLED".equalsIgnoreCase(status) || "GRADUATED".equalsIgnoreCase(status);
+    }
+
     /**
      * Closes the one managed open interval at the terminal transition date.
      * The half-open interval remains valid for same-day and future-dated
@@ -657,6 +969,90 @@ public class UserService {
         studentGroupHistoryRepository.save(openHistory);
     }
 
+    /**
+     * Reopens a new managed interval after a terminal STUDENT grant is
+     * reactivated. The old closed row remains immutable; using today's
+     * canonical Moscow date avoids resurrecting the old semester-start row.
+     */
+    private void openMembershipOnStudentReactivation(Long userId,
+                                                     Long groupId,
+                                                     LocalDate effectiveDate) {
+        if (userId == null || userId <= 0 || groupId == null || groupId <= 0
+                || effectiveDate == null) {
+            throw HistoricalMembershipException.invalid("Student reactivation membership is invalid");
+        }
+        if (groupRepository == null || coverageRepository == null
+                || studentGroupHistoryRepository == null) {
+            throw HistoricalMembershipException.precondition(
+                    "Historical membership writer is unavailable");
+        }
+        Group group = groupRepository.findByIdForUpdate(groupId)
+                .orElseThrow(() -> HistoricalMembershipException.notFound(
+                        "Group " + groupId + " not found"));
+        requireCoveredGroup(group, effectiveDate);
+        List<StudentGroupHistory> openHistories = studentGroupHistoryRepository
+                .findOpenByUserIdForUpdate(userId);
+        if (openHistories == null) {
+            throw HistoricalMembershipException.precondition(
+                    "Open membership lookup returned no coherent result");
+        }
+        if (!openHistories.isEmpty()) {
+            throw HistoricalMembershipException.precondition(
+                    "Student reactivation would overlap an open membership interval");
+        }
+        StudentGroupHistory history = new StudentGroupHistory();
+        history.setUserId(userId);
+        history.setGroupId(groupId);
+        history.setJoinedAt(effectiveDate);
+        history.setCreatedAt(OffsetDateTime.now());
+        history.setReason("role-reactivation");
+        studentGroupHistoryRepository.save(history);
+    }
+
+    private static void validateCreateRoleData(CreateUserRequest request) {
+        if (request == null || request.role() == null) {
+            throw new BadRequestException("role", "Роль обязательна");
+        }
+        if (request.groupId() != null && request.groupId() <= 0) {
+            throw new BadRequestException("groupId", "ID группы должен быть положительным");
+        }
+        if (request.telegramId() != null && request.telegramId() <= 0) {
+            throw new BadRequestException("telegramId", "Telegram ID должен быть положительным");
+        }
+        boolean hasEmployeeNumber = request.employeeNumber() != null
+                && !request.employeeNumber().isBlank();
+        switch (request.role()) {
+            case STUDENT -> {
+                if (request.groupId() == null) {
+                    throw new BadRequestException("groupId", "ID группы обязателен для студента");
+                }
+                if (hasEmployeeNumber) {
+                    throw new BadRequestException("employeeNumber",
+                            "Табельный номер не применим к роли STUDENT");
+                }
+                validateTelegramForRole(request);
+            }
+            case TEACHER -> {
+                if (request.groupId() != null) {
+                    throw new BadRequestException("groupId", "Группа не применима к роли TEACHER");
+                }
+                if (!hasEmployeeNumber) {
+                    throw new BadRequestException("employeeNumber",
+                            "Табельный номер обязателен для преподавателя");
+                }
+            }
+            case ADMIN -> {
+                if (request.groupId() != null) {
+                    throw new BadRequestException("groupId", "Группа не применима к роли ADMIN");
+                }
+                if (hasEmployeeNumber) {
+                    throw new BadRequestException("employeeNumber",
+                            "Табельный номер не применим к роли ADMIN");
+                }
+            }
+        }
+    }
+
     private void synchronizeRoleGrants(User user) {
         // The compatibility constructor is retained for source-era unit tests;
         // the Spring application constructor always supplies the V24 writer.
@@ -673,6 +1069,35 @@ public class UserService {
         }
     }
 
+    /**
+     * Invalidates cached group rosters only after the membership transaction
+     * commits. Evicting before commit permits a concurrent reader to repopulate
+     * the five-minute cache from the old database snapshot.
+     */
+    private void evictGroupMembersAfterCommit(Long... groupIds) {
+        if (cacheManager == null) return;
+        List<Long> affected = Arrays.stream(groupIds)
+                .filter(groupId -> groupId != null && groupId > 0)
+                .distinct()
+                .toList();
+        if (affected.isEmpty()) return;
+        Runnable evict = () -> {
+            Cache groupMembers = cacheManager.getCache("group_members");
+            if (groupMembers != null) {
+                affected.forEach(groupMembers::evict);
+            }
+        };
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override public void afterCommit() {
+                    evict.run();
+                }
+            });
+        } else {
+            evict.run();
+        }
+    }
+
     private record EnrollmentContext(Group group, Semester semester, GroupHistoryCoverage coverage) {
     }
 
@@ -682,7 +1107,7 @@ public class UserService {
      * optional. A telegramId of {@code 0} is normalised to "missing" — some
      * clients submit zero instead of null.
      */
-    private void validateTelegramForRole(CreateUserRequest request) {
+    private static void validateTelegramForRole(CreateUserRequest request) {
         if (request.role() == UserRole.STUDENT
                 && (request.telegramId() == null || request.telegramId() == 0L)) {
             throw new BadRequestException("telegramId",
@@ -690,18 +1115,86 @@ public class UserService {
         }
     }
 
-    private String generateLogin(UserRole role) {
-        if (role == UserRole.STUDENT) {
-            long seq = userRepository.nextStudentLoginSeq();
-            return "student" + seq;
-        } else if (role == UserRole.TEACHER) {
-            long seq = userRepository.nextTeacherLoginSeq();
-            return "teacher" + seq;
-        } else {
-            // ADMIN — use teacher sequence with "admin" prefix
-            long seq = userRepository.nextTeacherLoginSeq();
-            return "admin" + seq;
+    private String generateLogin(CreateUserRequest request) {
+        String surname = transliterate(request.lastName());
+        String given = transliterate(request.firstName());
+        String digits = loginDigits(request);
+        String stem = (surname + "-" + given).replaceAll("-+", "-");
+        if (stem.equals("-")) stem = "user";
+        // Keep the four-digit identity suffix inside the 32-character limit.
+        // Collision suffixes are reserved separately below, so a long name
+        // cannot make every candidate collapse to the same trimmed login.
+        String normalizedStem = trimLogin(stem);
+        String digitPart = digits.isBlank() ? "" : "-" + digits;
+        int baseStemLength = Math.max(1, 32 - digitPart.length());
+        String baseStem = normalizedStem.substring(0, Math.min(normalizedStem.length(), baseStemLength));
+        String base = trimLogin(baseStem + digitPart);
+        if (!userRepository.existsByLogin(base)) return base;
+        for (int suffix = 2; suffix < 10_000; suffix++) {
+            String collisionPart = "-" + suffix;
+            int candidateStemLength = Math.max(1, 32 - digitPart.length() - collisionPart.length());
+            String candidateStem = baseStem.substring(0, Math.min(baseStem.length(), candidateStemLength));
+            String candidate = trimLogin(candidateStem + digitPart + collisionPart);
+            if (!userRepository.existsByLogin(candidate)) return candidate;
         }
+        throw new ConflictException("login", base, "Не удалось подобрать уникальный логин");
+    }
+
+    private String loginDigits(CreateUserRequest request) {
+        String source = request.telegramId() == null
+                ? request.employeeNumber()
+                : Long.toString(request.telegramId());
+        if (source == null) {
+            return String.format("%04d", Math.floorMod(userRepository.nextTeacherLoginSeq(), 10_000));
+        }
+        String digits = source.replaceAll("\\D", "");
+        if (digits.isBlank()) {
+            return String.format("%04d", Math.floorMod(userRepository.nextTeacherLoginSeq(), 10_000));
+        }
+        return digits.length() <= 4 ? String.format("%04d", Long.parseLong(digits))
+                : digits.substring(digits.length() - 4);
+    }
+
+    private static String trimLogin(String value) {
+        String normalized = value.toLowerCase(java.util.Locale.ROOT)
+                .replaceAll("[^a-z0-9-]", "")
+                .replaceAll("^-+|-+$", "");
+        return normalized.length() <= 32 ? normalized : normalized.substring(0, 32);
+    }
+
+    private static String transliterate(String value) {
+        if (value == null) return "";
+        StringBuilder result = new StringBuilder(value.length());
+        String lower = value.toLowerCase(java.util.Locale.ROOT);
+        String[] source = {"щ", "ш", "ч", "ц", "ю", "я", "ж", "ё", "й", "х", "ъ", "ь"};
+        String[] target = {"shch", "sh", "ch", "ts", "yu", "ya", "zh", "yo", "y", "kh", "", ""};
+        for (int i = 0; i < lower.length(); i++) {
+            String symbol = lower.substring(i, i + 1);
+            boolean replaced = false;
+            for (int j = 0; j < source.length; j++) {
+                if (symbol.equals(source[j])) {
+                    result.append(target[j]);
+                    replaced = true;
+                    break;
+                }
+            }
+            if (replaced) continue;
+            char c = lower.charAt(i);
+            if (c >= 'а' && c <= 'я') {
+                String mapped = switch (c) {
+                    case 'а' -> "a"; case 'б' -> "b"; case 'в' -> "v"; case 'г' -> "g";
+                    case 'д' -> "d"; case 'е' -> "e"; case 'з' -> "z"; case 'и' -> "i";
+                    case 'к' -> "k"; case 'л' -> "l"; case 'м' -> "m"; case 'н' -> "n";
+                    case 'о' -> "o"; case 'п' -> "p"; case 'р' -> "r"; case 'с' -> "s";
+                    case 'т' -> "t"; case 'у' -> "u"; case 'ф' -> "f"; case 'ы' -> "y";
+                    case 'э' -> "e"; default -> "";
+                };
+                result.append(mapped);
+            } else if (Character.isLetterOrDigit(c)) {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 
     private String generatePassword() {

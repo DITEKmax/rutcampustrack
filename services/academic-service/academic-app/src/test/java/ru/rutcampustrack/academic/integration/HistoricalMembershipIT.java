@@ -11,8 +11,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
+import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
+import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.StudentGroupHistory;
@@ -207,6 +209,39 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                 .orElseThrow();
         assertThat(destinationHistory.getJoinedAt()).isEqualTo(transferDate);
         assertThat(destinationHistory.getLeftAt()).isEqualTo(archiveDate);
+    }
+
+    @Test
+    void terminalRoleGrantClosesHistoryAndReactivationStartsCanonicalInterval() {
+        Group group = createGroup();
+        User student = createStudent(group.getId());
+        LocalDate transitionDate = LocalDate.now(MOSCOW);
+
+        userService.updateRoleGrant(student.getId(), "STUDENT",
+                new RoleGrantUpdateRequest(RoleGrantStatus.EXPELLED, null, null, null));
+
+        List<StudentGroupHistory> afterExpulsion =
+                historyRepository.findByUserIdOrderByJoinedAtAscIdAsc(student.getId());
+        assertThat(afterExpulsion).hasSize(1);
+        assertThat(afterExpulsion.get(0).getLeftAt()).isEqualTo(transitionDate);
+
+        userService.updateRoleGrant(student.getId(), "STUDENT",
+                new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE, null, null, null));
+
+        List<StudentGroupHistory> afterReactivation =
+                historyRepository.findByUserIdOrderByJoinedAtAscIdAsc(student.getId());
+        assertThat(afterReactivation).hasSize(2);
+        assertThat(afterReactivation.get(0).getLeftAt()).isEqualTo(transitionDate);
+        assertThat(afterReactivation.get(1).getJoinedAt()).isEqualTo(transitionDate);
+        assertThat(afterReactivation.get(1).getLeftAt()).isNull();
+
+        userService.updateRoleGrant(student.getId(), "STUDENT",
+                new RoleGrantUpdateRequest(RoleGrantStatus.GRADUATED, null, null, null));
+
+        List<StudentGroupHistory> afterGraduation =
+                historyRepository.findByUserIdOrderByJoinedAtAscIdAsc(student.getId());
+        assertThat(afterGraduation).hasSize(2);
+        assertThat(afterGraduation.get(1).getLeftAt()).isEqualTo(transitionDate);
     }
 
     @Test

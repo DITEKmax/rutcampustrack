@@ -6,6 +6,7 @@ import {
   createGenerationBoundStudentApi,
   createGenerationBoundTeacherApi,
   createGenerationBoundAdminSemesterClient,
+  createGenerationBoundAdminUsersClient,
   StaleSessionGenerationError,
 } from '@rct/mobile-core'
 import type {
@@ -19,6 +20,7 @@ import type {
   StudentApi,
   TeacherApi,
   AdminSemesterClient,
+  AdminUsersClient,
   authComponents,
 } from '@rct/mobile-core'
 import { authenticateTma, TmaAuthError } from './tma-auth'
@@ -120,6 +122,14 @@ export function useTmaSession(options: TmaSessionOptions) {
     }, fetcher)
   }
 
+  function createAdminUsersApi(fetcher?: typeof fetch): AdminUsersClient {
+    return createGenerationBoundAdminUsersClient({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor: authenticateFor,
+    }, fetcher)
+  }
+
   async function getProfileFor(generation: number): Promise<ProfileSnapshot> {
     assertCurrent(generation)
     const response = await authenticatedRequest('/api/auth/session', generation)
@@ -178,6 +188,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     createHeadmanRequestsApi,
     createTeacherApi,
     createAdminSemesterApi,
+    createAdminUsersApi,
     getProfileFor,
     selectRoleFor,
     clear,
@@ -237,5 +248,5 @@ function isProfileRole(value: unknown): value is ProfileRole {
 }
 
 function isRoleStatus(value: unknown): value is ProfileRoleGrant['status'] {
-  return value === 'ACTIVE' || value === 'SUSPENDED' || value === 'EXPELLED' || value === 'GRADUATED' || value === 'ARCHIVED'
+  return value === 'ACTIVE' || value === 'SUSPENDED' || value === 'EXPELLED' || value === 'GRADUATED' || value === 'DISMISSED' || value === 'ARCHIVED'
 }

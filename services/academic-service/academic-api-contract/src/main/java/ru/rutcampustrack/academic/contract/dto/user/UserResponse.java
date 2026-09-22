@@ -6,6 +6,7 @@ import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Response DTO for a user resource with HATEOAS links.
@@ -33,6 +34,7 @@ public class UserResponse extends RepresentationModel<UserResponse> {
      * пользователь его не сменил (BUG-006). NULL во всех остальных случаях.
      */
     private String initialPassword;
+    private List<RoleGrantViewResponse> roles = List.of();
 
     public UserResponse() {}
 
@@ -104,6 +106,12 @@ public class UserResponse extends RepresentationModel<UserResponse> {
 
     public String getInitialPassword() { return initialPassword; }
     public void setInitialPassword(String initialPassword) { this.initialPassword = initialPassword; }
+
+    /** Durable per-role authority projection. */
+    public List<RoleGrantViewResponse> getRoles() { return roles; }
+    public void setRoles(List<RoleGrantViewResponse> roles) {
+        this.roles = roles == null ? List.of() : List.copyOf(roles);
+    }
 
     /** Computed ФИО для UI-списков (сериализуется как поле fullName). */
     public String getFullName() {

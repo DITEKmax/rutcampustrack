@@ -5,6 +5,8 @@ import {
   AdminMapScreen,
   AdminSemesterApiError,
   AdminSemesterScreen,
+  AdminUsersApiError,
+  AdminUsersScreen,
   AdminRoleNavigation,
   CampusMapClient,
   SemesterSnapshotStore,
@@ -42,6 +44,7 @@ import {
   type HeadmanJournalApi,
   type HeadmanRequestsApi,
   type AdminSemesterClient,
+  type AdminUsersClient,
 } from '@rct/mobile-core'
 import type { ProfilePort, ProfileRole, ProfileSnapshot } from '@rct/mobile-core'
 import { AuthRequestError } from './auth-client'
@@ -78,6 +81,7 @@ const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
 const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null)
+const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
 const profilePort = shallowRef<ProfilePort | null>(null)
@@ -89,7 +93,7 @@ const readOnly = ref(false)
 const sessionReady = ref(false)
 const bootstrapping = ref(false)
 const bootstrapError = ref<string | null>(null)
-const authView = ref<'login' | 'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-map' | 'admin-semesters'>('login')
+const authView = ref<'login' | 'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-map' | 'admin-semesters' | 'admin-users'>('login')
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null)
 const authError = shallowRef<ProfileRequestError | null>(null)
 const authLoading = ref(false)
@@ -113,8 +117,9 @@ const displayedSemesterSchedule = computed(() => offline.value ? semesterSchedul
 const mapViewVisible = computed(() => authView.value === 'map')
 const adminMapViewVisible = computed(() => authView.value === 'admin-map')
 const adminSemesterViewVisible = computed(() => authView.value === 'admin-semesters')
+const adminUsersViewVisible = computed(() => authView.value === 'admin-users')
 const featureVisible = computed(() => api.value !== null || headmanApi.value !== null || snapshot.value !== null
-  || teacherApi.value !== null || mapViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value)
+  || teacherApi.value !== null || mapViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value || adminUsersViewVisible.value)
 const studentViewVisible = computed(() => authView.value === 'student' && featureVisible.value)
 const teacherViewVisible = computed(() => authView.value === 'teacher' && teacherApi.value !== null)
 const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
@@ -136,6 +141,7 @@ function authDenialStatus(error: unknown): number | null {
   if (error instanceof HeadmanJournalApiError) return error.response.status
   if (error instanceof HeadmanRequestsApiError) return error.response.status
   if (error instanceof AdminSemesterApiError) return error.response.status
+  if (error instanceof AdminUsersApiError) return error.response.status
   return null
 }
 
@@ -209,6 +215,7 @@ async function loadOfflineSnapshot(): Promise<boolean> {
   headmanJournalApi.value = null
   headmanRequestsApi.value = null
   adminSemesterApi.value = null
+  adminUsersApi.value = null
   headmanGroupId.value = null
   session.value = null
   authSnapshot.value = null
@@ -267,6 +274,7 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): St
   headmanJournalApi.value = null
   headmanRequestsApi.value = null
   adminSemesterApi.value = null
+  adminUsersApi.value = null
   headmanGroupId.value = null
   teacherApi.value = null
   teacherSemesterId.value = null
@@ -536,6 +544,9 @@ async function activateMapRole(profile: ProfileSnapshot, generation: number): Pr
   adminSemesterApi.value = profile.activeRole === 'ADMIN'
     ? auth.createAdminSemesterApi(currentFetcher())
     : null
+  adminUsersApi.value = profile.activeRole === 'ADMIN'
+    ? auth.createAdminUsersApi(currentFetcher())
+    : null
   offline.value = false
   readOnly.value = profile.readOnly
   bootstrapError.value = null
@@ -543,9 +554,9 @@ async function activateMapRole(profile: ProfileSnapshot, generation: number): Pr
   authView.value = profile.activeRole === 'ADMIN' ? 'admin-map' : 'map'
 }
 
-function navigateAdmin(route: 'map' | 'semesters'): void {
-  if (authSnapshot.value?.activeRole !== 'ADMIN' || !adminSemesterApi.value) return
-  authView.value = route === 'map' ? 'admin-map' : 'admin-semesters'
+function navigateAdmin(route: 'map' | 'semesters' | 'users'): void {
+  if (authSnapshot.value?.activeRole !== 'ADMIN' || !adminSemesterApi.value || !adminUsersApi.value) return
+  authView.value = route === 'map' ? 'admin-map' : route === 'semesters' ? 'admin-semesters' : 'admin-users'
 }
 
 function assertCandidateCurrent(generation: number): void {
@@ -1023,6 +1034,17 @@ onBeforeUnmount(() => {
       @owner-error="onOwnerError"
     />
   </template>
+  <template v-else-if="adminUsersViewVisible && adminUsersApi">
+    <AdminRoleNavigation
+      active="users"
+      @navigate="navigateAdmin"
+    />
+    <AdminUsersScreen
+      :client="adminUsersApi"
+      theme="dark"
+      @owner-error="onOwnerError"
+    />
+  </template>
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
     :key="ownerKey"
@@ -1045,7 +1067,7 @@ onBeforeUnmount(() => {
     @owner-error="onOwnerError"
   />
   <button
-    v-if="(authView === 'student' && session) || authView === 'teacher' || authView === 'headman' || mapViewVisible || adminMapViewVisible || adminSemesterViewVisible"
+    v-if="(authView === 'student' && session) || authView === 'teacher' || authView === 'headman' || mapViewVisible || adminMapViewVisible || adminSemesterViewVisible || adminUsersViewVisible"
     class="pwa-logout"
     type="button"
     :disabled="authLoading"

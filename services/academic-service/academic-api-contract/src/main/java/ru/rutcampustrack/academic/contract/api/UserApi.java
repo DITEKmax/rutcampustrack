@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
+import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateAvatarRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
@@ -71,10 +72,26 @@ public interface UserApi {
     ResponseEntity<PagedModel<EntityModel<UserResponse>>> listUsers(
             @Parameter(description = "Case-insensitive поиск по login / ФИО / telegramId (contains). BUG-006-1.")
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) UserRole role,
+            @RequestParam(required = false) String role,
             @RequestParam(required = false) AccountStatus status,
+            @RequestParam(required = false) String roleStatus,
             Pageable pageable,
             PagedResourcesAssembler<UserResponse> assembler);
+
+    @Operation(summary = "Добавить или обновить роль пользователя",
+            description = "Атомарно изменяет один durable role grant. Только ADMIN.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Роль сохранена"),
+            @ApiResponse(responseCode = "400", description = "Недопустимая роль или статус"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Пользователь не найден"),
+            @ApiResponse(responseCode = "409", description = "Конфликт role-data")
+    })
+    @PutMapping("/{id}/roles/{role}")
+    ResponseEntity<EntityModel<UserResponse>> updateRoleGrant(
+            @PathVariable Long id,
+            @PathVariable String role,
+            @Valid @RequestBody RoleGrantUpdateRequest request);
 
     @Operation(summary = "Полное обновление пользователя (PUT). Только ADMIN.")
     @ApiResponses({

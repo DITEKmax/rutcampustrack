@@ -186,7 +186,7 @@ public class GroupService {
 
     public Page<User> getMyGroupMembers(Pageable pageable) {
         Long groupId = requestContext.getGroupId();
-        return userRepository.findByGroupId(groupId, pageable);
+        return userRepository.findActiveStudentsByGrantGroupId(groupId, pageable);
     }
 
     private Semester requireSingleActiveSemester() {

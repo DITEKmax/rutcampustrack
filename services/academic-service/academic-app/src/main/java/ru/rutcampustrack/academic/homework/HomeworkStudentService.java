@@ -60,10 +60,8 @@ public class HomeworkStudentService {
         Long studentId = requireStudent(claims);
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new AccessDeniedException("Студент недоступен"));
-        if (student.getRole() != UserRole.STUDENT
-                || student.getStatus() != AccountStatus.ACTIVE
-                || student.getGroupId() == null
-                || !student.getGroupId().equals(claims.groupId())) {
+        Long studentGroupId = userRepository.findActiveStudentGrantGroupId(studentId).orElse(null);
+        if (studentGroupId == null || !studentGroupId.equals(claims.groupId())) {
             throw new AccessDeniedException("JWT scope не совпадает с текущим студентом");
         }
 
@@ -75,7 +73,7 @@ public class HomeworkStudentService {
 
         Homework homework = homeworkRepository.findById(homeworkId)
                 .orElseThrow(() -> new ResourceNotFoundException("Homework", "id", homeworkId));
-        if (!student.getGroupId().equals(homework.getGroupId())) {
+        if (!studentGroupId.equals(homework.getGroupId())) {
             throw new AccessDeniedException("ДЗ принадлежит другой группе");
         }
         if (!active.getId().equals(homework.getSemesterId())) {

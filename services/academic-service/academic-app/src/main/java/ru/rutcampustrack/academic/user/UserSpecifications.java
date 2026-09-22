@@ -6,6 +6,7 @@ import org.springframework.data.jpa.domain.Specification;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.entity.UserRoleGrant;
 
 /**
  * JPA Specifications for dynamic User queries.
@@ -46,6 +47,10 @@ public final class UserSpecifications {
                     cb.lower(cb.coalesce(root.get("middleName"), "")),
                     pattern,
                     ESCAPE_CHAR);
+            Predicate byEmployeeNumber = cb.like(
+                    cb.lower(cb.coalesce(root.get("employeeNumber"), "")),
+                    pattern,
+                    ESCAPE_CHAR);
             // telegram_id — BIGINT. Приводим к тексту через Hibernate-функцию `str(...)`
             // (реализуется диалектом как CAST(... AS VARCHAR)). Null-safe через COALESCE
             // на случай user без telegramId.
@@ -54,7 +59,25 @@ public final class UserSpecifications {
                     String.class,
                     cb.coalesce(root.get("telegramId"), 0L));
             Predicate byTelegram = cb.like(telegramAsString, pattern, ESCAPE_CHAR);
-            return cb.or(byLogin, byLastName, byFirstName, byMiddleName, byTelegram);
+            return cb.or(byLogin, byLastName, byFirstName, byMiddleName,
+                    byEmployeeNumber, byTelegram);
+        };
+    }
+
+    /** Filters users by a durable grant rather than the legacy scalar role. */
+    public static Specification<User> matchesGrant(String role, String status) {
+        if (role == null || role.isBlank()) return null;
+        return (root, query, cb) -> {
+            var subquery = query.subquery(Long.class);
+            var grant = subquery.from(UserRoleGrant.class);
+            Predicate user = cb.equal(grant.get("userId"), root.get("id"));
+            Predicate roleMatch = cb.equal(cb.lower(grant.get("role")), role.toLowerCase());
+            if (status == null || status.isBlank()) {
+                return cb.exists(subquery.select(grant.get("id")).where(user, roleMatch));
+            }
+            Predicate statusMatch = cb.equal(cb.lower(grant.get("status")), status.toLowerCase());
+            return cb.exists(subquery.select(grant.get("id"))
+                    .where(user, roleMatch, statusMatch));
         };
     }
 

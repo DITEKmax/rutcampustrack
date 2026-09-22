@@ -61,7 +61,7 @@ public class AcademicReadService {
 
     @Cacheable(value = "group_members", key = "#groupId")
     public List<User> fetchGroupMembers(Long groupId) {
-        return userRepository.findByGroupId(groupId);
+        return userRepository.findActiveStudentsByGrantGroupId(groupId);
     }
 
     public HistoricalMembershipService.RosterSnapshot fetchHistoricalGroupMembers(

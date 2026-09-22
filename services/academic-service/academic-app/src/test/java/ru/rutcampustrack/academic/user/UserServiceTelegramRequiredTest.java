@@ -113,9 +113,55 @@ class UserServiceTelegramRequiredTest {
     }
 
     @Test
+    void studentWithoutGroupIsRejectedBeforePersistence() {
+        CreateUserRequest request = new CreateUserRequest(
+                "Иванов", "Иван", null, UserRole.STUDENT, null, null, 123456789L);
+
+        assertThatThrownBy(() -> service.createUser(request))
+                .isInstanceOfSatisfying(BadRequestException.class, ex ->
+                        assertThat(ex.getField()).isEqualTo("groupId"));
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void studentCannotCarryTeacherEmployeeNumber() {
+        CreateUserRequest request = req(UserRole.STUDENT, 123456789L, "EMP-777");
+
+        assertThatThrownBy(() -> service.createUser(request))
+                .isInstanceOfSatisfying(BadRequestException.class, ex ->
+                        assertThat(ex.getField()).isEqualTo("employeeNumber"));
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void teacherCannotCarryStudentGroup() {
+        CreateUserRequest request = new CreateUserRequest(
+                "Иванов", "Иван", null, UserRole.TEACHER, 1L, "EMP-777", null);
+
+        assertThatThrownBy(() -> service.createUser(request))
+                .isInstanceOfSatisfying(BadRequestException.class, ex ->
+                        assertThat(ex.getField()).isEqualTo("groupId"));
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void adminCannotCarryTeacherEmployeeNumber() {
+        CreateUserRequest request = new CreateUserRequest(
+                "Иванов", "Иван", null, UserRole.ADMIN, null, "EMP-777", null);
+
+        assertThatThrownBy(() -> service.createUser(request))
+                .isInstanceOfSatisfying(BadRequestException.class, ex ->
+                        assertThat(ex.getField()).isEqualTo("employeeNumber"));
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
     void teacherWithoutTelegramIdIsAccepted() {
         CreateUserRequest req = req(UserRole.TEACHER, null, "EMP-777");
-        when(userRepository.nextTeacherLoginSeq()).thenReturn(7L);
         lenient().when(userRepository.existsByEmployeeNumber("EMP-777")).thenReturn(false);
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -138,7 +184,6 @@ class UserServiceTelegramRequiredTest {
     @Test
     void studentWithTelegramIdIsAccepted() {
         CreateUserRequest req = req(UserRole.STUDENT, 123456789L, null);
-        when(userRepository.nextStudentLoginSeq()).thenReturn(10L);
         lenient().when(userRepository.existsByTelegramId(123456789L)).thenReturn(false);
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 

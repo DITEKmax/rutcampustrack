@@ -1,0 +1,66 @@
+@import '../../mobile-core/src/styles/tokens.pcss';
+
+.pwa-update-gate {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--rct-space-4);
+  background: color-mix(in srgb, var(--rct-color-surface-base) 94%, transparent);
+  color: var(--rct-color-text-primary);
+  font-family: var(--rct-font-family-sans);
+}
+
+.pwa-update-gate__panel {
+  display: grid;
+  inline-size: min(100%, 28rem);
+  gap: var(--rct-space-3);
+  padding: var(--rct-space-6);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-2xl);
+  background: var(--rct-color-surface-raised);
+}
+
+.pwa-update-gate__panel h1,
+.pwa-update-gate__panel p {
+  margin: 0;
+}
+
+.pwa-update-gate__panel h1 {
+  font-size: var(--rct-font-size-title-screen);
+  line-height: var(--rct-leading-tight);
+}
+
+.pwa-update-gate__panel p {
+  color: var(--rct-color-text-secondary);
+  line-height: var(--rct-leading-snug);
+}
+
+.pwa-update-gate__eyebrow {
+  color: var(--rct-color-danger-text);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+.pwa-update-gate__versions {
+  font-size: var(--rct-font-size-caption);
+}
+
+.pwa-update-gate__panel button {
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-2) var(--rct-space-4);
+  background: var(--rct-color-accent-now);
+  color: var(--rct-color-accent-on-now);
+  font: inherit;
+  font-weight: var(--rct-font-weight-bold);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.pwa-update-gate__panel button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}

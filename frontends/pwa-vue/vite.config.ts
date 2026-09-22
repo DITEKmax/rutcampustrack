@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
@@ -14,6 +15,42 @@ function runtime(mode: string) {
   return {
     apiTarget: env.VITE_API_PROXY_TARGET ?? 'http://localhost:8080',
     serviceWorkerEnabled: mode === 'production',
+    appVersion: env.VITE_APP_VERSION ?? '0.0.0',
+    minimumSupportedVersion: env.VITE_MIN_SUPPORTED_VERSION || env.VITE_APP_VERSION || '0.0.0',
+    forceUpdate: (env.VITE_FORCE_UPDATE ?? 'true').toLowerCase() !== 'false',
+  }
+}
+
+function versionPolicyPlugin(config: ReturnType<typeof runtime>): Plugin {
+  return {
+    name: 'rct-pwa-version-policy',
+    apply: 'build',
+    generateBundle(_, bundle) {
+      const publicWorker = readFileSync(new URL('./public/sw.js', import.meta.url), 'utf8')
+      const workerMarker = "const releaseVersion = '__RCT_PWA_RELEASE__'"
+      const versionedWorker = publicWorker.replace(
+        workerMarker,
+        `const releaseVersion = ${JSON.stringify(config.appVersion)}`,
+      )
+      if (versionedWorker === publicWorker) {
+        throw new Error('PWA service worker release marker is missing')
+      }
+      this.emitFile({
+        type: 'asset',
+        fileName: 'sw.js',
+        source: versionedWorker,
+      })
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: `${JSON.stringify({
+          latest: config.appVersion,
+          minimumSupported: config.minimumSupportedVersion,
+          force: config.forceUpdate,
+          message: 'Доступна новая версия RutTrack. Обнови приложение, чтобы продолжить.',
+        }, null, 2)}\n`,
+      })
+    },
   }
 }
 
@@ -29,7 +66,7 @@ function appShellPrecachePlugin(): Plugin {
     generateBundle(_, bundle) {
       const generatedFiles = Object.values(bundle)
         .map((output) => output.fileName)
-        .filter((fileName) => fileName !== 'sw.js' && fileName !== 'sw-assets.js')
+        .filter((fileName) => fileName !== 'sw.js' && fileName !== 'sw-assets.js' && fileName !== 'version.json')
         .sort()
       const precache = ['./', './manifest.webmanifest', ...generatedFiles.map((fileName) => `./${fileName}`)]
       this.emitFile({
@@ -51,12 +88,15 @@ export default defineConfig(({ mode }) => {
   }
   return {
     base: publicBase(mode),
-    plugins: [vue(), appShellPrecachePlugin()],
+    plugins: [vue(), versionPolicyPlugin(config), appShellPrecachePlugin()],
     css: {
       postcss: '../postcss.config.mjs',
     },
     define: {
       __RCT_SERVICE_WORKER_ENABLED__: config.serviceWorkerEnabled,
+      __RCT_APP_VERSION__: JSON.stringify(config.appVersion),
+      __RCT_MIN_SUPPORTED_VERSION__: JSON.stringify(config.minimumSupportedVersion),
+      __RCT_FORCE_UPDATE__: config.forceUpdate,
     },
     server: {
       port: 5175,

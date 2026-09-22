@@ -54,22 +54,26 @@ import { PwaHostAdapter } from './pwa-host'
 import { isOfflineBootstrapRecoveryError } from './bootstrap-policy'
 import { createPwaRoleSelection } from './role-flow'
 import { assertAuthBffCoherence } from './session-coherence'
+import PwaUpdateGate from './PwaUpdateGate.vue'
+import { createPwaFetcher } from './pwa-version'
 
 const fixtureMode = import.meta.env.VITE_MOBILE_FIXTURE_MODE === 'true'
 const fixtureDiagnosticsMode = fixtureMode && new URLSearchParams(window.location.search).get('fixtureDiagnostics') === 'true'
 const fixtureServiceWorkerBuildEnabled = import.meta.env.PROD
 const fixtureTransport = fixtureMode ? createFixtureTransport() : undefined
-const auth = usePwaAuth(fixtureTransport ? { fetcher: fixtureTransport } : undefined)
+const pwaFetcher = createPwaFetcher()
+const requestFetcher: typeof fetch = fixtureTransport ?? pwaFetcher
+const auth = usePwaAuth({ fetcher: requestFetcher })
 const mapClient = new CampusMapClient({
   accessToken: () => auth.accessToken.value,
   currentGeneration: () => auth.currentGeneration(),
   onUnauthorized: () => auth.refreshFor(auth.currentGeneration()),
-  ...(fixtureTransport ? { fetcher: fixtureTransport } : {}),
+  fetcher: requestFetcher,
 })
 const adminMapClient = new AdminMapClient({
   accessToken: () => auth.accessToken.value,
   onUnauthorized: () => auth.refreshFor(auth.currentGeneration()),
-  ...(fixtureTransport ? { fetcher: fixtureTransport } : {}),
+  fetcher: requestFetcher,
 })
 const host = new PwaHostAdapter()
 const theme = typeof document === 'undefined' ? null : createMobileTheme()
@@ -129,8 +133,8 @@ const ownerKey = computed(() => scope.value
   ? `${studentFeatureScopeIdentity(scope.value)}|${ownerRevision.value}`
   : `${snapshot.value?.scopeKey ?? 'offline-read-model'}|${ownerRevision.value}`)
 
-function currentFetcher(): typeof fetch | undefined {
-  return fixtureTransport
+function currentFetcher(): typeof fetch {
+  return requestFetcher
 }
 
 function authDenialStatus(error: unknown): number | null {
@@ -962,6 +966,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <PwaUpdateGate :enabled="!fixtureMode" />
   <section
     v-if="!featureVisible && !sessionReady && (authView === 'student' || authView === 'teacher')"
     class="today-state"

@@ -9,11 +9,15 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.validation.constraints.NotNull;
 import ru.rutcampustrack.mobilebff.contract.model.StudentMapModels.Format;
 import ru.rutcampustrack.mobilebff.contract.model.StudentMapModels.ManifestResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentMapModels.PlanResponse;
+
+import java.util.UUID;
 
 /** Canonical role-scoped campus-map read API for PWA and TMA clients. */
 @Tag(name = "Campus map", description = "Authorized campus map metadata and private assets")
@@ -62,4 +66,20 @@ public interface MapApi {
             @PathVariable String version,
             @PathVariable Format format,
             @PathVariable String assetId);
+
+    @Operation(summary = "Record one explicit floor-open intent")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Open intent accepted or already counted"),
+            @ApiResponse(responseCode = "400", description = "Invalid idempotency key"),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired session"),
+            @ApiResponse(responseCode = "403", description = "Floor is outside the current role scope"),
+            @ApiResponse(responseCode = "404", description = "Building or floor not found"),
+            @ApiResponse(responseCode = "409", description = "Intent is already bound to another floor"),
+            @ApiResponse(responseCode = "503", description = "Map usage is unavailable")
+    })
+    @PostMapping("/buildings/{buildingId}/floors/{floorId}/opens")
+    ResponseEntity<Void> recordFloorOpen(
+            @PathVariable String buildingId,
+            @PathVariable String floorId,
+            @RequestHeader(name = "Idempotency-Key") @NotNull UUID intentId);
 }

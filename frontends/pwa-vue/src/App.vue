@@ -62,6 +62,7 @@ const fixtureTransport = fixtureMode ? createFixtureTransport() : undefined
 const auth = usePwaAuth(fixtureTransport ? { fetcher: fixtureTransport } : undefined)
 const mapClient = new CampusMapClient({
   accessToken: () => auth.accessToken.value,
+  currentGeneration: () => auth.currentGeneration(),
   onUnauthorized: () => auth.refreshFor(auth.currentGeneration()),
   ...(fixtureTransport ? { fetcher: fixtureTransport } : {}),
 })

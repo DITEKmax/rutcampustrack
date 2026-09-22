@@ -20,6 +20,8 @@ import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 import ru.rutcampustrack.shared.outbox.jpa.JpaIdempotencyStore;
 import ru.rutcampustrack.shared.outbox.jpa.JpaOutboxStorage;
+import ru.rutcampustrack.academic.map.CampusMapUsageCleanupJob;
+import ru.rutcampustrack.academic.map.CampusMapUsageRepository;
 
 import javax.sql.DataSource;
 import java.time.Clock;
@@ -98,6 +100,12 @@ public class OutboxConfig {
                 IdempotencyStore store,
                 @Value("${rutcampustrack.idempotency.retention-days:7}") int retentionDays) {
             return new IdempotencyCleanupJob(store, Clock.systemUTC(), retentionDays);
+        }
+
+        @Bean
+        public CampusMapUsageCleanupJob campusMapUsageCleanupJob(
+                CampusMapUsageRepository repository) {
+            return new CampusMapUsageCleanupJob(repository);
         }
     }
 }

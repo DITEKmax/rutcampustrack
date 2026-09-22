@@ -24,6 +24,7 @@ import ru.rutcampustrack.academic.homework.HomeworkStudentService;
 import ru.rutcampustrack.academic.map.CampusMapReadException;
 import ru.rutcampustrack.academic.map.CampusMapReadModels;
 import ru.rutcampustrack.academic.map.CampusMapReadService;
+import ru.rutcampustrack.academic.map.CampusMapUsageService;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.AssignmentRepository;
 import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
@@ -95,6 +96,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     private final HeadmanRateLimiter headmanRateLimiter;
     private final HomeworkStudentService homeworkStudentService;
     private final CampusMapReadService campusMapReadService;
+    private final CampusMapUsageService campusMapUsageService;
     private final StudentProjectionScopeService studentProjectionScopeService;
 
     @Autowired
@@ -111,7 +113,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             HeadmanRateLimiter headmanRateLimiter,
             HomeworkStudentService homeworkStudentService,
             StudentProjectionScopeService studentProjectionScopeService,
-            CampusMapReadService campusMapReadService) {
+            CampusMapReadService campusMapReadService,
+            CampusMapUsageService campusMapUsageService) {
         this.academicReadService = academicReadService;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
@@ -126,6 +129,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.homeworkStudentService = homeworkStudentService;
         this.studentProjectionScopeService = studentProjectionScopeService;
         this.campusMapReadService = campusMapReadService;
+        this.campusMapUsageService = campusMapUsageService;
     }
 
     /** Compatibility constructor retained for source-era assignment tests. */
@@ -144,7 +148,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this(academicReadService, groupRepository, userRepository, subjectRepository,
                 assignmentRepository, semesterRepository, grantRepository,
                 homeworkRepository, completionRepository, headmanRateLimiter,
-                homeworkStudentService, null, null);
+                homeworkStudentService, null, null, null);
     }
 
     /** Compatibility constructor retained for existing map/projection and identity tests. */
@@ -174,6 +178,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.homeworkStudentService = homeworkStudentService;
         this.studentProjectionScopeService = studentProjectionScopeService;
         this.campusMapReadService = campusMapReadService;
+        this.campusMapUsageService = null;
     }
 
     /** Compatibility constructor retained for source-era identity tests. */
@@ -201,6 +206,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.homeworkStudentService = homeworkStudentService;
         this.studentProjectionScopeService = null;
         this.campusMapReadService = null;
+        this.campusMapUsageService = null;
     }
 
     /**
@@ -621,6 +627,42 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                         CampusMapReadException.Code.INTERNAL,
                         "campus map read failed"));
             }
+        }
+    }
+
+    /** Records one successful user-facing floor opening with intent idempotency. */
+    @Override
+    public void recordCampusFloorOpen(CampusMapOpenRequest request,
+                                      StreamObserver<CampusMapOpenAck> responseObserver) {
+        try {
+            if (campusMapUsageService == null) {
+                throw CampusMapReadException.of(
+                        CampusMapReadException.Code.UNAVAILABLE,
+                        "campus map usage is unavailable");
+            }
+            InternalJwtClaims claims = StudentHomeworkGrpcIdentity.requireClaims();
+            final java.util.UUID intentId;
+            try {
+                intentId = java.util.UUID.fromString(request.getIntentId());
+            } catch (RuntimeException error) {
+                throw CampusMapReadException.of(
+                        CampusMapReadException.Code.INVALID_ARGUMENT,
+                        "map open intent is invalid");
+            }
+            campusMapUsageService.recordFloorOpen(
+                    request.getBuildingId(), request.getFloorId(), intentId, claims);
+            responseObserver.onNext(CampusMapOpenAck.newBuilder().setAccepted(true).build());
+            responseObserver.onCompleted();
+        } catch (IllegalStateException error) {
+            onCampusMapError(responseObserver, CampusMapReadException.of(
+                    CampusMapReadException.Code.PERMISSION_DENIED,
+                    "signed student identity is required"));
+        } catch (CampusMapReadException error) {
+            onCampusMapError(responseObserver, error);
+        } catch (RuntimeException error) {
+            onCampusMapError(responseObserver, CampusMapReadException.of(
+                    CampusMapReadException.Code.INTERNAL,
+                    "campus map usage failed"));
         }
     }
 

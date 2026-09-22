@@ -71,7 +71,9 @@ public interface StudentMapApi {
             @ApiResponse(responseCode = "400", description = "Invalid idempotency key"),
             @ApiResponse(responseCode = "401", description = "Invalid or expired session"),
             @ApiResponse(responseCode = "403", description = "Floor is outside the current student scope"),
-            @ApiResponse(responseCode = "404", description = "Building or floor not found")
+            @ApiResponse(responseCode = "404", description = "Building or floor not found"),
+            @ApiResponse(responseCode = "409", description = "Intent is already bound to another floor"),
+            @ApiResponse(responseCode = "503", description = "Map usage is unavailable")
     })
     @PostMapping("/buildings/{buildingId}/floors/{floorId}/opens")
     ResponseEntity<Void> recordFloorOpen(

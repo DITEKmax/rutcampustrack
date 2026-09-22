@@ -19,7 +19,17 @@ const selectedBuildingId = ref<string | null>(null)
 const selectedFloorId = ref<string | null>(null)
 const svgUrl = ref<string | null>(null)
 const pngUrl = ref<string | null>(null)
+const usageError = ref<string | null>(null)
+const svgAssetRequest = ref(0)
 let assetRequest = 0
+let lifecycleGeneration = 0
+let requestController: AbortController | null = null
+let disposed = false
+let openIntentKey: string | null = null
+let openIntentId: string | null = null
+let openIntentGeneration: number | undefined
+let openRecorded = false
+let openRecording = false
 
 const buildings = computed<readonly MapBuilding[]>(() => manifest.value?.buildings ?? [])
 const selectedBuilding = computed(() => buildings.value.find((item) => item.id === selectedBuildingId.value) ?? null)
@@ -31,6 +41,12 @@ const pngMissing = computed(() => selectedPlan.value?.png.state !== 'ready')
 
 onMounted(() => void loadManifest())
 onBeforeUnmount(() => {
+  disposed = true
+  lifecycleGeneration += 1
+  assetRequest += 1
+  requestController?.abort()
+  requestController = null
+  invalidateOpenIntent()
   revokeAsset('svg')
   revokeAsset('png')
 })
@@ -43,18 +59,22 @@ watch(selectedBuildingId, () => {
 watch(selectedFloor, () => void loadAssets())
 
 async function loadManifest(): Promise<void> {
+  const requestGeneration = lifecycleGeneration
   loading.value = true
   error.value = null
   try {
     const response = await props.client.getManifest()
+    if (disposed || requestGeneration !== lifecycleGeneration) return
     manifest.value = response.data
     const firstBuilding = response.data?.buildings[0]
     selectedBuildingId.value = firstBuilding?.id ?? null
     selectedFloorId.value = firstBuilding?.floors[0]?.id ?? null
   } catch {
-    error.value = 'Карту не удалось загрузить. Попробуй обновить раздел.'
+    if (!disposed && requestGeneration === lifecycleGeneration) {
+      error.value = 'Карту не удалось загрузить. Попробуй обновить раздел.'
+    }
   } finally {
-    loading.value = false
+    if (!disposed && requestGeneration === lifecycleGeneration) loading.value = false
   }
 }
 
@@ -63,9 +83,32 @@ async function loadAssets(): Promise<void> {
   const floor = selectedFloor.value
   const building = selectedBuilding.value
   const requestId = ++assetRequest
+  requestController?.abort()
+  const controller = new AbortController()
+  requestController = controller
   revokeAsset('svg')
   revokeAsset('png')
-  if (!plan || !floor || !building) return
+  if (!plan || !floor || !building) {
+    loadingAsset.value = false
+    invalidateOpenIntent()
+    return
+  }
+
+  const currentOpenKey = `${building.id}:${floor.id}:${plan.version}`
+  const currentGeneration = props.client.currentGeneration()
+  if (openIntentKey !== currentOpenKey
+      || openIntentGeneration !== currentGeneration
+      || !openIntentId) {
+    openIntentKey = currentOpenKey
+    openIntentGeneration = currentGeneration
+    openIntentId = globalThis.crypto?.randomUUID?.() ?? null
+    openRecorded = false
+    openRecording = false
+  }
+  if (!openRecorded) openRecording = false
+  usageError.value = openIntentId
+    ? null
+    : 'Просмотр доступен, но статистику открытия сохранить не удалось.'
 
   loadingAsset.value = true
   error.value = null
@@ -74,21 +117,77 @@ async function loadAssets(): Promise<void> {
     if (plan.svg.state === 'ready' && plan.svg.id) {
       downloads.push(props.client.downloadAsset(building.id, floor.id, plan.version, 'svg', plan.svg.id)
         .then((blob) => {
-          if (requestId === assetRequest) svgUrl.value = URL.createObjectURL(blob)
+          if (requestId === assetRequest && !disposed) {
+            svgUrl.value = URL.createObjectURL(blob)
+            svgAssetRequest.value = requestId
+          }
         }))
     }
     if (plan.png.state === 'ready' && plan.png.id) {
       downloads.push(props.client.downloadAsset(building.id, floor.id, plan.version, 'png', plan.png.id)
         .then((blob) => {
-          if (requestId === assetRequest) pngUrl.value = URL.createObjectURL(blob)
+          if (requestId === assetRequest && !disposed) pngUrl.value = URL.createObjectURL(blob)
         }))
     }
     await Promise.all(downloads)
-  } catch {
-    if (requestId === assetRequest) error.value = 'Схему не удалось открыть. Попробуй позже.'
+  } catch (cause) {
+    if (requestId === assetRequest && !disposed && !isAbortError(cause)) {
+      error.value = 'Схему не удалось открыть. Попробуй позже.'
+    }
   } finally {
-    if (requestId === assetRequest) loadingAsset.value = false
+    if (requestId === assetRequest && !disposed) loadingAsset.value = false
   }
+}
+
+function handleSvgLoaded(): void {
+  const requestId = svgAssetRequest.value
+  const intentId = openIntentId
+  const intentKey = openIntentKey
+  const generation = openIntentGeneration
+  const building = selectedBuilding.value
+  const floor = selectedFloor.value
+  if (disposed || requestId === 0 || requestId !== assetRequest
+      || !intentId || !intentKey || !building || !floor
+      || openRecorded || openRecording
+      || !props.client.isCurrentGeneration(generation)) return
+
+  openRecording = true
+  void props.client.recordFloorOpen(building.id, floor.id, intentId, requestController?.signal)
+    .then(() => {
+      if (requestId === assetRequest
+          && intentKey === openIntentKey
+          && intentId === openIntentId
+          && props.client.isCurrentGeneration(generation)) {
+        openRecorded = true
+        usageError.value = null
+      }
+    })
+    .catch((cause: unknown) => {
+      if (requestId === assetRequest
+          && !disposed
+          && !isAbortError(cause)
+          && props.client.isCurrentGeneration(generation)) {
+        usageError.value = 'Просмотр доступен, но статистику открытия сохранить не удалось.'
+      }
+    })
+    .finally(() => {
+      if (requestId === assetRequest && intentKey === openIntentKey && intentId === openIntentId) {
+        openRecording = false
+      }
+    })
+}
+
+function invalidateOpenIntent(): void {
+  openIntentKey = null
+  openIntentId = null
+  openIntentGeneration = undefined
+  openRecorded = false
+  openRecording = false
+  usageError.value = null
+}
+
+function isAbortError(cause: unknown): boolean {
+  return cause instanceof Error && cause.name === 'AbortError'
 }
 
 function revokeAsset(kind: 'svg' | 'png'): void {
@@ -197,8 +296,10 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
             class="map-preview"
           >
             <img
+              :key="svgUrl"
               :src="svgUrl"
               alt="Схема выбранного этажа"
+              @load="handleSvgLoaded"
             >
           </div>
           <p
@@ -226,6 +327,13 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
             class="map-card__hint"
           >
             Доступные форматы показаны отдельно: публикация одного файла не скрывает другой.
+          </p>
+          <p
+            v-if="usageError"
+            class="map-state map-state--compact"
+            role="status"
+          >
+            {{ usageError }}
           </p>
         </section>
         <p

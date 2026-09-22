@@ -7,10 +7,12 @@ import type {
   MapPlan,
   MobileProblemDetails,
 } from './types'
+import { StaleSessionGenerationError } from '../shared/session-owner'
 
 export interface MapApiOptions {
   accessToken: () => string | null
   onUnauthorized?: () => Promise<void>
+  currentGeneration?: () => number
   fetcher?: typeof fetch
 }
 
@@ -30,6 +32,15 @@ export class CampusMapClient {
 
   constructor(private readonly options: MapApiOptions) {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
+  }
+
+  currentGeneration(): number | undefined {
+    return this.options.currentGeneration?.()
+  }
+
+  isCurrentGeneration(generation: number | undefined): boolean {
+    return generation === undefined
+      || this.options.currentGeneration?.() === generation
   }
 
   async getManifest(etag?: string, signal?: AbortSignal): Promise<{
@@ -82,15 +93,38 @@ export class CampusMapClient {
     return response.blob()
   }
 
+  async recordFloorOpen(
+    buildingId: string,
+    floorId: string,
+    intentId: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const response = await this.requestResponse(
+      `/api/v1/map/buildings/${encodeURIComponent(buildingId)}/floors/${encodeURIComponent(floorId)}/opens`,
+      {
+        method: 'POST',
+        headers: {
+          'Idempotency-Key': intentId,
+        },
+        ...(signal ? { signal } : {}),
+      },
+    )
+    await response.arrayBuffer()
+  }
+
   private async requestResponse(path: string, init?: RequestInit, retried = false): Promise<Response> {
+    const generation = this.currentGeneration()
+    this.assertCurrentGeneration(generation)
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
+    this.assertCurrentGeneration(generation)
     if (response.ok || response.status === 304) return response
     if (response.status === 401 && !retried && this.options.onUnauthorized) {
       await this.options.onUnauthorized()
+      this.assertCurrentGeneration(generation)
       return this.requestResponse(path, init, true)
     }
     let problem: MobileProblemDetails | null = null
@@ -100,6 +134,10 @@ export class CampusMapClient {
       // Keep the response status when a gateway cannot return Problem Details.
     }
     throw new MapApiError(response, problem)
+  }
+
+  private assertCurrentGeneration(generation: number | undefined): void {
+    if (!this.isCurrentGeneration(generation)) throw new StaleSessionGenerationError()
   }
 
   private async json<T>(response: Response): Promise<T> {

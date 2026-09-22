@@ -9,6 +9,8 @@ import ru.rutcampustrack.mobilebff.grpc.MapAcademicClient;
 import ru.rutcampustrack.mobilebff.security.MobileRequestContext;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
+import java.util.UUID;
+
 /** One role-scoped map reader shared by canonical and compatibility routes. */
 @Service
 public class MapQueryFacade {
@@ -37,6 +39,11 @@ public class MapQueryFacade {
                                             String assetId) {
         requireReadScope();
         return academic.asset(buildingId, floorId, version, format, assetId);
+    }
+
+    public void recordFloorOpen(String buildingId, String floorId, UUID intentId) {
+        requireReadScope();
+        academic.recordFloorOpen(buildingId, floorId, intentId);
     }
 
     private void requireReadScope() {

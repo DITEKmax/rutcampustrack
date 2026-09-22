@@ -17,6 +17,7 @@ import ru.rutcampustrack.mobilebff.contract.model.StudentMapModels.PlanResponse;
 import ru.rutcampustrack.mobilebff.grpc.MapAcademicClient;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 /** Canonical map REST adapter shared by all supported mobile roles. */
 @RestController
@@ -69,6 +70,14 @@ public class MapApiController implements MapApi {
                 .build());
         headers.setCacheControl(CacheControl.noStore());
         return new ResponseEntity<>(new ByteArrayResource(download.bytes()), headers, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Void> recordFloorOpen(String buildingId,
+                                                String floorId,
+                                                UUID intentId) {
+        maps.recordFloorOpen(buildingId, floorId, intentId);
+        return ResponseEntity.noContent().build();
     }
 
     private static String etag(long revision) {

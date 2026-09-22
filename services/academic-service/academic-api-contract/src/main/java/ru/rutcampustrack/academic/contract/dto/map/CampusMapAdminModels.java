@@ -70,8 +70,28 @@ public final class CampusMapAdminModels {
             String buildingId,
             String code,
             String label,
-            PlanResponse currentPlan
+            PlanResponse currentPlan,
+            @Schema(description = "Number of distinct floor openings in the labelled period", example = "42")
+            long openCount,
+            @Schema(description = "Period used for openCount", example = "all_time")
+            String openCountPeriod
     ) {
+        public FloorResponse(String id,
+                             String buildingId,
+                             String code,
+                             String label,
+                             PlanResponse currentPlan) {
+            this(id, buildingId, code, label, currentPlan, 0L, "all_time");
+        }
+
+        public FloorResponse {
+            if (openCount < 0) {
+                throw new IllegalArgumentException("map open count cannot be negative");
+            }
+            if (!"all_time".equals(openCountPeriod)) {
+                throw new IllegalArgumentException("map open count period must be all_time");
+            }
+        }
     }
 
     @Schema(name = "CampusMapPlan")

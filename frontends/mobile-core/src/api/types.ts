@@ -81,6 +81,8 @@ export interface AdminMapFloorResponse {
   readonly code: string
   readonly label: string
   readonly currentPlan: AdminMapPlan | null
+  readonly openCount: number
+  readonly openCountPeriod: 'all_time'
 }
 
 export interface AdminMapBuildingResponse {

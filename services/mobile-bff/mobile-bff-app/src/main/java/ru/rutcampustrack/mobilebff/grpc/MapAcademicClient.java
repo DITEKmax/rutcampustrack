@@ -14,6 +14,8 @@ import ru.rutcampustrack.academic.grpc.CampusMapFormatState;
 import ru.rutcampustrack.academic.grpc.CampusMapFloorRequest;
 import ru.rutcampustrack.academic.grpc.CampusMapManifestRequest;
 import ru.rutcampustrack.academic.grpc.CampusMapManifestResponse;
+import ru.rutcampustrack.academic.grpc.CampusMapOpenAck;
+import ru.rutcampustrack.academic.grpc.CampusMapOpenRequest;
 import ru.rutcampustrack.academic.grpc.CampusMapPlan;
 import ru.rutcampustrack.academic.grpc.CampusMapPlanResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
@@ -23,6 +25,7 @@ import ru.rutcampustrack.mobilebff.error.MobileBffException;
 import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -128,6 +131,24 @@ public class MapAcademicClient {
             throw dependencyFailure("Academic Service вернул пустой файл карты");
         }
         return new Download(contentType(format), bytes.toByteArray());
+    }
+
+    public void recordFloorOpen(String buildingId, String floorId, UUID intentId) {
+        if (intentId == null) {
+            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
+                    "Ключ идемпотентности открытия карты обязателен");
+        }
+        CampusMapOpenAck response = call(() -> auth.attach(stub)
+                .withDeadlineAfter(5, TimeUnit.SECONDS)
+                .recordCampusFloorOpen(CampusMapOpenRequest.newBuilder()
+                        .setBuildingId(requiredId(buildingId, "buildingId"))
+                        .setFloorId(requiredId(floorId, "floorId"))
+                        .setIntentId(intentId.toString())
+                        .build()));
+        if (!response.getAccepted()) {
+            throw new MobileBffException(HttpStatus.CONFLICT, ProblemCode.REQUEST_CONFLICT,
+                    "Academic Service не принял открытие карты");
+        }
     }
 
     private static StudentMapModels.ManifestResponse toManifest(

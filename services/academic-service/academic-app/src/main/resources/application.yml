@@ -60,6 +60,13 @@ academic:
     window-seconds: 60
     redis-enabled: ${ACADEMIC_HEADMAN_RL_REDIS_ENABLED:true}
 
+# Dedicated pseudonymous key for campus-map floor-open events.  It is kept
+# separate from the gRPC and JWT credentials; an empty value disables event
+# writes while map reads remain available.
+campus-map:
+  usage:
+    hmac-key: ${CAMPUS_MAP_USAGE_HMAC_KEY:}
+
 springdoc:
   api-docs:
     path: /api-docs

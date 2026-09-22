@@ -54,6 +54,7 @@ const sessionOwner = useTmaSession({
 const theme = typeof document === 'undefined' ? null : createMobileTheme()
 const mapClient = new CampusMapClient({
   accessToken: () => sessionOwner.accessToken.value,
+  currentGeneration: () => sessionOwner.currentGeneration(),
   onUnauthorized: () => sessionOwner.authenticateFor(sessionOwner.currentGeneration()),
   fetcher: fixtureTransport ?? nativeFetcher,
 })

@@ -28,6 +28,10 @@ const notice = ref<string | null>(null)
 const selectedBuilding = computed(() => buildings.value.find((item) => item.id === selectedBuildingId.value) ?? null)
 const floors = computed<readonly AdminMapFloorResponse[]>(() => selectedBuilding.value?.floors ?? [])
 const selectedFloor = computed(() => floors.value.find((item) => item.id === selectedFloorId.value) ?? null)
+const floorDemandRows = computed(() => buildings.value.flatMap((building) => building.floors.map((floor) => ({
+  buildingLabel: building.label,
+  floor,
+}))))
 
 onMounted(() => void refresh())
 
@@ -114,6 +118,10 @@ async function runSave(action: () => Promise<void>): Promise<void> {
   } finally {
     saving.value = false
   }
+}
+
+function periodLabel(period: string): string {
+  return period === 'all_time' ? 'за всё время' : period
 }
 
 function stateLabel(state: string): string {
@@ -281,6 +289,36 @@ function stateLabel(state: string): string {
           <div><dt>SVG</dt><dd>{{ stateLabel(selectedFloor.currentPlan.svg.state) }}</dd></div>
           <div><dt>PNG</dt><dd>{{ stateLabel(selectedFloor.currentPlan.png.state) }}</dd></div>
         </dl>
+      </section>
+
+      <section
+        class="admin-map-card"
+        aria-labelledby="admin-map-demand-title"
+      >
+        <h2 id="admin-map-demand-title">
+          Открытия этажей
+        </h2>
+        <p class="admin-map-help">
+          Сколько раз пользователи открывали схему, за всё время.
+        </p>
+        <ul class="admin-map-demand" aria-label="Количество открытий схем по этажам">
+          <li
+            v-for="row in floorDemandRows"
+            :key="row.floor.id"
+          >
+            <span>
+              {{ row.buildingLabel }} · {{ row.floor.label }}
+              <small>{{ periodLabel(row.floor.openCountPeriod) }}</small>
+            </span>
+            <strong>{{ row.floor.openCount }}</strong>
+          </li>
+        </ul>
+        <p
+          v-if="!floorDemandRows.length"
+          class="admin-map-help"
+        >
+          Этажей пока нет.
+        </p>
       </section>
     </div>
   </main>

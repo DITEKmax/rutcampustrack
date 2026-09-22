@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.BuildingResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBuildingRequest;
@@ -57,15 +58,24 @@ public class CampusMapAdminService {
     private static final long MAX_BYTES = CampusMapAdminRepository.MAX_ASSET_BYTES;
 
     private final CampusMapAdminRepository repository;
+    private final CampusMapUsageService usage;
 
     public CampusMapAdminService(CampusMapAdminRepository repository) {
+        this(repository, null);
+    }
+
+    @Autowired
+    public CampusMapAdminService(CampusMapAdminRepository repository,
+                                 CampusMapUsageService usage) {
         this.repository = repository;
+        this.usage = usage;
     }
 
     @Transactional(readOnly = true)
     public List<BuildingResponse> listBuildings() {
         List<CampusMapAdminRepository.FloorRow> floors = repository.findActiveFloors(null);
         Map<Long, PlanResponse> plans = currentPlans(floors);
+        Map<Long, Long> openCounts = usage == null ? Map.of() : usage.allTimeFloorCounts();
         return repository.findActiveBuildings().stream()
                 .map(building -> new BuildingResponse(
                         decimal(building.id()),
@@ -73,7 +83,7 @@ public class CampusMapAdminService {
                         building.label(),
                         floors.stream()
                                 .filter(floor -> floor.buildingId() == building.id())
-                                .map(floor -> toFloor(floor, plans.get(floor.id())))
+                                .map(floor -> toFloor(floor, plans.get(floor.id()), openCounts.getOrDefault(floor.id(), 0L)))
                                 .toList()))
                 .toList();
     }
@@ -85,7 +95,10 @@ public class CampusMapAdminService {
                 : parsePositiveId(buildingId, "buildingId");
         List<CampusMapAdminRepository.FloorRow> floors = repository.findActiveFloors(parsedBuildingId);
         Map<Long, PlanResponse> plans = currentPlans(floors);
-        return floors.stream().map(floor -> toFloor(floor, plans.get(floor.id()))).toList();
+        Map<Long, Long> openCounts = usage == null ? Map.of() : usage.allTimeFloorCounts();
+        return floors.stream()
+                .map(floor -> toFloor(floor, plans.get(floor.id()), openCounts.getOrDefault(floor.id(), 0L)))
+                .toList();
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -227,8 +240,11 @@ public class CampusMapAdminService {
         return repository.catalogRevisionValue(catalogId);
     }
 
-    private static FloorResponse toFloor(CampusMapAdminRepository.FloorRow floor, PlanResponse plan) {
-        return new FloorResponse(decimal(floor.id()), decimal(floor.buildingId()), floor.code(), floor.label(), plan);
+    private static FloorResponse toFloor(CampusMapAdminRepository.FloorRow floor,
+                                         PlanResponse plan,
+                                         long openCount) {
+        return new FloorResponse(decimal(floor.id()), decimal(floor.buildingId()), floor.code(), floor.label(),
+                plan, openCount, "all_time");
     }
 
     private static PlanResponse toPlan(CampusMapAdminRepository.PlanRow plan,

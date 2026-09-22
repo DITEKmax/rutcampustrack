@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +20,7 @@ import ru.rutcampustrack.mobilebff.contract.model.StudentMapModels.PlanResponse;
 import ru.rutcampustrack.mobilebff.grpc.MapAcademicClient;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 /** Compatibility read/download alias for clients using the original student path. */
 @RestController
@@ -74,5 +76,13 @@ public class StudentMapCompatibilityController {
                 .build());
         headers.setCacheControl(CacheControl.noStore());
         return new ResponseEntity<>(new ByteArrayResource(download.bytes()), headers, HttpStatus.OK);
+    }
+
+    @PostMapping("/buildings/{buildingId}/floors/{floorId}/opens")
+    public ResponseEntity<Void> recordFloorOpen(@PathVariable String buildingId,
+                                                @PathVariable String floorId,
+                                                @RequestHeader(name = "Idempotency-Key") UUID intentId) {
+        maps.recordFloorOpen(buildingId, floorId, intentId);
+        return ResponseEntity.noContent().build();
     }
 }

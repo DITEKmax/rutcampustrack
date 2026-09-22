@@ -13,6 +13,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
+import ru.rutcampustrack.academic.map.CampusMapUsageCleanupJob;
+import ru.rutcampustrack.academic.map.CampusMapUsageRepository;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -32,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * PostgreSQL behavior checks for the B0 academic V24-V26 chain.
+ * PostgreSQL behavior checks for the B0 academic V24-V30 chain.
  *
  * <p>Every method owns a fresh schema in one fresh PostgreSQL 16 container;
  * no Flyway clean/drop is used. The first concurrency test reconstructs the
@@ -415,6 +417,36 @@ class StudentFoundationMigrationIT {
     }
 
     @Test
+    void v30CountsDistinctLogicalOpeningsAndKeepsSameIntentIdempotent() {
+        String schema = newSchema();
+        flyway(schema, null).migrate();
+        CampusMapFixture fixture = campusMapFixture(schema);
+        String day = "DATE '2999-01-01'";
+        String acceptedAt = "TIMESTAMPTZ '2999-01-01 12:00:00+00'";
+        String expiry = "TIMESTAMPTZ '2999-01-03 12:00:00+00'";
+        UUID firstIntent = UUID.randomUUID();
+        UUID secondIntent = UUID.randomUUID();
+
+        insertOpenIntent(schema, fixture, OWNER_A, firstIntent, PAYLOAD_A, day, acceptedAt, expiry);
+        insertDemandDedupe(schema, fixture.floorId(), OWNER_A, firstIntent, day, acceptedAt);
+        insertOpenIntent(schema, fixture, OWNER_A, secondIntent, PAYLOAD_B, day, acceptedAt, expiry);
+        insertDemandDedupe(schema, fixture.floorId(), OWNER_A, secondIntent, day, acceptedAt);
+
+        String dedupe = table(schema, "campus_map_floor_demand_dedupe");
+        String demand = table(schema, "campus_map_floor_daily_demand");
+        assertSqlFailure("23505", () -> insertDemandDedupe(schema, fixture.floorId(), OWNER_A,
+                firstIntent, day, acceptedAt));
+        assertThat(jdbc.queryForObject("SELECT open_count FROM " + demand
+                        + " WHERE floor_id = ? AND utc_day = DATE '2999-01-01'", Long.class,
+                fixture.floorId())).isEqualTo(2L);
+        assertThat(jdbc.queryForObject("SELECT COALESCE(SUM(open_count), 0) FROM " + demand
+                + " WHERE floor_id = ?", Long.class, fixture.floorId())).isEqualTo(2L);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM " + dedupe
+                + " WHERE owner_hmac = " + OWNER_A + " AND floor_id = ?", Integer.class,
+                fixture.floorId())).isEqualTo(2);
+    }
+
+    @Test
     void intentAndDailyRetentionUseIndependentDeadlines() {
         String schema = newSchema();
         flyway(schema, "26").migrate();
@@ -454,10 +486,10 @@ class StudentFoundationMigrationIT {
                 "TIMESTAMPTZ '2000-01-03 12:00:00+00'");
         insertDemandDedupe(schema, fixture.floorId(), OWNER_C, expiredIntentId,
                 "DATE '2000-01-01'", "TIMESTAMPTZ '2000-01-01 12:00:00+00'");
-        assertThat(jdbc.update("DELETE FROM " + dedupe
-                + " WHERE owner_hmac = " + OWNER_C + " AND intent_id = ?", expiredIntentId)).isEqualTo(1);
-        assertThat(jdbc.update("DELETE FROM " + intents
-                + " WHERE owner_hmac = " + OWNER_C + " AND intent_id = ?", expiredIntentId)).isEqualTo(1);
+        CampusMapUsageCleanupJob.CleanupResult cleanup = new CampusMapUsageCleanupJob(
+                new CampusMapUsageRepository(jdbc)).runCleanup();
+        assertThat(cleanup.dedupeRows()).isEqualTo(1);
+        assertThat(cleanup.intentRows()).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM " + dedupe
                 + " WHERE owner_hmac = " + OWNER_C + " AND intent_id = ?", Integer.class, expiredIntentId)).isZero();
         assertThat(jdbc.queryForObject("SELECT open_count FROM "

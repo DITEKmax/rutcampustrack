@@ -42,6 +42,45 @@ export interface CreateAdminGroupInput {
   readonly trainingDurationYears: number
 }
 
+export interface HeadmanCandidate {
+  readonly id: number
+  readonly fio: string
+  readonly current: boolean
+}
+
+export interface HeadmanRoster {
+  readonly groupId: number
+  readonly currentHeadmanId: number | null
+  readonly currentHeadmanFio: string | null
+  readonly candidates: readonly HeadmanCandidate[]
+  readonly activeAssistantCount: number
+}
+
+export interface HeadmanAssignmentPreview {
+  readonly groupId: number
+  readonly currentHeadmanId: number | null
+  readonly currentHeadmanFio: string | null
+  readonly candidateId: number
+  readonly candidateFio: string
+  readonly sameHeadman: boolean
+  readonly activatesDraft: boolean
+  readonly assistantsToRevoke: number
+}
+
+export interface AssignHeadmanInput {
+  readonly studentId: number
+  readonly expectedHeadmanId: number | null
+}
+
+export interface HeadmanAssignment {
+  readonly groupId: number
+  readonly headmanId: number
+  readonly headmanFio: string
+  readonly changed: boolean
+  readonly activatesDraft: boolean
+  readonly assistantsRevoked: number
+}
+
 export interface AdminGroupsApiOptions {
   readonly accessToken: () => string | null
   readonly onUnauthorized?: () => Promise<void>
@@ -88,6 +127,31 @@ export class AdminGroupsClient {
       body: JSON.stringify(payload),
       ...(signal ? { signal } : {}),
     }).then(normalizeGroup)
+  }
+
+  getHeadmanRoster(groupId: number, signal?: AbortSignal): Promise<HeadmanRoster> {
+    positiveInteger(groupId, 'groupId')
+    return this.request<unknown>(`/api/academic/groups/${groupId}/headman/roster`, signal ? { signal } : undefined)
+      .then(normalizeHeadmanRoster)
+  }
+
+  previewHeadman(groupId: number, studentId: number, signal?: AbortSignal): Promise<HeadmanAssignmentPreview> {
+    positiveInteger(groupId, 'groupId')
+    positiveInteger(studentId, 'studentId')
+    const params = new URLSearchParams({ studentId: String(studentId) })
+    return this.request<unknown>(`/api/academic/groups/${groupId}/headman/preview?${params}`, signal ? { signal } : undefined)
+      .then(normalizeHeadmanPreview)
+  }
+
+  assignHeadman(groupId: number, input: AssignHeadmanInput, signal?: AbortSignal): Promise<HeadmanAssignment> {
+    positiveInteger(groupId, 'groupId')
+    const studentId = positiveInteger(input.studentId, 'studentId')
+    if (input.expectedHeadmanId !== null) positiveInteger(input.expectedHeadmanId, 'expectedHeadmanId')
+    return this.request<unknown>(`/api/academic/groups/${groupId}/headman`, {
+      method: 'PUT',
+      body: JSON.stringify({ studentId, expectedHeadmanId: input.expectedHeadmanId }),
+      ...(signal ? { signal } : {}),
+    }).then(normalizeHeadmanAssignment)
   }
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
@@ -161,6 +225,55 @@ function normalizeGroup(value: unknown): AdminGroup {
   }
 }
 
+function normalizeHeadmanRoster(value: unknown): HeadmanRoster {
+  const record = requiredRecord(value, 'headman roster')
+  const candidates = Array.isArray(record.candidates)
+    ? record.candidates.map(normalizeHeadmanCandidate)
+    : []
+  return {
+    groupId: positiveInteger(record.groupId, 'headman roster.groupId'),
+    currentHeadmanId: nullablePositiveInteger(record.currentHeadmanId, 'headman roster.currentHeadmanId'),
+    currentHeadmanFio: nullableText(record.currentHeadmanFio),
+    candidates,
+    activeAssistantCount: nonNegativeInteger(record.activeAssistantCount, 'headman roster.activeAssistantCount'),
+  }
+}
+
+function normalizeHeadmanCandidate(value: unknown): HeadmanCandidate {
+  const record = requiredRecord(value, 'headman candidate')
+  return {
+    id: positiveInteger(record.id, 'headman candidate.id'),
+    fio: requiredText(record.fio, 'headman candidate.fio'),
+    current: requiredBoolean(record.current, 'headman candidate.current'),
+  }
+}
+
+function normalizeHeadmanPreview(value: unknown): HeadmanAssignmentPreview {
+  const record = requiredRecord(value, 'headman preview')
+  return {
+    groupId: positiveInteger(record.groupId, 'headman preview.groupId'),
+    currentHeadmanId: nullablePositiveInteger(record.currentHeadmanId, 'headman preview.currentHeadmanId'),
+    currentHeadmanFio: nullableText(record.currentHeadmanFio),
+    candidateId: positiveInteger(record.candidateId, 'headman preview.candidateId'),
+    candidateFio: requiredText(record.candidateFio, 'headman preview.candidateFio'),
+    sameHeadman: requiredBoolean(record.sameHeadman, 'headman preview.sameHeadman'),
+    activatesDraft: requiredBoolean(record.activatesDraft, 'headman preview.activatesDraft'),
+    assistantsToRevoke: nonNegativeInteger(record.assistantsToRevoke, 'headman preview.assistantsToRevoke'),
+  }
+}
+
+function normalizeHeadmanAssignment(value: unknown): HeadmanAssignment {
+  const record = requiredRecord(value, 'headman assignment')
+  return {
+    groupId: positiveInteger(record.groupId, 'headman assignment.groupId'),
+    headmanId: positiveInteger(record.headmanId, 'headman assignment.headmanId'),
+    headmanFio: requiredText(record.headmanFio, 'headman assignment.headmanFio'),
+    changed: requiredBoolean(record.changed, 'headman assignment.changed'),
+    activatesDraft: requiredBoolean(record.activatesDraft, 'headman assignment.activatesDraft'),
+    assistantsRevoked: nonNegativeInteger(record.assistantsRevoked, 'headman assignment.assistantsRevoked'),
+  }
+}
+
 function normalizeCreateInput(input: CreateAdminGroupInput): CreateAdminGroupInput {
   const alphabeticCode = requiredText(input.alphabeticCode, 'alphabeticCode').toUpperCase()
   if (!/^[А-ЯЁ][А-ЯЁа-яё]{1,3}$/.test(alphabeticCode)) {
@@ -208,6 +321,11 @@ function nullablePositiveInteger(value: unknown, field: string): number | null {
 
 function nonNegativeInteger(value: unknown, field: string): number {
   if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0) throw new Error(`Некорректное поле ${field}.`)
+  return value
+}
+
+function requiredBoolean(value: unknown, field: string): boolean {
+  if (typeof value !== 'boolean') throw new Error(`Некорректное поле ${field}.`)
   return value
 }
 

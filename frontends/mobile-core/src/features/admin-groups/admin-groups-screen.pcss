@@ -206,6 +206,74 @@
 
 .admin-groups-table tbody th { font-weight: var(--rct-font-weight-bold); }
 
+.admin-groups-table__action,
+.admin-groups-headman__close {
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+  font: inherit;
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.admin-groups-table__action:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
+.admin-groups-headman {
+  margin-block-start: var(--rct-space-4);
+  border-block-start: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  padding-block-start: var(--rct-space-4);
+}
+
+.admin-groups-headman__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+
+.admin-groups-headman h2 {
+  margin-block-end: var(--rct-space-1);
+  font-size: var(--rct-font-size-title);
+}
+
+.admin-groups-headman__meta,
+.admin-groups-headman__preview {
+  margin-block-end: var(--rct-space-3);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-groups-headman__form {
+  display: grid;
+  gap: var(--rct-space-2);
+  max-inline-size: 32rem;
+}
+
+.admin-groups-headman__form label {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-groups-headman__form select {
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding: 0 var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+  font: inherit;
+  @mixin rct-focus-ring;
+}
+
 .admin-groups-pagination {
   display: flex;
   align-items: center;
@@ -237,4 +305,6 @@
   .admin-groups-form__fields { grid-template-columns: 1fr; }
   .admin-groups-search { grid-template-columns: 1fr; }
   .admin-groups-search button { inline-size: 100%; }
+  .admin-groups-headman__header { flex-direction: column; }
+  .admin-groups-headman__close { align-self: stretch; }
 }

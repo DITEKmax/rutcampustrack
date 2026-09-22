@@ -5,6 +5,8 @@ import {
   AdminGroupsApiError,
   type AdminGroup,
   type AdminGroupStatus,
+  type HeadmanAssignmentPreview,
+  type HeadmanRoster,
   type AdminGroupsClient,
 } from './admin-groups-client'
 import './admin-groups-screen.pcss'
@@ -35,10 +37,22 @@ const numericCode = ref('')
 const trainingDurationYears = ref('')
 const error = ref<string | null>(null)
 const notice = ref<string | null>(null)
+const assignmentGroup = ref<AdminGroup | null>(null)
+const headmanRoster = ref<HeadmanRoster | null>(null)
+const selectedStudentId = ref<number | null>(null)
+const assignmentPreview = ref<HeadmanAssignmentPreview | null>(null)
+const headmanLoading = ref(false)
+const headmanSaving = ref(false)
+const headmanMutationPending = ref(false)
 
 let disposed = false
 let listRevision = 0
 let listController: AbortController | null = null
+let headmanRevision = 0
+let headmanContextRevision = 0
+let headmanController: AbortController | null = null
+let headmanMutationRevision = 0
+let headmanMutationController: AbortController | null = null
 
 const tabs: readonly { value: AdminGroupStatus; label: string }[] = [
   { value: 'ACTIVE', label: 'Активные' },
@@ -48,13 +62,13 @@ const tabs: readonly { value: AdminGroupStatus; label: string }[] = [
 
 onMounted(() => void refresh())
 
-async function refresh(): Promise<void> {
+async function refresh(preserveMessages = false): Promise<void> {
   const revision = ++listRevision
   listController?.abort()
   const controller = new AbortController()
   listController = controller
   loading.value = true
-  error.value = null
+  if (!preserveMessages) error.value = null
   try {
     const result = await props.client.listGroups({
       status: status.value,
@@ -77,7 +91,7 @@ async function refresh(): Promise<void> {
     }
   } catch (cause) {
     if (!isCurrent(revision, controller) || cause instanceof StaleSessionGenerationError || isAbortError(cause)) return
-    showError(cause, 'Реестр групп не удалось загрузить.')
+    if (!preserveMessages) showError(cause, 'Реестр групп не удалось загрузить.')
   } finally {
     if (isCurrent(revision, controller)) {
       loading.value = false
@@ -100,6 +114,171 @@ function selectStatus(next: AdminGroupStatus): void {
 function submitSearch(): void {
   page.value = 0
   void refresh()
+}
+
+async function openHeadman(group: AdminGroup): Promise<void> {
+  closeHeadman(false)
+  assignmentGroup.value = group
+  const contextRevision = headmanContextRevision
+  headmanLoading.value = true
+  const revision = ++headmanRevision
+  const controller = new AbortController()
+  headmanController = controller
+  try {
+    const result = await props.client.getHeadmanRoster(group.id, controller.signal)
+    if (!isHeadmanCurrent(revision, controller, contextRevision)
+      || assignmentGroup.value?.id !== group.id) return
+    headmanRoster.value = result
+    selectedStudentId.value = result.currentHeadmanId
+    if (selectedStudentId.value !== null) await loadPreview()
+  } catch (cause) {
+    if (!isHeadmanCurrent(revision, controller, contextRevision)
+      || cause instanceof StaleSessionGenerationError || isAbortError(cause)) return
+    showError(cause, 'Состав группы не удалось загрузить.')
+  } finally {
+    if (isHeadmanCurrent(revision, controller, contextRevision)) {
+      headmanLoading.value = false
+      headmanController = null
+    }
+  }
+}
+
+async function loadPreview(): Promise<void> {
+  const group = assignmentGroup.value
+  const studentId = selectedStudentId.value
+  if (group === null || studentId === null) {
+    assignmentPreview.value = null
+    return
+  }
+  const contextRevision = headmanContextRevision
+  const groupId = group.id
+  headmanSaving.value = false
+  headmanController?.abort()
+  const revision = ++headmanRevision
+  const controller = new AbortController()
+  headmanController = controller
+  headmanLoading.value = true
+  try {
+    const result = await props.client.previewHeadman(groupId, studentId, controller.signal)
+    if (!isHeadmanCurrent(revision, controller, contextRevision)
+      || !isHeadmanContextCurrent(contextRevision, groupId, studentId)) return
+    assignmentPreview.value = result
+  } catch (cause) {
+    if (!isHeadmanCurrent(revision, controller, contextRevision)
+      || cause instanceof StaleSessionGenerationError || isAbortError(cause)) return
+    showError(cause, 'Предпросмотр назначения не удалось загрузить.')
+    assignmentPreview.value = null
+  } finally {
+    if (isHeadmanCurrent(revision, controller, contextRevision)) {
+      headmanLoading.value = false
+      headmanController = null
+    }
+  }
+}
+
+async function confirmHeadman(): Promise<void> {
+  if (headmanMutationPending.value) return
+  const contextRevision = headmanContextRevision
+  const group = assignmentGroup.value
+  const roster = headmanRoster.value
+  const studentId = selectedStudentId.value
+  if (group === null || roster === null || studentId === null) return
+  if (assignmentPreview.value === null || assignmentPreview.value.candidateId !== studentId) {
+    await loadPreview()
+    if (!isHeadmanContextCurrent(contextRevision, group.id, studentId)) return
+    if (assignmentPreview.value === null || assignmentPreview.value.candidateId !== studentId) return
+  }
+  const currentGroup = assignmentGroup.value
+  const currentRoster = headmanRoster.value
+  const currentStudentId = selectedStudentId.value
+  if (!isHeadmanContextCurrent(contextRevision, group.id, studentId)
+    || currentGroup === null
+    || currentRoster === null
+    || currentStudentId === null) return
+  headmanSaving.value = true
+  headmanMutationPending.value = true
+  error.value = null
+  notice.value = null
+  const revision = ++headmanMutationRevision
+  const controller = new AbortController()
+  headmanMutationController = controller
+  const refreshAfterOutcome = (): Promise<void> => {
+    return disposed ? Promise.resolve() : refresh(true)
+  }
+  try {
+    const result = await props.client.assignHeadman(currentGroup.id, {
+      studentId: currentStudentId,
+      expectedHeadmanId: currentRoster.currentHeadmanId,
+    }, controller.signal)
+    const reconciliation = refreshAfterOutcome()
+    if (!isHeadmanMutationCurrent(revision, controller, contextRevision, group.id, studentId)) {
+      void reconciliation
+      return
+    }
+    headmanSaving.value = false
+    closeHeadman(false)
+    notice.value = result.changed
+      ? `Староста группы изменён: ${result.headmanFio}.`
+      : 'Староста уже назначен, изменений нет.'
+    await reconciliation
+  } catch (cause) {
+    void refreshAfterOutcome()
+    if (!isHeadmanMutationCurrent(revision, controller, contextRevision, group.id, studentId)
+      || cause instanceof StaleSessionGenerationError) return
+    showError(cause, 'Старосту не удалось подтвердить, реестр обновляется.')
+  } finally {
+    if (headmanMutationRevision === revision && headmanMutationController === controller) {
+      headmanMutationPending.value = false
+      headmanMutationController = null
+      if (isHeadmanContextCurrent(contextRevision, group.id, studentId)) {
+        headmanSaving.value = false
+      }
+    }
+  }
+}
+
+function closeHeadman(clearNotice = true): void {
+  headmanContextRevision += 1
+  headmanRevision += 1
+  headmanController?.abort()
+  headmanController = null
+  assignmentGroup.value = null
+  headmanRoster.value = null
+  selectedStudentId.value = null
+  assignmentPreview.value = null
+  headmanLoading.value = false
+  headmanSaving.value = false
+  if (clearNotice) error.value = null
+}
+
+function isHeadmanCurrent(
+  revision: number,
+  controller: AbortController,
+  contextRevision: number,
+): boolean {
+  return !disposed
+    && revision === headmanRevision
+    && contextRevision === headmanContextRevision
+    && headmanController === controller
+}
+
+function isHeadmanContextCurrent(contextRevision: number, groupId: number, studentId: number): boolean {
+  return !disposed
+    && contextRevision === headmanContextRevision
+    && assignmentGroup.value?.id === groupId
+    && selectedStudentId.value === studentId
+}
+
+function isHeadmanMutationCurrent(
+  revision: number,
+  controller: AbortController,
+  contextRevision: number,
+  groupId: number,
+  studentId: number,
+): boolean {
+  return headmanMutationRevision === revision
+    && headmanMutationController === controller
+    && isHeadmanContextCurrent(contextRevision, groupId, studentId)
 }
 
 async function createGroup(): Promise<void> {
@@ -171,6 +350,10 @@ onBeforeUnmount(() => {
   listRevision += 1
   listController?.abort()
   listController = null
+  headmanContextRevision += 1
+  headmanRevision += 1
+  headmanController?.abort()
+  headmanController = null
 })
 </script>
 
@@ -266,6 +449,7 @@ onBeforeUnmount(() => {
               <th scope="col">Студентов</th>
               <th scope="col">Кто староста</th>
               <th v-if="status === 'DRAFT'" scope="col">Почему черновик</th>
+              <th scope="col">Действие</th>
             </tr>
           </thead>
           <tbody>
@@ -276,10 +460,67 @@ onBeforeUnmount(() => {
               <td>{{ group.studentCount }}</td>
               <td>{{ group.headmanFio ?? 'Не назначен' }}</td>
               <td v-if="status === 'DRAFT'">{{ group.draftReason ?? 'Причина не указана' }}</td>
+              <td>
+                <button
+                  class="admin-groups-table__action"
+                  type="button"
+                  :disabled="status === 'ARCHIVED'"
+                  @click="openHeadman(group)"
+                >
+                  {{ group.headmanFio ? 'Изменить старосту' : 'Назначить старосту' }}
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <section
+        v-if="assignmentGroup"
+        class="admin-groups-headman"
+        aria-labelledby="admin-groups-headman-title"
+      >
+        <div class="admin-groups-headman__header">
+          <div>
+            <h2 id="admin-groups-headman-title">Староста группы {{ displayCode(assignmentGroup) }}</h2>
+            <p v-if="headmanRoster" class="admin-groups-headman__meta">
+              Текущий староста: {{ headmanRoster.currentHeadmanFio ?? 'не назначен' }} ·
+              активных помощников: {{ headmanRoster.activeAssistantCount }}
+            </p>
+          </div>
+          <button class="admin-groups-headman__close" type="button" @click="closeHeadman()">Закрыть</button>
+        </div>
+
+        <p v-if="headmanLoading" class="admin-groups-state" role="status">Загружаем состав…</p>
+        <form v-else-if="headmanRoster" class="admin-groups-headman__form" @submit.prevent="confirmHeadman">
+          <label for="admin-groups-headman-select">Выбери старосту</label>
+          <select
+            id="admin-groups-headman-select"
+            v-model.number="selectedStudentId"
+            @change="loadPreview"
+          >
+            <option :value="null" disabled>Выбери студента</option>
+            <option v-for="candidate in headmanRoster.candidates" :key="candidate.id" :value="candidate.id">
+              {{ candidate.fio }}{{ candidate.current ? ' — текущий староста' : '' }}
+            </option>
+          </select>
+          <p v-if="assignmentPreview" class="admin-groups-headman__preview" role="status">
+            <template v-if="assignmentPreview.sameHeadman">Этот студент уже староста. Изменений не будет.</template>
+            <template v-else>
+              После подтверждения {{ assignmentPreview.activatesDraft ? 'группа станет активной' : 'староста будет заменён' }}.
+              Помощников к отзыву: {{ assignmentPreview.assistantsToRevoke }}.
+            </template>
+          </p>
+          <button
+            class="admin-groups-action"
+            type="submit"
+            :disabled="headmanSaving || headmanMutationPending || selectedStudentId === null || assignmentPreview === null"
+            :aria-busy="headmanSaving"
+          >
+            {{ headmanSaving ? 'Сохраняем…' : 'Подтвердить назначение' }}
+          </button>
+        </form>
+      </section>
 
       <footer v-if="!loading" class="admin-groups-pagination">
         <span>{{ totalElements }} групп · {{ formatPage() }}</span>

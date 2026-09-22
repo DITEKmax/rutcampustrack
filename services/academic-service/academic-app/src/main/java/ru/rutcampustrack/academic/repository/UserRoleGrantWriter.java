@@ -5,13 +5,13 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
-import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Transactional writer for the V24 authority rows owned by the Academic user
@@ -50,6 +50,16 @@ public class UserRoleGrantWriter {
             WHERE user_id = ? AND role = ?
             """;
 
+    private static final String SELECT_ACTIVE_STUDENT_GROUP_SQL = """
+            SELECT g.group_id
+            FROM user_role_grants g
+            JOIN users u ON u.id = g.user_id
+            WHERE g.user_id = ? AND g.role = 'student' AND g.status = 'active'
+              AND g.group_id IS NOT NULL AND u.status <> 'archived'
+            ORDER BY g.group_id
+            LIMIT 1
+            """;
+
     private static final String ARCHIVE_GRANTS_SQL = """
             UPDATE user_role_grants
             SET status = 'archived', updated_at = ?
@@ -79,14 +89,13 @@ public class UserRoleGrantWriter {
         String baseStatus = synchronizedBaseStatus(userId, baseRole, grantStatus(user.getStatus()));
         upsertGrant(userId, baseRole, baseStatus, user.getGroupId(), now);
 
-        boolean activeHeadman = user.getRole() == UserRole.STUDENT
-                && user.isHeadman()
-                && "active".equals(baseStatus);
+        Optional<Long> activeStudentGroup = activeStudentGrantGroup(userId);
+        boolean activeHeadman = activeStudentGroup.isPresent() && user.isHeadman();
         if (activeHeadman) {
-            upsertGrant(userId, "headman", "active", user.getGroupId(), now);
-        } else if (user.getRole() == UserRole.STUDENT && user.isHeadman()) {
+            upsertGrant(userId, "headman", "active", activeStudentGroup.get(), now);
+        } else if (activeStudentGroup.isPresent() && user.isHeadman()) {
             // A non-active account must never keep active headman authority.
-            upsertGrant(userId, "headman", "suspended", user.getGroupId(), now);
+            upsertGrant(userId, "headman", "suspended", activeStudentGroup.get(), now);
         } else {
             // Keep the durable row for audit/session foreign keys; revoke only
             // its selectable authority and preserve its former group scope.
@@ -109,13 +118,18 @@ public class UserRoleGrantWriter {
                 groupId, OffsetDateTime.now());
     }
 
-    /** Keeps derived HEADMAN authority aligned when the STUDENT grant changes. */
+    /**
+     * Keeps derived HEADMAN authority aligned when the STUDENT grant changes.
+     * The requested group argument is retained for existing callers, but the
+     * durable active STUDENT grant is the only source for the derived scope.
+     */
     @Transactional(propagation = Propagation.MANDATORY)
-    public void synchronizeDerivedHeadman(Long userId, boolean shouldBeActive, Long groupId) {
+    public void synchronizeDerivedHeadman(Long userId, boolean shouldBeActive, Long requestedGroupId) {
         Objects.requireNonNull(userId, "userId");
         jdbcTemplate.queryForObject(LOCK_USER_SQL, Long.class, userId);
-        if (shouldBeActive) {
-            upsertGrant(userId, "headman", "active", groupId, OffsetDateTime.now());
+        Optional<Long> activeStudentGroup = activeStudentGrantGroup(userId);
+        if (shouldBeActive && activeStudentGroup.isPresent()) {
+            upsertGrant(userId, "headman", "active", activeStudentGroup.get(), OffsetDateTime.now());
         } else {
             jdbcTemplate.update(SUSPEND_HEADMAN_SQL, OffsetDateTime.now(), userId);
         }
@@ -158,6 +172,14 @@ public class UserRoleGrantWriter {
                 },
                 (rs, rowNum) -> rs.getString(1));
         return existing == null || existing.isEmpty() ? desiredStatus : existing.get(0);
+    }
+
+    private Optional<Long> activeStudentGrantGroup(Long userId) {
+        List<Long> groups = jdbcTemplate.query(
+                SELECT_ACTIVE_STUDENT_GROUP_SQL,
+                ps -> ps.setLong(1, userId),
+                (rs, rowNum) -> rs.getLong(1));
+        return groups.stream().findFirst();
     }
 
     private static String grantStatus(AccountStatus status) {

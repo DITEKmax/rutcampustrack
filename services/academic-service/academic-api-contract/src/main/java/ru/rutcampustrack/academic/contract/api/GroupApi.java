@@ -23,8 +23,12 @@ import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupRegistryResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
+import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
+import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentPreviewResponse;
+import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentResponse;
+import ru.rutcampustrack.academic.contract.dto.group.HeadmanRosterResponse;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
@@ -100,6 +104,44 @@ public interface GroupApi {
             @RequestParam(defaultValue = "ACTIVE") AdminGroupStatus status,
             @RequestParam(required = false) String search,
             Pageable pageable);
+
+    /** ADMIN roster used to choose a group headman. */
+    @Operation(summary = "Состав группы для назначения старосты (ADMIN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Состав группы"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Группа не найдена"),
+            @ApiResponse(responseCode = "409", description = "Группа архивна или содержит конфликтующие данные")
+    })
+    @GetMapping("/{id}/headman/roster")
+    HeadmanRosterResponse getHeadmanRoster(@PathVariable Long id);
+
+    /** Server-only consequence preview; no durable mutation. */
+    @Operation(summary = "Предпросмотр назначения старосты (ADMIN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Предпросмотр"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Группа или студент не найдены"),
+            @ApiResponse(responseCode = "409", description = "Студент не состоит в группе")
+    })
+    @GetMapping("/{id}/headman/preview")
+    HeadmanAssignmentPreviewResponse previewHeadman(
+            @PathVariable Long id,
+            @RequestParam Long studentId);
+
+    /** Canonical CAS-protected headman mutation. */
+    @Operation(summary = "Назначить старосту (ADMIN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Староста назначен"),
+            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Группа или студент не найдены"),
+            @ApiResponse(responseCode = "409", description = "Устаревшее состояние или конфликт назначения")
+    })
+    @PutMapping("/{id}/headman")
+    HeadmanAssignmentResponse assignHeadman(
+            @PathVariable Long id,
+            @Valid @RequestBody AssignHeadmanRequest request);
 
     /**
      * 58-06 / BUG-006-6: Dry-run промоушена групп. Возвращает {@link PromotionSummary}

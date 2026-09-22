@@ -57,6 +57,24 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             nativeQuery = true)
     List<User> findActiveStudentsByGrantGroupId(@Param("groupId") Long groupId);
 
+    /** Durable active HEADMAN authority for one group; the partial V33 index
+     * normally makes this list contain at most one row. Keeping a list here
+     * lets the service fail closed if old data predates that invariant. */
+    @Query(value = "SELECT u.* FROM users u "
+            + "JOIN user_role_grants g ON g.user_id = u.id "
+            + "WHERE g.role = 'headman' AND g.status = 'active' AND g.group_id = :groupId "
+            + "AND u.status <> 'archived' ORDER BY u.id",
+            nativeQuery = true)
+    List<User> findActiveHeadmenByGrantGroupId(@Param("groupId") Long groupId);
+
+    /** ID-only variant used while rechecking the group CAS after row locks. */
+    @Query(value = "SELECT g.user_id FROM user_role_grants g "
+            + "JOIN users u ON u.id = g.user_id "
+            + "WHERE g.role = 'headman' AND g.status = 'active' AND g.group_id = :groupId "
+            + "AND u.status <> 'archived' ORDER BY g.user_id",
+            nativeQuery = true)
+    List<Long> findActiveHeadmanIdsByGrantGroupId(@Param("groupId") Long groupId);
+
     @Query(value = "SELECT u.* FROM users u "
             + "JOIN user_role_grants g ON g.user_id = u.id "
             + "WHERE g.role = 'student' AND g.status = 'active' AND g.group_id = :groupId "

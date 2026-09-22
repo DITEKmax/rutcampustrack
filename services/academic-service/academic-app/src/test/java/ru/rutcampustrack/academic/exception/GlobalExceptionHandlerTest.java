@@ -162,6 +162,21 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void activeHeadmanGroupConstraintRaceReturnsGroupConflict() {
+        DataIntegrityViolationException ex = new DataIntegrityViolationException(
+                "could not execute statement",
+                new RuntimeException("duplicate key value violates unique constraint "
+                        + "\"user_role_grants_active_headman_group_uq\""));
+
+        ResponseEntity<ErrorResponse> response = handler.handleDataIntegrityViolation(ex, request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().field()).isEqualTo("groupId");
+        assertThat(response.getBody().detail()).contains("староста");
+    }
+
+    @Test
     void dataIntegrityViolationWithUnknownConstraintReturns500() {
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "foo",

@@ -13,8 +13,12 @@ import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupRegistryResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
+import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
+import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentPreviewResponse;
+import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentResponse;
+import ru.rutcampustrack.academic.contract.dto.group.HeadmanRosterResponse;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
@@ -38,15 +42,18 @@ public class GroupController implements GroupApi {
     private final GroupAssembler groupAssembler;
     private final UserAssembler userAssembler;
     private final GroupPromotionService promotionService;
+    private final GroupHeadmanAssignmentService headmanAssignmentService;
 
     public GroupController(GroupService groupService,
                            GroupAssembler groupAssembler,
                            UserAssembler userAssembler,
-                           GroupPromotionService promotionService) {
+                           GroupPromotionService promotionService,
+                           GroupHeadmanAssignmentService headmanAssignmentService) {
         this.groupService = groupService;
         this.groupAssembler = groupAssembler;
         this.userAssembler = userAssembler;
         this.promotionService = promotionService;
+        this.headmanAssignmentService = headmanAssignmentService;
     }
 
     @Override
@@ -123,6 +130,25 @@ public class GroupController implements GroupApi {
                 result.page().getTotalElements(),
                 result.page().getTotalPages(),
                 counts.activeCount(), counts.draftCount(), counts.archivedCount());
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public HeadmanRosterResponse getHeadmanRoster(Long id) {
+        return headmanAssignmentService.roster(id);
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public HeadmanAssignmentPreviewResponse previewHeadman(
+            Long id, Long studentId) {
+        return headmanAssignmentService.preview(id, studentId);
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public HeadmanAssignmentResponse assignHeadman(Long id, AssignHeadmanRequest request) {
+        return headmanAssignmentService.assign(id, request);
     }
 
     @Override

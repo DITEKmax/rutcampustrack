@@ -33,6 +33,7 @@ import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
+import ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.history.HistoricalMembershipException;
@@ -83,6 +84,7 @@ public class UserService {
     private final GroupHistoryCoverageRepository coverageRepository;
     private final UserRoleGrantWriter roleGrantWriter;
     private final UserRoleGrantReader roleGrantReader;
+    private final GroupHeadmanAssignmentService headmanAssignmentService;
 
     @Autowired
     public UserService(UserRepository userRepository,
@@ -96,7 +98,8 @@ public class UserService {
                        SemesterRepository semesterRepository,
                        GroupHistoryCoverageRepository coverageRepository,
                        UserRoleGrantWriter roleGrantWriter,
-                       UserRoleGrantReader roleGrantReader) {
+                       UserRoleGrantReader roleGrantReader,
+                       GroupHeadmanAssignmentService headmanAssignmentService) {
         this.userRepository = userRepository;
         this.headmanAssistantRepository = headmanAssistantRepository;
         this.studentGroupHistoryRepository = studentGroupHistoryRepository;
@@ -109,6 +112,7 @@ public class UserService {
         this.coverageRepository = coverageRepository;
         this.roleGrantWriter = roleGrantWriter;
         this.roleGrantReader = roleGrantReader;
+        this.headmanAssignmentService = headmanAssignmentService;
     }
 
     /** Compatibility constructor for source-era unit tests that do not mutate membership. */
@@ -121,7 +125,7 @@ public class UserService {
                        ApplicationEventPublisher eventPublisher) {
         this(userRepository, headmanAssistantRepository, studentGroupHistoryRepository,
                 requestContext, userAssembler, cacheManager, eventPublisher,
-                null, null, null, null, null);
+                null, null, null, null, null, null);
     }
 
     @Transactional
@@ -566,6 +570,33 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User patchUser(Long id, PatchUserRequest request) {
+        boolean canonicalHeadmanMutation = request != null
+                && request.isHeadman() != null
+                && headmanAssignmentService != null;
+        if (canonicalHeadmanMutation) {
+            // The canonical operation owns all user locks before taking the
+            // group lock. Combining it with a group move would make the
+            // resulting membership ambiguous, so keep the old admin-users
+            // action atomic and require two explicit operations.
+            if (request.groupId() != null) {
+                User membershipSnapshot = userRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+                if (!java.util.Objects.equals(membershipSnapshot.getGroupId(), request.groupId())) {
+                    throw new BadRequestException(
+                            "groupId", "Назначение старосты нельзя совмещать с переводом группы");
+                }
+            }
+            if (request.isHeadman() && request.status() != null
+                    && request.status() != AccountStatus.ACTIVE) {
+                throw new BadRequestException(
+                        "status", "Старостой может быть только активный студент");
+            }
+            if (request.isHeadman()) {
+                headmanAssignmentService.assignLegacyHeadman(id);
+            } else {
+                headmanAssignmentService.revokeLegacyHeadman(id);
+            }
+        }
         User user = userRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         Long oldGroupId = user.getGroupId();
@@ -579,10 +610,10 @@ public class UserService {
                 ? request.status()
                 : user.getStatus();
         if (request.isHeadman() != null && request.isHeadman()) {
-            if (user.getRole() != UserRole.STUDENT) {
+            if (!canonicalHeadmanMutation && user.getRole() != UserRole.STUDENT) {
                 throw new BadRequestException("Только студент может быть назначен старостой");
             }
-            if (targetStatus != AccountStatus.ACTIVE) {
+            if (!canonicalHeadmanMutation && targetStatus != AccountStatus.ACTIVE) {
                 throw new BadRequestException("Только активный студент может быть назначен старостой");
             }
         }
@@ -618,7 +649,8 @@ public class UserService {
         }
 
         // Headman revoke cascade (D-13)
-        if (request.isHeadman() != null && !request.isHeadman() && user.isHeadman()) {
+        if (!canonicalHeadmanMutation
+                && request.isHeadman() != null && !request.isHeadman() && user.isHeadman()) {
             headmanAssistantRepository.revokeAllByGroupId(user.getGroupId());
             user.setHeadman(false);
         }
@@ -626,7 +658,7 @@ public class UserService {
         // Headman assign (USER-03). Request validation ran before the
         // terminal-history mutation above, so an unsupported transition cannot
         // leave a closed history row behind.
-        if (request.isHeadman() != null && request.isHeadman()) {
+        if (!canonicalHeadmanMutation && request.isHeadman() != null && request.isHeadman()) {
             user.setHeadman(true);
         }
 

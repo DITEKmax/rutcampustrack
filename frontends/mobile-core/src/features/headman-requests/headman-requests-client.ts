@@ -139,7 +139,10 @@ export class HeadmanRequestsApi {
   async downloadAttachment(requestId: string, attachmentId: string): Promise<Blob> {
     assertId(requestId)
     assertId(attachmentId)
-    const response = await this.response(`/api/attendance/requests/${encodeURIComponent(requestId)}/attachments/${encodeURIComponent(attachmentId)}`)
+    const response = await this.response(
+      `/api/attendance/requests/${encodeURIComponent(requestId)}/attachments/${encodeURIComponent(attachmentId)}`,
+      { headers: { Accept: '*/*' } },
+    )
     if (!response.ok) throw await this.apiError(response)
     const blob = await response.blob()
     this.options.assertCurrent?.()

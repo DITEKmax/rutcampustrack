@@ -15,6 +15,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.ErrorResponseException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -95,6 +96,16 @@ public class GlobalExceptionHandler {
         return problem(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "media-type-not-supported",
                 "Тип контента не поддерживается",
                 "Content-Type не поддерживается для этого endpoint'а",
+                request, null, null, null);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ErrorResponse> handleMediaTypeNotAcceptable(
+            HttpMediaTypeNotAcceptableException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.NOT_ACCEPTABLE, "media-type-not-acceptable",
+                "Тип ответа не поддерживается",
+                "Заголовок Accept не поддерживает тип ответа этого endpoint'а",
                 request, null, null, null);
     }
 

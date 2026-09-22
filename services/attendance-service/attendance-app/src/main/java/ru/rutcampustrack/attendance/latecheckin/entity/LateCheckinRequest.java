@@ -77,6 +77,10 @@ public class LateCheckinRequest {
     @Field("decision_by")
     private Long decisionBy;
 
+    /** Nullable for historical/bot decisions; unified headman rejection stores its reason here. */
+    @Field("decision_comment")
+    private String decisionComment;
+
     @Field("decision_at")
     private Instant decisionAt;
 

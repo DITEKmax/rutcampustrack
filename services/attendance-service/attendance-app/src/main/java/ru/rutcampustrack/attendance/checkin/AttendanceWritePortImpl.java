@@ -73,6 +73,9 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
 
         if (existing.isPresent()) {
             AttendanceDocument doc = existing.get();
+            if (preserveExistingPresent(doc, status, source)) {
+                return;
+            }
             applyJournalAttachmentTransition(doc, status, studentId, lessonId);
             doc.setStatus(status);
             doc.setSource(source);
@@ -108,6 +111,9 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
         pairWriteCoordinator.lock(studentId, lessonId, groupId, now);
         AttendanceDocument doc = attendanceRepository.findByLessonIdAndUserId(lessonId, studentId)
                 .orElseGet(AttendanceDocument::new);
+        if (preserveExistingPresent(doc, status, source)) {
+            return;
+        }
         if (doc.getCreatedAt() == null) doc.setCreatedAt(now);
         doc.setLessonId(lessonId);
         doc.setUserId(studentId);
@@ -125,6 +131,18 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
         doc.setExcuseComment(null);
         doc.setUpdatedAt(now);
         attendanceRepository.save(doc);
+    }
+
+    /**
+     * A headman excuse/late decision is a conditional write.  A prior PRESENT
+     * from a real check-in wins the pair race.  Manual marking uses its own
+     * writer and remains able to change the attendance state.
+     */
+    private static boolean preserveExistingPresent(AttendanceDocument document,
+                                                    AttendanceStatus requestedStatus,
+                                                    AttendanceSource source) {
+        return document.getStatus() == AttendanceStatus.PRESENT
+                && (source == AttendanceSource.HEADMAN_EXCUSE || source == AttendanceSource.LATE_CHECKIN);
     }
 
     private void applyJournalAttachmentTransition(AttendanceDocument document,

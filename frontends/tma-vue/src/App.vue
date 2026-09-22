@@ -9,6 +9,7 @@ import {
   CampusMapClient,
   HeadmanScheduleApiError,
   HeadmanJournalApiError,
+  HeadmanRequestsApiError,
   HeadmanScheduleScreen,
   MapScreen,
   ProfileRequestError,
@@ -29,6 +30,7 @@ import {
   type StudentSession,
   type HeadmanScheduleApi,
   type HeadmanJournalApi,
+  type HeadmanRequestsApi,
   type ProfileRole,
   type ProfileSnapshot,
   type AdminSemesterClient,
@@ -63,6 +65,7 @@ const teacherApi = shallowRef<TeacherApi | null>(null)
 const teacherSemesterId = ref<number | null>(null)
 const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
 const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
+const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null)
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
@@ -107,6 +110,7 @@ function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof TeacherApiError) return cause.response.status
   if (cause instanceof HeadmanScheduleApiError) return cause.response.status
   if (cause instanceof HeadmanJournalApiError) return cause.response.status
+  if (cause instanceof HeadmanRequestsApiError) return cause.response.status
   if (cause instanceof AdminSemesterApiError) return cause.response.status
   return null
 }
@@ -181,6 +185,7 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
   teacherSemesterId.value = null
   headmanApi.value = null
   headmanJournalApi.value = null
+  headmanRequestsApi.value = null
   adminSemesterApi.value = null
   headmanGroupId.value = null
   scope.value = null
@@ -240,6 +245,7 @@ async function bootstrap(): Promise<void> {
       scope.value = null
       headmanApi.value = sessionOwner.createHeadmanApi(currentFetcher())
       headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
+      headmanRequestsApi.value = sessionOwner.createHeadmanRequestsApi(currentFetcher())
       headmanGroupId.value = groupId
       authView.value = 'headman'
       ownerRevision.value += 1
@@ -257,6 +263,7 @@ async function bootstrap(): Promise<void> {
       const needsFreshOwner = !sameOwner || api.value === null
       headmanApi.value = null
       headmanJournalApi.value = null
+      headmanRequestsApi.value = null
       headmanGroupId.value = null
       api.value = needsFreshOwner ? candidate.api : api.value
       session.value = candidate.session
@@ -314,6 +321,7 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       scope.value = null
       headmanApi.value = sessionOwner.createHeadmanApi(currentFetcher())
       headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
+      headmanRequestsApi.value = sessionOwner.createHeadmanRequestsApi(currentFetcher())
       headmanGroupId.value = groupId
       authView.value = 'headman'
       ownerRevision.value += 1
@@ -329,6 +337,7 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       if (!sessionOwner.isCurrent(selection.generation)) throw new Error('Сессия сменилась во время входа')
       headmanApi.value = null
       headmanJournalApi.value = null
+      headmanRequestsApi.value = null
       headmanGroupId.value = null
       api.value = candidateApi
       session.value = candidateSession
@@ -425,6 +434,7 @@ onBeforeUnmount(() => {
     :key="`headman-${ownerRevision}`"
     :api="headmanApi"
     :journal-api="headmanJournalApi"
+    :requests-api="headmanRequestsApi"
     :profile="profile"
     :group-id="headmanGroupId"
     :offline="offline"

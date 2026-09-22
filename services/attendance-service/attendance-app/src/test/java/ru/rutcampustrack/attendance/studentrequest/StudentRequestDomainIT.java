@@ -37,6 +37,7 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.StudentRequestKind;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageResponse;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.excuse.ExcuseEventPublisher;
@@ -47,6 +48,7 @@ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.attendance.events.EventSchemaValidator;
@@ -58,6 +60,7 @@ import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.Identity
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.RequestDetail;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.RequestPage;
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
+import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentLateCheckinBudgetDocument;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentRequestReceiptDocument;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
@@ -107,7 +110,7 @@ import static org.mockito.Mockito.when;
  */
 @DataMongoTest
 @Testcontainers(disabledWithoutDocker = true)
-@Import({StudentRequestService.class, StudentRequestDomainIT.TestConfig.class})
+@Import({StudentRequestService.class, HeadmanRequestService.class, StudentRequestDomainIT.TestConfig.class})
 class StudentRequestDomainIT {
 
     private static final String RUN_ID = UUID.randomUUID().toString().replace("-", "");
@@ -119,6 +122,7 @@ class StudentRequestDomainIT {
     private static final String OUTBOX_COLLECTION = "student_request_test_outbox";
     private static final Instant START = Instant.parse("2026-09-07T08:00:00Z");
     private static final Identity STUDENT = new Identity(STUDENT_ID, UserRole.STUDENT, GROUP_ID, false);
+    private static final Identity HEADMAN = new Identity(777L, UserRole.STUDENT, GROUP_ID, true);
 
     @Container
     static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0")
@@ -158,6 +162,13 @@ class StudentRequestDomainIT {
         @Bean
         MongoOutboxStorage outboxStorage(MongoTemplate mongoTemplate) {
             return new MongoOutboxStorage(mongoTemplate, OUTBOX_COLLECTION);
+        }
+
+        @Bean
+        AttendanceAttachmentService attendanceAttachmentService(
+                RequestAttachmentRepository attachmentRepository,
+                MutableClock clock) {
+            return new AttendanceAttachmentService(attachmentRepository, clock);
         }
 
         @Bean
@@ -310,6 +321,8 @@ class StudentRequestDomainIT {
 
     @jakarta.annotation.Resource
     StudentRequestService service;
+    @jakarta.annotation.Resource
+    HeadmanRequestService headmanRequestService;
     @jakarta.annotation.Resource
     MongoTemplate mongoTemplate;
     @jakarta.annotation.Resource
@@ -733,7 +746,80 @@ class StudentRequestDomainIT {
                 .satisfies(attendance -> {
                     assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
                     assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);
-                });
+        });
+    }
+
+    @Test
+    void headmanOpenUnionNormalizesSubmittedAndExcludesDraft() {
+        seedHeadmanTicket("headman-submitted", ExcuseTicketStatus.SUBMITTED,
+                List.of(LocalDate.of(2026, 9, 7)), START, START, null);
+        seedHeadmanTicket("headman-draft", ExcuseTicketStatus.DRAFT,
+                List.of(LocalDate.of(2026, 9, 8)), START.plusSeconds(1), START.plusSeconds(1), null);
+
+        HeadmanRequestPageResponse page = headmanRequestService.list(
+                HEADMAN, "OPEN", 0, 20, "EXCUSE", null, null, null);
+
+        assertThat(page.content()).singleElement().satisfies(summary -> {
+            assertThat(summary.id()).isEqualTo("headman-submitted");
+            assertThat(summary.status()).isEqualTo("PENDING");
+        });
+        assertThat(page.totalElements()).isEqualTo(1);
+    }
+
+    @Test
+    void headmanCoverageFilterMatchesCoverageIntervalGap() {
+        seedHeadmanTicket("headman-gap", ExcuseTicketStatus.APPROVED,
+                List.of(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 10)),
+                START, START.plusSeconds(2), START.plusSeconds(1));
+        seedHeadmanTicket("headman-after", ExcuseTicketStatus.APPROVED,
+                List.of(LocalDate.of(2026, 9, 20), LocalDate.of(2026, 9, 21)),
+                START.plusSeconds(3), START.plusSeconds(5), START.plusSeconds(4));
+        seedHeadmanTicket("headman-empty", ExcuseTicketStatus.APPROVED,
+                List.of(), START.plusSeconds(6), START.plusSeconds(8), START.plusSeconds(7));
+
+        HeadmanRequestPageResponse page = headmanRequestService.list(
+                HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null,
+                "2026-09-05", "2026-09-05");
+
+        assertThat(page.content()).extracting(summary -> summary.id())
+                .containsExactly("headman-gap");
+        assertThat(page.totalElements()).isEqualTo(1);
+
+        HeadmanRequestPageResponse fromOnly = headmanRequestService.list(
+                HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null,
+                "2026-09-15", null);
+        assertThat(fromOnly.content()).extracting(summary -> summary.id())
+                .containsExactly("headman-after");
+        assertThat(fromOnly.totalElements()).isEqualTo(1);
+
+        HeadmanRequestPageResponse toOnly = headmanRequestService.list(
+                HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null,
+                null, "2026-09-05");
+        assertThat(toOnly.content()).extracting(summary -> summary.id())
+                .containsExactly("headman-gap");
+        assertThat(toOnly.totalElements()).isEqualTo(1);
+
+        HeadmanRequestPageResponse emptyRange = headmanRequestService.list(
+                HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null,
+                null, "2026-08-31");
+        assertThat(emptyRange.content()).isEmpty();
+        assertThat(emptyRange.totalElements()).isZero();
+    }
+
+    @Test
+    void headmanArchiveSortUsesDecisionTimeBeforeStableKindAndIdTieBreakers() {
+        seedHeadmanTicket("headman-decision-old", ExcuseTicketStatus.REJECTED,
+                List.of(LocalDate.of(2026, 9, 7)), START.plusSeconds(1), START.plusSeconds(30),
+                START.plusSeconds(2));
+        seedHeadmanTicket("headman-decision-new", ExcuseTicketStatus.APPROVED,
+                List.of(LocalDate.of(2026, 9, 8)), START.plusSeconds(2), START.plusSeconds(3),
+                START.plusSeconds(4));
+
+        HeadmanRequestPageResponse page = headmanRequestService.list(
+                HEADMAN, "ARCHIVE", 0, 20, "EXCUSE", null, null, null);
+
+        assertThat(page.content()).extracting(summary -> summary.id())
+                .containsExactly("headman-decision-new", "headman-decision-old");
     }
 
     @Test
@@ -805,10 +891,14 @@ class StudentRequestDomainIT {
         clearOutbox();
         faultInjectingTransactionTemplate.failNextBeforeTransaction();
 
-        RequestDetail decided = service.decideLateCheckin(headman(777L), request.summary().id(), false);
+        RequestDetail decided = service.decideLateCheckin(headman(777L), request.summary().id(), false,
+                "Не подтверждено старостой");
 
         assertThat(decided.summary().status())
                 .isEqualTo(ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus.REJECTED);
+        assertThat(decided.decision().comment()).isEqualTo("Не подтверждено старостой");
+        assertThat(lateCheckinRepository.findById(request.summary().id()).orElseThrow().getDecisionComment())
+                .isEqualTo("Не подтверждено старостой");
         assertThat(actualOutboxEvents("late_checkin.decided")).hasSize(1);
     }
 
@@ -985,6 +1075,12 @@ class StudentRequestDomainIT {
                     throw error;
                 }
                 lastFailure = error;
+                try {
+                    Thread.sleep(100L << (attempt - 1));
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted while retrying pair writer", interrupted);
+                }
             }
         }
         throw lastFailure;
@@ -1027,6 +1123,27 @@ class StudentRequestDomainIT {
 
     private static Identity headman(long userId) {
         return new Identity(userId, UserRole.STUDENT, GROUP_ID, true);
+    }
+
+    private ExcuseTicket seedHeadmanTicket(String id, ExcuseTicketStatus status,
+                                           List<LocalDate> dates, Instant createdAt,
+                                           Instant updatedAt, Instant decisionAt) {
+        List<Long> lessonIds = IntStream.range(0, dates.size())
+                .mapToObj(index -> 500L + index)
+                .toList();
+        List<StudentLessonSnapshotDocument> snapshots = IntStream.range(0, dates.size())
+                .mapToObj(index -> StudentLessonSnapshotDocument.builder()
+                        .lessonId(lessonIds.get(index)).groupId(GROUP_ID).subjectId(1000L + index)
+                        .subjectName("Subject " + index).subjectType("LECTURE")
+                        .semesterId(SEMESTER_ID).lessonNumber(index + 1).date(dates.get(index))
+                        .startsAt(LocalTime.of(10, 0)).endsAt(LocalTime.of(11, 0))
+                        .status("closed").build())
+                .toList();
+        return excuseRepository.save(ExcuseTicket.builder()
+                .id(id).studentId(200L).groupId(GROUP_ID).studentName("Иванов Иван")
+                .lessonIds(lessonIds).semesterId(SEMESTER_ID).lessonSnapshots(snapshots)
+                .excuseType(ExcuseType.ILLNESS).status(status).decisionBy(decisionAt == null ? null : 777L)
+                .decisionAt(decisionAt).createdAt(createdAt).updatedAt(updatedAt).build());
     }
 
     private void seedAbsent(long lessonId) {

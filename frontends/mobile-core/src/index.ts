@@ -40,6 +40,8 @@ export { default as AdminSemesterScreen } from './features/admin-semester/AdminS
 export { default as AdminRoleNavigation } from './features/admin-semester/AdminRoleNavigation.vue'
 export * from './features/headman-journal/headman-journal-client'
 export { default as HeadmanJournalScreen } from './features/headman-journal/HeadmanJournalScreen.vue'
+export * from './features/headman-requests/headman-requests-client'
+export { default as HeadmanRequestsScreen } from './features/headman-requests/HeadmanRequestsScreen.vue'
 export { ProfileRequestError } from './features/profile/profile-types'
 export { ProfileState } from './features/profile/profile-state'
 export type { ProfileStateView, ProfileResourceStatus } from './features/profile/profile-state'

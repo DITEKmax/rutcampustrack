@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import {
   createGenerationBoundHeadmanScheduleApi,
   createGenerationBoundHeadmanJournalApi,
+  createGenerationBoundHeadmanRequestsApi,
   createGenerationBoundStudentApi,
   createGenerationBoundTeacherApi,
   createGenerationBoundAdminSemesterClient,
@@ -10,6 +11,7 @@ import {
 import type {
   HeadmanScheduleApi,
   HeadmanJournalApi,
+  HeadmanRequestsApi,
   ProfileRole,
   ProfileRoleGrant,
   ProfileRoleSelection,
@@ -94,6 +96,14 @@ export function useTmaSession(options: TmaSessionOptions) {
     }, fetcher)
   }
 
+  function createHeadmanRequestsApi(fetcher?: typeof fetch): HeadmanRequestsApi {
+    return createGenerationBoundHeadmanRequestsApi({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor: authenticateFor,
+    }, fetcher)
+  }
+
   function createTeacherApi(fetcher?: typeof fetch): TeacherApi {
     return createGenerationBoundTeacherApi({
       currentGeneration,
@@ -165,6 +175,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     createApi,
     createHeadmanApi,
     createHeadmanJournalApi,
+    createHeadmanRequestsApi,
     createTeacherApi,
     createAdminSemesterApi,
     getProfileFor,

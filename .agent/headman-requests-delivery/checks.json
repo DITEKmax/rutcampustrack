@@ -1,0 +1,62 @@
+{
+  "baseline": "fc7f649ce12e04e1c2bbe45cc096f0d97b68ae20",
+  "rules_sha": "SHA4E05153BFAE604D6882805D37DD89011CCC7301B4641DEF3FFDCEB22D9D6F364",
+  "frozen_at": "2026-09-22",
+  "checks": [
+    {
+      "name": "scoped attendance integration test initial",
+      "command": "& .\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --no-daemon --no-parallel --max-workers=1 --no-problems-report --tests ExcuseServiceApproveIT.approve_preservesExistingPresentAttendance --tests StudentRequestDomainIT --tests StudentCheckinTransactionIT.manualDecisionAndGeoWritersClearJournalBlobButRetainRequestOwnedEvidence",
+      "exit_code": 1,
+      "result": "26_PASS_1_TRANSIENT_FAILURE",
+      "evidence": "Session 16442 compiled the app and executed 27 selected cases. The only failure was StudentRequestDomainIT.approvalAndRealPairWriterRacePreservesPresent: Mongo code 112 TransientTransactionError after the test helper's four immediate retries. Root-authored scoped-it-16442-cases.json records every case and status."
+    },
+    {
+      "name": "scoped pair-race recheck",
+      "command": "& .\\gradlew.bat :services:attendance-service:attendance-app:integrationTest --no-daemon --no-parallel --max-workers=1 --no-problems-report --tests StudentRequestDomainIT.approvalAndRealPairWriterRacePreservesPresent",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Session 49505 passed after the bounded test-only 100/200/400 ms backoff for labelled transient transaction errors; compile/test runtime and Docker Mongo completed successfully."
+    },
+    {
+      "name": "mobile-core typecheck",
+      "command": "npm run typecheck (frontends/mobile-core)",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Shared headman request client, screen and schedule route typecheck successfully."
+    },
+    {
+      "name": "pwa-vue typecheck",
+      "command": "npm run typecheck (frontends/pwa-vue)",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Executed after the HeadmanRequestsApiError(401) auth invalidation addition; generation-bound PWA wiring typechecks successfully."
+    },
+    {
+      "name": "tma-vue typecheck",
+      "command": "npm run typecheck (frontends/tma-vue)",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Generation-bound TMA headman session/client wiring typechecks successfully."
+    },
+    {
+      "name": "staged target whitespace",
+      "command": "git diff --cached --check",
+      "exit_code": 0,
+      "result": "PASS",
+      "evidence": "Staged product/evidence inventory was checked before commit; command exited 0."
+    }
+  ],
+  "runtime": {
+    "source_mongo_integration": "PASS",
+    "d6_live_route_executed": false,
+    "reason": "Root/runtime owns the frozen d6 harness lease. Source Mongo tests do not claim live HTTP, browser session, or Student refetch acceptance.",
+    "pending": [
+      "real GET /api/attendance/requests OPEN and ARCHIVE union pagination",
+      "server type/FIO/coverage-overlap filters and archive ordering through the live route",
+      "headman/foreign-group authorization and attachment binding/expiry",
+      "whole-ticket approve/reject persistence, refetch and Student read",
+      "PRESENT preservation in old/controller and bot decision entry paths",
+      "PWA/TMA stale-generation invalidation against live sessions"
+    ]
+  }
+}

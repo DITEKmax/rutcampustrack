@@ -1,0 +1,142 @@
+{
+  "session": "16442",
+  "source": "Gradle XML after author native scoped integrationTest",
+  "recordedAt": "2026-09-22T19:26:30.5379293+03:00",
+  "cases": [
+    {
+      "suite": "ru.rutcampustrack.attendance.excuse.ExcuseServiceApproveIT",
+      "name": "approve_preservesExistingPresentAttendance()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+      "name": "manualDecisionAndGeoWritersClearJournalBlobButRetainRequestOwnedEvidence()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "terminalDecisionDoesNotReplayForAnotherActorOutcomeOrComment()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "mixedOwnerListAndOptionsExposeBothPendingKindsWithoutPeerData()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "persistedLimitControlsOptionsAndSubmissionsUntilExhausted()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "approvalChangesFreeAttendanceToExcused()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "presentPriorityKeepsExistingAttendanceDuringExcuseApproval()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "ambiguousExcuseCommitRecoversPersistedDecisionWithoutDuplicateEvent()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "sixConcurrentManualLateSubmissionsChargeExactlyFive()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "attachmentDetailProjectsExpiryBeforeDownloadClearsBytes()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "ambiguousLateCheckinCommitRecoversPersistedDecisionWithoutDuplicateEvent()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "approvalAndRealPairWriterRacePreservesPresent()",
+      "status": "FAIL"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "excuseIdempotencyFingerprintDistinguishesNullCommentFromLiteralNull()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "cancelAndDecisionRaceLeaveOneTerminalLateOutcomeAndOneOutboxEvent()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "rejectedAndCancelledManualLateRequestsDoNotRefundBudget()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "attachmentSpoofThirdAndOversizeInputsRejectBeforeAnyWrite()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "concurrentSameExcuseKeyCreatesOneTicketAndOneReceipt()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "exactExcuseRetryKeepsSingleRequestReceiptAndOutboxButFilenameChangeConflicts()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "uncommittedTransientDecisionFailureStillRetriesOnce()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "productionMongoOutboxInsertRollsBackWithTransactionFailure()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "overlappingExcusePackagesCannotBothActivate()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "headmanOpenUnionNormalizesSubmittedAndExcludesDraft()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "headmanCoverageFilterMatchesCoverageIntervalGap()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "commentRequiredIsDomainOwnedAndOtherValidationRemainsStrict()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "headmanArchiveSortUsesDecisionTimeBeforeStableKindAndIdTieBreakers()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "invalidLessonMakesExcusePackageRollbackWithoutReceiptOrAttachment()",
+      "status": "PASS"
+    },
+    {
+      "suite": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+      "name": "exactAttachmentLimitsPersistBinarySeparatelyAndCancelRetainsIt()",
+      "status": "PASS"
+    }
+  ]
+}

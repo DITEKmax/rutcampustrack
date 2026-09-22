@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { createGenerationBoundHeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
 import { createGenerationBoundHeadmanJournalApi } from '../../mobile-core/src/features/headman-journal/headman-journal-client'
+import { createGenerationBoundHeadmanRequestsApi } from '../../mobile-core/src/features/headman-requests/headman-requests-client'
 import {
   createGenerationBoundAdminSemesterClient,
   createGenerationBoundStudentApi,
@@ -10,6 +11,7 @@ import { createGenerationBoundTeacherApi } from '../../mobile-core/src/features/
 import type { AdminSemesterClient } from '../../mobile-core/src/features/admin-semester/admin-semester-client'
 import type { HeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
 import type { HeadmanJournalApi } from '../../mobile-core/src/features/headman-journal/headman-journal-client'
+import type { HeadmanRequestsApi } from '../../mobile-core/src/features/headman-requests/headman-requests-client'
 import type { StudentApi } from '../../mobile-core/src/api/student-client'
 import type { TeacherApi } from '../../mobile-core/src/features/teacher/teacher-client'
 import {
@@ -209,6 +211,14 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     }, fetcher)
   }
 
+  function createHeadmanRequestsApi(fetcher?: typeof fetch): HeadmanRequestsApi {
+    return createGenerationBoundHeadmanRequestsApi({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor,
+    }, fetcher)
+  }
+
   function createTeacherApi(fetcher?: typeof fetch): TeacherApi {
     return createGenerationBoundTeacherApi({
       currentGeneration,
@@ -330,6 +340,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     createApi,
     createHeadmanApi,
     createHeadmanJournalApi,
+    createHeadmanRequestsApi,
     createTeacherApi,
     createAdminSemesterApi,
     createProfilePort,

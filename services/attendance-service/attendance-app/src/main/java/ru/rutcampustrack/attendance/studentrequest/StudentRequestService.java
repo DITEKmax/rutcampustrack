@@ -1211,8 +1211,9 @@ public class StudentRequestService {
                         ? StudentRequestOrigin.MANUAL
                         : StudentRequestOrigin.valueOf(request.getOrigin().name()),
                 List.of(snapshot), request.getCreatedAt(), request.getUpdatedAt());
-        Decision decision = request.getDecisionBy() == null && request.getDecisionAt() == null
-                ? null : new Decision(request.getDecisionBy(), null, request.getDecisionAt());
+        Decision decision = request.getDecisionBy() == null && request.getDecisionComment() == null
+                && request.getDecisionAt() == null
+                ? null : new Decision(request.getDecisionBy(), request.getDecisionComment(), request.getDecisionAt());
         return new RequestDetail(summary, null, null, List.of(), decision);
     }
 
@@ -1322,8 +1323,15 @@ public class StudentRequestService {
         }), () -> recoverExcuseDecision(identity, ticketId, approved, decisionComment));
     }
 
-    /** Atomic approval/rejection path for either manual or automatic late check-in. */
+    /** Compatibility overload for bot and legacy callers without a rejection comment. */
     public RequestDetail decideLateCheckin(Identity identity, String requestId, boolean approved) {
+        return decideLateCheckin(identity, requestId, approved, null);
+    }
+
+    /** Atomic approval/rejection path for either manual or automatic late check-in. */
+    public RequestDetail decideLateCheckin(Identity identity, String requestId, boolean approved,
+                                           String decisionComment) {
+        String normalizedComment = validateDecisionComment(decisionComment);
         return executeDecisionWithRetry(() -> transactionTemplate.execute(status -> {
             LateCheckinRequest request = lateCheckinRepository.findById(requestId).orElseThrow(
                     () -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
@@ -1343,6 +1351,7 @@ public class StudentRequestService {
                     ? LateCheckinResolutionReason.HEADMAN_APPROVED
                     : LateCheckinResolutionReason.HEADMAN_REJECTED);
             current.setDecisionBy(actor);
+            current.setDecisionComment(normalizedComment);
             current.setDecisionAt(now);
             current.setUpdatedAt(now);
             if (approved) {
@@ -1363,7 +1372,7 @@ public class StudentRequestService {
             lateCheckinEventPublisher.publishDecided(saved, saved.getLessonDate(), saved.getLessonNumber(),
                     saved.getSubjectId(), null);
             return toDetail(saved);
-        }), () -> recoverLateCheckinDecision(identity, requestId, approved));
+        }), () -> recoverLateCheckinDecision(identity, requestId, approved, normalizedComment));
     }
 
     /**
@@ -1391,7 +1400,8 @@ public class StudentRequestService {
         return toDetail(ticket);
     }
 
-    private RequestDetail recoverLateCheckinDecision(Identity identity, String requestId, boolean approved) {
+    private RequestDetail recoverLateCheckinDecision(Identity identity, String requestId, boolean approved,
+                                                    String decisionComment) {
         LateCheckinRequest request = lateCheckinRepository.findById(requestId).orElse(null);
         if (request == null) {
             return null;
@@ -1403,7 +1413,8 @@ public class StudentRequestService {
         LateCheckinRequestStatus expected = approved
                 ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED;
         if (request.getStatus() != expected
-                || !Objects.equals(request.getDecisionBy(), actor)) {
+                || !Objects.equals(request.getDecisionBy(), actor)
+                || !Objects.equals(request.getDecisionComment(), decisionComment)) {
             return null;
         }
         return toDetail(request);
@@ -1516,6 +1527,11 @@ public class StudentRequestService {
             throw new AccessDeniedException("Староста не подтверждён для группы заявки");
         }
         return caller;
+    }
+
+    /** Shared authorization gate for headman read adapters as well as decisions. */
+    public long requireHeadmanAuthority(Identity identity, Long resourceGroupId) {
+        return requireDecisionAuthority(identity, resourceGroupId);
     }
 
     private long requireAuthenticatedScope(Identity identity) {

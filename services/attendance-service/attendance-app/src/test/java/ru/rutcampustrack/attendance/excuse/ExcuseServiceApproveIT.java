@@ -137,10 +137,10 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
     }
 
     // -----------------------------------------------------------------------
-    // Test 4: pre-existing AttendanceDocument (PRESENT) is overwritten to EXCUSED
+    // Test 4: pre-existing AttendanceDocument (PRESENT) survives an excuse approval
     // -----------------------------------------------------------------------
     @Test
-    void approve_overwritesExistingPresentAttendance() {
+    void approve_preservesExistingPresentAttendance() {
         Instant past = Instant.now().minusSeconds(3600);
         AttendanceDocument preExisting = AttendanceDocument.builder()
                 .lessonId(41L)
@@ -162,10 +162,11 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
         assertThat(docs).hasSize(1);
         AttendanceDocument updated = docs.get(0);
         assertThat(updated.getLessonId()).isEqualTo(41L);
-        assertThat(updated.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
-        assertThat(updated.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);
+        assertThat(updated.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+        assertThat(updated.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);
         // createdAt preserved (Mongo truncates to millisecond precision, so compare via isCloseTo)
         assertThat(updated.getCreatedAt()).isCloseTo(past, within(1, java.time.temporal.ChronoUnit.MILLIS));
-        assertThat(updated.getUpdatedAt()).isAfter(past);
+        assertThat(updated.getUpdatedAt()).isCloseTo(past,
+                within(1, java.time.temporal.ChronoUnit.MILLIS));
     }
 }

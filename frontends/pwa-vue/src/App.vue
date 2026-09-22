@@ -10,6 +10,7 @@ import {
   SemesterSnapshotStore,
   HeadmanScheduleApiError,
   HeadmanJournalApiError,
+  HeadmanRequestsApiError,
   HeadmanScheduleScreen,
   MapScreen,
   StudentApi,
@@ -39,6 +40,7 @@ import {
   type StudentSession,
   type HeadmanScheduleApi,
   type HeadmanJournalApi,
+  type HeadmanRequestsApi,
   type AdminSemesterClient,
 } from '@rct/mobile-core'
 import type { ProfilePort, ProfileRole, ProfileSnapshot } from '@rct/mobile-core'
@@ -74,6 +76,7 @@ const teacherApi = shallowRef<TeacherApi | null>(null)
 const teacherSemesterId = ref<number | null>(null)
 const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
 const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
+const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null)
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
@@ -131,6 +134,7 @@ function authDenialStatus(error: unknown): number | null {
   if (error instanceof TeacherApiError) return error.response.status
   if (error instanceof HeadmanScheduleApiError) return error.response.status
   if (error instanceof HeadmanJournalApiError) return error.response.status
+  if (error instanceof HeadmanRequestsApiError) return error.response.status
   if (error instanceof AdminSemesterApiError) return error.response.status
   return null
 }
@@ -203,6 +207,7 @@ async function loadOfflineSnapshot(): Promise<boolean> {
   teacherSemesterId.value = null
   headmanApi.value = null
   headmanJournalApi.value = null
+  headmanRequestsApi.value = null
   adminSemesterApi.value = null
   headmanGroupId.value = null
   session.value = null
@@ -260,6 +265,7 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): St
   profilePort.value = null
   headmanApi.value = null
   headmanJournalApi.value = null
+  headmanRequestsApi.value = null
   adminSemesterApi.value = null
   headmanGroupId.value = null
   teacherApi.value = null
@@ -355,6 +361,7 @@ type HeadmanCandidate = {
   generation: number
   api: HeadmanScheduleApi
   journalApi: HeadmanJournalApi
+  requestsApi: HeadmanRequestsApi
   profile: ProfileSnapshot
   groupId: number
 }
@@ -378,8 +385,9 @@ async function fetchHeadmanCandidate(
   }
   const candidateApi = auth.createHeadmanApi(currentFetcher())
   const candidateJournalApi = auth.createHeadmanJournalApi(currentFetcher())
+  const candidateRequestsApi = auth.createHeadmanRequestsApi(currentFetcher())
   assertCandidateCurrent(generation)
-  return { generation, api: candidateApi, journalApi: candidateJournalApi, profile, groupId }
+  return { generation, api: candidateApi, journalApi: candidateJournalApi, requestsApi: candidateRequestsApi, profile, groupId }
 }
 
 type TeacherCandidate = {
@@ -498,6 +506,7 @@ async function activateHeadmanCandidate(candidate: HeadmanCandidate): Promise<vo
   assertCandidateCurrent(candidate.generation)
   headmanApi.value = candidate.api
   headmanJournalApi.value = candidate.journalApi
+  headmanRequestsApi.value = candidate.requestsApi
   headmanGroupId.value = candidate.groupId
   authSnapshot.value = candidate.profile
   offline.value = false
@@ -971,6 +980,7 @@ onBeforeUnmount(() => {
     :key="`headman-${ownerRevision}`"
     :api="headmanApi"
     :journal-api="headmanJournalApi"
+    :requests-api="headmanRequestsApi"
     :profile="authSnapshot"
     :group-id="headmanGroupId"
     :offline="offline"

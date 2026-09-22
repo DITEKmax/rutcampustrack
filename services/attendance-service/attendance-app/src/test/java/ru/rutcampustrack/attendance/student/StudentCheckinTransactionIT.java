@@ -451,6 +451,28 @@ class StudentCheckinTransactionIT {
     }
 
     @Test
+    void legacyLateApprovalPreservesExistingPresentProvenanceAndTimestamps() {
+        Instant before = Instant.parse("2026-09-06T06:59:00Z");
+        AttendanceDocument existing = attendanceRepository.save(AttendanceDocument.builder()
+                .lessonId(1L).userId(100L).groupId(10L).subjectId(20L).semesterId(30L)
+                .lessonNumber(2).lessonDate(LocalDate.of(2026, 9, 6))
+                .status(AttendanceStatus.PRESENT).source(AttendanceSource.STUDENT_GEO)
+                .createdAt(before).updatedAt(before).build());
+        LateCheckinRequest pending = seedLateCheckinRequest(LateCheckinRequestStatus.PENDING);
+
+        lateCheckinService.applyDecision(pending.getId(), 777L, true);
+
+        assertThat(attendanceRepository.findByLessonIdAndUserId(1L, 100L)).get()
+                .satisfies(attendance -> {
+                    assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+                    assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);
+                    assertThat(attendance.getMarkedBy()).isNull();
+                    assertThat(attendance.getCreatedAt()).isEqualTo(existing.getCreatedAt());
+                    assertThat(attendance.getUpdatedAt()).isEqualTo(existing.getUpdatedAt());
+                });
+    }
+
+    @Test
     void botDecisionForForeignGroupHeadmanMakesNoMongoWrites() {
         LateCheckinRequest pending = seedLateCheckinRequest(LateCheckinRequestStatus.PENDING);
         when(academicGrpcClient.isHeadman(42L, 10L))
@@ -636,12 +658,13 @@ class StudentCheckinTransactionIT {
         attendanceWritePort.markWithLesson(
                 100L, 1L, 10L, 20L, 30L, 2, LocalDate.of(2026, 9, 6),
                 AttendanceStatus.EXCUSED, AttendanceSource.HEADMAN_EXCUSE, 777L);
-        assertThat(attachmentRepository.findById("journal-port-clear")).isEmpty();
+        assertThat(attachmentRepository.findById("journal-port-clear")).isPresent();
         assertThat(attendanceRepository.findByLessonIdAndUserId(1L, 100L)).get()
                 .satisfies(document -> {
-                    assertThat(document.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
-                    assertThat(document.getAttachmentId()).isNull();
-                    assertThat(document.getAttachmentName()).isNull();
+                    assertThat(document.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+                    assertThat(document.getSource()).isEqualTo(AttendanceSource.HEADMAN);
+                    assertThat(document.getAttachmentId()).isEqualTo("journal-port-clear");
+                    assertThat(document.getAttachmentName()).isEqualTo("journal-port-clear.pdf");
                 });
 
         RequestAttachmentDocument journalDecision = attachment("journal-decision", pairKey, now);

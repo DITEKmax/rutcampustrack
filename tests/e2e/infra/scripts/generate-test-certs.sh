@@ -17,6 +17,46 @@ CERTS_DIR="${SCRIPT_DIR}/../certs"
 
 mkdir -p "${CERTS_DIR}"
 
+set_server_key_owner() {
+  local key_path="$1"
+  local owner="$2:$3"
+  local actual_owner
+  local actual_mode
+
+  if [ "$(uname -s)" != "Linux" ]; then
+    echo "Cannot verify Linux container ownership for ${key_path} on this platform; provision these e2e certificates on Linux." >&2
+    return 1
+  fi
+
+  actual_mode="$(stat -c '%a' "${key_path}")"
+  if [ "${actual_mode}" != "600" ] && ! chmod 600 "${key_path}" 2>/dev/null; then
+    if ! command -v sudo >/dev/null 2>&1 || ! sudo -n chmod 600 "${key_path}"; then
+      echo "Cannot restrict ${key_path} to mode 0600." >&2
+      return 1
+    fi
+  fi
+  actual_owner="$(stat -c '%u:%g' "${key_path}")"
+  if [ "${actual_owner}" != "${owner}" ] && ! chown "${owner}" "${key_path}" 2>/dev/null; then
+    if ! command -v sudo >/dev/null 2>&1 || ! sudo -n chown "${owner}" "${key_path}"; then
+      echo "Cannot assign ${key_path} to container UID:GID ${owner}." >&2
+      return 1
+    fi
+  fi
+  actual_owner="$(stat -c '%u:%g' "${key_path}")"
+  actual_mode="$(stat -c '%a' "${key_path}")"
+  if [ "${actual_mode}" != "600" ]; then
+    if ! command -v sudo >/dev/null 2>&1 || ! sudo -n chmod 600 "${key_path}"; then
+      echo "Cannot verify mode 0600 for ${key_path}." >&2
+      return 1
+    fi
+    actual_mode="$(stat -c '%a' "${key_path}")"
+  fi
+  if [ "${actual_owner}" != "${owner}" ] || [ "${actual_mode}" != "600" ]; then
+    echo "Private-key ownership check failed for ${key_path}: expected ${owner}:600." >&2
+    return 1
+  fi
+}
+
 if [ ! -f "${CERTS_DIR}/server.crt" ] || [ ! -f "${CERTS_DIR}/server.key" ]; then
   echo "Generating self-signed RSA-2048 cert (CN=localhost, 365d) in ${CERTS_DIR}..."
 # `//CN=localhost` префикс на Windows Git Bash MSYS избегает конверсии
@@ -50,8 +90,9 @@ if [ ! -f "${CERTS_DIR}/schedule-server.crt" ] || [ ! -f "${CERTS_DIR}/schedule-
     -subj "${SCHEDULE_SUBJ}" \
     -addext "subjectAltName=DNS:schedule-service,DNS:localhost,IP:127.0.0.1"
   chmod 644 "${CERTS_DIR}/schedule-server.crt"
-  chmod 600 "${CERTS_DIR}/schedule-server.key"
+  set_server_key_owner "${CERTS_DIR}/schedule-server.key" 10002 10002
 else
+  set_server_key_owner "${CERTS_DIR}/schedule-server.key" 10002 10002
   echo "Schedule gRPC test certs already exist in ${CERTS_DIR} — keep them."
 fi
 
@@ -67,8 +108,9 @@ if [ ! -f "${CERTS_DIR}/academic-server.crt" ] || [ ! -f "${CERTS_DIR}/academic-
     -subj "${ACADEMIC_SUBJ}" \
     -addext "subjectAltName=DNS:academic-service"
   chmod 644 "${CERTS_DIR}/academic-server.crt"
-  chmod 600 "${CERTS_DIR}/academic-server.key"
+  set_server_key_owner "${CERTS_DIR}/academic-server.key" 10001 10001
 else
+  set_server_key_owner "${CERTS_DIR}/academic-server.key" 10001 10001
   echo "Academic gRPC test certs already exist in ${CERTS_DIR} — keep them."
 fi
 

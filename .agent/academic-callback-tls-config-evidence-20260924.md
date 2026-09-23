@@ -16,6 +16,8 @@ Changed product files:
 
 - `.env.prod.example`
 - `docker-compose.e2e.yml`, `docker-compose.prod.yml`
+- `services/academic-service/academic-app/Dockerfile`
+- `services/schedule-service/schedule-app/Dockerfile`
 - `services/academic-service/academic-app/src/main/resources/application-prod.yml`
 - `services/schedule-service/schedule-app/src/main/resources/application-prod.yml`
 - `services/attendance-service/attendance-app/src/main/resources/application-prod.yml`
@@ -23,6 +25,24 @@ Changed product files:
 - `services/notification-bot/bot/{config.py,__main__.py,grpc_client/academic_client.py}`
 - `services/notification-bot/tests/test_academic_client.py`
 - `tests/e2e/infra/scripts/generate-test-certs.sh`
+
+## Independent review correction
+
+The first Sol review found that e2e private keys were mode `0600` but owned by
+the Linux runner, while both images run as non-root `app`; therefore the TLS
+servers could not read their bind-mounted keys. Both images now use stable,
+distinct `app` identities: Academic `10001:10001`, Schedule `10002:10002`.
+E2E key provisioning changes ownership and mode only on the two generated
+server key files, verifies the exact UID:GID and `0600`, and fails closed on
+platforms where Linux ownership cannot be confirmed. It uses non-recursive
+`chown`/`chmod`, with non-interactive sudo only when ordinary permissions do
+not suffice. Existing key files receive the same check. Production guidance
+documents owner and mode; no production key is generated or modified.
+
+The Requests runner was prepared in its separate owned worktree with an
+ephemeral Academic certificate, isolated key directory, Academic-only server
+key mount, and read-only Academic trust-certificate mounts for Schedule,
+Attendance, and Mobile BFF. This preparation is not runtime evidence.
 
 ## Acceptance criteria
 
@@ -57,6 +77,12 @@ Academic.
   profiles: exit 0.
 - Git Bash `bash -n tests/e2e/infra/scripts/generate-test-certs.sh`: exit 0.
 - `git diff --check` scoped to the changed product files: exit 0.
+- After the key-ownership correction, Git Bash `bash -n` for the certificate
+  generator: exit 0; scoped `git diff --check`: exit 0.
+- After runner adaptation, PowerShell AST parse of `runner.ps1` and its scoped
+  `git diff --check`: exit 0.
+- Source cross-check of Dockerfile IDs and e2e/prod certificate paths/authority:
+  exit 0.
 - An initial targeted pytest attempt using the system Python exited 1 because
   pytest was not installed there. The project venv run initially hit the
   Windows default temp-directory permission and single-file coverage threshold;
@@ -67,10 +93,10 @@ Academic.
 
 ## Runtime status and limitations
 
-New build and runtime validation are **NOT RUN**. The assigned parent gate
-requires independent source review before allocating the next build/runtime
-lifecycle. No production certificate, private key, deployment, or rotation was
-created or performed.
+The correction commit is awaiting scoped independent Sol recheck. New build
+and runtime validation are **NOT RUN**. The parent gate requires review and
+integration before allocating the next build/runtime lifecycle. No production
+certificate, private key, deployment, or rotation was created or performed.
 
 The existing `docker-compose.e2e.yml` and `docker-compose.prod.yml` do not define
 a Mobile BFF service. Its prod profile is TLS-configured here; environment and

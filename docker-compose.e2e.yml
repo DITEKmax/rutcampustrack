@@ -1,7 +1,7 @@
 # M13 G25.3 — e2e test stack для Playwright auth-token-lifecycle CI job.
 #
 # Standalone (НЕ override prod) — содержит только то, что нужно для
-# Playwright @smoke (auth lifecycle): 5 backend Java сервисов +
+# Playwright @smoke (auth lifecycle): 6 backend Java сервисов +
 # 5 infra + 2 notification + 4 frontend nginx + 1 reverse-proxy nginx.
 #
 # Что НЕ включено (vs prod):
@@ -338,6 +338,44 @@ services:
       retries: 5
       start_period: 90s
 
+  mobile-bff:
+    build:
+      context: .
+      dockerfile: services/mobile-bff/mobile-bff-app/Dockerfile
+    image: rct/mobile-bff:${IMAGE_TAG:-e2e-local}
+    container_name: rct-mobile-bff
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      AUTH_SERVICE_URL: http://auth-service:9090
+      GRPC_SECRET: ${GRPC_SECRET:?GRPC_SECRET must be set}
+      SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
+      SCHEDULE_GRPC_TLS_AUTHORITY: schedule-service
+      ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_TLS_AUTHORITY: academic-service
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC"
+    volumes:
+      - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
+      - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+    expose:
+      - "9080"
+    networks:
+      - private_net
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      academic-service:
+        condition: service_healthy
+      schedule-service:
+        condition: service_healthy
+      attendance-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 45s
+
   api-gateway:
     build:
       context: .
@@ -374,6 +412,8 @@ services:
       schedule-service:
         condition: service_healthy
       attendance-service:
+        condition: service_healthy
+      mobile-bff:
         condition: service_healthy
       notification-web:
         condition: service_healthy

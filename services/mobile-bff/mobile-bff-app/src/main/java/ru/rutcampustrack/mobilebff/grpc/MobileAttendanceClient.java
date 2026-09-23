@@ -13,6 +13,9 @@ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
 import ru.rutcampustrack.teacher.grpc.TeacherAttachmentDownload;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceReadServiceGrpc;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceReportKind;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseAttachmentRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseResponse;
@@ -74,6 +77,31 @@ public class MobileAttendanceClient {
         return call(() -> auth.attach(teacherStub).withDeadlineAfter(10, TimeUnit.SECONDS)
                 .getTeacherJournal(TeacherJournalRequest.newBuilder().addAllLessonIds(lessonIds).build()),
                 ProblemCode.LESSON_NOT_FOUND);
+    }
+
+    public TeacherAttendanceExportResponse exportTeacherAttendance(long semesterId,
+                                                                   long groupId,
+                                                                   long subjectId,
+                                                                   List<String> lessonTypes,
+                                                                   String format) {
+        TeacherAttendanceExportRequest request = TeacherAttendanceExportRequest.newBuilder()
+                .setSemesterId(semesterId)
+                .setGroupId(groupId)
+                .setSubjectId(subjectId)
+                .addAllLessonTypes(lessonTypes)
+                .setFormat(format)
+                .setReportKind(TeacherAttendanceReportKind.TEACHER_ATTENDANCE_REPORT_KIND_SUBJECT_JOURNAL)
+                .build();
+        try {
+            return auth.attach(teacherStub).withDeadlineAfter(60, TimeUnit.SECONDS)
+                    .exportTeacherAttendance(request);
+        } catch (StatusRuntimeException error) {
+            if (error.getStatus().getCode() == Code.RESOURCE_EXHAUSTED) {
+                throw new MobileBffException(HttpStatus.PAYLOAD_TOO_LARGE, ProblemCode.PAYLOAD_TOO_LARGE,
+                        "Экспорт превысил лимит передачи (до 20 МиБ; для PDF/PNG действует предел 4 МиБ сервиса преобразования). Попробуй DOCX, HTML или XLSX.");
+            }
+            throw translate(error, ProblemCode.DEPENDENCY_UNAVAILABLE);
+        }
     }
 
     public TeacherStatsResponse teacherStats(long semesterId,

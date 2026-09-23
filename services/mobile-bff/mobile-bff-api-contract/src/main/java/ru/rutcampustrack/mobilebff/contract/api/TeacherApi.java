@@ -15,6 +15,8 @@ import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.JournalRespon
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.LessonResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SemesterResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.StatsResponse;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExportFormat;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExportFormatsResponse;
 
 import java.util.List;
 
@@ -55,6 +57,20 @@ public interface TeacherApi {
             @RequestParam String lessonType,
             @RequestParam(defaultValue = "0") String page,
             @RequestParam(defaultValue = "100") String pageSize
+    );
+
+    @Operation(summary = "Server-supported teacher journal export formats")
+    @GetMapping("/journal/export/formats")
+    ResponseEntity<ExportFormatsResponse> journalExportFormats();
+
+    @Operation(summary = "Download a server-generated complete teacher journal")
+    @GetMapping(value = "/journal/export", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    ResponseEntity<byte[]> exportJournal(
+            @RequestParam String semesterId,
+            @RequestParam String groupId,
+            @RequestParam String subjectId,
+            @RequestParam(name = "lessonType") List<String> lessonTypes,
+            @RequestParam String format
     );
 
     @Operation(summary = "Teacher server-side attendance statistics")

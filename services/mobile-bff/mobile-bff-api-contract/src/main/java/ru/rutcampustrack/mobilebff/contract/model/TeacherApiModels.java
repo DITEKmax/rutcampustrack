@@ -164,6 +164,22 @@ public final class TeacherApiModels {
     ) {
     }
 
+    @Schema(name = "TeacherExportFormat")
+    public record ExportFormat(
+            String code,
+            String label,
+            String contentType,
+            String extension
+    ) {
+    }
+
+    @Schema(name = "TeacherExportFormats")
+    public record ExportFormatsResponse(List<ExportFormat> formats) {
+        public ExportFormatsResponse {
+            formats = List.copyOf(formats);
+        }
+    }
+
     @Schema(name = "TeacherStatsMetric")
     public record StatsMetric(int numerator, int denominator, double percent) {
     }

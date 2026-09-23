@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.test.util.ReflectionTestUtils;
 import ru.rutcampustrack.attendance.grpc.StudentCheckinErrorCode;
 import ru.rutcampustrack.attendance.grpc.StudentCheckinErrorDetail;
 import ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceGrpc;
@@ -19,14 +20,18 @@ import ru.rutcampustrack.attendance.grpc.StudentRequestErrorCode;
 import ru.rutcampustrack.attendance.grpc.StudentRequestErrorDetail;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceReadServiceGrpc;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -58,6 +63,28 @@ class MobileAttendanceClientErrorTest {
         assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE);
         assertThat(problem.code()).isEqualTo(ProblemCode.DEPENDENCY_UNAVAILABLE);
         assertThat(problem.getMessage()).isEqualTo(DEPENDENCY_MESSAGE);
+    }
+
+    @Test
+    void teacherExportSizeLimitBecomesAnActionable413() {
+        MobileGrpcAuth auth = mock(MobileGrpcAuth.class);
+        TeacherAttendanceReadServiceGrpc.TeacherAttendanceReadServiceBlockingStub teacherStub =
+                mock(TeacherAttendanceReadServiceGrpc.TeacherAttendanceReadServiceBlockingStub.class);
+        when(auth.attach(teacherStub)).thenReturn(teacherStub);
+        when(teacherStub.withDeadlineAfter(60, TimeUnit.SECONDS)).thenReturn(teacherStub);
+        when(teacherStub.exportTeacherAttendance(any(TeacherAttendanceExportRequest.class)))
+                .thenThrow(io.grpc.Status.RESOURCE_EXHAUSTED
+                        .withDescription("response exceeds current gRPC limit").asRuntimeException());
+        MobileAttendanceClient client = new MobileAttendanceClient(auth);
+        ReflectionTestUtils.setField(client, "teacherStub", teacherStub);
+
+        assertThatThrownBy(() -> client.exportTeacherAttendance(9L, 33L, 22L,
+                List.of("lecture"), "png"))
+                .isInstanceOfSatisfying(MobileBffException.class, problem -> {
+                    assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.PAYLOAD_TOO_LARGE);
+                    assertThat(problem.code()).isEqualTo(ProblemCode.PAYLOAD_TOO_LARGE);
+                    assertThat(problem.getMessage()).contains("20 МиБ", "4 МиБ", "DOCX", "XLSX");
+                });
     }
 
     @ParameterizedTest

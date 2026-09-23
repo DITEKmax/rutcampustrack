@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.grpc;
 
+import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
@@ -14,11 +15,29 @@ import java.util.concurrent.TimeUnit;
 public class DocumentRendererGrpcClient {
 
     private static final int PNG_DPI = 200;
+    private static final int DEFAULT_RENDERER_MESSAGE_LIMIT_BYTES = 4 * 1024 * 1024;
 
     @GrpcClient("document-renderer-service")
     private DocumentRendererGrpcServiceGrpc.DocumentRendererGrpcServiceBlockingStub stub;
 
     public byte[] convertDocx(byte[] docx, TargetFormat targetFormat) {
+        return convertDocx(docx, targetFormat, false);
+    }
+
+    /**
+     * Export-only conversion preserves RESOURCE_EXHAUSTED so the teacher export
+     * boundary can return a user-visible size limit instead of a generic outage.
+     */
+    public byte[] convertDocxForTeacherExport(byte[] docx, TargetFormat targetFormat) {
+        if (docx != null && docx.length > DEFAULT_RENDERER_MESSAGE_LIMIT_BYTES - 1024) {
+            throw Status.RESOURCE_EXHAUSTED
+                    .withDescription("Teacher DOCX exceeds the renderer's 4 MiB input limit")
+                    .asRuntimeException();
+        }
+        return convertDocx(docx, targetFormat, true);
+    }
+
+    private byte[] convertDocx(byte[] docx, TargetFormat targetFormat, boolean preserveSizeLimit) {
         if (docx == null || docx.length == 0) {
             throw new ReportExportUnavailableException("DOCX content is empty");
         }
@@ -35,6 +54,9 @@ public class DocumentRendererGrpcClient {
                     .getContent()
                     .toByteArray();
         } catch (StatusRuntimeException e) {
+            if (preserveSizeLimit && e.getStatus().getCode() == Status.Code.RESOURCE_EXHAUSTED) {
+                throw e;
+            }
             throw new ReportExportUnavailableException("Document renderer unavailable: " + e.getStatus());
         }
     }

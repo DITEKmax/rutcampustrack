@@ -7,6 +7,8 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
 final class TeacherAttendanceGrpcIdentity {
     static final Context.Key<InternalJwtClaims> CLAIMS =
             Context.key("teacher-attendance-internal-jwt-claims");
+    static final Context.Key<String> SIGNED_TOKEN =
+            Context.key("teacher-attendance-signed-token");
 
     private TeacherAttendanceGrpcIdentity() {
     }
@@ -17,5 +19,13 @@ final class TeacherAttendanceGrpcIdentity {
             throw new IllegalStateException("Internal teacher identity is missing");
         }
         return claims;
+    }
+
+    static String requireToken() {
+        String token = SIGNED_TOKEN.get();
+        if (token == null || token.isBlank()) {
+            throw new IllegalStateException("Signed teacher token is missing");
+        }
+        return token;
     }
 }

@@ -4,6 +4,8 @@ import {
   TeacherApiError,
   type TeacherApi,
   type TeacherDayLesson,
+  type TeacherExportFormat,
+  type TeacherExportFormatCode,
   type TeacherJournalCell,
   type TeacherJournalQuery,
   type TeacherJournalResponse,
@@ -24,21 +26,43 @@ const emit = defineEmits<{
 const state = ref<TeacherJournalResponse | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
+const formats = ref<readonly TeacherExportFormat[]>([])
+const selectedFormat = ref<TeacherExportFormatCode>('docx')
+const formatsLoading = ref(false)
+const exportLoading = ref(false)
+const exportError = ref<string | null>(null)
 const page = ref(0)
 let revision = 0
+let exportRevision = 0
+let formatsRevision = 0
+const exportObjectUrls = new Set<string>()
 
 const orderedLessons = computed(() => state.value?.lessons ?? [])
 
 watch(
   () => [props.api, queryKey(props.query)] as const,
   () => {
+    exportRevision += 1
+    formatsRevision += 1
     page.value = props.query?.page ?? 0
+    state.value = null
+    formats.value = []
+    error.value = null
+    exportError.value = null
+    exportLoading.value = false
     void load()
+    void loadFormats()
   },
   { immediate: true },
 )
 
-onBeforeUnmount(() => { revision += 1 })
+onBeforeUnmount(() => {
+  revision += 1
+  exportRevision += 1
+  formatsRevision += 1
+  for (const url of exportObjectUrls) URL.revokeObjectURL(url)
+  exportObjectUrls.clear()
+})
 
 async function load(): Promise<void> {
   const api = props.api
@@ -46,6 +70,8 @@ async function load(): Promise<void> {
   const current = ++revision
   if (!api || !query) {
     state.value = null
+    loading.value = false
+    error.value = null
     return
   }
   loading.value = true
@@ -66,6 +92,77 @@ async function load(): Promise<void> {
     if (current === revision) loading.value = false
   }
 }
+
+async function loadFormats(): Promise<void> {
+  const api = props.api
+  const current = ++formatsRevision
+  if (!api || !props.query) {
+    formats.value = []
+    formatsLoading.value = false
+    return
+  }
+  formatsLoading.value = true
+  try {
+    const value = await api.journalExportFormats()
+    if (current !== formatsRevision || api !== props.api || !props.query) return
+    formats.value = value
+    if (!value.some((format) => format.code === selectedFormat.value)) {
+      selectedFormat.value = value[0]?.code ?? 'docx'
+    }
+  } catch (cause) {
+    if (current !== formatsRevision) return
+    exportError.value = cause instanceof TeacherApiError
+      ? cause.message
+      : 'Не удалось получить список форматов выгрузки.'
+    emit('error', cause)
+  } finally {
+    if (current === formatsRevision) formatsLoading.value = false
+  }
+}
+
+async function exportJournal(): Promise<void> {
+  const api = props.api
+  const query = props.query
+  const current = ++exportRevision
+  const context = queryKey(query)
+  const format = selectedFormat.value
+  if (!api || !query || loading.value || exportLoading.value || !canExport.value) return
+  exportLoading.value = true
+  exportError.value = null
+  try {
+    const file = await api.exportJournal({
+      semesterId: query.semesterId,
+      groupId: query.groupId,
+      subjectId: query.subjectId,
+      lessonTypes: [query.lessonType],
+      format,
+    })
+    if (current !== exportRevision || api !== props.api || queryKey(props.query) !== context) return
+    const url = URL.createObjectURL(file.blob)
+    exportObjectUrls.add(url)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = file.filename
+    link.click()
+    window.setTimeout(() => {
+      exportObjectUrls.delete(url)
+      URL.revokeObjectURL(url)
+    }, 60_000)
+  } catch (cause) {
+    if (current !== exportRevision) return
+    exportError.value = cause instanceof TeacherApiError
+      ? cause.message
+      : 'Не удалось скачать журнал. Попробуй ещё раз.'
+    emit('error', cause)
+  } finally {
+    if (current === exportRevision) exportLoading.value = false
+  }
+}
+
+const canExport = computed(() => Boolean(
+  props.api && props.query && state.value && state.value.totalLessons > 0
+  && !loading.value && !formatsLoading.value && formats.value.some((format) => format.code === selectedFormat.value),
+))
 
 function queryKey(query: TeacherJournalQuery | null): string {
   if (!query) return ''
@@ -126,7 +223,7 @@ function shortLesson(lesson: TeacherDayLesson): string {
   <main
     class="teacher-screen"
     aria-labelledby="teacher-journal-title"
-    :aria-busy="loading"
+    :aria-busy="loading || exportLoading"
   >
     <button
       class="teacher-screen__back"
@@ -145,6 +242,64 @@ function shortLesson(lesson: TeacherDayLesson): string {
         </h1>
       </div>
     </header>
+    <section
+      v-if="props.query"
+      class="teacher-screen__export"
+      aria-label="Выгрузка журнала"
+    >
+      <label
+        class="teacher-screen__export-field"
+        for="teacher-journal-export-format"
+      >
+        <span class="teacher-screen__muted">Формат файла</span>
+        <select
+          id="teacher-journal-export-format"
+          v-model="selectedFormat"
+          class="teacher-screen__date"
+          :disabled="loading || formatsLoading || exportLoading || formats.length === 0"
+        >
+          <option
+            v-for="format in formats"
+            :key="format.code"
+            :value="format.code"
+          >
+            {{ format.label }}
+          </option>
+        </select>
+      </label>
+      <button
+        class="teacher-screen__primary teacher-screen__export-button"
+        type="button"
+        :disabled="!canExport"
+        @click="exportJournal"
+      >
+        {{ exportLoading ? 'Готовим файл…' : 'Скачать журнал' }}
+      </button>
+      <p class="teacher-screen__muted teacher-screen__export-message">
+        Выгрузка включает весь семестр; у ещё не начавшихся пар отметок нет.
+      </p>
+      <p
+        v-if="exportLoading"
+        class="teacher-screen__muted teacher-screen__export-message"
+        role="status"
+      >
+        Собираем полный журнал на сервере…
+      </p>
+      <p
+        v-else-if="exportError"
+        class="teacher-screen__state teacher-screen__state--error teacher-screen__export-message"
+        role="alert"
+      >
+        {{ exportError }}
+      </p>
+      <p
+        v-else-if="state && state.totalLessons === 0 && !loading"
+        class="teacher-screen__muted teacher-screen__export-message"
+        role="status"
+      >
+        В выбранном контексте нет занятий для выгрузки.
+      </p>
+    </section>
     <section
       v-if="loading"
       class="teacher-screen__state"

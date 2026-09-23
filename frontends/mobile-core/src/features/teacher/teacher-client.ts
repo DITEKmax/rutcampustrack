@@ -110,6 +110,37 @@ export interface TeacherJournalResponse {
   readonly hasMore: boolean
 }
 
+export type TeacherExportFormatCode = 'docx' | 'pdf' | 'png' | 'html' | 'xlsx'
+
+const TEACHER_EXPORT_CONTENT_TYPES: Record<TeacherExportFormatCode, string> = {
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  pdf: 'application/pdf',
+  png: 'application/zip',
+  html: 'text/html',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+}
+
+export interface TeacherExportFormat {
+  readonly code: TeacherExportFormatCode
+  readonly label: string
+  readonly contentType: string
+  readonly extension: string
+}
+
+export interface TeacherJournalExportQuery {
+  readonly semesterId: number
+  readonly groupId: number
+  readonly subjectId: number
+  readonly lessonTypes: readonly string[]
+  readonly format: TeacherExportFormatCode
+}
+
+export interface TeacherJournalExportFile {
+  readonly blob: Blob
+  readonly filename: string
+  readonly contentType: string
+}
+
 export type TeacherStatsScope = 'students' | 'groups'
 
 export interface TeacherStatsSort {
@@ -277,6 +308,55 @@ export class TeacherApi {
       .then(normalizeJournal)
   }
 
+  journalExportFormats(): Promise<readonly TeacherExportFormat[]> {
+    return this.request<unknown>('/api/v1/teacher/journal/export/formats')
+      .then((value) => {
+        const record = requiredRecord(value)
+        const formats = arrayValue(record.formats).map(normalizeExportFormat)
+        if (formats.length !== 5
+          || new Set(formats.map((format) => format.code)).size !== 5
+          || !(['docx', 'pdf', 'png', 'html', 'xlsx'] as const).every((code) => formats.some((format) => format.code === code))) {
+          throw new Error('Сервер вернул неполный список форматов журнала.')
+        }
+        return formats
+      })
+  }
+
+  async exportJournal(query: TeacherJournalExportQuery): Promise<TeacherJournalExportFile> {
+    assertPositiveInteger(query.semesterId, 'semesterId')
+    assertPositiveInteger(query.groupId, 'groupId')
+    assertPositiveInteger(query.subjectId, 'subjectId')
+    if (query.lessonTypes.length < 1 || query.lessonTypes.length > 3) {
+      throw new RangeError('lessonTypes must contain one to three values')
+    }
+    const params = new URLSearchParams({
+      semesterId: String(query.semesterId),
+      groupId: String(query.groupId),
+      subjectId: String(query.subjectId),
+      format: query.format,
+    })
+    for (const lessonType of query.lessonTypes) {
+      assertText(lessonType, 'lessonType')
+      params.append('lessonType', lessonType)
+    }
+    const response = await this.response(
+      `/api/v1/teacher/journal/export?${params.toString()}`,
+      { headers: { Accept: 'application/octet-stream' } },
+    )
+    if (!response.ok) throw await this.apiError(response)
+    const blob = await response.blob()
+    this.options.assertCurrent?.()
+    if (blob.size === 0) throw new Error('Сервер вернул пустой файл журнала.')
+    const contentType = response.headers.get('Content-Type')?.split(';', 1)[0]?.trim().toLowerCase() ?? ''
+    const filename = downloadFilename(response.headers.get('Content-Disposition'))
+    const expectedExtension = query.format === 'png' ? 'zip' : query.format
+    if (!filename || !filename.toLowerCase().endsWith(`.${expectedExtension}`)
+      || contentType !== TEACHER_EXPORT_CONTENT_TYPES[query.format]) {
+      throw new Error('Сервер вернул некорректные метаданные файла журнала.')
+    }
+    return { blob, filename, contentType }
+  }
+
   stats(query: TeacherStatsQuery): Promise<TeacherStatsResponse> {
     assertPositiveInteger(query.semesterId, 'semesterId')
     if (query.scope !== 'students' && query.scope !== 'groups') throw new RangeError('scope is invalid')
@@ -404,6 +484,40 @@ function normalizeAssignment(value: unknown): TeacherAssignment {
     validFrom: requiredDate(record.validFrom, 'assignment.validFrom'),
     validUntilExclusive: nullableDate(record.validUntilExclusive, 'assignment.validUntilExclusive'),
   }
+}
+
+function normalizeExportFormat(value: unknown): TeacherExportFormat {
+  const record = requiredRecord(value)
+  const code = requiredString(record.code, 'exportFormat.code')
+  if (!(['docx', 'pdf', 'png', 'html', 'xlsx'] as string[]).includes(code)) {
+    throw new Error('Сервер вернул неизвестный формат журнала.')
+  }
+  const extension = requiredString(record.extension, 'exportFormat.extension')
+  const contentType = requiredString(record.contentType, 'exportFormat.contentType')
+  const expectedExtension = code === 'png' ? 'zip' : code
+  if (extension !== expectedExtension
+    || contentType.split(';', 1)[0]?.trim().toLowerCase() !== TEACHER_EXPORT_CONTENT_TYPES[code as TeacherExportFormatCode]) {
+    throw new Error('Сервер вернул несовместимые метаданные формата журнала.')
+  }
+  return {
+    code: code as TeacherExportFormatCode,
+    label: requiredString(record.label, 'exportFormat.label'),
+    contentType,
+    extension,
+  }
+}
+
+function downloadFilename(contentDisposition: string | null): string | null {
+  if (!contentDisposition) return null
+  const encoded = contentDisposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i)?.[1]
+  const plain = contentDisposition.match(/filename\s*=\s*"?([^";]+)"?/i)?.[1]
+  let filename: string
+  try {
+    filename = encoded ? decodeURIComponent(encoded.trim()) : (plain?.trim() ?? '')
+  } catch {
+    return null
+  }
+  return /^[A-Za-z0-9._-]+$/.test(filename) ? filename : null
 }
 
 function normalizeSemester(value: unknown): TeacherSemester {

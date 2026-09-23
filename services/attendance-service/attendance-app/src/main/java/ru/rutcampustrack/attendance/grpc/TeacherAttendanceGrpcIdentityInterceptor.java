@@ -35,8 +35,11 @@ public final class TeacherAttendanceGrpcIdentityInterceptor implements ServerInt
             return next.startCall(call, headers);
         }
         try {
-            InternalJwtClaims claims = validator.validate(headers.get(INTERNAL_TOKEN));
-            Context context = Context.current().withValue(TeacherAttendanceGrpcIdentity.CLAIMS, claims);
+            String token = headers.get(INTERNAL_TOKEN);
+            InternalJwtClaims claims = validator.validate(token);
+            Context context = Context.current()
+                    .withValue(TeacherAttendanceGrpcIdentity.CLAIMS, claims)
+                    .withValue(TeacherAttendanceGrpcIdentity.SIGNED_TOKEN, token);
             return Contexts.interceptCall(context, call, headers, next);
         } catch (InternalJwtException error) {
             call.close(Status.UNAUTHENTICATED.withDescription("Invalid internal identity"),

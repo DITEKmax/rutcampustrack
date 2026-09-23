@@ -13,6 +13,7 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.teacher.grpc.TeacherAssignment;
 import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherAttachmentDownload;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseAttachment;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalCell;
@@ -49,6 +50,14 @@ import java.util.Set;
 @Service
 public final class TeacherReadFacade {
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
+    private static final List<TeacherApiModels.ExportFormat> JOURNAL_EXPORT_FORMATS = List.of(
+            new TeacherApiModels.ExportFormat("docx", "Word (.docx)",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx"),
+            new TeacherApiModels.ExportFormat("pdf", "PDF (.pdf)", "application/pdf", "pdf"),
+            new TeacherApiModels.ExportFormat("png", "PNG, архив страниц (.zip)", "application/zip", "zip"),
+            new TeacherApiModels.ExportFormat("html", "HTML (.html)", "text/html; charset=UTF-8", "html"),
+            new TeacherApiModels.ExportFormat("xlsx", "Excel (.xlsx)",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"));
     private final MobileRequestContext requestContext;
     private final MobileAcademicClient academic;
     private final MobileScheduleClient schedule;
@@ -177,6 +186,55 @@ public final class TeacherReadFacade {
                 response.getStudentsList().stream().map(TeacherReadFacade::journalStudent).toList(),
                 parseInstant(response.getServerNow()), page, pageSize,
                 concrete.size(), end < concrete.size());
+    }
+
+    public TeacherApiModels.ExportFormatsResponse journalExportFormats() {
+        requireTeacher();
+        return new TeacherApiModels.ExportFormatsResponse(JOURNAL_EXPORT_FORMATS);
+    }
+
+    public Download exportJournal(long semesterId,
+                                  long groupId,
+                                  long subjectId,
+                                  List<String> lessonTypes,
+                                  String format) {
+        InternalJwtClaims claims = requireTeacher();
+        if (semesterId <= 0 || groupId <= 0 || subjectId <= 0) {
+            throw invalidExport("Некорректный контекст журнала");
+        }
+        TeacherApiModels.ExportFormat selectedFormat = JOURNAL_EXPORT_FORMATS.stream()
+                .filter(value -> value.code().equals(format))
+                .findFirst()
+                .orElseThrow(() -> invalidExport("Неизвестный формат журнала"));
+        if (lessonTypes == null || lessonTypes.isEmpty() || lessonTypes.size() > 3
+                || lessonTypes.stream().anyMatch(value -> value == null || value.isBlank() || value.length() > 64)) {
+            throw invalidExport("Выбери от одного до трёх разных типов занятий");
+        }
+        List<String> selectedTypes = lessonTypes.stream()
+                .map(value -> value.trim().toLowerCase(Locale.ROOT))
+                .toList();
+        if (new HashSet<>(selectedTypes).size() != selectedTypes.size()) {
+            throw invalidExport("Выбери от одного до трёх разных типов занятий");
+        }
+        if (!currentTeacherGroupIds(claims).contains(groupId)) {
+            throw new MobileBffException(HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE,
+                    "Журнал недоступен в текущем scope");
+        }
+        TeacherAttendanceExportResponse response = attendance.exportTeacherAttendance(
+                semesterId, groupId, subjectId, selectedTypes, selectedFormat.code());
+        String filename = response.getFileName();
+        if (response.getContent().isEmpty() || filename.isBlank()
+                || !filename.matches("[A-Za-z0-9._-]+")
+                || !filename.endsWith("." + selectedFormat.extension())
+                || !selectedFormat.contentType().equals(response.getContentType())) {
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                    "Сервис экспорта вернул некорректный файл");
+        }
+        return new Download(filename, response.getContentType(), response.getContent().toByteArray());
+    }
+
+    private static MobileBffException invalidExport(String message) {
+        return new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST, message);
     }
 
     public TeacherApiModels.StatsResponse stats(long semesterId,

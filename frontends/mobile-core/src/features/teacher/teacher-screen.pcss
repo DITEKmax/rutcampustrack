@@ -66,6 +66,12 @@
 .teacher-screen__secondary { color: var(--rct-color-accent-now); }
 .teacher-screen__journal-context { display: grid; gap: var(--rct-space-1); inline-size: 100%; text-align: start; }
 .teacher-screen__back { justify-self: start; }
+.teacher-screen__export { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--rct-space-2); }
+.teacher-screen__export-field { display: grid; gap: var(--rct-space-1); min-inline-size: 0; }
+.teacher-screen__export-field .teacher-screen__date { inline-size: 100%; }
+.teacher-screen__export-button { max-inline-size: 100%; }
+.teacher-screen__export-button:disabled { cursor: not-allowed; opacity: 0.62; }
+.teacher-screen__export-message { grid-column: 1 / -1; }
 
 .teacher-screen__state,
 .teacher-screen__card,

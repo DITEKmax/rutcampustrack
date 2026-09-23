@@ -10,6 +10,7 @@ import ru.rutcampustrack.mobilebff.contract.api.TeacherApi;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.Assignment;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.DayResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExcuseResponse;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExportFormatsResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.JournalResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.LessonResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SemesterResponse;
@@ -64,6 +65,29 @@ public final class TeacherApiController implements TeacherApi {
                 parseText(lessonType, "lessonType"),
                 parsePage(page, "page", 0),
                 parsePage(pageSize, "pageSize", 100)));
+    }
+
+    @Override
+    public ResponseEntity<ExportFormatsResponse> journalExportFormats() {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.journalExportFormats());
+    }
+
+    @Override
+    public ResponseEntity<byte[]> exportJournal(String semesterId,
+                                                String groupId,
+                                                String subjectId,
+                                                List<String> lessonTypes,
+                                                String format) {
+        TeacherReadFacade.Download download = facade.exportJournal(
+                parseId(semesterId), parseId(groupId), parseId(subjectId), lessonTypes,
+                parseText(format, "format"));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(download.contentType()));
+        headers.setContentLength(download.bytes().length);
+        headers.setContentDisposition(ContentDisposition.attachment()
+                .filename(download.filename(), StandardCharsets.UTF_8).build());
+        headers.setCacheControl(CacheControl.noStore());
+        return new ResponseEntity<>(download.bytes(), headers, org.springframework.http.HttpStatus.OK);
     }
 
     @Override

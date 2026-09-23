@@ -22,7 +22,7 @@ COPY services/mobile-bff/mobile-bff-app/src \
      services/mobile-bff/mobile-bff-app/src
 
 RUN --mount=type=cache,target=/root/.gradle \
-    chmod +x gradlew && ./gradlew :services:mobile-bff:mobile-bff-app:bootJar --no-daemon -x test
+    sed -i 's/\r$//' gradlew && chmod +x gradlew && ./gradlew :services:mobile-bff:mobile-bff-app:bootJar --no-daemon -x test
 
 # Stage 2: Extract Spring Boot layers
 FROM eclipse-temurin:21-jre-alpine AS extractor

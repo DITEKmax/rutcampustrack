@@ -17,6 +17,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherJournalCell;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalStudent;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonSummary;
+import ru.rutcampustrack.teacher.grpc.TeacherSemesterResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -43,6 +44,9 @@ class TeacherReadFacadeTest {
         when(requestContext.claims()).thenReturn(new InternalJwtClaims(
                 71L, UUID.fromString("33333333-3333-4333-8333-333333333333"),
                 1L, 1L, "TEACHER", "ACTIVE", null, false, false));
+        when(academic.teacherActiveSemester()).thenReturn(TeacherSemesterResponse.newBuilder()
+                .setSemesterId(9L).setName("Осень").setDateFrom("2026-09-01").setDateTo("2026-09-30")
+                .build());
         when(academic.teacherAssignmentsForSemester(9L)).thenReturn(TeacherAssignmentsResponse.newBuilder()
                 .addAssignments(TeacherAssignment.newBuilder()
                         .setAssignmentId(12L)
@@ -56,10 +60,14 @@ class TeacherReadFacadeTest {
                         .setValidFrom("2026-09-01")
                         .setValidUntilExclusive("2026-10-01")
                         .build())
+                .setSemesterDateFrom("2026-09-01")
+                .setSemesterDateTo("2026-09-30")
                 .build());
 
-        LessonResponse sep1 = lesson(101L, "2026-09-01", 1, "09:00:00");
-        LessonResponse sep8 = lesson(108L, "2026-09-08", 2, "10:40:00");
+        LessonResponse sep1 = lesson(101L, "2026-09-01", 1, "09:00:00")
+                .toBuilder().setAssignedTeacherId(72L).build();
+        LessonResponse sep8 = lesson(108L, "2026-09-08", 2, "10:40:00")
+                .toBuilder().setAssignedTeacherId(72L).build();
         when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
                 .thenReturn(LessonsResponse.newBuilder().addLessons(sep8).addLessons(sep1).build());
         when(attendance.teacherJournal(List.of(101L, 108L))).thenReturn(journalResponse());

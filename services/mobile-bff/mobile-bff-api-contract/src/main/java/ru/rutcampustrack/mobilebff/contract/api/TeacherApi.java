@@ -14,6 +14,7 @@ import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExcuseRespons
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.JournalResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.LessonResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SemesterResponse;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.StatsResponse;
 
 import java.util.List;
 
@@ -54,6 +55,18 @@ public interface TeacherApi {
             @RequestParam String lessonType,
             @RequestParam(defaultValue = "0") String page,
             @RequestParam(defaultValue = "100") String pageSize
+    );
+
+    @Operation(summary = "Teacher server-side attendance statistics")
+    @GetMapping("/stats")
+    ResponseEntity<StatsResponse> stats(
+            @RequestParam String semesterId,
+            @RequestParam String scope,
+            @RequestParam(required = false) String groupId,
+            @RequestParam(required = false) String subjectId,
+            @RequestParam(required = false, name = "lessonType") List<String> lessonTypes,
+            @RequestParam(required = false, name = "sort") List<String> sorts,
+            @RequestParam(required = false, name = "filter") List<String> filters
     );
 
     @Operation(summary = "Server-scoped excuse detail")

@@ -21,6 +21,7 @@ const emit = defineEmits<{
   'select-date': [date: string]
   'open-lesson': [lessonId: number]
   'open-journal': [query: TeacherJournalQuery]
+  'open-stats': []
   error: [cause: unknown]
 }>()
 
@@ -168,6 +169,9 @@ function openJournal(context: TeacherJournalContext): void {
       <span class="teacher-screen__meta">
         {{ journalContexts.length }} {{ journalContexts.length === 1 ? 'журнал' : 'журнала' }}
       </span>
+      <button class="teacher-screen__secondary" type="button" @click="emit('open-stats')">
+        Статистика
+      </button>
     </header>
 
     <div class="teacher-screen__toolbar">

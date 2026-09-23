@@ -20,6 +20,11 @@ import ru.rutcampustrack.teacher.grpc.TeacherJournalRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsFilter;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsScope;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsSort;
 
 import java.time.Instant;
 import java.util.List;
@@ -69,6 +74,27 @@ public class MobileAttendanceClient {
         return call(() -> auth.attach(teacherStub).withDeadlineAfter(10, TimeUnit.SECONDS)
                 .getTeacherJournal(TeacherJournalRequest.newBuilder().addAllLessonIds(lessonIds).build()),
                 ProblemCode.LESSON_NOT_FOUND);
+    }
+
+    public TeacherStatsResponse teacherStats(long semesterId,
+                                             List<Long> lessonIds,
+                                             TeacherStatsScope scope,
+                                             long groupId,
+                                             long subjectId,
+                                             List<String> lessonTypes,
+                                             List<TeacherStatsSort> sorts,
+                                             List<TeacherStatsFilter> filters) {
+        TeacherStatsRequest.Builder request = TeacherStatsRequest.newBuilder()
+                .setSemesterId(semesterId)
+                .setScope(scope)
+                .addAllLessonIds(lessonIds == null ? List.of() : lessonIds)
+                .addAllLessonTypes(lessonTypes == null ? List.of() : lessonTypes)
+                .addAllSorts(sorts == null ? List.of() : sorts)
+                .addAllFilters(filters == null ? List.of() : filters);
+        if (groupId > 0) request.setGroupId(groupId);
+        if (subjectId > 0) request.setSubjectId(subjectId);
+        return call(() -> auth.attach(teacherStub).withDeadlineAfter(15, TimeUnit.SECONDS)
+                .getTeacherStats(request.build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
     public TeacherExcuseResponse teacherExcuse(String requestId) {

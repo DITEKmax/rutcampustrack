@@ -8,7 +8,9 @@ import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse
 import ru.rutcampustrack.attendance.contract.dto.report.StudentAttendanceEntry;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.report.ReportService;
@@ -32,6 +34,15 @@ import ru.rutcampustrack.teacher.grpc.TeacherLessonRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonSummary;
 import ru.rutcampustrack.teacher.grpc.TeacherRosterEntry;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsFilter;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsMetric;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsScope;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsSort;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsSubjectOption;
+import ru.rutcampustrack.teacher.grpc.TeacherStudentStats;
+import ru.rutcampustrack.teacher.grpc.TeacherGroupStats;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -181,6 +192,103 @@ public final class TeacherAttendanceReadGrpcService
         } catch (RuntimeException error) {
             responseObserver.onError(toStatus(error));
         }
+    }
+
+    @Override
+    public void getTeacherStats(TeacherStatsRequest request,
+                                StreamObserver<TeacherStatsResponse> responseObserver) {
+        try {
+            InternalJwtClaims claims = requireTeacher();
+            TeacherStatsScope scope = request.getScope();
+            if (scope == TeacherStatsScope.TEACHER_STATS_SCOPE_UNSPECIFIED) {
+                throw Status.INVALID_ARGUMENT.withDescription("stats scope is required")
+                        .asRuntimeException();
+            }
+            List<Long> lessonIds = request.getLessonIdsList().stream()
+                    .filter(id -> id > 0)
+                    .distinct()
+                    .toList();
+            if (lessonIds.size() != request.getLessonIdsCount() || lessonIds.size() > 5_000) {
+                throw Status.INVALID_ARGUMENT.withDescription("lesson_ids must contain unique positive ids")
+                        .asRuntimeException();
+            }
+            ReportService.TeacherStatsScope domainScope = scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
+                    ? ReportService.TeacherStatsScope.STUDENTS : ReportService.TeacherStatsScope.GROUPS;
+            ReportService.TeacherStatsQuery query = new ReportService.TeacherStatsQuery(
+                    lessonIds,
+                    domainScope,
+                    request.getGroupId(),
+                    request.getSubjectId(),
+                    request.getLessonTypesList(),
+                    request.getSortsList().stream()
+                            .map(sort -> new ReportService.TeacherStatsSort(sort.getColumn(), sort.getDescending()))
+                            .toList(),
+                    request.getFiltersList().stream()
+                            .map(filter -> new ReportService.TeacherStatsFilter(
+                                    filter.getColumn(),
+                                    filter.getContains(),
+                                    filter.hasMinPercent() ? filter.getMinPercent() : null,
+                                    filter.hasMaxPercent() ? filter.getMaxPercent() : null,
+                                    filter.hasMinValue() ? filter.getMinValue() : null,
+                                    filter.hasMaxValue() ? filter.getMaxValue() : null))
+                            .toList(),
+                    positive(request.getSemesterId(), "semester_id"));
+            ReportService.TeacherStatsResult result = reportService.getTeacherStats(query, claims.userId());
+            TeacherStatsResponse.Builder response = TeacherStatsResponse.newBuilder()
+                    .setScope(scope)
+                    .setSemesterId(result.semesterId())
+                    .setLessonsCount(result.lessonsCount())
+                    .setServerNow(result.serverNow().toString());
+            if (result.periodFrom() != null) response.setPeriodFrom(result.periodFrom().toString());
+            if (result.periodTo() != null) response.setPeriodTo(result.periodTo().toString());
+            result.students().stream().map(this::toStudentStats).forEach(response::addStudents);
+            result.groups().stream().map(this::toGroupStats).forEach(response::addGroups);
+            result.subjectOptions().stream().map(this::toSubjectOption).forEach(response::addSubjectOptions);
+            responseObserver.onNext(response.build());
+            responseObserver.onCompleted();
+        } catch (RuntimeException error) {
+            responseObserver.onError(toStatus(error));
+        }
+    }
+
+    private TeacherStudentStats toStudentStats(ReportService.TeacherStudentStats row) {
+        return TeacherStudentStats.newBuilder()
+                .setStudentId(row.studentId())
+                .setDisplayName(value(row.displayName()))
+                .setPresent(toMetric(row.present()))
+                .setPresentOrExcused(toMetric(row.presentOrExcused()))
+                .setExcused(toMetric(row.excused()))
+                .setAbsent(toMetric(row.absent()))
+                .build();
+    }
+
+    private TeacherGroupStats toGroupStats(ReportService.TeacherGroupStats row) {
+        return TeacherGroupStats.newBuilder()
+                .setGroupId(row.groupId())
+                .setGroupName(value(row.groupName()))
+                .setLessonsCount(row.lessonsCount())
+                .setPresent(toMetric(row.present()))
+                .setPresentOrExcused(toMetric(row.presentOrExcused()))
+                .setExcused(toMetric(row.excused()))
+                .setAbsent(toMetric(row.absent()))
+                .build();
+    }
+
+    private TeacherStatsSubjectOption toSubjectOption(ReportService.TeacherStatsSubjectOption option) {
+        return TeacherStatsSubjectOption.newBuilder()
+                .setGroupId(option.groupId())
+                .setSubjectId(option.subjectId())
+                .setSubjectName(value(option.subjectName()))
+                .addAllLessonTypes(option.lessonTypes())
+                .build();
+    }
+
+    private static TeacherStatsMetric toMetric(ReportService.TeacherMetric metric) {
+        return TeacherStatsMetric.newBuilder()
+                .setNumerator(metric.numerator())
+                .setDenominator(metric.denominator())
+                .setPercent(metric.percent())
+                .build();
     }
 
     @Override
@@ -345,7 +453,7 @@ public final class TeacherAttendanceReadGrpcService
         for (Long lessonId : lessonIds.stream().filter(Objects::nonNull).distinct().toList()) {
             try {
                 LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
-                reportService.authorizeTeacherLesson(lesson, teacherId);
+                reportService.authorizeTeacherOwnLesson(lesson, teacherId);
                 result.add(lesson);
             } catch (AccessDeniedException | ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException ignored) {
                 // A mixed ticket is projected only over the teacher's concrete lessons.
@@ -427,6 +535,11 @@ public final class TeacherAttendanceReadGrpcService
         }
         if (error instanceof BadRequestException) {
             return Status.INVALID_ARGUMENT.withDescription(error.getMessage())
+                    .withCause(error).asRuntimeException();
+        }
+        if (error instanceof AcademicServiceUnavailableException
+                || error instanceof ScheduleServiceUnavailableException) {
+            return Status.UNAVAILABLE.withDescription(error.getMessage())
                     .withCause(error).asRuntimeException();
         }
         if (error instanceof ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException) {

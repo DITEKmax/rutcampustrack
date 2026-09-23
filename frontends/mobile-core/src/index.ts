@@ -68,6 +68,7 @@ export { default as TeacherHomeScreen } from './features/teacher/TeacherHomeScre
 export { default as TeacherLessonScreen } from './features/teacher/TeacherLessonScreen.vue'
 export { default as TeacherJournalScreen } from './features/teacher/TeacherJournalScreen.vue'
 export { default as TeacherExcuseScreen } from './features/teacher/TeacherExcuseScreen.vue'
+export { default as TeacherStatsScreen } from './features/teacher/TeacherStatsScreen.vue'
 export type * from './features/requests/types'
 export * from './features/requests/state'
 export * from './features/requests/requests-port'

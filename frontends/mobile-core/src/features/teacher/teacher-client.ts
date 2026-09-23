@@ -110,6 +110,76 @@ export interface TeacherJournalResponse {
   readonly hasMore: boolean
 }
 
+export type TeacherStatsScope = 'students' | 'groups'
+
+export interface TeacherStatsSort {
+  readonly column: string
+  readonly descending?: boolean
+}
+
+export interface TeacherStatsFilter {
+  readonly column: string
+  readonly contains?: string
+  readonly minPercent?: number
+  readonly maxPercent?: number
+  readonly minValue?: number
+  readonly maxValue?: number
+}
+
+export interface TeacherStatsQuery {
+  readonly semesterId: number
+  readonly scope: TeacherStatsScope
+  readonly groupId?: number | null
+  readonly subjectId?: number | null
+  readonly lessonTypes?: readonly string[]
+  readonly sorts?: readonly TeacherStatsSort[]
+  readonly filters?: readonly TeacherStatsFilter[]
+}
+
+export interface TeacherStatsMetric {
+  readonly numerator: number
+  readonly denominator: number
+  readonly percent: number
+}
+
+export interface TeacherStatsSubjectOption {
+  readonly groupId: number
+  readonly subjectId: number
+  readonly subjectName: string
+  readonly lessonTypes: readonly string[]
+}
+
+export interface TeacherStatsStudent {
+  readonly studentId: number
+  readonly displayName: string
+  readonly present: TeacherStatsMetric
+  readonly presentOrExcused: TeacherStatsMetric
+  readonly excused: TeacherStatsMetric
+  readonly absent: TeacherStatsMetric
+}
+
+export interface TeacherStatsGroup {
+  readonly groupId: number
+  readonly groupName: string
+  readonly lessonsCount: number
+  readonly present: TeacherStatsMetric
+  readonly presentOrExcused: TeacherStatsMetric
+  readonly excused: TeacherStatsMetric
+  readonly absent: TeacherStatsMetric
+}
+
+export interface TeacherStatsResponse {
+  readonly scope: TeacherStatsScope
+  readonly semesterId: number
+  readonly periodFrom: string | null
+  readonly periodTo: string | null
+  readonly lessonsCount: number
+  readonly students: readonly TeacherStatsStudent[]
+  readonly groups: readonly TeacherStatsGroup[]
+  readonly subjectOptions: readonly TeacherStatsSubjectOption[]
+  readonly serverNow: string
+}
+
 export interface TeacherExcuseAttachment {
   readonly id: string
   readonly fileName: string
@@ -205,6 +275,40 @@ export class TeacherApi {
     })
     return this.request<unknown>(`/api/v1/teacher/journal?${params.toString()}`)
       .then(normalizeJournal)
+  }
+
+  stats(query: TeacherStatsQuery): Promise<TeacherStatsResponse> {
+    assertPositiveInteger(query.semesterId, 'semesterId')
+    if (query.scope !== 'students' && query.scope !== 'groups') throw new RangeError('scope is invalid')
+    if (query.scope === 'students') {
+      assertPositiveInteger(query.groupId ?? 0, 'groupId')
+      assertPositiveInteger(query.subjectId ?? 0, 'subjectId')
+    } else if (query.groupId != null || query.subjectId != null) {
+      throw new RangeError('group scope cannot select group or subject')
+    }
+    const params = new URLSearchParams({
+      semesterId: String(query.semesterId),
+      scope: query.scope,
+    })
+    if (query.groupId != null) params.set('groupId', String(query.groupId))
+    if (query.subjectId != null) params.set('subjectId', String(query.subjectId))
+    for (const lessonType of query.lessonTypes ?? []) {
+      assertText(lessonType, 'lessonType')
+      params.append('lessonType', lessonType)
+    }
+    for (const sort of query.sorts ?? []) {
+      assertText(sort.column, 'sort.column')
+      params.append('sort', `${sort.descending ? '-' : ''}${sort.column}`)
+    }
+    for (const filter of query.filters ?? []) {
+      assertText(filter.column, 'filter.column')
+      if (filter.contains != null) params.append('filter', `${filter.column}~${filter.contains}`)
+      if (filter.minPercent != null) params.append('filter', `${filter.column}>=${filter.minPercent}`)
+      if (filter.maxPercent != null) params.append('filter', `${filter.column}<=${filter.maxPercent}`)
+      if (filter.minValue != null) params.append('filter', `${filter.column}>=${filter.minValue}`)
+      if (filter.maxValue != null) params.append('filter', `${filter.column}<=${filter.maxValue}`)
+    }
+    return this.request<unknown>(`/api/v1/teacher/stats?${params.toString()}`).then(normalizeStats)
   }
 
   excuse(requestId: string): Promise<TeacherExcuseResponse> {
@@ -343,6 +447,71 @@ function normalizeJournal(value: unknown): TeacherJournalResponse {
     totalLessons: nonNegativeInteger(record.totalLessons, 'journal.totalLessons'),
     hasMore: requiredBoolean(record.hasMore, 'journal.hasMore'),
   }
+}
+
+function normalizeStats(value: unknown): TeacherStatsResponse {
+  const record = requiredRecord(value)
+  const scope = requiredString(record.scope, 'stats.scope')
+  if (scope !== 'students' && scope !== 'groups') throw new Error('Сервер вернул неизвестный разрез статистики.')
+  return {
+    scope,
+    semesterId: positiveInteger(record.semesterId, 'stats.semesterId'),
+    periodFrom: nullableDate(record.periodFrom, 'stats.periodFrom'),
+    periodTo: nullableDate(record.periodTo, 'stats.periodTo'),
+    lessonsCount: nonNegativeInteger(record.lessonsCount, 'stats.lessonsCount'),
+    students: arrayValue(record.students).map(normalizeStatsStudent),
+    groups: arrayValue(record.groups).map(normalizeStatsGroup),
+    subjectOptions: arrayValue(record.subjectOptions).map(normalizeStatsSubjectOption),
+    serverNow: requiredString(record.serverNow, 'stats.serverNow'),
+  }
+}
+
+function normalizeStatsSubjectOption(value: unknown): TeacherStatsSubjectOption {
+  const record = requiredRecord(value)
+  return {
+    groupId: positiveInteger(record.groupId, 'stats.subjectOption.groupId'),
+    subjectId: positiveInteger(record.subjectId, 'stats.subjectOption.subjectId'),
+    subjectName: requiredString(record.subjectName, 'stats.subjectOption.subjectName'),
+    lessonTypes: arrayValue(record.lessonTypes)
+      .map((lessonType) => requiredString(lessonType, 'stats.subjectOption.lessonType')),
+  }
+}
+
+function normalizeStatsStudent(value: unknown): TeacherStatsStudent {
+  const record = requiredRecord(value)
+  return {
+    studentId: positiveInteger(record.studentId, 'stats.studentId'),
+    displayName: requiredString(record.displayName, 'stats.displayName'),
+    present: normalizeStatsMetric(record.present),
+    presentOrExcused: normalizeStatsMetric(record.presentOrExcused),
+    excused: normalizeStatsMetric(record.excused),
+    absent: normalizeStatsMetric(record.absent),
+  }
+}
+
+function normalizeStatsGroup(value: unknown): TeacherStatsGroup {
+  const record = requiredRecord(value)
+  return {
+    groupId: positiveInteger(record.groupId, 'stats.groupId'),
+    groupName: requiredString(record.groupName, 'stats.groupName'),
+    lessonsCount: nonNegativeInteger(record.lessonsCount, 'stats.lessonsCount'),
+    present: normalizeStatsMetric(record.present),
+    presentOrExcused: normalizeStatsMetric(record.presentOrExcused),
+    excused: normalizeStatsMetric(record.excused),
+    absent: normalizeStatsMetric(record.absent),
+  }
+}
+
+function normalizeStatsMetric(value: unknown): TeacherStatsMetric {
+  const record = requiredRecord(value)
+  const numerator = nonNegativeInteger(record.numerator, 'stats.metric.numerator')
+  const denominator = nonNegativeInteger(record.denominator, 'stats.metric.denominator')
+  const percent = typeof record.percent === 'number' && Number.isFinite(record.percent)
+    ? record.percent : Number.NaN
+  if (!Number.isFinite(percent) || percent < 0 || percent > 100 || numerator > denominator) {
+    throw new Error('Сервер вернул некорректную метрику статистики.')
+  }
+  return { numerator, denominator, percent }
 }
 
 function normalizeExcuse(value: unknown): TeacherExcuseResponse {

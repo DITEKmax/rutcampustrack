@@ -10,6 +10,7 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.report.ReportService;
@@ -22,6 +23,9 @@ import ru.rutcampustrack.teacher.grpc.TeacherJournalRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsScope;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -34,11 +38,43 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /** A mixed student ticket is projected only over the teacher's concrete lessons. */
 class TeacherAttendanceReadGrpcServiceTest {
+
+    @Test
+    void teacherStatsMapsScheduleDependencyFailureToUnavailable() {
+        ReportService report = mock(ReportService.class);
+        ScheduleGrpcClient schedule = mock(ScheduleGrpcClient.class);
+        AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
+        ExcuseRepository excuses = mock(ExcuseRepository.class);
+        RequestAttachmentRepository attachments = mock(RequestAttachmentRepository.class);
+        when(report.getTeacherStats(any(), eq(71L)))
+                .thenThrow(new ScheduleServiceUnavailableException("schedule unavailable"));
+
+        TeacherAttendanceReadGrpcService service = new TeacherAttendanceReadGrpcService(
+                report, schedule, academic, excuses, attachments,
+                Clock.fixed(Instant.parse("2025-12-02T08:00:00Z"), ZoneOffset.UTC));
+        RecordingObserver<TeacherStatsResponse> observer = new RecordingObserver<>();
+        InternalJwtClaims claims = new InternalJwtClaims(
+                71L, UUID.randomUUID(), 1L, 1L, "TEACHER", "ACTIVE", null, false, false);
+
+        Context.current().withValue(TeacherAttendanceGrpcIdentity.CLAIMS, claims).run(() ->
+                service.getTeacherStats(TeacherStatsRequest.newBuilder()
+                        .setSemesterId(9L)
+                        .setScope(TeacherStatsScope.TEACHER_STATS_GROUPS)
+                        .addLessonIds(101L)
+                        .build(), observer));
+
+        assertThat(observer.value).isNull();
+        assertThat(observer.error).isInstanceOf(io.grpc.StatusRuntimeException.class);
+        assertThat(io.grpc.Status.fromThrowable(observer.error).getCode())
+                .isEqualTo(io.grpc.Status.Code.UNAVAILABLE);
+    }
 
     @Test
     void excuseDetailOmitsForeignLessonWithoutLeakingItsCount() {
@@ -52,9 +88,9 @@ class TeacherAttendanceReadGrpcServiceTest {
         LessonResponse foreign = lesson(202L, 99L, 88L);
         when(schedule.getLessonById(101L)).thenReturn(own);
         when(schedule.getLessonById(202L)).thenReturn(foreign);
-        doNothing().when(report).authorizeTeacherLesson(own, 71L);
+        doNothing().when(report).authorizeTeacherOwnLesson(own, 71L);
         doThrow(new AccessDeniedException("foreign lesson"))
-                .when(report).authorizeTeacherLesson(foreign, 71L);
+                .when(report).authorizeTeacherOwnLesson(foreign, 71L);
         when(academic.getGroup(33L)).thenReturn(GroupResponse.newBuilder().setId(33L).setName("УИТ-311").build());
         when(academic.getSubjectDetailsByIds(List.of(22L)))
                 .thenReturn(Map.of(22L, new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));

@@ -19,6 +19,18 @@ public interface AttendanceReadPort {
     List<AttendanceRecord> findByLessonId(Long lessonId);
 
     /**
+     * Find all marks for a bounded set of lessons in one read.  Stats/report
+     * callers must not turn a semester aggregate into one database round-trip
+     * per lesson; adapters should override this with their native batch query.
+     */
+    default List<AttendanceRecord> findByLessonIds(List<Long> lessonIds) {
+        if (lessonIds == null || lessonIds.isEmpty()) return List.of();
+        return lessonIds.stream().distinct()
+                .flatMap(id -> findByLessonId(id).stream())
+                .toList();
+    }
+
+    /**
      * Find all attendance records for a student in a semester.
      */
     List<AttendanceRecord> findByUserId(Long userId, Long semesterId);

@@ -37,6 +37,15 @@ public class AttendanceReadPortImpl implements AttendanceReadPort {
     }
 
     @Override
+    public List<AttendanceRecord> findByLessonIds(List<Long> lessonIds) {
+        if (lessonIds == null || lessonIds.isEmpty()) return List.of();
+        Query query = new Query(Criteria.where("lesson_id").in(lessonIds.stream().distinct().toList()));
+        return mongoTemplate.find(query, AttendanceDocument.class).stream()
+                .map(this::toRecord)
+                .toList();
+    }
+
+    @Override
     public List<AttendanceRecord> findByUserId(Long userId, Long semesterId) {
         Query query = new Query(
                 Criteria.where("user_id").is(userId)

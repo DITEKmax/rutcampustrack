@@ -190,6 +190,19 @@ public class AcademicGrpcClient {
     }
 
     /**
+     * Returns the actor's current teacher assignments, independently of any
+     * historical semester selected by a read report.  Academic applies the
+     * active grant and today's validity window on this existing read boundary.
+     */
+    public TeacherSubjectsResponse getCurrentTeacherSubjects(Long teacherId) {
+        SemesterResponse active = getActiveSemester();
+        if (active == null || active.getId() <= 0) {
+            throw new AcademicServiceUnavailableException("Academic returned no active semester");
+        }
+        return getTeacherSubjects(teacherId, active.getId());
+    }
+
+    /**
      * D-26: fetch user's display name for excuse-ticket snapshot.
      * Returns "Студент #userId" fallback if the user is not found to avoid blocking
      * ticket creation on transient academic-service outages.

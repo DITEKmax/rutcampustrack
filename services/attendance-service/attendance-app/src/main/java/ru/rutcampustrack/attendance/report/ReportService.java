@@ -3,6 +3,7 @@ package ru.rutcampustrack.attendance.report;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectInfo;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
@@ -45,6 +46,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -522,6 +524,592 @@ public class ReportService {
                 .toList();
     }
 
+    /**
+     * Builds the teacher's semester aggregate from concrete schedule lessons.
+     * The BFF discovers the complete group-bounded lesson set, while this
+     * service remains the final authority: every lesson is re-authorized against
+     * the signed teacher identity and current active group authority.
+     */
+    public TeacherStatsResult getTeacherStats(TeacherStatsQuery query, long teacherId) {
+        validateTeacherStatsQuery(query, teacherId);
+        List<Long> requestedLessonIds = query.lessonIds() == null
+                ? List.of()
+                : query.lessonIds().stream().distinct().toList();
+        if (requestedLessonIds.size() > 5_000
+                || query.lessonIds() != null && (query.lessonIds().stream().anyMatch(id -> id == null || id <= 0)
+                || requestedLessonIds.size() != query.lessonIds().size())) {
+            throw new BadRequestException("lesson_ids must contain unique positive ids (at most 5000)");
+        }
+
+        TeacherSubjectsResponse teacherAuthority = academicGrpcClient.getCurrentTeacherSubjects(teacherId);
+        if (teacherAuthority == null) {
+            throw new AccessDeniedException("Teacher assignment authority is unavailable");
+        }
+        Set<Long> activeGroupIds = teacherAuthority.getSubjectsList().stream()
+                .filter(info -> info != null && info.getGroupId() > 0)
+                .map(TeacherSubjectInfo::getGroupId)
+                .collect(Collectors.toSet());
+        if (activeGroupIds.isEmpty()) {
+            throw new AccessDeniedException("Teacher is not active in a group");
+        }
+        if (query.scope() == TeacherStatsScope.STUDENTS && !activeGroupIds.contains(query.groupId())) {
+            throw new AccessDeniedException("Teacher is not active in the selected group");
+        }
+
+        List<LessonInfo> authoritativeLessons = requestedLessonIds.isEmpty()
+                ? List.of()
+                : scheduleGrpcClient.getLessonsByIds(requestedLessonIds);
+        if (authoritativeLessons == null || authoritativeLessons.size() != requestedLessonIds.size()) {
+            throw new ScheduleServiceUnavailableException("Schedule returned an incomplete lesson authority response");
+        }
+        Map<Long, LessonInfo> lessonById = new java.util.HashMap<>();
+        for (LessonInfo lesson : authoritativeLessons) {
+            if (lesson == null || lesson.getLessonId() <= 0
+                    || lessonById.put(lesson.getLessonId(), lesson) != null) {
+                throw new ScheduleServiceUnavailableException("Schedule returned malformed lesson authority");
+            }
+        }
+        long semesterId = query.semesterId();
+        if (!authoritativeLessons.isEmpty()) {
+            long responseSemesterId = authoritativeLessons.get(0).getSemesterId();
+            if (responseSemesterId <= 0 || responseSemesterId != query.semesterId()
+                    || authoritativeLessons.stream().anyMatch(lesson -> lesson.getSemesterId() != responseSemesterId)) {
+                throw new BadRequestException("Stats lessons must belong to one semester");
+            }
+            semesterId = responseSemesterId;
+        }
+        List<TeacherStatsSubjectOption> subjectOptions = buildSubjectOptions(
+                authoritativeLessons, teacherAuthority);
+        List<LessonInfo> lessons = new ArrayList<>(requestedLessonIds.size());
+        LocalDate periodFrom = null;
+        LocalDate periodTo = null;
+        java.util.Set<String> requestedTypes = normalizedTypes(query.lessonTypes());
+        for (Long lessonId : requestedLessonIds) {
+            LessonInfo lesson = lessonById.get(lessonId);
+            if (lesson == null) {
+                throw new ScheduleServiceUnavailableException("Schedule returned no lesson authority response");
+            }
+            authorizeTeacherStatsLesson(lesson, teacherAuthority);
+            LocalDate date = parseLessonDate(lesson.getDate());
+            if (query.scope() == TeacherStatsScope.STUDENTS
+                    && lesson.getGroupId() != query.groupId()) {
+                throw new AccessDeniedException("Teacher stats lesson is outside the selected context");
+            }
+            // The request may carry the complete selected-group batch so the
+            // response can expose every readable subject option. Only the
+            // chosen subject contributes student rows.
+            if (query.scope() == TeacherStatsScope.STUDENTS
+                    && lesson.getSubjectId() != query.subjectId()) {
+                continue;
+            }
+            if (!requestedTypes.isEmpty()
+                    && !requestedTypes.contains(normalize(lesson.getLessonType()))) {
+                continue;
+            }
+            if (!isCompleted(lesson) || isCancelled(lesson)) {
+                continue;
+            }
+            lessons.add(lesson);
+            periodFrom = periodFrom == null || date.isBefore(periodFrom) ? date : periodFrom;
+            periodTo = periodTo == null || date.isAfter(periodTo) ? date : periodTo;
+        }
+
+        Map<Long, StudentStatsAccumulator> students = new java.util.LinkedHashMap<>();
+        Map<Long, GroupStatsAccumulator> groups = new java.util.LinkedHashMap<>();
+        if (query.scope() == TeacherStatsScope.GROUPS) {
+            activeGroupIds.stream().sorted().forEach(groupId ->
+                    groups.put(groupId, new GroupStatsAccumulator(groupId)));
+        } else {
+            groups.put(query.groupId(), new GroupStatsAccumulator(query.groupId()));
+        }
+        List<AttendanceRecord> attendanceRecords = lessons.isEmpty()
+                ? List.of()
+                : attendanceReadPort.findByLessonIds(
+                        lessons.stream().map(LessonInfo::getLessonId).toList());
+        Map<Long, List<AttendanceRecord>> recordsByLesson = attendanceRecords.stream()
+                .filter(record -> record != null && record.lessonId() != null)
+                .collect(Collectors.groupingBy(AttendanceRecord::lessonId));
+        Map<String, GroupMembersResponse> rosters = new java.util.HashMap<>();
+        for (LessonInfo lesson : lessons) {
+            GroupStatsAccumulator group = groups.computeIfAbsent(lesson.getGroupId(),
+                    ignored -> new GroupStatsAccumulator(lesson.getGroupId()));
+            group.lessonsCount++;
+            GroupMembersResponse roster = rosters.computeIfAbsent(
+                    lesson.getGroupId() + ":" + lesson.getSemesterId() + ":" + lesson.getDate(),
+                    ignored -> historicalMembersFor(lesson));
+            Map<Long, AttendanceRecord> records = recordsByLesson.getOrDefault(lesson.getLessonId(), List.of()).stream()
+                    .filter(record -> record != null && record.userId() != null)
+                    .collect(Collectors.toMap(AttendanceRecord::userId, value -> value,
+                            (first, ignored) -> first));
+            for (StudentInfo member : roster.getStudentsList()) {
+                if (member.getUserId() <= 0) {
+                    throw new AcademicServiceUnavailableException("Academic returned an invalid student identity");
+                }
+                StudentStatsAccumulator student = students.computeIfAbsent(member.getUserId(),
+                        ignored -> new StudentStatsAccumulator(member.getUserId(), member.getDisplayName()));
+                AttendanceRecord record = records.get(member.getUserId());
+                // Closed lessons normally have an AUTO_SCHEDULER ABSENT record.
+                // Treat a missing historical mark as ABSENT so the denominator is
+                // the passed lesson roster, never the number of stored documents.
+                AttendanceStatus status = record == null || record.status() == null
+                        ? AttendanceStatus.ABSENT : record.status();
+                student.counter.add(status);
+                group.counter.add(status);
+            }
+        }
+
+        Map<Long, String> groupNames = new java.util.HashMap<>();
+        for (Long groupId : groups.keySet()) {
+            GroupResponse group = academicGrpcClient.getGroup(groupId);
+            String groupName = group == null ? null : group.getName();
+            if (group == null || group.getId() != groupId || groupName == null || groupName.isBlank()) {
+                throw new AcademicServiceUnavailableException(
+                        "Academic returned an incomplete group response for " + groupId);
+            }
+            groupNames.put(groupId, groupName);
+        }
+
+        List<TeacherStudentStats> studentRows = students.values().stream()
+                .map(StudentStatsAccumulator::toResult)
+                .filter(row -> matchesFilters(row, query.filters()))
+                .sorted((left, right) -> compareStudents(left, right, query.sorts()))
+                .toList();
+        List<TeacherGroupStats> groupRows = groups.values().stream()
+                .map(group -> group.toResult(groupNames.getOrDefault(group.groupId, "")))
+                .filter(row -> matchesFilters(row, query.filters()))
+                .sorted((left, right) -> compareGroups(left, right, query.sorts()))
+                .toList();
+        return new TeacherStatsResult(query.scope(), semesterId, periodFrom, periodTo, lessons.size(),
+                studentRows, groupRows, subjectOptions, clock.instant());
+    }
+
+    private List<TeacherStatsSubjectOption> buildSubjectOptions(List<LessonInfo> lessons,
+                                                                 TeacherSubjectsResponse response) {
+        Set<Long> activeGroupIds = response.getSubjectsList().stream()
+                .filter(info -> info != null && info.getGroupId() > 0)
+                .map(TeacherSubjectInfo::getGroupId)
+                .collect(Collectors.toSet());
+        Map<TeacherStatsSubjectKey, Set<String>> lessonTypes = new java.util.HashMap<>();
+        for (LessonInfo lesson : lessons) {
+            if (lesson == null || !activeGroupIds.contains(lesson.getGroupId())
+                    || lesson.getSubjectId() <= 0 || lesson.getLessonType() == null
+                    || lesson.getLessonType().isBlank()) {
+                continue;
+            }
+            lessonTypes.computeIfAbsent(new TeacherStatsSubjectKey(lesson.getGroupId(), lesson.getSubjectId()),
+                    ignored -> new java.util.TreeSet<>()).add(normalize(lesson.getLessonType()));
+        }
+        if (lessonTypes.isEmpty()) return List.of();
+        List<Long> subjectIds = lessonTypes.keySet().stream()
+                .map(TeacherStatsSubjectKey::subjectId)
+                .distinct()
+                .toList();
+        Map<Long, AcademicGrpcClient.SubjectDetails> details =
+                academicGrpcClient.getSubjectDetailsByIds(subjectIds);
+        List<TeacherStatsSubjectOption> result = new ArrayList<>();
+        for (Map.Entry<TeacherStatsSubjectKey, Set<String>> entry : lessonTypes.entrySet()) {
+            AcademicGrpcClient.SubjectDetails subject = details.get(entry.getKey().subjectId());
+            if (subject == null || subject.name() == null || subject.name().isBlank()) {
+                throw new AcademicServiceUnavailableException(
+                        "Academic returned no subject for " + entry.getKey().subjectId());
+            }
+            result.add(new TeacherStatsSubjectOption(
+                    entry.getKey().groupId(), entry.getKey().subjectId(), subject.name(),
+                    List.copyOf(entry.getValue())));
+        }
+        result.sort(java.util.Comparator.comparingLong(TeacherStatsSubjectOption::groupId)
+                .thenComparing(TeacherStatsSubjectOption::subjectName, String.CASE_INSENSITIVE_ORDER)
+                .thenComparingLong(TeacherStatsSubjectOption::subjectId));
+        return List.copyOf(result);
+    }
+
+    private void authorizeTeacherStatsLesson(LessonInfo lesson, TeacherSubjectsResponse response) {
+        if (lesson == null || lesson.getLessonId() <= 0 || lesson.getGroupId() <= 0
+                || lesson.getSubjectId() <= 0 || lesson.getAssignmentId() <= 0
+                || lesson.getSemesterId() <= 0 || lesson.getTeacherId() <= 0
+                || lesson.getLessonType() == null || lesson.getLessonType().isBlank()) {
+            throw new AccessDeniedException("Teacher cannot read this lesson");
+        }
+        if (response == null || response.getSubjectsList().stream()
+                .noneMatch(info -> info != null && info.getGroupId() == lesson.getGroupId())) {
+            throw new AccessDeniedException("Teacher is not active in this group");
+        }
+    }
+
+    private GroupMembersResponse historicalMembersFor(LessonInfo lesson) {
+        if (lesson.getGroupId() <= 0 || lesson.getSemesterId() <= 0) {
+            throw new AcademicServiceUnavailableException(
+                    "Schedule returned a lesson without positive group/semester");
+        }
+        LocalDate lessonDate = parseLessonDate(lesson.getDate());
+        GroupMembersResponse response = academicGrpcClient.getGroupMembers(
+                lesson.getGroupId(), lessonDate, lesson.getSemesterId());
+        validateHistoricalRoster(response, lessonDate, lesson.getSemesterId());
+        return response;
+    }
+
+    private static void validateTeacherStatsQuery(TeacherStatsQuery query, long teacherId) {
+        if (query == null || query.scope() == null || teacherId <= 0) {
+            throw new BadRequestException("Invalid teacher stats query");
+        }
+        if (query.scope() == TeacherStatsScope.STUDENTS
+                && (query.groupId() <= 0 || query.subjectId() <= 0)) {
+            throw new BadRequestException("Student stats require group and subject");
+        }
+        if (query.scope() == TeacherStatsScope.GROUPS
+                && (query.groupId() != 0 || query.subjectId() != 0)) {
+            throw new BadRequestException("Group stats cannot select a group or subject");
+        }
+        if (query.semesterId() <= 0) {
+            throw new BadRequestException("Stats require a positive semester");
+        }
+        validateFilters(query.filters(), query.scope());
+        if (query.sorts() != null) {
+            for (TeacherStatsSort sort : query.sorts()) {
+                if (sort == null || !allowedColumn(sort.column())
+                        || query.scope() == TeacherStatsScope.STUDENTS
+                        && (sort.column().equals("groupName") || sort.column().equals("lessonsCount"))
+                        || query.scope() == TeacherStatsScope.GROUPS
+                        && sort.column().equals("displayName")) {
+                    throw new BadRequestException("Unknown teacher stats sort column");
+                }
+            }
+        }
+    }
+
+    private static void validateFilters(List<TeacherStatsFilter> filters, TeacherStatsScope scope) {
+        if (filters == null) return;
+        for (TeacherStatsFilter filter : filters) {
+            if (filter == null || !allowedColumn(filter.column())) {
+                throw new BadRequestException("Unknown teacher stats filter column");
+            }
+            if (scope == TeacherStatsScope.STUDENTS
+                    && (filter.column().equals("groupName") || filter.column().equals("lessonsCount"))) {
+                throw new BadRequestException("Filter column is not available for student stats");
+            }
+            if (scope == TeacherStatsScope.GROUPS && filter.column().equals("displayName")) {
+                throw new BadRequestException("Filter column is not available for group stats");
+            }
+            if (filter.contains() != null && !filter.contains().isBlank()
+                    && !(filter.column().equals("displayName") || filter.column().equals("groupName"))) {
+                throw new BadRequestException("Text filter is not available for this column");
+            }
+            if (filter.column().equals("lessonsCount")
+                    && (filter.minPercent() != null || filter.maxPercent() != null)) {
+                throw new BadRequestException("Percentage filter is not available for lessons count");
+            }
+            if ((filter.column().equals("displayName") || filter.column().equals("groupName"))
+                    && (filter.minPercent() != null || filter.maxPercent() != null)) {
+                throw new BadRequestException("Percentage filter is not available for names");
+            }
+            if (!filter.column().equals("lessonsCount")
+                    && (filter.minValue() != null || filter.maxValue() != null)) {
+                throw new BadRequestException("Value filter is available only for lessons count");
+            }
+            if (filter.minValue() != null && filter.minValue() < 0
+                    || filter.maxValue() != null && filter.maxValue() < 0) {
+                throw new BadRequestException("Teacher stats value filter is out of range");
+            }
+            if (filter.minValue() != null && filter.maxValue() != null
+                    && filter.minValue() > filter.maxValue()) {
+                throw new BadRequestException("Teacher stats value filter is out of range");
+            }
+            if (filter.minPercent() != null && (filter.minPercent() < 0 || filter.minPercent() > 100)
+                    || filter.maxPercent() != null && (filter.maxPercent() < 0 || filter.maxPercent() > 100)
+                    || filter.minPercent() != null && filter.maxPercent() != null
+                    && filter.minPercent() > filter.maxPercent()) {
+                throw new BadRequestException("Teacher stats percentage filter is out of range");
+            }
+        }
+    }
+
+    private static boolean allowedColumn(String column) {
+        return Set.of("displayName", "groupName", "present", "presentOrExcused", "excused", "absent", "lessonsCount")
+                .contains(column);
+    }
+
+    private static java.util.Set<String> normalizedTypes(List<String> types) {
+        if (types == null) return java.util.Set.of();
+        return types.stream().filter(Objects::nonNull).map(ReportService::normalize)
+                .filter(value -> !value.isBlank()).collect(Collectors.toUnmodifiableSet());
+    }
+
+    private static boolean isCompleted(LessonInfo lesson) {
+        // Schedule transitions a lesson to CLOSED only after its concrete
+        // Moscow end time (+ the configured grace period). A calendar-date
+        // comparison would include today's unfinished lessons.
+        return lesson != null && "closed".equalsIgnoreCase(lesson.getStatus());
+    }
+
+    private static boolean isCancelled(LessonInfo lesson) {
+        return "cancelled".equalsIgnoreCase(lesson.getStatus());
+    }
+
+    private static String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private static boolean matchesFilters(TeacherStudentStats row, List<TeacherStatsFilter> filters) {
+        if (filters == null) return true;
+        for (TeacherStatsFilter filter : filters) {
+            if (!matchesText(row.displayName(), filter) || !matchesMetric(row.metric(filter.column()), filter)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean matchesFilters(TeacherGroupStats row, List<TeacherStatsFilter> filters) {
+        if (filters == null) return true;
+        for (TeacherStatsFilter filter : filters) {
+            if (!matchesText(row.groupName(), filter)
+                    || !matchesMetric(row.metric(filter.column()), filter)
+                    || !matchesValue(row.lessonsCount(), filter)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean matchesText(String value, TeacherStatsFilter filter) {
+        if (filter.contains() == null || filter.contains().isBlank()) return true;
+        if (!(filter.column().equals("displayName") || filter.column().equals("groupName"))) return true;
+        return value.toLowerCase(java.util.Locale.ROOT)
+                .contains(filter.contains().trim().toLowerCase(java.util.Locale.ROOT));
+    }
+
+    private static boolean matchesMetric(TeacherMetric metric, TeacherStatsFilter filter) {
+        if (metric == null) return true;
+        return (filter.minPercent() == null || metric.percent() >= filter.minPercent())
+                && (filter.maxPercent() == null || metric.percent() <= filter.maxPercent());
+    }
+
+    private static boolean matchesValue(int value, TeacherStatsFilter filter) {
+        if (!filter.column().equals("lessonsCount")) return true;
+        return (filter.minValue() == null || value >= filter.minValue())
+                && (filter.maxValue() == null || value <= filter.maxValue());
+    }
+
+    private static int compareStudents(TeacherStudentStats left, TeacherStudentStats right,
+                                       List<TeacherStatsSort> sorts) {
+        if (sorts != null) {
+            for (TeacherStatsSort sort : sorts) {
+                int result = compareColumn(left, right, sort.column());
+                if (result != 0) return sort.descending() ? -result : result;
+            }
+        }
+        int result = compareColumn(left, right, "present");
+        return result != 0 ? result : Long.compare(left.studentId(), right.studentId());
+    }
+
+    private static int compareGroups(TeacherGroupStats left, TeacherGroupStats right,
+                                     List<TeacherStatsSort> sorts) {
+        if (sorts != null) {
+            for (TeacherStatsSort sort : sorts) {
+                int result = compareColumn(left, right, sort.column());
+                if (result != 0) return sort.descending() ? -result : result;
+            }
+        }
+        int result = compareColumn(left, right, "present");
+        return result != 0 ? result : Long.compare(left.groupId(), right.groupId());
+    }
+
+    private static int compareColumn(TeacherStudentStats left, TeacherStudentStats right, String column) {
+        return switch (column) {
+            case "displayName" -> left.displayName().compareToIgnoreCase(right.displayName());
+            case "present" -> Double.compare(left.present().percent(), right.present().percent());
+            case "presentOrExcused" -> Double.compare(left.presentOrExcused().percent(), right.presentOrExcused().percent());
+            case "excused" -> Double.compare(left.excused().percent(), right.excused().percent());
+            case "absent" -> Double.compare(left.absent().percent(), right.absent().percent());
+            default -> 0;
+        };
+    }
+
+    private static int compareColumn(TeacherGroupStats left, TeacherGroupStats right, String column) {
+        return switch (column) {
+            case "groupName" -> left.groupName().compareToIgnoreCase(right.groupName());
+            case "lessonsCount" -> Integer.compare(left.lessonsCount(), right.lessonsCount());
+            case "present" -> Double.compare(left.present().percent(), right.present().percent());
+            case "presentOrExcused" -> Double.compare(left.presentOrExcused().percent(), right.presentOrExcused().percent());
+            case "excused" -> Double.compare(left.excused().percent(), right.excused().percent());
+            case "absent" -> Double.compare(left.absent().percent(), right.absent().percent());
+            default -> 0;
+        };
+    }
+
+    public enum TeacherStatsScope {
+        STUDENTS,
+        GROUPS
+    }
+
+    public record TeacherStatsQuery(
+            List<Long> lessonIds,
+            TeacherStatsScope scope,
+            long groupId,
+            long subjectId,
+            List<String> lessonTypes,
+            List<TeacherStatsSort> sorts,
+            List<TeacherStatsFilter> filters,
+            long semesterId
+    ) {
+    }
+
+    public record TeacherStatsSort(String column, boolean descending) {
+    }
+
+    public record TeacherStatsFilter(
+                                    String column,
+                                    String contains,
+                                    Double minPercent,
+            Double maxPercent,
+            Integer minValue,
+            Integer maxValue
+    ) {
+    }
+
+    public record TeacherMetric(int numerator, int denominator, double percent) {
+        private static TeacherMetric of(int numerator, int denominator) {
+            return new TeacherMetric(numerator, denominator,
+                    denominator == 0 ? 0.0 : numerator * 100.0 / denominator);
+        }
+    }
+
+    public record TeacherStudentStats(
+            long studentId,
+            String displayName,
+            TeacherMetric present,
+            TeacherMetric presentOrExcused,
+            TeacherMetric excused,
+            TeacherMetric absent
+    ) {
+        private TeacherMetric metric(String column) {
+            return switch (column) {
+                case "present" -> present;
+                case "presentOrExcused" -> presentOrExcused;
+                case "excused" -> excused;
+                case "absent" -> absent;
+                default -> null;
+            };
+        }
+    }
+
+    public record TeacherGroupStats(
+            long groupId,
+            String groupName,
+            int lessonsCount,
+            TeacherMetric present,
+            TeacherMetric presentOrExcused,
+            TeacherMetric excused,
+            TeacherMetric absent
+    ) {
+        private TeacherMetric metric(String column) {
+            return switch (column) {
+                case "present" -> present;
+                case "presentOrExcused" -> presentOrExcused;
+                case "excused" -> excused;
+                case "absent" -> absent;
+                default -> null;
+            };
+        }
+    }
+
+    public record TeacherStatsResult(
+            TeacherStatsScope scope,
+            long semesterId,
+            LocalDate periodFrom,
+            LocalDate periodTo,
+            int lessonsCount,
+            List<TeacherStudentStats> students,
+            List<TeacherGroupStats> groups,
+            List<TeacherStatsSubjectOption> subjectOptions,
+            java.time.Instant serverNow
+    ) {
+    }
+
+    public record TeacherStatsSubjectOption(
+            long groupId,
+            long subjectId,
+            String subjectName,
+            List<String> lessonTypes
+    ) {
+    }
+
+    private record TeacherStatsSubjectKey(long groupId, long subjectId) {
+    }
+
+    private static final class StatsCounter {
+        private int denominator;
+        private int present;
+        private int presentOrExcused;
+        private int excused;
+        private int absent;
+
+        private void add(AttendanceStatus status) {
+            if (status == AttendanceStatus.CANCELLED) return;
+            denominator++;
+            switch (status) {
+                case PRESENT -> {
+                    present++;
+                    presentOrExcused++;
+                }
+                case EXCUSED, FREE_ATTENDANCE -> {
+                    presentOrExcused++;
+                    excused++;
+                }
+                case ABSENT -> absent++;
+                case CANCELLED -> { /* handled above */ }
+            }
+        }
+
+        private TeacherMetric presentMetric() {
+            return TeacherMetric.of(present, denominator);
+        }
+
+        private TeacherMetric presentOrExcusedMetric() {
+            return TeacherMetric.of(presentOrExcused, denominator);
+        }
+
+        private TeacherMetric excusedMetric() {
+            return TeacherMetric.of(excused, denominator);
+        }
+
+        private TeacherMetric absentMetric() {
+            return TeacherMetric.of(absent, denominator);
+        }
+    }
+
+    private static final class StudentStatsAccumulator {
+        private final long studentId;
+        private final String displayName;
+        private final StatsCounter counter = new StatsCounter();
+
+        private StudentStatsAccumulator(long studentId, String displayName) {
+            this.studentId = studentId;
+            this.displayName = displayName == null ? "" : displayName;
+        }
+
+        private TeacherStudentStats toResult() {
+            return new TeacherStudentStats(studentId, displayName, counter.presentMetric(),
+                    counter.presentOrExcusedMetric(), counter.excusedMetric(), counter.absentMetric());
+        }
+    }
+
+    private static final class GroupStatsAccumulator {
+        private final long groupId;
+        private final StatsCounter counter = new StatsCounter();
+        private int lessonsCount;
+
+        private GroupStatsAccumulator(long groupId) {
+            this.groupId = groupId;
+        }
+
+        private TeacherGroupStats toResult(String groupName) {
+            return new TeacherGroupStats(groupId, groupName == null ? "" : groupName, lessonsCount,
+                    counter.presentMetric(), counter.presentOrExcusedMetric(),
+                    counter.excusedMetric(), counter.absentMetric());
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Authorization helper
     // -------------------------------------------------------------------------
@@ -595,18 +1183,7 @@ public class ReportService {
                 throw new AccessDeniedException("Отсутствует право VIEW_STATS");
             }
         } else if (role == UserRole.TEACHER) {
-            Long semId = semesterCacheService.getActiveSemesterId();
-            if (semId == null) {
-                throw new IllegalStateException("Active semester not available");
-            }
-            TeacherSubjectsResponse resp =
-                    academicGrpcClient.getTeacherSubjects(requestContext.getUserId(), semId);
-            boolean teaches = resp.getSubjectsList().stream()
-                    .anyMatch(s -> s.getSubjectId() == subjectId.longValue()
-                            && s.getGroupId() == groupId.longValue());
-            if (!teaches) {
-                throw new AccessDeniedException("Teacher does not teach this subject for this group");
-            }
+            authorizeTeacherGroup(groupId, requestContext.getUserId());
         } else {
             throw new AccessDeniedException("Access denied");
         }
@@ -642,11 +1219,36 @@ public class ReportService {
 
     /**
      * Reusable concrete-lesson gate for the dedicated teacher read boundary.
-     * The legacy current-date projection is used only as the existing exact
-     * assignment check; an absent exact projection still permits an immutable
-     * schedule snapshot when there is no conflicting assignment projection.
+     * Current active group authority grants read access to the whole group,
+     * while the immutable Schedule snapshot supplies historical lesson data.
      */
     public void authorizeTeacherLesson(LessonResponse lesson, Long teacherId) {
+        if (lesson == null || lesson.getId() <= 0 || lesson.getGroupId() <= 0
+                || lesson.getSubjectId() <= 0 || lesson.getAssignmentId() <= 0
+                || lesson.getSemesterId() <= 0 || lesson.getAssignedTeacherId() <= 0
+                || lesson.getLessonType() == null || lesson.getLessonType().isBlank()
+                || teacherId == null) {
+            throw new AccessDeniedException("Teacher cannot read this lesson");
+        }
+        authorizeTeacherGroup(lesson.getGroupId(), teacherId);
+    }
+
+    private void authorizeTeacherGroup(long groupId, long teacherId) {
+        if (groupId <= 0 || teacherId <= 0) {
+            throw new AccessDeniedException("Teacher is not active in this group");
+        }
+        TeacherSubjectsResponse response = academicGrpcClient.getCurrentTeacherSubjects(teacherId);
+        if (response == null || response.getSubjectsList().stream()
+                .noneMatch(info -> info != null && info.getGroupId() == groupId)) {
+            throw new AccessDeniedException("Teacher is not active in this group");
+        }
+    }
+
+    /**
+     * Own-lesson gate retained for excuse/ticket and attachment reads. Those
+     * operations continue to require the immutable lesson assignment itself.
+     */
+    public void authorizeTeacherOwnLesson(LessonResponse lesson, Long teacherId) {
         JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
         long semesterId = lesson.getSemesterId();
         long assignmentId = lesson.getAssignmentId();
@@ -684,6 +1286,31 @@ public class ReportService {
 
     private static boolean matchesAssignment(TeacherSubjectInfo info,
                                              LessonResponse lesson,
+                                             LocalDate lessonDate) {
+        if (info == null || info.getAssignmentId() <= 0
+                || info.getAssignmentId() != lesson.getAssignmentId()
+                || info.getSemesterId() != lesson.getSemesterId()
+                || info.getSubjectId() != lesson.getSubjectId()
+                || info.getGroupId() != lesson.getGroupId()) {
+            return false;
+        }
+        String actualType = lesson.getLessonType();
+        String assignedType = info.getLessonType();
+        if (actualType == null || actualType.isBlank() || assignedType == null
+                || assignedType.isBlank() || !actualType.equalsIgnoreCase(assignedType)) {
+            return false;
+        }
+        try {
+            LocalDate validFrom = LocalDate.parse(info.getValidFrom());
+            LocalDate validUntilExclusive = LocalDate.parse(info.getValidUntilExclusive());
+            return !lessonDate.isBefore(validFrom) && lessonDate.isBefore(validUntilExclusive);
+        } catch (RuntimeException ex) {
+            return false;
+        }
+    }
+
+    private static boolean matchesAssignment(TeacherSubjectInfo info,
+                                             LessonInfo lesson,
                                              LocalDate lessonDate) {
         if (info == null || info.getAssignmentId() <= 0
                 || info.getAssignmentId() != lesson.getAssignmentId()

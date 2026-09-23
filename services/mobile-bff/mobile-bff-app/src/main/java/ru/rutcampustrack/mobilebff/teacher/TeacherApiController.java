@@ -13,6 +13,7 @@ import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.ExcuseRespons
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.JournalResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.LessonResponse;
 import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.SemesterResponse;
+import ru.rutcampustrack.mobilebff.contract.model.TeacherApiModels.StatsResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -66,6 +67,15 @@ public final class TeacherApiController implements TeacherApi {
     }
 
     @Override
+    public ResponseEntity<StatsResponse> stats(String semesterId, String scope, String groupId,
+                                               String subjectId, List<String> lessonTypes,
+                                               List<String> sorts, List<String> filters) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.stats(
+                parseId(semesterId), parseText(scope, "scope"), parseOptionalId(groupId, "groupId"),
+                parseOptionalId(subjectId, "subjectId"), lessonTypes, sorts, filters));
+    }
+
+    @Override
     public ResponseEntity<ExcuseResponse> excuse(String requestId) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.excuse(requestId));
     }
@@ -99,6 +109,11 @@ public final class TeacherApiController implements TeacherApi {
                     ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode.INVALID_REQUEST,
                     "ID должен быть положительным числом");
         }
+    }
+
+    private static Long parseOptionalId(String value, String field) {
+        if (value == null || value.isBlank()) return null;
+        return parseId(value);
     }
 
     private static LocalDate parseDate(String value) {

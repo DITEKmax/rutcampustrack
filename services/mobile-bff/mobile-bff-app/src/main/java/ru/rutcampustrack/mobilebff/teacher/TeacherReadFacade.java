@@ -22,12 +22,20 @@ import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonSummary;
 import ru.rutcampustrack.teacher.grpc.TeacherRosterEntry;
 import ru.rutcampustrack.teacher.grpc.TeacherSemesterResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsFilter;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsScope;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsSort;
+import ru.rutcampustrack.teacher.grpc.TeacherStudentStats;
+import ru.rutcampustrack.teacher.grpc.TeacherGroupStats;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsSubjectOption;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -40,6 +48,7 @@ import java.util.Set;
 /** Composes server-scoped teacher read RPCs into the mobile HTTP contract. */
 @Service
 public final class TeacherReadFacade {
+    private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
     private final MobileRequestContext requestContext;
     private final MobileAcademicClient academic;
     private final MobileScheduleClient schedule;
@@ -134,47 +143,19 @@ public final class TeacherReadFacade {
                     "Некорректный контекст журнала");
         }
 
-        List<TeacherAssignment> assignments = academic.teacherAssignmentsForSemester(semesterId)
-                .getAssignmentsList().stream()
-                .filter(assignment -> assignment.getTeacherId() == claims.userId())
-                .filter(assignment -> assignment.getGroupId() == groupId)
-                .filter(assignment -> assignment.getSubjectId() == subjectId)
-                .filter(assignment -> lessonType.equalsIgnoreCase(assignment.getLessonType()))
-                .toList();
-        if (assignments.isEmpty()) {
+        if (!currentTeacherGroupIds(claims).contains(groupId)) {
             throw new MobileBffException(HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE,
                     "Журнал недоступен в текущем scope");
         }
-
-        Map<Long, TeacherAssignment> assignmentById = new HashMap<>();
-        Map<AssignmentKey, TeacherAssignment> assignmentByKey = new HashMap<>();
-        LocalDate dateFrom = null;
-        LocalDate dateTo = null;
-        for (TeacherAssignment assignment : assignments) {
-            assignmentById.put(assignment.getAssignmentId(), assignment);
-            assignmentByKey.put(new AssignmentKey(assignment.getGroupId(), assignment.getSubjectId(),
-                    assignment.getLessonType().toLowerCase(Locale.ROOT)), assignment);
-            LocalDate validFrom = parseDate(assignment.getValidFrom());
-            LocalDate validUntil = parseNullableDate(assignment.getValidUntilExclusive());
-            dateFrom = dateFrom == null || validFrom.isBefore(dateFrom) ? validFrom : dateFrom;
-            if (validUntil != null) {
-                dateTo = dateTo == null || validUntil.isAfter(dateTo) ? validUntil : dateTo;
-            }
-        }
-        if (dateFrom == null || dateTo == null || !dateFrom.isBefore(dateTo)) {
-            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
-                    ProblemCode.DEPENDENCY_UNAVAILABLE, "Сервис вернул неполный срок назначения");
-        }
-
+        DateRange range = semesterRange(academic.teacherAssignmentsForSemester(semesterId));
         LessonsResponse scheduled = schedule.lessons(groupId, semesterId,
-                dateFrom, dateTo.minusDays(1));
+                range.from(), range.to());
         List<LessonResponse> concrete = scheduled.getLessonsList().stream()
-                .filter(lesson -> lesson.getAssignedTeacherId() == claims.userId())
+                .filter(lesson -> lesson.getId() > 0)
                 .filter(lesson -> lesson.getSemesterId() == semesterId
                         && lesson.getGroupId() == groupId
                         && lesson.getSubjectId() == subjectId
                         && lessonType.equalsIgnoreCase(lesson.getLessonType()))
-                .filter(lesson -> assignedToJournalContext(lesson, assignments))
                 .sorted(Comparator.comparing(LessonResponse::getDate)
                         .thenComparing(LessonResponse::getStartTime,
                                 Comparator.nullsLast(Comparator.naturalOrder()))
@@ -200,9 +181,216 @@ public final class TeacherReadFacade {
                 concrete.size(), end < concrete.size());
     }
 
+    public TeacherApiModels.StatsResponse stats(long semesterId,
+                                                String scopeValue,
+                                                Long selectedGroupId,
+                                                Long selectedSubjectId,
+                                                List<String> lessonTypes,
+                                                List<String> sortValues,
+                                                List<String> filterValues) {
+        InternalJwtClaims claims = requireTeacher();
+        if (semesterId <= 0) {
+            throw invalidStats("semesterId должен быть положительным");
+        }
+        TeacherStatsScope scope = parseStatsScope(scopeValue);
+        if (scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
+                && (selectedGroupId == null || selectedGroupId <= 0
+                || selectedSubjectId == null || selectedSubjectId <= 0)) {
+            throw invalidStats("Для студентов нужны группа и предмет");
+        }
+        if (scope == TeacherStatsScope.TEACHER_STATS_GROUPS
+                && (selectedGroupId != null || selectedSubjectId != null)) {
+            throw invalidStats("Разрез групп не принимает предмет или группу");
+        }
+
+        Set<String> selectedTypes = lessonTypes == null ? Set.of() : lessonTypes.stream()
+                .filter(value -> value != null && !value.isBlank())
+                .map(value -> value.trim().toLowerCase(Locale.ROOT))
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        Set<Long> activeGroupIds = currentTeacherGroupIds(claims);
+        if (activeGroupIds.isEmpty()
+                || scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
+                && !activeGroupIds.contains(selectedGroupId)) {
+            throw new MobileBffException(HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE,
+                    "Статистика недоступна в текущем scope");
+        }
+        DateRange range = semesterRange(academic.teacherAssignmentsForSemester(semesterId));
+        Map<Long, LessonResponse> concreteById = new HashMap<>();
+        for (Long groupId : activeGroupIds) {
+            LessonsResponse scheduled = schedule.lessons(groupId, semesterId,
+                    range.from(), range.to());
+            for (LessonResponse lesson : scheduled.getLessonsList()) {
+                if (lesson.getId() <= 0
+                        || lesson.getSemesterId() != semesterId
+                        || lesson.getGroupId() != groupId) {
+                    continue;
+                }
+                if (scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
+                        && lesson.getGroupId() != selectedGroupId) {
+                    continue;
+                }
+                concreteById.putIfAbsent(lesson.getId(), lesson);
+            }
+        }
+
+        List<TeacherStatsSort> sorts = parseStatsSorts(sortValues, scope);
+        List<TeacherStatsFilter> filters = parseStatsFilters(filterValues, scope);
+        TeacherStatsResponse response = attendance.teacherStats(
+                semesterId,
+                concreteById.values().stream()
+                        .sorted(Comparator.comparing(LessonResponse::getDate)
+                                .thenComparingInt(LessonResponse::getLessonNumber)
+                                .thenComparingLong(LessonResponse::getId))
+                        .map(LessonResponse::getId).toList(),
+                scope,
+                selectedGroupId == null ? 0 : selectedGroupId,
+                selectedSubjectId == null ? 0 : selectedSubjectId,
+                selectedTypes.stream().toList(),
+                sorts,
+                filters);
+        return stats(response);
+    }
+
+    private Set<Long> currentTeacherGroupIds(InternalJwtClaims claims) {
+        TeacherSemesterResponse active = academic.teacherActiveSemester();
+        TeacherAssignmentsResponse assignments = academic.teacherAssignmentsForSemester(active.getSemesterId());
+        return assignments.getAssignmentsList().stream()
+                .filter(value -> value.getTeacherId() == claims.userId())
+                .filter(value -> inRange(value, LocalDate.now(MOSCOW)))
+                .map(TeacherAssignment::getGroupId)
+                .filter(value -> value > 0)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+    }
+
+    private static DateRange semesterRange(TeacherAssignmentsResponse response) {
+        if (response == null || response.getSemesterDateFrom().isBlank()
+                || response.getSemesterDateTo().isBlank()) {
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
+                    ProblemCode.DEPENDENCY_UNAVAILABLE, "Сервис вернул неполный срок семестра");
+        }
+        LocalDate from = parseDate(response.getSemesterDateFrom());
+        LocalDate to = parseDate(response.getSemesterDateTo());
+        if (to.isBefore(from)) {
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE,
+                    ProblemCode.DEPENDENCY_UNAVAILABLE, "Сервис вернул некорректный срок семестра");
+        }
+        return new DateRange(from, to);
+    }
+
     public TeacherApiModels.ExcuseResponse excuse(String requestId) {
         requireTeacher();
         return excuse(attendance.teacherExcuse(requestId));
+    }
+
+    private static TeacherStatsScope parseStatsScope(String value) {
+        if (value == null) throw invalidStats("scope обязателен");
+        return switch (value.trim().toLowerCase(Locale.ROOT)) {
+            case "students", "student" -> TeacherStatsScope.TEACHER_STATS_STUDENTS;
+            case "groups", "group" -> TeacherStatsScope.TEACHER_STATS_GROUPS;
+            default -> throw invalidStats("Неизвестный разрез статистики");
+        };
+    }
+
+    private static List<TeacherStatsSort> parseStatsSorts(List<String> values, TeacherStatsScope scope) {
+        if (values == null || values.isEmpty()) return List.of();
+        List<TeacherStatsSort> result = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (String raw : values) {
+            if (raw == null || raw.isBlank()) throw invalidStats("Пустая сортировка");
+            String value = raw.trim();
+            boolean descending = value.startsWith("-");
+            if (descending) value = value.substring(1);
+            if (value.endsWith(":asc") || value.endsWith(":desc")) {
+                descending = value.endsWith(":desc");
+                value = value.substring(0, value.length() - 5);
+            }
+            if (!statsColumn(value, scope) || !seen.add(value)) throw invalidStats("Недопустимая сортировка");
+            result.add(TeacherStatsSort.newBuilder().setColumn(value).setDescending(descending).build());
+        }
+        return result;
+    }
+
+    private static List<TeacherStatsFilter> parseStatsFilters(List<String> values, TeacherStatsScope scope) {
+        if (values == null || values.isEmpty()) return List.of();
+        List<TeacherStatsFilter> result = new ArrayList<>();
+        for (String raw : values) {
+            if (raw == null || raw.isBlank()) throw invalidStats("Пустой фильтр");
+            String value = raw.trim();
+            String operator = value.contains("~") ? "~"
+                    : value.contains(">=") ? ">=" : value.contains("<=") ? "<=" : null;
+            if (operator == null) throw invalidStats("Фильтр имеет недопустимый формат");
+            int separator = value.indexOf(operator);
+            String column = value.substring(0, separator).trim();
+            String operand = value.substring(separator + operator.length()).trim();
+            if (!statsColumn(column, scope) || operand.isBlank()) throw invalidStats("Недопустимый фильтр");
+            TeacherStatsFilter.Builder filter = TeacherStatsFilter.newBuilder().setColumn(column);
+            if (operator.equals("~")) {
+                if (!(column.equals("displayName") || column.equals("groupName"))) {
+                    throw invalidStats("Текстовый фильтр доступен только для имени");
+                }
+                filter.setContains(operand);
+            } else {
+                try {
+                    if (column.equals("lessonsCount")) {
+                        int count = Integer.parseInt(operand);
+                        if (operator.equals(">=")) filter.setMinValue(count);
+                        else filter.setMaxValue(count);
+                    } else {
+                        double percent = Double.parseDouble(operand);
+                        if (operator.equals(">=")) filter.setMinPercent(percent);
+                        else filter.setMaxPercent(percent);
+                    }
+                } catch (NumberFormatException error) {
+                    throw invalidStats("Числовой фильтр имеет недопустимое значение");
+                }
+            }
+            result.add(filter.build());
+        }
+        return result;
+    }
+
+    private static boolean statsColumn(String column, TeacherStatsScope scope) {
+        if (scope == TeacherStatsScope.TEACHER_STATS_STUDENTS && column.equals("displayName")) return true;
+        if (scope == TeacherStatsScope.TEACHER_STATS_GROUPS
+                && (column.equals("groupName") || column.equals("lessonsCount"))) return true;
+        return Set.of("present", "presentOrExcused", "excused", "absent").contains(column);
+    }
+
+    private static TeacherApiModels.StatsResponse stats(TeacherStatsResponse response) {
+        return new TeacherApiModels.StatsResponse(
+                response.getScope() == TeacherStatsScope.TEACHER_STATS_GROUPS ? "groups" : "students",
+                Long.toString(response.getSemesterId()), parseNullableDate(response.getPeriodFrom()),
+                parseNullableDate(response.getPeriodTo()), response.getLessonsCount(),
+                response.getStudentsList().stream().map(TeacherReadFacade::statsStudent).toList(),
+                response.getGroupsList().stream().map(TeacherReadFacade::statsGroup).toList(),
+                response.getSubjectOptionsList().stream().map(TeacherReadFacade::statsSubjectOption).toList(),
+                parseInstant(response.getServerNow()));
+    }
+
+    private static TeacherApiModels.StatsStudent statsStudent(TeacherStudentStats value) {
+        return new TeacherApiModels.StatsStudent(Long.toString(value.getStudentId()), value.getDisplayName(),
+                metric(value.getPresent()), metric(value.getPresentOrExcused()), metric(value.getExcused()),
+                metric(value.getAbsent()));
+    }
+
+    private static TeacherApiModels.StatsGroup statsGroup(TeacherGroupStats value) {
+        return new TeacherApiModels.StatsGroup(Long.toString(value.getGroupId()), value.getGroupName(),
+                value.getLessonsCount(), metric(value.getPresent()), metric(value.getPresentOrExcused()),
+                metric(value.getExcused()), metric(value.getAbsent()));
+    }
+
+    private static TeacherApiModels.StatsSubjectOption statsSubjectOption(TeacherStatsSubjectOption value) {
+        return new TeacherApiModels.StatsSubjectOption(
+                Long.toString(value.getGroupId()), Long.toString(value.getSubjectId()),
+                value.getSubjectName(), value.getLessonTypesList());
+    }
+
+    private static TeacherApiModels.StatsMetric metric(ru.rutcampustrack.teacher.grpc.TeacherStatsMetric value) {
+        return new TeacherApiModels.StatsMetric(value.getNumerator(), value.getDenominator(), value.getPercent());
+    }
+
+    private static MobileBffException invalidStats(String message) {
+        return new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST, message);
     }
 
     public Download attachment(String requestId, String attachmentId) {
@@ -388,6 +576,9 @@ public final class TeacherReadFacade {
     }
 
     private record AssignmentKey(long groupId, long subjectId, String lessonType) {
+    }
+
+    private record DateRange(LocalDate from, LocalDate to) {
     }
 
     public record Download(String filename, String contentType, byte[] bytes) {

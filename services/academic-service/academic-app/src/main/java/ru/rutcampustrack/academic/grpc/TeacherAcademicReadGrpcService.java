@@ -140,6 +140,8 @@ public final class TeacherAcademicReadGrpcService
             responseObserver.onNext(TeacherAssignmentsResponse.newBuilder()
                     .addAllAssignments(assignments)
                     .setServerNow(OffsetDateTime.now(MOSCOW).toString())
+                    .setSemesterDateFrom(semester.getDateFrom().toString())
+                    .setSemesterDateTo(semester.getDateTo().toString())
                     .build());
             responseObserver.onCompleted();
         } catch (RuntimeException error) {

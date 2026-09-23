@@ -15,15 +15,16 @@ service TeacherAcademicReadService {
       returns (TeacherAssignmentsResponse);
 }
 
-// Additive attendance read boundary for the teacher PWA/TMA.  All lesson,
-// journal and excuse reads are authorized against the signed teacher identity
-// and the concrete assignment represented by the schedule snapshot.
+// Additive attendance read boundary for the teacher PWA/TMA.  Lesson, journal
+// and stats reads use current group authority plus the concrete schedule
+// snapshot; excuse and attachment reads retain the own-lesson assignment gate.
 service TeacherAttendanceReadService {
   rpc GetTeacherLesson(TeacherLessonRequest) returns (TeacherLessonResponse);
   rpc GetTeacherJournal(TeacherJournalRequest) returns (TeacherJournalResponse);
   rpc GetTeacherExcuse(TeacherExcuseRequest) returns (TeacherExcuseResponse);
   rpc DownloadTeacherExcuseAttachment(TeacherExcuseAttachmentRequest)
       returns (TeacherAttachmentDownload);
+  rpc GetTeacherStats(TeacherStatsRequest) returns (TeacherStatsResponse);
 }
 
 message TeacherActiveSemesterRequest {}
@@ -46,6 +47,8 @@ message TeacherAssignmentsRequest {
 message TeacherAssignmentsResponse {
   repeated TeacherAssignment assignments = 1;
   string server_now = 2;
+  string semester_date_from = 3;
+  string semester_date_to = 4;
 }
 
 message TeacherAssignment {
@@ -164,6 +167,84 @@ message TeacherAttachmentDownload {
   string content_type = 2;
   int64 size = 3;
   bytes data = 4;
+}
+
+enum TeacherStatsScope {
+  TEACHER_STATS_SCOPE_UNSPECIFIED = 0;
+  TEACHER_STATS_STUDENTS = 1;
+  TEACHER_STATS_GROUPS = 2;
+}
+
+message TeacherStatsRequest {
+  // The BFF resolves complete semester ranges to concrete lesson ids.
+  // Attendance re-authorizes every id against the signed teacher identity and
+  // the actor's current active group authority.
+  repeated int64 lesson_ids = 1;
+  TeacherStatsScope scope = 2;
+  int64 group_id = 3; // required for TEACHER_STATS_STUDENTS
+  int64 subject_id = 4; // required for TEACHER_STATS_STUDENTS
+  repeated string lesson_types = 5;
+  repeated TeacherStatsSort sorts = 6;
+  repeated TeacherStatsFilter filters = 7;
+  int64 semester_id = 8;
+}
+
+message TeacherStatsSort {
+  string column = 1;
+  bool descending = 2;
+}
+
+message TeacherStatsFilter {
+  string column = 1;
+  string contains = 2;
+  optional double min_percent = 3;
+  optional double max_percent = 4;
+  optional int32 min_value = 5;
+  optional int32 max_value = 6;
+}
+
+message TeacherStatsResponse {
+  TeacherStatsScope scope = 1;
+  int64 semester_id = 2;
+  string period_from = 3;
+  string period_to = 4;
+  int32 lessons_count = 5;
+  repeated TeacherStudentStats students = 6;
+  repeated TeacherGroupStats groups = 7;
+  string server_now = 8;
+  repeated TeacherStatsSubjectOption subject_options = 9;
+}
+
+message TeacherStatsSubjectOption {
+  int64 group_id = 1;
+  int64 subject_id = 2;
+  string subject_name = 3;
+  repeated string lesson_types = 4;
+}
+
+message TeacherStatsMetric {
+  int32 numerator = 1;
+  int32 denominator = 2;
+  double percent = 3;
+}
+
+message TeacherStudentStats {
+  int64 student_id = 1;
+  string display_name = 2;
+  TeacherStatsMetric present = 3;
+  TeacherStatsMetric present_or_excused = 4;
+  TeacherStatsMetric excused = 5;
+  TeacherStatsMetric absent = 6;
+}
+
+message TeacherGroupStats {
+  int64 group_id = 1;
+  string group_name = 2;
+  int32 lessons_count = 3;
+  TeacherStatsMetric present = 4;
+  TeacherStatsMetric present_or_excused = 5;
+  TeacherStatsMetric excused = 6;
+  TeacherStatsMetric absent = 7;
 }
 
 message TeacherLessonSummary {

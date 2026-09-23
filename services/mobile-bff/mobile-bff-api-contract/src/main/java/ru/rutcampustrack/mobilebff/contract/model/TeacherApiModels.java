@@ -163,4 +163,54 @@ public final class TeacherApiModels {
             Instant serverNow
     ) {
     }
+
+    @Schema(name = "TeacherStatsMetric")
+    public record StatsMetric(int numerator, int denominator, double percent) {
+    }
+
+    @Schema(name = "TeacherStatsStudent")
+    public record StatsStudent(
+            String studentId,
+            String displayName,
+            StatsMetric present,
+            StatsMetric presentOrExcused,
+            StatsMetric excused,
+            StatsMetric absent
+    ) {
+    }
+
+    @Schema(name = "TeacherStatsGroup")
+    public record StatsGroup(
+            String groupId,
+            String groupName,
+            int lessonsCount,
+            StatsMetric present,
+            StatsMetric presentOrExcused,
+            StatsMetric excused,
+            StatsMetric absent
+    ) {
+    }
+
+    @Schema(name = "TeacherStatsSubjectOption")
+    public record StatsSubjectOption(
+            String groupId,
+            String subjectId,
+            String subjectName,
+            List<String> lessonTypes
+    ) {
+    }
+
+    @Schema(name = "TeacherStats")
+    public record StatsResponse(
+            String scope,
+            String semesterId,
+            LocalDate periodFrom,
+            LocalDate periodTo,
+            int lessonsCount,
+            List<StatsStudent> students,
+            List<StatsGroup> groups,
+            List<StatsSubjectOption> subjectOptions,
+            Instant serverNow
+    ) {
+    }
 }

@@ -89,17 +89,15 @@ public final class TeacherReadFacade {
         TeacherAssignmentsResponse assignments = academic.teacherAssignments(
                 semesterId, date.toString(), date.toString());
         Map<Long, TeacherAssignment> assignmentById = new HashMap<>();
-        Map<AssignmentKey, TeacherAssignment> assignmentByKey = new HashMap<>();
         Set<Long> groupIds = new HashSet<>();
         for (TeacherAssignment assignment : assignments.getAssignmentsList()) {
-            if (assignment.getTeacherId() != claims.userId()
+            if (assignment.getAssignmentId() <= 0
+                    || assignment.getTeacherId() != claims.userId()
                     || !inRange(assignment, date)
                     || assignment.getGroupId() <= 0) {
                 continue;
             }
             assignmentById.put(assignment.getAssignmentId(), assignment);
-            assignmentByKey.put(new AssignmentKey(assignment.getGroupId(), assignment.getSubjectId(),
-                    assignment.getLessonType().toLowerCase(Locale.ROOT)), assignment);
             groupIds.add(assignment.getGroupId());
         }
 
@@ -111,8 +109,8 @@ public final class TeacherReadFacade {
                 .filter(lesson -> lesson.getAssignedTeacherId() == claims.userId())
                 .filter(lesson -> lesson.getSemesterId() == semesterId
                         && date.toString().equals(lesson.getDate()))
-                .filter(lesson -> assignedToTeacher(lesson, assignmentById, assignmentByKey))
-                .map(lesson -> dayLesson(lesson, assignmentById, assignmentByKey))
+                .filter(lesson -> assignedToTeacher(lesson, assignmentById, claims.userId()))
+                .map(lesson -> dayLesson(lesson, assignmentById))
                 .sorted(Comparator.comparing(TeacherApiModels.DayLesson::date)
                         .thenComparing(TeacherApiModels.DayLesson::startsAt,
                                 Comparator.nullsLast(Comparator.naturalOrder()))
@@ -410,15 +408,17 @@ public final class TeacherReadFacade {
 
     private static boolean assignedToTeacher(LessonResponse lesson,
                                              Map<Long, TeacherAssignment> byId,
-                                             Map<AssignmentKey, TeacherAssignment> byKey) {
-        TeacherAssignment exact = byId.get(lesson.getAssignmentId());
-        if (exact != null) {
-            return exact.getGroupId() == lesson.getGroupId()
-                    && exact.getSubjectId() == lesson.getSubjectId()
-                    && exact.getLessonType().equalsIgnoreCase(lesson.getLessonType());
+                                             long teacherId) {
+        if (lesson.getAssignmentId() <= 0) {
+            return false;
         }
-        return byKey.containsKey(new AssignmentKey(lesson.getGroupId(), lesson.getSubjectId(),
-                lesson.getLessonType().toLowerCase(Locale.ROOT)));
+        TeacherAssignment exact = byId.get(lesson.getAssignmentId());
+        return exact != null
+                && exact.getTeacherId() == teacherId
+                && lesson.getAssignedTeacherId() == teacherId
+                && exact.getGroupId() == lesson.getGroupId()
+                && exact.getSubjectId() == lesson.getSubjectId()
+                && exact.getLessonType().equalsIgnoreCase(lesson.getLessonType());
     }
 
     private static boolean assignedToJournalContext(LessonResponse lesson,
@@ -444,13 +444,8 @@ public final class TeacherReadFacade {
     }
 
     private static TeacherApiModels.DayLesson dayLesson(LessonResponse lesson,
-                                                         Map<Long, TeacherAssignment> byId,
-                                                         Map<AssignmentKey, TeacherAssignment> byKey) {
+                                                         Map<Long, TeacherAssignment> byId) {
         TeacherAssignment assignment = byId.get(lesson.getAssignmentId());
-        if (assignment == null) {
-            assignment = byKey.get(new AssignmentKey(lesson.getGroupId(), lesson.getSubjectId(),
-                    lesson.getLessonType().toLowerCase(Locale.ROOT)));
-        }
         return new TeacherApiModels.DayLesson(
                 Long.toString(lesson.getId()),
                 Long.toString(lesson.getAssignmentId()),
@@ -573,9 +568,6 @@ public final class TeacherReadFacade {
 
     private static String emptyToNull(String value) {
         return nullable(value);
-    }
-
-    private record AssignmentKey(long groupId, long subjectId, String lessonType) {
     }
 
     private record DateRange(LocalDate from, LocalDate to) {

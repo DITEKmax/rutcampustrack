@@ -85,6 +85,60 @@ class TeacherReadFacadeTest {
         verify(attendance).teacherJournal(List.of(101L, 108L));
     }
 
+    @Test
+    void dayIncludesOnlyLessonsWithTheTeachersExactAssignment() {
+        when(requestContext.claims()).thenReturn(new InternalJwtClaims(
+                71L, UUID.fromString("33333333-3333-4333-8333-333333333333"),
+                1L, 1L, "TEACHER", "ACTIVE", null, false, false));
+        when(academic.teacherAssignments(9L, "2026-09-10", "2026-09-10"))
+                .thenReturn(TeacherAssignmentsResponse.newBuilder()
+                        .addAssignments(assignment(0L, 71L))
+                        .addAssignments(assignment(12L, 71L))
+                        .addAssignments(assignment(13L, 72L))
+                        .build());
+
+        LessonResponse ownLesson = lesson(101L, "2026-09-10", 1, "09:00:00");
+        LessonResponse otherTeacherLesson = lesson(102L, "2026-09-10", 2, "10:40:00")
+                .toBuilder().setAssignmentId(13L).setAssignedTeacherId(72L).build();
+        LessonResponse wrongAssignmentId = lesson(103L, "2026-09-10", 3, "12:20:00")
+                .toBuilder().setAssignmentId(13L).build();
+        LessonResponse missingAssignmentId = lesson(104L, "2026-09-10", 4, "14:00:00")
+                .toBuilder().setAssignmentId(0L).build();
+        LessonResponse teacherMismatch = lesson(105L, "2026-09-10", 5, "15:40:00")
+                .toBuilder().setAssignedTeacherId(72L).build();
+        LessonResponse contextMismatch = lesson(106L, "2026-09-10", 6, "17:20:00")
+                .toBuilder().setSubjectId(23L).build();
+        when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 10), LocalDate.of(2026, 9, 10)))
+                .thenReturn(LessonsResponse.newBuilder()
+                        .addLessons(otherTeacherLesson)
+                        .addLessons(wrongAssignmentId)
+                        .addLessons(missingAssignmentId)
+                        .addLessons(teacherMismatch)
+                        .addLessons(contextMismatch)
+                        .addLessons(ownLesson)
+                        .build());
+
+        TeacherReadFacade facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        var result = facade.day(9L, LocalDate.of(2026, 9, 10));
+
+        assertThat(result.lessons()).extracting(lesson -> lesson.id()).containsExactly("101");
+    }
+
+    private static TeacherAssignment assignment(long assignmentId, long teacherId) {
+        return TeacherAssignment.newBuilder()
+                .setAssignmentId(assignmentId)
+                .setTeacherId(teacherId)
+                .setGroupId(33L)
+                .setGroupName("УИТ-311")
+                .setSubjectId(22L)
+                .setSubjectName("Математика")
+                .setSemesterId(9L)
+                .setLessonType("lecture")
+                .setValidFrom("2026-09-01")
+                .setValidUntilExclusive("2026-10-01")
+                .build();
+    }
+
     private static LessonResponse lesson(long id, String date, int number, String startTime) {
         return LessonResponse.newBuilder()
                 .setId(id)

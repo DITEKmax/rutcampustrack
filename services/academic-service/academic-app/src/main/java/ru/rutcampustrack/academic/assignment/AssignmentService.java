@@ -96,6 +96,7 @@ public class AssignmentService {
         assertOwnGroup(groupId);
         List<Assignment> list = assignmentRepository.findByGroupIdAndSemesterId(groupId, semesterId)
                 .stream()
+                .filter(a -> "ACTIVE".equals(a.getLifecycleState()))
                 .sorted(Comparator.comparing(Assignment::getSemesterId)
                         .thenComparing(a -> a.getLessonType().name())
                         .thenComparing(Assignment::getTeacherId)
@@ -135,6 +136,7 @@ public class AssignmentService {
         }
         List<Assignment> list = assignmentRepository.findByTeacherIdAndSemesterId(teacherId, activeSemester.getId())
                 .stream()
+                .filter(a -> "ACTIVE".equals(a.getLifecycleState()))
                 .filter(a -> !a.getValidFrom().isAfter(today))
                 .filter(a -> today.isBefore(AssignmentAuthority.effectiveEnd(a, activeSemester)))
                 .sorted(Comparator.comparing(Assignment::getSemesterId)

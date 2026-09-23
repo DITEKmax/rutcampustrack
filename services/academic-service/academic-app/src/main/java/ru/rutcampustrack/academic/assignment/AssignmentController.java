@@ -11,22 +11,28 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.academic.contract.api.AssignmentApi;
 import ru.rutcampustrack.academic.contract.dto.assignment.AssignTeacherRequest;
 import ru.rutcampustrack.academic.contract.dto.assignment.AssignmentResponse;
+import ru.rutcampustrack.academic.contract.dto.assignment.AssignmentReplacementResponse;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.contract.dto.assignment.ReplaceAssignmentRequest;
 import ru.rutcampustrack.academic.entity.Assignment;
 import ru.rutcampustrack.academic.security.RequireRole;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @RestController
 public class AssignmentController implements AssignmentApi {
 
     private final AssignmentService assignmentService;
     private final AssignmentAssembler assignmentAssembler;
+    private final AssignmentReplacementService replacementService;
 
     public AssignmentController(AssignmentService assignmentService,
-                                 AssignmentAssembler assignmentAssembler) {
+                                 AssignmentAssembler assignmentAssembler,
+                                 AssignmentReplacementService replacementService) {
         this.assignmentService = assignmentService;
         this.assignmentAssembler = assignmentAssembler;
+        this.replacementService = replacementService;
     }
 
     @Override
@@ -51,6 +57,20 @@ public class AssignmentController implements AssignmentApi {
     public ResponseEntity<Void> removeAssignment(Long id, LocalDate validUntilExclusive) {
         assignmentService.removeAssignment(id, validUntilExclusive);
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<AssignmentReplacementResponse> replaceAssignment(
+            Long id, ReplaceAssignmentRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(replacementService.replace(id, request));
+    }
+
+    @Override
+    @RequireRole({UserRole.STUDENT, UserRole.ADMIN})
+    public ResponseEntity<AssignmentReplacementResponse> getReplacementStatus(UUID operationId) {
+        return ResponseEntity.ok(replacementService.getStatus(operationId));
     }
 
     @Override

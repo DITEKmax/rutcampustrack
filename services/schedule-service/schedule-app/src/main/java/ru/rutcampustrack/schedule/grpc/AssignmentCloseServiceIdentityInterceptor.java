@@ -19,6 +19,8 @@ public final class AssignmentCloseServiceIdentityInterceptor implements ServerIn
 
     static final String PROTECTED_METHOD =
             ServiceIdentityServerInterceptor.SCHEDULE_INSTALL_ASSIGNMENT_CLOSE_CAP;
+    static final String COMMIT_METHOD =
+            ServiceIdentityServerInterceptor.SCHEDULE_COMMIT_ASSIGNMENT_CLOSE;
     static final String RESERVE_HOMEWORK_METHOD =
             ScheduleGrpcServiceGrpc.SERVICE_NAME + "/ReserveHomeworkBinding";
     static final String CONFIRM_HOMEWORK_METHOD =
@@ -40,6 +42,7 @@ public final class AssignmentCloseServiceIdentityInterceptor implements ServerIn
                 ServicePrincipal.SCHEDULE_SERVICE,
                 Map.of(
                         PROTECTED_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+                        COMMIT_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
                         RESERVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
                         CONFIRM_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
                         ARCHIVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,

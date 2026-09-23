@@ -28,6 +28,7 @@ import ru.rutcampustrack.academic.map.CampusMapReadService;
 import ru.rutcampustrack.academic.map.CampusMapUsageService;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.AssignmentRepository;
+import ru.rutcampustrack.academic.repository.AssignmentReplacementOperationRepository;
 import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
@@ -53,6 +54,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.HexFormat;
+import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
@@ -100,6 +102,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     private final CampusMapUsageService campusMapUsageService;
     private final StudentProjectionScopeService studentProjectionScopeService;
     private final AssistantPermissionAuthority assistantPermissionAuthority;
+    private final AssignmentReplacementOperationRepository replacementOperationRepository;
 
     @Autowired
     public AcademicGrpcServiceImpl(
@@ -117,7 +120,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             StudentProjectionScopeService studentProjectionScopeService,
             CampusMapReadService campusMapReadService,
             CampusMapUsageService campusMapUsageService,
-            AssistantPermissionAuthority assistantPermissionAuthority) {
+            AssistantPermissionAuthority assistantPermissionAuthority,
+            AssignmentReplacementOperationRepository replacementOperationRepository) {
         this.academicReadService = academicReadService;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
@@ -134,6 +138,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.campusMapReadService = campusMapReadService;
         this.campusMapUsageService = campusMapUsageService;
         this.assistantPermissionAuthority = assistantPermissionAuthority;
+        this.replacementOperationRepository = replacementOperationRepository;
     }
 
     /** Source-compatible constructor for focused tests predating assistant RPC. */
@@ -156,7 +161,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 assignmentRepository, semesterRepository, grantRepository,
                 homeworkRepository, completionRepository, headmanRateLimiter,
                 homeworkStudentService, studentProjectionScopeService,
-                campusMapReadService, campusMapUsageService, null);
+                campusMapReadService, campusMapUsageService, null, null);
     }
 
     /** Compatibility constructor retained for source-era assignment tests. */
@@ -175,7 +180,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this(academicReadService, groupRepository, userRepository, subjectRepository,
                 assignmentRepository, semesterRepository, grantRepository,
                 homeworkRepository, completionRepository, headmanRateLimiter,
-                homeworkStudentService, null, null, null, null);
+                homeworkStudentService, null, null, null, null, null);
     }
 
     /** Compatibility constructor retained for existing map/projection and identity tests. */
@@ -207,6 +212,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.campusMapReadService = campusMapReadService;
         this.campusMapUsageService = null;
         this.assistantPermissionAuthority = null;
+        this.replacementOperationRepository = null;
     }
 
     /** Compatibility constructor retained for source-era identity tests. */
@@ -236,6 +242,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.campusMapReadService = null;
         this.campusMapUsageService = null;
         this.assistantPermissionAuthority = null;
+        this.replacementOperationRepository = null;
     }
 
     /**
@@ -356,6 +363,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
 
         List<TeacherSubjectInfo> subjectInfos = assignmentRepository
                 .findByTeacherIdAndSemesterId(request.getTeacherId(), request.getSemesterId()).stream()
+                .filter(a -> "ACTIVE".equals(a.getLifecycleState()))
                 .filter(a -> !a.getValidFrom().isAfter(today))
                 .filter(a -> today.isBefore(a.getValidUntilExclusive() != null
                         ? a.getValidUntilExclusive() : activeSemester.getDateTo().plusDays(1)))
@@ -416,6 +424,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             return;
         }
         Map<Long, Assignment> byId = assignmentRepository.findAllById(ids).stream()
+                .filter(a -> "ACTIVE".equals(a.getLifecycleState()))
                 .collect(Collectors.toMap(Assignment::getId, a -> a, (left, right) -> left,
                         LinkedHashMap::new));
         List<Long> missing = ids.stream().distinct().filter(id -> !byId.containsKey(id)).toList();
@@ -453,6 +462,78 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                         .build())
                 .toList();
         responseObserver.onNext(AssignmentsByIdsResponse.newBuilder().addAllAssignments(infos).build());
+        responseObserver.onCompleted();
+    }
+
+    /**
+     * Directed read used by Schedule during the replacement prepare/apply
+     * protocol.  Only the durable operation tuple is exposed; ordinary
+     * assignment reads never reveal PREPARED rows.
+     */
+    @Override
+    public void getPreparedAssignmentCloseOperation(
+            PreparedAssignmentCloseRequest request,
+            StreamObserver<PreparedAssignmentCloseResponse> responseObserver) {
+        if (replacementOperationRepository == null) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription("assignment replacement store is unavailable")
+                    .asRuntimeException());
+            return;
+        }
+        final UUID operationId;
+        try {
+            operationId = UUID.fromString(request.getOperationId());
+        } catch (IllegalArgumentException error) {
+            responseObserver.onError(Status.INVALID_ARGUMENT
+                    .withDescription("operation_id must be a UUID")
+                    .asRuntimeException());
+            return;
+        }
+        var operation = replacementOperationRepository.findById(operationId).orElse(null);
+        if (operation == null || (!"PREPARED".equals(operation.getState())
+                && !"APPLIED".equals(operation.getState())
+                && !"COMMITTED".equals(operation.getState()))) {
+            responseObserver.onError(Status.NOT_FOUND
+                    .withDescription("assignment replacement operation not found")
+                    .asRuntimeException());
+            return;
+        }
+        if (request.getSourceAssignmentId() != operation.getSourceAssignmentId()) {
+            responseObserver.onError(Status.FAILED_PRECONDITION
+                    .withDescription("source assignment does not match operation")
+                    .asRuntimeException());
+            return;
+        }
+        Assignment source = assignmentRepository.findById(operation.getSourceAssignmentId()).orElse(null);
+        Assignment target = assignmentRepository.findById(operation.getTargetAssignmentId()).orElse(null);
+        if (source == null || target == null) {
+            responseObserver.onError(Status.FAILED_PRECONDITION
+                    .withDescription("assignment replacement tuple is incomplete")
+                    .asRuntimeException());
+            return;
+        }
+        responseObserver.onNext(PreparedAssignmentCloseResponse.newBuilder()
+                .setOperationId(operation.getOperationId().toString())
+                .setSourceAssignmentId(source.getId())
+                .setTargetAssignmentId(target.getId())
+                .setSourceTeacherId(source.getTeacherId())
+                .setTargetTeacherId(target.getTeacherId())
+                .setSubjectId(source.getSubjectId())
+                .setGroupId(source.getGroupId())
+                .setSemesterId(source.getSemesterId())
+                .setLessonType(source.getLessonType().name().toLowerCase(Locale.ROOT))
+                .setEffectiveFrom(operation.getEffectiveFrom().toString())
+                .setSourceValidUntilExclusive("PREPARED".equals(operation.getState())
+                        ? operation.getTargetValidUntil().toString()
+                        : source.getValidUntilExclusive() == null
+                                ? "" : source.getValidUntilExclusive().toString())
+                .setTargetValidUntilExclusive(operation.getTargetValidUntil() == null
+                        ? "" : operation.getTargetValidUntil().toString())
+                .setSourceValidFrom(source.getValidFrom().toString())
+                .setTargetLifecycleState(target.getLifecycleState())
+                .setState(operation.getState())
+                .setPayloadHash(ByteString.copyFrom(operation.getPayloadHash()))
+                .build());
         responseObserver.onCompleted();
     }
 

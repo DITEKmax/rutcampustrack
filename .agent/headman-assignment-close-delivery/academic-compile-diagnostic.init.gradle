@@ -1,0 +1,40 @@
+gradle.projectsEvaluated {
+    def academicProject = gradle.rootProject.findProject(
+            ":services:academic-service:academic-app")
+    if (academicProject == null) {
+        throw new GradleException("academic-app project not found for scoped compile diagnostic")
+    }
+    def compileTask = academicProject.tasks.named("compileJava").get()
+    compileTask.options.incremental = false
+    compileTask.doFirst {
+        println("REPLACEMENT_DIAGNOSTIC_TASK=${compileTask.path}")
+        def contractEntries = [
+                "ru/rutcampustrack/academic/contract/api/AssignmentApi.class",
+                "ru/rutcampustrack/academic/contract/dto/assignment/ReplaceAssignmentRequest.class",
+                "ru/rutcampustrack/academic/contract/dto/assignment/AssignmentReplacementResponse.class"
+        ]
+        def contractCandidates = compileTask.classpath.files.findAll {
+            it.absolutePath.toLowerCase().contains("academic-api-contract")
+        }.sort { it.absolutePath }
+        contractCandidates.each { candidate ->
+            println("REPLACEMENT_DIAGNOSTIC_CLASSPATH=${candidate.absolutePath}")
+            contractEntries.each { entry ->
+                boolean present = false
+                if (candidate.isDirectory()) {
+                    present = new File(candidate, entry).isFile()
+                } else if (candidate.isFile() && candidate.name.toLowerCase().endsWith(".jar")) {
+                    def jar = new java.util.zip.ZipFile(candidate)
+                    try {
+                        present = jar.getEntry(entry) != null
+                    } finally {
+                        jar.close()
+                    }
+                }
+                println("REPLACEMENT_DIAGNOSTIC_ENTRY=${entry};present=${present}")
+            }
+        }
+        if (contractCandidates.isEmpty()) {
+            println("REPLACEMENT_DIAGNOSTIC_CONTRACT_CANDIDATE=NONE")
+        }
+    }
+}

@@ -22,6 +22,9 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -75,14 +78,21 @@ public class RecurringScheduleItemWriter {
             return existingReplay;
         }
 
-        List<LocalDate> dates = RecurringDateCalculator.compute(
-                request, authority, semesterStart, semesterEnd, fenceCap);
+        List<LocalDate> dates = new ArrayList<>(RecurringDateCalculator.compute(
+                request, authority, semesterStart, semesterEnd, fenceCap));
+        dates.removeIf(replacementAlreadyCovered(request, authority, fenceCap));
+        Long replacementTemplateId = replacementTemplateId(request);
+        if (replacementTemplateId != null) {
+            dates.removeIf(date -> occurrenceExists(replacementTemplateId, date));
+        }
         OffsetDateTime createdAt = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
         LocalDate generatedFrom = dates.isEmpty() ? null : dates.get(0);
         LocalDate generatedUntil = dates.isEmpty() ? null : dates.get(dates.size() - 1);
         try {
-            long scheduleItemId = insertScheduleItem(request, authority, createdAt,
-                    dates.size(), generatedFrom, generatedUntil);
+            long scheduleItemId = replacementTemplateId == null
+                    ? insertScheduleItem(request, authority, createdAt,
+                            dates.size(), generatedFrom, generatedUntil)
+                    : replacementTemplateId;
             for (LocalDate date : dates) {
                 long occurrenceId = insertOccurrence(scheduleItemId, date, authority, createdAt);
                 long lessonId = insertPhysicalLesson(scheduleItemId, occurrenceId, date,
@@ -97,13 +107,25 @@ public class RecurringScheduleItemWriter {
                         """, occurrenceId, lessonId, actorId, createdAt);
             }
 
-            jdbc.update("""
+                jdbc.update("""
                     INSERT INTO schedule_recurring_create_replay
                         (actor_id, request_key, payload_hash, schedule_item_id,
                          assignment_id, generated_count, generated_from, generated_until, created_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, actorId, requestKey, payloadHash, scheduleItemId,
                     authority.assignmentId(), dates.size(), generatedFrom, generatedUntil, createdAt);
+            if (replacementTemplateId != null && !dates.isEmpty()) {
+                jdbc.update("""
+                        UPDATE schedule_items
+                           SET generated_count = COALESCE(generated_count, 0) + ?,
+                               generated_from = CASE WHEN generated_from IS NULL THEN ?
+                                                     ELSE LEAST(generated_from, ?) END,
+                               generated_until = CASE WHEN generated_until IS NULL THEN ?
+                                                      ELSE GREATEST(generated_until, ?) END
+                         WHERE id = ?
+                        """, dates.size(), generatedFrom, generatedFrom,
+                        generatedUntil, generatedUntil, scheduleItemId);
+            }
             return new RecurringCreateResult(scheduleItemId, authority.assignmentId(),
                     dates.size(), generatedFrom, generatedUntil);
         } catch (DataIntegrityViolationException ex) {
@@ -161,16 +183,18 @@ public class RecurringScheduleItemWriter {
         jdbc.update("""
                 INSERT INTO schedule_assignment_fences
                     (assignment_id, group_id, subject_id, semester_id,
-                     assigned_teacher_id, lesson_type, valid_from, cap_until_exclusive)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                     assigned_teacher_id, lesson_type, valid_from, cap_until_exclusive,
+                     creation_cap_until_exclusive)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT (assignment_id) DO NOTHING
                 """, authority.assignmentId(), authority.groupId(), authority.subjectId(),
                 authority.semesterId(), authority.teacherId(), authority.lessonType(),
-                authority.validFrom(), authority.validUntilExclusive());
+                authority.validFrom(), authority.validUntilExclusive(), authority.validUntilExclusive());
 
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 SELECT assignment_id, group_id, subject_id, semester_id,
-                       assigned_teacher_id, lesson_type, valid_from, cap_until_exclusive
+                       assigned_teacher_id, lesson_type, valid_from, cap_until_exclusive,
+                       creation_cap_until_exclusive
                   FROM schedule_assignment_fences
                  WHERE assignment_id = ?
                  FOR UPDATE
@@ -179,21 +203,44 @@ public class RecurringScheduleItemWriter {
             throw new RecurringProtocolConflictException("assignment fence disappeared");
         }
         Map<String, Object> fence = rows.get(0);
+        Boolean replacementPending = jdbc.queryForObject("""
+                SELECT EXISTS (
+                    SELECT 1 FROM schedule_assignment_replacement_operations
+                     WHERE target_assignment_id = ? AND state <> 'COMMITTED')
+                """, Boolean.class, authority.assignmentId());
+        if (Boolean.TRUE.equals(replacementPending)) {
+            throw new RecurringProtocolConflictException(
+                    "replacement target is fenced until Schedule commits the exact operation");
+        }
         requireEqual(fence.get("group_id"), authority.groupId(), "group");
         requireEqual(fence.get("subject_id"), authority.subjectId(), "subject");
         requireEqual(fence.get("semester_id"), authority.semesterId(), "semester");
         requireEqual(fence.get("assigned_teacher_id"), authority.teacherId(), "teacher");
         requireEqual(String.valueOf(fence.get("lesson_type")), authority.lessonType(), "lesson type");
         requireEqual(fence.get("valid_from"), authority.validFrom(), "validFrom");
-        LocalDate fenceCap = ((java.sql.Date) fence.get("cap_until_exclusive")).toLocalDate();
-        if (fenceCap.isAfter(authority.validUntilExclusive())) {
+        LocalDate retentionCap = ((java.sql.Date) fence.get("cap_until_exclusive")).toLocalDate();
+        LocalDate creationCap = ((java.sql.Date) fence.get("creation_cap_until_exclusive")).toLocalDate();
+        if (creationCap.isAfter(authority.validUntilExclusive())) {
             throw new RecurringProtocolConflictException(
-                    "verified assignment end is earlier than the retained local fence cap");
+                    "verified assignment end is earlier than the local creation cap");
+        }
+        if (retentionCap.isAfter(authority.validUntilExclusive())) {
+            Boolean replacementRetainedHistory = jdbc.queryForObject("""
+                    SELECT EXISTS (
+                        SELECT 1 FROM schedule_assignment_replacement_operations
+                         WHERE source_assignment_id = ?
+                           AND effective_from = ?
+                           AND state = 'COMMITTED')
+                    """, Boolean.class, authority.assignmentId(), creationCap);
+            if (!Boolean.TRUE.equals(replacementRetainedHistory)) {
+                throw new RecurringProtocolConflictException(
+                        "retained fence exceeds Academic authority without a committed replacement");
+            }
         }
         // A stale larger remote end is deliberately ignored. The durable
-        // local cap remains authoritative and is never widened.
-        verifyExistingCanonicalRows(authority, fenceCap);
-        return fenceCap;
+        // local creation cap remains authoritative and is never widened.
+        verifyExistingCanonicalRows(authority, retentionCap);
+        return creationCap;
     }
 
     private void verifyExistingCanonicalRows(RecurringAssignmentAuthority authority, LocalDate fenceCap) {
@@ -266,6 +313,82 @@ public class RecurringScheduleItemWriter {
                 generatedCount, generatedFrom, generatedUntil);
         if (id == null) throw new RecurringProtocolConflictException("schedule item id was not generated");
         return id;
+    }
+
+    /**
+     * A cloned replacement template already accounts for moved and skipped
+     * source dates.  If a later generation request targets the same tuple,
+     * keep those dates out of the new physical batch so held rows cannot be
+     * resurrected and moved rows cannot be duplicated.
+     */
+    private java.util.function.Predicate<LocalDate> replacementAlreadyCovered(
+            CreateScheduleItemRequest request,
+            RecurringAssignmentAuthority authority,
+            LocalDate creationCap) {
+        Set<LocalDate> covered = new HashSet<>();
+        for (Map<String, Object> row : jdbc.queryForList("""
+                SELECT DISTINCT ledger.occurrence_date
+                  FROM schedule_assignment_rebind_ledger ledger
+                  JOIN schedule_items target_item
+                    ON target_item.id = ledger.target_schedule_item_id
+                 WHERE target_item.assignment_id = ?
+                   AND target_item.group_id = ?
+                   AND target_item.subject_id = ?
+                   AND target_item.semester_id = ?
+                   AND target_item.day_of_week = ?
+                   AND target_item.lesson_number = ?
+                   AND target_item.start_time = ?
+                   AND target_item.end_time = ?
+                   AND target_item.week_type = CAST(? AS week_type)
+                   AND target_item.room IS NOT DISTINCT FROM ?
+                   AND ledger.occurrence_date >= ?
+                   AND ledger.occurrence_date < ?
+                """, request.assignmentId(), request.groupId(), request.subjectId(),
+                request.semesterId(), request.dayOfWeek(), request.lessonNumber(),
+                request.startTime(), request.endTime(), request.weekType().name().toLowerCase(),
+                request.room(), authority.validFrom(), creationCap)) {
+            Object value = row.get("occurrence_date");
+            covered.add(value instanceof java.sql.Date date ? date.toLocalDate() : LocalDate.parse(value.toString()));
+        }
+        return covered::contains;
+    }
+
+    private Long replacementTemplateId(CreateScheduleItemRequest request) {
+        List<Map<String, Object>> rows = jdbc.queryForList("""
+                SELECT target_item.id
+                  FROM schedule_assignment_replacement_templates mapping
+                 JOIN schedule_items target_item ON target_item.id = mapping.target_schedule_item_id
+                 WHERE target_item.assignment_id = ?
+                   AND mapping.source_was_active
+                   AND target_item.is_active
+                   AND target_item.group_id = ?
+                   AND target_item.subject_id = ?
+                   AND target_item.semester_id = ?
+                   AND target_item.day_of_week = ?
+                   AND target_item.lesson_number = ?
+                   AND target_item.start_time = ?
+                   AND target_item.end_time = ?
+                   AND target_item.week_type = CAST(? AS week_type)
+                   AND target_item.room IS NOT DISTINCT FROM ?
+                 ORDER BY target_item.id
+                 LIMIT 2
+                """, request.assignmentId(), request.groupId(), request.subjectId(),
+                request.semesterId(), request.dayOfWeek(), request.lessonNumber(),
+                request.startTime(), request.endTime(), request.weekType().name().toLowerCase(),
+                request.room());
+        if (rows.size() > 1) {
+            throw new RecurringProtocolConflictException(
+                    "more than one replacement template matches this recurring schedule tuple");
+        }
+        return rows.isEmpty() ? null : ((Number) rows.get(0).get("id")).longValue();
+    }
+
+    private boolean occurrenceExists(long scheduleItemId, LocalDate date) {
+        Boolean exists = jdbc.queryForObject("""
+                SELECT EXISTS (SELECT 1 FROM lesson_occurrences
+                                WHERE schedule_item_id = ? AND occurrence_date = ?)
+                """, Boolean.class, scheduleItemId, date);
+        return Boolean.TRUE.equals(exists);
     }
 
     private long insertOccurrence(long scheduleItemId,

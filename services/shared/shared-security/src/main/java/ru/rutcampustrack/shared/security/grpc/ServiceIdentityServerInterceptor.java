@@ -27,6 +27,8 @@ public final class ServiceIdentityServerInterceptor implements ServerInterceptor
 
     public static final String SCHEDULE_INSTALL_ASSIGNMENT_CLOSE_CAP =
             "rutcampustrack.schedule.ScheduleGrpcService/InstallAssignmentCloseCap";
+    public static final String SCHEDULE_COMMIT_ASSIGNMENT_CLOSE =
+            "rutcampustrack.schedule.ScheduleGrpcService/CommitAssignmentClose";
     public static final String ACADEMIC_GET_PREPARED_ASSIGNMENT_CLOSE_OPERATION =
             "rutcampustrack.academic.AcademicGrpcService/GetPreparedAssignmentCloseOperation";
 

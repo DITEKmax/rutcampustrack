@@ -10,6 +10,7 @@ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
+import ru.rutcampustrack.schedule.replacement.AssignmentReplacementService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,23 +36,35 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
     private final ScheduleItemRepository scheduleItemRepository;
     private final OneOffLessonRepository oneOffLessonRepository;
     private final HomeworkBindingService homeworkBindingService;
+    private final AssignmentReplacementService assignmentReplacementService;
 
     /** Legacy constructor kept for focused tests of the pre-V17 read RPCs. */
     public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
                                    ScheduleItemRepository scheduleItemRepository,
                                    OneOffLessonRepository oneOffLessonRepository) {
-        this(lessonRepository, scheduleItemRepository, oneOffLessonRepository, null);
+        this(lessonRepository, scheduleItemRepository, oneOffLessonRepository, null, null);
+    }
+
+    /** Compatibility constructor retained for focused pre-replacement tests. */
+    public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
+                                   ScheduleItemRepository scheduleItemRepository,
+                                   OneOffLessonRepository oneOffLessonRepository,
+                                   HomeworkBindingService homeworkBindingService) {
+        this(lessonRepository, scheduleItemRepository, oneOffLessonRepository,
+                homeworkBindingService, null);
     }
 
     @Autowired
     public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
                                    ScheduleItemRepository scheduleItemRepository,
                                    OneOffLessonRepository oneOffLessonRepository,
-                                   HomeworkBindingService homeworkBindingService) {
+                                   HomeworkBindingService homeworkBindingService,
+                                   AssignmentReplacementService assignmentReplacementService) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.oneOffLessonRepository = oneOffLessonRepository;
         this.homeworkBindingService = homeworkBindingService;
+        this.assignmentReplacementService = assignmentReplacementService;
     }
 
     /**
@@ -274,6 +287,27 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .setTotalLessonsCount(total)
                 .build());
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void installAssignmentCloseCap(InstallAssignmentCloseCapRequest request,
+                                          StreamObserver<AssignmentCloseReceipt> responseObserver) {
+        responseObserver.onNext(requireAssignmentReplacementService().install(request));
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void commitAssignmentClose(CommitAssignmentCloseRequest request,
+                                      StreamObserver<AssignmentCloseReceipt> responseObserver) {
+        responseObserver.onNext(requireAssignmentReplacementService().commit(request));
+        responseObserver.onCompleted();
+    }
+
+    private AssignmentReplacementService requireAssignmentReplacementService() {
+        if (assignmentReplacementService == null) {
+            throw new IllegalStateException("assignment replacement store is not configured");
+        }
+        return assignmentReplacementService;
     }
 
     private LessonResponse buildResponse(Lesson lesson, ScheduleItem item) {

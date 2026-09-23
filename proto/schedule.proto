@@ -44,6 +44,12 @@ service ScheduleGrpcService {
 
   // Прочитать текущие привязки домашних работ для occurrences.
   rpc GetHomeworkBindings (HomeworkBindingsRequest) returns (HomeworkBindingsResponse);
+
+  // Directed Academic service boundary for assignment replacement.
+  rpc InstallAssignmentCloseCap (InstallAssignmentCloseCapRequest)
+      returns (AssignmentCloseReceipt);
+  rpc CommitAssignmentClose (CommitAssignmentCloseRequest)
+      returns (AssignmentCloseReceipt);
 }
 
 message ActiveLessonRequest {
@@ -67,6 +73,26 @@ message LessonsByGroupRequest {
   int64 semester_id = 2;
   string date_from = 3;  // ISO date
   string date_to = 4;
+}
+
+message InstallAssignmentCloseCapRequest {
+  string operation_id = 1;
+  int64 source_assignment_id = 2;
+  int64 target_assignment_id = 3;
+  string effective_from = 4;
+  bytes payload_hash = 5;
+}
+
+message CommitAssignmentCloseRequest {
+  string operation_id = 1;
+  bytes payload_hash = 2;
+}
+
+message AssignmentCloseReceipt {
+  string operation_id = 1;
+  string state = 2;
+  int64 moved_count = 3;
+  int64 skipped_count = 4;
 }
 
 message LessonResponse {

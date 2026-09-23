@@ -70,6 +70,9 @@ public abstract class AbstractScheduleIntegrationTest {
                 TRUNCATE TABLE
                     schedule_outbox,
                     lesson_homework_bindings,
+                    schedule_assignment_rebind_ledger,
+                    schedule_assignment_replacement_templates,
+                    schedule_assignment_replacement_operations,
                     schedule_transfer_replay,
                     lesson_lifecycle_entries,
                     lessons,

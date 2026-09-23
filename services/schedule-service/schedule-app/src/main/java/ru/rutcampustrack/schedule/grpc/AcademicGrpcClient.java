@@ -4,6 +4,7 @@ import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,9 @@ import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.academic.grpc.AssignmentInfo;
 import ru.rutcampustrack.academic.grpc.AssignmentsByIdsRequest;
+import ru.rutcampustrack.academic.grpc.PreparedAssignmentCloseRequest;
+import ru.rutcampustrack.academic.grpc.PreparedAssignmentCloseResponse;
+import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
@@ -42,6 +46,9 @@ public class AcademicGrpcClient {
 
     @Autowired
     private RequestContext requestContext;
+
+    @Value("${grpc.service-identity.schedule-to-academic-token:}")
+    private String scheduleToAcademicToken;
 
     /**
      * Validates that a group exists and is active.
@@ -172,6 +179,27 @@ public class AcademicGrpcClient {
             }
             throw new AcademicServiceUnavailableException(
                     "Academic Service unavailable: " + e.getStatus());
+        }
+    }
+
+    public PreparedAssignmentCloseResponse getPreparedAssignmentCloseOperation(
+            java.util.UUID operationId, long sourceAssignmentId) {
+        if (!DirectedServiceCredential.isCanonicalToken(scheduleToAcademicToken)) {
+            throw new AcademicServiceUnavailableException(
+                    "Academic replacement API is not configured with a directed service identity");
+        }
+        Metadata metadata = new Metadata();
+        metadata.put(DirectedServiceCredential.TOKEN_METADATA_KEY, scheduleToAcademicToken);
+        try {
+            return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getPreparedAssignmentCloseOperation(PreparedAssignmentCloseRequest.newBuilder()
+                            .setOperationId(operationId.toString())
+                            .setSourceAssignmentId(sourceAssignmentId)
+                            .build());
+        } catch (StatusRuntimeException error) {
+            throw new AcademicServiceUnavailableException(
+                    "Academic replacement authority unavailable: " + error.getStatus());
         }
     }
 }

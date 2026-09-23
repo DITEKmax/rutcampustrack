@@ -59,6 +59,10 @@ service AcademicGrpcService {
   // Получить назначения по их идентификаторам
   rpc GetAssignmentsByIds (AssignmentsByIdsRequest) returns (AssignmentsByIdsResponse);
 
+  // Read one exact prepared replacement for the directed Schedule writer.
+  rpc GetPreparedAssignmentCloseOperation (PreparedAssignmentCloseRequest)
+      returns (PreparedAssignmentCloseResponse);
+
   rpc GetCampusMapManifest (CampusMapManifestRequest) returns (CampusMapManifestResponse);
   rpc GetCampusFloorPlan (CampusMapFloorRequest) returns (CampusMapPlanResponse);
   rpc ReadCampusMapAsset (CampusMapAssetRequest) returns (stream CampusMapAssetChunk);
@@ -334,6 +338,30 @@ message AssignmentsByIdsRequest {
 
 message AssignmentsByIdsResponse {
   repeated AssignmentInfo assignments = 1;
+}
+
+message PreparedAssignmentCloseRequest {
+  string operation_id = 1;
+  int64 source_assignment_id = 2;
+}
+
+message PreparedAssignmentCloseResponse {
+  string operation_id = 1;
+  int64 source_assignment_id = 2;
+  int64 target_assignment_id = 3;
+  int64 source_teacher_id = 4;
+  int64 target_teacher_id = 5;
+  int64 subject_id = 6;
+  int64 group_id = 7;
+  int64 semester_id = 8;
+  string lesson_type = 9;
+  string effective_from = 10;
+  string source_valid_until_exclusive = 11;
+  string state = 12;
+  bytes payload_hash = 13;
+  string target_valid_until_exclusive = 14;
+  string source_valid_from = 15;
+  string target_lifecycle_state = 16;
 }
 
 enum CampusMapFormat {

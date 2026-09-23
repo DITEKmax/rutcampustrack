@@ -19,8 +19,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.assignment.AssignTeacherRequest;
 import ru.rutcampustrack.academic.contract.dto.assignment.AssignmentResponse;
+import ru.rutcampustrack.academic.contract.dto.assignment.AssignmentReplacementResponse;
+import ru.rutcampustrack.academic.contract.dto.assignment.ReplaceAssignmentRequest;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * REST API contract for teacher-subject-group assignment management.
@@ -62,6 +65,23 @@ public interface AssignmentApi {
             @PathVariable Long id,
             @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
             LocalDate validUntilExclusive);
+
+    @Operation(summary = "Заменить преподавателя с даты (HEADMAN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Замена подготовлена и применена"),
+            @ApiResponse(responseCode = "403", description = "Нет права старосты"),
+            @ApiResponse(responseCode = "409", description = "Конфликт назначения или операции")
+    })
+    @PostMapping("/{id}/replace")
+    ResponseEntity<AssignmentReplacementResponse> replaceAssignment(
+            @PathVariable Long id,
+            @Valid @RequestBody ReplaceAssignmentRequest request);
+
+    @Operation(summary = "Статус замены преподавателя")
+    @ApiResponse(responseCode = "200", description = "Состояние durable operation")
+    @GetMapping("/replacements/{operationId}")
+    ResponseEntity<AssignmentReplacementResponse> getReplacementStatus(
+            @PathVariable UUID operationId);
 
     @Operation(summary = "Мои назначения (TEACHER)", description = "Возвращает все предметы и группы текущего преподавателя для активного семестра.")
     @ApiResponses({

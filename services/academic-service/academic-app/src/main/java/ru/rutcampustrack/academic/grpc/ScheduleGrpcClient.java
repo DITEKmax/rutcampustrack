@@ -23,6 +23,9 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.ResolveLessonRequest;
 import ru.rutcampustrack.schedule.grpc.ReserveHomeworkBindingRequest;
 import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
+import ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt;
+import ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest;
+import ru.rutcampustrack.schedule.grpc.CommitAssignmentCloseRequest;
 import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
 
 import java.time.LocalDate;
@@ -155,6 +158,46 @@ public class ScheduleGrpcClient {
         } catch (StatusRuntimeException e) {
             throw mapBindingError(e, "прочитать привязки домашних работ");
         }
+    }
+
+    public AssignmentCloseReceipt installAssignmentCloseCap(UUID operationId,
+                                                             long sourceAssignmentId,
+                                                             long targetAssignmentId,
+                                                             LocalDate effectiveFrom,
+                                                             byte[] payloadHash) {
+        try {
+            return directedStub().installAssignmentCloseCap(InstallAssignmentCloseCapRequest.newBuilder()
+                    .setOperationId(operationId.toString())
+                    .setSourceAssignmentId(sourceAssignmentId)
+                    .setTargetAssignmentId(targetAssignmentId)
+                    .setEffectiveFrom(effectiveFrom.toString())
+                    .setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash))
+                    .build());
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "применить замену преподавателя");
+        }
+    }
+
+    public AssignmentCloseReceipt commitAssignmentClose(UUID operationId, byte[] payloadHash) {
+        try {
+            return directedStub().commitAssignmentClose(CommitAssignmentCloseRequest.newBuilder()
+                    .setOperationId(operationId.toString())
+                    .setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash))
+                    .build());
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "зафиксировать замену преподавателя");
+        }
+    }
+
+    private ScheduleGrpcServiceGrpc.ScheduleGrpcServiceBlockingStub directedStub() {
+        if (!DirectedServiceCredential.isCanonicalToken(academicToScheduleToken)) {
+            throw new ScheduleServiceUnavailableException(
+                    "Нельзя вызвать replacement API без directed Academic service identity");
+        }
+        Metadata headers = new Metadata();
+        headers.put(DirectedServiceCredential.TOKEN_METADATA_KEY, academicToScheduleToken);
+        return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
+                .withDeadlineAfter(3, TimeUnit.SECONDS);
     }
 
     private ScheduleGrpcServiceGrpc.ScheduleGrpcServiceBlockingStub bindingStub() {

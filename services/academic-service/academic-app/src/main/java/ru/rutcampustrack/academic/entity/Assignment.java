@@ -49,6 +49,9 @@ public class Assignment {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+    @Column(name = "lifecycle_state", nullable = false, updatable = false)
+    private String lifecycleState = "ACTIVE";
+
     public Assignment(Long teacherId,
                       Long subjectId,
                       Long groupId,
@@ -56,6 +59,18 @@ public class Assignment {
                       SubjectType lessonType,
                       LocalDate validFrom,
                       LocalDate validUntilExclusive) {
+        this(teacherId, subjectId, groupId, semesterId, lessonType,
+                validFrom, validUntilExclusive, "ACTIVE");
+    }
+
+    public Assignment(Long teacherId,
+                      Long subjectId,
+                      Long groupId,
+                      Long semesterId,
+                      SubjectType lessonType,
+                      LocalDate validFrom,
+                      LocalDate validUntilExclusive,
+                      String lifecycleState) {
         this.teacherId = teacherId;
         this.subjectId = subjectId;
         this.groupId = groupId;
@@ -63,6 +78,7 @@ public class Assignment {
         this.lessonType = lessonType;
         this.validFrom = validFrom;
         this.validUntilExclusive = validUntilExclusive;
+        this.lifecycleState = lifecycleState == null ? "ACTIVE" : lifecycleState;
     }
 
     @jakarta.persistence.PrePersist

@@ -50,6 +50,26 @@ class AssignmentCloseServiceIdentityInterceptorTest {
     }
 
     @Test
+    void validAcademicCredentialAlsoProtectsCommitMethod() {
+        AssignmentCloseServiceIdentityInterceptor interceptor =
+                new AssignmentCloseServiceIdentityInterceptor(TOKEN);
+        AtomicReference<ServicePrincipal> seen = new AtomicReference<>();
+        AtomicBoolean called = new AtomicBoolean();
+
+        interceptor.interceptCall(
+                call(AssignmentCloseServiceIdentityInterceptor.COMMIT_METHOD, tlsAttributes()),
+                headers(TOKEN),
+                (nextCall, metadata) -> {
+                    called.set(true);
+                    seen.set(ServicePrincipal.CONTEXT_KEY.get());
+                    return new Listener<>() { };
+                });
+
+        assertThat(called.get()).isTrue();
+        assertThat(seen).hasValue(ServicePrincipal.ACADEMIC_SERVICE);
+    }
+
+    @Test
     void missingConfigurationDeniesOnlyReservedMethod() {
         AssignmentCloseServiceIdentityInterceptor interceptor =
                 new AssignmentCloseServiceIdentityInterceptor("");
@@ -58,6 +78,23 @@ class AssignmentCloseServiceIdentityInterceptorTest {
         AtomicBoolean called = new AtomicBoolean();
 
         interceptor.interceptCall(call, new Metadata(), (nextCall, metadata) -> {
+            called.set(true);
+            return new Listener<>() { };
+        });
+
+        verify(call).close(any(Status.class), any(Metadata.class));
+        assertThat(called.get()).isFalse();
+    }
+
+    @Test
+    void missingConfigurationAlsoDeniesCommitMethod() {
+        AssignmentCloseServiceIdentityInterceptor interceptor =
+                new AssignmentCloseServiceIdentityInterceptor("");
+        ServerCall<Object, Object> call = call(
+                AssignmentCloseServiceIdentityInterceptor.COMMIT_METHOD, tlsAttributes());
+        AtomicBoolean called = new AtomicBoolean();
+
+        interceptor.interceptCall(call, headers(TOKEN), (nextCall, metadata) -> {
             called.set(true);
             return new Listener<>() { };
         });

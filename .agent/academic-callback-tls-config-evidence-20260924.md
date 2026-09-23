@@ -33,16 +33,28 @@ the Linux runner, while both images run as non-root `app`; therefore the TLS
 servers could not read their bind-mounted keys. Both images now use stable,
 distinct `app` identities: Academic `10001:10001`, Schedule `10002:10002`.
 E2E key provisioning changes ownership and mode only on the two generated
-server key files, verifies the exact UID:GID and `0600`, and fails closed on
-platforms where Linux ownership cannot be confirmed. It uses non-recursive
-`chown`/`chmod`, with non-interactive sudo only when ordinary permissions do
-not suffice. Existing key files receive the same check. Production guidance
-documents owner and mode; no production key is generated or modified.
+server key files on Linux, verifies the exact UID:GID and `0600`, and fails
+closed if that cannot be confirmed. It uses non-recursive `chown`/`chmod`,
+with non-interactive sudo only when ordinary permissions do not suffice.
+Existing key files receive the same check. Windows Git Bash verifies actual
+container readability without changing host key permissions; other platforms
+fail closed. Production guidance documents owner and mode; no production key
+is generated or modified.
 
 The Requests runner was prepared in its separate owned worktree with an
 ephemeral Academic certificate, isolated key directory, Academic-only server
 key mount, and read-only Academic trust-certificate mounts for Schedule,
 Attendance, and Mobile BFF. This preparation is not runtime evidence.
+
+The Windows Git Bash correction keeps the Linux owner/mode checks unchanged.
+For `MINGW*`/`MSYS*`, each generated gRPC server key is checked separately in
+the preloaded `busybox:1.36.1` image using a single read-only bind mount and the
+corresponding numeric service UID:GID. The probe has no network, a read-only
+root filesystem, dropped capabilities, and redirects the key read to
+`/dev/null`. `cygpath -am` plus `MSYS_NO_PATHCONV`/`MSYS2_ARG_CONV_EXCL` keep
+the Windows source path intact. It does not change host key permissions and
+fails closed if Docker Desktop, `cygpath`, or the local helper image is
+unavailable. macOS and other platforms are not claimed as supported.
 
 ## Acceptance criteria
 
@@ -79,6 +91,17 @@ Academic.
 - `git diff --check` scoped to the changed product files: exit 0.
 - After the key-ownership correction, Git Bash `bash -n` for the certificate
   generator: exit 0; scoped `git diff --check`: exit 0.
+- After the Windows helper correction, `& 'C:\Program Files\Git\bin\bash.exe'
+  -n tests/e2e/infra/scripts/generate-test-certs.sh` (PowerShell, product WT):
+  exit 0; `git diff --check -- tests/e2e/infra/scripts/generate-test-certs.sh
+  docs/testing/e2e-testing.md .agent/academic-callback-tls-config-evidence-20260924.md`:
+  exit 0. The docs state the local helper-image prerequisite for Windows Git Bash.
+- A read-only Git Bash path calculation exited 0 and resolved `SCRIPT_DIR` to
+  `tests/e2e/infra/scripts` and `CERTS_DIR` to `tests/e2e/infra/scripts/../certs`.
+  The one generator invocation with Git Bash login/PATH initialized exited 1
+  at its initial `mkdir -p` with permission denied on `/c/Users/maksd`, before
+  certificate creation or Docker/helper invocation. Thus Windows key
+  readability remains **NOT RUN**; no key was created, removed, or re-permissioned.
 - After runner adaptation, PowerShell AST parse of `runner.ps1` and its scoped
   `git diff --check`: exit 0.
 - Source cross-check of Dockerfile IDs and e2e/prod certificate paths/authority:
@@ -93,10 +116,12 @@ Academic.
 
 ## Runtime status and limitations
 
-The correction commit is awaiting scoped independent Sol recheck. New build
-and runtime validation are **NOT RUN**. The parent gate requires review and
-integration before allocating the next build/runtime lifecycle. No production
-certificate, private key, deployment, or rotation was created or performed.
+The correction commit is awaiting scoped independent Sol recheck. No build or
+replacement runtime lifecycle was run for this correction. Windows helper
+readability is **NOT RUN** because the constrained Git Bash process could not
+create the ignored `tests/e2e/infra/certs` directory before reaching the probe;
+an elevated retry is pending a HEAVY slot. No production certificate, private
+key, deployment, or rotation was created or performed.
 
 The existing `docker-compose.e2e.yml` and `docker-compose.prod.yml` do not define
 a Mobile BFF service. Its prod profile is TLS-configured here; environment and

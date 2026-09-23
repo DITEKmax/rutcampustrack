@@ -17,16 +17,73 @@ CERTS_DIR="${SCRIPT_DIR}/../certs"
 
 mkdir -p "${CERTS_DIR}"
 
+verify_windows_container_key_readable() {
+  local key_path="$1"
+  local uid="$2"
+  local gid="$3"
+  local helper_image="busybox:1.36.1"
+  local source_path
+
+  if ! command -v docker >/dev/null 2>&1; then
+    echo "Docker Desktop is required to verify ${key_path} from Windows Git Bash." >&2
+    return 1
+  fi
+  if ! command -v cygpath >/dev/null 2>&1; then
+    echo "cygpath is required to verify ${key_path} from Windows Git Bash." >&2
+    return 1
+  fi
+  if ! MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*' docker image inspect "${helper_image}" >/dev/null 2>&1; then
+    echo "Cannot verify Docker Desktop or local helper image ${helper_image}; ensure Docker Desktop is available and preload the image before generating certificates." >&2
+    return 1
+  fi
+
+  source_path="$(cygpath -am "${key_path}")" || {
+    echo "Cannot convert the private-key path for Docker Desktop." >&2
+    return 1
+  }
+
+  # Only the one server key is mounted, read-only. The helper has no network,
+  # a read-only root filesystem, no capabilities, and never prints key bytes.
+  if ! MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*' docker run \
+    --pull=never \
+    --rm \
+    --network none \
+    --read-only \
+    --cap-drop ALL \
+    --security-opt no-new-privileges:true \
+    --user "${uid}:${gid}" \
+    --mount "type=bind,source=${source_path},target=/server-key,readonly" \
+    --entrypoint /bin/sh \
+    "${helper_image}" \
+    -c 'test "$(id -u)" = "$1" && test "$(id -g)" = "$2" && test -r /server-key && cat /server-key >/dev/null' \
+    sh "${uid}" "${gid}" >/dev/null 2>&1; then
+    echo "Docker Desktop could not verify that container UID:GID ${uid}:${gid} can read ${key_path}." >&2
+    return 1
+  fi
+}
+
 set_server_key_owner() {
   local key_path="$1"
   local owner="$2:$3"
   local actual_owner
   local actual_mode
+  local platform
 
-  if [ "$(uname -s)" != "Linux" ]; then
-    echo "Cannot verify Linux container ownership for ${key_path} on this platform; provision these e2e certificates on Linux." >&2
-    return 1
-  fi
+  platform="$(uname -s)"
+  case "${platform}" in
+    MINGW*|MSYS*)
+      if ! verify_windows_container_key_readable "${key_path}" "$2" "$3"; then
+        return 1
+      fi
+      return
+      ;;
+    Linux)
+      ;;
+    *)
+      echo "Unsupported certificate provisioning platform ${platform}; use Linux or Windows Git Bash with Docker Desktop." >&2
+      return 1
+      ;;
+  esac
 
   actual_mode="$(stat -c '%a' "${key_path}")"
   if [ "${actual_mode}" != "600" ] && ! chmod 600 "${key_path}" 2>/dev/null; then

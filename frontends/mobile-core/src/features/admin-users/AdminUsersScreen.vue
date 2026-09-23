@@ -9,6 +9,7 @@ import {
   type AdminUser,
   type CreateAdminUserInput,
   type UpdateAdminRoleInput,
+  type UpdateAdminUserProfileInput,
   type AdminUsersClient,
 } from './admin-users-client'
 import './admin-users-screen.pcss'
@@ -44,6 +45,13 @@ const createRole = ref<Exclude<AdminManagedRole, 'HEADMAN'>>('STUDENT')
 const createGroupId = ref('')
 const createEmployeeNumber = ref('')
 const createTelegramId = ref('')
+const profileEditorVisible = ref(false)
+const profileLoading = ref(false)
+const profileOriginal = ref<AdminUser | null>(null)
+const profileLastName = ref('')
+const profileFirstName = ref('')
+const profileMiddleName = ref('')
+const profileEmployeeNumber = ref('')
 const editorRole = ref<Exclude<AdminManagedRole, 'HEADMAN'>>('STUDENT')
 const editorStatus = ref<AdminRoleStatus>('ACTIVE')
 const editorGroupId = ref('')
@@ -57,6 +65,8 @@ let listRequestRevision = 0
 let listAbortController: AbortController | null = null
 let mutationRevision = 0
 let mutationAbortController: AbortController | null = null
+let profileLoadRevision = 0
+let profileLoadAbortController: AbortController | null = null
 
 const roleFilters: readonly { value: AdminManagedRole | ''; label: string }[] = [
   { value: '', label: 'Все роли' },
@@ -88,6 +98,8 @@ const editorStatuses = computed(() => {
 })
 const hasStudentGrant = computed(() => Boolean(selectedUser.value?.roles.some((grant) => grant.role === 'STUDENT')))
 const canTransfer = computed(() => hasStudentGrant.value && selectedUser.value?.roles.some((grant) => grant.role === 'STUDENT' && grant.status === 'ACTIVE'))
+const profileHasTeacherRole = computed(() => selectedUser.value?.role === 'TEACHER'
+  || Boolean(selectedUser.value?.roles.some((grant) => grant.role === 'TEACHER')))
 const totalLabel = computed(() => totalElements.value === 1 ? '1 пользователь' : `${totalElements.value} пользователей`)
 
 onMounted(() => void refresh())
@@ -117,6 +129,20 @@ function beginMutation(): { revision: number; controller: AbortController } {
 
 function isCurrentMutation(revision: number, controller: AbortController): boolean {
   return !disposed && revision === mutationRevision && mutationAbortController === controller
+}
+
+function isCurrentProfileLoad(revision: number, controller: AbortController, userId: number): boolean {
+  return !disposed
+    && revision === profileLoadRevision
+    && profileLoadAbortController === controller
+    && selectedUser.value?.id === userId
+}
+
+function cancelProfileLoad(): void {
+  ++profileLoadRevision
+  profileLoadAbortController?.abort()
+  profileLoadAbortController = null
+  profileLoading.value = false
 }
 
 async function refresh(): Promise<void> {
@@ -156,6 +182,7 @@ async function refresh(): Promise<void> {
 }
 
 async function createUser(): Promise<void> {
+  if (saving.value || profileEditorVisible.value) return
   const role = createRole.value
   let input: CreateAdminUserInput
   try {
@@ -199,7 +226,7 @@ async function createUser(): Promise<void> {
 
 async function updateRole(): Promise<void> {
   const user = selectedUser.value
-  if (!user || !editorCanUpdate.value) return
+  if (!user || saving.value || profileEditorVisible.value || !editorCanUpdate.value) return
   let input: UpdateAdminRoleInput
   try {
     input = {
@@ -225,6 +252,104 @@ async function updateRole(): Promise<void> {
   } catch (cause) {
     if (!isCurrentMutation(revision, controller) || isAbortError(cause) || cause instanceof StaleSessionGenerationError) return
     showError(cause, 'Роль не удалось обновить.')
+  } finally {
+    if (isCurrentMutation(revision, controller)) {
+      saving.value = false
+      mutationAbortController = null
+    }
+  }
+}
+
+async function beginProfileEdit(): Promise<void> {
+  const user = selectedUser.value
+  if (!user || saving.value || profileLoading.value || createVisible.value) return
+  cancelProfileLoad()
+  const revision = ++profileLoadRevision
+  const controller = new AbortController()
+  profileLoadAbortController = controller
+  profileEditorVisible.value = true
+  profileLoading.value = true
+  profileOriginal.value = null
+  error.value = null
+  notice.value = null
+  try {
+    const fresh = await props.client.getUser(user.id, controller.signal)
+    if (!isCurrentProfileLoad(revision, controller, user.id)) return
+    selectedUser.value = fresh
+    profileOriginal.value = fresh
+    profileLastName.value = fresh.lastName
+    profileFirstName.value = fresh.firstName
+    profileMiddleName.value = fresh.middleName ?? ''
+    profileEmployeeNumber.value = fresh.employeeNumber ?? ''
+    syncEditorFromUser(fresh)
+  } catch (cause) {
+    if (!isCurrentProfileLoad(revision, controller, user.id) || isAbortError(cause) || cause instanceof StaleSessionGenerationError) return
+    profileEditorVisible.value = false
+    showError(cause, 'Данные пользователя не удалось загрузить.')
+  } finally {
+    if (isCurrentProfileLoad(revision, controller, user.id)) {
+      profileLoading.value = false
+      profileLoadAbortController = null
+    }
+  }
+}
+
+function cancelProfileEdit(): void {
+  cancelProfileLoad()
+  profileEditorVisible.value = false
+  profileOriginal.value = null
+}
+
+async function updateProfile(): Promise<void> {
+  const user = selectedUser.value
+  const original = profileOriginal.value
+  if (!user || !original || user.id !== original.id || saving.value || profileLoading.value) return
+
+  const lastName = profileLastName.value.trim()
+  const firstName = profileFirstName.value.trim()
+  const middleName = profileMiddleName.value.trim()
+  const employeeNumber = profileEmployeeNumber.value.trim()
+  if (!lastName || !firstName) {
+    error.value = 'Укажи фамилию и имя.'
+    return
+  }
+  if (profileHasTeacherRole.value && !employeeNumber) {
+    error.value = 'Для преподавателя табельный номер обязателен.'
+    return
+  }
+
+  const input: {
+    lastName?: string
+    firstName?: string
+    middleName?: string
+    employeeNumber?: string
+  } = {}
+  if (lastName !== original.lastName) input.lastName = lastName
+  if (firstName !== original.firstName) input.firstName = firstName
+  if (middleName !== (original.middleName ?? '')) input.middleName = middleName
+  if (employeeNumber !== (original.employeeNumber ?? '')) input.employeeNumber = employeeNumber
+  if (Object.keys(input).length === 0) {
+    cancelProfileEdit()
+    notice.value = 'Изменений нет.'
+    return
+  }
+
+  const patch: UpdateAdminUserProfileInput = input
+  const { revision, controller } = beginMutation()
+  saving.value = true
+  error.value = null
+  notice.value = null
+  try {
+    const updated = await props.client.updateProfile(user.id, patch, controller.signal)
+    if (!isCurrentMutation(revision, controller) || selectedUser.value?.id !== user.id) return
+    selectedUser.value = updated
+    syncEditorFromUser(updated)
+    cancelProfileEdit()
+    notice.value = 'Данные пользователя сохранены.'
+    await refresh()
+  } catch (cause) {
+    if (!isCurrentMutation(revision, controller) || isAbortError(cause) || cause instanceof StaleSessionGenerationError) return
+    showError(cause, 'Данные пользователя не удалось сохранить.')
   } finally {
     if (isCurrentMutation(revision, controller)) {
       saving.value = false
@@ -271,6 +396,7 @@ async function transferStudent(): Promise<void> {
 }
 
 function selectUser(user: AdminUser): void {
+  cancelProfileEdit()
   selectedUser.value = user
   syncEditorFromUser(user)
   error.value = null
@@ -303,12 +429,13 @@ function resetCreateForm(): void {
 }
 
 function submitSearch(): void {
+  if (saving.value || profileEditorVisible.value) return
   page.value = 0
   void refresh()
 }
 
 function changePage(next: number): void {
-  if (saving.value || next < 0 || (totalPages.value > 0 && next >= totalPages.value)) return
+  if (saving.value || profileEditorVisible.value || next < 0 || (totalPages.value > 0 && next >= totalPages.value)) return
   page.value = next
   void refresh()
 }
@@ -358,6 +485,7 @@ onBeforeUnmount(() => {
   ++mutationRevision
   listAbortController?.abort()
   mutationAbortController?.abort()
+  cancelProfileLoad()
   listAbortController = null
   mutationAbortController = null
 })
@@ -383,6 +511,7 @@ onBeforeUnmount(() => {
         <button
           class="admin-users-screen__new"
           type="button"
+          :disabled="profileEditorVisible || saving"
           :aria-expanded="createVisible"
           @click="createVisible = !createVisible; error = null; notice = null"
         >
@@ -399,6 +528,7 @@ onBeforeUnmount(() => {
         <span>Поиск</span>
         <input
           v-model="search"
+          :disabled="saving || profileEditorVisible"
           type="search"
           placeholder="ФИО, логин или табельный номер"
           autocomplete="off"
@@ -408,6 +538,7 @@ onBeforeUnmount(() => {
         <span>Роль</span>
         <select
           v-model="roleFilter"
+          :disabled="saving || profileEditorVisible"
           @change="statusFilter = ''; submitSearch()"
         >
           <option
@@ -421,7 +552,7 @@ onBeforeUnmount(() => {
         <span>Статус</span>
         <select
           v-model="statusFilter"
-          :disabled="!roleFilter"
+          :disabled="!roleFilter || saving || profileEditorVisible"
           @change="submitSearch"
         >
           <option
@@ -434,7 +565,7 @@ onBeforeUnmount(() => {
       <button
         class="admin-users-action"
         type="submit"
-        :disabled="loading || saving"
+        :disabled="loading || saving || profileEditorVisible"
       >
         Найти
       </button>
@@ -540,6 +671,7 @@ onBeforeUnmount(() => {
           type="button"
           class="admin-users-row"
           :class="{ 'admin-users-row--selected': selectedUser?.id === user.id }"
+          :disabled="saving || profileEditorVisible"
           @click="selectUser(user)"
         >
           <strong>{{ user.fullName }}</strong>
@@ -548,7 +680,7 @@ onBeforeUnmount(() => {
         <div class="admin-users-pagination">
           <button
             type="button"
-            :disabled="saving || page === 0"
+            :disabled="saving || profileEditorVisible || page === 0"
             @click="changePage(page - 1)"
           >
             ← Назад
@@ -556,7 +688,7 @@ onBeforeUnmount(() => {
           <span>{{ totalPages ? `${page + 1} из ${totalPages}` : '—' }}</span>
           <button
             type="button"
-            :disabled="saving || totalPages === 0 || page + 1 >= totalPages"
+            :disabled="saving || profileEditorVisible || totalPages === 0 || page + 1 >= totalPages"
             @click="changePage(page + 1)"
           >
             Вперёд →
@@ -585,6 +717,110 @@ onBeforeUnmount(() => {
           <div><dt>Табельный номер</dt><dd>{{ selectedUser.employeeNumber ?? '—' }}</dd></div>
           <div><dt>Telegram ID</dt><dd>{{ selectedUser.telegramId ?? '—' }}</dd></div>
         </dl>
+        <button
+          v-if="!profileEditorVisible"
+          class="admin-users-action admin-users-action--secondary"
+          type="button"
+          :disabled="saving || createVisible"
+          @click="void beginProfileEdit()"
+        >
+          Изменить ФИО и табельный номер
+        </button>
+        <p
+          v-if="profileLoading"
+          class="admin-users-state"
+          role="status"
+        >
+          Загружаем актуальные данные пользователя…
+        </p>
+        <button
+          v-if="profileLoading"
+          class="admin-users-action admin-users-action--secondary"
+          type="button"
+          @click="cancelProfileEdit"
+        >
+          Отмена
+        </button>
+        <form
+          v-if="profileEditorVisible && profileOriginal"
+          class="admin-users-editor"
+          @submit.prevent="updateProfile"
+        >
+          <h3>Личные данные</h3>
+          <label for="admin-user-profile-last-name"><span>Фамилия</span><input
+            id="admin-user-profile-last-name"
+            v-model="profileLastName"
+            :disabled="saving || profileLoading"
+            aria-describedby="admin-user-profile-name-hint"
+            autocomplete="family-name"
+            maxlength="128"
+            required
+            type="text"
+          ></label>
+          <label for="admin-user-profile-first-name"><span>Имя</span><input
+            id="admin-user-profile-first-name"
+            v-model="profileFirstName"
+            :disabled="saving || profileLoading"
+            aria-describedby="admin-user-profile-name-hint"
+            autocomplete="given-name"
+            maxlength="128"
+            required
+            type="text"
+          ></label>
+          <label for="admin-user-profile-middle-name"><span>Отчество</span><input
+            id="admin-user-profile-middle-name"
+            v-model="profileMiddleName"
+            :disabled="saving || profileLoading"
+            aria-describedby="admin-user-profile-middle-hint"
+            autocomplete="additional-name"
+            maxlength="128"
+            type="text"
+          ></label>
+          <p
+            id="admin-user-profile-name-hint"
+            class="admin-users-form__hint"
+          >
+            Фамилия и имя обязательны. Максимальная длина каждого поля — 128 символов.
+          </p>
+          <p
+            id="admin-user-profile-middle-hint"
+            class="admin-users-form__hint"
+          >
+            Оставь поле пустым, чтобы убрать отчество.
+          </p>
+          <label for="admin-user-profile-employee-number"><span>Табельный номер</span><input
+            id="admin-user-profile-employee-number"
+            v-model="profileEmployeeNumber"
+            :disabled="saving || profileLoading"
+            aria-describedby="admin-user-profile-employee-hint"
+            :required="profileHasTeacherRole"
+            autocomplete="off"
+            maxlength="32"
+            type="text"
+          ></label>
+          <p
+            id="admin-user-profile-employee-hint"
+            class="admin-users-form__hint"
+          >
+            Пустое значение уберёт номер; у пользователя с ролью преподавателя номер обязателен. Максимум 32 символа.
+          </p>
+          <button
+            class="admin-users-action"
+            type="submit"
+            :disabled="saving || profileLoading"
+            :aria-busy="saving"
+          >
+            {{ saving ? 'Сохраняем…' : 'Сохранить данные' }}
+          </button>
+          <button
+            class="admin-users-action admin-users-action--secondary"
+            type="button"
+            :disabled="saving"
+            @click="cancelProfileEdit"
+          >
+            Отмена
+          </button>
+        </form>
         <div class="admin-users-grants">
           <h3>Права ролей</h3>
           <div
@@ -608,6 +844,7 @@ onBeforeUnmount(() => {
           <h3>Изменить или добавить роль</h3>
           <label><span>Роль</span><select
             :value="editorRole"
+            :disabled="saving || profileEditorVisible"
             @change="changeEditorRole(($event.target as HTMLSelectElement).value as Exclude<AdminManagedRole, 'HEADMAN'>)"
           ><option value="STUDENT">Студент</option><option value="TEACHER">Преподаватель</option><option value="ADMIN">Администратор</option></select></label>
           <p
@@ -616,29 +853,40 @@ onBeforeUnmount(() => {
           >
             {{ selectedGrant.blockedReason }}
           </p>
-          <label v-if="editorCanUpdate"><span>Статус</span><select v-model="editorStatus"><option
-            v-for="status in editorStatuses"
-            :key="status"
-            :value="status"
-          >{{ statusLabel(status) }}</option></select></label>
+          <label v-if="editorCanUpdate">
+            <span>Статус</span>
+            <select
+              v-model="editorStatus"
+              :disabled="saving || profileEditorVisible"
+            >
+              <option
+                v-for="status in editorStatuses"
+                :key="status"
+                :value="status"
+              >{{ statusLabel(status) }}</option>
+            </select>
+          </label>
           <label v-if="editorRole === 'STUDENT' && editorCanUpdate"><span>ID группы</span><input
             v-model="editorGroupId"
+            :disabled="saving || profileEditorVisible"
             inputmode="numeric"
             type="text"
           ></label>
           <label v-if="editorRole === 'STUDENT' && editorCanUpdate"><span>Telegram ID</span><input
             v-model="editorTelegramId"
+            :disabled="saving || profileEditorVisible"
             inputmode="numeric"
             type="text"
           ></label>
           <label v-if="editorRole === 'TEACHER' && editorCanUpdate"><span>Табельный номер</span><input
             v-model="editorEmployeeNumber"
+            :disabled="saving || profileEditorVisible"
             type="text"
           ></label>
           <button
             class="admin-users-action"
             type="submit"
-            :disabled="saving || !editorCanUpdate"
+            :disabled="saving || profileEditorVisible || !editorCanUpdate"
           >
             {{ saving ? 'Сохраняем…' : selectedGrant ? 'Сохранить роль' : 'Добавить роль' }}
           </button>
@@ -652,19 +900,21 @@ onBeforeUnmount(() => {
           <h3>Перевести студента</h3>
           <label><span>Новая группа</span><input
             v-model="transferGroupId"
+            :disabled="saving || profileEditorVisible"
             inputmode="numeric"
             required
             type="text"
           ></label>
           <label><span>Причина</span><textarea
             v-model="transferReason"
+            :disabled="saving || profileEditorVisible"
             required
             rows="3"
           /></label>
           <button
             class="admin-users-action admin-users-action--secondary"
             type="submit"
-            :disabled="saving"
+            :disabled="saving || profileEditorVisible"
           >
             Перевести
           </button>

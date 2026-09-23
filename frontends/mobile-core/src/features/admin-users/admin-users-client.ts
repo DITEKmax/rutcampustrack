@@ -64,6 +64,15 @@ export interface UpdateAdminRoleInput {
   readonly telegramId?: number
 }
 
+export interface UpdateAdminUserProfileInput {
+  readonly lastName?: string
+  readonly firstName?: string
+  /** An empty string clears the patronymic. */
+  readonly middleName?: string
+  /** An empty string clears the value when the user has no TEACHER grant. */
+  readonly employeeNumber?: string
+}
+
 export interface TransferAdminStudentInput {
   readonly newGroupId: number
   readonly reason: string
@@ -116,6 +125,16 @@ export class AdminUsersClient {
     const payload = normalizeCreateInput(input)
     return this.request<unknown>(AdminUsersClient.basePath, {
       method: 'POST',
+      body: JSON.stringify(payload),
+      ...(signal ? { signal } : {}),
+    }).then(normalizeUser)
+  }
+
+  updateProfile(id: number, input: UpdateAdminUserProfileInput, signal?: AbortSignal): Promise<AdminUser> {
+    positiveInteger(id, 'userId')
+    const payload = normalizeProfileInput(input)
+    return this.request<unknown>(`${AdminUsersClient.basePath}/${id}`, {
+      method: 'PATCH',
       body: JSON.stringify(payload),
       ...(signal ? { signal } : {}),
     }).then(normalizeUser)
@@ -269,6 +288,34 @@ function normalizeRoleInput(input: UpdateAdminRoleInput): UpdateAdminRoleInput {
     ...(input.employeeNumber === undefined ? {} : { employeeNumber: requiredText(input.employeeNumber, 'employeeNumber') }),
     ...(input.telegramId === undefined ? {} : { telegramId: positiveInteger(input.telegramId, 'telegramId') }),
   }
+}
+
+function normalizeProfileInput(input: UpdateAdminUserProfileInput): UpdateAdminUserProfileInput {
+  const payload: {
+    lastName?: string
+    firstName?: string
+    middleName?: string
+    employeeNumber?: string
+  } = {}
+  if (input.lastName !== undefined) payload.lastName = profileName(input.lastName, 'lastName')
+  if (input.firstName !== undefined) payload.firstName = profileName(input.firstName, 'firstName')
+  if (input.middleName !== undefined) payload.middleName = profileOptionalText(input.middleName, 128, 'middleName')
+  if (input.employeeNumber !== undefined) payload.employeeNumber = profileOptionalText(input.employeeNumber, 32, 'employeeNumber')
+  if (Object.keys(payload).length === 0) throw new RangeError('Изменения профиля не заданы')
+  return payload
+}
+
+function profileName(value: string, field: string): string {
+  const normalized = value.trim()
+  if (!normalized) throw new RangeError(`${field} не может быть пустым`)
+  if (normalized.length > 128) throw new RangeError(`${field} не может быть длиннее 128 символов`)
+  return normalized
+}
+
+function profileOptionalText(value: string, maxLength: number, field: string): string {
+  const normalized = value.trim()
+  if (normalized.length > maxLength) throw new RangeError(`${field} не может быть длиннее ${maxLength} символов`)
+  return normalized
 }
 
 function requiredRecord(value: unknown, field: string): Record<string, unknown> {

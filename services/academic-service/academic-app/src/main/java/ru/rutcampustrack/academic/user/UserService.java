@@ -591,6 +591,11 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User patchUser(Long id, PatchUserRequest request) {
+        boolean profileOnlyPatch = request != null
+                && request.isHeadman() == null
+                && request.groupId() == null
+                && request.status() == null
+                && request.telegramId() == null;
         boolean canonicalHeadmanMutation = request != null
                 && request.isHeadman() != null
                 && headmanAssignmentService != null;
@@ -620,6 +625,28 @@ public class UserService {
         }
         User user = userRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        String patchedLastName = request.lastName() == null
+                ? null : normalizeRequiredProfileField(request.lastName(), "lastName", "Фамилия");
+        String patchedFirstName = request.firstName() == null
+                ? null : normalizeRequiredProfileField(request.firstName(), "firstName", "Имя");
+        String patchedMiddleName = request.middleName() == null
+                ? null : normalizeOptionalProfileField(request.middleName(), 128, "middleName", "Отчество");
+        String patchedEmployeeNumber = request.employeeNumber() == null
+                ? null : normalizeOptionalProfileField(request.employeeNumber(), 32, "employeeNumber", "Табельный номер");
+        if (request.employeeNumber() != null) {
+            boolean hasTeacherRole = user.getRole() == UserRole.TEACHER
+                    || roleGrantReader != null && roleGrantReader.findByUserId(id).stream()
+                    .anyMatch(grant -> "TEACHER".equalsIgnoreCase(grant.role()));
+            if (hasTeacherRole && patchedEmployeeNumber == null) {
+                throw new BadRequestException("employeeNumber", "Для преподавателя табельный номер обязателен");
+            }
+            if (patchedEmployeeNumber != null
+                    && !java.util.Objects.equals(patchedEmployeeNumber, user.getEmployeeNumber())
+                    && userRepository.existsByEmployeeNumber(patchedEmployeeNumber)) {
+                throw new ConflictException("employeeNumber", patchedEmployeeNumber,
+                        "Табельный номер уже используется");
+            }
+        }
         Long oldGroupId = user.getGroupId();
         boolean oldHeadman = user.isHeadman();
         ensureMembershipMutationSupported(
@@ -642,20 +669,20 @@ public class UserService {
             closeOpenMembershipOnTerminalStatus(id, LocalDate.now(MOSCOW));
         }
 
-        if (request.lastName() != null) {
-            user.setLastName(request.lastName());
+        if (patchedLastName != null) {
+            user.setLastName(patchedLastName);
         }
-        if (request.firstName() != null) {
-            user.setFirstName(request.firstName());
+        if (patchedFirstName != null) {
+            user.setFirstName(patchedFirstName);
         }
         if (request.middleName() != null) {
-            user.setMiddleName(request.middleName());
+            user.setMiddleName(patchedMiddleName);
         }
         if (request.groupId() != null) {
             user.setGroupId(request.groupId());
         }
         if (request.employeeNumber() != null) {
-            user.setEmployeeNumber(request.employeeNumber());
+            user.setEmployeeNumber(patchedEmployeeNumber);
         }
         if (request.telegramId() != null) {
             user.setTelegramId(request.telegramId());
@@ -719,10 +746,29 @@ public class UserService {
         userRepository.flush();
         if (saved.getStatus() == AccountStatus.ARCHIVED) {
             archiveRoleGrants(saved);
-        } else {
+        } else if (!profileOnlyPatch) {
             synchronizeRoleGrants(saved);
         }
         return saved;
+    }
+
+    private static String normalizeRequiredProfileField(String value, String field, String label) {
+        String normalized = value.trim();
+        if (normalized.isEmpty()) {
+            throw new BadRequestException(field, label + " не может быть пустой");
+        }
+        if (normalized.length() > 128) {
+            throw new BadRequestException(field, label + " не может быть длиннее 128 символов");
+        }
+        return normalized;
+    }
+
+    private static String normalizeOptionalProfileField(String value, int maxLength, String field, String label) {
+        String normalized = value.trim();
+        if (normalized.length() > maxLength) {
+            throw new BadRequestException(field, label + " не может быть длиннее " + maxLength + " символов");
+        }
+        return normalized.isEmpty() ? null : normalized;
     }
 
     @CacheEvict(value = "users", key = "#id")

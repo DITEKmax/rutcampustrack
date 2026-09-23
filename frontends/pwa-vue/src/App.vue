@@ -65,6 +65,11 @@ import { createPwaRoleSelection } from './role-flow'
 import { assertAuthBffCoherence } from './session-coherence'
 import PwaUpdateGate from './PwaUpdateGate.vue'
 import { createPwaFetcher } from './pwa-version'
+import InstallOffer from './features/install/InstallOffer.vue'
+import type { InstallPromptController } from './features/install/install-prompt'
+
+const props = defineProps<{ installPrompt: InstallPromptController }>()
+const installPrompt = props.installPrompt
 
 const fixtureMode = import.meta.env.VITE_MOBILE_FIXTURE_MODE === 'true'
 const fixtureDiagnosticsMode = fixtureMode && new URLSearchParams(window.location.search).get('fixtureDiagnostics') === 'true'
@@ -1056,6 +1061,11 @@ onBeforeUnmount(() => {
 
 <template>
   <PwaUpdateGate :enabled="!fixtureMode" />
+  <InstallOffer
+    v-if="studentViewVisible && authSnapshot?.activeRole === 'STUDENT' && session"
+    :controller="installPrompt"
+    :eligible="studentViewVisible && authSnapshot?.activeRole === 'STUDENT' && session !== null"
+  />
   <section
     v-if="!featureVisible && !sessionReady && (authView === 'student' || authView === 'teacher')"
     class="today-state"

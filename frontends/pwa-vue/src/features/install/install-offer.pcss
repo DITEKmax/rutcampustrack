@@ -1,0 +1,103 @@
+@import '../../../../mobile-core/src/styles/tokens.pcss';
+
+.install-offer {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  inline-size: min(calc(100% - var(--rct-space-4) - var(--rct-space-4)), 48rem);
+  gap: var(--rct-space-3);
+  margin: var(--rct-space-3) auto 0;
+  padding: var(--rct-space-3) var(--rct-space-4);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  font-family: var(--rct-font-family-sans);
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.install-offer__mark {
+  display: grid;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  font-size: var(--rct-font-size-title);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+.install-offer__copy {
+  min-inline-size: 0;
+}
+
+.install-offer__title,
+.install-offer__hint {
+  margin: 0;
+}
+
+.install-offer__title {
+  font-size: var(--rct-font-size-dense);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: var(--rct-leading-snug);
+}
+
+.install-offer__hint {
+  margin-block-start: var(--rct-space-1);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  line-height: var(--rct-leading-caption);
+}
+
+.install-offer__install,
+.install-offer__dismiss {
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.install-offer__install {
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-2) var(--rct-space-4);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+  white-space: nowrap;
+}
+
+.install-offer__install:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.install-offer__dismiss {
+  display: grid;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  padding: 0;
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-text-secondary);
+  background: transparent;
+  font-size: var(--rct-font-size-title);
+  line-height: 1;
+}
+
+.install-offer__dismiss:hover {
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+}
+
+@media (max-width: 36rem) {
+  .install-offer {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .install-offer__install {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+}

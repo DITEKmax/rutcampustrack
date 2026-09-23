@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
@@ -27,6 +29,8 @@ import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -52,6 +56,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class HeadmanWeeklyReportServiceTest {
 
+    private static final String WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    private static final String SHEET_NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
     private static final Clock CLOCK = Clock.fixed(
             Instant.parse("2026-05-02T09:00:00Z"), ZoneId.of("Europe/Moscow"));
     private static final LocalDate WEEK_START = LocalDate.of(2026, 4, 27);
@@ -169,6 +175,32 @@ class HeadmanWeeklyReportServiceTest {
     }
 
     @Test
+    void xmlRenderersRemoveXml10ForbiddenRosterControlsAndPreserveTheOtherText() throws Exception {
+        stubBase(semester("2026-04-01", "2026-05-31"));
+        String rosterName = "А" + (char) 0x0B + "Б";
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, "2026-04-27", "2026-05-03"))
+                .thenReturn(LessonsResponse.newBuilder()
+                        .addLessons(lesson(100L, "2026-04-27", "09:00", 1, "closed"))
+                        .build());
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L)))
+                .thenReturn(Map.of(5L, new AcademicGrpcClient.SubjectDetails("Math", "lecture")));
+        when(academicGrpcClient.getGroupMembers(10L, WEEK_START, 1L))
+                .thenReturn(roster(WEEK_START, List.of(student(1L, rosterName))));
+        when(attendanceReadPort.findByGroupAndDateRange(10L, WEEK_START, WEEK_START.plusDays(6)))
+                .thenReturn(List.of());
+
+        TeacherAttendanceExportModel model = service.buildReportModels(List.of(WEEK_START)).get(0);
+        String wordXml = zipText(new TeacherAttendanceDocxRenderer().render(model), "word/document.xml");
+        String sheetXml = zipText(new HeadmanWeeklyTabularRenderer().renderXlsx(List.of(model)),
+                "xl/worksheets/sheet1.xml");
+
+        assertThat(model.rows()).hasSize(1);
+        assertThat(model.rows().get(0).displayName()).isEqualTo(rosterName);
+        assertThat(textValues(parseXml(wordXml), WORD_NS)).contains("АБ").noneMatch(value -> value.contains(rosterName));
+        assertThat(textValues(parseXml(sheetXml), SHEET_NS)).contains("АБ").noneMatch(value -> value.contains(rosterName));
+    }
+
+    @Test
     void singleWeekPngReturnsCompletePageArchiveMimeAndFilename() {
         stubBase(semester("2026-04-01", "2026-05-31"));
         when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, "2026-04-27", "2026-05-03"))
@@ -264,5 +296,20 @@ class HeadmanWeeklyReportServiceTest {
             }
         }
         throw new IllegalArgumentException("Missing ZIP entry: " + name);
+    }
+
+    private static Document parseXml(String xml) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        return factory.newDocumentBuilder().parse(
+                new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private static List<String> textValues(Document document, String namespace) {
+        NodeList elements = document.getElementsByTagNameNS(namespace, "t");
+        return IntStream.range(0, elements.getLength())
+                .mapToObj(index -> elements.item(index).getTextContent())
+                .toList();
     }
 }

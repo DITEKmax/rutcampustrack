@@ -230,8 +230,27 @@ final class HeadmanWeeklyTabularRenderer {
     }
 
     private static String escapeXml(String value) {
-        return value == null ? "" : value.replace("&", "&amp;").replace("<", "&lt;")
-                .replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;");
+        StringBuilder result = new StringBuilder(value == null ? 0 : value.length());
+        if (value != null) {
+            value.codePoints().filter(HeadmanWeeklyTabularRenderer::isXml10CodePoint).forEach(codePoint -> {
+                switch (codePoint) {
+                    case '&' -> result.append("&amp;");
+                    case '<' -> result.append("&lt;");
+                    case '>' -> result.append("&gt;");
+                    case '\"' -> result.append("&quot;");
+                    case '\'' -> result.append("&apos;");
+                    default -> result.appendCodePoint(codePoint);
+                }
+            });
+        }
+        return result.toString();
+    }
+
+    private static boolean isXml10CodePoint(int codePoint) {
+        return codePoint == 0x9 || codePoint == 0xA || codePoint == 0xD
+                || codePoint >= 0x20 && codePoint <= 0xD7FF
+                || codePoint >= 0xE000 && codePoint <= 0xFFFD
+                || codePoint >= 0x10000 && codePoint <= 0x10FFFF;
     }
 
     private static void put(ZipOutputStream zip, String name, String content) throws IOException {

@@ -29,3 +29,9 @@ The worktree also contains pre-existing foreign edits to `.agent/orchestration-v
 ## Limits
 
 The weekly request is bounded to 64 server-provided weeks and 5,000 scheduled lessons per week; exceeding bounds returns an error rather than silently truncating. The export response cap is 20 MiB; DOCX input to the renderer is capped at 4 MiB, and PNG also remains subject to the existing renderer client receive limit. PWA Blob download is implemented. A real Telegram host download adapter has not been validated, so TMA delivery remains unverified. Stats (113/123), roster (116), and 112 subject exports remain outside this implementation.
+
+## Sol review correction
+
+Sol found a medium file-integrity issue: U+000B in a historical roster name survived both DOCX and XLSX XML escaping and made the generated OpenXML part invalid. No stored names are rewritten. Both weekly XML escape paths now apply the XML 1.0 codepoint predicate already used by the teacher XLSX renderer before escaping markup characters. The regression creates a weekly model from a roster name containing U+000B, verifies the model retains the source name, and parses generated `word/document.xml` and `xl/worksheets/sheet1.xml` with JAXP.
+
+Focused correction verification: `:services:attendance-service:attendance-app:test --tests 'ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest.xmlRenderersRemoveXml10ForbiddenRosterControlsAndPreserveTheOtherText'` completed with exit 0 (one method). The first attempt had a test compile error from calling a package-private ZIP helper across packages; the test now uses its local ZIP-entry reader. No other checks were rerun.

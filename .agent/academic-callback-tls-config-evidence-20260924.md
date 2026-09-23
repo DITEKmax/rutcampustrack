@@ -48,13 +48,14 @@ Attendance, and Mobile BFF. This preparation is not runtime evidence.
 
 The Windows Git Bash correction keeps the Linux owner/mode checks unchanged.
 For `MINGW*`/`MSYS*`, each generated gRPC server key is checked separately in
-the preloaded `busybox:1.36.1` image using a single read-only bind mount and the
-corresponding numeric service UID:GID. The probe has no network, a read-only
-root filesystem, dropped capabilities, and redirects the key read to
-`/dev/null`. `cygpath -am` plus `MSYS_NO_PATHCONV`/`MSYS2_ARG_CONV_EXCL` keep
-the Windows source path intact. It does not change host key permissions and
-fails closed if Docker Desktop, `cygpath`, or the local helper image is
-unavailable. macOS and other platforms are not claimed as supported.
+the existing `eclipse-temurin:21-jre-alpine` runtime image using a single
+read-only bind mount and the corresponding numeric service UID:GID. The probe
+has no network, a read-only root filesystem, dropped capabilities, and
+redirects the key read to `/dev/null`. `cygpath -am` plus
+`MSYS_NO_PATHCONV`/`MSYS2_ARG_CONV_EXCL` keep the Windows source path intact.
+It does not pull images or change host key permissions, and fails closed if
+Docker Desktop, `cygpath`, or the local helper image is unavailable. macOS and
+other platforms are not claimed as supported.
 
 ## Acceptance criteria
 
@@ -98,10 +99,20 @@ Academic.
   exit 0. The docs state the local helper-image prerequisite for Windows Git Bash.
 - A read-only Git Bash path calculation exited 0 and resolved `SCRIPT_DIR` to
   `tests/e2e/infra/scripts` and `CERTS_DIR` to `tests/e2e/infra/scripts/../certs`.
-  The one generator invocation with Git Bash login/PATH initialized exited 1
-  at its initial `mkdir -p` with permission denied on `/c/Users/maksd`, before
-  certificate creation or Docker/helper invocation. Thus Windows key
-  readability remains **NOT RUN**; no key was created, removed, or re-permissioned.
+  An unprivileged generator invocation exited 1 at its initial `mkdir -p` with
+  permission denied on `/c/Users/maksd`, before certificate creation. After
+  the authorized elevated retry, the generator created the ignored local e2e
+  Nginx and Schedule cert/key fixtures, then exited 1 at
+  `docker image inspect busybox:1.36.1` because that image was not present.
+  No helper container started in that attempt. The helper was then retargeted
+  to the locally present application runtime image, `eclipse-temurin:21-jre-alpine`.
+- One subsequent elevated Git Bash generator invocation with the retained
+  fixtures exited 0 and reached `Done`. It ran the no-network, read-only
+  helper twice: Schedule key readable as `10002:10002`, Academic key readable
+  as `10001:10001`; the Academic cert/key fixture was created in that run.
+  The only Docker containers were the two `--rm` key-read helpers; no app stack
+  or build was started. Key contents were not read or printed. The ignored
+  Nginx/Schedule/Academic fixtures are retained for the upcoming acceptance.
 - After runner adaptation, PowerShell AST parse of `runner.ps1` and its scoped
   `git diff --check`: exit 0.
 - Source cross-check of Dockerfile IDs and e2e/prod certificate paths/authority:
@@ -116,12 +127,13 @@ Academic.
 
 ## Runtime status and limitations
 
-The correction commit is awaiting scoped independent Sol recheck. No build or
-replacement runtime lifecycle was run for this correction. Windows helper
-readability is **NOT RUN** because the constrained Git Bash process could not
-create the ignored `tests/e2e/infra/certs` directory before reaching the probe;
-an elevated retry is pending a HEAVY slot. No production certificate, private
-key, deployment, or rotation was created or performed.
+Correction commit `b9008478d25fd2572d5bba89aa8caeb054212da6` plus the pending
+image-retarget delta is awaiting scoped independent Sol recheck. Windows key
+readability is **PASS** for both gRPC server identities via the isolated helper
+described above. No build or replacement application runtime lifecycle was run
+for this correction; those remain pending review/integration and a separate
+HEAVY lease. Only ignored local e2e fixtures were generated. No production
+certificate, private key, deployment, or rotation was created or performed.
 
 The existing `docker-compose.e2e.yml` and `docker-compose.prod.yml` do not define
 a Mobile BFF service. Its prod profile is TLS-configured here; environment and

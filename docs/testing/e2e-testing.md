@@ -287,11 +287,13 @@ docker compose -f docker-compose.e2e.yml down -v
 rm .env
 ```
 
-On Windows Git Bash with Docker Desktop, preload `busybox:1.36.1` before
-running the certificate generator. It verifies each gRPC server key with a
-separate, read-only bind mount under that server's container UID; it does not
-expose key bytes or change Windows key permissions. The generator fails closed
-if Docker, `cygpath`, or the local helper image is unavailable.
+On Windows Git Bash with Docker Desktop, ensure the existing
+`eclipse-temurin:21-jre-alpine` runtime image is available locally before
+running the certificate generator; the generator never pulls an image. It
+verifies each gRPC server key with a separate, read-only bind mount under that
+server's container UID; it does not expose key bytes or change Windows key
+permissions. The generator fails closed if Docker, `cygpath`, or the local
+helper image is unavailable.
 
 **Trade-off vs dev compose** (`docker-compose.yml`): dev compose не
 содержит backend Java сервисов (запускаются через `gradle bootRun`

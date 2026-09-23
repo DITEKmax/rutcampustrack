@@ -21,7 +21,7 @@ verify_windows_container_key_readable() {
   local key_path="$1"
   local uid="$2"
   local gid="$3"
-  local helper_image="busybox:1.36.1"
+  local helper_image="eclipse-temurin:21-jre-alpine"
   local source_path
 
   if ! command -v docker >/dev/null 2>&1; then

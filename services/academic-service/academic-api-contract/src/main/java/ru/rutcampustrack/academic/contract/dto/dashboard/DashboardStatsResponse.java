@@ -6,7 +6,7 @@ import org.springframework.hateoas.RepresentationModel;
 /**
  * Response DTO for admin dashboard summary statistics with HATEOAS links.
  */
-@Schema(description = "Сводная статистика для админ-дашборда (HATEOAS Level 3 с _links)")
+@Schema(description = "Сводная статистика ADMIN: totalStudents и totalTeachers считают пользователей с активной ролью; totalGroups и activeGroups содержат одно число действующих групп реестра")
 public class DashboardStatsResponse extends RepresentationModel<DashboardStatsResponse> {
 
     private long totalStudents;

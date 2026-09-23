@@ -4,10 +4,13 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardStatsResponse;
+import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
-import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.GroupRegistryReadRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
-import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
+
+import java.util.Locale;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -19,24 +22,26 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 public class DashboardService {
 
-    private final UserRepository userRepository;
-    private final GroupRepository groupRepository;
+    private final UserRoleGrantRepository userRoleGrantRepository;
+    private final GroupRegistryReadRepository groupRegistryReadRepository;
     private final SemesterRepository semesterRepository;
 
-    public DashboardService(UserRepository userRepository,
-                             GroupRepository groupRepository,
+    public DashboardService(UserRoleGrantRepository userRoleGrantRepository,
+                             GroupRegistryReadRepository groupRegistryReadRepository,
                              SemesterRepository semesterRepository) {
-        this.userRepository = userRepository;
-        this.groupRepository = groupRepository;
+        this.userRoleGrantRepository = userRoleGrantRepository;
+        this.groupRegistryReadRepository = groupRegistryReadRepository;
         this.semesterRepository = semesterRepository;
     }
 
     @Transactional(readOnly = true)
     public EntityModel<DashboardStatsResponse> getStats() {
-        long totalStudents = userRepository.countByRole(UserRole.STUDENT.name().toLowerCase());
-        long totalTeachers = userRepository.countByRole(UserRole.TEACHER.name().toLowerCase());
-        long totalGroups = groupRepository.count();
-        long activeGroups = groupRepository.countByIsActive(true);
+        String activeStatus = RoleGrantStatus.ACTIVE.name().toLowerCase(Locale.ROOT);
+        long totalStudents = userRoleGrantRepository.countDistinctUsersByRoleAndStatus(
+                UserRole.STUDENT.name().toLowerCase(Locale.ROOT), activeStatus);
+        long totalTeachers = userRoleGrantRepository.countDistinctUsersByRoleAndStatus(
+                UserRole.TEACHER.name().toLowerCase(Locale.ROOT), activeStatus);
+        long activeGroups = groupRegistryReadRepository.countAll(null).activeCount();
         String activeSemesterName = semesterRepository.findByIsActiveTrue()
                 .map(s -> s.getName())
                 .orElse(null);
@@ -44,7 +49,7 @@ public class DashboardService {
         DashboardStatsResponse response = new DashboardStatsResponse();
         response.setTotalStudents(totalStudents);
         response.setTotalTeachers(totalTeachers);
-        response.setTotalGroups(totalGroups);
+        response.setTotalGroups(activeGroups);
         response.setActiveGroups(activeGroups);
         response.setActiveSemesterName(activeSemesterName);
 

@@ -6,6 +6,7 @@ import { createGenerationBoundHeadmanGroupApi } from '../../mobile-core/src/feat
 import { createGenerationBoundHeadmanHomeworkApi } from '../../mobile-core/src/features/homework/headman-homework-client'
 import { createGenerationBoundHeadmanSubjectsApi } from '../../mobile-core/src/features/headman-subjects/headman-subjects-client'
 import {
+  createGenerationBoundAdminDashboardClient,
   createGenerationBoundAdminSemesterClient,
   createGenerationBoundAdminGroupsClient,
   createGenerationBoundAdminUsersClient,
@@ -14,6 +15,7 @@ import {
 } from '../../mobile-core/src/shared/session-owner'
 import { createGenerationBoundTeacherApi } from '../../mobile-core/src/features/teacher/teacher-client'
 import type { AdminSemesterClient } from '../../mobile-core/src/features/admin-semester/admin-semester-client'
+import type { AdminDashboardClient } from '../../mobile-core/src/features/admin-dashboard/admin-dashboard-client'
 import type { AdminUsersClient } from '../../mobile-core/src/features/admin-users/admin-users-client'
 import type { AdminGroupsClient } from '../../mobile-core/src/features/admin-groups/admin-groups-client'
 import type { HeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
@@ -269,6 +271,14 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     }, fetcher)
   }
 
+  function createAdminDashboardApi(fetcher?: typeof fetch): AdminDashboardClient {
+    return createGenerationBoundAdminDashboardClient({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor,
+    }, fetcher)
+  }
+
   function createAdminUsersApi(fetcher?: typeof fetch): AdminUsersClient {
     return createGenerationBoundAdminUsersClient({
       currentGeneration,
@@ -396,6 +406,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     createHeadmanSubjectsApi,
     createTeacherApi,
     createAdminSemesterApi,
+    createAdminDashboardApi,
     createAdminUsersApi,
     createAdminGroupsApi,
     createProfilePort,

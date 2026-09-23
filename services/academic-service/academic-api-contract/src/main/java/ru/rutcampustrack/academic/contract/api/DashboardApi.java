@@ -17,7 +17,7 @@ import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardStatsResponse;
 @RequestMapping("/academic/dashboard")
 public interface DashboardApi {
 
-    @Operation(summary = "Сводная статистика системы (ADMIN)", description = "Возвращает количество пользователей, групп, активный семестр и другие ключевые показатели.")
+    @Operation(summary = "Сводная статистика системы (ADMIN)", description = "Возвращает число пользователей с активной ролью, число действующих групп и название активного семестра.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Статистика получена"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа")

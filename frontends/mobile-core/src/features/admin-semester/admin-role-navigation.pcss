@@ -2,17 +2,24 @@
 
 .admin-role-navigation {
   display: flex;
+  overflow-x: auto;
   max-inline-size: 26.625rem;
   margin-inline: auto;
   padding: calc(env(safe-area-inset-top) + var(--rct-space-3)) var(--rct-space-4) 0;
   gap: var(--rct-space-2);
   background: var(--rct-color-surface-base);
   font-family: var(--rct-font-family-sans);
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+}
+
+.admin-role-navigation::-webkit-scrollbar {
+  display: none;
 }
 
 .admin-role-navigation button {
   min-block-size: var(--rct-control-min-touch);
-  flex: 1 1 0;
+  flex: 0 0 auto;
   border: 0;
   border-radius: var(--rct-radius-full);
   color: var(--rct-color-text-secondary);
@@ -20,6 +27,7 @@
   font: inherit;
   font-size: var(--rct-font-size-caption);
   font-weight: var(--rct-font-weight-bold);
+  padding-inline: var(--rct-space-3);
   cursor: pointer;
   @mixin rct-focus-ring;
 }

@@ -1,6 +1,10 @@
 import { StudentApi } from '../api/student-client'
 import type { StudentSession } from '../api/types'
 import {
+  AdminDashboardClient,
+  type AdminDashboardApiOptions,
+} from '../features/admin-dashboard/admin-dashboard-client'
+import {
   AdminSemesterClient,
   type AdminSemesterApiGenerationOwner,
 } from '../features/admin-semester/admin-semester-client'
@@ -72,6 +76,30 @@ export function createGenerationBoundAdminSemesterClient(
     },
     ...(fetcher ? { fetcher } : {}),
   })
+}
+
+export function createGenerationBoundAdminDashboardClient(
+  owner: AdminSemesterApiGenerationOwner,
+  fetcher?: typeof fetch,
+): AdminDashboardClient {
+  const generation = owner.currentGeneration()
+  const assertCurrent = (): void => {
+    if (generation !== owner.currentGeneration()) throw new StaleSessionGenerationError()
+  }
+  const options: AdminDashboardApiOptions = {
+    assertCurrent,
+    accessToken: () => {
+      assertCurrent()
+      return owner.accessTokenFor(generation)
+    },
+    onUnauthorized: async () => {
+      assertCurrent()
+      await owner.refreshFor(generation)
+      assertCurrent()
+    },
+    ...(fetcher ? { fetcher } : {}),
+  }
+  return new AdminDashboardClient(options)
 }
 
 export function createGenerationBoundAdminUsersClient(

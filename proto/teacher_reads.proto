@@ -25,6 +25,29 @@ service TeacherAttendanceReadService {
   rpc DownloadTeacherExcuseAttachment(TeacherExcuseAttachmentRequest)
       returns (TeacherAttachmentDownload);
   rpc GetTeacherStats(TeacherStatsRequest) returns (TeacherStatsResponse);
+  rpc ExportTeacherAttendance(TeacherAttendanceExportRequest)
+      returns (TeacherAttendanceExportResponse);
+}
+
+message TeacherAttendanceExportRequest {
+  int64 semester_id = 1;
+  int64 group_id = 2;
+  int64 subject_id = 3;
+  repeated string lesson_types = 4;
+  string format = 5; // docx, pdf, png, html, or xlsx
+  TeacherAttendanceReportKind report_kind = 6;
+}
+
+message TeacherAttendanceExportResponse {
+  bytes content = 1;
+  string file_name = 2;
+  string content_type = 3;
+}
+
+enum TeacherAttendanceReportKind {
+  TEACHER_ATTENDANCE_REPORT_KIND_UNSPECIFIED = 0;
+  TEACHER_ATTENDANCE_REPORT_KIND_WEEKLY_ATTENDANCE = 1;
+  TEACHER_ATTENDANCE_REPORT_KIND_SUBJECT_JOURNAL = 2;
 }
 
 message TeacherActiveSemesterRequest {}

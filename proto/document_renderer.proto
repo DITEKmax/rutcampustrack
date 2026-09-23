@@ -13,6 +13,7 @@ enum TargetFormat {
   TARGET_FORMAT_UNSPECIFIED = 0;
   PDF = 1;
   PNG = 2;
+  PNG_PAGES_ZIP = 3;
 }
 
 message ConvertDocumentRequest {

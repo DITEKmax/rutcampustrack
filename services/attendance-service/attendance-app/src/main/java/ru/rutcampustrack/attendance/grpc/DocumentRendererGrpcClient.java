@@ -38,4 +38,8 @@ public class DocumentRendererGrpcClient {
             throw new ReportExportUnavailableException("Document renderer unavailable: " + e.getStatus());
         }
     }
+
+    public byte[] convertDocxToPngPagesZip(byte[] docx) {
+        return convertDocx(docx, TargetFormat.PNG_PAGES_ZIP);
+    }
 }

@@ -1,0 +1,51 @@
+{
+  "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/pwa-install-delivery-20260923",
+  "baseRevision": "1bbb52b02f55ada16183b28107dc41158311f01e",
+  "checks": [
+    {
+      "command": "npm run typecheck --workspace @rct/pwa-vue",
+      "cwd": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/pwa-install-delivery-20260923/frontends",
+      "exitCode": 0,
+      "environment": "Windows; @rct/pwa-vue vue-tsc -p tsconfig.json --noEmit",
+      "result": "PASS; checks PWA host .vue files and imported shared mobile-core source"
+    },
+    {
+      "command": "git diff --check -- frontends/mobile-core/src/features/headman-subjects/HeadmanSubjectsScreen.vue frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue frontends/mobile-core/src/features/headman-subjects/headman-subjects-client.ts frontends/mobile-core/src/features/headman-subjects/headman-subjects-screen.pcss",
+      "cwd": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/pwa-install-delivery-20260923",
+      "exitCode": 0,
+      "environment": "Git worktree; product diff only",
+      "result": "PASS; no whitespace errors; Git printed only LF-to-CRLF working-copy notices"
+    }
+  ],
+  "sourceFlowChecks": [
+    {
+      "scenario": "Actor switch and missing identity",
+      "result": "PASS_BY_SOURCE_AND_SCOPED_REVIEW",
+      "evidence": "HeadmanScheduleScreen passes profile.userId; the screen invalidates async revisions and clears old scope; restore/persist/replay require the same actorUserId and group; missing identity returns before restore and blocks replacement actions."
+    },
+    {
+      "scenario": "Same actor, same group, distinct requests in separate tabs",
+      "result": "PASS_BY_SOURCE_AND_SCOPED_REVIEW",
+      "evidence": "Each record key includes its requestKey; restore enumerates the full actor/group prefix; cross-tab events reload only that scope; exact removal verifies and deletes only the supplied actor/group/requestKey record."
+    },
+    {
+      "scenario": "Reload and safe retry",
+      "result": "PASS_BY_SOURCE_AND_SCOPED_REVIEW",
+      "evidence": "Restored intent retains requestKey; resume repeats POST with that exact key when operationId is absent and calls status GET when present."
+    }
+  ],
+  "review": {
+    "status": "PASS",
+    "scope": "Two previously reported storage isolation findings only; parent confirmed same Sol scoped code recheck passed."
+  },
+  "sourceDiff": {
+    "file": "source.diff",
+    "sha256": "4691A35CCEEE0699DD24BBDBE4530D0E603B183D4343A66B8696E077FF467DE8",
+    "baseRevision": "1bbb52b02f55ada16183b28107dc41158311f01e"
+  },
+  "runtime": {
+    "status": "PENDING",
+    "evidenceFile": "runtime-evidence.md",
+    "reason": "The replacement backend and shared REST runtime are being completed by the parent-owned lane; this source-ready UI has not been connected to a live service."
+  }
+}

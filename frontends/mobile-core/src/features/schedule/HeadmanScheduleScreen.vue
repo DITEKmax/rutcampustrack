@@ -417,6 +417,7 @@ onBeforeUnmount(() => {
       v-else-if="subjectsOpen"
       :api="subjectsApi"
       :group-id="groupId"
+      :actor-user-id="profile?.userId ?? null"
       :offline="offline"
       :read-only="readOnly"
       @error="emit('error', $event)"

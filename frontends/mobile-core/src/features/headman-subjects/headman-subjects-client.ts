@@ -35,6 +35,32 @@ export interface HeadmanSemester {
   readonly active: boolean
 }
 
+export interface AssignmentReplacementInput {
+  readonly replacementTeacherId: string
+  readonly effectiveFrom: string
+  readonly requestKey: string
+}
+
+/** The academic service returns lifecycle strings; unknown future states are preserved safely. */
+export interface AssignmentReplacementResponse {
+  readonly operationId: string
+  readonly sourceAssignmentId: number
+  readonly targetAssignmentId: number
+  readonly sourceTeacherId: number
+  readonly targetTeacherId: number
+  readonly subjectId: number
+  readonly groupId: number
+  readonly semesterId: number
+  readonly lessonType: string
+  readonly effectiveFrom: string
+  readonly sourceValidUntilExclusive: string | null
+  readonly targetValidUntilExclusive: string | null
+  readonly state: string
+  readonly scheduleReceiptState: string | null
+  readonly movedCount: number
+  readonly skippedCount: number
+}
+
 export interface HeadmanSubjectInitialAssignment {
   readonly teacherId: number
   readonly semesterId: number
@@ -113,6 +139,21 @@ export class HeadmanSubjectsApi {
     const query = new URLSearchParams({ ids: unique.join(',') })
     const value = await this.request<unknown>(`/api/academic/users/by-ids?${query.toString()}`)
     return embeddedItems(value, 'userSummaryResponseList').map(normalizeSummaryTeacher)
+  }
+
+  replaceAssignment(assignmentId: number, input: AssignmentReplacementInput): Promise<AssignmentReplacementResponse> {
+    assertPositiveInteger(assignmentId, 'assignmentId')
+    const payload = normalizeReplacementInput(input)
+    return this.request<unknown>(`/api/academic/assignments/${assignmentId}/replace`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }).then(normalizeAssignmentReplacement)
+  }
+
+  getReplacementStatus(operationId: string): Promise<AssignmentReplacementResponse> {
+    const id = uuid(operationId, 'operationId')
+    return this.request<unknown>(`/api/academic/assignments/replacements/${encodeURIComponent(id)}`)
+      .then(normalizeAssignmentReplacement)
   }
 
   createSubject(input: CreateHeadmanSubjectInput): Promise<HeadmanSubject> {
@@ -267,6 +308,41 @@ function normalizeAddInput(input: AddHeadmanSubjectTeacherInput): AddHeadmanSubj
   return result
 }
 
+function normalizeReplacementInput(input: AssignmentReplacementInput): AssignmentReplacementInput {
+  const replacementTeacherId = requiredText(input.replacementTeacherId, 'replacementTeacherId')
+  if (!/^[1-9][0-9]*$/.test(replacementTeacherId)) {
+    throw new RangeError('replacementTeacherId must be a positive decimal string')
+  }
+  return {
+    replacementTeacherId,
+    effectiveFrom: requiredDate(input.effectiveFrom, 'effectiveFrom'),
+    requestKey: uuid(input.requestKey, 'requestKey'),
+  }
+}
+
+function normalizeAssignmentReplacement(value: unknown): AssignmentReplacementResponse {
+  const record = requiredRecord(value, 'assignment replacement')
+  return {
+    operationId: uuid(record.operationId, 'replacement.operationId'),
+    sourceAssignmentId: positiveInteger(record.sourceAssignmentId, 'replacement.sourceAssignmentId'),
+    targetAssignmentId: positiveInteger(record.targetAssignmentId, 'replacement.targetAssignmentId'),
+    sourceTeacherId: positiveInteger(record.sourceTeacherId, 'replacement.sourceTeacherId'),
+    targetTeacherId: positiveInteger(record.targetTeacherId, 'replacement.targetTeacherId'),
+    subjectId: positiveInteger(record.subjectId, 'replacement.subjectId'),
+    groupId: positiveInteger(record.groupId, 'replacement.groupId'),
+    semesterId: positiveInteger(record.semesterId, 'replacement.semesterId'),
+    lessonType: requiredText(record.lessonType, 'replacement.lessonType'),
+    effectiveFrom: requiredDate(record.effectiveFrom, 'replacement.effectiveFrom'),
+    sourceValidUntilExclusive: nullableDate(record.sourceValidUntilExclusive),
+    targetValidUntilExclusive: nullableDate(record.targetValidUntilExclusive),
+    // Do not treat an unrecognized service state as success in the screen.
+    state: requiredText(record.state, 'replacement.state'),
+    scheduleReceiptState: nullableText(record.scheduleReceiptState),
+    movedCount: nonNegativeInteger(record.movedCount, 'replacement.movedCount'),
+    skippedCount: nonNegativeInteger(record.skippedCount, 'replacement.skippedCount'),
+  }
+}
+
 function normalizeSubject(value: unknown): HeadmanSubject {
   const record = requiredRecord(value, 'subject')
   const lessonTypes = arrayOf(record.lessonTypes).map((item) => subjectType(item, 'subject.lessonTypes'))
@@ -412,6 +488,14 @@ function nonNegativeInteger(value: unknown, field: string): number {
 
 function assertPositiveInteger(value: number, field: string): void {
   if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${field} must be a positive integer`)
+}
+
+function uuid(value: unknown, field: string): string {
+  const text = requiredText(value, field)
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)) {
+    throw new Error(`Сервер вернул некорректный UUID ${field}.`)
+  }
+  return text
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

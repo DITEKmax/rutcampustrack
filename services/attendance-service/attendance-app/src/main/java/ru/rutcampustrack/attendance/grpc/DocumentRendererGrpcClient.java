@@ -37,6 +37,19 @@ public class DocumentRendererGrpcClient {
         return convertDocx(docx, targetFormat, true);
     }
 
+    /**
+     * Bounded conversion for a headman weekly export. Keep the teacher-specific
+     * boundary unchanged while preserving renderer size failures for the 413 API mapping.
+     */
+    public byte[] convertDocxForHeadmanWeeklyExport(byte[] docx, TargetFormat targetFormat) {
+        if (docx != null && docx.length > DEFAULT_RENDERER_MESSAGE_LIMIT_BYTES - 1024) {
+            throw Status.RESOURCE_EXHAUSTED
+                    .withDescription("Headman weekly DOCX exceeds the renderer's 4 MiB input limit")
+                    .asRuntimeException();
+        }
+        return convertDocx(docx, targetFormat, true);
+    }
+
     private byte[] convertDocx(byte[] docx, TargetFormat targetFormat, boolean preserveSizeLimit) {
         if (docx == null || docx.length == 0) {
             throw new ReportExportUnavailableException("DOCX content is empty");

@@ -164,4 +164,75 @@ describe('HeadmanJournalApi', () => {
     expect(paths).toEqual(['/api/attendance/lessons/42/students/3/attachment'])
     await expect(blob.text()).resolves.toBe('file-body')
   })
+
+  it('reads the server weekly and format catalogue without inventing format options', async () => {
+    const paths: string[] = []
+    const api = new HeadmanJournalApi({
+      accessToken: () => 'token',
+      fetcher: async (input) => {
+        paths.push(String(input))
+        return jsonResponse({
+          content: {
+            semesterId: 4,
+            semesterName: 'Осень 2026',
+            semesterDateFrom: '2026-09-01',
+            semesterDateTo: '2027-01-31',
+            weeks: [{
+              weekOfSemester: 1,
+              isoWeek: 36,
+              label: 'Н1',
+              weekStart: '2026-08-31',
+              weekEnd: '2026-09-06',
+              current: true,
+            }],
+            formats: [
+              { code: 'docx', label: 'Word (.docx)', contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', extension: 'docx' },
+              { code: 'pdf', label: 'PDF (.pdf)', contentType: 'application/pdf', extension: 'pdf' },
+              { code: 'png', label: 'PNG, архив страниц (.zip)', contentType: 'application/zip', extension: 'zip' },
+              { code: 'html', label: 'HTML (.html)', contentType: 'text/html; charset=UTF-8', extension: 'html' },
+              { code: 'xlsx', label: 'Excel (.xlsx)', contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', extension: 'xlsx' },
+            ],
+          },
+        })
+      },
+    })
+
+    const options = await api.getWeeklyExportOptions()
+
+    expect(paths).toEqual(['/api/attendance/reports/headman-weekly/weeks'])
+    expect(options.weeks[0]).toMatchObject({ weekStart: '2026-08-31', label: 'Н1', current: true })
+    expect(options.formats.map((format) => [format.code, format.extension])).toEqual([
+      ['docx', 'docx'], ['pdf', 'pdf'], ['png', 'zip'], ['html', 'html'], ['xlsx', 'xlsx'],
+    ])
+  })
+
+  it('posts only selected server week starts and preserves binary filename and MIME', async () => {
+    const requests: Array<{ path: string; init: RequestInit }> = []
+    const api = new HeadmanJournalApi({
+      accessToken: () => 'token',
+      fetcher: async (input, init = {}) => {
+        requests.push({ path: String(input), init })
+        return new Response('png-zip', {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/zip',
+            'Content-Disposition': "attachment; filename*=UTF-8''UVPV511_27.04.2026_png.zip",
+          },
+        })
+      },
+    })
+
+    const downloaded = await api.downloadWeeklyExport(['2026-04-27'], {
+      code: 'png', label: 'PNG, архив страниц (.zip)', contentType: 'application/zip', extension: 'zip',
+    })
+
+    expect(requests).toHaveLength(1)
+    expect(requests[0]?.path).toBe('/api/attendance/reports/headman-weekly/export')
+    expect(requests[0]?.init.method).toBe('POST')
+    expect(new Headers(requests[0]?.init.headers).get('Accept')).toBe('*/*')
+    expect(JSON.parse(String(requests[0]?.init.body))).toEqual({ weekStarts: ['2026-04-27'], format: 'png' })
+    expect(downloaded.filename).toBe('UVPV511_27.04.2026_png.zip')
+    expect(downloaded.blob.type).toBe('application/zip')
+    await expect(downloaded.blob.text()).resolves.toBe('png-zip')
+  })
 })

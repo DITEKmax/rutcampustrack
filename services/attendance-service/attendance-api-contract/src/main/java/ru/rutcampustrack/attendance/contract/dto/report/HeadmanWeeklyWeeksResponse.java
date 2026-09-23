@@ -14,17 +14,20 @@ public class HeadmanWeeklyWeeksResponse extends RepresentationModel<HeadmanWeekl
     private final LocalDate semesterDateFrom;
     private final LocalDate semesterDateTo;
     private final List<HeadmanWeeklyWeekOption> weeks;
+    private final List<HeadmanWeeklyExportFormatOption> formats;
 
     public HeadmanWeeklyWeeksResponse(Long semesterId,
                                       String semesterName,
                                       LocalDate semesterDateFrom,
                                       LocalDate semesterDateTo,
-                                      List<HeadmanWeeklyWeekOption> weeks) {
+                                      List<HeadmanWeeklyWeekOption> weeks,
+                                      List<HeadmanWeeklyExportFormatOption> formats) {
         this.semesterId = semesterId;
         this.semesterName = semesterName;
         this.semesterDateFrom = semesterDateFrom;
         this.semesterDateTo = semesterDateTo;
         this.weeks = List.copyOf(weeks);
+        this.formats = List.copyOf(formats);
     }
 
     public Long getSemesterId() {
@@ -45,5 +48,9 @@ public class HeadmanWeeklyWeeksResponse extends RepresentationModel<HeadmanWeekl
 
     public List<HeadmanWeeklyWeekOption> getWeeks() {
         return weeks;
+    }
+
+    public List<HeadmanWeeklyExportFormatOption> getFormats() {
+        return formats;
     }
 }

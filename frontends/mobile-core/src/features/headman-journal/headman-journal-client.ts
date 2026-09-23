@@ -80,6 +80,36 @@ export interface HeadmanJournalApiOptions {
   fetcher?: typeof fetch
 }
 
+export interface HeadmanWeeklyWeekOption {
+  readonly weekOfSemester: number
+  readonly isoWeek: number
+  readonly label: string
+  readonly weekStart: string
+  readonly weekEnd: string
+  readonly current: boolean
+}
+
+export interface HeadmanWeeklyExportFormat {
+  readonly code: string
+  readonly label: string
+  readonly contentType: string
+  readonly extension: string
+}
+
+export interface HeadmanWeeklyExportOptions {
+  readonly semesterId: number
+  readonly semesterName: string
+  readonly semesterDateFrom: string
+  readonly semesterDateTo: string
+  readonly weeks: readonly HeadmanWeeklyWeekOption[]
+  readonly formats: readonly HeadmanWeeklyExportFormat[]
+}
+
+export interface HeadmanWeeklyDownload {
+  readonly blob: Blob
+  readonly filename: string
+}
+
 export class HeadmanJournalApiError extends Error {
   constructor(
     readonly response: Response,
@@ -131,6 +161,37 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     const blob = await response.blob()
     this.options.assertCurrent?.()
     return blob
+  }
+
+  async getWeeklyExportOptions(): Promise<HeadmanWeeklyExportOptions> {
+    const value = await this.request<unknown>('/api/attendance/reports/headman-weekly/weeks')
+    return normalizeWeeklyExportOptions(value)
+  }
+
+  async downloadWeeklyExport(
+    weekStarts: readonly string[],
+    format: HeadmanWeeklyExportFormat,
+    signal?: AbortSignal,
+  ): Promise<HeadmanWeeklyDownload> {
+    if (weekStarts.length === 0) throw new RangeError('Выбери хотя бы одну неделю')
+    if (!format.code.trim()) throw new RangeError('Выбери формат выгрузки')
+    for (const weekStart of weekStarts) assertDate(weekStart, 'weekStart')
+    const response = await this.response('/api/attendance/reports/headman-weekly/export', {
+      method: 'POST',
+      headers: { Accept: '*/*' },
+      body: JSON.stringify({ weekStarts: [...weekStarts], format: format.code }),
+      ...(signal ? { signal } : {}),
+    })
+    if (!response.ok) throw await this.apiError(response)
+    const blob = await response.blob()
+    this.options.assertCurrent?.()
+    return {
+      blob,
+      filename: filenameFromContentDisposition(
+        response.headers.get('Content-Disposition'),
+        `zhurnal.${format.extension}`,
+      ),
+    }
   }
 
   async cancelLesson(lessonId: number, reason: string): Promise<HeadmanJournalLesson> {
@@ -308,6 +369,81 @@ function normalizeLesson(value: unknown): HeadmanJournalLesson | null {
     room: stringValue(record.room),
     lessonType: stringValue(record.lessonType),
   }
+}
+
+function normalizeWeeklyExportOptions(value: unknown): HeadmanWeeklyExportOptions {
+  const record = unwrapContent(value)
+  if (!record) throw new Error('Сервер вернул неполный список недель для выгрузки.')
+  const semesterId = positiveInteger(record.semesterId)
+  const semesterName = stringValue(record.semesterName)
+  const semesterDateFrom = isoDateValue(record.semesterDateFrom)
+  const semesterDateTo = isoDateValue(record.semesterDateTo)
+  if (semesterId === null || semesterName === null || semesterDateFrom === null || semesterDateTo === null) {
+    throw new Error('Сервер вернул неполный контекст семестра.')
+  }
+  if (!Array.isArray(record.weeks) || !Array.isArray(record.formats)) {
+    throw new Error('Сервер не вернул список недель и форматов.')
+  }
+  const weeks = record.weeks.map(normalizeWeeklyWeek).filter((item): item is HeadmanWeeklyWeekOption => item !== null)
+  const formats = record.formats.map(normalizeWeeklyFormat).filter((item): item is HeadmanWeeklyExportFormat => item !== null)
+  if (weeks.length !== record.weeks.length || formats.length !== record.formats.length || formats.length === 0) {
+    throw new Error('Сервер вернул некорректный список недель или форматов.')
+  }
+  if (new Set(weeks.map((week) => week.weekStart)).size !== weeks.length
+    || new Set(formats.map((format) => format.code)).size !== formats.length) {
+    throw new Error('Сервер вернул повторяющиеся недели или форматы.')
+  }
+  return {
+    semesterId,
+    semesterName,
+    semesterDateFrom,
+    semesterDateTo,
+    weeks,
+    formats,
+  }
+}
+
+function normalizeWeeklyWeek(value: unknown): HeadmanWeeklyWeekOption | null {
+  if (!isRecord(value)) return null
+  const weekOfSemester = integerValue(value.weekOfSemester)
+  const isoWeek = integerValue(value.isoWeek)
+  const label = stringValue(value.label)
+  const weekStart = isoDateValue(value.weekStart)
+  const weekEnd = isoDateValue(value.weekEnd)
+  const current = booleanValue(value.current)
+  if (weekOfSemester === null || weekOfSemester <= 0 || isoWeek === null || isoWeek <= 0
+    || label === null || weekStart === null || weekEnd === null || current === null || weekStart > weekEnd) return null
+  return { weekOfSemester, isoWeek, label, weekStart, weekEnd, current }
+}
+
+function normalizeWeeklyFormat(value: unknown): HeadmanWeeklyExportFormat | null {
+  if (!isRecord(value)) return null
+  const code = stringValue(value.code)
+  const label = stringValue(value.label)
+  const contentType = stringValue(value.contentType)
+  const extension = stringValue(value.extension)
+  if (code === null || label === null || contentType === null || extension === null
+    || !/^[a-z0-9-]+$/.test(code) || !/^[a-z0-9]+$/.test(extension)) return null
+  return { code, label, contentType, extension }
+}
+
+function isoDateValue(value: unknown): string | null {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null
+}
+
+function filenameFromContentDisposition(value: string | null, fallback: string): string {
+  if (!value) return fallback
+  const utf8 = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(value)?.[1]
+  if (utf8) {
+    try {
+      return decodeURIComponent(utf8.trim().replace(/^"|"$/g, ''))
+    } catch {
+      // Fall back to the quoted filename if a gateway malformed RFC 5987 encoding.
+    }
+  }
+  const quoted = /filename\s*=\s*"([^"]+)"/i.exec(value)?.[1]
+  const unquoted = /filename\s*=\s*([^;]+)/i.exec(value)?.[1]
+  return (quoted ?? unquoted)?.trim() || fallback
 }
 
 function normalizeReport(value: unknown, fallbackLessonId: number): HeadmanJournalReport {

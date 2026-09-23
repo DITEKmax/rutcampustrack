@@ -15,14 +15,14 @@ public record HeadmanWeeklyExportRequest(
                 requiredMode = Schema.RequiredMode.REQUIRED,
                 example = "[\"2026-04-27\", \"2026-05-11\"]")
         @NotNull
-        @Size(min = 1, message = "At least one week must be selected")
+        @Size(min = 1, max = 64, message = "Можно выбрать не более 64 недель")
         List<@NotNull LocalDate> weekStarts,
 
-        @Schema(description = "Export format: docx, pdf, or png",
+        @Schema(description = "Server-catalogue format code: docx, pdf, png, html, or xlsx",
                 requiredMode = Schema.RequiredMode.REQUIRED,
-                allowableValues = {"docx", "pdf", "png"},
+                allowableValues = {"docx", "pdf", "png", "html", "xlsx"},
                 example = "pdf")
         @NotBlank
-        @Pattern(regexp = "docx|pdf|png", message = "Format must be docx, pdf, or png")
+        @Pattern(regexp = "docx|pdf|png|html|xlsx", message = "Format must be one of the server-supported export formats")
         String format
 ) {}

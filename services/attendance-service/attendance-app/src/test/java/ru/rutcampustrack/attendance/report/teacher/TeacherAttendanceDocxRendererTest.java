@@ -135,8 +135,10 @@ class TeacherAttendanceDocxRendererTest {
 
         assertThat(visibleText).contains(
                 "Неделя: 07.09.2026–13.09.2026", "Неделя: 14.09.2026–20.09.2026");
-        assertThat(count(xml, "<w:br w:type=\"page\"/>" )).isEqualTo(5);
+        assertThat(count(xml, "<w:br w:type=\"page\"/>" )).isEqualTo(3);
         assertThat(visibleText).doesNotContain("${");
+        assertThat(visibleText).doesNotContain("Итоги по студентам");
+        assertThat(parse(xml).getElementsByTagNameNS(WORD_NS, "tbl").getLength()).isEqualTo(4);
     }
 
     @Test
@@ -178,17 +180,22 @@ class TeacherAttendanceDocxRendererTest {
         firstCells.put(706L, new Cell("у", AttendanceStatus.EXCUSED, true));
         // Future lesson 707 deliberately has no key, so the report cannot imply absence.
 
+        java.util.Optional<Metrics> rowMetrics = kind == ReportKind.WEEKLY_ATTENDANCE
+                ? java.util.Optional.empty()
+                : java.util.Optional.of(new Metrics(2, 2, 1, 4, 8,
+                        new BigDecimal("25"), new BigDecimal("50"),
+                        new BigDecimal("25"), new BigDecimal("12.5")));
         Row first = new Row(50001L,
                 "Иванова Елизавета Александровна с очень длинной фамилией",
                 firstCells,
-                new Metrics(2, 2, 1, 4, 8,
-                        new BigDecimal("25"), new BigDecimal("50"),
-                        new BigDecimal("25"), new BigDecimal("12.5")));
+                rowMetrics);
         Row second = new Row(50002L,
                 "Петров Артём",
                 Map.of(),
-                new Metrics(0, 0, 0, 0, 0,
-                        BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+                kind == ReportKind.WEEKLY_ATTENDANCE
+                        ? java.util.Optional.empty()
+                        : java.util.Optional.of(new Metrics(0, 0, 0, 0, 0,
+                                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)));
 
         Context context = new Context(kind, 12L, "Осенний семестр", 42L, "ПИ-101",
                 kind == ReportKind.SUBJECT_JOURNAL ? 81L : null,
@@ -234,9 +241,9 @@ class TeacherAttendanceDocxRendererTest {
                     91_000L + studentIndex,
                     largeStudentNames().get(studentIndex),
                     cells,
-                    new Metrics(18, 9, 9, 27, 36,
+                    java.util.Optional.of(new Metrics(18, 9, 9, 27, 36,
                             new BigDecimal("50"), new BigDecimal("75"),
-                            new BigDecimal("25"), new BigDecimal("25"))));
+                            new BigDecimal("25"), new BigDecimal("25")))));
         }
 
         Context context = new Context(

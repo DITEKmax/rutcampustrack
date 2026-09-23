@@ -113,20 +113,21 @@ class ReportControllerMvcTest {
     }
 
     @Test
-    void exportCurrentPng_returnsPngContentType() throws Exception {
+    void exportCurrentPng_returnsCompletePagesZip() throws Exception {
         LocalDate weekStart = LocalDate.of(2026, 4, 27);
         when(headmanWeeklyReportService.exportSingleWeek(weekStart, "png"))
                 .thenReturn(new HeadmanWeeklyExportResult(
-                        "UVPV511_27.04.2026_03.05.2026.png",
-                        ReportApi.PNG_MEDIA_TYPE,
+                        "UVPV511_27.04.2026_03.05.2026_png.zip",
+                        ReportApi.ZIP_MEDIA_TYPE,
                         new byte[]{8, 9}));
 
         mockMvc.perform(get("/attendance/reports/headman-weekly/current")
                         .param("weekStart", "2026-04-27")
                         .param("format", "png"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.IMAGE_PNG))
-                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString(".png")))
+                .andExpect(content().contentType(ReportApi.ZIP_MEDIA_TYPE))
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("_png.zip")))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, containsString("no-store")))
                 .andExpect(content().bytes(new byte[]{8, 9}));
     }
 

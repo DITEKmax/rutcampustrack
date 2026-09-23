@@ -100,8 +100,9 @@ public final class TeacherAttendanceDocxRenderer {
             documentXml = documentXml.replace("${" + entry.getKey() + "}", escapeXml(entry.getValue()));
         }
         documentXml = replacePlaceholderParagraph(documentXml, "MATRIX_TABLE", matrixTables(model));
+        String summaryTable = context.kind() == ReportKind.WEEKLY_ATTENDANCE ? "" : summary(model);
         documentXml = replacePreviousTitleAndPlaceholderParagraph(
-                documentXml, "Итоги по студентам", "SUMMARY_TABLE", summary(model));
+                documentXml, "Итоги по студентам", "SUMMARY_TABLE", summaryTable);
         Matcher unresolved = PLACEHOLDER.matcher(documentXml);
         if (unresolved.find()) {
             throw new ReportValidationException("DOCX template still contains placeholder " + unresolved.group());
@@ -179,7 +180,8 @@ public final class TeacherAttendanceDocxRenderer {
 
         for (int rowIndex = 0; rowIndex < model.rows().size(); rowIndex++) {
             Row row = model.rows().get(rowIndex);
-            Metrics metrics = row.metrics();
+            Metrics metrics = row.metrics().orElseThrow(() ->
+                    new ReportValidationException("Subject-journal row has no server-supplied metrics"));
             boolean alternate = rowIndex % 2 == 1;
             String[] values = {
                     displayName(row),

@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Immutable, renderer-neutral input for teacher attendance exports.
@@ -28,6 +29,10 @@ public record TeacherAttendanceExportModel(
         context = Objects.requireNonNull(context, "context");
         columns = List.copyOf(Objects.requireNonNull(columns, "columns"));
         rows = List.copyOf(Objects.requireNonNull(rows, "rows"));
+        if (context.kind() == ReportKind.SUBJECT_JOURNAL
+                && rows.stream().anyMatch(row -> row.metrics().isEmpty())) {
+            throw new IllegalArgumentException("Subject-journal rows require server-supplied metrics");
+        }
     }
 
     public enum ReportKind {
@@ -84,7 +89,7 @@ public record TeacherAttendanceExportModel(
             long studentId,
             String displayName,
             Map<Long, Cell> cellsByLessonId,
-            Metrics metrics
+            Optional<Metrics> metrics
     ) {
         public Row {
             displayName = Objects.requireNonNullElse(displayName, "");
@@ -112,6 +117,8 @@ public record TeacherAttendanceExportModel(
      * Counts, denominator, and percentages are supplied by the server for the
      * exact lesson selection and student membership in this report context.
      * Percentages are in the 0..100 range; renderers do not recompute them. When the denominator is zero, they show no data rather than 0%.
+     * Weekly attendance matrices may omit these metrics when their layout does
+     * not contain a summary section.
      */
     public record Metrics(
             int presentCount,

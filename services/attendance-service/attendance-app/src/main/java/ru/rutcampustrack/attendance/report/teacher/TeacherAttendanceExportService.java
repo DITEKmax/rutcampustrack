@@ -245,7 +245,7 @@ public final class TeacherAttendanceExportService {
                         if (cell != null) orderedCells.put(column.lessonId(), cell);
                     }
                     return new TeacherAttendanceExportModel.Row(row.studentId, row.displayName, orderedCells,
-                            metricsByStudent.getOrDefault(row.studentId, emptyMetrics()));
+                            java.util.Optional.of(metricsByStudent.getOrDefault(row.studentId, emptyMetrics())));
                 })
                 .toList();
         List<String> typeLabels = types.stream().map(TeacherAttendanceExportService::typeLabel).toList();
@@ -404,7 +404,7 @@ public final class TeacherAttendanceExportService {
             for (TeacherAttendanceExportModel.Column column : model.columns()) {
                 out.append("<td>").append(escapeHtml(safeCellValue(row.cellsByLessonId().get(column.lessonId())))).append("</td>");
             }
-            TeacherAttendanceExportModel.Metrics metrics = row.metrics();
+            TeacherAttendanceExportModel.Metrics metrics = row.metrics().orElseThrow();
             out.append("<td>").append(metricValue(metrics.presentCount(), metrics.denominator(), metrics.percentPresent()))
                     .append("</td><td>").append(metricValue(metrics.presentOrExcusedCount(), metrics.denominator(), metrics.percentPresentOrExcused()))
                     .append("</td><td>").append(metricValue(metrics.excusedCount(), metrics.denominator(), metrics.percentExcused()))
@@ -448,7 +448,7 @@ public final class TeacherAttendanceExportService {
             for (TeacherAttendanceExportModel.Column column : model.columns()) {
                 values.add(SheetValue.text(safeCellValue(row.cellsByLessonId().get(column.lessonId()))));
             }
-            TeacherAttendanceExportModel.Metrics metrics = row.metrics();
+            TeacherAttendanceExportModel.Metrics metrics = row.metrics().orElseThrow();
             values.add(SheetValue.number(metrics.denominator()));
             addMetricValues(values, metrics.presentCount(), metrics.percentPresent(), metrics.denominator());
             addMetricValues(values, metrics.presentOrExcusedCount(), metrics.percentPresentOrExcused(), metrics.denominator());

@@ -420,6 +420,107 @@
   cursor: not-allowed;
 }
 
+.headman-journal__weekly-export {
+  display: grid;
+  gap: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-4);
+  background: var(--rct-color-surface-raised);
+}
+
+.headman-journal__weekly-export h2,
+.headman-journal__weekly-export p {
+  margin: 0;
+}
+
+.headman-journal__weekly-export-controls {
+  display: grid;
+  gap: var(--rct-space-3);
+  min-inline-size: 0;
+}
+
+.headman-journal__weekly-export-context {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  overflow-wrap: anywhere;
+}
+
+.headman-journal__weekly-weeks {
+  display: grid;
+  gap: var(--rct-space-1);
+  min-inline-size: 0;
+  margin: 0;
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+}
+
+.headman-journal__weekly-weeks legend,
+.headman-journal__weekly-format {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-journal__weekly-week {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-2);
+  min-block-size: var(--rct-control-min-touch);
+  color: var(--rct-color-text-primary);
+  font-size: var(--rct-font-size-body);
+  cursor: pointer;
+}
+
+.headman-journal__weekly-week input {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  flex: 0 0 auto;
+  accent-color: var(--rct-color-accent-now);
+}
+
+.headman-journal__weekly-week span {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.headman-journal__weekly-format {
+  display: grid;
+  gap: var(--rct-space-1);
+}
+
+.headman-journal__weekly-format select {
+  min-block-size: var(--rct-control-min-touch);
+  inline-size: 100%;
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding-inline: var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  @mixin rct-focus-ring;
+}
+
+.headman-journal__weekly-download {
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  padding-inline: var(--rct-space-3);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.headman-journal__weekly-download:disabled,
+.headman-journal__weekly-format select:disabled,
+.headman-journal__weekly-weeks:disabled .headman-journal__weekly-week {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
 @media (max-width: 24rem) {
   .headman-journal__header,
   .headman-journal__section-header {

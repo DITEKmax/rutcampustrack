@@ -26,7 +26,7 @@ final class HeadmanWeeklyReportFiles {
         LocalDate last = sorted.get(sorted.size() - 1).plusDays(6);
 
         String suffix = hasGaps(sorted) ? GAP_SUFFIX : "";
-        if (format == HeadmanWeeklyReportFormat.PNG && sorted.size() > 1) {
+        if (format == HeadmanWeeklyReportFormat.PNG) {
             return "%s_%s_%s%s_png.zip".formatted(
                     sanitizeGroupCode(groupCode),
                     first.format(FILE_DATE),
@@ -50,13 +50,6 @@ final class HeadmanWeeklyReportFiles {
             }
         }
         return false;
-    }
-
-    static String pngEntryName(HeadmanWeeklyReportModel model) {
-        return "week-%02d_%s_%s.png".formatted(
-                model.weekOfSemester(),
-                model.weekStart().format(FILE_DATE),
-                model.weekEnd().format(FILE_DATE));
     }
 
     private static List<LocalDate> sortedDistinct(List<LocalDate> weekStarts) {

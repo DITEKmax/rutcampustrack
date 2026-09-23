@@ -103,6 +103,14 @@ public class GlobalExceptionHandler {
                 "Report cannot be generated", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(ReportExportTooLargeException.class)
+    public ResponseEntity<ErrorResponse> handleReportExportTooLarge(
+            ReportExportTooLargeException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.PAYLOAD_TOO_LARGE, "report-export-too-large",
+                "Экспорт слишком большой", ex.getMessage(), request);
+    }
+
     @ExceptionHandler(GeofenceBlockedException.class)
     public ResponseEntity<ErrorResponse> handleGeofenceBlocked(
             GeofenceBlockedException ex,

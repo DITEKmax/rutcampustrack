@@ -12,6 +12,7 @@ import {
   type HeadmanJournalLesson,
   type HeadmanJournalReport,
   type HeadmanJournalRosterEntry,
+  type HeadmanWeeklyExportOptions,
 } from './headman-journal-client'
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
 import './headman-journal-screen.pcss'
@@ -57,9 +58,19 @@ const lessonActionBusy = ref(false)
 const attachmentStates = ref<Readonly<Record<number, RequestAttachmentViewState>>>({})
 const attachmentOwnerIdentity = ref<string | null>(props.api ? 'headman-journal' : null)
 const attachmentOwnerGeneration = ref(0)
+const weeklyExportOptions = shallowRef<HeadmanWeeklyExportOptions | null>(null)
+const weeklyExportFormatCode = ref('')
+const selectedWeeklyStarts = ref<readonly string[]>([])
+const loadingWeeklyOptions = ref(false)
+const weeklyExportBusy = ref(false)
+const weeklyExportError = ref<string | null>(null)
+const weeklyExportStatus = ref<string | null>(null)
 let lessonsRevision = 0
 let reportRevision = 0
 let lessonActionRevision = 0
+let weeklyOptionsRevision = 0
+let weeklyExportRevision = 0
+let weeklyExportAbort: AbortController | null = null
 let disposed = false
 let attachmentDisposed = false
 const attachmentPopups = new Set<RequestAttachmentPopup>()
@@ -78,7 +89,10 @@ const excuseTypes = [
 
 const selectedLesson = computed(() => lessons.value.find((lesson) => lesson.id === selectedLessonId.value) ?? null)
 const entries = computed(() => report.value?.entries ?? [])
-const busy = computed(() => loadingLessons.value || loadingReport.value)
+const busy = computed(() => loadingLessons.value || loadingReport.value || loadingWeeklyOptions.value || weeklyExportBusy.value)
+const selectedWeeklyFormat = computed(() => weeklyExportOptions.value?.formats
+  .find((format) => format.code === weeklyExportFormatCode.value) ?? null)
+const selectedWeeklyCount = computed(() => selectedWeeklyStarts.value.length)
 
 function formatDate(value: string): string {
   const date = new Date(`${value}T12:00:00Z`)
@@ -173,6 +187,135 @@ function hasAssistantPermission(permission: HeadmanAssistantPermission): boolean
 
 function canViewReport(): boolean {
   return hasAssistantPermission('MARK_ATTENDANCE') || hasAssistantPermission('VIEW_STATS')
+}
+
+function canExportWeekly(): boolean {
+  return Boolean(props.api && props.groupId !== null && !props.offline
+    && (props.assistantPermissions === null || props.assistantPermissions.includes('VIEW_STATS')))
+}
+
+function weekForDate(options: HeadmanWeeklyExportOptions, date: string) {
+  return options.weeks.find((week) => date >= week.weekStart && date <= week.weekEnd) ?? null
+}
+
+function resetWeeklySelectionForDate(): void {
+  const options = weeklyExportOptions.value
+  if (!options) {
+    selectedWeeklyStarts.value = []
+    return
+  }
+  const selected = weekForDate(options, selectedDate.value)
+  selectedWeeklyStarts.value = selected ? [selected.weekStart] : []
+}
+
+function toggleWeeklyWeek(weekStart: string, checked: boolean): void {
+  const options = weeklyExportOptions.value
+  if (!options?.weeks.some((week) => week.weekStart === weekStart)) return
+  const next = new Set(selectedWeeklyStarts.value)
+  if (checked) next.add(weekStart)
+  else next.delete(weekStart)
+  selectedWeeklyStarts.value = options.weeks
+    .filter((week) => next.has(week.weekStart))
+    .map((week) => week.weekStart)
+  invalidateWeeklyExport('Недели изменились. Запусти скачивание для нового выбора.')
+}
+
+function invalidateWeeklyExport(message?: string): void {
+  weeklyExportRevision += 1
+  weeklyExportAbort?.abort()
+  weeklyExportAbort = null
+  weeklyExportBusy.value = false
+  weeklyExportError.value = null
+  weeklyExportStatus.value = null
+  if (message) weeklyExportStatus.value = message
+}
+
+async function loadWeeklyExportOptions(): Promise<void> {
+  const revision = ++weeklyOptionsRevision
+  invalidateWeeklyExport()
+  weeklyExportOptions.value = null
+  weeklyExportFormatCode.value = ''
+  selectedWeeklyStarts.value = []
+  if (!canExportWeekly()) {
+    loadingWeeklyOptions.value = false
+    return
+  }
+  const api = props.api
+  loadingWeeklyOptions.value = true
+  weeklyExportError.value = null
+  try {
+    const options = await api!.getWeeklyExportOptions()
+    if (disposed || revision !== weeklyOptionsRevision || api !== props.api || !canExportWeekly()) return
+    weeklyExportOptions.value = options
+    weeklyExportFormatCode.value = options.formats[0]?.code ?? ''
+    resetWeeklySelectionForDate()
+  } catch (cause) {
+    if (disposed || revision !== weeklyOptionsRevision || cause instanceof StaleSessionGenerationError) return
+    weeklyExportError.value = cause instanceof Error
+      ? cause.message
+      : 'Не удалось загрузить список недель и форматов.'
+    emit('error', cause)
+  } finally {
+    if (revision === weeklyOptionsRevision) loadingWeeklyOptions.value = false
+  }
+}
+
+async function downloadWeeklyExport(): Promise<void> {
+  const api = props.api
+  const options = weeklyExportOptions.value
+  const format = selectedWeeklyFormat.value
+  if (!api || !options || !format || !canExportWeekly() || weeklyExportBusy.value) return
+  const weekStarts = options.weeks
+    .filter((week) => selectedWeeklyStarts.value.includes(week.weekStart))
+    .map((week) => week.weekStart)
+  if (weekStarts.length === 0) {
+    weeklyExportError.value = 'Выбери хотя бы одну неделю.'
+    weeklyExportStatus.value = null
+    return
+  }
+  invalidateWeeklyExport()
+  const revision = weeklyExportRevision
+  const controller = new AbortController()
+  weeklyExportAbort = controller
+  weeklyExportBusy.value = true
+  try {
+    const downloaded = await api.downloadWeeklyExport(weekStarts, format, controller.signal)
+    if (disposed || revision !== weeklyExportRevision || api !== props.api || !canExportWeekly()) return
+    if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function' || typeof document === 'undefined') {
+      throw new Error('Скачивание файла недоступно в этом приложении.')
+    }
+    const url = URL.createObjectURL(downloaded.blob)
+    attachmentObjectUrls.add(url)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = downloaded.filename
+    anchor.rel = 'noopener'
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    window.setTimeout(() => releaseAttachmentObjectUrl(url), 60_000)
+    weeklyExportStatus.value = `Файл ${downloaded.filename} подготовлен.`
+  } catch (cause) {
+    if (disposed || revision !== weeklyExportRevision || cause instanceof StaleSessionGenerationError
+      || (typeof DOMException !== 'undefined' && cause instanceof DOMException && cause.name === 'AbortError')) return
+    if (cause instanceof HeadmanJournalApiError && cause.response.status === 403) {
+      weeklyExportError.value = 'Для выгрузки требуется действующее право VIEW_STATS.'
+    } else if (cause instanceof HeadmanJournalApiError && cause.response.status === 413) {
+      weeklyExportError.value = cause.message || 'Файл слишком большой. Выбери меньше недель или другой доступный формат; данные не обрезаны.'
+    } else if (cause instanceof HeadmanJournalApiError && cause.response.status === 422) {
+      weeklyExportError.value = 'Выбранная неделя больше недоступна. Обнови список и выбери неделю из него.'
+    } else if (cause instanceof HeadmanJournalApiError && cause.response.status >= 500) {
+      weeklyExportError.value = 'Не удалось сформировать журнал. Проверь подключение и попробуй ещё раз.'
+    } else {
+      weeklyExportError.value = cause instanceof Error ? cause.message : 'Не удалось скачать журнал.'
+    }
+    emit('error', cause)
+  } finally {
+    if (revision === weeklyExportRevision) {
+      weeklyExportBusy.value = false
+      weeklyExportAbort = null
+    }
+  }
 }
 
 function canCancelLessons(): boolean {
@@ -540,6 +683,21 @@ watch(
 )
 
 watch(
+  () => [props.api, props.groupId, props.offline, props.assistantPermissions] as const,
+  () => { void loadWeeklyExportOptions() },
+  { immediate: true, flush: 'sync' },
+)
+
+watch(
+  () => selectedDate.value,
+  () => {
+    invalidateWeeklyExport()
+    resetWeeklySelectionForDate()
+  },
+  { flush: 'sync' },
+)
+
+watch(
   () => [props.api, props.groupId, selectedLessonId.value] as const,
   () => {
     attachmentOwnerGeneration.value += 1
@@ -555,6 +713,10 @@ onBeforeUnmount(() => {
   attachmentDisposed = true
   lessonsRevision += 1
   reportRevision += 1
+  weeklyOptionsRevision += 1
+  invalidateWeeklyExport()
+  weeklyExportAbort?.abort()
+  weeklyExportOptions.value = null
   attachmentOwnerGeneration.value += 1
   for (const popup of attachmentPopups) closeAttachmentPopup(popup)
   for (const url of attachmentObjectUrls) releaseAttachmentObjectUrl(url)
@@ -588,6 +750,101 @@ onBeforeUnmount(() => {
         Сегодня
       </button>
     </header>
+
+    <section
+      v-if="canExportWeekly()"
+      class="headman-journal__weekly-export"
+      aria-labelledby="headman-journal-weekly-export-title"
+      :aria-busy="loadingWeeklyOptions || weeklyExportBusy"
+    >
+      <h2 id="headman-journal-weekly-export-title">
+        Скачать недельный журнал
+      </h2>
+      <p
+        v-if="loadingWeeklyOptions"
+        class="headman-journal__state"
+        role="status"
+      >
+        Загружаем серверный список недель и форматов…
+      </p>
+      <p
+        v-else-if="weeklyExportError && !weeklyExportOptions"
+        class="headman-journal__state headman-journal__state--error"
+        role="alert"
+      >
+        {{ weeklyExportError }}
+      </p>
+      <div
+        v-else-if="weeklyExportOptions"
+        class="headman-journal__weekly-export-controls"
+      >
+        <p class="headman-journal__weekly-export-context">
+          {{ weeklyExportOptions.semesterName }} · {{ selectedWeeklyCount }} выбрано
+        </p>
+        <fieldset
+          class="headman-journal__weekly-weeks"
+          :disabled="weeklyExportBusy"
+        >
+          <legend>Недели для выгрузки</legend>
+          <label
+            v-for="week in weeklyExportOptions.weeks"
+            :key="week.weekStart"
+            class="headman-journal__weekly-week"
+          >
+            <input
+              type="checkbox"
+              :checked="selectedWeeklyStarts.includes(week.weekStart)"
+              :aria-label="`${week.label}, ${formatShortDate(week.weekStart)}–${formatShortDate(week.weekEnd)}${week.current ? ', текущая неделя' : ''}`"
+              @change="toggleWeeklyWeek(week.weekStart, ($event.target as HTMLInputElement).checked)"
+            >
+            <span>
+              {{ week.label }} · {{ formatShortDate(week.weekStart) }}–{{ formatShortDate(week.weekEnd) }}<span v-if="week.current"> · текущая</span>
+            </span>
+          </label>
+        </fieldset>
+        <label class="headman-journal__weekly-format">
+          <span>Формат файла</span>
+          <select
+            v-model="weeklyExportFormatCode"
+            :disabled="weeklyExportBusy"
+          >
+            <option
+              v-for="format in weeklyExportOptions.formats"
+              :key="format.code"
+              :value="format.code"
+            >
+              {{ format.label }}
+            </option>
+          </select>
+        </label>
+        <p class="headman-journal__weekly-export-context">
+          Общий предел — 20 МиБ на файл; PDF и PNG могут иметь меньший технический предел. Большой отчёт не обрезается.
+        </p>
+        <button
+          class="headman-journal__weekly-download"
+          type="button"
+          :disabled="weeklyExportBusy || selectedWeeklyCount === 0 || !selectedWeeklyFormat"
+          :aria-busy="weeklyExportBusy"
+          @click="downloadWeeklyExport"
+        >
+          {{ weeklyExportBusy ? 'Готовим файл…' : `Скачать${selectedWeeklyCount > 1 ? ` (${selectedWeeklyCount} недели)` : ''}` }}
+        </button>
+        <p
+          v-if="weeklyExportError"
+          class="headman-journal__state headman-journal__state--error"
+          role="alert"
+        >
+          {{ weeklyExportError }}
+        </p>
+        <p
+          v-if="weeklyExportStatus"
+          class="headman-journal__state"
+          role="status"
+        >
+          {{ weeklyExportStatus }}
+        </p>
+      </div>
+    </section>
 
     <nav
       class="headman-journal__date-nav"
@@ -827,10 +1084,10 @@ onBeforeUnmount(() => {
               н
             </button>
             <button
+              v-if="canManageExcuses()"
               type="button"
               :disabled="pendingUserId !== null"
               :aria-label="`Отметить «уважительная причина»: ${entry.displayName}`"
-              v-if="canManageExcuses()"
               @click="onStatusClick(entry, 'EXCUSED')"
             >
               у

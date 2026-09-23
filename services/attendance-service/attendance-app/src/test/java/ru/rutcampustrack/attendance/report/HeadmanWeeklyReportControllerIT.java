@@ -63,7 +63,7 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
     private static final LocalDate FIRST_WEEK = LocalDate.of(2026, 4, 27);
     private static final LocalDate THIRD_WEEK = LocalDate.of(2026, 5, 11);
     private static final byte[] PDF_BYTES = new byte[]{0x25, 0x50, 0x44, 0x46};
-    private static final byte[] PNG_BYTES = new byte[]{(byte) 0x89, 0x50, 0x4e, 0x47};
+    private static final byte[] PNG_ZIP_BYTES = pngPageZip();
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -101,7 +101,7 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
 
     @Test
     void exportCurrentPdf_convertsSingleWeekDocx() throws Exception {
-        when(documentRendererGrpcClient.convertDocx(any(byte[].class), eq(TargetFormat.PDF)))
+        when(documentRendererGrpcClient.convertDocxForHeadmanWeeklyExport(any(byte[].class), eq(TargetFormat.PDF)))
                 .thenReturn(PDF_BYTES);
 
         mockMvc.perform(get("/attendance/reports/headman-weekly/current")
@@ -113,24 +113,24 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, org.hamcrest.Matchers.containsString(".pdf")))
                 .andExpect(content().bytes(PDF_BYTES));
 
-        verify(documentRendererGrpcClient).convertDocx(any(byte[].class), eq(TargetFormat.PDF));
+        verify(documentRendererGrpcClient).convertDocxForHeadmanWeeklyExport(any(byte[].class), eq(TargetFormat.PDF));
     }
 
     @Test
     void exportCurrentPng_convertsSingleWeekDocx() throws Exception {
-        when(documentRendererGrpcClient.convertDocx(any(byte[].class), eq(TargetFormat.PNG)))
-                .thenReturn(PNG_BYTES);
+        when(documentRendererGrpcClient.convertDocxForHeadmanWeeklyExport(any(byte[].class), eq(TargetFormat.PNG_PAGES_ZIP)))
+                .thenReturn(PNG_ZIP_BYTES);
 
         mockMvc.perform(get("/attendance/reports/headman-weekly/current")
                         .param("weekStart", FIRST_WEEK.toString())
                         .param("format", "png")
                         .headers(headmanHeaders()))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.IMAGE_PNG))
-                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, org.hamcrest.Matchers.containsString(".png")))
-                .andExpect(content().bytes(PNG_BYTES));
+                .andExpect(content().contentType(ReportApi.ZIP_MEDIA_TYPE))
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, org.hamcrest.Matchers.containsString("_png.zip")))
+                .andExpect(content().bytes(PNG_ZIP_BYTES));
 
-        verify(documentRendererGrpcClient).convertDocx(any(byte[].class), eq(TargetFormat.PNG));
+        verify(documentRendererGrpcClient).convertDocxForHeadmanWeeklyExport(any(byte[].class), eq(TargetFormat.PNG_PAGES_ZIP));
     }
 
     @Test
@@ -153,7 +153,7 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
 
     @Test
     void exportSelectedWeeksPdf_convertsOneMultiPageDocx() throws Exception {
-        when(documentRendererGrpcClient.convertDocx(any(byte[].class), eq(TargetFormat.PDF)))
+        when(documentRendererGrpcClient.convertDocxForHeadmanWeeklyExport(any(byte[].class), eq(TargetFormat.PDF)))
                 .thenReturn(PDF_BYTES);
 
         mockMvc.perform(post("/attendance/reports/headman-weekly/export")
@@ -165,13 +165,13 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, org.hamcrest.Matchers.containsString(".pdf")))
                 .andExpect(content().bytes(PDF_BYTES));
 
-        verify(documentRendererGrpcClient).convertDocx(any(byte[].class), eq(TargetFormat.PDF));
+        verify(documentRendererGrpcClient).convertDocxForHeadmanWeeklyExport(any(byte[].class), eq(TargetFormat.PDF));
     }
 
     @Test
     void exportSelectedWeeksPng_returnsZipWithOneEntryPerSelectedWeek() throws Exception {
-        when(documentRendererGrpcClient.convertDocx(any(byte[].class), eq(TargetFormat.PNG)))
-                .thenReturn(new byte[]{1}, new byte[]{2});
+        when(documentRendererGrpcClient.convertDocxForHeadmanWeeklyExport(any(byte[].class), eq(TargetFormat.PNG_PAGES_ZIP)))
+                .thenReturn(PNG_ZIP_BYTES);
 
         MvcResult result = mockMvc.perform(post("/attendance/reports/headman-weekly/export")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -183,8 +183,9 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
                 .andReturn();
 
         assertThat(zipEntries(result.getResponse().getContentAsByteArray()))
-                .containsExactly("week-01_27.04.2026_03.05.2026.png", "week-03_11.05.2026_17.05.2026.png");
-        verify(documentRendererGrpcClient, times(2)).convertDocx(any(byte[].class), eq(TargetFormat.PNG));
+                .containsExactly("page-001.png", "page-002.png");
+        verify(documentRendererGrpcClient, times(1)).convertDocxForHeadmanWeeklyExport(
+                any(byte[].class), eq(TargetFormat.PNG_PAGES_ZIP));
     }
 
     private static org.springframework.http.HttpHeaders headmanHeaders() {
@@ -212,10 +213,8 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
                 .setName("UVPV511")
                 .setIsActive(true)
                 .build());
-        when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(GroupMembersResponse.newBuilder()
-                .addStudents(student(100L, "Alpha Student"))
-                .addStudents(student(101L, "Beta Student"))
-                .build());
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, FIRST_WEEK, SEMESTER_ID)).thenReturn(roster(FIRST_WEEK));
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, THIRD_WEEK, SEMESTER_ID)).thenReturn(roster(THIRD_WEEK));
         when(academicGrpcClient.getSubjectDetailsByIds(List.of(SUBJECT_ID)))
                 .thenReturn(Map.of(SUBJECT_ID, new AcademicGrpcClient.SubjectDetails("Math", "lecture")));
     }
@@ -264,15 +263,43 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
                 .build();
     }
 
+    private static GroupMembersResponse roster(LocalDate asOfDate) {
+        return GroupMembersResponse.newBuilder()
+                .setAsOfDate(asOfDate.toString())
+                .setSemesterId(SEMESTER_ID)
+                .addStudents(student(100L, "Alpha Student"))
+                .addStudents(student(101L, "Beta Student"))
+                .build();
+    }
+
     private static LessonResponse lesson(Long id, String date, int lessonNumber) {
         return LessonResponse.newBuilder()
                 .setId(id)
                 .setGroupId(GROUP_ID)
+                .setSemesterId(SEMESTER_ID)
                 .setSubjectId(SUBJECT_ID)
                 .setDate(date)
                 .setLessonNumber(lessonNumber)
+                .setStartTime("09:00")
+                .setLessonType("lecture")
                 .setStatus("closed")
                 .build();
+    }
+
+    private static byte[] pngPageZip() {
+        try (java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
+             java.util.zip.ZipOutputStream zip = new java.util.zip.ZipOutputStream(output)) {
+            zip.putNextEntry(new ZipEntry("page-001.png"));
+            zip.write(new byte[]{1, 2, 3});
+            zip.closeEntry();
+            zip.putNextEntry(new ZipEntry("page-002.png"));
+            zip.write(new byte[]{4, 5, 6});
+            zip.closeEntry();
+            zip.finish();
+            return output.toByteArray();
+        } catch (java.io.IOException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     private static List<String> zipEntries(byte[] zipBytes) throws Exception {

@@ -40,6 +40,8 @@ public interface ReportApi {
     String PDF_MEDIA_TYPE = "application/pdf";
     String PNG_MEDIA_TYPE = "image/png";
     String ZIP_MEDIA_TYPE = "application/zip";
+    String HTML_MEDIA_TYPE = "text/html; charset=UTF-8";
+    String XLSX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     @Operation(summary = "Lesson attendance list")
     @ApiResponses({
@@ -91,7 +93,7 @@ public interface ReportApi {
     @Operation(summary = "Weeks of the active semester available for headman weekly report export")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Weeks retrieved"),
-            @ApiResponse(responseCode = "403", description = "Only a headman can export weekly reports",
+            @ApiResponse(responseCode = "403", description = "A headman or assistant with current VIEW_STATS can export the journal",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "503", description = "Academic service unavailable",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -99,19 +101,23 @@ public interface ReportApi {
     @GetMapping("/headman-weekly/weeks")
     ResponseEntity<EntityModel<HeadmanWeeklyWeeksResponse>> getHeadmanWeeklyWeeks();
 
-    @Operation(summary = "Export one headman weekly report")
+    @Operation(summary = "Export one headman weekly attendance journal")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Report file",
                     content = {
                             @Content(mediaType = DOCX_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
                             @Content(mediaType = PDF_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
-                            @Content(mediaType = PNG_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary"))
+                            @Content(mediaType = ZIP_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = HTML_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = XLSX_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary"))
                     }),
             @ApiResponse(responseCode = "400", description = "Unknown export format",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "Only a headman can export weekly reports",
+            @ApiResponse(responseCode = "403", description = "A headman or assistant with current VIEW_STATS can export the journal",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "422", description = "Week is outside the active semester or template limits are exceeded",
+            @ApiResponse(responseCode = "413", description = "The selected export exceeds a bounded document or transport limit",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "422", description = "Week is outside the available active-semester range",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "503", description = "Renderer or upstream service unavailable",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -121,19 +127,23 @@ public interface ReportApi {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekStart,
             @RequestParam String format);
 
-    @Operation(summary = "Export multiple selected headman weekly reports")
+    @Operation(summary = "Export selected headman weekly attendance journals")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Report file",
                     content = {
                             @Content(mediaType = DOCX_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
                             @Content(mediaType = PDF_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
-                            @Content(mediaType = ZIP_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary"))
+                            @Content(mediaType = ZIP_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = HTML_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = XLSX_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary"))
                     }),
             @ApiResponse(responseCode = "400", description = "Unknown export format or invalid request body",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "Only a headman can export weekly reports",
+            @ApiResponse(responseCode = "403", description = "A headman or assistant with current VIEW_STATS can export the journal",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "422", description = "Selected weeks are outside the active semester or template limits are exceeded",
+            @ApiResponse(responseCode = "413", description = "The selected export exceeds a bounded document or transport limit",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "422", description = "Selected weeks are outside the available active-semester range",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "503", description = "Renderer or upstream service unavailable",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))

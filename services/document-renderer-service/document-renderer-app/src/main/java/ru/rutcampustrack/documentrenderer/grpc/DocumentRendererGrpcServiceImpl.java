@@ -29,8 +29,11 @@ public class DocumentRendererGrpcServiceImpl extends DocumentRendererGrpcService
                 case PDF -> response(converter.convertToPdf(request.getDocx().toByteArray()), "application/pdf", "pdf");
                 case PNG -> response(converter.convertToPng(request.getDocx().toByteArray(), request.getPngDpi()),
                         "image/png", "png");
+                case PNG_PAGES_ZIP -> response(
+                        converter.convertToPngPagesZip(request.getDocx().toByteArray(), request.getPngDpi()),
+                        "application/zip", "zip");
                 case TARGET_FORMAT_UNSPECIFIED, UNRECOGNIZED -> throw new DocumentConversionException(
-                        "Target format must be PDF or PNG");
+                        "Target format must be PDF, PNG, or PNG_PAGES_ZIP");
             };
             responseObserver.onNext(response);
             responseObserver.onCompleted();

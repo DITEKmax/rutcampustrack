@@ -3,13 +3,19 @@ package ru.rutcampustrack.documentrenderer.render;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 @EnableConfigurationProperties(DocumentRendererProperties.class)
@@ -74,6 +80,96 @@ public class OfficeDocumentConverter {
         } finally {
             deleteRecursively(tempDir);
         }
+    }
+
+    /**
+     * Converts every PDF page produced from the supplied DOCX into an ordered PNG archive.
+     * The legacy {@link #convertToPng(byte[], int)} contract remains a single-page PNG.
+     */
+    public byte[] convertToPngPagesZip(byte[] docx, int requestedDpi) {
+        Path tempDir = createTempDir();
+        try {
+            Path pdf = tempDir.resolve("input.pdf");
+            Files.write(pdf, convertToPdf(docx));
+            int dpi = requestedDpi > 0 ? requestedDpi : properties.getPngDpi();
+            ProcessRunner.ProcessResult result = processRunner.run(List.of(
+                    properties.getPdftoppmCommand(),
+                    "-png",
+                    "-r",
+                    String.valueOf(dpi),
+                    pdf.toString(),
+                    tempDir.resolve("page").toString()), tempDir, properties.timeout());
+            if (result.exitCode() != 0) {
+                throw new DocumentConversionException(
+                        "Poppler failed to convert PDF pages to PNG: " + result.output());
+            }
+
+            List<PngPage> pages = findPngPages(tempDir);
+            if (pages.isEmpty()) {
+                throw new DocumentConversionException("Poppler produced no PNG pages");
+            }
+            ensureCompletePageSequence(pages);
+            return zipPages(pages);
+        } catch (IOException ex) {
+            throw new DocumentConversionException("Failed to create PNG pages archive", ex);
+        } finally {
+            deleteRecursively(tempDir);
+        }
+    }
+
+    private static List<PngPage> findPngPages(Path tempDir) throws IOException {
+        try (Stream<Path> paths = Files.list(tempDir)) {
+            return paths
+                    .filter(Files::isRegularFile)
+                    .filter(path -> PNG_PAGE.matcher(path.getFileName().toString()).matches())
+                    .map(path -> new PngPage(parsePageNumber(path), path))
+                    .sorted(Comparator.comparingInt(PngPage::number))
+                    .toList();
+        }
+    }
+
+    private static int parsePageNumber(Path path) {
+        Matcher matcher = PNG_PAGE.matcher(path.getFileName().toString());
+        if (!matcher.matches()) {
+            throw new DocumentConversionException("Poppler produced an unexpected PNG page filename");
+        }
+        try {
+            int number = Integer.parseInt(matcher.group(1));
+            if (number < 1) {
+                throw new DocumentConversionException("Poppler produced an invalid PNG page number");
+            }
+            return number;
+        } catch (NumberFormatException ex) {
+            throw new DocumentConversionException("Poppler produced an invalid PNG page number", ex);
+        }
+    }
+
+    private static void ensureCompletePageSequence(List<PngPage> pages) {
+        for (int index = 0; index < pages.size(); index++) {
+            if (pages.get(index).number() != index + 1) {
+                throw new DocumentConversionException("Poppler produced an incomplete PNG page sequence");
+            }
+        }
+    }
+
+    private static byte[] zipPages(List<PngPage> pages) throws IOException {
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream();
+             ZipOutputStream zip = new ZipOutputStream(output)) {
+            for (PngPage page : pages) {
+                ZipEntry entry = new ZipEntry(String.format(Locale.ROOT, "page-%04d.png", page.number()));
+                entry.setTime(0L);
+                zip.putNextEntry(entry);
+                Files.copy(page.path(), zip);
+                zip.closeEntry();
+            }
+            zip.finish();
+            return output.toByteArray();
+        }
+    }
+
+    private static final Pattern PNG_PAGE = Pattern.compile("^page-(\\d+)\\.png$");
+
+    private record PngPage(int number, Path path) {
     }
 
     private static Path createTempDir() {

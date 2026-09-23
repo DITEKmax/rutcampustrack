@@ -51,6 +51,27 @@ class DocumentRendererGrpcServiceImplTest {
         assertThat(observer.values).isEmpty();
     }
 
+    @Test
+    void convertAllPngPagesReturnsZipPayload() {
+        OfficeDocumentConverter converter = mock(OfficeDocumentConverter.class);
+        when(converter.convertToPngPagesZip(new byte[]{1, 2, 3}, 180)).thenReturn(new byte[]{8, 9});
+        DocumentRendererGrpcServiceImpl service = new DocumentRendererGrpcServiceImpl(converter);
+        RecordingObserver observer = new RecordingObserver();
+
+        service.convert(ConvertDocumentRequest.newBuilder()
+                .setDocx(com.google.protobuf.ByteString.copyFrom(new byte[]{1, 2, 3}))
+                .setPngDpi(180)
+                .setTargetFormat(TargetFormat.PNG_PAGES_ZIP)
+                .build(), observer);
+
+        assertThat(observer.error).isNull();
+        assertThat(observer.completed).isTrue();
+        assertThat(observer.values).hasSize(1);
+        assertThat(observer.values.get(0).getContent().toByteArray()).containsExactly(8, 9);
+        assertThat(observer.values.get(0).getContentType()).isEqualTo("application/zip");
+        assertThat(observer.values.get(0).getExtension()).isEqualTo("zip");
+    }
+
     private static class RecordingObserver implements StreamObserver<ConvertDocumentResponse> {
         private final List<ConvertDocumentResponse> values = new ArrayList<>();
         private Throwable error;

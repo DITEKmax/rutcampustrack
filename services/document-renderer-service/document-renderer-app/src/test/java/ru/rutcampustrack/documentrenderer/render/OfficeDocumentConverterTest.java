@@ -2,12 +2,15 @@ package ru.rutcampustrack.documentrenderer.render;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -58,6 +61,51 @@ class OfficeDocumentConverterTest {
 
         assertThat(runner.invocations().get(1).command())
                 .containsSubsequence("pdftoppm", "-r", "144");
+        assertThat(runner.invocations())
+                .extracting(Invocation::workingDirectory)
+                .allSatisfy(path -> assertThat(path).doesNotExist());
+    }
+
+    @Test
+    void convertToPngPagesZipIncludesEveryPageInNumericOrder() throws IOException {
+        RecordingProcessRunner runner = new RecordingProcessRunner();
+        OfficeDocumentConverter converter = new OfficeDocumentConverter(properties(), runner);
+
+        byte[] archive = converter.convertToPngPagesZip(DOCX, 180);
+
+        List<String> names = new ArrayList<>();
+        List<byte[]> pages = new ArrayList<>();
+        try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(archive), StandardCharsets.UTF_8)) {
+            var entry = zip.getNextEntry();
+            while (entry != null) {
+                names.add(entry.getName());
+                pages.add(zip.readAllBytes());
+                entry = zip.getNextEntry();
+            }
+        }
+        assertThat(names).containsExactly(
+                "page-0001.png", "page-0002.png", "page-0003.png", "page-0004.png",
+                "page-0005.png", "page-0006.png", "page-0007.png", "page-0008.png",
+                "page-0009.png", "page-0010.png", "page-0011.png", "page-0012.png");
+        assertThat(pages).hasSize(12);
+        assertThat(pages.get(11)).containsExactly((byte) 12);
+        assertThat(runner.invocations().get(1).command())
+                .containsSubsequence("pdftoppm", "-png", "-r", "180")
+                .doesNotContain("-singlefile");
+        assertThat(runner.invocations())
+                .extracting(Invocation::workingDirectory)
+                .allSatisfy(path -> assertThat(path).doesNotExist());
+    }
+
+    @Test
+    void convertToPngPagesZipRejectsMissingPageInsteadOfReturningPartialArchive() {
+        RecordingProcessRunner runner = new RecordingProcessRunner();
+        runner.mode = Mode.MISSING_MIDDLE_PNG_PAGE;
+        OfficeDocumentConverter converter = new OfficeDocumentConverter(properties(), runner);
+
+        assertThatThrownBy(() -> converter.convertToPngPagesZip(DOCX, 180))
+                .isInstanceOf(DocumentConversionException.class)
+                .hasMessageContaining("incomplete PNG page sequence");
         assertThat(runner.invocations())
                 .extracting(Invocation::workingDirectory)
                 .allSatisfy(path -> assertThat(path).doesNotExist());
@@ -129,7 +177,8 @@ class OfficeDocumentConverterTest {
     private enum Mode {
         SUCCESS,
         NON_ZERO_EXIT,
-        MISSING_PNG_OUTPUT
+        MISSING_PNG_OUTPUT,
+        MISSING_MIDDLE_PNG_PAGE
     }
 
     private record Invocation(List<String> command, Path workingDirectory) {
@@ -152,8 +201,15 @@ class OfficeDocumentConverterTest {
             try {
                 if (command.contains("soffice")) {
                     Files.write(workingDirectory.resolve("input.pdf"), PDF);
-                } else if (mode != Mode.MISSING_PNG_OUTPUT) {
+                } else if (command.contains("-singlefile") && mode != Mode.MISSING_PNG_OUTPUT) {
                     Files.write(workingDirectory.resolve("page.png"), PNG);
+                } else if (mode == Mode.MISSING_MIDDLE_PNG_PAGE) {
+                    Files.write(workingDirectory.resolve("page-1.png"), new byte[]{1});
+                    Files.write(workingDirectory.resolve("page-3.png"), new byte[]{3});
+                } else if (mode != Mode.MISSING_PNG_OUTPUT) {
+                    for (int page = 12; page >= 1; page--) {
+                        Files.write(workingDirectory.resolve("page-" + page + ".png"), new byte[]{(byte) page});
+                    }
                 }
             } catch (IOException error) {
                 throw new AssertionError("fake renderer could not write its output", error);

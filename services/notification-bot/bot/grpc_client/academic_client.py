@@ -1,5 +1,6 @@
 import logging
 import time
+from pathlib import Path
 from typing import Any
 
 import grpc
@@ -13,9 +14,25 @@ logger = logging.getLogger(__name__)
 class AcademicGrpcClient:
     _CACHE_TTL_SECONDS = 300  # 5 minutes
 
-    def __init__(self, host: str, port: int, grpc_secret: str = "") -> None:
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        grpc_secret: str = "",
+        tls_enabled: bool = False,
+        tls_ca_path: str = "",
+    ) -> None:
         target = f"{host}:{port}"
-        self._channel = grpc.aio.insecure_channel(target)
+        if tls_enabled:
+            if not tls_ca_path:
+                raise ValueError("ACADEMIC_GRPC_TLS_CA_PATH is required when TLS is enabled")
+            ca_path = Path(tls_ca_path)
+            if not ca_path.is_file():
+                raise ValueError(f"ACADEMIC_GRPC_TLS_CA_PATH does not exist: {tls_ca_path}")
+            credentials = grpc.ssl_channel_credentials(root_certificates=ca_path.read_bytes())
+            self._channel = grpc.aio.secure_channel(target, credentials)
+        else:
+            self._channel = grpc.aio.insecure_channel(target)
         self._stub = academic_pb2_grpc.AcademicGrpcServiceStub(self._channel)
         # IMP-09: Shared secret for inter-service gRPC auth
         self._metadata = (("x-grpc-secret", grpc_secret),) if grpc_secret else ()

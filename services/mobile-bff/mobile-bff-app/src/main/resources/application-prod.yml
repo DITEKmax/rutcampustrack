@@ -8,3 +8,8 @@ grpc:
       security:
         trust-cert-collection: ${SCHEDULE_GRPC_TRUST_CERT_COLLECTION}
         authority-override: ${SCHEDULE_GRPC_TLS_AUTHORITY:schedule-service}
+    academic-service:
+      negotiation-type: TLS
+      security:
+        trust-cert-collection: ${ACADEMIC_GRPC_TRUST_CERT_COLLECTION}
+        authority-override: ${ACADEMIC_GRPC_TLS_AUTHORITY}

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# M13 G25.3 — генерация self-signed TLS сертификатов для e2e nginx и
-# Schedule gRPC. The latter is trusted by the Java/Python Schedule clients.
+# M13 G25.3 — генерация self-signed TLS сертификатов для e2e nginx,
+# Schedule gRPC и Academic gRPC. Each gRPC server cert is trusted only by
+# clients of that service.
 #
 # Sertcfffts go в `tests/e2e/infra/certs/` (gitignored). Идемпотентно —
 # regenerate'ит если файлов нет, иначе skip. CN=localhost, SAN=localhost.
@@ -54,5 +55,22 @@ else
   echo "Schedule gRPC test certs already exist in ${CERTS_DIR} — keep them."
 fi
 
+if [ ! -f "${CERTS_DIR}/academic-server.crt" ] || [ ! -f "${CERTS_DIR}/academic-server.key" ]; then
+  echo "Generating self-signed RSA-2048 Academic gRPC cert (SAN=academic-service) in ${CERTS_DIR}..."
+  ACADEMIC_SUBJ="/CN=academic-service"
+  if [ -n "${MSYSTEM:-}" ] || [ -n "${WSL_DISTRO_NAME:-}" ]; then
+    ACADEMIC_SUBJ="//CN=academic-service"
+  fi
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "${CERTS_DIR}/academic-server.key" \
+    -out "${CERTS_DIR}/academic-server.crt" \
+    -subj "${ACADEMIC_SUBJ}" \
+    -addext "subjectAltName=DNS:academic-service"
+  chmod 644 "${CERTS_DIR}/academic-server.crt"
+  chmod 600 "${CERTS_DIR}/academic-server.key"
+else
+  echo "Academic gRPC test certs already exist in ${CERTS_DIR} — keep them."
+fi
+
 echo "Done:"
-ls -l "${CERTS_DIR}/server."* "${CERTS_DIR}/schedule-server."*
+ls -l "${CERTS_DIR}/server."* "${CERTS_DIR}/schedule-server."* "${CERTS_DIR}/academic-server."*

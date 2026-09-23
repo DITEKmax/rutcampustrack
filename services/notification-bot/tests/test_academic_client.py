@@ -120,3 +120,46 @@ async def test_grpc_error_propagates():
 
     with pytest.raises(grpc.aio.AioRpcError):
         await client.get_group_members(42)
+
+
+def test_tls_enabled_requires_academic_ca_path():
+    with pytest.raises(ValueError, match="ACADEMIC_GRPC_TLS_CA_PATH is required"):
+        AcademicGrpcClient("academic-service", 19091, tls_enabled=True)
+
+
+def test_tls_enabled_uses_academic_ca_file(tmp_path):
+    ca_path = tmp_path / "academic-server.crt"
+    ca_path.write_bytes(b"test academic CA")
+
+    with (
+        patch("bot.grpc_client.academic_client.grpc.ssl_channel_credentials") as credentials_factory,
+        patch("bot.grpc_client.academic_client.grpc.aio.secure_channel") as secure_channel,
+        patch("bot.grpc_client.academic_client.academic_pb2_grpc.AcademicGrpcServiceStub") as stub_factory,
+    ):
+        credentials = MagicMock()
+        channel = MagicMock()
+        credentials_factory.return_value = credentials
+        secure_channel.return_value = channel
+
+        AcademicGrpcClient(
+            "academic-service",
+            19091,
+            grpc_secret="directed-token",
+            tls_enabled=True,
+            tls_ca_path=str(ca_path),
+        )
+
+    credentials_factory.assert_called_once_with(root_certificates=b"test academic CA")
+    secure_channel.assert_called_once_with("academic-service:19091", credentials)
+    stub_factory.assert_called_once_with(channel)
+
+
+def test_tls_enabled_rejects_missing_academic_ca_file(tmp_path):
+    ca_path = tmp_path / "missing-academic-server.crt"
+    with pytest.raises(ValueError, match="ACADEMIC_GRPC_TLS_CA_PATH does not exist"):
+        AcademicGrpcClient(
+            "academic-service",
+            19091,
+            tls_enabled=True,
+            tls_ca_path=str(ca_path),
+        )

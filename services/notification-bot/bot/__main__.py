@@ -88,7 +88,13 @@ async def run_with_watchdog(rabbitmq_url: str, dispatcher=None, idempotency_guar
 
 async def create_clients():
     """Create and start all service clients for bot handlers."""
-    academic_client = AcademicGrpcClient(config.academic_grpc_host, config.academic_grpc_port, config.grpc_secret)
+    academic_client = AcademicGrpcClient(
+        config.academic_grpc_host,
+        config.academic_grpc_port,
+        config.grpc_secret,
+        config.academic_grpc_tls_enabled,
+        config.academic_grpc_tls_ca_path,
+    )
     schedule_client = ScheduleGrpcClient(
         config.schedule_grpc_host,
         config.schedule_grpc_port,

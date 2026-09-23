@@ -17,6 +17,11 @@ management:
 # The Schedule binding contract is admitted only over TLS. The trust bundle
 # and authority are explicit deployment inputs; no prod plaintext fallback.
 grpc:
+  server:
+    security:
+      enabled: true
+      certificate-chain: ${ACADEMIC_GRPC_CERTIFICATE_CHAIN}
+      private-key: ${ACADEMIC_GRPC_PRIVATE_KEY}
   client:
     schedule-service:
       negotiation-type: TLS

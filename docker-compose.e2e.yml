@@ -16,8 +16,8 @@
 #   Reverse-proxy nginx терминирует HTTPS через self-signed cert,
 #   генерируется через `tests/e2e/infra/scripts/generate-test-certs.sh`
 #   до `docker compose up`. Playwright использует ignoreHTTPSErrors=true.
-#   The same script generates the Schedule gRPC certificate; Java/Python
-#   Schedule consumers mount it through SCHEDULE_GRPC_TLS_DIR.
+#   The same script generates the Schedule and Academic gRPC certificates;
+#   each consumer mounts only the public certificate it trusts.
 #   Это нужно потому что AuthCookies выставляет `Secure` flag на refresh
 #   cookie — на чистом HTTP браузер cookie отбрасывает.
 #
@@ -208,10 +208,14 @@ services:
       GRPC_SECRET: ${GRPC_SECRET}
       ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:?ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN must be set}
       SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN: ${SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN:?SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN must be set}
+      ACADEMIC_GRPC_CERTIFICATE_CHAIN: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_PRIVATE_KEY: file:/run/rct-academic-tls/academic-server.key
       SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC"
     volumes:
       - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
+      - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+      - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.key:/run/rct-academic-tls/academic-server.key:ro
     expose:
       - "9091"
     networks:
@@ -244,12 +248,16 @@ services:
       GRPC_SECRET: ${GRPC_SECRET}
       ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:?ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN must be set}
       SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN: ${SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN:?SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN must be set}
+      ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_TLS_AUTHORITY: academic-service
       SCHEDULE_GRPC_CERTIFICATE_CHAIN: file:/run/rct-schedule-tls/schedule-server.crt
       SCHEDULE_GRPC_PRIVATE_KEY: file:/run/rct-schedule-tls/schedule-server.key
       TZ: Europe/Moscow
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC"
     volumes:
-      - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}:/run/rct-schedule-tls:ro
+      - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
+      - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.key:/run/rct-schedule-tls/schedule-server.key:ro
+      - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
       - "9092"
     networks:
@@ -282,9 +290,12 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       GRPC_SECRET: ${GRPC_SECRET}
       SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
+      ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_TLS_AUTHORITY: academic-service
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC"
     volumes:
       - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
+      - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
       - "9093"
     networks:
@@ -441,6 +452,8 @@ services:
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       ACADEMIC_GRPC_HOST: academic-service
       ACADEMIC_GRPC_PORT: "19091"
+      ACADEMIC_GRPC_TLS_ENABLED: "true"
+      ACADEMIC_GRPC_TLS_CA_PATH: /run/rct-academic-tls/academic-server.crt
       REDIS_HOST: redis
       REDIS_PORT: "6379"
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -459,6 +472,7 @@ services:
       TZ: Europe/Moscow
     volumes:
       - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
+      - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     networks:
       - private_net
     depends_on:

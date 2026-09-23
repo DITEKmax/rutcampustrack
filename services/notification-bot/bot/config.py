@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     # gRPC shared secret (IMP-09)
     grpc_secret: str = ""
 
+    # Academic Service gRPC (prod compose enables TLS and provides its CA)
+    academic_grpc_tls_enabled: bool = False
+    academic_grpc_tls_ca_path: str = ""
+
     # Schedule Service gRPC
     schedule_grpc_host: str = "schedule-service"
     schedule_grpc_port: int = 19092

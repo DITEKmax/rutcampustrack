@@ -1,5 +1,7 @@
 import type { MobileProblemDetails } from '../../api/types'
 
+export type AdminSemesterType = 'AUTUMN' | 'SPRING'
+
 export interface AdminSemester {
   readonly id: number
   readonly name: string
@@ -7,12 +9,23 @@ export interface AdminSemester {
   readonly dateTo: string
   readonly active: boolean
   readonly createdAt: string | null
+  /** Null for legacy rows whose type was never explicitly assigned. */
+  readonly semesterType: AdminSemesterType | null
+  /** First year of the academic year; null on unclassified legacy rows. */
+  readonly academicYear: number | null
 }
 
 export interface CreateAdminSemesterInput {
   readonly name: string
   readonly dateFrom: string
   readonly dateTo: string
+  readonly semesterType: AdminSemesterType
+  readonly academicYear: number
+}
+
+export interface AdminSemesterOverlap {
+  readonly overlaps: boolean
+  readonly conflictingName: string | null
 }
 
 export interface AdminSemesterApiOptions {
@@ -65,11 +78,39 @@ export class AdminSemesterClient {
   }
 
   createSemester(input: CreateAdminSemesterInput): Promise<AdminSemester> {
-    const payload = normalizeCreateInput(input)
+    const payload = normalizeSemesterInput(input)
     return this.request<unknown>(AdminSemesterClient.basePath, {
       method: 'POST',
       body: JSON.stringify(payload),
     }).then(normalizeSemester)
+  }
+
+  getSemester(id: number, signal?: AbortSignal): Promise<AdminSemester> {
+    assertPositiveInteger(id, 'semesterId')
+    return this.request<unknown>(`${AdminSemesterClient.basePath}/${id}`, signal ? { signal } : undefined)
+      .then(normalizeSemester)
+  }
+
+  updateSemester(id: number, input: CreateAdminSemesterInput): Promise<AdminSemester> {
+    assertPositiveInteger(id, 'semesterId')
+    const payload = normalizeSemesterInput(input)
+    return this.request<unknown>(`${AdminSemesterClient.basePath}/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }).then(normalizeSemester)
+  }
+
+  checkOverlap(from: string, to: string, excludeId?: number, signal?: AbortSignal): Promise<AdminSemesterOverlap> {
+    const dateFrom = requiredDate(from, 'from')
+    const dateTo = requiredDate(to, 'to')
+    if (dateTo < dateFrom) throw new RangeError('to must be on or after from')
+    const query = new URLSearchParams({ from: dateFrom, to: dateTo })
+    if (excludeId !== undefined) {
+      assertPositiveInteger(excludeId, 'excludeId')
+      query.set('excludeId', String(excludeId))
+    }
+    return this.request<unknown>(`${AdminSemesterClient.basePath}/overlap?${query.toString()}`, signal ? { signal } : undefined)
+      .then(normalizeOverlap)
   }
 
   /** One PATCH is the complete server-side activation transaction. */
@@ -152,6 +193,11 @@ function readSemesterItems(value: unknown): readonly AdminSemester[] {
 
 function normalizeSemester(value: unknown): AdminSemester {
   const record = requiredRecord(value, 'semester')
+  const semesterType = nullableSemesterType(record.semesterType)
+  const academicYear = nullableAcademicYear(record.academicYear)
+  if ((semesterType === null) !== (academicYear === null)) {
+    throw new Error('Сервер вернул неполную классификацию семестра.')
+  }
   return {
     id: positiveInteger(record.id, 'semester.id'),
     name: requiredText(record.name, 'semester.name'),
@@ -159,15 +205,46 @@ function normalizeSemester(value: unknown): AdminSemester {
     dateTo: requiredDate(record.dateTo, 'semester.dateTo'),
     active: requiredBoolean(record.active, 'semester.active'),
     createdAt: nullableText(record.createdAt),
+    semesterType,
+    academicYear,
   }
 }
 
-function normalizeCreateInput(input: CreateAdminSemesterInput): CreateAdminSemesterInput {
+function normalizeSemesterInput(input: CreateAdminSemesterInput): CreateAdminSemesterInput {
   const name = requiredText(input.name, 'name')
   const dateFrom = requiredDate(input.dateFrom, 'dateFrom')
   const dateTo = requiredDate(input.dateTo, 'dateTo')
   if (dateTo < dateFrom) throw new RangeError('dateTo must be on or after dateFrom')
-  return { name, dateFrom, dateTo }
+  const semesterType = input.semesterType
+  if (semesterType !== 'AUTUMN' && semesterType !== 'SPRING') {
+    throw new RangeError('semesterType must be AUTUMN or SPRING')
+  }
+  if (!Number.isInteger(input.academicYear) || input.academicYear < 1 || input.academicYear > 9998) {
+    throw new RangeError('academicYear must be an integer from 1 to 9998')
+  }
+  return { name, dateFrom, dateTo, semesterType, academicYear: input.academicYear }
+}
+
+function normalizeOverlap(value: unknown): AdminSemesterOverlap {
+  const record = requiredRecord(value, 'semester overlap')
+  return {
+    overlaps: requiredBoolean(record.overlaps, 'semester overlap.overlaps'),
+    conflictingName: nullableText(record.conflictingName),
+  }
+}
+
+function nullableSemesterType(value: unknown): AdminSemesterType | null {
+  if (value === undefined || value === null || value === '') return null
+  if (value === 'AUTUMN' || value === 'SPRING') return value
+  throw new Error('Сервер вернул некорректный тип семестра.')
+}
+
+function nullableAcademicYear(value: unknown): number | null {
+  if (value === undefined || value === null || value === '') return null
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1 || value > 9998) {
+    throw new Error('Сервер вернул некорректный учебный год семестра.')
+  }
+  return value
 }
 
 function requiredRecord(value: unknown, field: string): Record<string, unknown> {

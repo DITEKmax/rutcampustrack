@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import {
   AdminSemesterApiError,
+  type AdminSemesterType,
   type AdminSemester,
   type AdminSemesterClient,
 } from './admin-semester-client'
@@ -24,7 +25,13 @@ const loading = ref(true)
 const saving = ref(false)
 const pendingActivationId = ref<number | null>(null)
 const formVisible = ref(false)
+const formMode = ref<'create' | 'edit'>('create')
+const editingSemesterId = ref<number | null>(null)
+const formLoading = ref(false)
+const semesterType = ref<AdminSemesterType | null>(null)
 const name = ref('')
+const academicYear = ref('')
+const academicYearTouched = ref(false)
 const dateFrom = ref('')
 const dateTo = ref('')
 const error = ref<string | null>(null)
@@ -32,10 +39,27 @@ const notice = ref<string | null>(null)
 let disposed = false
 let listRequestRevision = 0
 let listAbortController: AbortController | null = null
+let editRequestRevision = 0
+let editAbortController: AbortController | null = null
 
 const activeSemesters = computed(() => semesters.value.filter((semester) => semester.active))
 const inactiveSemesters = computed(() => semesters.value.filter((semester) => !semester.active))
 const hasActiveSemester = computed(() => activeSemesters.value.length > 0)
+const formName = computed(() => {
+  if (semesterType.value === null) return name.value
+  const year = Number(academicYear.value)
+  if (!Number.isSafeInteger(year) || year < 1 || year > 9998) return ''
+  return generatedSemesterName(semesterType.value, year)
+})
+
+watch([semesterType, dateFrom], ([type, from]) => {
+  if (academicYearTouched.value || type === null || from === '') return
+  const calendarYear = Number(from.slice(0, 4))
+  const defaultYear = type === 'SPRING' ? calendarYear - 1 : calendarYear
+  academicYear.value = Number.isSafeInteger(defaultYear) && defaultYear >= 1 && defaultYear <= 9998
+    ? String(defaultYear)
+    : ''
+})
 
 onMounted(() => void refresh())
 
@@ -71,14 +95,104 @@ function isAbortError(cause: unknown): boolean {
   return cause instanceof Error && cause.name === 'AbortError'
 }
 
-async function createSemester(): Promise<void> {
+function cancelEditLoad(): void {
+  editRequestRevision += 1
+  editAbortController?.abort()
+  editAbortController = null
+  formLoading.value = false
+}
+
+function openCreateForm(): void {
+  if (saving.value) return
+  cancelEditLoad()
+  formMode.value = 'create'
+  editingSemesterId.value = null
+  semesterType.value = null
+  name.value = ''
+  academicYear.value = ''
+  academicYearTouched.value = false
+  dateFrom.value = ''
+  dateTo.value = ''
+  formVisible.value = true
+  error.value = null
+  notice.value = null
+}
+
+function closeForm(): void {
+  if (saving.value) return
+  cancelEditLoad()
+  formVisible.value = false
+  editingSemesterId.value = null
+  error.value = null
+  notice.value = null
+}
+
+async function openEditForm(semester: AdminSemester): Promise<void> {
+  if (saving.value) return
+  cancelEditLoad()
+  formMode.value = 'edit'
+  editingSemesterId.value = semester.id
+  formVisible.value = true
+  formLoading.value = true
+  semesterType.value = null
+  name.value = ''
+  academicYear.value = ''
+  academicYearTouched.value = false
+  dateFrom.value = ''
+  dateTo.value = ''
+  error.value = null
+  notice.value = null
+
+  const revision = ++editRequestRevision
+  const controller = new AbortController()
+  editAbortController = controller
+  try {
+    const fresh = await props.client.getSemester(semester.id, controller.signal)
+    if (!isCurrentEditRequest(revision, controller, semester.id)) return
+    name.value = fresh.name
+    dateFrom.value = fresh.dateFrom
+    dateTo.value = fresh.dateTo
+    // Legacy rows stay explicitly untyped until an admin chooses a type.
+    semesterType.value = fresh.semesterType
+    academicYear.value = fresh.academicYear === null ? '' : String(fresh.academicYear)
+    // A persisted academic year is an explicit choice; changing dates must not replace it.
+    academicYearTouched.value = fresh.academicYear !== null
+  } catch (cause) {
+    if (!isCurrentEditRequest(revision, controller, semester.id)
+      || cause instanceof StaleSessionGenerationError
+      || isAbortError(cause)) return
+    showError(cause, 'Данные семестра не удалось загрузить.')
+  } finally {
+    if (isCurrentEditRequest(revision, controller, semester.id)) {
+      formLoading.value = false
+      editAbortController = null
+    }
+  }
+}
+
+function isCurrentEditRequest(revision: number, controller: AbortController, semesterId: number): boolean {
+  return !disposed
+    && revision === editRequestRevision
+    && editAbortController === controller
+    && formMode.value === 'edit'
+    && editingSemesterId.value === semesterId
+}
+
+async function saveSemester(): Promise<void> {
+  if (saving.value || formLoading.value) return
+  const selectedType = semesterType.value
+  const selectedYear = Number(academicYear.value)
   const payload = {
-    name: name.value.trim(),
+    name: selectedType !== null && Number.isSafeInteger(selectedYear) && selectedYear >= 1 && selectedYear <= 9998
+      ? generatedSemesterName(selectedType, selectedYear)
+      : '',
     dateFrom: dateFrom.value,
     dateTo: dateTo.value,
+    semesterType: selectedType,
+    academicYear: selectedYear,
   }
-  if (!payload.name || !payload.dateFrom || !payload.dateTo) {
-    error.value = 'Укажи название, дату начала и дату окончания.'
+  if (!payload.dateFrom || !payload.dateTo || payload.semesterType === null || payload.name === '') {
+    error.value = 'Укажи тип семестра, учебный год, дату начала и дату окончания.'
     return
   }
   if (payload.dateTo < payload.dateFrom) {
@@ -90,16 +204,38 @@ async function createSemester(): Promise<void> {
   error.value = null
   notice.value = null
   try {
-    await props.client.createSemester(payload)
+    const overlap = await props.client.checkOverlap(
+      payload.dateFrom,
+      payload.dateTo,
+      editingSemesterId.value ?? undefined,
+    )
+    if (overlap.overlaps) {
+      error.value = `Даты пересекаются с семестром «${overlap.conflictingName ?? 'без названия'}».`
+      return
+    }
+    const wasEditing = formMode.value === 'edit'
+    if (wasEditing && editingSemesterId.value !== null) {
+      await props.client.updateSemester(editingSemesterId.value, payload)
+    } else {
+      await props.client.createSemester(payload)
+    }
     if (disposed) return
+    cancelEditLoad()
+    editingSemesterId.value = null
+    semesterType.value = null
     name.value = ''
+    academicYear.value = ''
+    academicYearTouched.value = false
     dateFrom.value = ''
     dateTo.value = ''
     formVisible.value = false
-    notice.value = 'Семестр создан.'
+    formMode.value = 'create'
+    notice.value = wasEditing ? 'Изменения семестра сохранены.' : 'Семестр создан.'
     await refresh()
   } catch (cause) {
-    if (!disposed && !(cause instanceof StaleSessionGenerationError)) showError(cause, 'Семестр не удалось создать.')
+    if (!disposed && !(cause instanceof StaleSessionGenerationError)) {
+      showError(cause, formMode.value === 'edit' ? 'Семестр не удалось сохранить.' : 'Семестр не удалось создать.')
+    }
   } finally {
     if (!disposed) saving.value = false
   }
@@ -152,11 +288,28 @@ function statusLabel(semester: AdminSemester): string {
   return semester.active ? 'Активный' : 'Неактивный'
 }
 
+function semesterTypeLabel(value: AdminSemesterType | null): string {
+  if (value === 'AUTUMN') return 'Осенний семестр'
+  if (value === 'SPRING') return 'Весенний семестр'
+  return 'Тип не указан'
+}
+
+function generatedSemesterName(type: AdminSemesterType, academicYearValue: number): string {
+  const season = type === 'AUTUMN' ? 'Осенний' : 'Весенний'
+  return `${season} ${academicYearValue}/${academicYearValue + 1}`
+}
+
+function setAcademicYear(event: Event): void {
+  academicYearTouched.value = true
+  academicYear.value = (event.target as HTMLInputElement).value
+}
+
 onBeforeUnmount(() => {
   disposed = true
   listRequestRevision += 1
   listAbortController?.abort()
   listAbortController = null
+  cancelEditLoad()
 })
 </script>
 
@@ -175,8 +328,9 @@ onBeforeUnmount(() => {
         <button
           class="admin-semester-screen__new"
           type="button"
+          :disabled="saving"
           :aria-expanded="formVisible"
-          @click="formVisible = !formVisible; error = null; notice = null"
+          @click="formVisible ? closeForm() : openCreateForm()"
         >
           {{ formVisible ? 'Скрыть форму' : '+ Новый семестр' }}
         </button>
@@ -190,21 +344,61 @@ onBeforeUnmount(() => {
       v-if="formVisible"
       class="admin-semester-card admin-semester-form"
       aria-labelledby="admin-semester-form-title"
-      @submit.prevent="createSemester"
+      @submit.prevent="saveSemester"
     >
       <h2 id="admin-semester-form-title">
-        Новый семестр
+        {{ formMode === 'edit' ? 'Изменить семестр' : 'Новый семестр' }}
       </h2>
+      <p
+        v-if="formLoading"
+        class="admin-semester-form__hint"
+        role="status"
+      >
+        Загружаем сохранённые данные…
+      </p>
+      <fieldset
+        class="admin-semester-form__types"
+        :disabled="saving || formLoading"
+      >
+        <legend>Тип семестра</legend>
+        <label class="admin-semester-form__type-option">
+          <input
+            v-model="semesterType"
+            name="semester-type"
+            required
+            type="radio"
+            value="AUTUMN"
+          >
+          <span>Осенний</span>
+        </label>
+        <label class="admin-semester-form__type-option">
+          <input
+            v-model="semesterType"
+            name="semester-type"
+            required
+            type="radio"
+            value="SPRING"
+          >
+          <span>Весенний</span>
+        </label>
+      </fieldset>
       <label>
-        <span>Название</span>
+        <span>Учебный год</span>
         <input
-          v-model="name"
-          autocomplete="off"
-          maxlength="120"
+          :value="academicYear"
+          inputmode="numeric"
+          max="9998"
+          min="1"
           required
-          type="text"
+          step="1"
+          type="number"
+          :disabled="saving || formLoading"
+          @input="setAcademicYear"
         >
       </label>
+      <p class="admin-semester-form__hint">
+        Название формируется автоматически: {{ formName || 'выбери тип и укажи учебный год' }}.
+      </p>
       <div class="admin-semester-form__dates">
         <label>
           <span>Начало</span>
@@ -212,6 +406,7 @@ onBeforeUnmount(() => {
             v-model="dateFrom"
             required
             type="date"
+            :disabled="saving || formLoading"
           >
         </label>
         <label>
@@ -220,19 +415,26 @@ onBeforeUnmount(() => {
             v-model="dateTo"
             required
             type="date"
+            :disabled="saving || formLoading"
           >
         </label>
       </div>
       <p class="admin-semester-form__hint">
-        Начало может быть в прошлом. Пересечение с другим периодом проверит сервер.
+        Начало может быть в прошлом. Пересечение проверяется с учётом этой записи; сервер проверит его ещё раз при сохранении.
+      </p>
+      <p
+        v-if="formMode === 'edit' && semesterType === null"
+        class="admin-semester-form__hint"
+      >
+        У старой записи тип не указан. Выбери его явно; название и сохранённые данные не переопределяются автоматически.
       </p>
       <button
         class="admin-semester-action"
         type="submit"
-        :disabled="saving"
+        :disabled="saving || formLoading"
         :aria-busy="saving"
       >
-        {{ saving ? 'Сохраняем…' : 'Создать семестр' }}
+        {{ saving ? 'Сохраняем…' : formMode === 'edit' ? 'Сохранить изменения' : 'Создать семестр' }}
       </button>
     </form>
 
@@ -298,6 +500,17 @@ onBeforeUnmount(() => {
           <p class="admin-semester-card__period">
             <time :datetime="semester.dateFrom">{{ formatPeriod(semester) }}</time>
           </p>
+          <p class="admin-semester-card__type">
+            {{ semesterTypeLabel(semester.semesterType) }}
+          </p>
+          <button
+            class="admin-semester-action admin-semester-action--secondary"
+            type="button"
+            :disabled="saving"
+            @click="openEditForm(semester)"
+          >
+            Изменить
+          </button>
         </article>
       </section>
 
@@ -323,6 +536,17 @@ onBeforeUnmount(() => {
           <p class="admin-semester-card__period">
             <time :datetime="semester.dateFrom">{{ formatPeriod(semester) }}</time>
           </p>
+          <p class="admin-semester-card__type">
+            {{ semesterTypeLabel(semester.semesterType) }}
+          </p>
+          <button
+            class="admin-semester-action admin-semester-action--secondary"
+            type="button"
+            :disabled="saving"
+            @click="openEditForm(semester)"
+          >
+            Изменить
+          </button>
           <button
             class="admin-semester-action admin-semester-action--secondary"
             type="button"

@@ -12,6 +12,8 @@ const semester = {
   dateTo: '2027-01-31',
   active: false,
   createdAt: '2026-09-22T10:00:00Z',
+  semesterType: null,
+  academicYear: null,
 }
 const secondSemester = {
   ...semester,
@@ -83,21 +85,31 @@ describe('AdminSemesterClient', () => {
       fetcher: async (input, init) => {
         capturedInput = input
         capturedInit = init
-        return jsonResponse({ ...semester, active: false })
+        return jsonResponse({
+          ...semester,
+          name: 'Осенний 2026/2027',
+          semesterType: 'AUTUMN',
+          academicYear: 2026,
+          active: false,
+        })
       },
     })
 
     await client.createSemester({
-      name: 'Осень 2026',
+      name: 'Осенний 2026/2027',
       dateFrom: '2026-09-01',
       dateTo: '2027-01-31',
+      semesterType: 'AUTUMN',
+      academicYear: 2026,
     })
     expect(capturedInput).toBe('/api/academic/semesters')
     expect(capturedInit?.method).toBe('POST')
     expect(JSON.parse(String(capturedInit?.body))).toEqual({
-      name: 'Осень 2026',
+      name: 'Осенний 2026/2027',
       dateFrom: '2026-09-01',
       dateTo: '2027-01-31',
+      semesterType: 'AUTUMN',
+      academicYear: 2026,
     })
   })
 

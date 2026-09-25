@@ -105,6 +105,11 @@
   font-size: var(--rct-font-size-dense);
 }
 
+.admin-semester-card__type {
+  color: var(--rct-color-text-muted);
+  font-size: var(--rct-font-size-caption);
+}
+
 .admin-semester-status {
   flex: 0 0 auto;
   color: var(--rct-color-text-muted);
@@ -127,7 +132,7 @@
   font-size: var(--rct-font-size-caption);
 }
 
-.admin-semester-form input {
+.admin-semester-form input:not([type='radio']) {
   min-block-size: var(--rct-control-min-touch);
   inline-size: 100%;
   border: var(--rct-border-hairline) solid var(--rct-color-border-default);
@@ -136,6 +141,39 @@
   color: var(--rct-color-text-primary);
   background: var(--rct-color-surface-base);
   font: inherit;
+}
+
+.admin-semester-form__types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rct-space-2) var(--rct-space-4);
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-semester-form__types legend {
+  margin-block-end: var(--rct-space-1);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-semester-form__type-option {
+  display: inline-flex !important;
+  min-block-size: var(--rct-control-min-touch);
+  align-items: center;
+  gap: var(--rct-space-2) !important;
+  padding-inline: var(--rct-space-2);
+  border-radius: var(--rct-radius-md);
+  color: var(--rct-color-text-primary) !important;
+  cursor: pointer;
+}
+
+.admin-semester-form__type-option input[type='radio'] {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  margin: 0;
+  accent-color: var(--rct-color-accent-now);
 }
 
 .admin-semester-form__dates {
@@ -183,7 +221,8 @@
 
 .admin-semester-screen__new:focus-visible,
 .admin-semester-action:focus-visible,
-.admin-semester-form input:focus-visible {
+.admin-semester-form input:focus-visible,
+.admin-semester-form__type-option:focus-within {
   outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
   outline-offset: var(--rct-focus-offset);
 }

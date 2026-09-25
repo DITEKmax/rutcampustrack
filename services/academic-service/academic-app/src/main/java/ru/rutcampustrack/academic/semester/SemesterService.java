@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
+import ru.rutcampustrack.academic.contract.enums.SemesterType;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.event.SemesterArchivedEvent;
@@ -29,6 +30,9 @@ import java.util.Optional;
  */
 @Service
 public class SemesterService {
+
+    private static final int MIN_ACADEMIC_YEAR = 1;
+    private static final int MAX_ACADEMIC_YEAR = 9998;
 
     private final SemesterRepository semesterRepository;
     private final SemesterAssembler semesterAssembler;
@@ -50,13 +54,18 @@ public class SemesterService {
 
     @Transactional
     public Semester createSemester(CreateSemesterRequest request) {
+        validateAcademicYear(request.semesterType(), request.academicYear());
         validateDates(request.dateFrom(), request.dateTo(), true);
         checkOverlapOrThrow(request.dateFrom(), request.dateTo(), null);
 
         Semester semester = new Semester();
-        semester.setName(request.name());
+        semester.setName(request.semesterType() == null
+                ? request.name()
+                : generatedName(request.semesterType(), request.academicYear()));
         semester.setDateFrom(request.dateFrom());
         semester.setDateTo(request.dateTo());
+        semester.setSemesterType(request.semesterType());
+        semester.setAcademicYear(request.academicYear());
         semester.setActive(false);
         semester.setCreatedAt(OffsetDateTime.now());
         return semesterRepository.save(semester);
@@ -81,6 +90,8 @@ public class SemesterService {
                     "Нельзя редактировать завершённый семестр");
         }
 
+        validateAcademicYear(request.semesterType(), request.academicYear());
+
         validateDates(request.dateFrom(), request.dateTo(), false);
         boolean datesChanged = !request.dateFrom().equals(semester.getDateFrom())
                 || !request.dateTo().equals(semester.getDateTo());
@@ -90,10 +101,34 @@ public class SemesterService {
         }
         checkOverlapOrThrow(request.dateFrom(), request.dateTo(), id);
 
-        semester.setName(request.name());
+        if (request.semesterType() != null) {
+            semester.setSemesterType(request.semesterType());
+            semester.setAcademicYear(request.academicYear());
+            semester.setName(generatedName(request.semesterType(), request.academicYear()));
+        } else if (semester.getSemesterType() != null || semester.getAcademicYear() != null) {
+            validateAcademicYear(semester.getSemesterType(), semester.getAcademicYear());
+            semester.setName(generatedName(semester.getSemesterType(), semester.getAcademicYear()));
+        } else {
+            // Legacy rows keep their explicit name until an administrator selects a type and year.
+            semester.setName(request.name());
+        }
         semester.setDateFrom(request.dateFrom());
         semester.setDateTo(request.dateTo());
         return semesterRepository.save(semester);
+    }
+
+    private void validateAcademicYear(SemesterType type, Integer year) {
+        if ((type == null) != (year == null)) {
+            throw new BadRequestException("academicYear", "Тип семестра и учебный год нужно указать вместе");
+        }
+        if (year != null && (year < MIN_ACADEMIC_YEAR || year > MAX_ACADEMIC_YEAR)) {
+            throw new BadRequestException("academicYear", "Учебный год должен быть от 1 до 9998");
+        }
+    }
+
+    private String generatedName(SemesterType type, Integer academicYear) {
+        String season = type == SemesterType.AUTUMN ? "Осенний" : "Весенний";
+        return season + " " + academicYear + "/" + (academicYear + 1);
     }
 
     private Semester findSemesterForUpdate(Long id) {

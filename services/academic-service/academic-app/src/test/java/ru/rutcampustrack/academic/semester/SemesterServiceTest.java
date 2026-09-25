@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
+import ru.rutcampustrack.academic.contract.enums.SemesterType;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
@@ -106,7 +107,7 @@ class SemesterServiceTest {
     void createSemester_noOverlap_savesAndReturns() {
         LocalDate from = LocalDate.now().plusDays(1);
         LocalDate to = LocalDate.now().plusMonths(4);
-        CreateSemesterRequest req = new CreateSemesterRequest("Winter 2030", from, to);
+        CreateSemesterRequest req = new CreateSemesterRequest("Winter 2030", from, to, SemesterType.AUTUMN, 2030);
 
         when(semesterRepository.findFirstOverlapping(from, to, null))
                 .thenReturn(Optional.empty());
@@ -115,10 +116,75 @@ class SemesterServiceTest {
 
         Semester saved = semesterService.createSemester(req);
 
-        assertThat(saved.getName()).isEqualTo("Winter 2030");
+        assertThat(saved.getName()).isEqualTo("Осенний 2030/2031");
         assertThat(saved.getDateFrom()).isEqualTo(from);
         assertThat(saved.getDateTo()).isEqualTo(to);
+        assertThat(saved.getSemesterType()).isEqualTo(SemesterType.AUTUMN);
+        assertThat(saved.getAcademicYear()).isEqualTo(2030);
         assertThat(saved.isActive()).isFalse();
+    }
+
+    @Test
+    void createAndUpdate_typedSemesterNamesUseTheExplicitAcademicYear() {
+        LocalDate autumnFrom = LocalDate.of(2026, 9, 1);
+        LocalDate autumnTo = LocalDate.of(2027, 1, 31);
+        CreateSemesterRequest create = new CreateSemesterRequest(
+                "Клиентское название не является авторитетным",
+                autumnFrom,
+                autumnTo,
+                SemesterType.AUTUMN,
+                2026
+        );
+        when(semesterRepository.findFirstOverlapping(autumnFrom, autumnTo, null))
+                .thenReturn(Optional.empty());
+        when(semesterRepository.save(any(Semester.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Semester created = semesterService.createSemester(create);
+
+        assertThat(created.getName()).isEqualTo("Осенний 2026/2027");
+        assertThat(created.getAcademicYear()).isEqualTo(2026);
+
+        Long id = 91L;
+        Semester existing = newSemester(id, "Осенний 2026/2027");
+        existing.setDateFrom(autumnFrom);
+        existing.setDateTo(autumnTo);
+        existing.setSemesterType(SemesterType.AUTUMN);
+        existing.setAcademicYear(2026);
+        when(semesterRepository.findByIdForUpdate(id)).thenReturn(Optional.of(existing));
+
+        LocalDate springFrom = LocalDate.of(2027, 2, 1);
+        LocalDate springTo = LocalDate.of(2027, 6, 30);
+        when(semesterRepository.findFirstOverlapping(springFrom, springTo, id))
+                .thenReturn(Optional.empty());
+        UpdateSemesterRequest update = new UpdateSemesterRequest(
+                "Клиентское название не является авторитетным",
+                springFrom,
+                springTo,
+                SemesterType.SPRING,
+                2026
+        );
+
+        Semester updated = semesterService.updateSemester(id, update);
+
+        assertThat(updated.getName()).isEqualTo("Весенний 2026/2027");
+        assertThat(updated.getAcademicYear()).isEqualTo(2026);
+        assertThat(updated.getSemesterType()).isEqualTo(SemesterType.SPRING);
+    }
+
+    @Test
+    void createSemester_academicYearCannotOverflowTheDisplayedRange() {
+        CreateSemesterRequest request = new CreateSemesterRequest(
+                "не используется",
+                LocalDate.of(9999, 1, 1),
+                LocalDate.of(9999, 2, 1),
+                SemesterType.AUTUMN,
+                9999
+        );
+
+        assertThatThrownBy(() -> semesterService.createSemester(request))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("от 1 до 9998");
+        verify(semesterRepository, never()).findFirstOverlapping(any(), any(), any());
     }
 
     // ---------- update ----------
@@ -156,7 +222,7 @@ class SemesterServiceTest {
 
         LocalDate newFrom = today.plusDays(5);
         LocalDate newTo = today.plusMonths(5);
-        UpdateSemesterRequest req = new UpdateSemesterRequest("Spring 2030 edit", newFrom, newTo);
+        UpdateSemesterRequest req = new UpdateSemesterRequest("Spring 2030 edit", newFrom, newTo, SemesterType.SPRING, 2030);
 
         when(semesterRepository.findFirstOverlapping(newFrom, newTo, id))
                 .thenReturn(Optional.empty());
@@ -164,9 +230,32 @@ class SemesterServiceTest {
 
         Semester result = semesterService.updateSemester(id, req);
 
-        assertThat(result.getName()).isEqualTo("Spring 2030 edit");
+        assertThat(result.getName()).isEqualTo("Весенний 2030/2031");
         assertThat(result.getDateFrom()).isEqualTo(newFrom);
         assertThat(result.getDateTo()).isEqualTo(newTo);
+        assertThat(result.getSemesterType()).isEqualTo(SemesterType.SPRING);
+        assertThat(result.getAcademicYear()).isEqualTo(2030);
+    }
+
+    @Test
+    void updateSemester_legacyRowKeepsItsNameUntilTypeAndYearAreExplicitlySelected() {
+        Long id = 13L;
+        Semester legacy = newSemester(id, "Старое название");
+        legacy.setDateFrom(LocalDate.now().plusDays(10));
+        legacy.setDateTo(LocalDate.now().plusMonths(4));
+        when(semesterRepository.findByIdForUpdate(id)).thenReturn(Optional.of(legacy));
+
+        LocalDate from = LocalDate.now().plusDays(11);
+        LocalDate to = LocalDate.now().plusMonths(5);
+        when(semesterRepository.findFirstOverlapping(from, to, id)).thenReturn(Optional.empty());
+        when(semesterRepository.save(any(Semester.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Semester updated = semesterService.updateSemester(id,
+                new UpdateSemesterRequest("Старое название", from, to));
+
+        assertThat(updated.getName()).isEqualTo("Старое название");
+        assertThat(updated.getSemesterType()).isNull();
+        assertThat(updated.getAcademicYear()).isNull();
     }
 
     @Test

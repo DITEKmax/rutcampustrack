@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import ru.rutcampustrack.academic.contract.enums.SemesterType;
 
 @Entity
 @Table(name = "semesters")
@@ -40,4 +41,13 @@ public class Semester {
     @Setter
     @Column(name = "first_week_type", nullable = false, length = 10)
     private String firstWeekType = "odd";
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "semester_type", length = 8)
+    private SemesterType semesterType;
+
+    @Setter
+    @Column(name = "academic_year")
+    private Integer academicYear;
 }

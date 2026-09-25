@@ -1,8 +1,11 @@
 package ru.rutcampustrack.academic.contract.dto.semester;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import ru.rutcampustrack.academic.contract.enums.SemesterType;
 
 import java.time.LocalDate;
 
@@ -12,7 +15,8 @@ import java.time.LocalDate;
 @Schema(description = "Запрос на полное обновление семестра (PUT)")
 public record UpdateSemesterRequest(
 
-        @Schema(description = "Название семестра", example = "Весенний 2026",
+        @Schema(description = "Совместимое название; тип и учебный год задают серверное название",
+                example = "Осенний 2026/2027",
                 requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "Название семестра обязательно")
         String name,
@@ -25,5 +29,18 @@ public record UpdateSemesterRequest(
         @Schema(description = "Дата окончания семестра", example = "2026-06-30",
                 requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "Дата окончания обязательна")
-        LocalDate dateTo
-) {}
+        LocalDate dateTo,
+
+        @Schema(description = "Явно выбранный тип; null не выводит тип из названия и сохраняет текущее legacy-значение")
+        SemesterType semesterType,
+
+        @Schema(description = "Первый год учебного года, видимый и редактируемый в форме; вместе с типом задаёт серверное название",
+                example = "2026")
+        @Min(value = 1, message = "Учебный год должен быть не меньше 1")
+        @Max(value = 9998, message = "Учебный год должен быть не больше 9998")
+        Integer academicYear
+) {
+    public UpdateSemesterRequest(String name, LocalDate dateFrom, LocalDate dateTo) {
+        this(name, dateFrom, dateTo, null, null);
+    }
+}

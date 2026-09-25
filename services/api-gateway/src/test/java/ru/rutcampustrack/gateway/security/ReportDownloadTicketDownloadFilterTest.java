@@ -19,6 +19,8 @@ import ru.rutcampustrack.auth.dto.ReportDownloadFormat;
 import ru.rutcampustrack.auth.dto.ReportDownloadKind;
 import ru.rutcampustrack.auth.dto.ReportDownloadTicketRedemptionResponse;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +37,9 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -71,8 +75,9 @@ class ReportDownloadTicketDownloadFilterTest {
 
             var auth = mock(InternalJwtIssuerClient.class);
             var verifier = mock(InternalJwtIssuerFilter.class);
+            var attemptRateLimiter = allowedAttemptRateLimiter();
             var properties = properties(attendance.baseUrl());
-            var filter = new ReportDownloadTicketDownloadFilter(auth, verifier, properties,
+            var filter = new ReportDownloadTicketDownloadFilter(auth, verifier, properties, attemptRateLimiter,
                     WebClient.builder().baseUrl("http://127.0.0.1:1").build(),
                     WebClient.builder().baseUrl(attendance.baseUrl()).build());
             var report = new IssueReportDownloadTicketRequest(
@@ -126,8 +131,10 @@ class ReportDownloadTicketDownloadFilterTest {
                             .withHeader(HttpHeaders.CONTENT_TYPE, "application/pdf")
                             .withBody("%PDF-test")));
             var auth = mock(InternalJwtIssuerClient.class);
+            var attemptRateLimiter = allowedAttemptRateLimiter();
             var filter = new ReportDownloadTicketDownloadFilter(auth, mock(InternalJwtIssuerFilter.class),
-                    properties(mobile.baseUrl()), WebClient.builder().baseUrl(mobile.baseUrl()).build(),
+                    properties(mobile.baseUrl()), attemptRateLimiter,
+                    WebClient.builder().baseUrl(mobile.baseUrl()).build(),
                     WebClient.builder().baseUrl("http://127.0.0.1:1").build());
             var report = new IssueReportDownloadTicketRequest(
                     ReportDownloadKind.TEACHER_JOURNAL,
@@ -154,7 +161,8 @@ class ReportDownloadTicketDownloadFilterTest {
     void nonGetOverrideQueryAndRangeFailBeforeTicketRedemption() {
         var auth = mock(InternalJwtIssuerClient.class);
         var filter = new ReportDownloadTicketDownloadFilter(auth, mock(InternalJwtIssuerFilter.class),
-                properties("http://127.0.0.1:1"), WebClient.builder().baseUrl("http://127.0.0.1:1").build(),
+                properties("http://127.0.0.1:1"), allowedAttemptRateLimiter(),
+                WebClient.builder().baseUrl("http://127.0.0.1:1").build(),
                 WebClient.builder().baseUrl("http://127.0.0.1:1").build());
 
         assertStatus(filter, exchange(HttpMethod.POST, "/api/report-download/" + TICKET, false, null),
@@ -170,7 +178,8 @@ class ReportDownloadTicketDownloadFilterTest {
     void unknownCapabilityReturnsNotFoundWithoutBackendCall() {
         var auth = mock(InternalJwtIssuerClient.class);
         var filter = new ReportDownloadTicketDownloadFilter(auth, mock(InternalJwtIssuerFilter.class),
-                properties("http://127.0.0.1:1"), WebClient.builder().baseUrl("http://127.0.0.1:1").build(),
+                properties("http://127.0.0.1:1"), allowedAttemptRateLimiter(),
+                WebClient.builder().baseUrl("http://127.0.0.1:1").build(),
                 WebClient.builder().baseUrl("http://127.0.0.1:1").build());
         when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.empty()));
 
@@ -191,6 +200,7 @@ class ReportDownloadTicketDownloadFilterTest {
                             .withHeader(HttpHeaders.CONTENT_TYPE, "application/problem+json")
                             .withBody("private downstream detail with report ids")));
             var auth = mock(InternalJwtIssuerClient.class);
+            var attemptRateLimiter = allowedAttemptRateLimiter();
             var report = new IssueReportDownloadTicketRequest(
                     ReportDownloadKind.TEACHER_JOURNAL,
                     new IssueReportDownloadTicketRequest.TeacherJournalParameters(
@@ -198,7 +208,8 @@ class ReportDownloadTicketDownloadFilterTest {
                     null, null, null, null);
             when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.of(redemption(report))));
             var filter = new ReportDownloadTicketDownloadFilter(auth, mock(InternalJwtIssuerFilter.class),
-                    properties(mobile.baseUrl()), WebClient.builder().baseUrl(mobile.baseUrl()).build(),
+                    properties(mobile.baseUrl()), attemptRateLimiter,
+                    WebClient.builder().baseUrl(mobile.baseUrl()).build(),
                     WebClient.builder().baseUrl("http://127.0.0.1:1").build());
 
             MockServerWebExchange exchange = exchange(HttpMethod.GET, "/api/report-download/" + TICKET,
@@ -214,9 +225,85 @@ class ReportDownloadTicketDownloadFilterTest {
         }
     }
 
+    @Test
+    void publicAttemptBudgetStopsUnknownTicketCallsBeforeAuthAndUsesCanonicalPeer() throws Exception {
+        var auth = mock(InternalJwtIssuerClient.class);
+        var attemptRateLimiter = mock(ReportDownloadAttemptRateLimiter.class);
+        when(attemptRateLimiter.tryAcquire("203.0.113.7"))
+                .thenReturn(Mono.just(true), Mono.just(false));
+        when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.empty()));
+        var filter = new ReportDownloadTicketDownloadFilter(auth, mock(InternalJwtIssuerFilter.class),
+                properties("http://127.0.0.1:1"), attemptRateLimiter,
+                WebClient.builder().baseUrl("http://127.0.0.1:1").build(),
+                WebClient.builder().baseUrl("http://127.0.0.1:1").build());
+
+        MockServerWebExchange firstAttempt = exchangeFromPeer(TICKET, "198.51.100.41");
+        MockServerWebExchange exhaustedAttempt = exchangeFromPeer(TICKET, "198.51.100.42");
+        assertStatus(filter, firstAttempt, HttpStatus.NOT_FOUND);
+        assertStatus(filter, exhaustedAttempt, HttpStatus.TOO_MANY_REQUESTS);
+
+        verify(attemptRateLimiter, times(2)).tryAcquire("203.0.113.7");
+        verify(auth, times(1)).redeemReportTicket(TICKET);
+        verifyNoMoreInteractions(auth);
+    }
+
+    @Test
+    void downstream422IsPreservedAndItsBodyIsNotForwarded() {
+        WireMockServer attendance = server();
+        attendance.start();
+        try {
+            attendance.stubFor(com.github.tomakehurst.wiremock.client.WireMock.get(
+                            urlEqualTo("/attendance/reports/headman-weekly/current?weekStart=2026-09-28&format=pdf"))
+                    .withHeader("X-Internal-Token", equalTo(INTERNAL_TOKEN))
+                    .willReturn(aResponse().withStatus(422)
+                            .withHeader(HttpHeaders.CONTENT_TYPE, "application/problem+json")
+                            .withBody("private week is outside the active semester")));
+            var auth = mock(InternalJwtIssuerClient.class);
+            var report = new IssueReportDownloadTicketRequest(
+                    ReportDownloadKind.HEADMAN_WEEKLY_CURRENT, null, null,
+                    new IssueReportDownloadTicketRequest.HeadmanWeeklyCurrentParameters(
+                            java.time.LocalDate.parse("2026-09-28"), ReportDownloadFormat.PDF),
+                    null, null);
+            when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.of(redemption(report))));
+            var filter = new ReportDownloadTicketDownloadFilter(auth, mock(InternalJwtIssuerFilter.class),
+                    properties(attendance.baseUrl()), allowedAttemptRateLimiter(),
+                    WebClient.builder().baseUrl("http://127.0.0.1:1").build(),
+                    WebClient.builder().baseUrl(attendance.baseUrl()).build());
+
+            MockServerWebExchange exchange = exchange(HttpMethod.GET, "/api/report-download/" + TICKET,
+                    false, null);
+            StepVerifier.create(filter.filter(exchange, mock(GatewayFilterChain.class))).verifyComplete();
+
+            assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, exchange.getResponse().getStatusCode());
+            String body = exchange.getResponse().getBodyAsString().block();
+            assertTrue(body.contains("422"));
+            assertTrue(body.contains("Report selection rejected"));
+            assertTrue(!body.contains("private week is outside the active semester"));
+            attendance.verify(com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor(urlEqualTo(
+                    "/attendance/reports/headman-weekly/current?weekStart=2026-09-28&format=pdf")));
+        } finally {
+            attendance.stop();
+        }
+    }
+
     private static WireMockServer server() {
         return new WireMockServer(com.github.tomakehurst.wiremock.core.WireMockConfiguration.options()
                 .dynamicPort());
+    }
+
+    private static ReportDownloadAttemptRateLimiter allowedAttemptRateLimiter() {
+        var rateLimiter = mock(ReportDownloadAttemptRateLimiter.class);
+        when(rateLimiter.tryAcquire(org.mockito.ArgumentMatchers.anyString())).thenReturn(Mono.just(true));
+        return rateLimiter;
+    }
+
+    private static MockServerWebExchange exchangeFromPeer(String ticket, String forwardedFor) throws Exception {
+        var peerAddress = InetAddress.getByAddress(new byte[]{(byte) 203, 0, 113, 7});
+        var request = MockServerHttpRequest.get("/api/report-download/" + ticket)
+                .remoteAddress(new InetSocketAddress(peerAddress, 41_000))
+                .header("X-Forwarded-For", forwardedFor)
+                .build();
+        return MockServerWebExchange.from(request);
     }
 
     private static ReportDownloadBackendProperties properties(String url) {

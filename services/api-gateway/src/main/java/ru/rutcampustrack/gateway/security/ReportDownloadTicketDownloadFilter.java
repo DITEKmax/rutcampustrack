@@ -27,6 +27,7 @@ import reactor.core.publisher.Mono;
 import ru.rutcampustrack.auth.dto.IssueReportDownloadTicketRequest;
 import ru.rutcampustrack.auth.dto.ReportDownloadKind;
 import ru.rutcampustrack.auth.dto.ReportDownloadTicketRedemptionResponse;
+import ru.rutcampustrack.gateway.clientip.TrustedClientIpResolver;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -50,6 +51,7 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
     private final InternalJwtIssuerClient authClient;
     private final InternalJwtIssuerFilter tokenVerifier;
     private final ReportDownloadBackendProperties properties;
+    private final ReportDownloadAttemptRateLimiter attemptRateLimiter;
     private final WebClient mobileBffClient;
     private final WebClient attendanceClient;
 
@@ -57,9 +59,10 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
     public ReportDownloadTicketDownloadFilter(
             InternalJwtIssuerClient authClient,
             InternalJwtIssuerFilter tokenVerifier,
-            ReportDownloadBackendProperties properties
+            ReportDownloadBackendProperties properties,
+            ReportDownloadAttemptRateLimiter attemptRateLimiter
     ) {
-        this(authClient, tokenVerifier, properties,
+        this(authClient, tokenVerifier, properties, attemptRateLimiter,
                 WebClient.builder().baseUrl(properties.getMobileBffUrl()).build(),
                 WebClient.builder().baseUrl(properties.getAttendanceServiceUrl()).build());
     }
@@ -68,12 +71,14 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
             InternalJwtIssuerClient authClient,
             InternalJwtIssuerFilter tokenVerifier,
             ReportDownloadBackendProperties properties,
+            ReportDownloadAttemptRateLimiter attemptRateLimiter,
             WebClient mobileBffClient,
             WebClient attendanceClient
     ) {
         this.authClient = authClient;
         this.tokenVerifier = tokenVerifier;
         this.properties = properties;
+        this.attemptRateLimiter = attemptRateLimiter;
         this.mobileBffClient = mobileBffClient;
         this.attendanceClient = attendanceClient;
     }
@@ -103,6 +108,22 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
             return writeProblem(exchange, HttpStatus.NOT_FOUND, "Not Found", "Report not found");
         }
 
+        return attemptRateLimiter.tryAcquire(canonicalClientIp(exchange))
+                .flatMap(allowed -> allowed
+                        ? redeemAndDownload(exchange, ticket)
+                        : writeProblem(exchange, HttpStatus.TOO_MANY_REQUESTS,
+                                "Request limit exceeded", "Try again after the current window expires"))
+                .onErrorResume(ReportDownloadAttemptRateLimiter.AttemptBudgetUnavailableException.class,
+                        error -> {
+                            log.warn("Report download attempt budget unavailable ({})",
+                                    error.getCause() == null ? error.getClass().getSimpleName()
+                                            : error.getCause().getClass().getSimpleName());
+                            return writeProblem(exchange, HttpStatus.SERVICE_UNAVAILABLE,
+                                    "Service Unavailable", "Report service is unavailable");
+                        });
+    }
+
+    private Mono<Void> redeemAndDownload(ServerWebExchange exchange, String ticket) {
         return authClient.redeemReportTicket(ticket)
                 .flatMap(redeemed -> redeemed
                         .<Mono<Void>>map(value -> download(exchange, value))
@@ -313,6 +334,15 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
         return request.getHeaders().containsKey(HttpHeaders.TRANSFER_ENCODING);
     }
 
+    private static String canonicalClientIp(ServerWebExchange exchange) {
+        String normalized = exchange.getAttribute(TrustedClientIpResolver.CLIENT_IP_ATTRIBUTE);
+        if (normalized != null && !normalized.isBlank()) {
+            return TrustedClientIpResolver.canonicalizeLiteral(normalized)
+                    .orElse(TrustedClientIpResolver.UNKNOWN);
+        }
+        return TrustedClientIpResolver.canonicalizeRemoteAddress(exchange.getRequest().getRemoteAddress());
+    }
+
     private static String exactTicketSegment(ServerHttpRequest request) {
         String path = request.getURI().getRawPath();
         if (path == null || !path.startsWith(PATH_PREFIX)) {
@@ -330,6 +360,7 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
             case 404 -> HttpStatus.NOT_FOUND;
             case 413 -> HttpStatus.PAYLOAD_TOO_LARGE;
             case 429 -> HttpStatus.TOO_MANY_REQUESTS;
+            case 422 -> HttpStatus.UNPROCESSABLE_ENTITY;
             default -> HttpStatus.SERVICE_UNAVAILABLE;
         };
     }
@@ -368,6 +399,7 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
             case UNAUTHORIZED -> "Unauthorized";
             case FORBIDDEN -> "Forbidden";
             case NOT_FOUND -> "Not Found";
+            case UNPROCESSABLE_ENTITY -> "Report selection rejected";
             case PAYLOAD_TOO_LARGE -> "Payload Too Large";
             case TOO_MANY_REQUESTS -> "Request limit exceeded";
             case METHOD_NOT_ALLOWED -> "Method Not Allowed";
@@ -381,6 +413,7 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
             case BAD_REQUEST -> "The stored report selector was rejected";
             case UNAUTHORIZED, FORBIDDEN -> "Report access denied";
             case NOT_FOUND -> "Report not found";
+            case UNPROCESSABLE_ENTITY -> "The selected report cannot be generated with these parameters";
             case PAYLOAD_TOO_LARGE -> "Report exceeds the download limit";
             case TOO_MANY_REQUESTS -> "Retry after the ticket window expires";
             default -> "Report service is unavailable";

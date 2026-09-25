@@ -141,6 +141,12 @@ export interface TeacherJournalExportFile {
   readonly contentType: string
 }
 
+export interface TeacherStatsExportFile {
+  readonly blob: Blob
+  readonly filename: string
+  readonly contentType: string
+}
+
 export type TeacherStatsScope = 'students' | 'groups'
 
 export interface TeacherStatsSort {
@@ -358,6 +364,49 @@ export class TeacherApi {
   }
 
   stats(query: TeacherStatsQuery): Promise<TeacherStatsResponse> {
+    const params = this.statsQueryParams(query)
+    return this.request<unknown>(`/api/v1/teacher/stats?${params.toString()}`).then(normalizeStats)
+  }
+
+  statsExportFormats(): Promise<readonly TeacherExportFormat[]> {
+    return this.request<unknown>('/api/v1/teacher/stats/export/formats')
+      .then((value) => {
+        const record = requiredRecord(value)
+        const formats = arrayValue(record.formats).map((item) => normalizeStatsExportFormat(item))
+        if (formats.length !== 5
+          || new Set(formats.map((format) => format.code)).size !== 5
+          || !(['docx', 'pdf', 'png', 'html', 'xlsx'] as const).every((code) => formats.some((format) => format.code === code))) {
+          throw new Error('Сервер вернул неполный список форматов статистики.')
+        }
+        return formats
+      })
+  }
+
+  async exportStats(query: TeacherStatsQuery, format: TeacherExportFormatCode): Promise<TeacherStatsExportFile> {
+    const params = this.statsQueryParams(query)
+    if (!(['docx', 'pdf', 'png', 'html', 'xlsx'] as const).includes(format)) {
+      throw new RangeError('format is invalid')
+    }
+    params.set('format', format)
+    const response = await this.response(
+      `/api/v1/teacher/stats/export?${params.toString()}`,
+      { headers: { Accept: 'application/octet-stream' } },
+    )
+    if (!response.ok) throw await this.apiError(response)
+    const blob = await response.blob()
+    this.options.assertCurrent?.()
+    if (blob.size === 0) throw new Error('Сервер вернул пустой файл статистики.')
+    const contentType = response.headers.get('Content-Type')?.split(';', 1)[0]?.trim().toLowerCase() ?? ''
+    const filename = downloadFilename(response.headers.get('Content-Disposition'))
+    const expectedExtension = format === 'png' ? 'zip' : format
+    if (!filename || !filename.toLowerCase().endsWith(`.${expectedExtension}`)
+      || contentType !== TEACHER_EXPORT_CONTENT_TYPES[format]) {
+      throw new Error('Сервер вернул некорректные метаданные файла статистики.')
+    }
+    return { blob, filename, contentType }
+  }
+
+  private statsQueryParams(query: TeacherStatsQuery): URLSearchParams {
     assertPositiveInteger(query.semesterId, 'semesterId')
     if (query.scope !== 'students' && query.scope !== 'groups') throw new RangeError('scope is invalid')
     if (query.scope === 'students') {
@@ -385,10 +434,10 @@ export class TeacherApi {
       if (filter.contains != null) params.append('filter', `${filter.column}~${filter.contains}`)
       if (filter.minPercent != null) params.append('filter', `${filter.column}>=${filter.minPercent}`)
       if (filter.maxPercent != null) params.append('filter', `${filter.column}<=${filter.maxPercent}`)
-      if (filter.minValue != null) params.append('filter', `${filter.column}>=${filter.minValue}`)
-      if (filter.maxValue != null) params.append('filter', `${filter.column}<=${filter.maxValue}`)
+        if (filter.minValue != null) params.append('filter', `${filter.column}>=${filter.minValue}`)
+        if (filter.maxValue != null) params.append('filter', `${filter.column}<=${filter.maxValue}`)
     }
-    return this.request<unknown>(`/api/v1/teacher/stats?${params.toString()}`).then(normalizeStats)
+    return params
   }
 
   excuse(requestId: string): Promise<TeacherExcuseResponse> {
@@ -502,6 +551,27 @@ function normalizeExportFormat(value: unknown): TeacherExportFormat {
   return {
     code: code as TeacherExportFormatCode,
     label: requiredString(record.label, 'exportFormat.label'),
+    contentType,
+    extension,
+  }
+}
+
+function normalizeStatsExportFormat(value: unknown): TeacherExportFormat {
+  const record = requiredRecord(value)
+  const code = requiredString(record.code, 'statsExportFormat.code')
+  if (!(['docx', 'pdf', 'png', 'html', 'xlsx'] as string[]).includes(code)) {
+    throw new Error('Сервер вернул неизвестный формат статистики.')
+  }
+  const extension = requiredString(record.extension, 'statsExportFormat.extension')
+  const contentType = requiredString(record.contentType, 'statsExportFormat.contentType')
+  const expectedExtension = code === 'png' ? 'zip' : code
+  if (extension !== expectedExtension
+    || contentType.split(';', 1)[0]?.trim().toLowerCase() !== TEACHER_EXPORT_CONTENT_TYPES[code as TeacherExportFormatCode]) {
+    throw new Error('Сервер вернул несовместимые метаданные формата статистики.')
+  }
+  return {
+    code: code as TeacherExportFormatCode,
+    label: requiredString(record.label, 'statsExportFormat.label'),
     contentType,
     extension,
   }

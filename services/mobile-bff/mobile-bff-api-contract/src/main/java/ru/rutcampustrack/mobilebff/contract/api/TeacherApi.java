@@ -85,6 +85,23 @@ public interface TeacherApi {
             @RequestParam(required = false, name = "filter") List<String> filters
     );
 
+    @Operation(summary = "Server-supported teacher statistics export formats")
+    @GetMapping("/stats/export/formats")
+    ResponseEntity<ExportFormatsResponse> statsExportFormats();
+
+    @Operation(summary = "Download a server-generated teacher statistics summary")
+    @GetMapping(value = "/stats/export", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    ResponseEntity<byte[]> exportStats(
+            @RequestParam String semesterId,
+            @RequestParam String scope,
+            @RequestParam(required = false) String groupId,
+            @RequestParam(required = false) String subjectId,
+            @RequestParam(required = false, name = "lessonType") List<String> lessonTypes,
+            @RequestParam(required = false, name = "sort") List<String> sorts,
+            @RequestParam(required = false, name = "filter") List<String> filters,
+            @RequestParam String format
+    );
+
     @Operation(summary = "Server-scoped excuse detail")
     @GetMapping("/excuses/{requestId}")
     ResponseEntity<ExcuseResponse> excuse(@PathVariable String requestId);

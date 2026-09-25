@@ -1,0 +1,121 @@
+{
+  "task": "Teacher 123 statistics export candidate",
+  "worktree": ".agent/worktrees/headman-assistants-delivery-20260922",
+  "branch": "codex/teacher-export-20260923",
+  "baseRevision": "27a7f8008da416d259257052145ddbfd35b1838d",
+  "rulesSha256": "F4986A1834A9175ADBB7DCB3C49483168111A0B60C7EB13ACDA9FBF9D74927F8",
+  "risk": "S3: teacher read authorization and historical group data; export is read-only",
+  "criteria": [
+    "Export carries the current semester, scope, selected group/subject, types, server sort, and filters through the same ReportService aggregation as the screen.",
+    "Student and group summaries preserve canonical metrics, counts, dates, context, and a dash for denominator zero.",
+    "DOCX, PDF, all-page PNG ZIP, HTML, and XLSX return non-empty content with matching MIME and extension.",
+    "Focused backend/BFF tests and scoped mobile-core typecheck/lint pass; runtime remains explicitly pending."
+  ],
+  "environment": {
+    "shell": "Windows PowerShell",
+    "gradle": "Wrapper 8.12; --no-daemon --no-parallel --max-workers=1",
+    "java": "Microsoft OpenJDK 21.0.10 LTS",
+    "frontend": "npm workspace @rct/mobile-core"
+  },
+  "checks": [
+    {
+      "name": "Focused export test before correction",
+      "status": "FAIL, reproduced and corrected",
+      "exitCode": 1,
+      "revisionAtRun": "dirty assigned worktree based on 27a7f8008da416d259257052145ddbfd35b1838d",
+      "command": ".\\gradlew.bat --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --no-parallel --max-workers=1 --console=plain :services:attendance-service:attendance-app:test --tests \"*TeacherStatsExportServiceTest\"",
+      "handle": "16428",
+      "evidence": "The DOCX content included a valid 100.0% value; the test's raw doesNotContain(\"0.0%\") matched that substring. Failure details were captured from the test output; Gradle later replaced this XML result with the passing rerun. The assertion now checks an exact zero-percent text node."
+    },
+    {
+      "name": "Focused export and gRPC batch before DOCX correction",
+      "status": "FAIL overall; scoped findings resolved",
+      "exitCode": 1,
+      "revisionAtRun": "dirty assigned worktree based on 27a7f8008da416d259257052145ddbfd35b1838d",
+      "command": ".\\gradlew.bat --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --no-parallel --max-workers=1 --console=plain :services:attendance-service:attendance-app:test --tests \"*TeacherStatsExportServiceTest\" --tests \"*TeacherAttendanceReadGrpcServiceTest\" :services:mobile-bff:mobile-bff-app:test --tests \"*TeacherReadFacadeTest\"",
+      "handle": "58060",
+      "evidence": "TeacherStatsExportServiceTest reproduced a separate DOCX defect: split(\\R) turned U+000B in the fixture's group label into a visible line break before XML filtering. TeacherAttendanceReadGrpcServiceTest passed 3/3 in this run. The BFF task did not execute after the Attendance task failed. Gradle replaced the prior gRPC XML when the final scoped run omitted that selector."
+    },
+    {
+      "name": "Focused export and BFF facade tests after correction",
+      "status": "PASS",
+      "exitCode": 0,
+      "revisionAtRun": "dirty assigned worktree based on 27a7f8008da416d259257052145ddbfd35b1838d; no product-source edits after this check",
+      "command": ".\\gradlew.bat --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --no-parallel --max-workers=1 --console=plain :services:attendance-service:attendance-app:test --tests \"*TeacherStatsExportServiceTest\" :services:mobile-bff:mobile-bff-app:test --tests \"*TeacherReadFacadeTest\"",
+      "handle": "38310",
+      "evidence": "BUILD SUCCESSFUL; 49 actionable tasks, 12 executed. XML: services/attendance-service/attendance-app/build/test-results/test/TEST-ru.rutcampustrack.attendance.report.teacher.TeacherStatsExportServiceTest.xml (1 test, 0 failures/errors/skips); services/mobile-bff/mobile-bff-app/build/test-results/test/TEST-ru.rutcampustrack.mobilebff.teacher.TeacherReadFacadeTest.xml (2 tests, 0 failures/errors/skips). DOCX/XLSX XML and the HTML output are checked; PDF/PNG conversion is stubbed in this unit test."
+    },
+    {
+      "name": "Teacher Attendance gRPC focused tests",
+      "status": "PASS",
+      "exitCode": 0,
+      "revisionAtRun": "dirty assigned worktree based on 27a7f8008da416d259257052145ddbfd35b1838d",
+      "command": "The gRPC selector in Gradle handle 58060 above",
+      "evidence": "TeacherAttendanceReadGrpcServiceTest XML was inspected at 2026-09-25 11:55:39 local time: 3 tests, 0 failures/errors/skips. The subsequent Gradle run replaced the XML; it was not rerun per scope."
+    },
+    {
+      "name": "Mobile core TypeScript",
+      "status": "PASS",
+      "exitCode": 0,
+      "revisionAtRun": "dirty assigned worktree based on 27a7f8008da416d259257052145ddbfd35b1838d; product sources unchanged afterward",
+      "command": "npm run typecheck",
+      "workingDirectory": "frontends/mobile-core",
+      "evidence": "tsc -p tsconfig.json --noEmit completed successfully."
+    },
+    {
+      "name": "Scoped teacher frontend ESLint",
+      "status": "PASS after scoped formatting correction",
+      "exitCode": 0,
+      "revisionAtRun": "dirty assigned worktree based on 27a7f8008da416d259257052145ddbfd35b1838d; product sources unchanged afterward",
+      "command": "npm exec -- eslint --max-warnings=0 src/features/teacher/TeacherStatsScreen.vue src/features/teacher/teacher-client.ts",
+      "workingDirectory": "frontends/mobile-core",
+      "correction": "Initial scoped lint exited 1 with 106 Vue template formatting warnings and 0 errors. ESLint autofix was applied only to these two assigned files; the final scoped lint exits 0."
+    },
+    {
+      "name": "Git diff hygiene",
+      "status": "PASS",
+      "exitCode": 0,
+      "revisionAtRun": "dirty assigned worktree based on 27a7f8008da416d259257052145ddbfd35b1838d",
+      "command": "git diff --check",
+      "evidence": "No whitespace defects; Git printed existing LF-to-CRLF conversion notices."
+    }
+  ],
+  "runtime": {
+    "status": "PENDING, not run",
+    "evidence": "Parent assigned offline-only source work until release. No app/service/renderer process was started. This candidate has no live PWA/API acceptance; the unit test stubs PDF/PNG conversion.",
+    "review": "Independent Sol review and MAIN integration are still pending root assignment."
+  },
+  "diff": {
+    "productAndTestPaths": [
+      "frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
+      "frontends/mobile-core/src/features/teacher/teacher-client.ts",
+      "frontends/mobile-core/src/features/teacher/teacher-stats-screen.pcss",
+      "proto/teacher_reads.proto",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcService.java",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsDocxRenderer.java",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportModel.java",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportService.java",
+      "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsTabularRenderer.java",
+      "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportServiceTest.java",
+      "services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/api/TeacherApi.java",
+      "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAttendanceClient.java",
+      "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherApiController.java",
+      "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacade.java"
+    ],
+    "agentPaths": [
+      ".agent/teacher123-stats-export-20260925/contract.md",
+      ".agent/teacher123-stats-export-20260925/checks.json"
+    ],
+    "foreignChangesPreservedAndExcluded": [
+      ".agent/orchestration-v2/RULES.md",
+      ".agent/orchestration-v2/LEAF-PACKET.md"
+    ],
+    "deletedPaths": []
+  },
+  "limitations": [
+    "No runtime or live download acceptance; PWA and TMA host behavior remains unverified.",
+    "PDF and all-page PNG use the existing renderer RPC, but the focused unit test stubs that RPC; a real conversion/rendering run remains pending.",
+    "No independent Sol review, MAIN integration, push, or deployment is included.",
+    "Unrelated Gradle deprecation/compiler and Git line-ending diagnostics were observed and left outside scope."
+  ]
+}

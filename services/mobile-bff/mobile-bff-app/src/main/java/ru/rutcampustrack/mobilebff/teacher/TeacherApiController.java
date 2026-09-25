@@ -100,6 +100,33 @@ public final class TeacherApiController implements TeacherApi {
     }
 
     @Override
+    public ResponseEntity<ExportFormatsResponse> statsExportFormats() {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.statsExportFormats());
+    }
+
+    @Override
+    public ResponseEntity<byte[]> exportStats(String semesterId,
+                                              String scope,
+                                              String groupId,
+                                              String subjectId,
+                                              List<String> lessonTypes,
+                                              List<String> sorts,
+                                              List<String> filters,
+                                              String format) {
+        TeacherReadFacade.Download download = facade.exportStats(
+                parseId(semesterId), parseText(scope, "scope"), parseOptionalId(groupId, "groupId"),
+                parseOptionalId(subjectId, "subjectId"), lessonTypes, sorts, filters,
+                parseText(format, "format"));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(download.contentType()));
+        headers.setContentLength(download.bytes().length);
+        headers.setContentDisposition(ContentDisposition.attachment()
+                .filename(download.filename(), StandardCharsets.UTF_8).build());
+        headers.setCacheControl(CacheControl.noStore());
+        return new ResponseEntity<>(download.bytes(), headers, org.springframework.http.HttpStatus.OK);
+    }
+
+    @Override
     public ResponseEntity<ExcuseResponse> excuse(String requestId) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.excuse(requestId));
     }

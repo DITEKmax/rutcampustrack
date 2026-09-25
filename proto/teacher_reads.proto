@@ -25,8 +25,21 @@ service TeacherAttendanceReadService {
   rpc DownloadTeacherExcuseAttachment(TeacherExcuseAttachmentRequest)
       returns (TeacherAttachmentDownload);
   rpc GetTeacherStats(TeacherStatsRequest) returns (TeacherStatsResponse);
+  rpc ExportTeacherStats(TeacherStatsExportRequest)
+      returns (TeacherStatsExportResponse);
   rpc ExportTeacherAttendance(TeacherAttendanceExportRequest)
       returns (TeacherAttendanceExportResponse);
+}
+
+message TeacherStatsExportRequest {
+  TeacherStatsRequest stats_request = 1;
+  string format = 2; // docx, pdf, png, html, or xlsx
+}
+
+message TeacherStatsExportResponse {
+  bytes content = 1;
+  string file_name = 2;
+  string content_type = 3;
 }
 
 message TeacherAttendanceExportRequest {

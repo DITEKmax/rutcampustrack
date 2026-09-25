@@ -17,6 +17,7 @@ import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.report.ReportService;
 import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportService;
+import ru.rutcampustrack.attendance.report.teacher.TeacherStatsExportService;
 import ru.rutcampustrack.attendance.studentrequest.AttachmentState;
 import ru.rutcampustrack.attendance.studentrequest.RequestAttachmentRepository;
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
@@ -40,6 +41,8 @@ import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonSummary;
 import ru.rutcampustrack.teacher.grpc.TeacherRosterEntry;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsFilter;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsExportRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsExportResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsMetric;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsResponse;
@@ -75,6 +78,7 @@ public final class TeacherAttendanceReadGrpcService
     private final RequestAttachmentRepository attachmentRepository;
     private final Clock clock;
     private final TeacherAttendanceExportService exportService;
+    private final TeacherStatsExportService statsExportService;
 
     public TeacherAttendanceReadGrpcService(ReportService reportService,
                                             ScheduleGrpcClient scheduleGrpcClient,
@@ -104,6 +108,8 @@ public final class TeacherAttendanceReadGrpcService
         this.exportService = new TeacherAttendanceExportService(reportService, scheduleGrpcClient,
                 academicGrpcClient, teacherAcademicGrpcClient, documentRendererGrpcClient,
                 this::readTeacherJournal);
+        this.statsExportService = new TeacherStatsExportService(reportService, academicGrpcClient,
+                teacherAcademicGrpcClient, documentRendererGrpcClient);
     }
 
     @Override
@@ -233,39 +239,7 @@ public final class TeacherAttendanceReadGrpcService
         try {
             InternalJwtClaims claims = requireTeacher();
             TeacherStatsScope scope = request.getScope();
-            if (scope == TeacherStatsScope.TEACHER_STATS_SCOPE_UNSPECIFIED) {
-                throw Status.INVALID_ARGUMENT.withDescription("stats scope is required")
-                        .asRuntimeException();
-            }
-            List<Long> lessonIds = request.getLessonIdsList().stream()
-                    .filter(id -> id > 0)
-                    .distinct()
-                    .toList();
-            if (lessonIds.size() != request.getLessonIdsCount() || lessonIds.size() > 5_000) {
-                throw Status.INVALID_ARGUMENT.withDescription("lesson_ids must contain unique positive ids")
-                        .asRuntimeException();
-            }
-            ReportService.TeacherStatsScope domainScope = scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
-                    ? ReportService.TeacherStatsScope.STUDENTS : ReportService.TeacherStatsScope.GROUPS;
-            ReportService.TeacherStatsQuery query = new ReportService.TeacherStatsQuery(
-                    lessonIds,
-                    domainScope,
-                    request.getGroupId(),
-                    request.getSubjectId(),
-                    request.getLessonTypesList(),
-                    request.getSortsList().stream()
-                            .map(sort -> new ReportService.TeacherStatsSort(sort.getColumn(), sort.getDescending()))
-                            .toList(),
-                    request.getFiltersList().stream()
-                            .map(filter -> new ReportService.TeacherStatsFilter(
-                                    filter.getColumn(),
-                                    filter.getContains(),
-                                    filter.hasMinPercent() ? filter.getMinPercent() : null,
-                                    filter.hasMaxPercent() ? filter.getMaxPercent() : null,
-                                    filter.hasMinValue() ? filter.getMinValue() : null,
-                                    filter.hasMaxValue() ? filter.getMaxValue() : null))
-                            .toList(),
-                    positive(request.getSemesterId(), "semester_id"));
+            ReportService.TeacherStatsQuery query = statsQuery(request);
             ReportService.TeacherStatsResult result = reportService.getTeacherStats(query, claims.userId());
             TeacherStatsResponse.Builder response = TeacherStatsResponse.newBuilder()
                     .setScope(scope)
@@ -282,6 +256,63 @@ public final class TeacherAttendanceReadGrpcService
         } catch (RuntimeException error) {
             responseObserver.onError(toStatus(error));
         }
+    }
+
+    @Override
+    public void exportTeacherStats(TeacherStatsExportRequest request,
+                                   StreamObserver<TeacherStatsExportResponse> responseObserver) {
+        try {
+            InternalJwtClaims claims = requireTeacher();
+            if (!request.hasStatsRequest()) {
+                throw Status.INVALID_ARGUMENT.withDescription("stats_request is required").asRuntimeException();
+            }
+            if (statsExportService == null) {
+                throw Status.UNAVAILABLE.withDescription("Teacher statistics export is not configured")
+                        .asRuntimeException();
+            }
+            responseObserver.onNext(statsExportService.export(
+                    statsQuery(request.getStatsRequest()), claims.userId(), request.getFormat()));
+            responseObserver.onCompleted();
+        } catch (RuntimeException error) {
+            responseObserver.onError(toStatus(error));
+        }
+    }
+
+    private static ReportService.TeacherStatsQuery statsQuery(TeacherStatsRequest request) {
+        TeacherStatsScope scope = request.getScope();
+        if (scope != TeacherStatsScope.TEACHER_STATS_STUDENTS
+                && scope != TeacherStatsScope.TEACHER_STATS_GROUPS) {
+            throw Status.INVALID_ARGUMENT.withDescription("stats scope is required").asRuntimeException();
+        }
+        List<Long> lessonIds = request.getLessonIdsList().stream()
+                .filter(id -> id > 0)
+                .distinct()
+                .toList();
+        if (lessonIds.size() != request.getLessonIdsCount() || lessonIds.size() > 5_000) {
+            throw Status.INVALID_ARGUMENT.withDescription("lesson_ids must contain unique positive ids")
+                    .asRuntimeException();
+        }
+        ReportService.TeacherStatsScope domainScope = scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
+                ? ReportService.TeacherStatsScope.STUDENTS : ReportService.TeacherStatsScope.GROUPS;
+        return new ReportService.TeacherStatsQuery(
+                lessonIds,
+                domainScope,
+                request.getGroupId(),
+                request.getSubjectId(),
+                request.getLessonTypesList(),
+                request.getSortsList().stream()
+                        .map(sort -> new ReportService.TeacherStatsSort(sort.getColumn(), sort.getDescending()))
+                        .toList(),
+                request.getFiltersList().stream()
+                        .map(filter -> new ReportService.TeacherStatsFilter(
+                                filter.getColumn(),
+                                filter.getContains(),
+                                filter.hasMinPercent() ? filter.getMinPercent() : null,
+                                filter.hasMaxPercent() ? filter.getMaxPercent() : null,
+                                filter.hasMinValue() ? filter.getMinValue() : null,
+                                filter.hasMaxValue() ? filter.getMaxValue() : null))
+                        .toList(),
+                positive(request.getSemesterId(), "semester_id"));
     }
 
     private TeacherStudentStats toStudentStats(ReportService.TeacherStudentStats row) {

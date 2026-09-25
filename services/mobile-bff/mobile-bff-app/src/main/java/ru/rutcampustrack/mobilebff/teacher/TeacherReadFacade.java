@@ -14,6 +14,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherAssignment;
 import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherAttachmentDownload;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsExportResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseAttachment;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalCell;
@@ -24,6 +25,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherLessonSummary;
 import ru.rutcampustrack.teacher.grpc.TeacherRosterEntry;
 import ru.rutcampustrack.teacher.grpc.TeacherSemesterResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsFilter;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsScope;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsSort;
@@ -245,6 +247,50 @@ public final class TeacherReadFacade {
                                                 List<String> sortValues,
                                                 List<String> filterValues) {
         InternalJwtClaims claims = requireTeacher();
+        return stats(attendance.teacherStats(statsRequest(claims, semesterId, scopeValue, selectedGroupId,
+                selectedSubjectId, lessonTypes, sortValues, filterValues)));
+    }
+
+    public TeacherApiModels.ExportFormatsResponse statsExportFormats() {
+        requireTeacher();
+        return new TeacherApiModels.ExportFormatsResponse(JOURNAL_EXPORT_FORMATS);
+    }
+
+    public Download exportStats(long semesterId,
+                                String scopeValue,
+                                Long selectedGroupId,
+                                Long selectedSubjectId,
+                                List<String> lessonTypes,
+                                List<String> sortValues,
+                                List<String> filterValues,
+                                String format) {
+        InternalJwtClaims claims = requireTeacher();
+        TeacherApiModels.ExportFormat selectedFormat = JOURNAL_EXPORT_FORMATS.stream()
+                .filter(value -> value.code().equals(format))
+                .findFirst()
+                .orElseThrow(() -> invalidExport("Неизвестный формат статистики"));
+        TeacherStatsRequest request = statsRequest(claims, semesterId, scopeValue, selectedGroupId,
+                selectedSubjectId, lessonTypes, sortValues, filterValues);
+        TeacherStatsExportResponse response = attendance.exportTeacherStats(request, selectedFormat.code());
+        String filename = response.getFileName();
+        if (response.getContent().isEmpty() || filename.isBlank()
+                || !filename.matches("[A-Za-z0-9._-]+")
+                || !filename.endsWith("." + selectedFormat.extension())
+                || !selectedFormat.contentType().equals(response.getContentType())) {
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                    "Сервис экспорта статистики вернул некорректный файл");
+        }
+        return new Download(filename, response.getContentType(), response.getContent().toByteArray());
+    }
+
+    private TeacherStatsRequest statsRequest(InternalJwtClaims claims,
+                                             long semesterId,
+                                             String scopeValue,
+                                             Long selectedGroupId,
+                                             Long selectedSubjectId,
+                                             List<String> lessonTypes,
+                                             List<String> sortValues,
+                                             List<String> filterValues) {
         if (semesterId <= 0) {
             throw invalidStats("semesterId должен быть положительным");
         }
@@ -259,10 +305,11 @@ public final class TeacherReadFacade {
             throw invalidStats("Разрез групп не принимает предмет или группу");
         }
 
-        Set<String> selectedTypes = lessonTypes == null ? Set.of() : lessonTypes.stream()
+        List<String> selectedTypes = lessonTypes == null ? List.of() : lessonTypes.stream()
                 .filter(value -> value != null && !value.isBlank())
                 .map(value -> value.trim().toLowerCase(Locale.ROOT))
-                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+                .distinct()
+                .toList();
         Set<Long> activeGroupIds = currentTeacherGroupIds(claims);
         if (activeGroupIds.isEmpty()
                 || scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
@@ -291,20 +338,20 @@ public final class TeacherReadFacade {
 
         List<TeacherStatsSort> sorts = parseStatsSorts(sortValues, scope);
         List<TeacherStatsFilter> filters = parseStatsFilters(filterValues, scope);
-        TeacherStatsResponse response = attendance.teacherStats(
-                semesterId,
-                concreteById.values().stream()
+        TeacherStatsRequest.Builder request = TeacherStatsRequest.newBuilder()
+                .setSemesterId(semesterId)
+                .setScope(scope)
+                .addAllLessonIds(concreteById.values().stream()
                         .sorted(Comparator.comparing(LessonResponse::getDate)
                                 .thenComparingInt(LessonResponse::getLessonNumber)
                                 .thenComparingLong(LessonResponse::getId))
-                        .map(LessonResponse::getId).toList(),
-                scope,
-                selectedGroupId == null ? 0 : selectedGroupId,
-                selectedSubjectId == null ? 0 : selectedSubjectId,
-                selectedTypes.stream().toList(),
-                sorts,
-                filters);
-        return stats(response);
+                        .map(LessonResponse::getId).toList())
+                .addAllLessonTypes(selectedTypes)
+                .addAllSorts(sorts)
+                .addAllFilters(filters);
+        if (selectedGroupId != null) request.setGroupId(selectedGroupId);
+        if (selectedSubjectId != null) request.setSubjectId(selectedSubjectId);
+        return request.build();
     }
 
     private Set<Long> currentTeacherGroupIds(InternalJwtClaims claims) {

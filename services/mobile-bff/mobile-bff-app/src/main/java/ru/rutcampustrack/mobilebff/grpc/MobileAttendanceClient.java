@@ -15,6 +15,8 @@ import ru.rutcampustrack.teacher.grpc.TeacherAttachmentDownload;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceReadServiceGrpc;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsExportRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsExportResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceReportKind;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseAttachmentRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseRequest;
@@ -121,8 +123,29 @@ public class MobileAttendanceClient {
                 .addAllFilters(filters == null ? List.of() : filters);
         if (groupId > 0) request.setGroupId(groupId);
         if (subjectId > 0) request.setSubjectId(subjectId);
+        return teacherStats(request.build());
+    }
+
+    public TeacherStatsResponse teacherStats(TeacherStatsRequest request) {
         return call(() -> auth.attach(teacherStub).withDeadlineAfter(15, TimeUnit.SECONDS)
-                .getTeacherStats(request.build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
+                .getTeacherStats(request), ProblemCode.DEPENDENCY_UNAVAILABLE);
+    }
+
+    public TeacherStatsExportResponse exportTeacherStats(TeacherStatsRequest statsRequest, String format) {
+        TeacherStatsExportRequest request = TeacherStatsExportRequest.newBuilder()
+                .setStatsRequest(statsRequest)
+                .setFormat(format)
+                .build();
+        try {
+            return auth.attach(teacherStub).withDeadlineAfter(60, TimeUnit.SECONDS)
+                    .exportTeacherStats(request);
+        } catch (StatusRuntimeException error) {
+            if (error.getStatus().getCode() == Code.RESOURCE_EXHAUSTED) {
+                throw new MobileBffException(HttpStatus.PAYLOAD_TOO_LARGE, ProblemCode.PAYLOAD_TOO_LARGE,
+                        "Экспорт превысил лимит передачи (до 20 МиБ; для PDF/PNG действует предел 4 МиБ сервиса преобразования). Попробуй DOCX, HTML или XLSX.");
+            }
+            throw translate(error, ProblemCode.DEPENDENCY_UNAVAILABLE);
+        }
     }
 
     public TeacherExcuseResponse teacherExcuse(String requestId) {

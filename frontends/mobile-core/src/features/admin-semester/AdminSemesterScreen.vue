@@ -182,18 +182,23 @@ async function saveSemester(): Promise<void> {
   if (saving.value || formLoading.value) return
   const selectedType = semesterType.value
   const selectedYear = Number(academicYear.value)
-  const payload = {
-    name: selectedType !== null && Number.isSafeInteger(selectedYear) && selectedYear >= 1 && selectedYear <= 9998
-      ? generatedSemesterName(selectedType, selectedYear)
-      : '',
-    dateFrom: dateFrom.value,
-    dateTo: dateTo.value,
-    semesterType: selectedType,
-    academicYear: selectedYear,
-  }
-  if (!payload.dateFrom || !payload.dateTo || payload.semesterType === null || payload.name === '') {
+  const selectedDateFrom = dateFrom.value
+  const selectedDateTo = dateTo.value
+  if (!selectedDateFrom || !selectedDateTo
+    || selectedType === null
+    || !Number.isSafeInteger(selectedYear)
+    || selectedYear < 1
+    || selectedYear > 9998) {
     error.value = 'Укажи тип семестра, учебный год, дату начала и дату окончания.'
     return
+  }
+
+  const payload = {
+    name: generatedSemesterName(selectedType, selectedYear),
+    dateFrom: selectedDateFrom,
+    dateTo: selectedDateTo,
+    semesterType: selectedType,
+    academicYear: selectedYear,
   }
   if (payload.dateTo < payload.dateFrom) {
     error.value = 'Дата окончания не может быть раньше даты начала.'

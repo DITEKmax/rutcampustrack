@@ -10,7 +10,7 @@ import java.util.Optional;
 
 /** Redis implementation using fixed-window Lua counters and absolute ticket TTLs. */
 @Repository
-public final class RedisReportDownloadTicketStore implements ReportDownloadTicketStore {
+public class RedisReportDownloadTicketStore implements ReportDownloadTicketStore {
 
     private static final String TICKET_PREFIX = "report_download_ticket:";
     private static final String ISSUE_PREFIX = "report_download_ticket_issue:";

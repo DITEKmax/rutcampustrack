@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { moscowDate } from '../../domain/homework'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import type { ReportDownloadPort } from '../../shared/report-download-client'
 import { openRequestAttachmentPopup, runRequestAttachmentOpen, type RequestAttachmentPopup } from '../requests/request-attachment-action'
 import type { RequestAttachmentViewState } from '../requests/types'
 import {
@@ -13,6 +14,7 @@ import {
   type HeadmanJournalReport,
   type HeadmanJournalRosterEntry,
   type HeadmanWeeklyExportOptions,
+  toHeadmanWeeklyReportRequest,
 } from './headman-journal-client'
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
 import './headman-journal-screen.pcss'
@@ -23,10 +25,12 @@ const props = withDefaults(defineProps<{
   assistantPermissions?: readonly HeadmanAssistantPermission[] | null
   offline?: boolean
   readOnly?: boolean
+  reportDownload?: ReportDownloadPort | null
 }>(), {
   assistantPermissions: null,
   offline: false,
   readOnly: false,
+  reportDownload: null,
 })
 
 const emit = defineEmits<{
@@ -262,6 +266,7 @@ async function loadWeeklyExportOptions(): Promise<void> {
 
 async function downloadWeeklyExport(): Promise<void> {
   const api = props.api
+  const reportDownload = props.reportDownload
   const options = weeklyExportOptions.value
   const format = selectedWeeklyFormat.value
   if (!api || !options || !format || !canExportWeekly() || weeklyExportBusy.value) return
@@ -279,6 +284,25 @@ async function downloadWeeklyExport(): Promise<void> {
   weeklyExportAbort = controller
   weeklyExportBusy.value = true
   try {
+    if (reportDownload) {
+      const request = toHeadmanWeeklyReportRequest(options.weeks, weekStarts, format)
+      const isCurrent = (): boolean => !disposed && revision === weeklyExportRevision
+        && api === props.api && reportDownload === props.reportDownload
+        && options === weeklyExportOptions.value && canExportWeekly()
+        && selectedWeeklyFormat.value?.code === format.code
+        && JSON.stringify(selectedWeeklyStarts.value) === JSON.stringify(weekStarts)
+      const result = await reportDownload.download(request, isCurrent)
+      if (result === 'stale' || !isCurrent()) return
+      if (result === 'unsupported') {
+        weeklyExportStatus.value = 'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.'
+      } else {
+        weeklyExportStatus.value = result === 'accepted'
+          ? 'Telegram принял запрос на скачивание; проверь завершение в Telegram.'
+          : 'Скачивание отменено.'
+      }
+      return
+    }
+
     const downloaded = await api.downloadWeeklyExport(weekStarts, format, controller.signal)
     if (disposed || revision !== weeklyExportRevision || api !== props.api || !canExportWeekly()) return
     if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function' || typeof document === 'undefined') {
@@ -683,7 +707,7 @@ watch(
 )
 
 watch(
-  () => [props.api, props.groupId, props.offline, props.assistantPermissions] as const,
+  () => [props.api, props.groupId, props.offline, props.assistantPermissions, props.reportDownload] as const,
   () => { void loadWeeklyExportOptions() },
   { immediate: true, flush: 'sync' },
 )

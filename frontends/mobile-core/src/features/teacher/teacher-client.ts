@@ -1,4 +1,9 @@
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import type {
+  ReportDownloadFormat,
+  ReportDownloadTicketRequest,
+  TeacherStatsReportSelector,
+} from '../../shared/report-download-client'
 
 export interface TeacherAssignment {
   readonly id: number
@@ -100,6 +105,22 @@ export interface TeacherJournalQuery {
   readonly pageSize?: number
 }
 
+export function toTeacherJournalReportRequest(
+  query: TeacherJournalQuery,
+  format: TeacherExportFormatCode,
+): ReportDownloadTicketRequest {
+  return {
+    kind: 'TEACHER_JOURNAL',
+    teacherJournal: {
+      semesterId: query.semesterId,
+      groupId: query.groupId,
+      subjectId: query.subjectId,
+      lessonTypes: [query.lessonType],
+      format,
+    },
+  }
+}
+
 export interface TeacherJournalResponse {
   readonly lessons: readonly TeacherDayLesson[]
   readonly students: readonly TeacherJournalStudent[]
@@ -110,7 +131,7 @@ export interface TeacherJournalResponse {
   readonly hasMore: boolean
 }
 
-export type TeacherExportFormatCode = 'docx' | 'pdf' | 'png' | 'html' | 'xlsx'
+export type TeacherExportFormatCode = ReportDownloadFormat
 
 const TEACHER_EXPORT_CONTENT_TYPES: Record<TeacherExportFormatCode, string> = {
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -171,6 +192,26 @@ export interface TeacherStatsQuery {
   readonly lessonTypes?: readonly string[]
   readonly sorts?: readonly TeacherStatsSort[]
   readonly filters?: readonly TeacherStatsFilter[]
+}
+
+export function toTeacherStatsReportSelector(
+  query: TeacherStatsQuery,
+  format: TeacherExportFormatCode,
+): TeacherStatsReportSelector {
+  const params = createTeacherStatsQueryParams(query)
+  const lessonTypes = params.getAll('lessonType')
+  const sorts = params.getAll('sort')
+  const filters = params.getAll('filter')
+  return {
+    semesterId: query.semesterId,
+    scope: query.scope,
+    ...(query.groupId != null ? { groupId: query.groupId } : {}),
+    ...(query.subjectId != null ? { subjectId: query.subjectId } : {}),
+    ...(lessonTypes.length > 0 ? { lessonTypes } : {}),
+    ...(sorts.length > 0 ? { sorts } : {}),
+    ...(filters.length > 0 ? { filters } : {}),
+    format,
+  }
 }
 
 export interface TeacherStatsMetric {
@@ -407,37 +448,7 @@ export class TeacherApi {
   }
 
   private statsQueryParams(query: TeacherStatsQuery): URLSearchParams {
-    assertPositiveInteger(query.semesterId, 'semesterId')
-    if (query.scope !== 'students' && query.scope !== 'groups') throw new RangeError('scope is invalid')
-    if (query.scope === 'students') {
-      assertPositiveInteger(query.groupId ?? 0, 'groupId')
-      assertPositiveInteger(query.subjectId ?? 0, 'subjectId')
-    } else if (query.groupId != null || query.subjectId != null) {
-      throw new RangeError('group scope cannot select group or subject')
-    }
-    const params = new URLSearchParams({
-      semesterId: String(query.semesterId),
-      scope: query.scope,
-    })
-    if (query.groupId != null) params.set('groupId', String(query.groupId))
-    if (query.subjectId != null) params.set('subjectId', String(query.subjectId))
-    for (const lessonType of query.lessonTypes ?? []) {
-      assertText(lessonType, 'lessonType')
-      params.append('lessonType', lessonType)
-    }
-    for (const sort of query.sorts ?? []) {
-      assertText(sort.column, 'sort.column')
-      params.append('sort', `${sort.descending ? '-' : ''}${sort.column}`)
-    }
-    for (const filter of query.filters ?? []) {
-      assertText(filter.column, 'filter.column')
-      if (filter.contains != null) params.append('filter', `${filter.column}~${filter.contains}`)
-      if (filter.minPercent != null) params.append('filter', `${filter.column}>=${filter.minPercent}`)
-      if (filter.maxPercent != null) params.append('filter', `${filter.column}<=${filter.maxPercent}`)
-        if (filter.minValue != null) params.append('filter', `${filter.column}>=${filter.minValue}`)
-        if (filter.maxValue != null) params.append('filter', `${filter.column}<=${filter.maxValue}`)
-    }
-    return params
+    return createTeacherStatsQueryParams(query)
   }
 
   excuse(requestId: string): Promise<TeacherExcuseResponse> {
@@ -488,6 +499,40 @@ export class TeacherApi {
     this.options.assertCurrent?.()
     return new TeacherApiError(response, problem)
   }
+}
+
+function createTeacherStatsQueryParams(query: TeacherStatsQuery): URLSearchParams {
+  assertPositiveInteger(query.semesterId, 'semesterId')
+  if (query.scope !== 'students' && query.scope !== 'groups') throw new RangeError('scope is invalid')
+  if (query.scope === 'students') {
+    assertPositiveInteger(query.groupId ?? 0, 'groupId')
+    assertPositiveInteger(query.subjectId ?? 0, 'subjectId')
+  } else if (query.groupId != null || query.subjectId != null) {
+    throw new RangeError('group scope cannot select group or subject')
+  }
+  const params = new URLSearchParams({
+    semesterId: String(query.semesterId),
+    scope: query.scope,
+  })
+  if (query.groupId != null) params.set('groupId', String(query.groupId))
+  if (query.subjectId != null) params.set('subjectId', String(query.subjectId))
+  for (const lessonType of query.lessonTypes ?? []) {
+    assertText(lessonType, 'lessonType')
+    params.append('lessonType', lessonType)
+  }
+  for (const sort of query.sorts ?? []) {
+    assertText(sort.column, 'sort.column')
+    params.append('sort', `${sort.descending ? '-' : ''}${sort.column}`)
+  }
+  for (const filter of query.filters ?? []) {
+    assertText(filter.column, 'filter.column')
+    if (filter.contains != null) params.append('filter', `${filter.column}~${filter.contains}`)
+    if (filter.minPercent != null) params.append('filter', `${filter.column}>=${filter.minPercent}`)
+    if (filter.maxPercent != null) params.append('filter', `${filter.column}<=${filter.maxPercent}`)
+    if (filter.minValue != null) params.append('filter', `${filter.column}>=${filter.minValue}`)
+    if (filter.maxValue != null) params.append('filter', `${filter.column}<=${filter.maxValue}`)
+  }
+  return params
 }
 
 export interface TeacherApiGenerationOwner {

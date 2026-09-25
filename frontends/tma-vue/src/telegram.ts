@@ -1,4 +1,5 @@
 import type { MobileHostAdapter, MobileHostAction, StudentCheckinCommand } from '@rct/mobile-core'
+import type { TelegramDownloadFileParams } from './report-download-adapter'
 
 interface TelegramLocation { latitude: number; longitude: number }
 
@@ -25,6 +26,7 @@ interface TelegramWebApp {
   onEvent?: (event: string, callback: () => void) => void
   offEvent?: (event: string, callback: () => void) => void
   openLink?: (url: string) => void
+  downloadFile?: (params: TelegramDownloadFileParams, callback: (accepted: boolean) => void) => void
   LocationManager?: { init(callback: () => void): void; getLocation(callback: (location: TelegramLocation | null) => void): void }
 }
 
@@ -154,6 +156,20 @@ export class TelegramHost implements MobileHostAdapter {
       return
     }
     window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  supportsFileDownload(): boolean {
+    return typeof this.app?.downloadFile === 'function'
+  }
+
+  requestFileDownload(
+    params: TelegramDownloadFileParams,
+    callback: (accepted: boolean) => void,
+  ): boolean {
+    const downloadFile = this.app?.downloadFile
+    if (typeof downloadFile !== 'function') return false
+    downloadFile.call(this.app, { url: params.url, file_name: params.file_name }, callback)
+    return true
   }
 
   location(): Promise<StudentCheckinCommand> {

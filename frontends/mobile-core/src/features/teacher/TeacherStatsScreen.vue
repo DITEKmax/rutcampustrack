@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import type { ReportDownloadPort, ReportDownloadTicketRequest } from '../../shared/report-download-client'
 import {
   TeacherApiError,
   type TeacherApi,
@@ -13,6 +14,7 @@ import {
   type TeacherStatsSubjectOption,
   type TeacherStatsScope,
   type TeacherStatsSort,
+  toTeacherStatsReportSelector,
 } from './teacher-client'
 import {
   readTeacherStatsContext,
@@ -25,8 +27,10 @@ const props = withDefaults(defineProps<{
   api: TeacherApi | null
   semesterId: number | null
   initialGroupId?: number | null
+  reportDownload?: ReportDownloadPort | null
 }>(), {
   initialGroupId: null,
+  reportDownload: null,
 })
 
 const emit = defineEmits<{
@@ -54,6 +58,7 @@ const selectedFormat = ref<TeacherExportFormatCode>('docx')
 const formatsLoading = ref(false)
 const exportLoading = ref(false)
 const exportError = ref<string | null>(null)
+const exportStatus = ref<string | null>(null)
 let exportRevision = 0
 let formatsRevision = 0
 const exportObjectUrls = new Set<string>()
@@ -92,6 +97,7 @@ watch(
     exportLoading.value = false
     formatsLoading.value = false
     exportError.value = null
+    exportStatus.value = null
     void loadContext()
     void loadExportFormats()
   },
@@ -222,6 +228,7 @@ async function loadExportFormats(): Promise<void> {
 
 async function exportStats(): Promise<void> {
   const api = props.api
+  const reportDownload = props.reportDownload
   const query = statsQuery.value
   const current = ++exportRevision
   const queryKey = JSON.stringify(query)
@@ -229,9 +236,29 @@ async function exportStats(): Promise<void> {
   if (!api || !query || !canExport.value) return
   exportLoading.value = true
   exportError.value = null
+  exportStatus.value = null
   try {
+    if (reportDownload) {
+      const request: ReportDownloadTicketRequest = {
+        kind: 'TEACHER_STATS',
+        teacherStats: toTeacherStatsReportSelector(query, format),
+      }
+      const result = await reportDownload.download(request, () => isCurrentExport(
+        current, api, queryKey, format, reportDownload,
+      ))
+      if (result === 'stale' || !isCurrentExport(current, api, queryKey, format, reportDownload)) return
+      if (result === 'unsupported') {
+        exportError.value = 'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.'
+      } else {
+        exportStatus.value = result === 'accepted'
+          ? 'Telegram принял запрос на скачивание; проверь завершение в Telegram.'
+          : 'Скачивание отменено.'
+      }
+      return
+    }
+
     const file = await api.exportStats(query, format)
-    if (!isCurrentExport(current, api, queryKey, format)) return
+    if (!isCurrentExport(current, api, queryKey, format, reportDownload)) return
     const url = URL.createObjectURL(file.blob)
     exportObjectUrls.add(url)
     const link = document.createElement('a')
@@ -243,11 +270,11 @@ async function exportStats(): Promise<void> {
       URL.revokeObjectURL(url)
     }, 60_000)
   } catch (cause) {
-    if (!isCurrentExport(current, api, queryKey, format)
+    if (!isCurrentExport(current, api, queryKey, format, reportDownload)
       || cause instanceof StaleSessionGenerationError) return
     exportError.value = cause instanceof TeacherApiError
       ? cause.message
-      : 'Не удалось скачать статистику. Попробуй ещё раз.'
+      : cause instanceof Error ? cause.message : 'Не удалось скачать статистику. Попробуй ещё раз.'
     emit('error', cause)
   } finally {
     if (current === exportRevision) exportLoading.value = false
@@ -274,8 +301,10 @@ function currentStatsQuery(): TeacherStatsQuery | null {
 function isCurrentExport(current: number,
                          api: TeacherApi,
                          queryKey: string,
-                         format: TeacherExportFormatCode): boolean {
+                         format: TeacherExportFormatCode,
+                         reportDownload: ReportDownloadPort | null): boolean {
   return !disposed && current === exportRevision && api === props.api
+    && reportDownload === props.reportDownload
     && JSON.stringify(currentStatsQuery()) === queryKey && selectedFormat.value === format
 }
 
@@ -703,6 +732,13 @@ function isCurrent(requestRevision: number): boolean {
         role="alert"
       >
         {{ exportError }}
+      </p>
+      <p
+        v-else-if="exportStatus"
+        class="teacher-stats__state"
+        role="status"
+      >
+        {{ exportStatus }}
       </p>
 
       <p

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { StaleSessionGenerationError } from '../../shared/session-owner'
+import type { ReportDownloadPort } from '../../shared/report-download-client'
 import {
   TeacherApiError,
   type TeacherApi,
@@ -9,12 +11,14 @@ import {
   type TeacherJournalCell,
   type TeacherJournalQuery,
   type TeacherJournalResponse,
+  toTeacherJournalReportRequest,
 } from './teacher-client'
 import './teacher-screen.pcss'
 
 const props = defineProps<{
   api: TeacherApi | null
   query: TeacherJournalQuery | null
+  reportDownload?: ReportDownloadPort | null
 }>()
 
 const emit = defineEmits<{
@@ -31,6 +35,7 @@ const selectedFormat = ref<TeacherExportFormatCode>('docx')
 const formatsLoading = ref(false)
 const exportLoading = ref(false)
 const exportError = ref<string | null>(null)
+const exportStatus = ref<string | null>(null)
 const page = ref(0)
 let revision = 0
 let exportRevision = 0
@@ -49,6 +54,7 @@ watch(
     formats.value = []
     error.value = null
     exportError.value = null
+    exportStatus.value = null
     exportLoading.value = false
     void load()
     void loadFormats()
@@ -122,6 +128,7 @@ async function loadFormats(): Promise<void> {
 
 async function exportJournal(): Promise<void> {
   const api = props.api
+  const reportDownload = props.reportDownload ?? null
   const query = props.query
   const current = ++exportRevision
   const context = queryKey(query)
@@ -129,7 +136,24 @@ async function exportJournal(): Promise<void> {
   if (!api || !query || loading.value || exportLoading.value || !canExport.value) return
   exportLoading.value = true
   exportError.value = null
+  exportStatus.value = null
   try {
+    if (reportDownload) {
+      const result = await reportDownload.download(toTeacherJournalReportRequest(query, format), () => current === exportRevision
+        && api === props.api && reportDownload === (props.reportDownload ?? null) && queryKey(props.query) === context
+        && selectedFormat.value === format)
+      if (result === 'stale' || current !== exportRevision || api !== props.api
+        || reportDownload !== (props.reportDownload ?? null) || queryKey(props.query) !== context) return
+      if (result === 'unsupported') {
+        exportError.value = 'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.'
+      } else {
+        exportStatus.value = result === 'accepted'
+          ? 'Telegram принял запрос на скачивание; проверь завершение в Telegram.'
+          : 'Скачивание отменено.'
+      }
+      return
+    }
+
     const file = await api.exportJournal({
       semesterId: query.semesterId,
       groupId: query.groupId,
@@ -149,10 +173,10 @@ async function exportJournal(): Promise<void> {
       URL.revokeObjectURL(url)
     }, 60_000)
   } catch (cause) {
-    if (current !== exportRevision) return
+    if (current !== exportRevision || cause instanceof StaleSessionGenerationError) return
     exportError.value = cause instanceof TeacherApiError
       ? cause.message
-      : 'Не удалось скачать журнал. Попробуй ещё раз.'
+      : cause instanceof Error ? cause.message : 'Не удалось скачать журнал. Попробуй ещё раз.'
     emit('error', cause)
   } finally {
     if (current === exportRevision) exportLoading.value = false
@@ -291,6 +315,13 @@ function shortLesson(lesson: TeacherDayLesson): string {
         role="alert"
       >
         {{ exportError }}
+      </p>
+      <p
+        v-else-if="exportStatus"
+        class="teacher-screen__muted teacher-screen__export-message"
+        role="status"
+      >
+        {{ exportStatus }}
       </p>
       <p
         v-else-if="state && state.totalLessons === 0 && !loading"

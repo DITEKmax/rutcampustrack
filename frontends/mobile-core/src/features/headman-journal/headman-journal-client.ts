@@ -1,4 +1,8 @@
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import {
+  isReportDownloadFormat,
+  type ReportDownloadTicketRequest,
+} from '../../shared/report-download-client'
 
 export type HeadmanJournalLessonStatus = 'PLANNED' | 'ACTIVE' | 'CLOSED' | 'CANCELLED' | 'UNSUPPORTED'
 export type HeadmanJournalAttendanceStatus = 'PRESENT' | 'ABSENT' | 'EXCUSED' | 'EMPTY' | 'CANCELLED' | 'UNSUPPORTED'
@@ -108,6 +112,36 @@ export interface HeadmanWeeklyExportOptions {
 export interface HeadmanWeeklyDownload {
   readonly blob: Blob
   readonly filename: string
+}
+
+export function toHeadmanWeeklyReportRequest(
+  weeks: readonly HeadmanWeeklyWeekOption[],
+  selectedWeekStarts: readonly string[],
+  format: HeadmanWeeklyExportFormat,
+): ReportDownloadTicketRequest {
+  if (!isReportDownloadFormat(format.code)) {
+    throw new RangeError('Сервер вернул неподдерживаемый формат недельного отчёта.')
+  }
+  const selected = new Set(selectedWeekStarts)
+  const orderedWeeks = weeks.filter((week) => selected.has(week.weekStart))
+  const firstWeek = orderedWeeks[0]
+  if (!firstWeek) throw new RangeError('Выбери хотя бы одну неделю из доступных.')
+  if (orderedWeeks.length === 1 && firstWeek.current) {
+    return {
+      kind: 'HEADMAN_WEEKLY_CURRENT',
+      headmanWeeklyCurrent: {
+        weekStart: firstWeek.weekStart,
+        format: format.code,
+      },
+    }
+  }
+  return {
+    kind: 'HEADMAN_WEEKLY_SELECTED',
+    headmanWeeklySelected: {
+      weekStarts: orderedWeeks.map((week) => week.weekStart),
+      format: format.code,
+    },
+  }
 }
 
 export class HeadmanJournalApiError extends Error {

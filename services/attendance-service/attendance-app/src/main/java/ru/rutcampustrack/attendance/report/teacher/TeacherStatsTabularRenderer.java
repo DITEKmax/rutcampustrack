@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -23,6 +24,8 @@ import java.util.zip.ZipOutputStream;
 @Component
 public final class TeacherStatsTabularRenderer {
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd.MM.uuuu");
+    private static final DateTimeFormatter GENERATED_AT = DateTimeFormatter
+            .ofPattern("dd.MM.uuuu HH:mm 'UTC'").withZone(ZoneOffset.UTC);
     private static final List<String> METRIC_LABELS = List.of("«+»", "«+ и у»", "«у»", "«н»");
 
     public byte[] renderHtml(TeacherStatsExportModel model) {
@@ -40,6 +43,7 @@ public final class TeacherStatsTabularRenderer {
                 .append(contextItem("Период семестра", dateRange(context)))
                 .append(contextItem("Период данных", dataRange(context)))
                 .append(contextItem("Учтено пар", Integer.toString(context.lessonsCount())))
+                .append(contextItem("Сформировано", GENERATED_AT.format(context.generatedAt())))
                 .append("</dl><div class=\"table-wrap\"><table><thead><tr><th>")
                 .append(groups ? "Группа" : "Студент").append("</th>");
         for (String label : METRIC_LABELS) {
@@ -69,7 +73,7 @@ public final class TeacherStatsTabularRenderer {
         Context context = model.context();
         boolean groups = context.scope() == Scope.GROUPS;
         int columns = 1 + 4 * 3 + (groups ? 1 : 0);
-        int headerRow = 9;
+        int headerRow = 10;
         int firstDataRow = headerRow + 1;
         int lastRow = Math.max(firstDataRow, firstDataRow + model.rows().size() - 1);
         Map<String, String> entries = new LinkedHashMap<>();
@@ -139,6 +143,7 @@ public final class TeacherStatsTabularRenderer {
         appendContextRow(xml, 6, "Период семестра", dateRange(context), 0);
         appendContextRow(xml, 7, "Период данных", dataRange(context), 0);
         appendContextRow(xml, 8, "Учтено пар", Integer.toString(context.lessonsCount()), 0);
+        appendContextRow(xml, 9, "Сформировано", GENERATED_AT.format(context.generatedAt()), 0);
         List<String> headers = new ArrayList<>();
         headers.add(groups ? "Группа" : "Студент");
         for (String label : METRIC_LABELS) {

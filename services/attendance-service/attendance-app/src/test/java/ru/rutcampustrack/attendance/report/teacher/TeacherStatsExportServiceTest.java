@@ -81,6 +81,7 @@ class TeacherStatsExportServiceTest {
                                     ? "Статистика по моим группам" : "Статистика студентов группы")
                             .contains("Период семестра: 01.01.2026 — 30.06.2026")
                             .contains("Учтено пар: 2")
+                            .contains("Сформировано: 02.05.2026 10:00 UTC")
                             .contains("— (0/0)")
                             .contains(">100.0%</w:t>")
                             .doesNotContain(">0.0%</w:t>", "\u000b", "71");
@@ -92,7 +93,8 @@ class TeacherStatsExportServiceTest {
                 }
                 if (format.equals("html")) {
                     String html = response.getContent().toStringUtf8();
-                    assertThat(html).contains("Период семестра", "Учтено пар", "— (0/0)", "100.0%")
+                    assertThat(html).contains("Период семестра", "Учтено пар", "02.05.2026 10:00 UTC",
+                                    "— (0/0)", "100.0%")
                             .doesNotContain("/ 0.0%</td>", "\u000b", "71");
                     if (scope == ReportService.TeacherStatsScope.STUDENTS) {
                         assertThat(html).contains("УИТ-311", "Математика", "А&amp;Б");
@@ -108,7 +110,8 @@ class TeacherStatsExportServiceTest {
                         }
                     });
                     String sheet = new String(entries.get("xl/worksheets/sheet1.xml"), StandardCharsets.UTF_8);
-                    assertThat(sheet).contains("xSplit=\"1\" ySplit=\"9\"", "t=\"n\"", "—")
+                    assertThat(sheet).contains("xSplit=\"1\" ySplit=\"10\"", "02.05.2026 10:00 UTC",
+                                    "t=\"n\"", "—")
                             .doesNotContain("\u000b");
                     if (scope == ReportService.TeacherStatsScope.GROUPS) assertThat(sheet).contains("Пар учтено");
                 }

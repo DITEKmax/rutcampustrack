@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, toRaw } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch } from 'vue'
 import {
   AdminMapClient,
   AdminMapScreen,
@@ -22,6 +22,9 @@ import {
   MapScreen,
   StudentApi,
   StudentApiError,
+  NotificationsApiError,
+  NotificationsEntryButton,
+  NotificationsScreen,
   StudentFeatureOwner,
   TeacherApi,
   TeacherApiError,
@@ -31,6 +34,7 @@ import {
   StaleSessionGenerationError,
   commandFromCoordinates,
   createFixtureTransport,
+  createGenerationBoundNotificationsApi,
   createMobileTheme,
   offlineToday,
   studentFeatureScope,
@@ -57,6 +61,7 @@ import {
   type AdminDashboardClient,
   type AdminGroupsClient,
   type AdminUsersClient,
+  type NotificationsApi,
 } from '@rct/mobile-core'
 import type { ProfilePort, ProfileRole, ProfileSnapshot } from '@rct/mobile-core'
 import { AuthRequestError } from './auth-client'
@@ -114,6 +119,9 @@ const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null)
 const adminDashboardApi = shallowRef<AdminDashboardClient | null>(null)
 const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
+const notificationsApi = shallowRef<NotificationsApi | null>(null)
+const notificationsOpen = ref(false)
+const notificationsGeneration = ref<number | null>(null)
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
 const profilePort = shallowRef<ProfilePort | null>(null)
@@ -154,6 +162,11 @@ const adminUsersViewVisible = computed(() => authView.value === 'admin-users')
 const adminGroupsViewVisible = computed(() => authView.value === 'admin-groups')
 const featureVisible = computed(() => api.value !== null || headmanApi.value !== null || snapshot.value !== null
   || teacherApi.value !== null || mapViewVisible.value || adminHomeViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value || adminUsersViewVisible.value || adminGroupsViewVisible.value)
+const notificationsEntryVisible = computed(() => featureVisible.value
+  && authSnapshot.value !== null
+  && authSnapshot.value.activeRole !== null
+  && authView.value !== 'login'
+  && authView.value !== 'role')
 const studentViewVisible = computed(() => authView.value === 'student' && featureVisible.value)
 const teacherViewVisible = computed(() => authView.value === 'teacher' && teacherApi.value !== null)
 const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
@@ -170,6 +183,7 @@ function authDenialStatus(error: unknown): number | null {
   if (error instanceof PwaAuthError) return error.status
   if (error instanceof AuthRequestError) return error.status ?? null
   if (error instanceof StudentApiError) return error.response.status
+  if (error instanceof NotificationsApiError) return error.status
   if (error instanceof TeacherApiError) return error.response.status
   if (error instanceof HeadmanScheduleApiError) return error.response.status
   if (error instanceof HeadmanJournalApiError) return error.response.status
@@ -181,6 +195,37 @@ function authDenialStatus(error: unknown): number | null {
   if (error instanceof AdminUsersApiError) return error.response.status
   return null
 }
+
+function openNotifications(): void {
+  if (!notificationsEntryVisible.value) return
+  const generation = auth.currentGeneration()
+  notificationsGeneration.value = generation
+  notificationsApi.value = createGenerationBoundNotificationsApi({
+    currentGeneration: () => auth.currentGeneration(),
+    accessTokenFor: (capturedGeneration) => {
+      if (!auth.isCurrent(capturedGeneration)) throw new StaleSessionGenerationError()
+      return auth.accessToken.value
+    },
+    refreshFor: (capturedGeneration) => auth.refreshFor(capturedGeneration),
+  }, currentFetcher())
+  notificationsOpen.value = true
+}
+
+function closeNotifications(): void {
+  notificationsOpen.value = false
+  notificationsApi.value = null
+  notificationsGeneration.value = null
+}
+
+watch(
+  () => [auth.resetGeneration.value, authSnapshot.value?.userId, authSnapshot.value?.activeRole] as const,
+  (current, previous) => {
+    if (notificationsOpen.value && previous
+      && (current[0] !== previous[0] || current[1] !== previous[1] || current[2] !== previous[2])) {
+      closeNotifications()
+    }
+  },
+)
 
 function isConfirmedOnlineAuthDenial(error: unknown): boolean {
   if (authDenialStatus(error) === 401) return true
@@ -1087,6 +1132,19 @@ onBeforeUnmount(() => {
 
 <template>
   <PwaUpdateGate :enabled="!fixtureMode" />
+  <NotificationsEntryButton
+    v-if="notificationsEntryVisible && !notificationsOpen"
+    @click="openNotifications"
+  />
+  <NotificationsScreen
+    v-if="notificationsOpen && notificationsApi"
+    :key="`notifications-${notificationsGeneration}`"
+    :api="notificationsApi"
+    :host="host"
+    :offline="offline"
+    @close="closeNotifications"
+    @owner-error="onOwnerError"
+  />
   <InstallOffer
     v-if="studentViewVisible && authSnapshot?.activeRole === 'STUDENT' && session"
     :controller="installPrompt"

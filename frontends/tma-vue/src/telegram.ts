@@ -85,6 +85,8 @@ export class TelegramHost implements MobileHostAdapter {
   readonly primaryActionOwner = 'host' as const
   readonly app: TelegramWebApp | null = window.Telegram?.WebApp ?? null
   private primaryActionHandler: (() => void) | null = null
+  private backRequestedVisible = false
+  private backSuspensions = 0
 
   start(): string | null {
     if (!this.app?.initData) return null
@@ -100,20 +102,41 @@ export class TelegramHost implements MobileHostAdapter {
 
   subscribeBack(listener: () => void): () => void {
     const button = this.app?.BackButton
+    const guardedListener = (): void => {
+      if (this.backSuspensions > 0) return
+      listener()
+    }
     if (button?.onClick) {
-      button.onClick(listener)
-      return () => button.offClick?.(listener)
+      button.onClick(guardedListener)
+      return () => button.offClick?.(guardedListener)
     }
     if (this.app?.onEvent) {
-      this.app.onEvent('backButtonClicked', listener)
-      return () => this.app?.offEvent?.('backButtonClicked', listener)
+      this.app.onEvent('backButtonClicked', guardedListener)
+      return () => this.app?.offEvent?.('backButtonClicked', guardedListener)
     }
     return () => undefined
   }
 
   setBackVisible(visible: boolean): void {
-    if (visible) this.app?.BackButton?.show?.()
-    else this.app?.BackButton?.hide?.()
+    this.backRequestedVisible = visible
+    this.applyBackVisibility()
+  }
+
+  suspendBack(): () => void {
+    this.backSuspensions += 1
+    this.applyBackVisibility()
+    let released = false
+    return () => {
+      if (released) return
+      released = true
+      this.backSuspensions = Math.max(0, this.backSuspensions - 1)
+      this.applyBackVisibility()
+    }
+  }
+
+  private applyBackVisibility(): void {
+    if (this.backSuspensions > 0 || !this.backRequestedVisible) this.app?.BackButton?.hide?.()
+    else this.app?.BackButton?.show?.()
   }
 
   subscribeKeyboard(listener: (visible: boolean) => void): () => void {

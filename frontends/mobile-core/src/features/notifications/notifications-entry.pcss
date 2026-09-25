@@ -1,0 +1,17 @@
+@import '../../styles/tokens.pcss';
+
+.notifications-entry {
+  position: fixed;
+  z-index: 20;
+  inset-block-start: calc(env(safe-area-inset-top) + var(--rct-space-2));
+  inset-inline-end: var(--rct-space-3);
+  min-block-size: var(--rct-control-min-touch);
+  border: 0.0625rem solid var(--rct-color-border-default);
+  border-radius: 999rem;
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}

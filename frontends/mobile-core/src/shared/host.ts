@@ -17,6 +17,8 @@ export interface MobileHostAdapter {
   readonly primaryActionOwner?: MobilePrimaryActionOwner
   subscribeBack?: (listener: () => void) => () => void
   setBackVisible?: (visible: boolean) => void
+  /** Temporarily suppresses host Back while an app-level overlay is active. */
+  suspendBack?: () => () => void
   subscribeKeyboard?: (listener: (visible: boolean) => void) => () => void
   setPrimaryAction?: (action: MobileHostAction | null) => void
 }

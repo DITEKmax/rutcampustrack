@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import {
   AdminMapClient,
   AdminMapScreen,
@@ -19,6 +19,9 @@ import {
   HeadmanSubjectsApiError,
   HeadmanScheduleScreen,
   MapScreen,
+  NotificationsApiError,
+  NotificationsEntryButton,
+  NotificationsScreen,
   ProfileRequestError,
   RoleSwitchScreen,
   StaleSessionGenerationError,
@@ -29,6 +32,7 @@ import {
   TeacherApiError,
   TeacherFeatureOwner,
   createFixtureTransport,
+  createGenerationBoundNotificationsApi,
   createMobileTheme,
   studentFeatureScope,
   studentFeatureScopeIdentity,
@@ -49,6 +53,7 @@ import {
   type AdminSemesterClient,
   type AdminGroupsClient,
   type AdminUsersClient,
+  type NotificationsApi,
 } from '@rct/mobile-core'
 import { installFixtureTelegramHost, TelegramHost } from './telegram'
 import { useTmaSession } from './tma-session'
@@ -99,6 +104,9 @@ const adminSemesterApi = shallowRef<AdminSemesterClient | null>(null)
 const adminDashboardApi = shallowRef<AdminDashboardClient | null>(null)
 const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
+const notificationsApi = shallowRef<NotificationsApi | null>(null)
+const notificationsOpen = ref(false)
+const notificationsGeneration = ref<number | null>(null)
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
 const profile = shallowRef<ProfileSnapshot | null>(null)
@@ -121,6 +129,10 @@ const adminUsersViewVisible = computed(() => authView.value === 'admin-users')
 const adminGroupsViewVisible = computed(() => authView.value === 'admin-groups')
 const featureVisible = computed(() => api.value !== null || headmanApi.value !== null
   || teacherApi.value !== null || mapViewVisible.value || adminHomeViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value || adminUsersViewVisible.value || adminGroupsViewVisible.value)
+const notificationsEntryVisible = computed(() => featureVisible.value
+  && profile.value !== null
+  && profile.value.activeRole !== null
+  && authView.value !== 'role')
 const studentViewVisible = computed(() => authView.value === 'student' && api.value !== null)
 const teacherViewVisible = computed(() => authView.value === 'teacher' && teacherApi.value !== null)
 const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
@@ -139,8 +151,40 @@ function currentFetcher(): typeof fetch | undefined {
   return fixtureTransport
 }
 
+function openNotifications(): void {
+  if (!notificationsEntryVisible.value) return
+  const generation = sessionOwner.currentGeneration()
+  notificationsGeneration.value = generation
+  notificationsApi.value = createGenerationBoundNotificationsApi({
+    currentGeneration: () => sessionOwner.currentGeneration(),
+    accessTokenFor: (capturedGeneration) => {
+      if (!sessionOwner.isCurrent(capturedGeneration)) throw new StaleSessionGenerationError()
+      return sessionOwner.accessToken.value
+    },
+    refreshFor: (capturedGeneration) => sessionOwner.authenticateFor(capturedGeneration),
+  }, currentFetcher())
+  notificationsOpen.value = true
+}
+
+function closeNotifications(): void {
+  notificationsOpen.value = false
+  notificationsApi.value = null
+  notificationsGeneration.value = null
+}
+
+watch(
+  () => [sessionOwner.resetGeneration.value, profile.value?.userId, profile.value?.activeRole] as const,
+  (current, previous) => {
+    if (notificationsOpen.value && previous
+      && (current[0] !== previous[0] || current[1] !== previous[1] || current[2] !== previous[2])) {
+      closeNotifications()
+    }
+  },
+)
+
 function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof TmaAuthError) return cause.status
+  if (cause instanceof NotificationsApiError) return cause.status
   if (cause instanceof StudentApiError) return cause.response.status
   if (cause instanceof TeacherApiError) return cause.response.status
   if (cause instanceof HeadmanSubjectsApiError) return cause.response.status
@@ -155,6 +199,7 @@ function authDenialStatus(cause: unknown): number | null {
 }
 
 function isAuthDenied(cause: unknown): boolean {
+  if (cause instanceof NotificationsApiError && cause.status === 403) return false
   if ((cause instanceof HeadmanScheduleApiError || cause instanceof HeadmanJournalApiError)
     && cause.response.status === 403) return false
   const status = authDenialStatus(cause)
@@ -530,6 +575,19 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <NotificationsEntryButton
+    v-if="notificationsEntryVisible && !notificationsOpen"
+    @click="openNotifications"
+  />
+  <NotificationsScreen
+    v-if="notificationsOpen && notificationsApi"
+    :key="`notifications-${notificationsGeneration}`"
+    :api="notificationsApi"
+    :host="host"
+    :offline="offline"
+    @close="closeNotifications"
+    @owner-error="onOwnerError"
+  />
   <RoleSwitchScreen
     v-if="authView === 'role' && profile"
     :snapshot="profile"

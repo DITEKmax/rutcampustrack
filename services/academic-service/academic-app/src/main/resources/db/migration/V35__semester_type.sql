@@ -2,7 +2,7 @@ ALTER TABLE semesters
     ADD COLUMN semester_type VARCHAR(8);
 
 ALTER TABLE semesters
-    ADD COLUMN academic_year SMALLINT;
+    ADD COLUMN academic_year INTEGER;
 
 ALTER TABLE semesters
     ADD CONSTRAINT semesters_semester_type_check

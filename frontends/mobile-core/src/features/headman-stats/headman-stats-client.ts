@@ -213,6 +213,8 @@ export interface HeadmanStatsApiGenerationOwner {
   refreshFor(generation: number): Promise<void>
 }
 
+export type HeadmanStatsBlock = 'group' | 'subject'
+
 export function toHeadmanStatsReportRequest(
   query: HeadmanStatsExportQuery,
   format: ReportDownloadFormat,
@@ -248,6 +250,13 @@ export function headmanStatsQueryKey(query: HeadmanStatsQuery): string {
     page: query.page,
     size: query.size,
   })
+}
+
+export function headmanStatsQueryScopeKey(
+  block: HeadmanStatsBlock,
+  query: Pick<HeadmanStatsQuery, 'subjectId'>,
+): string {
+  return JSON.stringify({ block, subjectId: query.subjectId })
 }
 
 export function isHeadmanStatsResponseCurrent(

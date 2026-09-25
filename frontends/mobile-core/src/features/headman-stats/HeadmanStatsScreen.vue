@@ -6,10 +6,12 @@ import {
   HeadmanStatsApiError,
   headmanStatsResponseForCurrentQuery,
   headmanStatsQueryKey,
+  headmanStatsQueryScopeKey,
   hasHeadmanStatsResettableCriteria,
   resetHeadmanStatsCriteria,
   toHeadmanStatsReportRequest,
   type HeadmanStatsApi,
+  type HeadmanStatsBlock,
   type HeadmanStatsColumn,
   type HeadmanStatsFilter,
   type HeadmanStatsFormat,
@@ -20,7 +22,6 @@ import {
 } from './headman-stats-client'
 import './headman-stats-screen.pcss'
 
-type Block = 'group' | 'subject'
 interface FilterDraft { contains: string; minimum: string; maximum: string }
 
 const props = withDefaults(defineProps<{
@@ -37,9 +38,10 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{ error: [cause: unknown]; back: [] }>()
 
-const block = ref<Block>('group')
+const block = ref<HeadmanStatsBlock>('group')
 const response = ref<HeadmanStatsResponse | null>(null)
 const responseQueryKey = ref<string | null>(null)
+const responseScopeKey = ref<string | null>(null)
 const selectedSubjectId = ref<number | null>(null)
 const selectedTypes = ref<string[]>([])
 const sorts = ref<HeadmanStatsSort[]>([])
@@ -58,19 +60,26 @@ let activeController: AbortController | null = null
 
 const canView = computed(() => props.assistantPermissions === null
   || props.assistantPermissions.includes('VIEW_STATS'))
-const currentQueryKey = computed(() => headmanStatsQueryKey({
+const currentQuery = computed(() => ({
   ...queryForCurrentBlock(true),
   page: page.value,
   size: pageSize,
 }))
+const currentQueryKey = computed(() => headmanStatsQueryKey(currentQuery.value))
+const currentScopeKey = computed(() => headmanStatsQueryScopeKey(block.value, currentQuery.value))
+const controlResponse = computed(() => headmanStatsResponseForCurrentQuery(
+  response.value,
+  responseScopeKey.value,
+  currentScopeKey.value,
+))
 const displayedResponse = computed(() => headmanStatsResponseForCurrentQuery(
   response.value,
   responseQueryKey.value,
   currentQueryKey.value,
 ))
 const activeFormat = computed(() => displayedResponse.value?.formats.find((item) => item.code === selectedFormat.value) ?? null)
-const selectedSubject = computed(() => displayedResponse.value?.subjects.find((item) => item.id === selectedSubjectId.value) ?? null)
-const hasFilterDraft = computed(() => filters.value.length > 0 || (displayedResponse.value?.columns.some((column) => {
+const selectedSubject = computed(() => response.value?.subjects.find((item) => item.id === selectedSubjectId.value) ?? null)
+const hasFilterDraft = computed(() => filters.value.length > 0 || (controlResponse.value?.columns.some((column) => {
   const draft = filterDrafts[column.field]
   return draft && (draft.contains.trim() !== '' || draft.minimum.trim() !== '' || draft.maximum.trim() !== '')
 }) ?? false))
@@ -94,7 +103,7 @@ function filterDraft(column: HeadmanStatsColumn): FilterDraft {
 }
 
 function visibleFilters(): HeadmanStatsFilter[] {
-  return (displayedResponse.value?.columns ?? []).flatMap((column): HeadmanStatsFilter[] => {
+  return (controlResponse.value?.columns ?? []).flatMap((column): HeadmanStatsFilter[] => {
     const draft = filterDraft(column)
     if (column.filterKind === 'TEXT') {
       const contains = draft.contains.trim()
@@ -197,6 +206,7 @@ async function loadInitial(): Promise<void> {
   loading.value = false
   response.value = null
   responseQueryKey.value = null
+  responseScopeKey.value = null
   exportStatus.value = null
   error.value = null
   denied.value = false
@@ -219,6 +229,7 @@ async function loadBlock(): Promise<void> {
   }
   const query = { ...queryForCurrentBlock(true), page: page.value, size: pageSize }
   const queryKey = headmanStatsQueryKey(query)
+  const queryScopeKey = headmanStatsQueryScopeKey(block.value, query)
   const currentRevision = ++revision
   activeController?.abort()
   const controller = new AbortController()
@@ -234,6 +245,7 @@ async function loadBlock(): Promise<void> {
     if (result.context.groupId !== props.groupId) throw new Error('Сервер вернул статистику для другой группы.')
     response.value = result
     responseQueryKey.value = queryKey
+    responseScopeKey.value = queryScopeKey
     for (const column of result.columns) filterDraft(column)
     if (selectedSubjectId.value === null && result.subjects.length > 0) {
       selectedSubjectId.value = result.subjects[0]!.id
@@ -244,7 +256,10 @@ async function loadBlock(): Promise<void> {
   } catch (cause) {
     if (currentRevision !== revision || controller.signal.aborted) return
     denied.value = cause instanceof HeadmanStatsApiError && cause.response.status === 403
-    if (denied.value) response.value = null
+    if (denied.value) {
+      response.value = null
+      responseScopeKey.value = null
+    }
     error.value = cause instanceof Error ? cause.message : 'Не удалось загрузить статистику.'
     emit('error', cause)
   } finally {
@@ -252,7 +267,7 @@ async function loadBlock(): Promise<void> {
   }
 }
 
-function openBlock(next: Block): void {
+function openBlock(next: HeadmanStatsBlock): void {
   if (next === block.value) return
   block.value = next
   page.value = 0
@@ -439,7 +454,7 @@ onBeforeUnmount(() => {
       Загружаем статистику группы…
     </p>
 
-    <template v-if="displayedResponse && !props.offline && canView">
+    <template v-if="response && !props.offline && canView">
       <nav
         class="headman-stats__blocks"
         aria-label="Раздел статистики"
@@ -478,7 +493,7 @@ onBeforeUnmount(() => {
               disabled
             >Выбери предмет</option>
             <option
-              v-for="subject in displayedResponse.subjects"
+              v-for="subject in response.subjects"
               :key="subject.id"
               :value="subject.id"
             >{{ subject.label }}</option>
@@ -502,7 +517,10 @@ onBeforeUnmount(() => {
             {{ type.label }}
           </label>
         </fieldset>
-        <div class="headman-stats__export">
+        <div
+          v-if="displayedResponse"
+          class="headman-stats__export"
+        >
           <label class="headman-stats__field">
             <span>Формат выгрузки</span>
             <select v-model="selectedFormat">
@@ -530,21 +548,26 @@ onBeforeUnmount(() => {
         </p>
       </section>
 
-      <section
-        class="headman-stats__summary"
-        aria-label="Сводные показатели после фильтров"
-      >
-        <article><h2>«+»</h2><p>{{ metricValue(displayedResponse.summary, 'present') }}</p></article>
-        <article><h2>«+ и у»</h2><p>{{ metricValue(displayedResponse.summary, 'presentOrExcused') }}</p></article>
-        <article><h2>«у»</h2><p>{{ metricValue(displayedResponse.summary, 'excused') }}</p></article>
-        <article><h2>«н»</h2><p>{{ metricValue(displayedResponse.summary, 'absent') }}</p></article>
-      </section>
+      <template v-if="displayedResponse">
+        <section
+          class="headman-stats__summary"
+          aria-label="Сводные показатели после фильтров"
+        >
+          <article><h2>«+»</h2><p>{{ metricValue(displayedResponse.summary, 'present') }}</p></article>
+          <article><h2>«+ и у»</h2><p>{{ metricValue(displayedResponse.summary, 'presentOrExcused') }}</p></article>
+          <article><h2>«у»</h2><p>{{ metricValue(displayedResponse.summary, 'excused') }}</p></article>
+          <article><h2>«н»</h2><p>{{ metricValue(displayedResponse.summary, 'absent') }}</p></article>
+        </section>
+      </template>
 
-      <details class="headman-stats__filters">
+      <details
+        v-if="controlResponse"
+        class="headman-stats__filters"
+      >
         <summary>Фильтры столбцов</summary>
         <div class="headman-stats__filter-grid">
           <fieldset
-            v-for="column in displayedResponse.columns"
+            v-for="column in controlResponse.columns"
             :key="column.field"
           >
             <legend>{{ column.label }}</legend>
@@ -594,89 +617,91 @@ onBeforeUnmount(() => {
         </div>
       </details>
 
-      <section
-        class="headman-stats__table-section"
-        aria-labelledby="headman-stats-table-title"
-      >
-        <div class="headman-stats__table-heading">
-          <div>
-            <h2 id="headman-stats-table-title">
-              {{ block === 'group' ? 'Вся группа' : `Предмет: ${selectedSubject?.label ?? ''}` }}
-            </h2>
-            <p>{{ displayedResponse.filteredStudents }} студентов · {{ displayedResponse.context.lessonsCount }} завершённых занятий · сформировано {{ formatGeneratedAt(displayedResponse.context.generatedAt) }}</p>
+      <template v-if="displayedResponse">
+        <section
+          class="headman-stats__table-section"
+          aria-labelledby="headman-stats-table-title"
+        >
+          <div class="headman-stats__table-heading">
+            <div>
+              <h2 id="headman-stats-table-title">
+                {{ block === 'group' ? 'Вся группа' : `Предмет: ${selectedSubject?.label ?? ''}` }}
+              </h2>
+              <p>{{ displayedResponse.filteredStudents }} студентов · {{ displayedResponse.context.lessonsCount }} завершённых занятий · сформировано {{ formatGeneratedAt(displayedResponse.context.generatedAt) }}</p>
+            </div>
+            <p v-if="sorts.length > 1">
+              Для сортировки выбери столбцы с Shift; номер задаёт приоритет.
+            </p>
           </div>
-          <p v-if="sorts.length > 1">
-            Для сортировки выбери столбцы с Shift; номер задаёт приоритет.
+          <p
+            v-if="emptyStateLabel()"
+            class="headman-stats__state"
+            role="status"
+          >
+            {{ emptyStateLabel() }}
           </p>
-        </div>
-        <p
-          v-if="emptyStateLabel()"
-          class="headman-stats__state"
-          role="status"
-        >
-          {{ emptyStateLabel() }}
-        </p>
-        <div
-          v-if="displayedResponse.rows.length > 0"
-          class="headman-stats__table-wrap"
-          tabindex="0"
-          aria-label="Таблица статистики, прокручивается по горизонтали"
-        >
-          <table>
-            <thead>
-              <tr>
-                <th
-                  v-for="column in displayedResponse.columns"
-                  :key="column.field"
-                  scope="col"
-                >
-                  <button
-                    type="button"
-                    class="headman-stats__sort"
-                    @click="toggleSort(column.field, $event.shiftKey)"
+          <div
+            v-if="displayedResponse.rows.length > 0"
+            class="headman-stats__table-wrap"
+            tabindex="0"
+            aria-label="Таблица статистики, прокручивается по горизонтали"
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th
+                    v-for="column in displayedResponse.columns"
+                    :key="column.field"
+                    scope="col"
                   >
-                    {{ column.label }} <span aria-hidden="true">{{ sortIndicator(column.field) }}</span>
-                  </button>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="row in displayedResponse.rows"
-                :key="row.studentId"
-              >
-                <td
-                  v-for="column in displayedResponse.columns"
-                  :key="column.field"
+                    <button
+                      type="button"
+                      class="headman-stats__sort"
+                      @click="toggleSort(column.field, $event.shiftKey)"
+                    >
+                      {{ column.label }} <span aria-hidden="true">{{ sortIndicator(column.field) }}</span>
+                    </button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="row in displayedResponse.rows"
+                  :key="row.studentId"
                 >
-                  {{ cellValue(row, column.field) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <nav
-          v-if="displayedResponse.totalPages > 1"
-          class="headman-stats__pagination"
-          aria-label="Страницы таблицы"
-        >
-          <button
-            type="button"
-            :disabled="!displayedResponse.hasPrevious || loading"
-            @click="changePage(page - 1)"
+                  <td
+                    v-for="column in displayedResponse.columns"
+                    :key="column.field"
+                  >
+                    {{ cellValue(row, column.field) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <nav
+            v-if="displayedResponse.totalPages > 1"
+            class="headman-stats__pagination"
+            aria-label="Страницы таблицы"
           >
-            Предыдущая
-          </button>
-          <span>Страница {{ displayedResponse.page + 1 }} из {{ displayedResponse.totalPages }}</span>
-          <button
-            type="button"
-            :disabled="!displayedResponse.hasNext || loading"
-            @click="changePage(page + 1)"
-          >
-            Следующая
-          </button>
-        </nav>
-      </section>
+            <button
+              type="button"
+              :disabled="!displayedResponse.hasPrevious || loading"
+              @click="changePage(page - 1)"
+            >
+              Предыдущая
+            </button>
+            <span>Страница {{ displayedResponse.page + 1 }} из {{ displayedResponse.totalPages }}</span>
+            <button
+              type="button"
+              :disabled="!displayedResponse.hasNext || loading"
+              @click="changePage(page + 1)"
+            >
+              Следующая
+            </button>
+          </nav>
+        </section>
+      </template>
     </template>
   </main>
 </template>

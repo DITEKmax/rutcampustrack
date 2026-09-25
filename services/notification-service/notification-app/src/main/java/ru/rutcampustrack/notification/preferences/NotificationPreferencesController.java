@@ -24,13 +24,13 @@ public class NotificationPreferencesController implements NotificationPreference
     }
 
     @Override
-    @RequireRole({UserRole.STUDENT})
+    @RequireRole({UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN})
     public ResponseEntity<EntityModel<NotificationPreferencesDto>> getPreferences() {
         return ResponseEntity.ok(EntityModel.of(service.getForUser(requestContext.getUserId())));
     }
 
     @Override
-    @RequireRole({UserRole.STUDENT})
+    @RequireRole({UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN})
     public ResponseEntity<EntityModel<NotificationPreferencesDto>> updatePreferences(
             @RequestBody UpdateNotificationPreferencesRequest request) {
         NotificationPreferencesDto dto = service.updateForUser(requestContext.getUserId(), request);

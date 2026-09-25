@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
+import HeadmanStatsDetailPanel from './HeadmanStatsDetailPanel.vue'
+import HeadmanStatsTrendChart from './HeadmanStatsTrendChart.vue'
 import {
   HeadmanStatsApiError,
   headmanStatsResponseForCurrentQuery,
@@ -19,6 +21,10 @@ import {
   type HeadmanStatsResponse,
   type HeadmanStatsSort,
   type HeadmanStatsStudentRow,
+  type HeadmanStatsStudentDetailResponse,
+  type HeadmanStatsTrendMode,
+  type HeadmanStatsTrendQuery,
+  type HeadmanStatsTrendResponse,
 } from './headman-stats-client'
 import './headman-stats-screen.pcss'
 
@@ -48,6 +54,23 @@ const sorts = ref<HeadmanStatsSort[]>([])
 const filters = ref<HeadmanStatsFilter[]>([])
 const filterDrafts = reactive<Record<string, FilterDraft>>({})
 const selectedFormat = ref<HeadmanStatsFormat['code']>('xlsx')
+const trendMode = ref<HeadmanStatsTrendMode>('SEMESTER')
+const trendWeekStart = ref('')
+const trendSubjectId = ref<number | null>(null)
+const trendLessonTypes = ref<string[]>([])
+const trendResponse = ref<HeadmanStatsTrendResponse | null>(null)
+const trendResponseKey = ref<string | null>(null)
+const trendLoading = ref(false)
+const trendError = ref<string | null>(null)
+const detailStudentId = ref<number | null>(null)
+const detailResponse = ref<HeadmanStatsStudentDetailResponse | null>(null)
+const detailResponseKey = ref<string | null>(null)
+const detailLoading = ref(false)
+const detailError = ref<string | null>(null)
+const latePage = ref(0)
+const excusePage = ref(0)
+const detailPanelRef = ref<{ focus: () => void } | null>(null)
+const detailReturnFocus = ref<HTMLButtonElement | null>(null)
 const loading = ref(false)
 const exporting = ref(false)
 const exportStatus = ref<string | null>(null)
@@ -57,6 +80,10 @@ const page = ref(0)
 const pageSize = 50
 let revision = 0
 let activeController: AbortController | null = null
+let trendRevision = 0
+let trendController: AbortController | null = null
+let detailRevision = 0
+let detailController: AbortController | null = null
 
 const canView = computed(() => props.assistantPermissions === null
   || props.assistantPermissions.includes('VIEW_STATS'))
@@ -67,6 +94,32 @@ const currentQuery = computed(() => ({
 }))
 const currentQueryKey = computed(() => headmanStatsQueryKey(currentQuery.value))
 const currentScopeKey = computed(() => headmanStatsQueryScopeKey(block.value, currentQuery.value))
+const currentTrendQuery = computed<HeadmanStatsTrendQuery | null>(() => {
+  if (trendMode.value === 'SEMESTER') return { mode: 'SEMESTER' }
+  if (trendMode.value === 'WEEK') return trendWeekStart.value ? { mode: 'WEEK', weekStart: trendWeekStart.value } : null
+  if (trendSubjectId.value === null) return null
+  return {
+    mode: 'SUBJECT',
+    subjectId: trendSubjectId.value,
+    ...(trendLessonTypes.value.length ? { lessonTypes: [...trendLessonTypes.value] } : {}),
+  }
+})
+const currentTrendKey = computed(() => currentTrendQuery.value === null
+  ? null
+  : JSON.stringify({ groupId: props.groupId, query: currentTrendQuery.value }))
+const displayedTrend = computed(() => trendResponseKey.value !== null
+  && trendResponseKey.value === currentTrendKey.value
+  && !props.offline && canView.value && !denied.value
+  ? trendResponse.value
+  : null)
+const currentDetailKey = computed(() => detailStudentId.value === null
+  ? null
+  : JSON.stringify({ groupId: props.groupId, studentId: detailStudentId.value, latePage: latePage.value, excusePage: excusePage.value, size: 20 }))
+const displayedDetail = computed(() => detailResponseKey.value !== null
+  && detailResponseKey.value === currentDetailKey.value
+  && !props.offline && canView.value && !denied.value
+  ? detailResponse.value
+  : null)
 const controlResponse = computed(() => headmanStatsResponseForCurrentQuery(
   response.value,
   responseScopeKey.value,
@@ -79,6 +132,7 @@ const displayedResponse = computed(() => headmanStatsResponseForCurrentQuery(
 ))
 const activeFormat = computed(() => displayedResponse.value?.formats.find((item) => item.code === selectedFormat.value) ?? null)
 const selectedSubject = computed(() => response.value?.subjects.find((item) => item.id === selectedSubjectId.value) ?? null)
+const selectedTrendSubject = computed(() => response.value?.subjects.find((item) => item.id === trendSubjectId.value) ?? null)
 const hasFilterDraft = computed(() => filters.value.length > 0 || (controlResponse.value?.columns.some((column) => {
   const draft = filterDrafts[column.field]
   return draft && (draft.contains.trim() !== '' || draft.minimum.trim() !== '' || draft.maximum.trim() !== '')
@@ -199,10 +253,252 @@ function queryForCurrentBlock(includePaging: boolean): {
   }
 }
 
+function toDate(value: string | null): Date | null {
+  if (value === null || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null
+  const parsed = new Date(`${value}T00:00:00.000Z`)
+  return Number.isFinite(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value ? parsed : null
+}
+
+function isoDate(value: Date): string {
+  return value.toISOString().slice(0, 10)
+}
+
+function mondayOf(value: Date): Date {
+  const monday = new Date(value)
+  monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7))
+  return monday
+}
+
+function boundedWeekStart(context: HeadmanStatsResponse['context']): string {
+  const today = new Date()
+  const semesterFrom = toDate(context.semesterFrom)
+  const semesterTo = toDate(context.semesterTo)
+  if (semesterFrom && today < semesterFrom) return isoDate(mondayOf(semesterFrom))
+  if (semesterTo && today > semesterTo) return isoDate(mondayOf(semesterTo))
+  return isoDate(mondayOf(today))
+}
+
+function semesterWeekMin(): string | undefined {
+  const start = toDate(response.value?.context.semesterFrom ?? null)
+  return start ? isoDate(mondayOf(start)) : undefined
+}
+
+function initializeTrendControls(result: HeadmanStatsResponse): void {
+  if (trendSubjectId.value === null || !result.subjects.some((subject) => subject.id === trendSubjectId.value)) {
+    trendSubjectId.value = result.subjects[0]?.id ?? null
+    trendLessonTypes.value = []
+  } else {
+    const allowed = new Set(result.subjects.find((subject) => subject.id === trendSubjectId.value)?.lessonTypes.map((type) => type.code) ?? [])
+    trendLessonTypes.value = trendLessonTypes.value.filter((type) => allowed.has(type))
+  }
+  const start = toDate(trendWeekStart.value)
+  const from = toDate(result.context.semesterFrom)
+  const to = toDate(result.context.semesterTo)
+  if (!start || from && start.getTime() < mondayOf(from).getTime() || to && start.getTime() > mondayOf(to).getTime()) {
+    trendWeekStart.value = boundedWeekStart(result.context)
+  }
+}
+
+function resetTrendRequest(): void {
+  trendRevision += 1
+  trendController?.abort()
+  trendController = null
+  trendResponse.value = null
+  trendResponseKey.value = null
+  trendLoading.value = false
+  trendError.value = null
+}
+
+function clearDetail(focusReturn = false): void {
+  detailRevision += 1
+  detailController?.abort()
+  detailController = null
+  detailResponse.value = null
+  detailResponseKey.value = null
+  detailLoading.value = false
+  detailError.value = null
+  detailStudentId.value = null
+  latePage.value = 0
+  excusePage.value = 0
+  const target = detailReturnFocus.value
+  detailReturnFocus.value = null
+  if (focusReturn && target) {
+    void nextTick(() => {
+      if (target.isConnected && !props.offline && canView.value && !denied.value) target.focus()
+    })
+  }
+}
+
+function clearOnDenied(): void {
+  denied.value = true
+  revision += 1
+  activeController?.abort()
+  activeController = null
+  loading.value = false
+  response.value = null
+  responseQueryKey.value = null
+  responseScopeKey.value = null
+  exportStatus.value = null
+  resetTrendRequest()
+  clearDetail()
+}
+
+function setTrendMode(mode: HeadmanStatsTrendMode): void {
+  if (trendMode.value === mode) return
+  trendMode.value = mode
+  trendError.value = null
+  void loadTrend()
+}
+
+function selectTrendSubject(value: string): void {
+  trendSubjectId.value = value ? Number(value) : null
+  trendLessonTypes.value = []
+  trendError.value = null
+  void loadTrend()
+}
+
+function selectTrendWeek(value: string): void {
+  const date = toDate(value)
+  if (!date) return
+  trendWeekStart.value = isoDate(mondayOf(date))
+  trendError.value = null
+  void loadTrend()
+}
+
+function shiftTrendWeek(offset: number): void {
+  const date = toDate(trendWeekStart.value)
+  if (!date || !Number.isInteger(offset)) return
+  date.setUTCDate(date.getUTCDate() + offset * 7)
+  trendWeekStart.value = isoDate(date)
+  trendError.value = null
+  void loadTrend()
+}
+
+function canShiftTrendWeek(offset: number): boolean {
+  const date = toDate(trendWeekStart.value)
+  const context = response.value?.context
+  if (!date || !context) return false
+  date.setUTCDate(date.getUTCDate() + offset * 7)
+  const from = toDate(context.semesterFrom)
+  const to = toDate(context.semesterTo)
+  const weekEnd = new Date(date)
+  weekEnd.setUTCDate(weekEnd.getUTCDate() + 6)
+  return (!from || weekEnd >= from) && (!to || date <= to)
+}
+
+async function loadTrend(): Promise<void> {
+  const api = props.api
+  const groupId = props.groupId
+  const base = response.value
+  const query = currentTrendQuery.value
+  const key = currentTrendKey.value
+  if (api === null || groupId === null || props.offline || !canView.value || denied.value || !base || !query || !key) {
+    resetTrendRequest()
+    if (trendMode.value === 'SUBJECT' && trendSubjectId.value === null) trendError.value = 'Выбери предмет для динамики.'
+    return
+  }
+  const currentRevision = ++trendRevision
+  trendController?.abort()
+  const controller = new AbortController()
+  trendController = controller
+  trendResponse.value = null
+  trendResponseKey.value = null
+  trendLoading.value = true
+  trendError.value = null
+  try {
+    const result = await api.trend(query, controller.signal)
+    if (currentRevision !== trendRevision || controller.signal.aborted) return
+    if (api !== props.api || groupId !== props.groupId || props.offline || !canView.value || denied.value
+      || key !== currentTrendKey.value) return
+    if (result.context.groupId !== groupId || result.context.semesterId !== base.context.semesterId) {
+      throw new Error('Сервер вернул динамику для другой группы или семестра.')
+    }
+    trendResponse.value = result
+    trendResponseKey.value = key
+  } catch (cause) {
+    if (currentRevision !== trendRevision || controller.signal.aborted || cause instanceof StaleSessionGenerationError) return
+    if (api !== props.api || groupId !== props.groupId || props.offline || !canView.value || denied.value) return
+    if (cause instanceof HeadmanStatsApiError && cause.response.status === 403) {
+      clearOnDenied()
+      return
+    }
+    trendError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить динамику посещаемости.'
+    emit('error', cause)
+  } finally {
+    if (currentRevision === trendRevision) trendLoading.value = false
+  }
+}
+
+function openStudentDetail(studentId: number, event: MouseEvent): void {
+  if (detailStudentId.value === studentId) {
+    clearDetail(true)
+    return
+  }
+  clearDetail()
+  detailReturnFocus.value = event.currentTarget instanceof HTMLButtonElement ? event.currentTarget : null
+  detailStudentId.value = studentId
+  void nextTick(() => detailPanelRef.value?.focus())
+  void loadStudentDetail()
+}
+
+async function loadStudentDetail(): Promise<void> {
+  const api = props.api
+  const groupId = props.groupId
+  const studentId = detailStudentId.value
+  const base = response.value
+  const key = currentDetailKey.value
+  if (api === null || groupId === null || studentId === null || !base || props.offline || !canView.value || denied.value || !key) {
+    clearDetail()
+    return
+  }
+  const currentRevision = ++detailRevision
+  detailController?.abort()
+  const controller = new AbortController()
+  detailController = controller
+  const query = { latePage: latePage.value, excusePage: excusePage.value, size: 20 }
+  detailResponse.value = null
+  detailResponseKey.value = null
+  detailLoading.value = true
+  detailError.value = null
+  try {
+    const result = await api.studentDetail(studentId, query, controller.signal)
+    if (currentRevision !== detailRevision || controller.signal.aborted) return
+    if (api !== props.api || groupId !== props.groupId || studentId !== detailStudentId.value
+      || props.offline || !canView.value || denied.value || key !== currentDetailKey.value) return
+    if (result.context.groupId !== groupId || result.student.id !== studentId
+      || result.context.semesterId !== base.context.semesterId) {
+      throw new Error('Сервер вернул подробности для другого студента, группы или семестра.')
+    }
+    detailResponse.value = result
+    detailResponseKey.value = key
+  } catch (cause) {
+    if (currentRevision !== detailRevision || controller.signal.aborted || cause instanceof StaleSessionGenerationError) return
+    if (api !== props.api || groupId !== props.groupId || studentId !== detailStudentId.value
+      || props.offline || !canView.value || denied.value) return
+    if (cause instanceof HeadmanStatsApiError && cause.response.status === 403) {
+      clearOnDenied()
+      return
+    }
+    detailError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить подробности студента.'
+    emit('error', cause)
+  } finally {
+    if (currentRevision === detailRevision) detailLoading.value = false
+  }
+}
+
+function changeDetailPage(kind: 'late' | 'excuse', pageNumber: number): void {
+  if (!Number.isSafeInteger(pageNumber) || pageNumber < 0 || detailLoading.value) return
+  if (kind === 'late') latePage.value = pageNumber
+  else excusePage.value = pageNumber
+  void loadStudentDetail()
+}
+
 async function loadInitial(): Promise<void> {
   revision += 1
   activeController?.abort()
   activeController = null
+  resetTrendRequest()
+  clearDetail()
   loading.value = false
   response.value = null
   responseQueryKey.value = null
@@ -221,6 +517,7 @@ async function loadInitial(): Promise<void> {
 async function loadBlock(): Promise<void> {
   const api = props.api
   if (api === null || props.groupId === null || props.offline || !canView.value) return
+  if (detailStudentId.value !== null) clearDetail()
   if (block.value === 'subject' && selectedSubjectId.value === null) {
     responseQueryKey.value = null
     exportStatus.value = null
@@ -250,15 +547,16 @@ async function loadBlock(): Promise<void> {
     if (selectedSubjectId.value === null && result.subjects.length > 0) {
       selectedSubjectId.value = result.subjects[0]!.id
     }
+    initializeTrendControls(result)
     if (!result.formats.some((format) => format.code === selectedFormat.value)) {
       selectedFormat.value = result.formats[0]?.code ?? 'xlsx'
     }
+    void loadTrend()
   } catch (cause) {
     if (currentRevision !== revision || controller.signal.aborted) return
     denied.value = cause instanceof HeadmanStatsApiError && cause.response.status === 403
     if (denied.value) {
-      response.value = null
-      responseScopeKey.value = null
+      clearOnDenied()
     }
     error.value = cause instanceof Error ? cause.message : 'Не удалось загрузить статистику.'
     emit('error', cause)
@@ -384,6 +682,15 @@ function emptyStateLabel(): string | null {
   }
 }
 
+function trendEmptyStateLabel(): string | null {
+  switch (displayedTrend.value?.emptyState) {
+    case 'NO_ACTIVE_SEMESTER': return 'Нет активного семестра.'
+    case 'NO_COMPLETED_LESSONS': return 'В активном семестре ещё нет завершённых занятий.'
+    case 'NO_MATCHING_LESSONS': return 'Нет занятий, соответствующих выбранному предмету и типам.'
+    default: return null
+  }
+}
+
 watch(() => [props.api, props.groupId, props.offline, props.reportDownload, canView.value] as const, () => {
   void loadInitial()
 }, { immediate: true })
@@ -391,6 +698,8 @@ watch(() => [props.api, props.groupId, props.offline, props.reportDownload, canV
 onBeforeUnmount(() => {
   revision += 1
   activeController?.abort()
+  resetTrendRequest()
+  clearDetail()
 })
 </script>
 
@@ -560,6 +869,145 @@ onBeforeUnmount(() => {
         </section>
       </template>
 
+      <section
+        class="headman-stats__trend-section"
+        aria-labelledby="headman-stats-trend-title"
+      >
+        <div class="headman-stats__table-heading">
+          <div>
+            <h2 id="headman-stats-trend-title">
+              Динамика посещаемости
+            </h2>
+            <p>Данные сервера, проценты по завершённым занятиям.</p>
+          </div>
+        </div>
+        <nav
+          class="headman-stats__blocks"
+          aria-label="Период динамики"
+        >
+          <button
+            type="button"
+            :aria-pressed="trendMode === 'SEMESTER'"
+            @click="setTrendMode('SEMESTER')"
+          >
+            По семестру
+          </button>
+          <button
+            type="button"
+            :aria-pressed="trendMode === 'WEEK'"
+            @click="setTrendMode('WEEK')"
+          >
+            По неделе
+          </button>
+          <button
+            type="button"
+            :aria-pressed="trendMode === 'SUBJECT'"
+            @click="setTrendMode('SUBJECT')"
+          >
+            По предмету
+          </button>
+        </nav>
+        <div
+          v-if="trendMode === 'WEEK'"
+          class="headman-stats__trend-controls"
+        >
+          <button
+            type="button"
+            :disabled="!canShiftTrendWeek(-1) || trendLoading"
+            @click="shiftTrendWeek(-1)"
+          >
+            Предыдущая неделя
+          </button>
+          <label class="headman-stats__field">
+            <span>Неделя, выбери любую дату</span>
+            <input
+              type="date"
+              :value="trendWeekStart"
+              :min="semesterWeekMin()"
+              :max="response?.context.semesterTo ?? undefined"
+              @change="selectTrendWeek(($event.target as HTMLInputElement).value)"
+            >
+          </label>
+          <button
+            type="button"
+            :disabled="!canShiftTrendWeek(1) || trendLoading"
+            @click="shiftTrendWeek(1)"
+          >
+            Следующая неделя
+          </button>
+        </div>
+        <div
+          v-if="trendMode === 'SUBJECT'"
+          class="headman-stats__trend-controls"
+        >
+          <label class="headman-stats__field">
+            <span>Предмет для динамики</span>
+            <select
+              :value="trendSubjectId ?? ''"
+              @change="selectTrendSubject(($event.target as HTMLSelectElement).value)"
+            >
+              <option value="">Выбери предмет</option>
+              <option
+                v-for="subject in response.subjects"
+                :key="subject.id"
+                :value="subject.id"
+              >{{ subject.label }}</option>
+            </select>
+          </label>
+          <fieldset
+            v-if="selectedTrendSubject"
+            class="headman-stats__types"
+          >
+            <legend>Типы занятий</legend>
+            <label
+              v-for="type in selectedTrendSubject.lessonTypes"
+              :key="type.code"
+            >
+              <input
+                v-model="trendLessonTypes"
+                type="checkbox"
+                :value="type.code"
+                @change="loadTrend"
+              >
+              {{ type.label }}
+            </label>
+          </fieldset>
+        </div>
+        <p
+          v-if="trendLoading"
+          class="headman-stats__state"
+          role="status"
+          aria-live="polite"
+        >
+          Загружаем динамику…
+        </p>
+        <div
+          v-if="trendError"
+          class="headman-stats__state headman-stats__state--error"
+          role="alert"
+        >
+          <span>{{ trendError }}</span>
+          <button
+            type="button"
+            :disabled="trendLoading || offline"
+            @click="loadTrend"
+          >
+            Повторить
+          </button>
+        </div>
+        <p
+          v-if="trendEmptyStateLabel()"
+          class="headman-stats__state"
+          role="status"
+        >
+          {{ trendEmptyStateLabel() }}
+        </p>
+        <HeadmanStatsTrendChart
+          v-if="displayedTrend"
+          :points="displayedTrend.points"
+        />
+      </section>
+
       <details
         v-if="controlResponse"
         class="headman-stats__filters"
@@ -662,6 +1110,9 @@ onBeforeUnmount(() => {
                       {{ column.label }} <span aria-hidden="true">{{ sortIndicator(column.field) }}</span>
                     </button>
                   </th>
+                  <th scope="col">
+                    Подробности
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -674,6 +1125,17 @@ onBeforeUnmount(() => {
                     :key="column.field"
                   >
                     {{ cellValue(row, column.field) }}
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      class="headman-stats__detail-action"
+                      :aria-expanded="detailStudentId === row.studentId"
+                      :aria-label="`${detailStudentId === row.studentId ? 'Закрыть' : 'Открыть'} подробности студента ${row.displayName || row.studentId}`"
+                      @click="openStudentDetail(row.studentId, $event)"
+                    >
+                      {{ detailStudentId === row.studentId ? 'Открыто' : 'Подробности' }}
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -702,6 +1164,18 @@ onBeforeUnmount(() => {
           </nav>
         </section>
       </template>
+      <HeadmanStatsDetailPanel
+        v-if="detailStudentId !== null"
+        ref="detailPanelRef"
+        :student-id="detailStudentId"
+        :detail="displayedDetail"
+        :loading="detailLoading"
+        :error="detailError"
+        :offline="offline"
+        @close="clearDetail(true)"
+        @retry="loadStudentDetail"
+        @page="changeDetailPage"
+      />
     </template>
   </main>
 </template>

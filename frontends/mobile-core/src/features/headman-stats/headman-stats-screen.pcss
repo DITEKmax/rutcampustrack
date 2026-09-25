@@ -62,6 +62,7 @@
 .headman-stats__state,
 .headman-stats__filters,
 .headman-stats__table-section,
+.headman-stats__trend-section,
 .headman-stats__summary article,
 .headman-stats__section {
   border: var(--rct-border-hairline) solid var(--rct-color-border-default);
@@ -89,6 +90,7 @@
 }
 
 .headman-stats__blocks button,
+.headman-stats__trend-controls button,
 .headman-stats__back,
 .headman-stats__state button,
 .headman-stats__export button,
@@ -124,6 +126,20 @@
   padding: var(--rct-space-3);
 }
 
+.headman-stats__trend-section {
+  display: grid;
+  gap: var(--rct-space-3);
+  min-inline-size: 0;
+  padding: var(--rct-space-3);
+}
+
+.headman-stats__trend-controls {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: var(--rct-space-2);
+}
+
 .headman-stats__field {
   display: grid;
   gap: var(--rct-space-1);
@@ -133,6 +149,7 @@
 }
 
 .headman-stats__field select,
+.headman-stats__field input,
 .headman-stats__filter-grid input {
   min-block-size: var(--rct-control-min-touch);
   border: var(--rct-border-hairline) solid var(--rct-color-border-default);
@@ -282,6 +299,18 @@
   font: inherit;
   font-weight: var(--rct-font-weight-bold);
   cursor: pointer;
+}
+
+.headman-stats__detail-action {
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-accent-now);
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
 }
 
 .headman-stats__pagination {

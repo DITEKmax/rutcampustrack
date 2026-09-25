@@ -43,6 +43,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,14 +68,13 @@ class HeadmanStatsServiceTest {
         service = new HeadmanStatsService(academicGrpcClient, scheduleGrpcClient, attendanceReadPort,
                 excuseRepository, lateCheckinRepository, new HeadmanStatsDocxRenderer(),
                 new HeadmanStatsTabularRenderer(), documentRendererGrpcClient, requestContext, CLOCK);
-        when(requestContext.isHeadman()).thenReturn(false);
         when(requestContext.getGroupId()).thenReturn(10L);
-        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS"))
-                .thenReturn(true, true, true, false, false);
     }
 
     @Test
     void currentViewStatsAssistantGetsFilteredCanonicalMetricsAndUnpagedExportUntilRevoked() {
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS"))
+                .thenReturn(true, true, true, false, false);
         stubStatisticsData();
         HeadmanStatsQueryRequest query = new HeadmanStatsQueryRequest(5L, List.of("lecture"), 0, 1,
                 List.of(new HeadmanStatsSort("presentPercent", true)),
@@ -117,6 +117,20 @@ class HeadmanStatsServiceTest {
         assertThatThrownBy(() -> service.query(query)).isInstanceOf(AccessDeniedException.class);
         assertThatThrownBy(() -> service.export(new HeadmanStatsExportRequest(5L, List.of("lecture"),
                 List.of(), List.of(), "html"))).isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void headmanFlagStillRequiresFreshActiveHeadmanGrantForReadAndExport() {
+        lenient().when(requestContext.isHeadman()).thenReturn(true); // A stale role flag must not bypass the current grant check.
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true, false, false);
+        stubStatisticsData();
+        HeadmanStatsQueryRequest query = new HeadmanStatsQueryRequest(null, List.of(), 0, 50,
+                List.of(), List.of());
+
+        assertThat(service.query(query).context().groupId()).isEqualTo(10L);
+        assertThatThrownBy(() -> service.query(query)).isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> service.export(new HeadmanStatsExportRequest(
+                null, List.of(), List.of(), List.of(), "html"))).isInstanceOf(AccessDeniedException.class);
     }
 
     private void stubStatisticsData() {

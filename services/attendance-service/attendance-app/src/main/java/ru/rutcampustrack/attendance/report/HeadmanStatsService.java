@@ -537,7 +537,7 @@ public class HeadmanStatsService {
         if (groupId == null || groupId <= 0) {
             throw new AccessDeniedException("Headman group is not available in request context");
         }
-        if (!requestContext.isHeadman() && !academicGrpcClient.hasAssistantPermission(groupId, "VIEW_STATS")) {
+        if (!academicGrpcClient.hasAssistantPermission(groupId, "VIEW_STATS")) {
             throw new AccessDeniedException("Отсутствует право VIEW_STATS");
         }
         return groupId;

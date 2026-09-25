@@ -4,6 +4,7 @@ import type {
   TeacherApi,
   TeacherJournalQuery,
 } from '../../features/teacher/teacher-client'
+import type { ReportDownloadPort } from '../report-download-client'
 import TeacherExcuseScreen from '../../features/teacher/TeacherExcuseScreen.vue'
 import TeacherHomeScreen from '../../features/teacher/TeacherHomeScreen.vue'
 import TeacherJournalScreen from '../../features/teacher/TeacherJournalScreen.vue'
@@ -19,8 +20,10 @@ const props = withDefaults(defineProps<{
   api: TeacherApi | null
   semesterId: number | null
   selectedDate?: string
+  reportDownload?: ReportDownloadPort | null
 }>(), {
   selectedDate: '',
+  reportDownload: null,
 })
 
 const emit = defineEmits<{
@@ -131,6 +134,7 @@ onBeforeUnmount(() => {
     v-else-if="surface === 'journal'"
     :api="api"
     :query="journalQuery"
+    :report-download="reportDownload"
     @back="backFromJournal"
     @open-excuse="openExcuse"
     @error="forwardError"
@@ -146,6 +150,7 @@ onBeforeUnmount(() => {
     v-else
     :api="api"
     :semester-id="semesterId"
+    :report-download="reportDownload"
     @back="backHome"
     @open-journal="openStatsJournal"
     @error="forwardError"

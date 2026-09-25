@@ -9,6 +9,7 @@ import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-cl
 import type { HeadmanAssistantPermission } from './headman-group-client'
 import HeadmanStatsScreen from '../headman-stats/HeadmanStatsScreen.vue'
 import type { HeadmanStatsApi } from '../headman-stats/headman-stats-client'
+import type { ReportDownloadPort } from '../../shared/report-download-client'
 import './assistant-actions-screen.pcss'
 
 const props = withDefaults(defineProps<{
@@ -18,12 +19,14 @@ const props = withDefaults(defineProps<{
   statsApi: HeadmanStatsApi | null
   requestsApi: HeadmanRequestsApi | null
   homeworkApi: HeadmanHomeworkApi | null
+  reportDownload?: ReportDownloadPort | null
   userId: number | null
   offline?: boolean
   readOnly?: boolean
 }>(), {
   offline: false,
   readOnly: false,
+  reportDownload: null,
 })
 
 const emit = defineEmits<{
@@ -128,6 +131,7 @@ watch(canStats, (allowed) => {
     :assistant-permissions="permissions"
     :offline="offline"
     :read-only="readOnly"
+    :report-download="reportDownload"
     @error="reportError"
   />
   <HeadmanStatsScreen
@@ -136,6 +140,7 @@ watch(canStats, (allowed) => {
     :group-id="groupId"
     :assistant-permissions="permissions"
     :offline="offline"
+    :report-download="reportDownload"
     @back="surface = 'home'"
     @error="reportError"
   />

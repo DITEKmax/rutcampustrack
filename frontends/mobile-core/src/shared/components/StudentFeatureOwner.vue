@@ -26,6 +26,7 @@ import type { HeadmanAssistantPermission } from '../../features/headman-group/he
 import type { HeadmanJournalApi } from '../../features/headman-journal/headman-journal-client'
 import type { HeadmanRequestsApi } from '../../features/headman-requests/headman-requests-client'
 import type { HeadmanStatsApi } from '../../features/headman-stats/headman-stats-client'
+import type { ReportDownloadPort } from '../report-download-client'
 import MapScreen from '../../features/map/MapScreen.vue'
 import ProfileScreen from '../../features/profile/ProfileScreen.vue'
 import { ProfileState } from '../../features/profile/profile-state'
@@ -85,6 +86,7 @@ const props = withDefaults(defineProps<{
   assistantStatsApi?: HeadmanStatsApi | null
   assistantRequestsApi?: HeadmanRequestsApi | null
   assistantHomeworkApi?: HeadmanHomeworkApi | null
+  reportDownload?: ReportDownloadPort | null
 }>(), {
   readOnly: false,
   todayFallback: null,
@@ -101,6 +103,7 @@ const props = withDefaults(defineProps<{
   assistantStatsApi: null,
   assistantRequestsApi: null,
   assistantHomeworkApi: null,
+  reportDownload: null,
 })
 
 const emit = defineEmits<{
@@ -1043,6 +1046,7 @@ onBeforeUnmount(() => {
       :user-id="scope?.userId ? Number(scope.userId) : null"
       :offline="offline"
       :read-only="props.readOnly"
+      :report-download="reportDownload"
       @error="emit('ownerError', $event)"
     />
     <StatisticsScreen

@@ -9,6 +9,7 @@ import {
   createGenerationBoundHeadmanStatsApi,
   createGenerationBoundStudentApi,
   createGenerationBoundTeacherApi,
+  createGenerationBoundReportDownloadClient,
   createGenerationBoundAdminDashboardClient,
   createGenerationBoundAdminSemesterClient,
   createGenerationBoundAdminGroupsClient,
@@ -29,6 +30,7 @@ import type {
   ProfileSnapshot,
   StudentApi,
   TeacherApi,
+  ReportDownloadClient,
   AdminDashboardClient,
   AdminSemesterClient,
   AdminGroupsClient,
@@ -158,6 +160,14 @@ export function useTmaSession(options: TmaSessionOptions) {
     }, fetcher)
   }
 
+  function createReportDownloadClient(fetcher?: typeof fetch): ReportDownloadClient {
+    return createGenerationBoundReportDownloadClient({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor: authenticateFor,
+    }, fetcher)
+  }
+
   function createAdminSemesterApi(fetcher?: typeof fetch): AdminSemesterClient {
     return createGenerationBoundAdminSemesterClient({
       currentGeneration,
@@ -251,6 +261,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     createHeadmanHomeworkApi,
     createHeadmanSubjectsApi,
     createTeacherApi,
+    createReportDownloadClient,
     createAdminSemesterApi,
     createAdminDashboardApi,
     createAdminUsersApi,

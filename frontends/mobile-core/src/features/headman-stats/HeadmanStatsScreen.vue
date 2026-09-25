@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { StaleSessionGenerationError } from '../../shared/session-owner'
+import type { ReportDownloadPort } from '../../shared/report-download-client'
 import {
   HeadmanStatsApiError,
+  headmanStatsResponseForCurrentQuery,
+  headmanStatsQueryKey,
+  hasHeadmanStatsResettableCriteria,
+  resetHeadmanStatsCriteria,
+  toHeadmanStatsReportRequest,
   type HeadmanStatsApi,
   type HeadmanStatsColumn,
   type HeadmanStatsFilter,
@@ -21,15 +28,18 @@ const props = withDefaults(defineProps<{
   groupId: number | null
   assistantPermissions?: readonly string[] | null
   offline?: boolean
+  reportDownload?: ReportDownloadPort | null
 }>(), {
   assistantPermissions: null,
   offline: false,
+  reportDownload: null,
 })
 
 const emit = defineEmits<{ error: [cause: unknown]; back: [] }>()
 
 const block = ref<Block>('group')
 const response = ref<HeadmanStatsResponse | null>(null)
+const responseQueryKey = ref<string | null>(null)
 const selectedSubjectId = ref<number | null>(null)
 const selectedTypes = ref<string[]>([])
 const sorts = ref<HeadmanStatsSort[]>([])
@@ -38,6 +48,7 @@ const filterDrafts = reactive<Record<string, FilterDraft>>({})
 const selectedFormat = ref<HeadmanStatsFormat['code']>('xlsx')
 const loading = ref(false)
 const exporting = ref(false)
+const exportStatus = ref<string | null>(null)
 const denied = ref(false)
 const error = ref<string | null>(null)
 const page = ref(0)
@@ -47,13 +58,24 @@ let activeController: AbortController | null = null
 
 const canView = computed(() => props.assistantPermissions === null
   || props.assistantPermissions.includes('VIEW_STATS'))
-const activeFormat = computed(() => response.value?.formats.find((item) => item.code === selectedFormat.value) ?? null)
-const selectedSubject = computed(() => response.value?.subjects.find((item) => item.id === selectedSubjectId.value) ?? null)
-const hasFilterDraft = computed(() => filters.value.length > 0 || (response.value?.columns.some((column) => {
+const currentQueryKey = computed(() => headmanStatsQueryKey({
+  ...queryForCurrentBlock(true),
+  page: page.value,
+  size: pageSize,
+}))
+const displayedResponse = computed(() => headmanStatsResponseForCurrentQuery(
+  response.value,
+  responseQueryKey.value,
+  currentQueryKey.value,
+))
+const activeFormat = computed(() => displayedResponse.value?.formats.find((item) => item.code === selectedFormat.value) ?? null)
+const selectedSubject = computed(() => displayedResponse.value?.subjects.find((item) => item.id === selectedSubjectId.value) ?? null)
+const hasFilterDraft = computed(() => filters.value.length > 0 || (displayedResponse.value?.columns.some((column) => {
   const draft = filterDrafts[column.field]
   return draft && (draft.contains.trim() !== '' || draft.minimum.trim() !== '' || draft.maximum.trim() !== '')
 }) ?? false))
-const canExport = computed(() => activeFormat.value !== null && response.value?.emptyState === 'NONE')
+const canResetCriteria = computed(() => hasHeadmanStatsResettableCriteria(sorts.value, hasFilterDraft.value))
+const canExport = computed(() => activeFormat.value !== null && displayedResponse.value?.emptyState === 'NONE')
 const stateMessage = computed(() => {
   if (props.offline || props.api === null) return 'Статистика доступна только при подключении к интернету.'
   if (props.groupId === null) return 'Для этого аккаунта не определена учебная группа.'
@@ -72,7 +94,7 @@ function filterDraft(column: HeadmanStatsColumn): FilterDraft {
 }
 
 function visibleFilters(): HeadmanStatsFilter[] {
-  return (response.value?.columns ?? []).flatMap((column): HeadmanStatsFilter[] => {
+  return (displayedResponse.value?.columns ?? []).flatMap((column): HeadmanStatsFilter[] => {
     const draft = filterDraft(column)
     if (column.filterKind === 'TEXT') {
       const contains = draft.contains.trim()
@@ -174,6 +196,8 @@ async function loadInitial(): Promise<void> {
   activeController = null
   loading.value = false
   response.value = null
+  responseQueryKey.value = null
+  exportStatus.value = null
   error.value = null
   denied.value = false
   if (props.offline || props.api === null || props.groupId === null || !canView.value) return
@@ -188,21 +212,28 @@ async function loadBlock(): Promise<void> {
   const api = props.api
   if (api === null || props.groupId === null || props.offline || !canView.value) return
   if (block.value === 'subject' && selectedSubjectId.value === null) {
+    responseQueryKey.value = null
+    exportStatus.value = null
     error.value = 'Выбери предмет для статистики.'
     return
   }
+  const query = { ...queryForCurrentBlock(true), page: page.value, size: pageSize }
+  const queryKey = headmanStatsQueryKey(query)
   const currentRevision = ++revision
   activeController?.abort()
   const controller = new AbortController()
   activeController = controller
   loading.value = true
+  responseQueryKey.value = null
+  exportStatus.value = null
   error.value = null
   denied.value = false
   try {
-    const result = await api.query({ ...queryForCurrentBlock(true), page: page.value, size: pageSize }, controller.signal)
+    const result = await api.query(query, controller.signal)
     if (currentRevision !== revision || controller.signal.aborted) return
     if (result.context.groupId !== props.groupId) throw new Error('Сервер вернул статистику для другой группы.')
     response.value = result
+    responseQueryKey.value = queryKey
     for (const column of result.columns) filterDraft(column)
     if (selectedSubjectId.value === null && result.subjects.length > 0) {
       selectedSubjectId.value = result.subjects[0]!.id
@@ -227,9 +258,12 @@ function openBlock(next: Block): void {
   page.value = 0
   sorts.value = []
   filters.value = []
+  responseQueryKey.value = null
+  exportStatus.value = null
   for (const draft of Object.values(filterDrafts)) Object.assign(draft, newFilterDraft())
   if (next === 'group') void loadBlock()
   else if (selectedSubjectId.value !== null) void loadBlock()
+  else error.value = 'Выбери предмет для статистики.'
 }
 
 function selectSubject(value: string): void {
@@ -238,7 +272,10 @@ function selectSubject(value: string): void {
   page.value = 0
   sorts.value = []
   filters.value = []
+  responseQueryKey.value = null
+  exportStatus.value = null
   if (block.value === 'subject' && selectedSubjectId.value !== null) void loadBlock()
+  else if (block.value === 'subject') error.value = 'Выбери предмет для статистики.'
 }
 
 function applyFilters(): void {
@@ -247,29 +284,54 @@ function applyFilters(): void {
   void loadBlock()
 }
 
-function clearFilters(): void {
+function resetCriteria(): void {
+  const clearedCriteria = resetHeadmanStatsCriteria()
   for (const draft of Object.values(filterDrafts)) Object.assign(draft, newFilterDraft())
-  filters.value = []
+  sorts.value = [...clearedCriteria.sorts]
+  filters.value = [...clearedCriteria.filters]
   page.value = 0
   void loadBlock()
 }
 
 function changePage(next: number): void {
-  if (!response.value || next < 0 || next >= response.value.totalPages) return
+  const currentResponse = displayedResponse.value
+  if (!currentResponse || next < 0 || next >= currentResponse.totalPages) return
   page.value = next
   void loadBlock()
 }
 
 async function exportCurrent(): Promise<void> {
   const api = props.api
+  const reportDownload = props.reportDownload
   const format = activeFormat.value
   if (api === null || format === null || props.offline || exporting.value || !canView.value) return
   const currentRevision = revision
+  const query = queryForCurrentBlock(false)
+  const querySnapshot = JSON.stringify(query)
   exporting.value = true
   error.value = null
+  exportStatus.value = null
   try {
-    const downloaded = await api.downloadExport(queryForCurrentBlock(false), format)
-    if (currentRevision !== revision) return
+    if (reportDownload) {
+      const isCurrent = (): boolean => currentRevision === revision
+        && api === props.api && reportDownload === props.reportDownload
+        && !props.offline && canView.value && canExport.value
+        && selectedFormat.value === format.code
+        && JSON.stringify(queryForCurrentBlock(false)) === querySnapshot
+      const result = await reportDownload.download(toHeadmanStatsReportRequest(query, format.code), isCurrent)
+      if (result === 'stale' || !isCurrent()) return
+      if (result === 'unsupported') {
+        error.value = 'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.'
+      } else {
+        exportStatus.value = result === 'accepted'
+          ? 'Telegram принял запрос на скачивание; проверь завершение в Telegram.'
+          : 'Скачивание отменено.'
+      }
+      return
+    }
+
+    const downloaded = await api.downloadExport(query, format)
+    if (currentRevision !== revision || api !== props.api) return
     const url = URL.createObjectURL(downloaded.blob)
     const anchor = document.createElement('a')
     anchor.href = url
@@ -280,7 +342,7 @@ async function exportCurrent(): Promise<void> {
     anchor.remove()
     window.setTimeout(() => URL.revokeObjectURL(url), 0)
   } catch (cause) {
-    if (currentRevision !== revision) return
+    if (currentRevision !== revision || cause instanceof StaleSessionGenerationError) return
     denied.value = cause instanceof HeadmanStatsApiError && cause.response.status === 403
     if (denied.value) response.value = null
     error.value = cause instanceof Error ? cause.message : 'Не удалось скачать статистику.'
@@ -298,7 +360,7 @@ function formatGeneratedAt(value: string): string {
 }
 
 function emptyStateLabel(): string | null {
-  switch (response.value?.emptyState) {
+  switch (displayedResponse.value?.emptyState) {
     case 'NO_ACTIVE_SEMESTER': return 'Нет активного семестра.'
     case 'NO_COMPLETED_LESSONS': return 'В активном семестре ещё нет завершённых занятий.'
     case 'NO_MEMBERS': return 'В группе пока нет участников.'
@@ -307,7 +369,7 @@ function emptyStateLabel(): string | null {
   }
 }
 
-watch(() => [props.api, props.groupId, props.offline, canView.value] as const, () => {
+watch(() => [props.api, props.groupId, props.offline, props.reportDownload, canView.value] as const, () => {
   void loadInitial()
 }, { immediate: true })
 
@@ -331,10 +393,10 @@ onBeforeUnmount(() => {
           Посещаемость группы
         </h1>
         <p
-          v-if="response"
+          v-if="displayedResponse"
           class="headman-stats__context"
         >
-          {{ response.context.groupName }}<span v-if="response.context.semesterName"> · {{ response.context.semesterName }}</span>
+          {{ displayedResponse.context.groupName }}<span v-if="displayedResponse.context.semesterName"> · {{ displayedResponse.context.semesterName }}</span>
         </p>
       </div>
       <button
@@ -377,7 +439,7 @@ onBeforeUnmount(() => {
       Загружаем статистику группы…
     </p>
 
-    <template v-if="response && !props.offline && canView">
+    <template v-if="displayedResponse && !props.offline && canView">
       <nav
         class="headman-stats__blocks"
         aria-label="Раздел статистики"
@@ -416,7 +478,7 @@ onBeforeUnmount(() => {
               disabled
             >Выбери предмет</option>
             <option
-              v-for="subject in response.subjects"
+              v-for="subject in displayedResponse.subjects"
               :key="subject.id"
               :value="subject.id"
             >{{ subject.label }}</option>
@@ -445,7 +507,7 @@ onBeforeUnmount(() => {
             <span>Формат выгрузки</span>
             <select v-model="selectedFormat">
               <option
-                v-for="format in response.formats"
+                v-for="format in displayedResponse.formats"
                 :key="format.code"
                 :value="format.code"
               >{{ format.label }}</option>
@@ -459,23 +521,30 @@ onBeforeUnmount(() => {
             {{ exporting ? 'Готовим файл…' : 'Скачать этот блок' }}
           </button>
         </div>
+        <p
+          v-if="exportStatus"
+          class="headman-stats__state"
+          role="status"
+        >
+          {{ exportStatus }}
+        </p>
       </section>
 
       <section
         class="headman-stats__summary"
         aria-label="Сводные показатели после фильтров"
       >
-        <article><h2>«+»</h2><p>{{ metricValue(response.summary, 'present') }}</p></article>
-        <article><h2>«+ и у»</h2><p>{{ metricValue(response.summary, 'presentOrExcused') }}</p></article>
-        <article><h2>«у»</h2><p>{{ metricValue(response.summary, 'excused') }}</p></article>
-        <article><h2>«н»</h2><p>{{ metricValue(response.summary, 'absent') }}</p></article>
+        <article><h2>«+»</h2><p>{{ metricValue(displayedResponse.summary, 'present') }}</p></article>
+        <article><h2>«+ и у»</h2><p>{{ metricValue(displayedResponse.summary, 'presentOrExcused') }}</p></article>
+        <article><h2>«у»</h2><p>{{ metricValue(displayedResponse.summary, 'excused') }}</p></article>
+        <article><h2>«н»</h2><p>{{ metricValue(displayedResponse.summary, 'absent') }}</p></article>
       </section>
 
       <details class="headman-stats__filters">
         <summary>Фильтры столбцов</summary>
         <div class="headman-stats__filter-grid">
           <fieldset
-            v-for="column in response.columns"
+            v-for="column in displayedResponse.columns"
             :key="column.field"
           >
             <legend>{{ column.label }}</legend>
@@ -516,8 +585,8 @@ onBeforeUnmount(() => {
           </button>
           <button
             type="button"
-            :disabled="loading || !hasFilterDraft"
-            @click="clearFilters"
+            :disabled="loading || !canResetCriteria"
+            @click="resetCriteria"
           >
             Сбросить
           </button>
@@ -534,7 +603,7 @@ onBeforeUnmount(() => {
             <h2 id="headman-stats-table-title">
               {{ block === 'group' ? 'Вся группа' : `Предмет: ${selectedSubject?.label ?? ''}` }}
             </h2>
-            <p>{{ response.filteredStudents }} студентов · {{ response.context.lessonsCount }} завершённых занятий · сформировано {{ formatGeneratedAt(response.context.generatedAt) }}</p>
+            <p>{{ displayedResponse.filteredStudents }} студентов · {{ displayedResponse.context.lessonsCount }} завершённых занятий · сформировано {{ formatGeneratedAt(displayedResponse.context.generatedAt) }}</p>
           </div>
           <p v-if="sorts.length > 1">
             Для сортировки выбери столбцы с Shift; номер задаёт приоритет.
@@ -548,7 +617,7 @@ onBeforeUnmount(() => {
           {{ emptyStateLabel() }}
         </p>
         <div
-          v-if="response.rows.length > 0"
+          v-if="displayedResponse.rows.length > 0"
           class="headman-stats__table-wrap"
           tabindex="0"
           aria-label="Таблица статистики, прокручивается по горизонтали"
@@ -557,7 +626,7 @@ onBeforeUnmount(() => {
             <thead>
               <tr>
                 <th
-                  v-for="column in response.columns"
+                  v-for="column in displayedResponse.columns"
                   :key="column.field"
                   scope="col"
                 >
@@ -573,11 +642,11 @@ onBeforeUnmount(() => {
             </thead>
             <tbody>
               <tr
-                v-for="row in response.rows"
+                v-for="row in displayedResponse.rows"
                 :key="row.studentId"
               >
                 <td
-                  v-for="column in response.columns"
+                  v-for="column in displayedResponse.columns"
                   :key="column.field"
                 >
                   {{ cellValue(row, column.field) }}
@@ -587,21 +656,21 @@ onBeforeUnmount(() => {
           </table>
         </div>
         <nav
-          v-if="response.totalPages > 1"
+          v-if="displayedResponse.totalPages > 1"
           class="headman-stats__pagination"
           aria-label="Страницы таблицы"
         >
           <button
             type="button"
-            :disabled="!response.hasPrevious || loading"
+            :disabled="!displayedResponse.hasPrevious || loading"
             @click="changePage(page - 1)"
           >
             Предыдущая
           </button>
-          <span>Страница {{ response.page + 1 }} из {{ response.totalPages }}</span>
+          <span>Страница {{ displayedResponse.page + 1 }} из {{ displayedResponse.totalPages }}</span>
           <button
             type="button"
-            :disabled="!response.hasNext || loading"
+            :disabled="!displayedResponse.hasNext || loading"
             @click="changePage(page + 1)"
           >
             Следующая

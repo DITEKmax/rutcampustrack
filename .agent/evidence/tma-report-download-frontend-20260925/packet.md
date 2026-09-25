@@ -64,3 +64,16 @@ Teacher and headman / `VIEW_STATS` assistant select an existing report and downl
 - Do not silently fall back to arbitrary or external URLs, Blob downloads in native mode, or false success on callback acceptance.
 - Do not include report ticket paths or credentials in logs, analytics, storage, screenshots, or evidence artifacts.
 - Do not claim integration or live Telegram acceptance before root wires the port and validates the genuine host.
+
+## Approved scope amendment — final TMA wiring and PK-113 UI corrections
+
+Root transferred final wiring ownership after the stats package was frozen at `6d90d2b0`. This amendment authorizes the same writer to edit the previously reserved files only for report-port wiring: `frontends/tma-vue/src/App.vue`, `frontends/tma-vue/src/tma-session.ts`, `frontends/mobile-core/src/index.ts`, `TeacherFeatureOwner.vue`, `StudentFeatureOwner.vue`, `AssistantActionsScreen.vue`, `HeadmanScheduleScreen.vue`, plus the existing `headman-stats-client.ts` and `HeadmanStatsScreen.vue` for `HEADMAN_STATS` native download and the two specific reviewer corrections.
+
+Required additional behavior:
+
+- The TMA session owner creates a generation-bound report-ticket client using the existing `authenticateFor` refresh callback. Ticket issuance keeps the one guarded 401 refresh/retry contract already stated above.
+- TMA App passes the native port to teacher journal/stats, direct headman journal/stats, and the assistant `VIEW_STATS`/journal path. PWA App supplies no port and keeps the existing Blob/filename path.
+- `HEADMAN_STATS` request mapping contains only the frozen selector fields; no group, semester, or page values are added.
+- PK-113 data and export stay bound to the exact successfully queried slice. A changed slice is hidden before a request completes and remains hidden if it fails. Reset clears both filters and sorts and is enabled when either category alone has active criteria.
+
+Do not alter backend DTOs, redesign PK-113, change calculations/ordering/filter semantics, or edit any other imported stats files. Root will request one independent Sol review of the whole native path and the PK-113 corrections after the diff is stable. Genuine Telegram-host saving remains a separate runtime acceptance item.

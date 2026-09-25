@@ -52,6 +52,7 @@ import {
 } from '@rct/mobile-core'
 import { installFixtureTelegramHost, TelegramHost } from './telegram'
 import { useTmaSession } from './tma-session'
+import { createTelegramReportDownloadPort } from './report-download-adapter'
 import { TmaAuthError } from './tma-auth'
 
 const fixtureMode = import.meta.env.VITE_MOBILE_FIXTURE_MODE === 'true'
@@ -63,6 +64,10 @@ const sessionOwner = useTmaSession({
   fetcher: fixtureTransport ?? nativeFetcher,
   getInitData: () => host.start(),
 })
+const reportDownload = computed(() => createTelegramReportDownloadPort(
+  sessionOwner.createReportDownloadClient(currentFetcher()),
+  host,
+))
 const theme = typeof document === 'undefined' ? null : createMobileTheme()
 const mapClient = new CampusMapClient({
   accessToken: () => sessionOwner.accessToken.value,
@@ -548,6 +553,7 @@ onBeforeUnmount(() => {
     :offline="offline"
     :read-only="profile?.readOnly ?? true"
     :host="host"
+    :report-download="reportDownload"
     :map-client="mapClient"
     :on-role-switch="openRoleSwitch"
     @error="onOwnerError"
@@ -557,6 +563,7 @@ onBeforeUnmount(() => {
     :key="`teacher-${ownerRevision}`"
     :api="teacherApi"
     :semester-id="teacherSemesterId"
+    :report-download="reportDownload"
     @owner-error="onOwnerError"
   />
   <MapScreen
@@ -631,6 +638,7 @@ onBeforeUnmount(() => {
     :semester-schedule="null"
     :updated-at="null"
     :host="host"
+    :report-download="reportDownload"
     :map-client="mapClient"
     :acquire-checkin-command="acquireCheckinCommand"
     :open-material="openMaterial"

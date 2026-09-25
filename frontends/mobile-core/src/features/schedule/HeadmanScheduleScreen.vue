@@ -24,6 +24,7 @@ import HeadmanSubjectsScreen from '../headman-subjects/HeadmanSubjectsScreen.vue
 import type { HeadmanSubjectsApi } from '../headman-subjects/headman-subjects-client'
 import HeadmanStatsScreen from '../headman-stats/HeadmanStatsScreen.vue'
 import type { HeadmanStatsApi } from '../headman-stats/headman-stats-client'
+import type { ReportDownloadPort } from '../../shared/report-download-client'
 import {
   HeadmanScheduleApiError,
   type HeadmanScheduleApi,
@@ -50,6 +51,7 @@ const props = withDefaults(defineProps<{
   host?: MobileHostAdapter | null
   navItems?: MobileBottomNavItems
   onRoleSwitch?: (() => void | Promise<void>) | undefined
+  reportDownload?: ReportDownloadPort | null
 }>(), {
   journalApi: null,
   requestsApi: null,
@@ -63,6 +65,7 @@ const props = withDefaults(defineProps<{
   host: null,
   navItems: undefined as never,
   onRoleSwitch: undefined,
+  reportDownload: null,
 })
 
 const emit = defineEmits<{
@@ -422,6 +425,7 @@ onBeforeUnmount(() => {
       :group-id="groupId"
       :assistant-permissions="assistantPermissions"
       :offline="offline"
+      :report-download="reportDownload"
       @back="closeStats"
       @error="emit('error', $event)"
     />
@@ -432,6 +436,7 @@ onBeforeUnmount(() => {
       :assistant-permissions="assistantPermissions"
       :offline="offline"
       :read-only="readOnly"
+      :report-download="reportDownload"
       @error="emit('error', $event)"
     />
     <HeadmanRequestsScreen

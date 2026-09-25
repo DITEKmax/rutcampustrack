@@ -1,4 +1,8 @@
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import type {
+  ReportDownloadFormat,
+  ReportDownloadTicketRequest,
+} from '../../shared/report-download-client'
 
 export type HeadmanStatsEmptyState = 'NONE' | 'NO_ACTIVE_SEMESTER' | 'NO_COMPLETED_LESSONS' | 'NO_MEMBERS' | 'FILTERED_EMPTY'
 export type HeadmanStatsFilterKind = 'TEXT' | 'RANGE'
@@ -85,7 +89,7 @@ export interface HeadmanStatsColumn {
 }
 
 export interface HeadmanStatsFormat {
-  readonly code: 'docx' | 'pdf' | 'png' | 'html' | 'xlsx'
+  readonly code: ReportDownloadFormat
   readonly label: string
   readonly contentType: string
   readonly extension: string
@@ -207,6 +211,69 @@ export interface HeadmanStatsApiGenerationOwner {
   currentGeneration(): number
   accessTokenFor(generation: number): string | null
   refreshFor(generation: number): Promise<void>
+}
+
+export function toHeadmanStatsReportRequest(
+  query: HeadmanStatsExportQuery,
+  format: ReportDownloadFormat,
+): Extract<ReportDownloadTicketRequest, { readonly kind: 'HEADMAN_STATS' }> {
+  validateExportQuery(query)
+  return {
+    kind: 'HEADMAN_STATS',
+    headmanStats: {
+      ...(query.subjectId === null ? {} : { subjectId: query.subjectId }),
+      ...(query.lessonTypes.length === 0 ? {} : { lessonTypes: [...query.lessonTypes] }),
+      ...(query.sorts.length === 0 ? {} : {
+        sorts: query.sorts.map((sort) => ({ field: sort.field, descending: sort.descending })),
+      }),
+      ...(query.filters.length === 0 ? {} : {
+        filters: query.filters.map((filter) => ({
+          field: filter.field,
+          ...(filter.contains == null ? {} : { contains: filter.contains }),
+          ...(filter.minimum == null ? {} : { minimum: filter.minimum }),
+          ...(filter.maximum == null ? {} : { maximum: filter.maximum }),
+        })),
+      }),
+      format,
+    },
+  }
+}
+
+export function headmanStatsQueryKey(query: HeadmanStatsQuery): string {
+  return JSON.stringify({
+    subjectId: query.subjectId,
+    lessonTypes: query.lessonTypes,
+    sorts: query.sorts,
+    filters: query.filters,
+    page: query.page,
+    size: query.size,
+  })
+}
+
+export function isHeadmanStatsResponseCurrent(
+  loadedQueryKey: string | null,
+  currentQueryKey: string,
+): boolean {
+  return loadedQueryKey !== null && loadedQueryKey === currentQueryKey
+}
+
+export function headmanStatsResponseForCurrentQuery<T>(
+  response: T | null,
+  loadedQueryKey: string | null,
+  currentQueryKey: string,
+): T | null {
+  return isHeadmanStatsResponseCurrent(loadedQueryKey, currentQueryKey) ? response : null
+}
+
+export function hasHeadmanStatsResettableCriteria(
+  sorts: readonly HeadmanStatsSort[],
+  hasFilterDraft: boolean,
+): boolean {
+  return sorts.length > 0 || hasFilterDraft
+}
+
+export function resetHeadmanStatsCriteria(): Pick<HeadmanStatsExportQuery, 'sorts' | 'filters'> {
+  return { sorts: [], filters: [] }
 }
 
 export function createGenerationBoundHeadmanStatsApi(

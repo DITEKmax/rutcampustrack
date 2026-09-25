@@ -12,6 +12,13 @@ import {
   type HeadmanWeeklyWeekOption,
 } from '../../mobile-core/src/features/headman-journal/headman-journal-client'
 import {
+  headmanStatsResponseForCurrentQuery,
+  headmanStatsQueryKey,
+  hasHeadmanStatsResettableCriteria,
+  resetHeadmanStatsCriteria,
+  toHeadmanStatsReportRequest,
+} from '../../mobile-core/src/features/headman-stats/headman-stats-client'
+import {
   toTeacherJournalReportRequest,
   toTeacherStatsReportSelector,
 } from '../../mobile-core/src/features/teacher/teacher-client'
@@ -183,6 +190,49 @@ describe('selected report parameter mapping', () => {
     }
     validateTicketRequest(request)
     expect(Object.keys(request.headmanStats)).toEqual(['subjectId', 'lessonTypes', 'sorts', 'filters', 'format'])
+  })
+
+  it('maps the current headman stats slice and strips absent filter values from the ticket DTO', () => {
+    const request = toHeadmanStatsReportRequest({
+      subjectId: 3,
+      lessonTypes: ['LECTURE', 'LAB'],
+      sorts: [{ field: 'presentPercent', descending: true }],
+      filters: [
+        { field: 'displayName', contains: 'Иван' },
+        { field: 'presentPercent', minimum: 40, maximum: null },
+      ],
+    }, 'xlsx')
+
+    expect(request).toEqual({
+      kind: 'HEADMAN_STATS',
+      headmanStats: {
+        subjectId: 3,
+        lessonTypes: ['LECTURE', 'LAB'],
+        sorts: [{ field: 'presentPercent', descending: true }],
+        filters: [
+          { field: 'displayName', contains: 'Иван' },
+          { field: 'presentPercent', minimum: 40 },
+        ],
+        format: 'xlsx',
+      },
+    })
+    validateTicketRequest(request)
+  })
+
+  it('keeps stale stats slices hidden and allows reset when only a sort is active', () => {
+    const groupQuery = { subjectId: null, lessonTypes: [], sorts: [], filters: [], page: 0, size: 50 }
+    const subjectQuery = { ...groupQuery, subjectId: 3 }
+
+    const groupKey = headmanStatsQueryKey(groupQuery)
+    const subjectKey = headmanStatsQueryKey(subjectQuery)
+    expect(subjectKey).not.toBe(groupKey)
+    const loadedGroupSlice = { heading: 'Вся группа', rows: ['студент группы'] }
+    expect(headmanStatsResponseForCurrentQuery(loadedGroupSlice, groupKey, subjectKey)).toBeNull()
+    expect(headmanStatsResponseForCurrentQuery(loadedGroupSlice, null, subjectKey)).toBeNull()
+    expect(headmanStatsResponseForCurrentQuery(loadedGroupSlice, subjectKey, subjectKey)).toBe(loadedGroupSlice)
+    expect(hasHeadmanStatsResettableCriteria([{ field: 'presentPercent', descending: true }], false)).toBe(true)
+    expect(resetHeadmanStatsCriteria()).toEqual({ sorts: [], filters: [] })
+    expect(hasHeadmanStatsResettableCriteria([], false)).toBe(false)
   })
 })
 

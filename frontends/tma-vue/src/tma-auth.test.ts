@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createFixtureTransport } from '@rct/mobile-core'
+import { createFixtureTransport, type ReportDownloadTicketRequest } from '@rct/mobile-core'
 import { installFixtureTelegramHost, TelegramHost } from './telegram'
 import { authenticateTma, TmaAuthError } from './tma-auth'
+import { useTmaSession } from './tma-session'
 
 const INIT_DATA = 'query_id=fixture-query&user=%7B%22id%22%3A77%7D&hash=fixture-hash'
 
@@ -51,6 +52,43 @@ describe('TMA authentication wire contract', () => {
       status: 401,
       message: 'Telegram не подтвердил сессию',
     } satisfies Partial<TmaAuthError>)
+  })
+})
+
+describe('generation-bound report ticket session', () => {
+  it('refreshes the TMA auth session once after a ticket 401 and retries with the fresh bearer', async () => {
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'expired-synthetic-bearer' }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'fresh-synthetic-bearer' }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        downloadPath: `/api/report-download/${'a'.repeat(43)}`,
+        expiresAt: new Date(Date.now() + 60_000).toISOString(),
+        suggestedFilename: 'journal.pdf',
+      }), { status: 200 }))
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    const request: ReportDownloadTicketRequest = {
+      kind: 'TEACHER_JOURNAL',
+      teacherJournal: {
+        semesterId: 24,
+        groupId: 8,
+        subjectId: 3,
+        lessonTypes: ['LECTURE'],
+        format: 'pdf',
+      },
+    }
+
+    await session.authenticate()
+    const client = session.createReportDownloadClient(fetcher)
+    await expect(client.issueTicket(request)).resolves.toMatchObject({ suggestedFilename: 'journal.pdf' })
+
+    expect(fetcher).toHaveBeenCalledTimes(4)
+    expect(fetcher.mock.calls[0]?.[0]).toBe('/api/auth/tma')
+    expect(fetcher.mock.calls[2]?.[0]).toBe('/api/auth/tma')
+    expect(new Headers(fetcher.mock.calls[1]?.[1]?.headers).get('Authorization'))
+      .toBe('Bearer expired-synthetic-bearer')
+    expect(new Headers(fetcher.mock.calls[3]?.[1]?.headers).get('Authorization'))
+      .toBe('Bearer fresh-synthetic-bearer')
   })
 })
 

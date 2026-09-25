@@ -158,6 +158,78 @@ class ReportDownloadTicketDownloadFilterTest {
     }
 
     @Test
+    void teacherStatsHtmlUsesDynamicAcceptAndStillValidatesActualMediaType() {
+        WireMockServer mobile = server();
+        mobile.start();
+        try {
+            byte[] html = "<!doctype html><html>teacher stats</html>"
+                    .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            String path = "/api/v1/teacher/stats/export?semesterId=2&scope=students&groupId=2"
+                    + "&subjectId=1&lessonType=lecture&format=html";
+            mobile.stubFor(com.github.tomakehurst.wiremock.client.WireMock.get(urlEqualTo(path))
+                    .withHeader("X-Internal-Token", equalTo(INTERNAL_TOKEN))
+                    .withHeader(HttpHeaders.ACCEPT, equalTo("*/*"))
+                    .willReturn(aResponse().withStatus(200)
+                            .withHeader(HttpHeaders.CONTENT_TYPE, "text/html")
+                            .withBody(html)));
+
+            var auth = mock(InternalJwtIssuerClient.class);
+            var filter = new ReportDownloadTicketDownloadFilter(auth, mock(InternalJwtIssuerFilter.class),
+                    properties(mobile.baseUrl()), allowedAttemptRateLimiter(),
+                    WebClient.builder().baseUrl(mobile.baseUrl()).build(),
+                    WebClient.builder().baseUrl("http://127.0.0.1:1").build());
+            when(auth.redeemReportTicket(TICKET))
+                    .thenReturn(Mono.just(Optional.of(redemption(teacherStatsHtmlReport()))));
+
+            MockServerWebExchange exchange = exchange(HttpMethod.GET, "/api/report-download/" + TICKET,
+                    false, null);
+            StepVerifier.create(filter.filter(exchange, mock(GatewayFilterChain.class))).verifyComplete();
+
+            assertEquals(HttpStatus.OK, exchange.getResponse().getStatusCode());
+            assertEquals(MediaType.TEXT_HTML, exchange.getResponse().getHeaders().getContentType());
+            assertArrayEquals(html, responseBytes(exchange));
+            mobile.verify(com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor(urlEqualTo(path))
+                    .withHeader(HttpHeaders.ACCEPT, equalTo("*/*")));
+        } finally {
+            mobile.stop();
+        }
+    }
+
+    @Test
+    void teacherStatsHtmlRejectsUnexpectedDownstreamMediaType() {
+        WireMockServer mobile = server();
+        mobile.start();
+        try {
+            String path = "/api/v1/teacher/stats/export?semesterId=2&scope=students&groupId=2"
+                    + "&subjectId=1&lessonType=lecture&format=html";
+            mobile.stubFor(com.github.tomakehurst.wiremock.client.WireMock.get(urlEqualTo(path))
+                    .withHeader(HttpHeaders.ACCEPT, equalTo("*/*"))
+                    .willReturn(aResponse().withStatus(200)
+                            .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .withBody("{}")));
+
+            var auth = mock(InternalJwtIssuerClient.class);
+            var filter = new ReportDownloadTicketDownloadFilter(auth, mock(InternalJwtIssuerFilter.class),
+                    properties(mobile.baseUrl()), allowedAttemptRateLimiter(),
+                    WebClient.builder().baseUrl(mobile.baseUrl()).build(),
+                    WebClient.builder().baseUrl("http://127.0.0.1:1").build());
+            when(auth.redeemReportTicket(TICKET))
+                    .thenReturn(Mono.just(Optional.of(redemption(teacherStatsHtmlReport()))));
+
+            MockServerWebExchange exchange = exchange(HttpMethod.GET, "/api/report-download/" + TICKET,
+                    false, null);
+            StepVerifier.create(filter.filter(exchange, mock(GatewayFilterChain.class))).verifyComplete();
+
+            assertEquals(HttpStatus.SERVICE_UNAVAILABLE, exchange.getResponse().getStatusCode());
+            assertEquals(MediaType.APPLICATION_PROBLEM_JSON, exchange.getResponse().getHeaders().getContentType());
+            mobile.verify(com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor(urlEqualTo(path))
+                    .withHeader(HttpHeaders.ACCEPT, equalTo("*/*")));
+        } finally {
+            mobile.stop();
+        }
+    }
+
+    @Test
     void nonGetOverrideQueryAndRangeFailBeforeTicketRedemption() {
         var auth = mock(InternalJwtIssuerClient.class);
         var filter = new ReportDownloadTicketDownloadFilter(auth, mock(InternalJwtIssuerFilter.class),
@@ -289,6 +361,13 @@ class ReportDownloadTicketDownloadFilterTest {
     private static WireMockServer server() {
         return new WireMockServer(com.github.tomakehurst.wiremock.core.WireMockConfiguration.options()
                 .dynamicPort());
+    }
+
+    private static IssueReportDownloadTicketRequest teacherStatsHtmlReport() {
+        return new IssueReportDownloadTicketRequest(ReportDownloadKind.TEACHER_STATS, null,
+                new IssueReportDownloadTicketRequest.TeacherStatsParameters(
+                        2L, "students", 2L, 1L, List.of("lecture"), List.of(), List.of(),
+                        ReportDownloadFormat.HTML), null, null, null);
     }
 
     private static ReportDownloadAttemptRateLimiter allowedAttemptRateLimiter() {

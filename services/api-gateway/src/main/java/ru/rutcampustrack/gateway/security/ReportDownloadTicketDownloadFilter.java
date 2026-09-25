@@ -162,7 +162,8 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
         WebClient.RequestBodySpec request = client.method(dispatch.method())
                 .uri(builder -> buildUri(builder, dispatch))
                 .header(INTERNAL_TOKEN_HEADER, redemption.admission().internalToken())
-                .accept(MediaType.parseMediaType(dispatch.expectedMediaType()));
+                .accept(dispatch.backend() == Backend.MOBILE_BFF
+                        ? MediaType.ALL : MediaType.parseMediaType(dispatch.expectedMediaType()));
         WebClient.RequestHeadersSpec<?> requestSpec = dispatch.body() == null
                 ? request
                 : request.contentType(MediaType.APPLICATION_JSON).bodyValue(dispatch.body());

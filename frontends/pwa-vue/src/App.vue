@@ -1133,18 +1133,20 @@ onBeforeUnmount(() => {
 <template>
   <PwaUpdateGate :enabled="!fixtureMode" />
   <NotificationsEntryButton
-    v-if="notificationsEntryVisible && !notificationsOpen"
+    v-if="notificationsEntryVisible"
     @click="openNotifications"
   />
-  <NotificationsScreen
-    v-if="notificationsOpen && notificationsApi"
-    :key="`notifications-${notificationsGeneration}`"
-    :api="notificationsApi"
-    :host="host"
-    :offline="offline"
-    @close="closeNotifications"
-    @owner-error="onOwnerError"
-  />
+  <Teleport to="body">
+    <NotificationsScreen
+      v-if="notificationsOpen && notificationsApi"
+      :key="`notifications-${notificationsGeneration}`"
+      :api="notificationsApi"
+      :host="host"
+      :offline="offline"
+      @close="closeNotifications"
+      @owner-error="onOwnerError"
+    />
+  </Teleport>
   <InstallOffer
     v-if="studentViewVisible && authSnapshot?.activeRole === 'STUDENT' && session"
     :controller="installPrompt"

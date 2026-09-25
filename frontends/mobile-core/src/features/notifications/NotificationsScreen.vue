@@ -11,6 +11,7 @@ import {
 } from './notifications-client'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { MobileHostAdapter } from '../../shared/host'
+import { enterNotificationsFocusScope } from './notifications-focus'
 import './notifications-screen.pcss'
 
 const props = defineProps<{
@@ -44,12 +45,15 @@ const pendingItemIds = ref(new Set<string>())
 const markAllPending = ref(false)
 const permissionDenied = ref(false)
 const permissionDeniedMessage = ref<string | null>(null)
+const dialogElement = ref<HTMLElement | null>(null)
+const backButtonElement = ref<HTMLButtonElement | null>(null)
 let screenEpoch = 0
 let historyRequest = 0
 let countRequest = 0
 let preferencesRequest = 0
 let stopHostBack: (() => void) | undefined
 let restoreHostBack: (() => void) | undefined
+let restoreFocusScope: (() => void) | undefined
 
 const categories: readonly { key: NotificationCategoryKey; label: string }[] = [
   { key: 'lessons', label: 'Начало и закрытие занятий' },
@@ -333,6 +337,13 @@ function close(): void {
 }
 
 onMounted(() => {
+  if (dialogElement.value) {
+    restoreFocusScope = enterNotificationsFocusScope(
+      dialogElement.value,
+      document.getElementById('app'),
+      backButtonElement.value,
+    )
+  }
   if (props.host?.backOwner === 'host') {
     if (props.host.suspendBack) {
       restoreHostBack = props.host.suspendBack()
@@ -349,6 +360,7 @@ onBeforeUnmount(() => {
   historyRequest += 1
   countRequest += 1
   preferencesRequest += 1
+  restoreFocusScope?.()
   stopHostBack?.()
   if (restoreHostBack) restoreHostBack()
   else props.host?.setBackVisible?.(false)
@@ -358,11 +370,16 @@ onBeforeUnmount(() => {
 
 <template>
   <main
+    ref="dialogElement"
     class="notifications-screen"
+    role="dialog"
+    aria-modal="true"
     aria-labelledby="notifications-title"
+    tabindex="-1"
   >
     <header class="notifications-screen__header">
       <button
+        ref="backButtonElement"
         type="button"
         class="notifications-screen__back"
         aria-label="Вернуться к предыдущему экрану"

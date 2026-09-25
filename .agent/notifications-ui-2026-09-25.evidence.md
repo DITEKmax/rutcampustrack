@@ -8,6 +8,7 @@
 - Серверная пагинация, фильтр непрочитанных, счётчик, одиночная/общая отметка прочтения и независимые загрузка, ошибка и повтор для истории, счётчика и настроек.
 - Настройки при открытии читаются с сервера; изменения подтверждаются только ответом PUT. Экран не включает web-push и не обещает Telegram-доставку.
 - Клиент привязан к поколению сессии, делает один refresh/retry на 401, очищает данные на 403 и не публикует устаревшие ответы. Telegram BackButton не меняет скрытый маршрут во время overlay и восстанавливает запрошенную им видимость после закрытия.
+- Overlay — modal dialog в `body`: роль остаётся смонтированной под `inert`, Tab/Shift+Tab остаются внутри окна, начальный фокус попадает на «Назад», закрытие возвращает фокус к входной кнопке.
 - UI показывает только подписи известных типов и ограниченный белый список полей payload. `userId`, `_links`, причины, произвольные URL и полный payload не передаются компоненту/не отображаются.
 
 ## Inventory
@@ -17,6 +18,7 @@
 - `frontends/mobile-core/src/features/notifications/notifications-screen.pcss` — экранные стили на текущих semantic tokens.
 - `frontends/mobile-core/src/features/notifications/NotificationsEntryButton.vue` и `notifications-entry.pcss` — общий вход для PWA/TMA.
 - `frontends/mobile-core/src/features/notifications/notifications-client.test.ts` — stale generation, однократный refresh, whitelist payload и отказ небезопасному ID.
+- `frontends/mobile-core/src/features/notifications/notifications-focus.ts` и `notifications-focus.test.ts` — изоляция tab sequence, Enter activation только внутри modal scope и восстановление фокуса.
 - `frontends/mobile-core/src/shared/host.ts`, `src/index.ts` — экспорт feature API и optional back suspension на host boundary.
 - `frontends/pwa-vue/src/App.vue`, `frontends/tma-vue/src/App.vue` — authenticated entry, owner-bound client и возврат к активному экрану.
 - `frontends/tma-vue/src/telegram.ts` — подавление скрытых back listeners и восстановление видимости host-кнопки.
@@ -36,6 +38,21 @@
 Для этих команд временно создан junction `frontends/node_modules` в worktree, направленный на `C:\Users\maksd\IntelliJIDEA\rutcampustrack\frontends\node_modules`; использовались только локальные compiler/linter/test executables, package install/autoinstall не запускался. После проверок junction удалён и его отсутствие подтверждено; целевой dependency tree не изменялся.
 
 **Runtime evidence:** браузерный PWA и Telegram WebView в этой задаче не запускались; проверены типы, lint и API-boundary тесты. Серверный runtime/API scenario не объявляется проверенным этим пакетом.
+
+## Исправление по Sol review
+
+Sol review исходного commit `968840c799a4720ac073d99b33681273093ef339` обнаружил P2: смонтированная фоновая роль оставалась доступна с клавиатуры за notification overlay. Исправление ограничено modal/navigation поведением: `NotificationsScreen` теперь Teleport в `body`, помечает `#app` inert с восстановлением прежнего значения, ставит фокус на кнопку возврата и держит Tab/Shift+Tab внутри видимых элементов. Кнопка открытия остаётся смонтирована под modal и получает фокус после закрытия, поэтому роль и её вложенное состояние не пересоздаются.
+
+После исправления выполнены целевые проверки (без повтора API client suite):
+
+- `tsc -p frontends/mobile-core/tsconfig.json --noEmit` — exit 0.
+- `vue-tsc -p frontends/pwa-vue/tsconfig.json --noEmit` — exit 0.
+- `vue-tsc -p frontends/tma-vue/tsconfig.json --noEmit` — exit 0.
+- `vitest run --root frontends/mobile-core src/features/notifications/notifications-focus.test.ts` — exit 0, 1 file / 1 interaction test passed: Shift+Tab/Tab wrap, Enter activates the overlay Back action, background route action remains untouched, and focus returns to the opener.
+- Scoped ESLint по изменённым NotificationsScreen/focus helper/focus test и PWA/TMA App с `--max-warnings=0` — exit 0.
+- `git diff --check` — exit 0.
+
+Для correction checks junction `frontends/node_modules` временно создан в назначенном worktree после проверки точной цели `C:\Users\maksd\IntelliJIDEA\rutcampustrack\frontends\node_modules`. Он удалён после прогонов, отсутствие junction подтверждено; install и изменение dependency tree не выполнялись. Interaction test запускается в Vitest Node с контролируемым DOM focus test double; реальный browser/TMA WebView не проверялся, этот пакет не заявляет browser runtime.
 
 ## Ограничения
 

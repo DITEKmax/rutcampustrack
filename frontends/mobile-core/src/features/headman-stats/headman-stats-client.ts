@@ -140,6 +140,14 @@ export interface HeadmanStatsTrendResponse {
   readonly mode: HeadmanStatsTrendMode
   readonly points: readonly HeadmanStatsTrendPoint[]
   readonly emptyState: HeadmanStatsTrendEmptyState
+  readonly formats: readonly HeadmanStatsTrendFormat[]
+}
+
+export interface HeadmanStatsTrendFormat {
+  readonly code: 'png' | 'html'
+  readonly label: string
+  readonly contentType: string
+  readonly extension: 'png' | 'html'
 }
 
 export interface HeadmanStatsStudentDetailQuery {
@@ -283,6 +291,40 @@ export class HeadmanStatsApi {
     return result
   }
 
+  async downloadTrendExport(
+    query: HeadmanStatsTrendQuery,
+    format: HeadmanStatsTrendFormat,
+    signal?: AbortSignal,
+  ): Promise<HeadmanStatsDownload> {
+    validateTrendQuery(query)
+    if ((format.code !== 'png' && format.code !== 'html')
+      || format.extension !== format.code
+      || format.contentType.split(';', 1)[0]?.trim().toLowerCase() !== (format.code === 'png' ? 'image/png' : 'text/html')) {
+      throw new RangeError('Выбран неподдерживаемый формат графика.')
+    }
+    const response = await this.response('/api/attendance/reports/headman/stats/trend/export', {
+      method: 'POST',
+      headers: { Accept: '*/*' },
+      body: JSON.stringify({ query: trendRequestBody(query), format: format.code }),
+      ...(signal ? { signal } : {}),
+    })
+    if (!response.ok) throw await this.apiError(response)
+    const blob = await response.blob()
+    this.options.assertCurrent?.()
+    const contentType = response.headers.get('Content-Type') ?? ''
+    const actualType = contentType.split(';', 1)[0]?.trim().toLowerCase()
+    const expectedType = format.code === 'png' ? 'image/png' : 'text/html'
+    if (blob.size === 0 || actualType !== expectedType) {
+      throw new Error('Сервер вернул файл графика в неожиданном формате.')
+    }
+    const fallbackName = `headman-stats-trend.${format.extension}`
+    return {
+      blob,
+      filename: filenameFromContentDisposition(response.headers.get('Content-Disposition'), fallbackName),
+      contentType,
+    }
+  }
+
   async studentDetail(
     studentId: number,
     query: HeadmanStatsStudentDetailQuery,
@@ -388,6 +430,26 @@ export function toHeadmanStatsReportRequest(
           ...(filter.maximum == null ? {} : { maximum: filter.maximum }),
         })),
       }),
+      format,
+    },
+  }
+}
+
+export function toHeadmanStatsTrendReportRequest(
+  query: HeadmanStatsTrendQuery,
+  format: HeadmanStatsTrendFormat['code'],
+): Extract<ReportDownloadTicketRequest, { readonly kind: 'HEADMAN_STATS_TREND' }> {
+  validateTrendQuery(query)
+  if (format !== 'png' && format !== 'html') throw new RangeError('Выбери PNG или HTML.')
+  return {
+    kind: 'HEADMAN_STATS_TREND',
+    headmanStatsTrend: {
+      mode: query.mode,
+      ...(query.mode === 'WEEK' ? { weekStart: query.weekStart } : {}),
+      ...(query.mode === 'SUBJECT' ? { subjectId: query.subjectId } : {}),
+      ...(query.mode === 'SUBJECT' && query.lessonTypes?.length
+        ? { lessonTypes: [...query.lessonTypes] }
+        : {}),
       format,
     },
   }
@@ -572,9 +634,12 @@ function normalizeTrendResponse(value: unknown): HeadmanStatsTrendResponse {
   const context = normalizeContext(record.context)
   const modeValue = stringValue(record.mode)
   const points = array(record.points).map(normalizeTrendPoint)
+  const formats = array(record.formats).map(normalizeTrendFormat)
   const emptyStateValue = stringValue(record.emptyState)
   const keys = points.flatMap((point) => point ? [point.key] : [])
   if (!context || !isTrendMode(modeValue) || points.some((point) => point === null)
+    || formats.some((format) => format === null)
+    || !['png', 'html'].every((code) => formats.some((format) => format?.code === code))
     || new Set(keys).size !== keys.length || !isTrendEmptyState(emptyStateValue)) {
     throw new Error('Сервер вернул некорректную динамику посещаемости.')
   }
@@ -583,7 +648,25 @@ function normalizeTrendResponse(value: unknown): HeadmanStatsTrendResponse {
     mode: modeValue,
     points: points as HeadmanStatsTrendPoint[],
     emptyState: emptyStateValue,
+    formats: formats as HeadmanStatsTrendFormat[],
   }
+}
+
+function normalizeTrendFormat(value: unknown): HeadmanStatsTrendFormat | null {
+  const record = asRecord(value)
+  if (!record) return null
+  const code = stringValue(record.code)
+  const contentType = stringValue(record.contentType)
+  const extension = stringValue(record.extension)
+  if (code === 'png' && contentType?.split(';', 1)[0]?.trim().toLowerCase() === 'image/png'
+    && extension === 'png') {
+    return { code, label: stringValue(record.label) ?? 'PNG', contentType, extension }
+  }
+  if (code === 'html' && contentType?.split(';', 1)[0]?.trim().toLowerCase() === 'text/html'
+    && extension === 'html') {
+    return { code, label: stringValue(record.label) ?? 'HTML', contentType, extension }
+  }
+  return null
 }
 
 function normalizeTrendPoint(value: unknown): HeadmanStatsTrendPoint | null {

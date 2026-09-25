@@ -12,6 +12,7 @@ import {
   hasHeadmanStatsResettableCriteria,
   resetHeadmanStatsCriteria,
   toHeadmanStatsReportRequest,
+  toHeadmanStatsTrendReportRequest,
   type HeadmanStatsApi,
   type HeadmanStatsBlock,
   type HeadmanStatsColumn,
@@ -23,6 +24,7 @@ import {
   type HeadmanStatsStudentRow,
   type HeadmanStatsStudentDetailResponse,
   type HeadmanStatsTrendMode,
+  type HeadmanStatsTrendFormat,
   type HeadmanStatsTrendQuery,
   type HeadmanStatsTrendResponse,
 } from './headman-stats-client'
@@ -62,6 +64,8 @@ const trendResponse = ref<HeadmanStatsTrendResponse | null>(null)
 const trendResponseKey = ref<string | null>(null)
 const trendLoading = ref(false)
 const trendError = ref<string | null>(null)
+const trendExportStatus = ref<string | null>(null)
+const trendExportError = ref<string | null>(null)
 const detailStudentId = ref<number | null>(null)
 const detailResponse = ref<HeadmanStatsStudentDetailResponse | null>(null)
 const detailResponseKey = ref<string | null>(null)
@@ -307,6 +311,8 @@ function resetTrendRequest(): void {
   trendResponseKey.value = null
   trendLoading.value = false
   trendError.value = null
+  trendExportStatus.value = null
+  trendExportError.value = null
 }
 
 function clearDetail(focusReturn = false): void {
@@ -405,6 +411,8 @@ async function loadTrend(): Promise<void> {
   trendResponseKey.value = null
   trendLoading.value = true
   trendError.value = null
+  trendExportStatus.value = null
+  trendExportError.value = null
   try {
     const result = await api.trend(query, controller.signal)
     if (currentRevision !== trendRevision || controller.signal.aborted) return
@@ -659,6 +667,66 @@ async function exportCurrent(): Promise<void> {
     denied.value = cause instanceof HeadmanStatsApiError && cause.response.status === 403
     if (denied.value) response.value = null
     error.value = cause instanceof Error ? cause.message : 'Не удалось скачать статистику.'
+    emit('error', cause)
+  } finally {
+    exporting.value = false
+  }
+}
+
+async function exportTrend(formatCode: HeadmanStatsTrendFormat['code']): Promise<void> {
+  const api = props.api
+  const reportDownload = props.reportDownload
+  const query = currentTrendQuery.value
+  const trend = displayedTrend.value
+  const format = trend?.formats.find((item) => item.code === formatCode)
+  const key = currentTrendKey.value
+  if (api === null || query === null || trend === null || format === undefined || key === null
+    || props.offline || exporting.value || !canView.value) return
+  const querySnapshot = JSON.stringify(query)
+  const currentTrendRevision = trendRevision
+  exporting.value = true
+  trendExportStatus.value = null
+  trendExportError.value = null
+  try {
+    if (reportDownload) {
+      const isCurrent = (): boolean => currentTrendRevision === trendRevision
+        && api === props.api && reportDownload === props.reportDownload
+        && !props.offline && canView.value && !denied.value
+        && key === currentTrendKey.value
+        && JSON.stringify(currentTrendQuery.value) === querySnapshot
+      const result = await reportDownload.download(toHeadmanStatsTrendReportRequest(query, format.code), isCurrent)
+      if (result === 'stale' || !isCurrent()) return
+      if (result === 'unsupported') {
+        trendExportError.value = 'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.'
+      } else {
+        trendExportStatus.value = result === 'accepted'
+          ? 'Telegram принял запрос на скачивание графика; проверь завершение в Telegram.'
+          : 'Скачивание графика отменено.'
+      }
+      return
+    }
+
+    const downloaded = await api.downloadTrendExport(query, format)
+    if (currentTrendRevision !== trendRevision || api !== props.api
+      || props.offline || !canView.value || denied.value
+      || key !== currentTrendKey.value || JSON.stringify(currentTrendQuery.value) !== querySnapshot) return
+    const url = URL.createObjectURL(downloaded.blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = downloaded.filename
+    anchor.rel = 'noopener'
+    document.body.append(anchor)
+    anchor.click()
+    anchor.remove()
+    window.setTimeout(() => URL.revokeObjectURL(url), 0)
+    trendExportStatus.value = `График скачан: ${downloaded.filename}`
+  } catch (cause) {
+    if (cause instanceof StaleSessionGenerationError) return
+    if (cause instanceof HeadmanStatsApiError && cause.response.status === 403) {
+      clearOnDenied()
+      return
+    }
+    trendExportError.value = cause instanceof Error ? cause.message : 'Не удалось скачать график.'
     emit('error', cause)
   } finally {
     exporting.value = false
@@ -1006,6 +1074,36 @@ onBeforeUnmount(() => {
           v-if="displayedTrend"
           :points="displayedTrend.points"
         />
+        <div
+          v-if="displayedTrend"
+          class="headman-stats__trend-controls"
+          aria-label="Скачать график динамики"
+          role="group"
+        >
+          <button
+            v-for="format in displayedTrend.formats"
+            :key="format.code"
+            type="button"
+            :disabled="exporting || offline || !canView"
+            @click="exportTrend(format.code)"
+          >
+            Скачать {{ format.label }}
+          </button>
+        </div>
+        <p
+          v-if="trendExportStatus"
+          class="headman-stats__state"
+          role="status"
+        >
+          {{ trendExportStatus }}
+        </p>
+        <p
+          v-if="trendExportError"
+          class="headman-stats__state headman-stats__state--error"
+          role="alert"
+        >
+          {{ trendExportError }}
+        </p>
       </section>
 
       <details

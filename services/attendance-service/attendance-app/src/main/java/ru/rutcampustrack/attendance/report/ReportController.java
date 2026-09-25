@@ -19,6 +19,7 @@ import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsStudentDetailResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendQueryRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendExportRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
@@ -48,6 +49,7 @@ public class ReportController implements ReportApi {
     private final ReportService reportService;
     private final HeadmanWeeklyReportService headmanWeeklyReportService;
     private final HeadmanStatsService headmanStatsService;
+    private final HeadmanStatsTrendExportService headmanStatsTrendExportService;
 
     @RequireRole({UserRole.STUDENT, UserRole.TEACHER})
     @Override
@@ -137,6 +139,12 @@ public class ReportController implements ReportApi {
 
     @RequireRole(UserRole.STUDENT)
     @Override
+    public ResponseEntity<byte[]> exportHeadmanStatsTrend(HeadmanStatsTrendExportRequest request) {
+        return download(headmanStatsTrendExportService.export(request));
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
     public ResponseEntity<EntityModel<HeadmanStatsStudentDetailResponse>> queryHeadmanStudentStatsDetail(
             Long studentId, int latePage, int excusePage, int size) {
         return ResponseEntity.ok(EntityModel.of(
@@ -158,6 +166,17 @@ public class ReportController implements ReportApi {
     }
 
     private static ResponseEntity<byte[]> download(HeadmanWeeklyExportResult result) {
+        ContentDisposition disposition = ContentDisposition.attachment()
+                .filename(result.fileName(), StandardCharsets.UTF_8)
+                .build();
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(result.contentType()))
+                .cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .body(result.content());
+    }
+
+    private static ResponseEntity<byte[]> download(HeadmanStatsExportResult result) {
         ContentDisposition disposition = ContentDisposition.attachment()
                 .filename(result.fileName(), StandardCharsets.UTF_8)
                 .build();

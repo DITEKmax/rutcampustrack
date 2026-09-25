@@ -9,13 +9,24 @@ public record HeadmanStatsTrendResponse(
         HeadmanStatsResponse.Context context,
         HeadmanStatsTrendQueryRequest.Mode mode,
         List<Point> points,
-        EmptyState emptyState
+        EmptyState emptyState,
+        List<HeadmanStatsResponse.FormatOption> formats
 ) {
     public HeadmanStatsTrendResponse {
         context = Objects.requireNonNull(context, "context");
         mode = Objects.requireNonNull(mode, "mode");
         points = List.copyOf(Objects.requireNonNull(points, "points"));
         emptyState = Objects.requireNonNull(emptyState, "emptyState");
+        formats = List.copyOf(Objects.requireNonNull(formats, "formats"));
+    }
+
+    public HeadmanStatsTrendResponse(
+            HeadmanStatsResponse.Context context,
+            HeadmanStatsTrendQueryRequest.Mode mode,
+            List<Point> points,
+            EmptyState emptyState
+    ) {
+        this(context, mode, points, emptyState, List.of());
     }
 
     public record Point(

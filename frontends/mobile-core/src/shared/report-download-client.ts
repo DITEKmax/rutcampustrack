@@ -48,6 +48,14 @@ export interface HeadmanStatsReportSelector {
   readonly format: ReportDownloadFormat
 }
 
+export interface HeadmanStatsTrendReportSelector {
+  readonly mode: 'SEMESTER' | 'WEEK' | 'SUBJECT'
+  readonly weekStart?: string
+  readonly subjectId?: number
+  readonly lessonTypes?: readonly string[]
+  readonly format: 'png' | 'html'
+}
+
 export type ReportDownloadTicketRequest =
   | {
     readonly kind: 'TEACHER_JOURNAL'
@@ -88,6 +96,16 @@ export type ReportDownloadTicketRequest =
     readonly headmanWeeklyCurrent?: never
     readonly headmanWeeklySelected?: never
     readonly headmanStats: HeadmanStatsReportSelector
+    readonly headmanStatsTrend?: never
+  }
+  | {
+    readonly kind: 'HEADMAN_STATS_TREND'
+    readonly teacherJournal?: never
+    readonly teacherStats?: never
+    readonly headmanWeeklyCurrent?: never
+    readonly headmanWeeklySelected?: never
+    readonly headmanStats?: never
+    readonly headmanStatsTrend: HeadmanStatsTrendReportSelector
   }
 
 export interface ReportDownloadTicket {
@@ -232,7 +250,9 @@ export function parseTicketResponse(
   }
   const expiryTime = Date.parse(expiresAt)
   const format = reportFormat(request)
-  const expectedExtension = format === 'png' ? 'zip' : format
+  const expectedExtension = request.kind === 'HEADMAN_STATS_TREND'
+    ? format
+    : format === 'png' ? 'zip' : format
   if (!/^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(downloadPath)
     || !Number.isFinite(expiryTime) || expiryTime <= now
     || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$/.test(suggestedFilename)
@@ -250,6 +270,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     HEADMAN_WEEKLY_CURRENT: 'headmanWeeklyCurrent',
     HEADMAN_WEEKLY_SELECTED: 'headmanWeeklySelected',
     HEADMAN_STATS: 'headmanStats',
+    HEADMAN_STATS_TREND: 'headmanStatsTrend',
   }
   const expectedSelector = selectorByKind[request.kind]
   const actualSelectors = Object.keys(record).filter((key) => selectorByKind[request.kind] === key
@@ -269,6 +290,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     HEADMAN_WEEKLY_CURRENT: ['weekStart', 'format'],
     HEADMAN_WEEKLY_SELECTED: ['weekStarts', 'format'],
     HEADMAN_STATS: ['subjectId', 'lessonTypes', 'sorts', 'filters', 'format'],
+    HEADMAN_STATS_TREND: ['mode', 'weekStart', 'subjectId', 'lessonTypes', 'format'],
   }
   if (Object.keys(selector).some((key) => !allowedSelectorFields[request.kind].includes(key))) {
     throw new RangeError('У отчёта есть неподдерживаемые параметры.')
@@ -279,6 +301,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     HEADMAN_WEEKLY_CURRENT: ['weekStart', 'format'],
     HEADMAN_WEEKLY_SELECTED: ['weekStarts', 'format'],
     HEADMAN_STATS: ['format'],
+    HEADMAN_STATS_TREND: ['mode', 'format'],
   }
   if (requiredSelectorFields[request.kind].some((key) => !Object.prototype.hasOwnProperty.call(selector, key))) {
     throw new RangeError('У отчёта не хватает обязательных параметров.')
@@ -317,6 +340,25 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
         throw new RangeError('Проверь параметры статистики старосты.')
       }
       break
+    case 'HEADMAN_STATS_TREND': {
+      const noSubjectSelection = selector.subjectId === undefined
+        && (selector.lessonTypes === undefined
+          || Array.isArray(selector.lessonTypes) && selector.lessonTypes.length === 0)
+      const noWeekSelection = selector.weekStart === undefined
+      const validMode = selector.mode === 'SEMESTER'
+        ? noSubjectSelection && noWeekSelection
+        : selector.mode === 'WEEK'
+          ? noSubjectSelection && isIsoDate(selector.weekStart)
+            && new Date(`${String(selector.weekStart)}T00:00:00.000Z`).getUTCDay() === 1
+          : selector.mode === 'SUBJECT'
+            ? noWeekSelection && isPositiveInteger(selector.subjectId)
+              && (selector.lessonTypes === undefined || isStringList(selector.lessonTypes, 0, 20, 64))
+            : false
+      if (!validMode || (selector.format !== 'png' && selector.format !== 'html')) {
+        throw new RangeError('Проверь период и формат графика старосты.')
+      }
+      break
+    }
   }
 }
 
@@ -366,6 +408,7 @@ function reportFormat(request: ReportDownloadTicketRequest): ReportDownloadForma
     case 'HEADMAN_WEEKLY_CURRENT': return request.headmanWeeklyCurrent.format
     case 'HEADMAN_WEEKLY_SELECTED': return request.headmanWeeklySelected.format
     case 'HEADMAN_STATS': return request.headmanStats.format
+    case 'HEADMAN_STATS_TREND': return request.headmanStatsTrend.format
   }
 }
 

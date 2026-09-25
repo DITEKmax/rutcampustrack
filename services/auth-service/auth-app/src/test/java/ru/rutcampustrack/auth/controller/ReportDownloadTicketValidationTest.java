@@ -9,10 +9,14 @@ import ru.rutcampustrack.auth.exception.GlobalExceptionHandler;
 import ru.rutcampustrack.auth.exception.InvalidReportDownloadTicketRequestException;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
 import ru.rutcampustrack.auth.service.ReportDownloadTicketService;
+import ru.rutcampustrack.auth.dto.IssueReportDownloadTicketRequest;
+import ru.rutcampustrack.auth.dto.ReportDownloadFormat;
+import ru.rutcampustrack.auth.dto.ReportDownloadKind;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleStatus;
 
 import java.util.UUID;
+import java.time.LocalDate;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
@@ -22,6 +26,31 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ReportDownloadTicketValidationTest {
+
+    @Test
+    void trendTicketBindsItsSelectorAndUsesActualPngWithoutChangingLegacyPngZip() {
+        var selector = new IssueReportDownloadTicketRequest.HeadmanStatsTrendParameters(
+                IssueReportDownloadTicketRequest.HeadmanStatsTrendMode.WEEK,
+                LocalDate.parse("2026-09-21"), null, null, ReportDownloadFormat.PNG);
+        var png = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_STATS_TREND,
+                null, null, null, null, null, selector);
+        var html = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_STATS_TREND,
+                null, null, null, null, null,
+                new IssueReportDownloadTicketRequest.HeadmanStatsTrendParameters(
+                        IssueReportDownloadTicketRequest.HeadmanStatsTrendMode.WEEK,
+                        LocalDate.parse("2026-09-21"), null, null, ReportDownloadFormat.HTML));
+        var tablePng = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_STATS,
+                null, null, null, null,
+                new IssueReportDownloadTicketRequest.HeadmanStatsParameters(
+                        null, null, null, null, ReportDownloadFormat.PNG));
+
+        org.junit.jupiter.api.Assertions.assertTrue(png.isParametersConsistent());
+        org.junit.jupiter.api.Assertions.assertEquals("headman-stats-trend.png", png.suggestedFilename());
+        org.junit.jupiter.api.Assertions.assertEquals("image/png", png.expectedMediaType());
+        org.junit.jupiter.api.Assertions.assertNotEquals(png.bindingHash(), html.bindingHash());
+        org.junit.jupiter.api.Assertions.assertEquals("headman-stats.zip", tablePng.suggestedFilename());
+        org.junit.jupiter.api.Assertions.assertEquals("application/zip", tablePng.expectedMediaType());
+    }
 
     @Test
     void selectorWithAnExtraParameterObjectIsRejectedAsBadRequestBeforeIssuance() throws Exception {

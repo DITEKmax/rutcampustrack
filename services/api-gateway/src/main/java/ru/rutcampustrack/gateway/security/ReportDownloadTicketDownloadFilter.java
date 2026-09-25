@@ -233,7 +233,7 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
         tokenVerifier.verifyInternalReportDownloadToken(redemption.admission(),
                 redemption.ticketExpiresAt(), redemption.reportBindingHash());
         String filename = redemption.report().suggestedFilename();
-        if (!filename.matches("[a-z0-9-]+\\.(docx|pdf|zip|html|xlsx)")) {
+        if (!filename.matches("[a-z0-9-]+\\.(docx|pdf|zip|html|xlsx|png)")) {
             throw new IllegalArgumentException("report filename is not safe");
         }
     }
@@ -294,6 +294,19 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                         selection.filters(), selection.format().code());
                 yield new Dispatch(Backend.ATTENDANCE, HttpMethod.POST,
                         "/attendance/reports/headman/stats/export", query, body,
+                        expectedMediaType, filename);
+            }
+            case HEADMAN_STATS_TREND -> {
+                var selection = report.headmanStatsTrend();
+                HeadmanStatsTrendQueryPayload trend = new HeadmanStatsTrendQueryPayload(
+                        selection.mode().name(),
+                        selection.weekStart() == null ? null : selection.weekStart().toString(),
+                        selection.subjectId(),
+                        selection.lessonTypes());
+                HeadmanStatsTrendExportPayload body = new HeadmanStatsTrendExportPayload(
+                        trend, selection.format().code());
+                yield new Dispatch(Backend.ATTENDANCE, HttpMethod.POST,
+                        "/attendance/reports/headman/stats/trend/export", query, body,
                         expectedMediaType, filename);
             }
         };
@@ -450,6 +463,20 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
             List<String> lessonTypes,
             List<IssueReportDownloadTicketRequest.HeadmanStatsSort> sorts,
             List<IssueReportDownloadTicketRequest.HeadmanStatsFilter> filters,
+            String format
+    ) {
+    }
+
+    public record HeadmanStatsTrendQueryPayload(
+            String mode,
+            String weekStart,
+            Long subjectId,
+            List<String> lessonTypes
+    ) {
+    }
+
+    public record HeadmanStatsTrendExportPayload(
+            HeadmanStatsTrendQueryPayload query,
             String format
     ) {
     }

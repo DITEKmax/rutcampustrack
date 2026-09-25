@@ -235,7 +235,8 @@ public class HeadmanStatsService {
         calculate(groupId, subjectId, types, List.of(), List.of(), false, false, capture);
         if (capture.context.semesterId() == null) {
             return new HeadmanStatsTrendResponse(capture.context, request.mode(), List.of(),
-                    HeadmanStatsTrendResponse.EmptyState.NO_ACTIVE_SEMESTER);
+                    HeadmanStatsTrendResponse.EmptyState.NO_ACTIVE_SEMESTER,
+                    HeadmanStatsTrendFormat.catalogue());
         }
         if (request.mode() == HeadmanStatsTrendQueryRequest.Mode.WEEK) {
             LocalDate weekEnd = request.weekStart().plusDays(6);
@@ -268,7 +269,8 @@ public class HeadmanStatsService {
                 hasEligiblePairs ? HeadmanStatsTrendResponse.EmptyState.NONE
                         : capture.completedSemesterLessons == 0
                         ? HeadmanStatsTrendResponse.EmptyState.NO_COMPLETED_LESSONS
-                        : HeadmanStatsTrendResponse.EmptyState.NO_MATCHING_LESSONS);
+                        : HeadmanStatsTrendResponse.EmptyState.NO_MATCHING_LESSONS,
+                HeadmanStatsTrendFormat.catalogue());
     }
 
     public HeadmanStatsStudentDetailResponse studentDetail(Long studentId, int latePage, int excusePage, int size) {

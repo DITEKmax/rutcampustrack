@@ -56,6 +56,12 @@ class ReportControllerMvcTest {
     @MockitoBean
     private HeadmanWeeklyReportService headmanWeeklyReportService;
 
+    @MockitoBean
+    private HeadmanStatsService headmanStatsService;
+
+    @MockitoBean
+    private HeadmanStatsTrendExportService headmanStatsTrendExportService;
+
     @Test
     void exportCurrentDocx_returnsBinaryFileHeaders() throws Exception {
         LocalDate weekStart = LocalDate.of(2026, 4, 27);

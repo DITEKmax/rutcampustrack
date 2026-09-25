@@ -93,8 +93,9 @@ export function validateSuggestedFilename(
     : request.kind === 'TEACHER_STATS' ? request.teacherStats.format
       : request.kind === 'HEADMAN_WEEKLY_CURRENT' ? request.headmanWeeklyCurrent.format
         : request.kind === 'HEADMAN_WEEKLY_SELECTED' ? request.headmanWeeklySelected.format
-          : request.headmanStats.format
-  const extension = format === 'png' ? 'zip' : format
+          : request.kind === 'HEADMAN_STATS' ? request.headmanStats.format
+            : request.headmanStatsTrend.format
+  const extension = request.kind === 'HEADMAN_STATS_TREND' ? format : format === 'png' ? 'zip' : format
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$/.test(filename) || !filename.endsWith(`.${extension}`)) {
     throw new ReportDownloadResponseError()
   }

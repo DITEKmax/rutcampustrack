@@ -17,6 +17,7 @@ import {
   hasHeadmanStatsResettableCriteria,
   resetHeadmanStatsCriteria,
   toHeadmanStatsReportRequest,
+  toHeadmanStatsTrendReportRequest,
 } from '../../mobile-core/src/features/headman-stats/headman-stats-client'
 import {
   toTeacherJournalReportRequest,
@@ -274,6 +275,27 @@ describe('Telegram download adapter', () => {
     expect(host.params).toHaveBeenCalledWith({
       url: `https://rutcampustrack.example/api/report-download/${'a'.repeat(43)}`,
       file_name: 'teacher-journal.pdf',
+    })
+  })
+
+  it('uses the native Telegram adapter and the PNG extension for a headman trend ticket', async () => {
+    const request = toHeadmanStatsTrendReportRequest({
+      mode: 'SUBJECT',
+      subjectId: 3,
+      lessonTypes: ['LECTURE'],
+    }, 'png')
+    validateTicketRequest(request)
+    const host = fakeHost(true)
+    const port = createTelegramReportDownloadPort(
+      fakeTicketIssuer(ticket('headman-stats-trend.png')),
+      host,
+      () => 'https://rutcampustrack.example',
+    )
+
+    await expect(port.download(request, () => true)).resolves.toBe('accepted')
+    expect(host.params).toHaveBeenCalledWith({
+      url: `https://rutcampustrack.example/api/report-download/${'a'.repeat(43)}`,
+      file_name: 'headman-stats-trend.png',
     })
   })
 

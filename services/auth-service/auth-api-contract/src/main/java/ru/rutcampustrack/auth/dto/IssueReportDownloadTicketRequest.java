@@ -27,7 +27,8 @@ public record IssueReportDownloadTicketRequest(
         @Valid TeacherStatsParameters teacherStats,
         @Valid HeadmanWeeklyCurrentParameters headmanWeeklyCurrent,
         @Valid HeadmanWeeklySelectedParameters headmanWeeklySelected,
-        @Valid HeadmanStatsParameters headmanStats
+        @Valid HeadmanStatsParameters headmanStats,
+        @Valid HeadmanStatsTrendParameters headmanStatsTrend
 ) {
     private static final int MAX_PARAMETER_VALUES = 20;
     private static final int MAX_PARAMETER_LENGTH = 128;
@@ -40,16 +41,36 @@ public record IssueReportDownloadTicketRequest(
         }
         return switch (kind) {
             case TEACHER_JOURNAL -> teacherJournal != null && teacherStats == null
-                    && headmanWeeklyCurrent == null && headmanWeeklySelected == null && headmanStats == null;
+                    && headmanWeeklyCurrent == null && headmanWeeklySelected == null && headmanStats == null
+                    && headmanStatsTrend == null;
             case TEACHER_STATS -> teacherStats != null && teacherJournal == null
-                    && headmanWeeklyCurrent == null && headmanWeeklySelected == null && headmanStats == null;
+                    && headmanWeeklyCurrent == null && headmanWeeklySelected == null && headmanStats == null
+                    && headmanStatsTrend == null;
             case HEADMAN_WEEKLY_CURRENT -> headmanWeeklyCurrent != null && teacherJournal == null
-                    && teacherStats == null && headmanWeeklySelected == null && headmanStats == null;
+                    && teacherStats == null && headmanWeeklySelected == null && headmanStats == null
+                    && headmanStatsTrend == null;
             case HEADMAN_WEEKLY_SELECTED -> headmanWeeklySelected != null && teacherJournal == null
-                    && teacherStats == null && headmanWeeklyCurrent == null && headmanStats == null;
+                    && teacherStats == null && headmanWeeklyCurrent == null && headmanStats == null
+                    && headmanStatsTrend == null;
             case HEADMAN_STATS -> headmanStats != null && teacherJournal == null && teacherStats == null
-                    && headmanWeeklyCurrent == null && headmanWeeklySelected == null;
+                    && headmanWeeklyCurrent == null && headmanWeeklySelected == null
+                    && headmanStatsTrend == null;
+            case HEADMAN_STATS_TREND -> headmanStatsTrend != null && teacherJournal == null
+                    && teacherStats == null && headmanWeeklyCurrent == null && headmanWeeklySelected == null
+                    && headmanStats == null && headmanStatsTrend.isConsistent();
         };
+    }
+
+    /** Retains source compatibility for callers constructing existing ticket kinds. */
+    public IssueReportDownloadTicketRequest(
+            ReportDownloadKind kind,
+            TeacherJournalParameters teacherJournal,
+            TeacherStatsParameters teacherStats,
+            HeadmanWeeklyCurrentParameters headmanWeeklyCurrent,
+            HeadmanWeeklySelectedParameters headmanWeeklySelected,
+            HeadmanStatsParameters headmanStats
+    ) {
+        this(kind, teacherJournal, teacherStats, headmanWeeklyCurrent, headmanWeeklySelected, headmanStats, null);
     }
 
     /** Stable digest signed into the short-lived internal JWT to bind dispatch to this exact report. */
@@ -110,6 +131,13 @@ public record IssueReportDownloadTicketRequest(
                 }
                 append(canonical, headmanStats.format().code());
             }
+            case HEADMAN_STATS_TREND -> {
+                append(canonical, headmanStatsTrend.mode().name());
+                append(canonical, headmanStatsTrend.weekStart());
+                append(canonical, headmanStatsTrend.subjectId());
+                appendList(canonical, headmanStatsTrend.lessonTypes());
+                append(canonical, headmanStatsTrend.format().code());
+            }
         }
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
@@ -131,13 +159,19 @@ public record IssueReportDownloadTicketRequest(
             case HEADMAN_WEEKLY_CURRENT -> "headman-weekly-current";
             case HEADMAN_WEEKLY_SELECTED -> "headman-weekly-selected";
             case HEADMAN_STATS -> "headman-stats";
+            case HEADMAN_STATS_TREND -> "headman-stats-trend";
         };
-        return base + "." + selectedFormat().filenameExtension();
+        String extension = kind == ReportDownloadKind.HEADMAN_STATS_TREND
+                ? headmanStatsTrend.format().code()
+                : selectedFormat().filenameExtension();
+        return base + "." + extension;
     }
 
     @JsonIgnore
     public String expectedMediaType() {
-        return selectedFormat().mediaType();
+        return kind == ReportDownloadKind.HEADMAN_STATS_TREND
+                ? headmanStatsTrend.format() == ReportDownloadFormat.PNG ? "image/png" : "text/html"
+                : selectedFormat().mediaType();
     }
 
     private ReportDownloadFormat selectedFormat() {
@@ -147,6 +181,7 @@ public record IssueReportDownloadTicketRequest(
             case HEADMAN_WEEKLY_CURRENT -> headmanWeeklyCurrent.format();
             case HEADMAN_WEEKLY_SELECTED -> headmanWeeklySelected.format();
             case HEADMAN_STATS -> headmanStats.format();
+            case HEADMAN_STATS_TREND -> headmanStatsTrend.format();
         };
     }
 
@@ -240,6 +275,44 @@ public record IssueReportDownloadTicketRequest(
             sorts = immutable(sorts);
             filters = immutable(filters);
         }
+    }
+
+    @Schema(description = "Current-group headman trend chart export parameters")
+    public record HeadmanStatsTrendParameters(
+            @NotNull HeadmanStatsTrendMode mode,
+            LocalDate weekStart,
+            @Positive Long subjectId,
+            @Size(max = MAX_PARAMETER_VALUES)
+            List<@NotBlank @Size(max = 64) String> lessonTypes,
+            @NotNull ReportDownloadFormat format
+    ) {
+        public HeadmanStatsTrendParameters {
+            lessonTypes = immutable(lessonTypes);
+        }
+
+        @JsonIgnore
+        public boolean isConsistent() {
+            if (mode == null || (format != ReportDownloadFormat.PNG && format != ReportDownloadFormat.HTML)) {
+                return false;
+            }
+            List<String> types = lessonTypes == null ? List.of() : lessonTypes;
+            if (types.stream().anyMatch(value -> value == null || value.isBlank())
+                    || types.size() > MAX_PARAMETER_VALUES || types.stream().distinct().count() != types.size()) {
+                return false;
+            }
+            return switch (mode) {
+                case SEMESTER -> weekStart == null && subjectId == null && types.isEmpty();
+                case WEEK -> weekStart != null && weekStart.getDayOfWeek().getValue() == 1
+                        && subjectId == null && types.isEmpty();
+                case SUBJECT -> weekStart == null && subjectId != null && subjectId > 0;
+            };
+        }
+    }
+
+    public enum HeadmanStatsTrendMode {
+        SEMESTER,
+        WEEK,
+        SUBJECT
     }
 
     @Schema(description = "One priority-ordered headman statistics sort field")

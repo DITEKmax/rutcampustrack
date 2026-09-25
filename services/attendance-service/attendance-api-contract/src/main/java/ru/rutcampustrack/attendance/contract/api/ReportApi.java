@@ -25,6 +25,7 @@ import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsQueryRequest
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsStudentDetailResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendQueryRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendExportRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
@@ -184,6 +185,23 @@ public interface ReportApi {
     @PostMapping("/headman/stats/trend")
     ResponseEntity<EntityModel<HeadmanStatsTrendResponse>> queryHeadmanStatsTrend(
             @Valid @RequestBody HeadmanStatsTrendQueryRequest request);
+
+    @Operation(summary = "Export the current-group headman attendance trend as PNG or self-contained HTML")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Rendered trend chart",
+                    content = {
+                            @Content(mediaType = PNG_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = HTML_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary"))
+                    }),
+            @ApiResponse(responseCode = "400", description = "Invalid trend selector or export format",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Headman or current VIEW_STATS permission required",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "413", description = "The rendered export exceeds 20 MiB",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/headman/stats/trend/export")
+    ResponseEntity<byte[]> exportHeadmanStatsTrend(@Valid @RequestBody HeadmanStatsTrendExportRequest request);
 
     @Operation(summary = "Read one current-group student's headman statistics detail")
     @ApiResponses({

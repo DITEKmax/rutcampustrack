@@ -35,6 +35,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -113,6 +114,52 @@ class ReportDownloadTicketDownloadFilterTest {
                     org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(),
                     org.mockito.ArgumentMatchers.anyString());
             attendance.verify(postRequestedFor(urlEqualTo("/attendance/reports/headman/stats/export")));
+        } finally {
+            attendance.stop();
+        }
+    }
+
+    @Test
+    void headmanTrendPngUsesFixedAttendanceRouteAndRealImageMime() {
+        WireMockServer attendance = server();
+        attendance.start();
+        try {
+            byte[] png = new byte[]{(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10, 0};
+            attendance.stubFor(post(urlEqualTo("/attendance/reports/headman/stats/trend/export"))
+                    .withHeader("X-Internal-Token", equalTo(INTERNAL_TOKEN))
+                    .withHeader(HttpHeaders.AUTHORIZATION, absent())
+                    .withRequestBody(matchingJsonPath("$.query.mode", equalTo("SUBJECT")))
+                    .withRequestBody(matchingJsonPath("$.query.subjectId", equalTo("41")))
+                    .withRequestBody(matchingJsonPath("$.query.lessonTypes[0]", equalTo("LECTURE")))
+                    .withRequestBody(matchingJsonPath("$.format", equalTo("png")))
+                    .willReturn(aResponse().withStatus(200)
+                            .withHeader(HttpHeaders.CONTENT_TYPE, "image/png")
+                            .withBody(png)));
+
+            var auth = mock(InternalJwtIssuerClient.class);
+            var filter = new ReportDownloadTicketDownloadFilter(auth, mock(InternalJwtIssuerFilter.class),
+                    properties(attendance.baseUrl()), allowedAttemptRateLimiter(),
+                    WebClient.builder().baseUrl("http://127.0.0.1:1").build(),
+                    WebClient.builder().baseUrl(attendance.baseUrl()).build());
+            var report = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_STATS_TREND,
+                    null, null, null, null, null,
+                    new IssueReportDownloadTicketRequest.HeadmanStatsTrendParameters(
+                            IssueReportDownloadTicketRequest.HeadmanStatsTrendMode.SUBJECT,
+                            null, 41L, List.of("LECTURE"), ReportDownloadFormat.PNG));
+            when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.of(redemption(report))));
+
+            MockServerWebExchange exchange = exchange(HttpMethod.GET, "/api/report-download/" + TICKET,
+                    false, null);
+            StepVerifier.create(filter.filter(exchange, mock(GatewayFilterChain.class))).verifyComplete();
+
+            assertEquals(HttpStatus.OK, exchange.getResponse().getStatusCode());
+            assertEquals(MediaType.parseMediaType("image/png"), exchange.getResponse().getHeaders().getContentType());
+            assertTrue(exchange.getResponse().getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION)
+                    .contains("headman-stats-trend.png"));
+            assertArrayEquals(png, responseBytes(exchange));
+            String body = attendance.getAllServeEvents().get(0).getRequest().getBodyAsString();
+            assertFalse(body.contains("groupId"));
+            attendance.verify(postRequestedFor(urlEqualTo("/attendance/reports/headman/stats/trend/export")));
         } finally {
             attendance.stop();
         }

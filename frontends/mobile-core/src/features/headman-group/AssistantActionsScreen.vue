@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AssistantHomeworkScreen from '../homework/AssistantHomeworkScreen.vue'
 import type { HeadmanHomeworkApi } from '../homework/headman-homework-client'
 import HeadmanJournalScreen from '../headman-journal/HeadmanJournalScreen.vue'
@@ -7,12 +7,15 @@ import type { HeadmanJournalApi } from '../headman-journal/headman-journal-clien
 import HeadmanRequestsScreen from '../headman-requests/HeadmanRequestsScreen.vue'
 import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
 import type { HeadmanAssistantPermission } from './headman-group-client'
+import HeadmanStatsScreen from '../headman-stats/HeadmanStatsScreen.vue'
+import type { HeadmanStatsApi } from '../headman-stats/headman-stats-client'
 import './assistant-actions-screen.pcss'
 
 const props = withDefaults(defineProps<{
   permissions: readonly HeadmanAssistantPermission[]
   groupId: number | null
   journalApi: HeadmanJournalApi | null
+  statsApi: HeadmanStatsApi | null
   requestsApi: HeadmanRequestsApi | null
   homeworkApi: HeadmanHomeworkApi | null
   userId: number | null
@@ -27,15 +30,20 @@ const emit = defineEmits<{
   error: [cause: unknown]
 }>()
 
-const surface = ref<'home' | 'journal' | 'requests' | 'homework'>('home')
+const surface = ref<'home' | 'journal' | 'stats' | 'requests' | 'homework'>('home')
 const canJournal = computed(() => props.permissions.includes('MARK_ATTENDANCE')
   || props.permissions.includes('VIEW_STATS')
   || props.permissions.includes('CANCEL_LESSONS'))
+const canStats = computed(() => props.permissions.includes('VIEW_STATS'))
 const canRequests = computed(() => props.permissions.includes('MANAGE_EXCUSES'))
 const canHomework = computed(() => props.permissions.includes('MANAGE_HOMEWORK'))
 
 function openJournal(): void {
   if (canJournal.value && props.groupId !== null && props.journalApi) surface.value = 'journal'
+}
+
+function openStats(): void {
+  if (canStats.value && props.groupId !== null && props.statsApi && !props.offline) surface.value = 'stats'
 }
 
 function openRequests(): void {
@@ -49,6 +57,10 @@ function openHomework(): void {
 function reportError(cause: unknown): void {
   emit('error', cause)
 }
+
+watch(canStats, (allowed) => {
+  if (!allowed && surface.value === 'stats') surface.value = 'home'
+})
 </script>
 
 <template>
@@ -80,6 +92,15 @@ function reportError(cause: unknown): void {
         Посещаемость и журнал
       </button>
       <button
+        v-if="canStats"
+        class="assistant-actions__button"
+        type="button"
+        :disabled="offline || !statsApi || groupId === null"
+        @click="openStats"
+      >
+        Статистика группы
+      </button>
+      <button
         v-if="canRequests"
         class="assistant-actions__button"
         type="button"
@@ -107,6 +128,15 @@ function reportError(cause: unknown): void {
     :assistant-permissions="permissions"
     :offline="offline"
     :read-only="readOnly"
+    @error="reportError"
+  />
+  <HeadmanStatsScreen
+    v-else-if="surface === 'stats'"
+    :api="statsApi"
+    :group-id="groupId"
+    :assistant-permissions="permissions"
+    :offline="offline"
+    @back="surface = 'home'"
     @error="reportError"
   />
   <HeadmanRequestsScreen

@@ -5,6 +5,7 @@ import { createGenerationBoundHeadmanRequestsApi } from '../../mobile-core/src/f
 import { createGenerationBoundHeadmanGroupApi } from '../../mobile-core/src/features/headman-group/headman-group-client'
 import { createGenerationBoundHeadmanHomeworkApi } from '../../mobile-core/src/features/homework/headman-homework-client'
 import { createGenerationBoundHeadmanSubjectsApi } from '../../mobile-core/src/features/headman-subjects/headman-subjects-client'
+import { createGenerationBoundHeadmanStatsApi } from '../../mobile-core/src/features/headman-stats/headman-stats-client'
 import {
   createGenerationBoundAdminDashboardClient,
   createGenerationBoundAdminSemesterClient,
@@ -24,6 +25,7 @@ import type { HeadmanRequestsApi } from '../../mobile-core/src/features/headman-
 import type { HeadmanGroupApi } from '../../mobile-core/src/features/headman-group/headman-group-client'
 import type { HeadmanHomeworkApi } from '../../mobile-core/src/features/homework/headman-homework-client'
 import type { HeadmanSubjectsApi } from '../../mobile-core/src/features/headman-subjects/headman-subjects-client'
+import type { HeadmanStatsApi } from '../../mobile-core/src/features/headman-stats/headman-stats-client'
 import type { StudentApi } from '../../mobile-core/src/api/student-client'
 import type { TeacherApi } from '../../mobile-core/src/features/teacher/teacher-client'
 import {
@@ -223,6 +225,14 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     }, fetcher)
   }
 
+  function createHeadmanStatsApi(fetcher?: typeof fetch): HeadmanStatsApi {
+    return createGenerationBoundHeadmanStatsApi({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor,
+    }, fetcher)
+  }
+
   function createHeadmanRequestsApi(fetcher?: typeof fetch): HeadmanRequestsApi {
     return createGenerationBoundHeadmanRequestsApi({
       currentGeneration,
@@ -400,6 +410,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     createApi,
     createHeadmanApi,
     createHeadmanJournalApi,
+    createHeadmanStatsApi,
     createHeadmanRequestsApi,
     createHeadmanGroupApi,
     createHeadmanHomeworkApi,

@@ -13,6 +13,9 @@ import ru.rutcampustrack.attendance.contract.api.ReportApi;
 import ru.rutcampustrack.attendance.contract.dto.report.AttendanceRecordEntry;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyWeeksResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsExportRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsQueryRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
@@ -41,6 +44,7 @@ public class ReportController implements ReportApi {
 
     private final ReportService reportService;
     private final HeadmanWeeklyReportService headmanWeeklyReportService;
+    private final HeadmanStatsService headmanStatsService;
 
     @RequireRole({UserRole.STUDENT, UserRole.TEACHER})
     @Override
@@ -113,6 +117,26 @@ public class ReportController implements ReportApi {
     @Override
     public ResponseEntity<byte[]> exportHeadmanWeekly(HeadmanWeeklyExportRequest request) {
         return download(headmanWeeklyReportService.exportSelectedWeeks(request));
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<EntityModel<HeadmanStatsResponse>> queryHeadmanStats(HeadmanStatsQueryRequest request) {
+        return ResponseEntity.ok(EntityModel.of(headmanStatsService.query(request)));
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<byte[]> exportHeadmanStats(HeadmanStatsExportRequest request) {
+        HeadmanStatsExportResult result = headmanStatsService.export(request);
+        ContentDisposition disposition = ContentDisposition.attachment()
+                .filename(result.fileName(), StandardCharsets.UTF_8)
+                .build();
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(result.contentType()))
+                .cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .body(result.content());
     }
 
     private static ResponseEntity<byte[]> download(HeadmanWeeklyExportResult result) {

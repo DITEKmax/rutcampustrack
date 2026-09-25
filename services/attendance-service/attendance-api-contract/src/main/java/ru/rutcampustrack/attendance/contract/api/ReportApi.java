@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.attendance.contract.dto.report.AttendanceRecordEntry;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyWeeksResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsExportRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsQueryRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
@@ -150,4 +153,40 @@ public interface ReportApi {
     })
     @PostMapping("/headman-weekly/export")
     ResponseEntity<byte[]> exportHeadmanWeekly(@Valid @RequestBody HeadmanWeeklyExportRequest request);
+
+    @Operation(summary = "Query current-group semester attendance statistics for the headman")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Filtered student statistics page"),
+            @ApiResponse(responseCode = "400", description = "Invalid statistics query",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Headman or current VIEW_STATS permission required",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = "Academic or schedule data is unavailable",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/headman/stats/query")
+    ResponseEntity<EntityModel<HeadmanStatsResponse>> queryHeadmanStats(
+            @Valid @RequestBody HeadmanStatsQueryRequest request);
+
+    @Operation(summary = "Export the complete filtered current-group semester statistics block")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Report file",
+                    content = {
+                            @Content(mediaType = DOCX_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = PDF_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = ZIP_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = HTML_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = XLSX_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary"))
+                    }),
+            @ApiResponse(responseCode = "400", description = "Unknown format or invalid statistics query",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Headman or current VIEW_STATS permission required",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "413", description = "The selected export exceeds a bounded document or transport limit",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = "Renderer or upstream service unavailable",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/headman/stats/export")
+    ResponseEntity<byte[]> exportHeadmanStats(@Valid @RequestBody HeadmanStatsExportRequest request);
 }

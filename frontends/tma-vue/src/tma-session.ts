@@ -6,6 +6,7 @@ import {
   createGenerationBoundHeadmanGroupApi,
   createGenerationBoundHeadmanHomeworkApi,
   createGenerationBoundHeadmanSubjectsApi,
+  createGenerationBoundHeadmanStatsApi,
   createGenerationBoundStudentApi,
   createGenerationBoundTeacherApi,
   createGenerationBoundAdminDashboardClient,
@@ -21,6 +22,7 @@ import type {
   HeadmanGroupApi,
   HeadmanHomeworkApi,
   HeadmanSubjectsApi,
+  HeadmanStatsApi,
   ProfileRole,
   ProfileRoleGrant,
   ProfileRoleSelection,
@@ -102,6 +104,14 @@ export function useTmaSession(options: TmaSessionOptions) {
 
   function createHeadmanJournalApi(fetcher?: typeof fetch): HeadmanJournalApi {
     return createGenerationBoundHeadmanJournalApi({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor: authenticateFor,
+    }, fetcher)
+  }
+
+  function createHeadmanStatsApi(fetcher?: typeof fetch): HeadmanStatsApi {
+    return createGenerationBoundHeadmanStatsApi({
       currentGeneration,
       accessTokenFor,
       refreshFor: authenticateFor,
@@ -235,6 +245,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     createApi,
     createHeadmanApi,
     createHeadmanJournalApi,
+    createHeadmanStatsApi,
     createHeadmanRequestsApi,
     createHeadmanGroupApi,
     createHeadmanHomeworkApi,

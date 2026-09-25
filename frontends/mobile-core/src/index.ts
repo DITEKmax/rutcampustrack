@@ -55,6 +55,8 @@ export { default as AssistantActionsScreen } from './features/headman-group/Assi
 export { default as HeadmanGroupScreen } from './features/headman-group/HeadmanGroupScreen.vue'
 export * from './features/headman-subjects/headman-subjects-client'
 export { default as HeadmanSubjectsScreen } from './features/headman-subjects/HeadmanSubjectsScreen.vue'
+export * from './features/headman-stats/headman-stats-client'
+export { default as HeadmanStatsScreen } from './features/headman-stats/HeadmanStatsScreen.vue'
 export { ProfileRequestError } from './features/profile/profile-types'
 export { ProfileState } from './features/profile/profile-state'
 export type { ProfileStateView, ProfileResourceStatus } from './features/profile/profile-state'

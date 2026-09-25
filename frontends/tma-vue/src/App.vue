@@ -41,6 +41,7 @@ import {
   type HeadmanGroupApi,
   type HeadmanHomeworkApi,
   type HeadmanSubjectsApi,
+  type HeadmanStatsApi,
   type HeadmanAssistantPermission,
   type ProfileRole,
   type ProfileSnapshot,
@@ -83,7 +84,9 @@ const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const headmanGroupApi = shallowRef<HeadmanGroupApi | null>(null)
 const headmanSubjectsApi = shallowRef<HeadmanSubjectsApi | null>(null)
+const headmanStatsApi = shallowRef<HeadmanStatsApi | null>(null)
 const assistantJournalApi = shallowRef<HeadmanJournalApi | null>(null)
+const assistantStatsApi = shallowRef<HeadmanStatsApi | null>(null)
 const assistantRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const assistantHomeworkApi = shallowRef<HeadmanHomeworkApi | null>(null)
 const assistantPermissions = shallowRef<readonly HeadmanAssistantPermission[]>([])
@@ -175,12 +178,14 @@ async function fetchAssistantCapabilities(
   studentSession: StudentSession,
 ): Promise<{
   journalApi: HeadmanJournalApi
+  statsApi: HeadmanStatsApi
   requestsApi: HeadmanRequestsApi
   homeworkApi: HeadmanHomeworkApi
   permissions: readonly HeadmanAssistantPermission[]
 }> {
   const groupApi = sessionOwner.createHeadmanGroupApi(currentFetcher())
   const journalApi = sessionOwner.createHeadmanJournalApi(currentFetcher())
+  const statsApi = sessionOwner.createHeadmanStatsApi(currentFetcher())
   const requestsApi = sessionOwner.createHeadmanRequestsApi(currentFetcher())
   const homeworkApi = sessionOwner.createHeadmanHomeworkApi(currentFetcher())
   const groupId = studentSession.group?.id ? Number(studentSession.group.id) : null
@@ -188,7 +193,7 @@ async function fetchAssistantCapabilities(
     ? (await groupApi.listMyPermissions()).map((option) => option.code)
     : []
   if (!sessionOwner.isCurrent(generation)) throw new StaleSessionGenerationError()
-  return { journalApi, requestsApi, homeworkApi, permissions }
+  return { journalApi, statsApi, requestsApi, homeworkApi, permissions }
 }
 
 async function fetchProfileForCurrentGeneration(): Promise<{ generation: number; profile: ProfileSnapshot }> {
@@ -240,7 +245,9 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
   headmanRequestsApi.value = null
   headmanGroupApi.value = null
   headmanSubjectsApi.value = null
+  headmanStatsApi.value = null
   assistantJournalApi.value = null
+  assistantStatsApi.value = null
   assistantRequestsApi.value = null
   assistantHomeworkApi.value = null
   assistantPermissions.value = []
@@ -319,6 +326,7 @@ async function bootstrap(): Promise<void> {
       scope.value = null
       headmanApi.value = sessionOwner.createHeadmanApi(currentFetcher())
       headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
+      headmanStatsApi.value = sessionOwner.createHeadmanStatsApi(currentFetcher())
       headmanRequestsApi.value = sessionOwner.createHeadmanRequestsApi(currentFetcher())
       headmanGroupApi.value = sessionOwner.createHeadmanGroupApi(currentFetcher())
       headmanSubjectsApi.value = sessionOwner.createHeadmanSubjectsApi(currentFetcher())
@@ -340,11 +348,13 @@ async function bootstrap(): Promise<void> {
       const needsFreshOwner = !sameOwner || api.value === null
       headmanApi.value = null
       headmanJournalApi.value = null
+      headmanStatsApi.value = null
       headmanRequestsApi.value = null
       headmanGroupApi.value = null
       headmanSubjectsApi.value = null
       headmanGroupId.value = null
       assistantJournalApi.value = assistant.journalApi
+      assistantStatsApi.value = assistant.statsApi
       assistantRequestsApi.value = assistant.requestsApi
       assistantHomeworkApi.value = assistant.homeworkApi
       assistantPermissions.value = assistant.permissions
@@ -404,6 +414,7 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       scope.value = null
       headmanApi.value = sessionOwner.createHeadmanApi(currentFetcher())
       headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
+      headmanStatsApi.value = sessionOwner.createHeadmanStatsApi(currentFetcher())
       headmanRequestsApi.value = sessionOwner.createHeadmanRequestsApi(currentFetcher())
       headmanGroupApi.value = sessionOwner.createHeadmanGroupApi(currentFetcher())
       headmanSubjectsApi.value = sessionOwner.createHeadmanSubjectsApi(currentFetcher())
@@ -423,11 +434,13 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
       const assistant = await fetchAssistantCapabilities(selection.generation, candidateSession)
       headmanApi.value = null
       headmanJournalApi.value = null
+      headmanStatsApi.value = null
       headmanRequestsApi.value = null
       headmanGroupApi.value = null
       headmanSubjectsApi.value = null
       headmanGroupId.value = null
       assistantJournalApi.value = assistant.journalApi
+      assistantStatsApi.value = assistant.statsApi
       assistantRequestsApi.value = assistant.requestsApi
       assistantHomeworkApi.value = assistant.homeworkApi
       assistantPermissions.value = assistant.permissions
@@ -526,6 +539,7 @@ onBeforeUnmount(() => {
     :key="`headman-${ownerRevision}`"
     :api="headmanApi"
     :journal-api="headmanJournalApi"
+    :stats-api="headmanStatsApi"
     :requests-api="headmanRequestsApi"
     :group-api="headmanGroupApi"
     :subjects-api="headmanSubjectsApi"
@@ -622,6 +636,7 @@ onBeforeUnmount(() => {
     :open-material="openMaterial"
     :assistant-permissions="assistantPermissions"
     :assistant-journal-api="assistantJournalApi"
+    :assistant-stats-api="assistantStatsApi"
     :assistant-requests-api="assistantRequestsApi"
     :assistant-homework-api="assistantHomeworkApi"
     @owner-error="onOwnerError"

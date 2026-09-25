@@ -22,6 +22,8 @@ import type { HeadmanGroupApi } from '../headman-group/headman-group-client'
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
 import HeadmanSubjectsScreen from '../headman-subjects/HeadmanSubjectsScreen.vue'
 import type { HeadmanSubjectsApi } from '../headman-subjects/headman-subjects-client'
+import HeadmanStatsScreen from '../headman-stats/HeadmanStatsScreen.vue'
+import type { HeadmanStatsApi } from '../headman-stats/headman-stats-client'
 import {
   HeadmanScheduleApiError,
   type HeadmanScheduleApi,
@@ -38,6 +40,7 @@ const props = withDefaults(defineProps<{
   requestsApi?: HeadmanRequestsApi | null
   groupApi?: HeadmanGroupApi | null
   subjectsApi?: HeadmanSubjectsApi | null
+  statsApi?: HeadmanStatsApi | null
   assistantPermissions?: readonly HeadmanAssistantPermission[] | null
   profile: ProfileSnapshot | null
   groupId: number | null
@@ -52,6 +55,7 @@ const props = withDefaults(defineProps<{
   requestsApi: null,
   groupApi: null,
   subjectsApi: null,
+  statsApi: null,
   assistantPermissions: null,
   mapClient: null,
   offline: false,
@@ -82,6 +86,7 @@ const journalOpen = ref(false)
 const requestsOpen = ref(false)
 const groupOpen = ref(false)
 const subjectsOpen = ref(false)
+const statsOpen = ref(false)
 const formBusy = ref(false)
 const formError = ref<string | null>(null)
 const notice = ref<string | null>(null)
@@ -97,6 +102,7 @@ const journalRouteId = 'more/headman-journal/journal' as const
 const requestsRouteId = 'more/headman-requests/list' as const
 const groupRouteId = 'more/headman-group/list' as const
 const subjectsRouteId = 'more/headman-subjects/list' as const
+const statsRouteId = 'more/headman-stats/stats' as const
 let loadRevision = 0
 let stopNavigation = navigation.subscribe(() => {
   const next = navigation.current
@@ -108,6 +114,7 @@ let stopNavigation = navigation.subscribe(() => {
     requestsOpen.value = false
     groupOpen.value = false
     subjectsOpen.value = false
+    statsOpen.value = false
     void props.onRoleSwitch?.()
   } else if (next.id === journalRouteId) {
     formOpen.value = false
@@ -115,35 +122,48 @@ let stopNavigation = navigation.subscribe(() => {
     requestsOpen.value = false
     groupOpen.value = false
     subjectsOpen.value = false
+    statsOpen.value = false
   } else if (next.id === requestsRouteId) {
     formOpen.value = false
     journalOpen.value = false
     requestsOpen.value = true
     groupOpen.value = false
     subjectsOpen.value = false
+    statsOpen.value = false
   } else if (next.id === groupRouteId) {
     formOpen.value = false
     journalOpen.value = false
     requestsOpen.value = false
     groupOpen.value = true
     subjectsOpen.value = false
+    statsOpen.value = false
   } else if (next.id === subjectsRouteId) {
     formOpen.value = false
     journalOpen.value = false
     requestsOpen.value = false
     groupOpen.value = false
     subjectsOpen.value = true
+    statsOpen.value = false
+  } else if (next.id === statsRouteId) {
+    formOpen.value = false
+    journalOpen.value = false
+    requestsOpen.value = false
+    groupOpen.value = false
+    subjectsOpen.value = false
+    statsOpen.value = true
   } else if (next.id === 'more/headman-schedule/list') {
     formOpen.value = false
     journalOpen.value = false
     requestsOpen.value = false
     groupOpen.value = false
     subjectsOpen.value = false
+    statsOpen.value = false
   } else if (next.id === 'more/headman-schedule/form') {
     journalOpen.value = false
     requestsOpen.value = false
     groupOpen.value = false
     subjectsOpen.value = false
+    statsOpen.value = false
     formOpen.value = true
   }
 })
@@ -231,6 +251,16 @@ function openSubjects(): void {
   if (!props.subjectsApi || props.groupId === null || props.offline) return
   subjectsOpen.value = true
   navigation.push(nestedRoute('more', subjectsRouteId, 'task'))
+}
+
+function openStats(): void {
+  if (!props.statsApi || props.groupId === null || props.offline) return
+  statsOpen.value = true
+  navigation.push(nestedRoute('more', statsRouteId, 'task'))
+}
+
+function closeStats(): void {
+  navigation.replace(nestedRoute('more', 'more/headman-schedule/list', 'task'))
 }
 
 function closeRequests(): void {
@@ -386,6 +416,15 @@ onBeforeUnmount(() => {
       v-if="route.id === 'more/map' && props.mapClient"
       :client="props.mapClient"
     />
+    <HeadmanStatsScreen
+      v-else-if="statsOpen"
+      :api="statsApi"
+      :group-id="groupId"
+      :assistant-permissions="assistantPermissions"
+      :offline="offline"
+      @back="closeStats"
+      @error="emit('error', $event)"
+    />
     <HeadmanJournalScreen
       v-else-if="journalOpen"
       :api="journalApi"
@@ -505,6 +544,15 @@ onBeforeUnmount(() => {
         @click="openSubjects"
       >
         Управление предметами
+      </button>
+      <button
+        v-if="statsApi && groupId !== null"
+        class="headman-schedule__journal"
+        type="button"
+        :disabled="offline"
+        @click="openStats"
+      >
+        Статистика группы
       </button>
       <button
         v-if="mapClient"

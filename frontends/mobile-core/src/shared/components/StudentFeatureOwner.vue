@@ -25,6 +25,7 @@ import AssistantActionsScreen from '../../features/headman-group/AssistantAction
 import type { HeadmanAssistantPermission } from '../../features/headman-group/headman-group-client'
 import type { HeadmanJournalApi } from '../../features/headman-journal/headman-journal-client'
 import type { HeadmanRequestsApi } from '../../features/headman-requests/headman-requests-client'
+import type { HeadmanStatsApi } from '../../features/headman-stats/headman-stats-client'
 import MapScreen from '../../features/map/MapScreen.vue'
 import ProfileScreen from '../../features/profile/ProfileScreen.vue'
 import { ProfileState } from '../../features/profile/profile-state'
@@ -81,6 +82,7 @@ const props = withDefaults(defineProps<{
   openMaterial: (url: string, item: StudentHomeworkItem) => void
   assistantPermissions?: readonly HeadmanAssistantPermission[]
   assistantJournalApi?: HeadmanJournalApi | null
+  assistantStatsApi?: HeadmanStatsApi | null
   assistantRequestsApi?: HeadmanRequestsApi | null
   assistantHomeworkApi?: HeadmanHomeworkApi | null
 }>(), {
@@ -96,6 +98,7 @@ const props = withDefaults(defineProps<{
   themeController: null,
   assistantPermissions: () => [],
   assistantJournalApi: null,
+  assistantStatsApi: null,
   assistantRequestsApi: null,
   assistantHomeworkApi: null,
 })
@@ -1034,6 +1037,7 @@ onBeforeUnmount(() => {
       :permissions="assistantPermissions ?? []"
       :group-id="scope?.groupId ? Number(scope.groupId) : null"
       :journal-api="assistantJournalApi ?? null"
+      :stats-api="assistantStatsApi ?? null"
       :requests-api="assistantRequestsApi ?? null"
       :homework-api="assistantHomeworkApi ?? null"
       :user-id="scope?.userId ? Number(scope.userId) : null"

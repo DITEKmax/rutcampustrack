@@ -1037,14 +1037,15 @@ public class ReportService {
     private record TeacherStatsSubjectKey(long groupId, long subjectId) {
     }
 
-    private static final class StatsCounter {
+    /** Shared canonical attendance denominator and four metrics for 123 and 113 reports. */
+    static final class StatsCounter {
         private int denominator;
         private int present;
         private int presentOrExcused;
         private int excused;
         private int absent;
 
-        private void add(AttendanceStatus status) {
+        void add(AttendanceStatus status) {
             if (status == AttendanceStatus.CANCELLED) return;
             denominator++;
             switch (status) {
@@ -1061,20 +1062,28 @@ public class ReportService {
             }
         }
 
-        private TeacherMetric presentMetric() {
+        TeacherMetric presentMetric() {
             return TeacherMetric.of(present, denominator);
         }
 
-        private TeacherMetric presentOrExcusedMetric() {
+        TeacherMetric presentOrExcusedMetric() {
             return TeacherMetric.of(presentOrExcused, denominator);
         }
 
-        private TeacherMetric excusedMetric() {
+        TeacherMetric excusedMetric() {
             return TeacherMetric.of(excused, denominator);
         }
 
-        private TeacherMetric absentMetric() {
+        TeacherMetric absentMetric() {
             return TeacherMetric.of(absent, denominator);
+        }
+
+        void merge(StatsCounter other) {
+            denominator += other.denominator;
+            present += other.present;
+            presentOrExcused += other.presentOrExcused;
+            excused += other.excused;
+            absent += other.absent;
         }
     }
 

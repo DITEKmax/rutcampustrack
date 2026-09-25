@@ -51,6 +51,7 @@ import {
   type HeadmanGroupApi,
   type HeadmanHomeworkApi,
   type HeadmanSubjectsApi,
+  type HeadmanStatsApi,
   type HeadmanAssistantPermission,
   type AdminSemesterClient,
   type AdminDashboardClient,
@@ -103,7 +104,9 @@ const headmanJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const headmanGroupApi = shallowRef<HeadmanGroupApi | null>(null)
 const headmanSubjectsApi = shallowRef<HeadmanSubjectsApi | null>(null)
+const headmanStatsApi = shallowRef<HeadmanStatsApi | null>(null)
 const assistantJournalApi = shallowRef<HeadmanJournalApi | null>(null)
+const assistantStatsApi = shallowRef<HeadmanStatsApi | null>(null)
 const assistantRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const assistantHomeworkApi = shallowRef<HeadmanHomeworkApi | null>(null)
 const assistantPermissions = shallowRef<readonly HeadmanAssistantPermission[]>([])
@@ -250,7 +253,9 @@ async function loadOfflineSnapshot(): Promise<boolean> {
   headmanRequestsApi.value = null
   headmanGroupApi.value = null
   headmanSubjectsApi.value = null
+  headmanStatsApi.value = null
   assistantJournalApi.value = null
+  assistantStatsApi.value = null
   assistantRequestsApi.value = null
   assistantHomeworkApi.value = null
   assistantPermissions.value = []
@@ -317,7 +322,9 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): St
   headmanRequestsApi.value = null
   headmanGroupApi.value = null
   headmanSubjectsApi.value = null
+  headmanStatsApi.value = null
   assistantJournalApi.value = null
+  assistantStatsApi.value = null
   assistantRequestsApi.value = null
   assistantHomeworkApi.value = null
   assistantPermissions.value = []
@@ -412,6 +419,7 @@ async function fetchStudentCandidate(
   session: StudentSession
   profile: ProfileSnapshot
   assistantJournalApi: HeadmanJournalApi
+  assistantStatsApi: HeadmanStatsApi
   assistantRequestsApi: HeadmanRequestsApi
   assistantHomeworkApi: HeadmanHomeworkApi
   assistantPermissions: readonly HeadmanAssistantPermission[]
@@ -421,6 +429,7 @@ async function fetchStudentCandidate(
   const candidateSession = await candidateApi.getSession()
   const candidateGroupApi = auth.createHeadmanGroupApi(currentFetcher())
   const candidateJournalApi = auth.createHeadmanJournalApi(currentFetcher())
+  const candidateStatsApi = auth.createHeadmanStatsApi(currentFetcher())
   const candidateRequestsApi = auth.createHeadmanRequestsApi(currentFetcher())
   const candidateHomeworkApi = auth.createHeadmanHomeworkApi(currentFetcher())
   const groupId = candidateSession.group?.id ? Number(candidateSession.group.id) : null
@@ -435,6 +444,7 @@ async function fetchStudentCandidate(
     session: candidateSession,
     profile,
     assistantJournalApi: candidateJournalApi,
+    assistantStatsApi: candidateStatsApi,
     assistantRequestsApi: candidateRequestsApi,
     assistantHomeworkApi: candidateHomeworkApi,
     assistantPermissions: permissions,
@@ -445,6 +455,7 @@ type HeadmanCandidate = {
   generation: number
   api: HeadmanScheduleApi
   journalApi: HeadmanJournalApi
+  statsApi: HeadmanStatsApi
   requestsApi: HeadmanRequestsApi
   groupApi: HeadmanGroupApi
   subjectsApi: HeadmanSubjectsApi
@@ -471,6 +482,7 @@ async function fetchHeadmanCandidate(
   }
   const candidateApi = auth.createHeadmanApi(currentFetcher())
   const candidateJournalApi = auth.createHeadmanJournalApi(currentFetcher())
+  const candidateStatsApi = auth.createHeadmanStatsApi(currentFetcher())
   const candidateRequestsApi = auth.createHeadmanRequestsApi(currentFetcher())
   const candidateGroupApi = auth.createHeadmanGroupApi(currentFetcher())
   const candidateSubjectsApi = auth.createHeadmanSubjectsApi(currentFetcher())
@@ -479,6 +491,7 @@ async function fetchHeadmanCandidate(
     generation,
     api: candidateApi,
     journalApi: candidateJournalApi,
+    statsApi: candidateStatsApi,
     requestsApi: candidateRequestsApi,
     groupApi: candidateGroupApi,
     subjectsApi: candidateSubjectsApi,
@@ -511,6 +524,7 @@ type StudentCandidate = {
   session: StudentSession
   profile: ProfileSnapshot
   assistantJournalApi: HeadmanJournalApi
+  assistantStatsApi: HeadmanStatsApi
   assistantRequestsApi: HeadmanRequestsApi
   assistantHomeworkApi: HeadmanHomeworkApi
   assistantPermissions: readonly HeadmanAssistantPermission[]
@@ -588,6 +602,7 @@ async function activateCandidate(candidate: StudentCandidate): Promise<void> {
   assertCandidateCurrent(candidate.generation)
   api.value = needsFreshOwner ? candidate.api : api.value
   assistantJournalApi.value = candidate.assistantJournalApi
+  assistantStatsApi.value = candidate.assistantStatsApi
   assistantRequestsApi.value = candidate.assistantRequestsApi
   assistantHomeworkApi.value = candidate.assistantHomeworkApi
   assistantPermissions.value = candidate.assistantPermissions
@@ -611,6 +626,7 @@ async function activateHeadmanCandidate(candidate: HeadmanCandidate): Promise<vo
   assertCandidateCurrent(candidate.generation)
   headmanApi.value = candidate.api
   headmanJournalApi.value = candidate.journalApi
+  headmanStatsApi.value = candidate.statsApi
   headmanRequestsApi.value = candidate.requestsApi
   headmanGroupApi.value = candidate.groupApi
   headmanSubjectsApi.value = candidate.subjectsApi
@@ -1106,6 +1122,7 @@ onBeforeUnmount(() => {
     :key="`headman-${ownerRevision}`"
     :api="headmanApi"
     :journal-api="headmanJournalApi"
+    :stats-api="headmanStatsApi"
     :requests-api="headmanRequestsApi"
     :group-api="headmanGroupApi"
     :subjects-api="headmanSubjectsApi"
@@ -1201,6 +1218,7 @@ onBeforeUnmount(() => {
     :profile-role-select="selectRole"
     :assistant-permissions="assistantPermissions"
     :assistant-journal-api="assistantJournalApi"
+    :assistant-stats-api="assistantStatsApi"
     :assistant-requests-api="assistantRequestsApi"
     :assistant-homework-api="assistantHomeworkApi"
     :map-client="mapClient"

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.rutcampustrack.auth.session.SessionAdmissionException;
 import ru.rutcampustrack.auth.session.AuthSessionException;
+import ru.rutcampustrack.auth.service.ReportDownloadTicketRateLimitException;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 import java.time.Instant;
@@ -116,6 +117,22 @@ public class GlobalExceptionHandler {
                 .cacheControl(CacheControl.noStore())
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                 .body(body);
+    }
+
+    @ExceptionHandler(ReportDownloadTicketRateLimitException.class)
+    public ResponseEntity<ErrorResponse> handleReportDownloadTicketRateLimit(
+            ReportDownloadTicketRateLimitException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.TOO_MANY_REQUESTS, "report-download-ticket-rate-limit-exceeded",
+                "Request limit exceeded", "Retry after the current ticket window expires", request);
+    }
+
+    @ExceptionHandler(InvalidReportDownloadTicketRequestException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidReportDownloadTicketRequest(
+            InvalidReportDownloadTicketRequestException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.BAD_REQUEST, "invalid-report-download-ticket-request",
+                "Invalid report selector", ex.getMessage(), request);
     }
 
     @ExceptionHandler(AuthSessionException.class)

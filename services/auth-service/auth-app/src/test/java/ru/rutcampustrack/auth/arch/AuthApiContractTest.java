@@ -62,5 +62,7 @@ class AuthApiContractTest {
                     .orShould().implement(ru.rutcampustrack.auth.api.WsTicketApi.class)
                     .orShould().implement(ru.rutcampustrack.auth.api.InternalSessionAdmissionApi.class)
                     .orShould().implement(ru.rutcampustrack.auth.api.InternalWsTicketApi.class)
+                    .orShould().implement(ru.rutcampustrack.auth.api.ReportDownloadTicketApi.class)
+                    .orShould().implement(ru.rutcampustrack.auth.api.InternalReportDownloadTicketApi.class)
                     .because("M12 01 P0-1: каждый @RestController реализует interface из auth-api-contract");
 }

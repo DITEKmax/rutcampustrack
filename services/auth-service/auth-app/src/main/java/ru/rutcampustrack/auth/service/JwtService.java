@@ -359,6 +359,40 @@ public class JwtService {
      * The admission service supplies the already-capped whole-second window.
      */
     public String generateInternalToken(SessionSnapshot snapshot, Instant issuedAt, Instant expiration) {
+        return generateInternalToken(snapshot, issuedAt, expiration, null);
+    }
+
+    /** Signs fresh authority for one stored report selector as well as the live session. */
+    public String generateInternalReportDownloadToken(
+            SessionSnapshot snapshot,
+            Instant issuedAt,
+            Instant expiration,
+            String reportBindingHash,
+            Instant reportTicketExpiresAt
+    ) {
+        if (reportBindingHash == null || !reportBindingHash.matches("[0-9a-f]{64}")
+                || reportTicketExpiresAt == null) {
+            throw new IllegalArgumentException("report binding hash is invalid");
+        }
+        return generateInternalToken(snapshot, issuedAt, expiration, reportBindingHash, reportTicketExpiresAt);
+    }
+
+    private String generateInternalToken(
+            SessionSnapshot snapshot,
+            Instant issuedAt,
+            Instant expiration,
+            String reportBindingHash
+    ) {
+        return generateInternalToken(snapshot, issuedAt, expiration, reportBindingHash, null);
+    }
+
+    private String generateInternalToken(
+            SessionSnapshot snapshot,
+            Instant issuedAt,
+            Instant expiration,
+            String reportBindingHash,
+            Instant reportTicketExpiresAt
+    ) {
         Objects.requireNonNull(snapshot, "snapshot");
         Objects.requireNonNull(issuedAt, "issuedAt");
         Objects.requireNonNull(expiration, "expiration");
@@ -382,6 +416,10 @@ public class JwtService {
                 .expiration(Date.from(expiration));
         if (activeRole.groupId() != null) {
             builder.claim("group_id", Long.toString(activeRole.groupId()));
+        }
+        if (reportBindingHash != null) {
+            builder.claim("report_hash", reportBindingHash);
+            builder.claim("report_ticket_exp", reportTicketExpiresAt.toString());
         }
         return builder.signWith(privateKey, Jwts.SIG.RS256).compact();
     }

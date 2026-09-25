@@ -29,6 +29,15 @@ spring:
           globalcors:
             add-to-simple-url-handler-mapping: true
             cors-configurations:
+              '[/api/report-download/**]':
+                allowed-origins:
+                  - "https://web.telegram.org"
+                allowed-methods:
+                  - GET
+                allowed-headers:
+                  - Range
+                allow-credentials: false
+                max-age: 300
               '[/**]':
                 allowed-origins:
                   - "${CORS_ALLOWED_ORIGIN:http://localhost:5173}"
@@ -60,6 +69,13 @@ spring:
           # default-filters:
           #   - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
           routes:
+            # This route exists only so the exact report-ticket GlobalFilter
+            # can consume the bearer-free request before any proxying occurs.
+            - id: report-download-ticket
+              uri: no://op
+              predicates:
+                - Path=/api/report-download/*
+
             # === Rate-limited routes (specific first, wins over generic auth-service) ===
 
             # M13 G2: real X/min semantics via token bucket.
@@ -417,6 +433,10 @@ gateway:
   auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
 
 rutcampustrack:
+  report-download:
+    mobile-bff-url: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+    attendance-service-url: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
+    timeout-millis: 30000
   gateway:
     client-ip:
       # Development has no implicit proxy trust. The prod profile replaces

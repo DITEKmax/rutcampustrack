@@ -193,6 +193,51 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
                                      String status,
                                      String groupId,
                                      Instant accessExpiry) {
+        verifyInternalToken(response, userId, sessionId, sessionVersion, rolesVersion,
+                role, status, groupId, accessExpiry, null, null);
+    }
+
+    void verifyInternalReportDownloadToken(
+            AuthAdmissionResponse response,
+            Instant ticketExpiresAt,
+            String reportBindingHash
+    ) {
+        if (response == null || response.internalToken() == null
+                || response.internalToken().isBlank() || response.internalToken().length() > 16_384
+                || response.expiresAt() == null || ticketExpiresAt == null
+                || reportBindingHash == null || !reportBindingHash.matches("[0-9a-f]{64}")) {
+            throw new IllegalArgumentException("incoherent report-ticket admission response");
+        }
+        String userId = requirePositiveLongString(response.userId(), "userId");
+        String sessionId = requireCanonicalUuid(response.sessionId(), "sessionId");
+        String sessionVersion = requirePositiveLongString(response.sessionVersion(), "sessionVersion");
+        String rolesVersion = requirePositiveLongString(response.rolesVersion(), "rolesVersion");
+        String role = requireKnownRole(response.role());
+        String status = requireAdmissionStatus(response.status());
+        String groupId = response.groupId() == null
+                ? null : requirePositiveLongString(response.groupId(), "groupId");
+        if (response.isHeadman() != "HEADMAN".equals(role)
+                || ("HEADMAN".equals(role) && groupId == null)
+                || response.readOnly() != TERMINAL_STATUSES.contains(status)
+                || !ticketExpiresAt.isAfter(Instant.now())
+                || ticketExpiresAt.isAfter(Instant.now().plusSeconds(60))) {
+            throw new IllegalArgumentException("report-ticket admission identity or expiry is invalid");
+        }
+        verifyInternalToken(response, userId, sessionId, sessionVersion, rolesVersion,
+                role, status, groupId, ticketExpiresAt, reportBindingHash, ticketExpiresAt.toString());
+    }
+
+    private void verifyInternalToken(AuthAdmissionResponse response,
+                                     String userId,
+                                     String sessionId,
+                                     String sessionVersion,
+                                     String rolesVersion,
+                                     String role,
+                                     String status,
+                                     String groupId,
+                                     Instant accessExpiry,
+                                     String expectedReportBindingHash,
+                                     String expectedReportTicketExpiry) {
         try {
             PublicKey publicKey = publicKeyConfig.getPublicKey();
             if (!(publicKey instanceof RSAPublicKey)) {
@@ -237,6 +282,11 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
             if (!Boolean.valueOf(response.isHeadman()).equals(requireBooleanClaim(claims, "is_headman"))
                     || !Boolean.valueOf(response.readOnly()).equals(requireBooleanClaim(claims, "readOnly"))) {
                 throw new IllegalArgumentException("internal JWT flags do not match response");
+            }
+
+            if (expectedReportBindingHash != null) {
+                requireExactStringClaim(claims, "report_hash", expectedReportBindingHash);
+                requireExactStringClaim(claims, "report_ticket_exp", expectedReportTicketExpiry);
             }
 
             Instant tokenExpiry = expiresAt.toInstant();

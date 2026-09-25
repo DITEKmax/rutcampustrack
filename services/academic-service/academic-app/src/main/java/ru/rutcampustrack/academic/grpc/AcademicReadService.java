@@ -72,6 +72,13 @@ public class AcademicReadService {
         return historicalMembershipService.readRoster(groupId, asOfDate, semesterId);
     }
 
+    public List<Long> fetchHistoricalGroupMemberIds(Long groupId, LocalDate asOfDate) {
+        if (historicalMembershipService == null) {
+            throw new IllegalStateException("Historical membership service is unavailable");
+        }
+        return historicalMembershipService.readMemberUserIds(groupId, asOfDate);
+    }
+
     @Cacheable(value = "active_semester", key = "'current'")
     public Semester fetchActiveSemester() {
         return semesterRepository.findByIsActiveTrue()

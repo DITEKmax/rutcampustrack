@@ -52,6 +52,26 @@ class HistoricalMembershipGrpcTest {
     }
 
     @Test
+    void datedIdRequestUsesNoSemesterAndEchoesItsScope() {
+        AcademicReadService readService = mock(AcademicReadService.class);
+        when(readService.fetchHistoricalGroupMemberIds(7L, LocalDate.of(2026, 4, 20)))
+                .thenReturn(List.of(41L, 42L));
+
+        AcademicGrpcServiceImpl service = service(readService);
+        RecordingObserver<GroupMemberIdsAsOfResponse> observer = new RecordingObserver<>();
+
+        service.getGroupMemberIdsAsOf(GroupMemberIdsAsOfRequest.newBuilder()
+                .setGroupId(7L)
+                .setAsOfDate("2026-04-20")
+                .build(), observer);
+
+        assertThat(observer.error).isNull();
+        assertThat(observer.value.getGroupId()).isEqualTo(7L);
+        assertThat(observer.value.getAsOfDate()).isEqualTo("2026-04-20");
+        assertThat(observer.value.getUserIdsList()).containsExactly(41L, 42L);
+    }
+
+    @Test
     void oneMissingPairedFieldIsInvalidArgument() {
         AcademicGrpcServiceImpl service = service(mock(AcademicReadService.class));
 

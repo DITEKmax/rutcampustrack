@@ -16,6 +16,10 @@ service AcademicGrpcService {
   // Получить состав группы (список студентов)
   rpc GetGroupMembers (GroupMembersRequest) returns (GroupMembersResponse);
 
+  // Resolve the managed membership audience for one dated group event.
+  // Unlike GetGroupMembers this is intentionally not semester-bound.
+  rpc GetGroupMemberIdsAsOf (GroupMemberIdsAsOfRequest) returns (GroupMemberIdsAsOfResponse);
+
   // Получить предметы преподавателя (для авторизации в Report)
   rpc GetTeacherSubjects (TeacherSubjectsRequest) returns (TeacherSubjectsResponse);
 
@@ -94,6 +98,17 @@ message GroupMembersResponse {
   repeated StudentInfo students = 1;
   optional string as_of_date = 2;  // exact request echo for dated calls
   optional int64 semester_id = 3;  // exact request echo for dated calls
+}
+
+message GroupMemberIdsAsOfRequest {
+  int64 group_id = 1;
+  string as_of_date = 2;  // ISO-8601 date in the event's Academic zone
+}
+
+message GroupMemberIdsAsOfResponse {
+  int64 group_id = 1;  // exact request echo
+  string as_of_date = 2;  // exact request echo
+  repeated int64 user_ids = 3;
 }
 
 message StudentInfo {

@@ -56,7 +56,7 @@ public class HistoricalMembershipService {
             throw HistoricalMembershipException.invalid("group_id, as_of_date and semester_id are required");
         }
 
-        Group group = groupRepository.findById(groupId)
+        groupRepository.findById(groupId)
                 .orElseThrow(() -> HistoricalMembershipException.notFound("Group " + groupId + " not found"));
         Semester semester = semesterRepository.findById(semesterId)
                 .orElseThrow(() -> HistoricalMembershipException.notFound("Semester " + semesterId + " not found"));
@@ -68,7 +68,27 @@ public class HistoricalMembershipService {
             throw HistoricalMembershipException.invalid("as_of_date must belong to semester");
         }
 
-        GroupHistoryCoverage coverage = coverageRepository.findById(group.getId())
+        ActiveRoster roster = readManagedRoster(groupId, asOfDate);
+        return new RosterSnapshot(groupId, asOfDate, semesterId, roster.students());
+    }
+
+    /**
+     * Reads only historical member IDs for dated internal consumers whose event
+     * date is not guaranteed to belong to a single semester (for example, a
+     * group broadcast published between semesters).
+     */
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public List<Long> readMemberUserIds(long groupId, LocalDate asOfDate) {
+        if (groupId <= 0 || asOfDate == null) {
+            throw HistoricalMembershipException.invalid("group_id and as_of_date are required");
+        }
+        groupRepository.findById(groupId)
+                .orElseThrow(() -> HistoricalMembershipException.notFound("Group " + groupId + " not found"));
+        return readManagedRoster(groupId, asOfDate).userIds();
+    }
+
+    private ActiveRoster readManagedRoster(long groupId, LocalDate asOfDate) {
+        GroupHistoryCoverage coverage = coverageRepository.findById(groupId)
                 .orElseThrow(() -> HistoricalMembershipException.precondition(
                         "Group history coverage is not established"));
         if (coverage.getCoverageFrom() == null || asOfDate.isBefore(coverage.getCoverageFrom())) {
@@ -168,7 +188,7 @@ public class HistoricalMembershipService {
         Map<Long, User> usersById = users.stream().collect(Collectors.toMap(
                 User::getId, user -> user, (left, right) -> left, LinkedHashMap::new));
         List<User> orderedUsers = activeUserIds.stream().map(usersById::get).toList();
-        return new RosterSnapshot(groupId, asOfDate, semesterId, orderedUsers);
+        return new ActiveRoster(activeUserIds, orderedUsers);
     }
 
     private static void validateHistory(List<StudentGroupHistory> histories,
@@ -234,6 +254,13 @@ public class HistoricalMembershipService {
                 throw new IllegalArgumentException("roster identity must be positive");
             }
             Objects.requireNonNull(asOfDate, "asOfDate");
+            students = List.copyOf(Objects.requireNonNull(students, "students"));
+        }
+    }
+
+    private record ActiveRoster(List<Long> userIds, List<User> students) {
+        private ActiveRoster {
+            userIds = List.copyOf(Objects.requireNonNull(userIds, "userIds"));
             students = List.copyOf(Objects.requireNonNull(students, "students"));
         }
     }

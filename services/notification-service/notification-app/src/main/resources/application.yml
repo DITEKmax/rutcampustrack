@@ -4,6 +4,14 @@ server:
     mbeanregistry:
       enabled: true
 
+grpc:
+  auth:
+    secret: ${GRPC_SECRET:}
+  client:
+    academic-service:
+      address: ${ACADEMIC_SERVICE_GRPC_ADDRESS:static://academic-service:19091}
+      negotiationType: PLAINTEXT
+
 spring:
   application:
     name: notification-web

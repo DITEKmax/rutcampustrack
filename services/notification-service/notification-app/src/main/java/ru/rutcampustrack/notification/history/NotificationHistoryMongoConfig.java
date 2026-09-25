@@ -14,6 +14,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.index.IndexInfo;
 import org.springframework.data.mongodb.core.index.IndexOperations;
+import org.springframework.data.mongodb.core.index.PartialIndexFilter;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
 import ru.rutcampustrack.shared.events.IdempotencyStore;
@@ -61,9 +63,10 @@ public class NotificationHistoryMongoConfig {
     static final String IDX_USER_SENT_DESC = "idx_user_sent_desc";
     static final String IDX_USER_READ = "idx_user_read";
     static final String IDX_TTL_SENT_AT = "ttl_sent_at";
+    static final String IDX_EVENT_USER = "uniq_event_user";
 
     private static final Set<String> EXPECTED_INDEXES = Set.of(
-            IDX_USER_SENT_DESC, IDX_USER_READ, IDX_TTL_SENT_AT);
+            IDX_USER_SENT_DESC, IDX_USER_READ, IDX_TTL_SENT_AT, IDX_EVENT_USER);
 
     private final MongoTemplate mongoTemplate;
     private final int ttlDays;
@@ -126,8 +129,15 @@ public class NotificationHistoryMongoConfig {
                 .expire(Duration.ofDays(ttlDays))
                 .named(IDX_TTL_SENT_AT));
 
-        log.info("notification_history indexes ensured: {}, {}, {} (TTL {} days)",
-                i1, i2, i3, ttlDays);
+        String i4 = ops.ensureIndex(new Index()
+                .on("event_id", Sort.Direction.ASC)
+                .on("user_id", Sort.Direction.ASC)
+                .unique()
+                .partial(PartialIndexFilter.of(Criteria.where("event_id").exists(true)))
+                .named(IDX_EVENT_USER));
+
+        log.info("notification_history indexes ensured: {}, {}, {}, {} (TTL {} days)",
+                i1, i2, i3, i4, ttlDays);
 
         verifyIndexes(ops);
 
@@ -162,6 +172,15 @@ public class NotificationHistoryMongoConfig {
                     + "Runbook: runbooks/mongo-indexes-verify.md";
             log.error(msg);
             throw new IllegalStateException(msg);
+        }
+
+        Document eventUserIndex = mongoTemplate.getCollection(COLLECTION).listIndexes().into(new java.util.ArrayList<>())
+                .stream()
+                .filter(index -> IDX_EVENT_USER.equals(index.getString("name")))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("notification_history unique event index missing"));
+        if (!Boolean.TRUE.equals(eventUserIndex.getBoolean("unique"))) {
+            throw new IllegalStateException("notification_history event/user index must be unique");
         }
 
         // TTL sanity: ttl_sent_at должен иметь expireAfter > 0.

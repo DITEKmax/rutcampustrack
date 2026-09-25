@@ -15,3 +15,13 @@ management:
       application: ${spring.application.name}
 
 # M04 QA1: prod не переопределяет ru.rutcampustrack — default уже INFO.
+
+grpc:
+  client:
+    academic-service:
+      # Internal dated membership reads require the existing Academic TLS trust.
+      # No production plaintext fallback is configured.
+      negotiation-type: TLS
+      security:
+        trust-cert-collection: ${ACADEMIC_GRPC_TRUST_CERT_COLLECTION}
+        authority-override: ${ACADEMIC_GRPC_TLS_AUTHORITY}

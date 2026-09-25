@@ -420,6 +420,9 @@ services:
     container_name: rct-notification-web
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      GRPC_SECRET: ${GRPC_SECRET:?GRPC_SECRET must be set}
+      ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
       # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       SPRING_RABBITMQ_HOST: rabbitmq
@@ -455,6 +458,7 @@ services:
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     volumes:
       - jwt-keys:/keys:ro
+      - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
       - "9094"
     networks:

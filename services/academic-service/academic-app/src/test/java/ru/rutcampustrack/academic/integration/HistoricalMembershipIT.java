@@ -152,6 +152,8 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                 source.getId(), semesterStart, testSemesterId).students())
                 .extracting(User::getId)
                 .containsExactly(student.getId());
+        assertThat(historicalMembershipService.readMemberUserIds(source.getId(), semesterStart))
+                .containsExactly(student.getId());
 
         userService.transferStudent(student.getId(),
                 new TransferStudentRequest(destination.getId(), "historical test transfer"));
@@ -161,12 +163,19 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                 source.getId(), transferDate.minusDays(1), testSemesterId).students())
                 .extracting(User::getId)
                 .containsExactly(student.getId());
+        assertThat(historicalMembershipService.readMemberUserIds(source.getId(), transferDate.minusDays(1)))
+                .containsExactly(student.getId());
         assertThat(historicalMembershipService.readRoster(
                 source.getId(), transferDate, testSemesterId).students())
                 .isEmpty();
+        assertThat(historicalMembershipService.readMemberUserIds(source.getId(), transferDate)).isEmpty();
+        assertThat(historicalMembershipService.readMemberUserIds(
+                destination.getId(), transferDate.minusDays(1))).isEmpty();
         assertThat(historicalMembershipService.readRoster(
                 destination.getId(), transferDate, testSemesterId).students())
                 .extracting(User::getId)
+                .containsExactly(student.getId());
+        assertThat(historicalMembershipService.readMemberUserIds(destination.getId(), transferDate))
                 .containsExactly(student.getId());
 
         long transferredRolesVersion = rolesVersion(student.getId());
@@ -193,6 +202,8 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                 .containsExactly(student.getId());
         assertThat(historicalMembershipService.readRoster(
                 destination.getId(), archiveDate, testSemesterId).students())
+                .isEmpty();
+        assertThat(historicalMembershipService.readMemberUserIds(destination.getId(), archiveDate))
                 .isEmpty();
         assertThat(historicalMembershipService.readRoster(
                 destination.getId(), archiveDate.plusDays(1), testSemesterId).students())
@@ -401,6 +412,9 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
 
         assertThatThrownBy(() -> historicalMembershipService.readRoster(
                 destination.getId(), today, testSemesterId))
+                .isInstanceOf(HistoricalMembershipException.class);
+        assertThatThrownBy(() -> historicalMembershipService.readMemberUserIds(
+                destination.getId(), today))
                 .isInstanceOf(HistoricalMembershipException.class);
     }
 

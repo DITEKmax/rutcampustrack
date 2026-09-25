@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * M13 G6 — IT проверяет что при старте notification-web на чистой Mongo
- * {@link NotificationHistoryMongoConfig#initIndexes()} создаёт все 3
+ * {@link NotificationHistoryMongoConfig#initIndexes()} создаёт все custom
  * ожидаемых индекса + TTL {@code expireAfterSeconds}, а fail-fast
  * verification не срабатывает (нет
  * {@link IllegalStateException} на context load).
@@ -52,7 +52,7 @@ class NotificationMongoIndexesIT extends ContainerTestBase {
 
     @Test
     void notificationHistory_afterStartup_hasExpectedIndexesAndTtl() {
-        // Collection создана + 3 кастомных индекса + _id_ = 4 total.
+        // Collection created indexes plus _id_.
         List<Document> indexes = new ArrayList<>();
         mongoTemplate.getCollection("notification_history").listIndexes().forEach(indexes::add);
 
@@ -61,11 +61,12 @@ class NotificationMongoIndexesIT extends ContainerTestBase {
                 .collect(Collectors.toSet());
 
         assertThat(names)
-                .as("все 3 custom-индекса + _id_ должны присутствовать")
+                .as("all history indexes plus _id_ must be present")
                 .contains(
                         NotificationHistoryMongoConfig.IDX_USER_SENT_DESC,
                         NotificationHistoryMongoConfig.IDX_USER_READ,
                         NotificationHistoryMongoConfig.IDX_TTL_SENT_AT,
+                        NotificationHistoryMongoConfig.IDX_EVENT_USER,
                         "_id_"
                 );
 
@@ -93,5 +94,14 @@ class NotificationMongoIndexesIT extends ContainerTestBase {
         assertThat(key).containsKeys("user_id", "sent_at");
         assertThat(key.getInteger("user_id")).isEqualTo(1);
         assertThat(key.getInteger("sent_at")).isEqualTo(-1);
+
+        Document eventUserIdx = indexes.stream()
+                .filter(d -> NotificationHistoryMongoConfig.IDX_EVENT_USER.equals(d.getString("name")))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("unique event/user index missing"));
+        assertThat(eventUserIdx.getBoolean("unique")).isTrue();
+        Document partialFilter = eventUserIdx.get("partialFilterExpression", Document.class);
+        assertThat(partialFilter).containsKey("event_id");
+        assertThat(partialFilter.get("event_id", Document.class).getBoolean("$exists")).isTrue();
     }
 }

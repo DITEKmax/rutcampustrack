@@ -36,6 +36,9 @@ public class NotificationHistoryDocument {
     @Field("user_id")
     private Long userId;
 
+    @Field("event_id")
+    private String eventId;
+
     @Field("type")
     private NotificationType type;
 

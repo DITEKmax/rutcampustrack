@@ -312,6 +312,30 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         responseObserver.onCompleted();
     }
 
+    /** Resolves the managed group audience for an event date without semester coupling. */
+    @Override
+    public void getGroupMemberIdsAsOf(GroupMemberIdsAsOfRequest request,
+                                     StreamObserver<GroupMemberIdsAsOfResponse> responseObserver) {
+        if (request.getGroupId() <= 0 || request.getAsOfDate().isBlank()) {
+            throw HistoricalMembershipException.invalid("group_id and as_of_date must be valid");
+        }
+        final LocalDate asOfDate;
+        try {
+            asOfDate = LocalDate.parse(request.getAsOfDate());
+        } catch (RuntimeException error) {
+            throw HistoricalMembershipException.invalid("as_of_date must be an ISO date");
+        }
+
+        List<Long> userIds = academicReadService.fetchHistoricalGroupMemberIds(
+                request.getGroupId(), asOfDate);
+        responseObserver.onNext(GroupMemberIdsAsOfResponse.newBuilder()
+                .setGroupId(request.getGroupId())
+                .setAsOfDate(asOfDate.toString())
+                .addAllUserIds(userIds)
+                .build());
+        responseObserver.onCompleted();
+    }
+
     private static StudentInfo toStudentInfo(User user) {
         return StudentInfo.newBuilder()
                 .setUserId(user.getId())

@@ -21,6 +21,10 @@ public interface ExcuseRepository extends MongoRepository<ExcuseTicket, String> 
             List<ExcuseTicketStatus> statuses
     );
 
+    Page<ExcuseTicket> findByGroupIdAndSemesterIdAndStudentIdAndLessonIdsInAndStatusIn(
+            Long groupId, Long semesterId, Long studentId, List<Long> lessonIds,
+            List<ExcuseTicketStatus> statuses, Pageable pageable);
+
     /**
      * D-11 duplicate check: does this student already have an active ticket
      * (status in {SUBMITTED, APPROVED}) containing any of these lessonIds?

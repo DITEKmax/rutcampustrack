@@ -16,6 +16,9 @@ import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyWeeksRespon
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsExportRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsQueryRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsStudentDetailResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendQueryRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
@@ -123,6 +126,21 @@ public class ReportController implements ReportApi {
     @Override
     public ResponseEntity<EntityModel<HeadmanStatsResponse>> queryHeadmanStats(HeadmanStatsQueryRequest request) {
         return ResponseEntity.ok(EntityModel.of(headmanStatsService.query(request)));
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<EntityModel<HeadmanStatsTrendResponse>> queryHeadmanStatsTrend(
+            HeadmanStatsTrendQueryRequest request) {
+        return ResponseEntity.ok(EntityModel.of(headmanStatsService.trend(request)));
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<EntityModel<HeadmanStatsStudentDetailResponse>> queryHeadmanStudentStatsDetail(
+            Long studentId, int latePage, int excusePage, int size) {
+        return ResponseEntity.ok(EntityModel.of(
+                headmanStatsService.studentDetail(studentId, latePage, excusePage, size)));
     }
 
     @RequireRole(UserRole.STUDENT)

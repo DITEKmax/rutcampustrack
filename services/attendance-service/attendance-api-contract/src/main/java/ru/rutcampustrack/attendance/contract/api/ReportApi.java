@@ -23,6 +23,9 @@ import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyWeeksRespon
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsExportRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsQueryRequest;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsStudentDetailResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendQueryRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsTrendResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
@@ -167,6 +170,39 @@ public interface ReportApi {
     @PostMapping("/headman/stats/query")
     ResponseEntity<EntityModel<HeadmanStatsResponse>> queryHeadmanStats(
             @Valid @RequestBody HeadmanStatsQueryRequest request);
+
+    @Operation(summary = "Query current-group semester attendance trend for the headman")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Two attendance series on one time grid"),
+            @ApiResponse(responseCode = "400", description = "Invalid trend mode or range",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Headman or current VIEW_STATS permission required",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = "Academic or schedule data is unavailable",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/headman/stats/trend")
+    ResponseEntity<EntityModel<HeadmanStatsTrendResponse>> queryHeadmanStatsTrend(
+            @Valid @RequestBody HeadmanStatsTrendQueryRequest request);
+
+    @Operation(summary = "Read one current-group student's headman statistics detail")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Student detail and paged request decisions"),
+            @ApiResponse(responseCode = "400", description = "Invalid student identity or ticket page",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Headman or current VIEW_STATS permission required",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Student is outside the current group's history",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = "Academic or schedule data is unavailable",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/headman/stats/students/{studentId}/detail")
+    ResponseEntity<EntityModel<HeadmanStatsStudentDetailResponse>> queryHeadmanStudentStatsDetail(
+            @PathVariable Long studentId,
+            @RequestParam(name = "latePage", defaultValue = "0") int latePage,
+            @RequestParam(name = "excusePage", defaultValue = "0") int excusePage,
+            @RequestParam(name = "size", defaultValue = "20") int size);
 
     @Operation(summary = "Export the complete filtered current-group semester statistics block")
     @ApiResponses({

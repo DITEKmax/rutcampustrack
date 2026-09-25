@@ -28,6 +28,10 @@ public interface LateCheckinRepository extends MongoRepository<LateCheckinReques
     List<LateCheckinRequest> findByGroupIdAndSemesterIdAndStatusIn(
             Long groupId, Long semesterId, List<LateCheckinRequestStatus> statuses);
 
+    Page<LateCheckinRequest> findByGroupIdAndSemesterIdAndStudentIdAndLessonIdInAndStatusIn(
+            Long groupId, Long semesterId, Long studentId, List<Long> lessonIds,
+            List<LateCheckinRequestStatus> statuses, Pageable pageable);
+
     Page<LateCheckinRequest> findByGroupIdAndUpdatedAtGreaterThanEqual(
             Long groupId, Instant updatedAt, Pageable pageable);
 

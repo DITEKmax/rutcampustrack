@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import ru.rutcampustrack.auth.config.InternalIssuerProperties;
 import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
 import ru.rutcampustrack.auth.dto.IssueReportDownloadTicketRequest;
+import ru.rutcampustrack.auth.dto.ReportDownloadKind;
 import ru.rutcampustrack.auth.dto.ReportDownloadTicketRedemptionResponse;
 import ru.rutcampustrack.auth.dto.ReportDownloadTicketResponse;
 import ru.rutcampustrack.auth.exception.InvalidReportDownloadTicketRequestException;
+import ru.rutcampustrack.auth.grpc.AcademicAssistantPermissionClient;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.session.SessionAdmissionException;
@@ -47,6 +49,7 @@ public final class ReportDownloadTicketService {
     private final JwtService jwtService;
     private final InternalIssuerProperties issuerProperties;
     private final ObjectMapper objectMapper;
+    private final AcademicAssistantPermissionClient academicAssistantPermissionClient;
     private final Clock clock;
     private final SecureRandom secureRandom;
 
@@ -56,10 +59,11 @@ public final class ReportDownloadTicketService {
             AuthService authService,
             JwtService jwtService,
             InternalIssuerProperties issuerProperties,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            AcademicAssistantPermissionClient academicAssistantPermissionClient
     ) {
         this(ticketStore, authService, jwtService, issuerProperties, objectMapper,
-                Clock.systemUTC(), new SecureRandom());
+                Clock.systemUTC(), new SecureRandom(), academicAssistantPermissionClient);
     }
 
     ReportDownloadTicketService(
@@ -69,12 +73,15 @@ public final class ReportDownloadTicketService {
             InternalIssuerProperties issuerProperties,
             ObjectMapper objectMapper,
             Clock clock,
-            SecureRandom secureRandom
+            SecureRandom secureRandom,
+            AcademicAssistantPermissionClient academicAssistantPermissionClient
     ) {
         this.ticketStore = Objects.requireNonNull(ticketStore, "ticketStore");
         this.authService = Objects.requireNonNull(authService, "authService");
         this.jwtService = Objects.requireNonNull(jwtService, "jwtService");
         this.issuerProperties = Objects.requireNonNull(issuerProperties, "issuerProperties");
+        this.academicAssistantPermissionClient = Objects.requireNonNull(
+                academicAssistantPermissionClient, "academicAssistantPermissionClient");
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper").copy()
                 .registerModule(new JavaTimeModule())
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -95,6 +102,9 @@ public final class ReportDownloadTicketService {
         RoleGrant selectedRole = snapshot.activeRole();
         if (principal.isBootstrap() || selectedRole == null || !selectedRole.isSelectable()) {
             throw new SessionAdmissionException(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE);
+        }
+        if (report.kind() == ReportDownloadKind.HEADMAN_STATS_TREND) {
+            requireCurrentViewStats(snapshot, selectedRole);
         }
 
         String sessionDigest = digest(principal.userId() + ":" + principal.sessionId());
@@ -119,6 +129,30 @@ public final class ReportDownloadTicketService {
             }
         }
         throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+    }
+
+    private void requireCurrentViewStats(SessionSnapshot snapshot, RoleGrant selectedRole) {
+        Long groupId = selectedRole.groupId();
+        if (groupId == null || groupId <= 0) {
+            throw new SessionAdmissionException(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+        }
+        Instant issuedAt = clock.instant().truncatedTo(ChronoUnit.SECONDS);
+        long verificationTtlSeconds = Math.min(TICKET_TTL.toSeconds(), issuerProperties.getTokenTtlSeconds());
+        Instant configuredExpiry = issuedAt.plusSeconds(verificationTtlSeconds);
+        Instant sessionExpiry = snapshot.refreshExpiresAt().truncatedTo(ChronoUnit.SECONDS);
+        Instant tokenExpiry = configuredExpiry.isBefore(sessionExpiry) ? configuredExpiry : sessionExpiry;
+        if (!issuedAt.isBefore(tokenExpiry)) {
+            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+        }
+        String signedIdentity;
+        try {
+            signedIdentity = jwtService.generateInternalToken(snapshot, issuedAt, tokenExpiry);
+        } catch (RuntimeException exception) {
+            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
+        if (!academicAssistantPermissionClient.hasViewStatsPermission(signedIdentity, groupId)) {
+            throw new SessionAdmissionException(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+        }
     }
 
     public Optional<ReportDownloadTicketRedemptionResponse> redeem(String ticket) {

@@ -13,6 +13,7 @@ public final class SessionAdmissionException extends RuntimeException {
         ROLE_NOT_GRANTED,
         ROLE_NOT_SELECTABLE,
         SESSION_STATE_STALE,
+        REPORT_PERMISSION_DENIED,
         AUTHORITY_UNAVAILABLE
     }
 

@@ -13,3 +13,12 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
+# The permission preflight uses the same authenticated TLS Academic channel as Attendance.
+grpc:
+  client:
+    academic-service:
+      negotiation-type: TLS
+      security:
+        trust-cert-collection: ${ACADEMIC_GRPC_TRUST_CERT_COLLECTION}
+        authority-override: ${ACADEMIC_GRPC_TLS_AUTHORITY}

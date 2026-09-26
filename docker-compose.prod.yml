@@ -193,10 +193,14 @@ services:
       # верифицируют ими же. RequiredSecretsValidator (M14 G4 v2) fail-fast при
       # отсутствии. Должен совпадать с api-gateway / notification-web env value.
       INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
+      GRPC_SECRET: ${GRPC_SECRET:?GRPC_SECRET must be set}
+      ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
+      ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
       # M09 G7 (NEW-157) — heap = 0.75 × mem_limit. См. docs/resource-limits.md.
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     volumes:
       - jwt-keys:/keys
+      - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
       - "9090"
     networks:

@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
         HttpStatus status = switch (ex.code()) {
             case INVALID_SESSION, SESSION_REVOKED -> HttpStatus.UNAUTHORIZED;
-            case ROLE_NOT_GRANTED, ROLE_NOT_SELECTABLE -> HttpStatus.FORBIDDEN;
+            case ROLE_NOT_GRANTED, ROLE_NOT_SELECTABLE, REPORT_PERMISSION_DENIED -> HttpStatus.FORBIDDEN;
             case SESSION_STATE_STALE -> HttpStatus.CONFLICT;
             case AUTHORITY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
         };

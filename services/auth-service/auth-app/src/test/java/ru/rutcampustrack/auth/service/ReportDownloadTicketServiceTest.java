@@ -7,8 +7,10 @@ import ru.rutcampustrack.auth.config.InternalIssuerProperties;
 import ru.rutcampustrack.auth.dto.IssueReportDownloadTicketRequest;
 import ru.rutcampustrack.auth.dto.ReportDownloadFormat;
 import ru.rutcampustrack.auth.dto.ReportDownloadKind;
+import ru.rutcampustrack.auth.grpc.AcademicAssistantPermissionClient;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
 import ru.rutcampustrack.auth.session.AuthSessionException;
+import ru.rutcampustrack.auth.session.SessionAdmissionException;
 import ru.rutcampustrack.auth.session.model.AuthMethod;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleGrant;
@@ -111,6 +113,31 @@ class ReportDownloadTicketServiceTest {
     }
 
     @Test
+    void revokedViewStatsDeniesTrendTicketBeforeRateLimitOrStorage() {
+        ReportDownloadTicketStore store = mock(ReportDownloadTicketStore.class);
+        AuthService auth = mock(AuthService.class);
+        JwtService jwt = mock(JwtService.class);
+        AcademicAssistantPermissionClient academic = mock(AcademicAssistantPermissionClient.class);
+        InternalIssuerProperties issuer = new InternalIssuerProperties();
+        issuer.setTokenTtlSeconds(300);
+        SessionPrincipal principal = assistantPrincipal();
+        SessionSnapshot snapshot = assistantSnapshot(NOW);
+        when(auth.admit(principal)).thenReturn(snapshot);
+        when(jwt.generateInternalToken(eq(snapshot), any(), any())).thenReturn("fresh-current-identity");
+        when(academic.hasViewStatsPermission("fresh-current-identity", 31L)).thenReturn(false);
+        ReportDownloadTicketService service = service(store, auth, jwt, issuer,
+                new MutableClock(NOW), academic);
+
+        SessionAdmissionException denied = assertThrows(SessionAdmissionException.class,
+                () -> service.issue(principal, trendReport()));
+
+        assertEquals(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED, denied.code());
+        verify(jwt).generateInternalToken(eq(snapshot), eq(NOW), eq(NOW.plusSeconds(60)));
+        verify(academic).hasViewStatsPermission("fresh-current-identity", 31L);
+        verifyNoInteractions(store);
+    }
+
+    @Test
     void malformedSelectorHasExplicitBadRequestFailureInsteadOfGenericIllegalArgumentException() {
         AuthService auth = mock(AuthService.class);
         IssueReportDownloadTicketRequest malformed = new IssueReportDownloadTicketRequest(
@@ -126,13 +153,22 @@ class ReportDownloadTicketServiceTest {
         verifyNoInteractions(auth);
     }
 
-    private static ReportDownloadTicketService service(MemoryStore store,
+    private static ReportDownloadTicketService service(ReportDownloadTicketStore store,
                                                         AuthService auth,
                                                         JwtService jwt,
                                                         InternalIssuerProperties issuer,
                                                         Clock clock) {
+        return service(store, auth, jwt, issuer, clock, mock(AcademicAssistantPermissionClient.class));
+    }
+
+    private static ReportDownloadTicketService service(ReportDownloadTicketStore store,
+                                                        AuthService auth,
+                                                        JwtService jwt,
+                                                        InternalIssuerProperties issuer,
+                                                        Clock clock,
+                                                        AcademicAssistantPermissionClient academic) {
         return new ReportDownloadTicketService(store, auth, jwt, issuer,
-                new ObjectMapper().registerModule(new JavaTimeModule()), clock, new SecureRandom());
+                new ObjectMapper().registerModule(new JavaTimeModule()), clock, new SecureRandom(), academic);
     }
 
     private static SessionPrincipal principal() {
@@ -148,11 +184,32 @@ class ReportDownloadTicketServiceTest {
                 AuthMethod.PASSWORD, null, null);
     }
 
+    private static SessionPrincipal assistantPrincipal() {
+        return new SessionPrincipal(USER_ID, SESSION_ID, 2L, 3L,
+                AuthRole.STUDENT, RoleStatus.ACTIVE, 31L, false, false);
+    }
+
+    private static SessionSnapshot assistantSnapshot(Instant now) {
+        RoleGrant role = new RoleGrant(6L, USER_ID, AuthRole.STUDENT, RoleStatus.ACTIVE, 31L,
+                now.minusSeconds(10), now.minusSeconds(2));
+        return new SessionSnapshot(SESSION_ID, USER_ID, 2L, 3L, role, List.of(role),
+                now.plusSeconds(900), now.minusSeconds(10), now.minusSeconds(1), null, null,
+                AuthMethod.PASSWORD, null, null);
+    }
+
     private static IssueReportDownloadTicketRequest report() {
         return new IssueReportDownloadTicketRequest(ReportDownloadKind.TEACHER_JOURNAL,
                 new IssueReportDownloadTicketRequest.TeacherJournalParameters(
                         7L, 31L, 41L, List.of("LECTURE"), ReportDownloadFormat.PDF),
                 null, null, null, null);
+    }
+
+    private static IssueReportDownloadTicketRequest trendReport() {
+        return new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_STATS_TREND,
+                null, null, null, null, null,
+                new IssueReportDownloadTicketRequest.HeadmanStatsTrendParameters(
+                        IssueReportDownloadTicketRequest.HeadmanStatsTrendMode.SEMESTER,
+                        null, null, null, ReportDownloadFormat.PNG));
     }
 
     private static final class MutableClock extends Clock {

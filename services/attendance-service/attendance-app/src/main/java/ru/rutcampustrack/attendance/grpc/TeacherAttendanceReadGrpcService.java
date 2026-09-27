@@ -183,7 +183,7 @@ public final class TeacherAttendanceReadGrpcService
                 scope = lessonScope;
             } else if (!scope.equals(lessonScope)) {
                 throw Status.INVALID_ARGUMENT.withDescription(
-                                "lesson_ids must share group, subject, lesson type, and semester")
+                                "lesson_ids must share group, subject, and semester")
                         .asRuntimeException();
             }
         }
@@ -619,13 +619,12 @@ public final class TeacherAttendanceReadGrpcService
     private record LessonRoster(LessonResponse lesson, List<TeacherRosterEntry> entries) {
     }
 
-    private record JournalScope(long groupId, long subjectId, long semesterId, String lessonType) {
+    private record JournalScope(long groupId, long subjectId, long semesterId) {
         private static JournalScope from(LessonResponse lesson) {
             return new JournalScope(
                     lesson.getGroupId(),
                     lesson.getSubjectId(),
-                    lesson.getSemesterId(),
-                    value(lesson.getLessonType()).toLowerCase(Locale.ROOT));
+                    lesson.getSemesterId());
         }
     }
 

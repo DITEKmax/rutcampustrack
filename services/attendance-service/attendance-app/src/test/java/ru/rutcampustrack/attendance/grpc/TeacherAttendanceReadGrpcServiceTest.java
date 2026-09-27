@@ -41,6 +41,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /** A mixed student ticket is projected only over the teacher's concrete lessons. */
@@ -125,7 +127,7 @@ class TeacherAttendanceReadGrpcServiceTest {
     }
 
     @Test
-    void journalRejectsMixedContextsAndLessonKeepsAutomaticAbsenceMark() {
+    void journalReadsMixedLessonTypesButRejectsMixedContextsAndKeepsAutomaticAbsenceMark() {
         ReportService report = mock(ReportService.class);
         ScheduleGrpcClient schedule = mock(ScheduleGrpcClient.class);
         AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
@@ -133,11 +135,18 @@ class TeacherAttendanceReadGrpcServiceTest {
         RequestAttachmentRepository attachments = mock(RequestAttachmentRepository.class);
 
         LessonResponse own = lesson(101L, 12L, 71L);
+        LessonResponse practice = LessonResponse.newBuilder(own)
+                .setId(202L)
+                .setDate("2025-12-02")
+                .setLessonNumber(2)
+                .setLessonType("practice")
+                .build();
         LessonResponse foreignContext = LessonResponse.newBuilder(own)
                 .setId(303L)
                 .setGroupId(44L)
                 .build();
         when(schedule.getLessonById(101L)).thenReturn(own);
+        when(schedule.getLessonById(202L)).thenReturn(practice);
         when(schedule.getLessonById(303L)).thenReturn(foreignContext);
         when(academic.getGroup(33L)).thenReturn(GroupResponse.newBuilder()
                 .setId(33L).setName("УИТ-311").build());
@@ -145,6 +154,8 @@ class TeacherAttendanceReadGrpcServiceTest {
                 .thenReturn(Map.of(22L, new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));
         when(report.getTeacherLessonAttendance(101L, 71L))
                 .thenReturn(attendance(101L));
+        when(report.getTeacherLessonAttendance(202L, 71L))
+                .thenReturn(attendance(202L));
         when(report.getTeacherLessonAttendance(303L, 71L))
                 .thenReturn(attendance(303L));
         when(excuses.findByLessonIdsInAndStatusIn(
@@ -196,6 +207,24 @@ class TeacherAttendanceReadGrpcServiceTest {
                     assertThat(entry.getAutoAbsent()).isFalse();
                     assertThat(entry.getPendingTicket()).isTrue();
                 });
+
+        RecordingObserver<TeacherJournalResponse> mixedTypesObserver = new RecordingObserver<>();
+        Context.current().withValue(TeacherAttendanceGrpcIdentity.CLAIMS, claims).run(() ->
+                service.getTeacherJournal(TeacherJournalRequest.newBuilder()
+                        .addLessonIds(101L).addLessonIds(202L).build(), mixedTypesObserver));
+
+        assertThat(mixedTypesObserver.error).isNull();
+        assertThat(mixedTypesObserver.value.getLessonsList())
+                .extracting(lesson -> lesson.getLessonId())
+                .containsExactly(101L, 202L);
+        assertThat(mixedTypesObserver.value.getStudentsList())
+                .filteredOn(student -> student.getStudentId() == 501L)
+                .singleElement()
+                .satisfies(student -> assertThat(student.getCellsList())
+                        .extracting(cell -> cell.getLessonId())
+                        .containsExactly(101L, 202L));
+        verify(report, times(2)).getTeacherLessonAttendance(101L, 71L);
+        verify(report).getTeacherLessonAttendance(202L, 71L);
 
         RecordingObserver<TeacherJournalResponse> journalObserver = new RecordingObserver<>();
         Context.current().withValue(TeacherAttendanceGrpcIdentity.CLAIMS, claims).run(() ->

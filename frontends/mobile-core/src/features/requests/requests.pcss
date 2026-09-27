@@ -69,7 +69,8 @@
 .requests-tab,
 .requests-inline-action,
 .requests-back-button,
-.request-card__attachment-action {
+.request-card__attachment-action,
+.request-attachment-preview__open {
   font: inherit;
   cursor: pointer;
   transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease, opacity 120ms ease;
@@ -812,17 +813,23 @@
 }
 
 .request-attachment-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
   min-block-size: 2.75rem;
   border-radius: 0.75rem;
   padding: 0.5rem 0.75rem;
   background: var(--requests-float);
 }
 
-.request-attachment-list li > span {
+.request-attachment-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+
+.request-attachment-list__item > span {
   display: grid;
   min-inline-size: 0;
   gap: 0.125rem;
@@ -851,6 +858,44 @@
   font-size: 0.8125rem;
   cursor: pointer;
   @mixin rct-focus-ring;
+}
+
+.request-attachment-preview {
+  display: grid;
+  min-inline-size: 0;
+  gap: 0.25rem;
+}
+
+.request-attachment-preview__image,
+.request-attachment-preview__pdf {
+  display: block;
+  inline-size: 100%;
+  block-size: 18rem;
+  border: 0.0625rem solid var(--requests-border);
+  border-radius: var(--rct-radius-2xl);
+  background: var(--requests-base);
+}
+
+.request-attachment-preview__image {
+  object-fit: contain;
+}
+
+.request-attachment-preview__message {
+  color: var(--requests-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.request-attachment-preview__open {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  justify-self: start;
+  color: var(--requests-text);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  text-decoration: underline;
+  text-underline-offset: 0.15rem;
 }
 
 .requests-submit-action {

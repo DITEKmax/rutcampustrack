@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { acceptsRequestFile, requestAttachmentFormatHint } from './attachment-validation'
+import { RequestAttachmentPreviewUrls, requestAttachmentPreviewKind } from './request-attachment-preview'
 import type { RequestFileLimits, RequestFileRef } from './types'
 
 const props = withDefaults(defineProps<{
@@ -20,6 +21,10 @@ const emit = defineEmits<{
 const validationMessage = ref<string | null>(null)
 const statusMessage = ref<string | null>(null)
 const inputId = 'request-attachments-input'
+const previewResources = new RequestAttachmentPreviewUrls()
+const previewUrls = shallowRef<ReadonlyMap<string, string>>(new Map())
+const previewUnavailableIds = shallowRef<ReadonlySet<string>>(new Set())
+const previewErrors = shallowRef<ReadonlyMap<string, string>>(new Map())
 
 const selectedFiles = computed(() => props.modelValue)
 const limitDescription = computed(() => {
@@ -40,6 +45,51 @@ const acceptValue = computed(() => {
   const extensions = props.limits?.extensions ?? []
   return [...types, ...extensions].join(',')
 })
+
+watch(selectedFiles, (files) => {
+  const previews = previewResources.sync(files)
+  previewUrls.value = previews.urls
+  previewUnavailableIds.value = previews.unavailableIds
+  previewErrors.value = new Map(
+    [...previewErrors.value].filter(([id, url]) => previews.urls.get(id) === url),
+  )
+}, { immediate: true })
+
+onBeforeUnmount(() => previewResources.clear())
+
+function previewUrl(file: RequestFileRef): string | null {
+  return previewUrls.value.get(file.id) ?? null
+}
+
+function hasPreviewError(file: RequestFileRef): boolean {
+  const url = previewUrl(file)
+  return url !== null && previewErrors.value.get(file.id) === url
+}
+
+function markPreviewError(fileId: string, event: Event): void {
+  const target = event.currentTarget
+  if (!(target instanceof Element)) return
+  const url = target.getAttribute('src') ?? target.getAttribute('data')
+  if (!url || previewUrls.value.get(fileId) !== url) return
+  const next = new Map(previewErrors.value)
+  next.set(fileId, url)
+  previewErrors.value = next
+}
+
+function previewKind(file: RequestFileRef): ReturnType<typeof requestAttachmentPreviewKind> {
+  return requestAttachmentPreviewKind(file.file)
+}
+
+function previewUnavailableMessage(file: RequestFileRef): string {
+  if (!file.file) return 'Предпросмотр недоступен для этого вложения.'
+  if (previewUnavailableIds.value.has(file.id)) {
+    return 'Не удалось подготовить предпросмотр. Вложение можно удалить или выбрать снова.'
+  }
+  if (hasPreviewError(file)) {
+    return 'Не удалось показать предпросмотр. Вложение можно удалить или выбрать снова.'
+  }
+  return 'Предпросмотр доступен для JPEG, PNG и PDF.'
+}
 
 function formatBytes(value: number): string {
   if (value >= 1024 * 1024) return (value / (1024 * 1024)).toFixed(value % (1024 * 1024) === 0 ? 0 : 1) + ' МБ'
@@ -172,18 +222,81 @@ function removeFile(id: string): void {
         v-for="file in selectedFiles"
         :key="file.id"
       >
-        <span>
-          <strong>{{ file.name }}</strong>
-          <small>{{ formatBytes(file.size) }}</small>
-        </span>
-        <button
-          type="button"
-          :disabled="props.disabled"
-          :aria-label="'Удалить вложение ' + file.name"
-          @click="removeFile(file.id)"
+        <div class="request-attachment-list__item">
+          <span>
+            <strong>{{ file.name }}</strong>
+            <small>{{ formatBytes(file.size) }}</small>
+          </span>
+          <button
+            type="button"
+            :disabled="props.disabled"
+            :aria-label="'Удалить вложение ' + file.name"
+            @click="removeFile(file.id)"
+          >
+            Удалить
+          </button>
+        </div>
+
+        <div
+          class="request-attachment-preview"
+          role="group"
+          :aria-label="'Предпросмотр вложения ' + file.name"
         >
-          Удалить
-        </button>
+          <template v-if="previewKind(file) === 'image' && previewUrl(file) && !hasPreviewError(file)">
+            <img
+              class="request-attachment-preview__image"
+              :src="previewUrl(file) ?? undefined"
+              :alt="'Предварительный просмотр изображения: ' + file.name"
+              @error="markPreviewError(file.id, $event)"
+            >
+          </template>
+
+          <template v-else-if="previewKind(file) === 'pdf' && previewUrl(file) && !hasPreviewError(file)">
+            <object
+              class="request-attachment-preview__pdf"
+              :data="previewUrl(file) ?? undefined"
+              type="application/pdf"
+              :aria-label="'Предпросмотр PDF: ' + file.name"
+              @error="markPreviewError(file.id, $event)"
+            >
+              <p class="request-attachment-preview__message">
+                Встроенный просмотр PDF недоступен.
+              </p>
+            </object>
+            <p class="request-attachment-preview__message">
+              Если встроенный просмотр не открылся, открой файл отдельно.
+            </p>
+            <a
+              class="request-attachment-preview__open"
+              :href="previewUrl(file) ?? undefined"
+              target="_blank"
+              rel="noopener noreferrer"
+              :aria-label="'Открыть PDF в новой вкладке: ' + file.name"
+            >
+              Открыть PDF отдельно
+            </a>
+          </template>
+
+          <template v-else>
+            <p
+              class="request-attachment-preview__message"
+              role="status"
+              aria-live="polite"
+            >
+              {{ previewUnavailableMessage(file) }}
+            </p>
+            <a
+              v-if="previewKind(file) === 'pdf' && previewUrl(file)"
+              class="request-attachment-preview__open"
+              :href="previewUrl(file) ?? undefined"
+              target="_blank"
+              rel="noopener noreferrer"
+              :aria-label="'Открыть PDF в новой вкладке: ' + file.name"
+            >
+              Открыть PDF отдельно
+            </a>
+          </template>
+        </div>
       </li>
     </ul>
   </div>

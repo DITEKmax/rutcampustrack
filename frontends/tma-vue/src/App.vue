@@ -33,6 +33,7 @@ import {
   TeacherFeatureOwner,
   createFixtureTransport,
   createGenerationBoundNotificationsApi,
+  createGenerationBoundNotificationsRealtime,
   createMobileTheme,
   studentFeatureScope,
   studentFeatureScopeIdentity,
@@ -110,6 +111,7 @@ const adminDashboardApi = shallowRef<AdminDashboardClient | null>(null)
 const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
 const notificationsApi = shallowRef<NotificationsApi | null>(null)
+const notificationRealtimeRevision = ref(0)
 const notificationsOpen = ref(false)
 const notificationsGeneration = ref<number | null>(null)
 const notificationTargetIntent = shallowRef<NotificationTargetIntent | null>(null)
@@ -220,6 +222,43 @@ watch(
 watch(offline, (isOffline) => {
   if (isOffline) notificationTargetIntent.value = null
 })
+
+let disposeNotificationsRealtime = (): void => undefined
+watch(
+  () => [
+    sessionOwner.resetGeneration.value,
+    profile.value?.userId,
+    profile.value?.activeRole,
+    scope.value?.groupId ?? null,
+    headmanGroupId.value,
+    offline.value,
+  ] as const,
+  ([, userId, activeRole, studentGroupId, currentHeadmanGroupId, isOffline]) => {
+    disposeNotificationsRealtime()
+    disposeNotificationsRealtime = (): void => undefined
+    if (fixtureMode || isOffline || !userId || !activeRole) return
+    if (activeRole === 'STUDENT' && scope.value === null) return
+    if (activeRole === 'HEADMAN' && currentHeadmanGroupId === null) return
+
+    const groupId = activeRole === 'STUDENT'
+      ? studentGroupId
+      : activeRole === 'HEADMAN' ? String(currentHeadmanGroupId) : null
+    disposeNotificationsRealtime = createGenerationBoundNotificationsRealtime({
+      owner: {
+        currentGeneration: () => sessionOwner.currentGeneration(),
+        accessTokenFor: (generation) => {
+          if (!sessionOwner.isCurrent(generation)) throw new StaleSessionGenerationError()
+          return sessionOwner.accessToken.value
+        },
+        refreshFor: (generation) => sessionOwner.authenticateFor(generation),
+      },
+      scope: { userId, groupId, headman: activeRole === 'HEADMAN' },
+      fetcher: currentFetcher() ?? nativeFetcher,
+      onChanged: () => { notificationRealtimeRevision.value += 1 },
+    }).dispose
+  },
+  { immediate: true, flush: 'sync' },
+)
 
 function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof TmaAuthError) return cause.status
@@ -641,6 +680,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  disposeNotificationsRealtime()
+  disposeNotificationsRealtime = (): void => undefined
   invalidateOwnerSynchronously()
   window.removeEventListener('offline', offlineNow)
   window.removeEventListener('online', onlineNow)
@@ -660,6 +701,7 @@ onBeforeUnmount(() => {
       :api="notificationsApi"
       :host="host"
       :offline="offline"
+      :realtime-revision="notificationRealtimeRevision"
       :can-open-target="canOpenNotificationTarget"
       @close="closeNotifications"
       @open-target="openNotificationTarget"

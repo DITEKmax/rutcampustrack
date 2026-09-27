@@ -35,6 +35,7 @@ import {
   commandFromCoordinates,
   createFixtureTransport,
   createGenerationBoundNotificationsApi,
+  createGenerationBoundNotificationsRealtime,
   createMobileTheme,
   offlineToday,
   studentFeatureScope,
@@ -124,6 +125,7 @@ const adminDashboardApi = shallowRef<AdminDashboardClient | null>(null)
 const adminUsersApi = shallowRef<AdminUsersClient | null>(null)
 const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
 const notificationsApi = shallowRef<NotificationsApi | null>(null)
+const notificationRealtimeRevision = ref(0)
 const notificationsOpen = ref(false)
 const notificationsGeneration = ref<number | null>(null)
 const notificationTargetIntent = shallowRef<NotificationTargetIntent | null>(null)
@@ -263,6 +265,43 @@ watch(
 watch(offline, (isOffline) => {
   if (isOffline) notificationTargetIntent.value = null
 })
+
+let disposeNotificationsRealtime = (): void => undefined
+watch(
+  () => [
+    auth.resetGeneration.value,
+    authSnapshot.value?.userId,
+    authSnapshot.value?.activeRole,
+    scope.value?.groupId ?? null,
+    headmanGroupId.value,
+    offline.value,
+  ] as const,
+  ([, userId, activeRole, studentGroupId, currentHeadmanGroupId, isOffline]) => {
+    disposeNotificationsRealtime()
+    disposeNotificationsRealtime = (): void => undefined
+    if (fixtureMode || isOffline || !userId || !activeRole) return
+    if (activeRole === 'STUDENT' && scope.value === null) return
+    if (activeRole === 'HEADMAN' && currentHeadmanGroupId === null) return
+
+    const groupId = activeRole === 'STUDENT'
+      ? studentGroupId
+      : activeRole === 'HEADMAN' ? String(currentHeadmanGroupId) : null
+    disposeNotificationsRealtime = createGenerationBoundNotificationsRealtime({
+      owner: {
+        currentGeneration: () => auth.currentGeneration(),
+        accessTokenFor: (generation) => {
+          if (!auth.isCurrent(generation)) throw new StaleSessionGenerationError()
+          return auth.accessToken.value
+        },
+        refreshFor: (generation) => auth.refreshFor(generation),
+      },
+      scope: { userId, groupId, headman: activeRole === 'HEADMAN' },
+      fetcher: currentFetcher(),
+      onChanged: () => { notificationRealtimeRevision.value += 1 },
+    }).dispose
+  },
+  { immediate: true, flush: 'sync' },
+)
 
 function isConfirmedOnlineAuthDenial(error: unknown): boolean {
   if (authDenialStatus(error) === 401) return true
@@ -478,7 +517,24 @@ async function retryPendingCleanup(): Promise<void> {
   }
 }
 
-async function handleOnlineAuthDenial(error: unknown): Promise<void> {
+async function handleOnlineAuthDenial(
+  error: unknown,
+  options: { initialAnonymousSessionRequest?: boolean } = {},
+): Promise<void> {
+  const hadAuthenticatedOwner = authSnapshot.value !== null
+    || auth.accessToken.value !== null
+    || api.value !== null
+    || teacherApi.value !== null
+    || headmanApi.value !== null
+    || snapshot.value !== null
+  const explicitRevocation = error instanceof AuthRequestError
+    && ['INVALID_SESSION', 'SESSION_REVOKED', 'ACCOUNT_INVALIDATED', 'REFRESH_REJECTED'].includes(error.serverCode ?? '')
+  const expectedInitialAnonymousDenial = options.initialAnonymousSessionRequest === true
+    && !hadAuthenticatedOwner
+    && !explicitRevocation
+    && error instanceof AuthRequestError
+    && error.operation === 'current-session'
+    && error.status === 401
   const previous = invalidateOwnerSynchronously()
   await clearOwnerSnapshot(previous)
   offline.value = false
@@ -486,7 +542,11 @@ async function handleOnlineAuthDenial(error: unknown): Promise<void> {
   authSnapshot.value = null
   authView.value = 'login'
   authError.value = null
-  bootstrapError.value = error instanceof Error ? error.message : 'Сессия больше недоступна'
+  bootstrapError.value = expectedInitialAnonymousDenial
+    ? null
+    : authDenialStatus(error) === 401 || hadAuthenticatedOwner || explicitRevocation
+      ? 'Сессия завершена или больше недоступна. Войди снова.'
+      : error instanceof Error ? error.message : 'Сессия больше недоступна'
 }
 
 async function fetchAuthForCurrentGeneration(options: { refresh?: boolean } = {}): Promise<{
@@ -840,7 +900,7 @@ async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
       return
     }
     if (isConfirmedOnlineAuthDenial(error)) {
-      await handleOnlineAuthDenial(error)
+      await handleOnlineAuthDenial(error, { initialAnonymousSessionRequest: true })
     } else if (error instanceof AuthRequestError && authSnapshot.value && authView.value === 'role') {
       authError.value = error
       bootstrapError.value = error.message
@@ -1193,6 +1253,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  disposeNotificationsRealtime()
+  disposeNotificationsRealtime = (): void => undefined
   stopAuthInvalidation()
   auth.dispose()
   invalidateOwnerSynchronously()
@@ -1216,6 +1278,7 @@ onBeforeUnmount(() => {
       :api="notificationsApi"
       :host="host"
       :offline="offline"
+      :realtime-revision="notificationRealtimeRevision"
       :can-open-target="canOpenNotificationTarget"
       @close="closeNotifications"
       @open-target="openNotificationTarget"

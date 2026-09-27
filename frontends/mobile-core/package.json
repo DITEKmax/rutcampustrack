@@ -9,5 +9,12 @@
   },
   "exports": {
     ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@stomp/stompjs": "7.3.0",
+    "sockjs-client": "1.6.1"
+  },
+  "devDependencies": {
+    "@types/sockjs-client": "1.5.4"
   }
 }

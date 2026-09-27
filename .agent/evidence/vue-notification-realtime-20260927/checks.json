@@ -1,0 +1,86 @@
+{
+  "scope": "Vue PWA/TMA generation-bound notification realtime lifecycle and clean initial anonymous PWA login",
+  "branch": "codex/vue-notification-realtime-20260927",
+  "baseRevision": "f10e3c39df5ab44b4fa47937acc8cd65bfe45dd1",
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "node": "v24.14.0",
+    "npm": "11.9.0"
+  },
+  "checks": [
+    {
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "npm run typecheck --workspace @rct/pwa-vue",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "npm run typecheck --workspace @rct/tma-vue",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "npm exec -- vitest run mobile-core/src/features/notifications/notifications-realtime.test.ts",
+      "exitCode": 0,
+      "result": "PASS; 1 test verifies fresh ticket after transient ticket request failure, exact private destinations, event coalescing, stale owner suppression, and forced deactivation"
+    },
+    {
+      "command": "npm exec -- eslint mobile-core/src/features/notifications/notifications-realtime.ts mobile-core/src/features/notifications/notifications-realtime.test.ts mobile-core/src/features/notifications/NotificationsScreen.vue mobile-core/src/index.ts pwa-vue/src/App.vue tma-vue/src/App.vue --max-warnings=0",
+      "exitCode": 0,
+      "result": "PASS; all changed product source and test files lint clean"
+    },
+    {
+      "command": "npm run build --workspace @rct/pwa-vue",
+      "exitCode": 0,
+      "result": "PASS; Vite production bundle emitted; existing size warning reports the main JavaScript chunk above 500 kB"
+    },
+    {
+      "command": "npm run build --workspace @rct/tma-vue",
+      "exitCode": 0,
+      "result": "PASS; Vite production bundle emitted; existing size warning reports the main JavaScript chunk above 500 kB"
+    },
+    {
+      "command": "npm run lint --workspace @rct/tma-vue",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "git status --short -- frontends/mobile-core/package.json frontends/mobile-core/src/features/notifications/NotificationsScreen.vue frontends/mobile-core/src/features/notifications/notifications-realtime.ts frontends/mobile-core/src/features/notifications/notifications-realtime.test.ts frontends/mobile-core/src/index.ts frontends/package-lock.json frontends/pwa-vue/src/App.vue frontends/tma-vue/src/App.vue (original main checkout)",
+      "exitCode": 0,
+      "result": "PASS; no scoped product changes in original main checkout"
+    }
+  ],
+  "diagnostics": [
+    {
+      "command": "npm run lint --workspace @rct/pwa-vue",
+      "exitCode": 1,
+      "result": "Package-wide lint reports two unused parameters in untouched pwa-vue/vite.config.ts:28 (`_` and `bundle`). Scoped changed-file lint passes."
+    },
+    {
+      "command": "npm run lint --workspace @rct/mobile-core",
+      "exitCode": 1,
+      "result": "An exploratory package-wide lint run before final test cleanup reported package-wide formatting warnings and two errors, including an unused mock parameter in the new test. That mock parameter was fixed; scoped lint of all changed files passed afterward. The package-wide command was not rerun."
+    }
+  ],
+  "runtime": {
+    "status": "PENDING_ROOT_INTEGRATION",
+    "details": "This leaf did not start Docker or another runtime. Root owns live verification on the shared stand; builds and unit test do not claim WebSocket runtime acceptance. Root-provided reproduction of anonymous current-session HTTP 401 and the adjacent login error card informed the narrow PWA fix."
+  },
+  "preservation": {
+    "foreignDirtyFiles": [
+      ".agent/evidence/headman-trend-export-20260926/contract.md",
+      ".agent/evidence/headman-trend-export-20260926/result.md"
+    ],
+    "status": "Preserved unstaged and excluded from the scoped commit."
+  }
+}

@@ -58,6 +58,7 @@ export { default as HeadmanSubjectsScreen } from './features/headman-subjects/He
 export * from './features/headman-stats/headman-stats-client'
 export { default as HeadmanStatsScreen } from './features/headman-stats/HeadmanStatsScreen.vue'
 export * from './features/notifications/notifications-client'
+export * from './features/notifications/notifications-realtime'
 export { default as NotificationsEntryButton } from './features/notifications/NotificationsEntryButton.vue'
 export { default as NotificationsScreen } from './features/notifications/NotificationsScreen.vue'
 export { ProfileRequestError } from './features/profile/profile-types'

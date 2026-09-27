@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   NotificationsApiError,
   notificationsErrorMessage,
@@ -20,6 +20,7 @@ const props = defineProps<{
   host?: MobileHostAdapter | null
   offline?: boolean
   canOpenTarget?: boolean
+  realtimeRevision?: number
 }>()
 
 const emit = defineEmits<{
@@ -57,6 +58,9 @@ let preferencesRequest = 0
 let stopHostBack: (() => void) | undefined
 let restoreHostBack: (() => void) | undefined
 let restoreFocusScope: (() => void) | undefined
+let realtimeRefreshTimer: ReturnType<typeof setTimeout> | undefined
+let realtimeRefreshPending = false
+let realtimeRefreshRunning = false
 
 const categories: readonly { key: NotificationCategoryKey; label: string }[] = [
   { key: 'lessons', label: 'Начало и закрытие занятий' },
@@ -101,6 +105,29 @@ function clearSensitiveData(): void {
   draftMutedUntil.value = ''
   pendingItemIds.value = new Set()
   markAllPending.value = false
+  realtimeRefreshPending = false
+  if (realtimeRefreshTimer !== undefined) clearTimeout(realtimeRefreshTimer)
+  realtimeRefreshTimer = undefined
+}
+
+function queueRealtimeRefresh(): void {
+  if (permissionDenied.value || props.offline) return
+  realtimeRefreshPending = true
+  if (realtimeRefreshRunning || realtimeRefreshTimer !== undefined) return
+  realtimeRefreshTimer = setTimeout(() => {
+    realtimeRefreshTimer = undefined
+    if (!realtimeRefreshPending || permissionDenied.value || props.offline) return
+    if (historyState.value === 'loading' || unreadCountState.value === 'loading') {
+      queueRealtimeRefresh()
+      return
+    }
+    realtimeRefreshPending = false
+    realtimeRefreshRunning = true
+    void Promise.all([loadHistory(), loadUnreadCount()]).finally(() => {
+      realtimeRefreshRunning = false
+      if (realtimeRefreshPending) queueRealtimeRefresh()
+    })
+  }, 250)
 }
 
 function handleFailure(error: unknown): string {
@@ -374,11 +401,19 @@ onMounted(() => {
   void retryAll()
 })
 
+watch(() => props.realtimeRevision ?? 0, queueRealtimeRefresh)
+watch(() => props.offline, (offline) => {
+  if (!offline && realtimeRefreshPending) queueRealtimeRefresh()
+})
+
 onBeforeUnmount(() => {
   screenEpoch += 1
   historyRequest += 1
   countRequest += 1
   preferencesRequest += 1
+  realtimeRefreshPending = false
+  if (realtimeRefreshTimer !== undefined) clearTimeout(realtimeRefreshTimer)
+  realtimeRefreshTimer = undefined
   restoreFocusScope?.()
   stopHostBack?.()
   if (restoreHostBack) restoreHostBack()

@@ -145,6 +145,43 @@ describe('useStompCheckin', () => {
     expect(instance.deactivate).toHaveBeenCalled()
   })
 
+  it('ignores delayed old-client connect and frame callbacks after user switch', () => {
+    const oldHandler = vi.fn()
+    const newHandler = vi.fn()
+    const { rerender } = renderHook(
+      ({ userId, onMarked }) => useStompCheckin(5, userId, onMarked),
+      { initialProps: { userId: 42, onMarked: oldHandler } }
+    )
+
+    const oldClient = mockClientInstances[0]
+    oldClient.onConnect!()
+    const oldUserCallback = oldClient.subscribe.mock.calls.find(
+      ([destination]) => destination === '/topic/user/42'
+    )![1]
+    const oldSubscriptionCount = oldClient.subscribe.mock.calls.length
+
+    rerender({ userId: 43, onMarked: newHandler })
+    const currentClient = mockClientInstances[1]
+    currentClient.onConnect!()
+    const currentSubscriptionCount = currentClient.subscribe.mock.calls.length
+
+    oldClient.onConnect!()
+    oldUserCallback({
+      body: JSON.stringify({
+        type: 'attendance.marked',
+        payload: { lesson_id: 1, user_id: 42, group_id: 5, status: 'present', marked_by: 'student_geo' },
+      }),
+    })
+
+    expect(oldClient.deactivate).toHaveBeenCalled()
+    expect(oldClient.subscribe).toHaveBeenCalledTimes(oldSubscriptionCount)
+    expect(currentClient.subscribe).toHaveBeenCalledTimes(currentSubscriptionCount)
+    expect(currentClient.subscribe).toHaveBeenCalledWith('/topic/user/43', expect.any(Function))
+    expect(currentClient.subscribe).not.toHaveBeenCalledWith('/topic/user/42', expect.any(Function))
+    expect(oldHandler).not.toHaveBeenCalled()
+    expect(newHandler).not.toHaveBeenCalled()
+  })
+
   // M08 G9 (P1-9) — reconnect contract regression guards. Actual reconnect
   // logic lives inside @stomp/stompjs; we pin the hook's contract with the
   // library so that a careless refactor can't silently drop reconnect.

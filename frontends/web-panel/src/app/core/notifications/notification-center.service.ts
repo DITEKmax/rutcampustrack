@@ -93,6 +93,7 @@ export class NotificationCenterService {
 
   private client: Client | null = null;
   private connectedKey: string | null = null; // `${userId}:${groupId}:${isHeadman}`
+  private connectionGeneration = 0;
 
   private readonly _items = signal<NotificationRecord[]>(this.loadFromStorage());
   readonly items: Signal<NotificationRecord[]> = this._items.asReadonly();
@@ -141,48 +142,74 @@ export class NotificationCenterService {
 
     this.disconnect();
     this.connectedKey = key;
+    const generation = ++this.connectionGeneration;
 
     // M03b Группа 7: ticket-based handshake. Каждый reconnect свежий ticket.
     // M07 G5: exponential backoff (1s → 30s). Fixed 2s raffle'ил broker при
     // массовых отключениях (reverse-proxy рестарт); exponential равномерно
     // размазывает reconnect'ы во времени.
-    this.client = new Client({
+    const client = new Client({
       webSocketFactory: async () => new SockJS(await buildWsUrl(this.authApi)),
       reconnectDelay: 1000,
       maxReconnectDelay: 30_000,
       reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
       onConnect: () => {
-        this.client?.subscribe(`/topic/user/${userId}`, message =>
-          this.handleFrame(message.body, userId),
-        );
-        if (groupId !== null) {
-          this.client?.subscribe(`/topic/group/${groupId}`, message =>
-            this.handleFrame(message.body, userId),
+        if (!this.isCurrentConnection(client, generation, userId, groupId, isHeadman)) return;
+        const handle = (message: { body: string }) => {
+          this.handleFrame(
+            message.body,
+            userId,
+            () => this.isCurrentConnection(client, generation, userId, groupId, isHeadman),
           );
+        };
+
+        client.subscribe(`/topic/user/${userId}`, handle);
+        if (groupId !== null) {
+          client.subscribe(`/topic/group/${groupId}`, handle);
           if (isHeadman) {
-            this.client?.subscribe(`/topic/group/${groupId}/headman`, message =>
-              this.handleFrame(message.body, userId),
-            );
+            client.subscribe(`/topic/group/${groupId}/headman`, handle);
           }
         }
       },
       onStompError: frame => {
+        if (!this.isCurrentConnection(client, generation, userId, groupId, isHeadman)) return;
         // eslint-disable-next-line no-console
         console.error('[notification-center] STOMP error:', frame.headers['message']);
       },
     });
-    this.client.activate();
+    this.client = client;
+    client.activate();
   }
 
   private disconnect(): void {
-    if (this.client !== null) {
-      this.client.deactivate();
-      this.client = null;
-    }
+    // Invalidate callbacks synchronously before deactivate() can finish.
+    this.connectionGeneration += 1;
+    const client = this.client;
+    this.client = null;
     this.connectedKey = null;
+    client?.deactivate();
   }
 
-  private handleFrame(body: string, currentUserId: number): void {
+  private isCurrentConnection(
+    client: Client,
+    generation: number,
+    userId: number,
+    groupId: number | null,
+    isHeadman: boolean,
+  ): boolean {
+    if (this.connectionGeneration !== generation || this.client !== client) return false;
+    const user = this.auth.currentUser();
+    if (!user || user.id !== userId) return false;
+    const currentGroupId = user.groupId != null
+      && Number.isSafeInteger(user.groupId)
+      && user.groupId > 0
+      ? user.groupId
+      : null;
+    return currentGroupId === groupId && (groupId === null || user.isHeadman === isHeadman);
+  }
+
+  private handleFrame(body: string, currentUserId: number, isCurrent: () => boolean): void {
+    if (!isCurrent()) return;
     let envelope: StompEnvelope;
     try {
       envelope = JSON.parse(body) as StompEnvelope;
@@ -214,6 +241,7 @@ export class NotificationCenterService {
 
     // Пробрасываем raw envelope подписчикам (авто-закрытие карточек и т.п.).
     this.eventSubject.next(envelope);
+    if (!isCurrent()) return;
 
     // GEO_CONFIRMED закрывает действие старосты. Студент уже получил успешный
     // check-in ACK, поэтому отдельная запись не должна выглядеть как отказ.
@@ -232,17 +260,21 @@ export class NotificationCenterService {
       receivedAt: new Date().toISOString(),
       read: false,
     };
+    if (!isCurrent()) return;
     this._items.update(list => {
       const next = [record, ...list];
       return next.length > MAX_ITEMS ? next.slice(0, MAX_ITEMS) : next;
     });
+    if (!isCurrent()) return;
     this.persist();
+    if (!isCurrent()) return;
     // M10 G7: backend consumer после persist делает evict Caffeine
     // unread-count; refresh чтобы badge из server-side источника не
     // отставал на 30s TTL. NOTIF unification: также refresh страничного
     // списка — пользователь, открывший /student/notifications, увидит
     // новую запись без F5.
     this.historyService.refreshUnreadCount();
+    if (!isCurrent()) return;
     this.historyService.refreshList();
   }
 

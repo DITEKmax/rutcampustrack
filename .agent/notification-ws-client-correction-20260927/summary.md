@@ -38,3 +38,18 @@ Acceptance: both notification centers and check-in hook request the authenticate
 ## Limits
 
 Checks could not execute the specs because the assigned checkout has no complete legacy frontend dependency installation. This note records dependency-resolution failures rather than attributing them to the changed source. The result preserves delivery wiring for the three named legacy consumers only; it does not claim realtime UI delivery across the separately scoped Vue clients or production WebSocket readiness.
+
+## Lifecycle correction after independent review
+
+The follow-up correction closes stale callbacks from replaced clients without changing routes or auth protocol:
+
+- Web-panel increments a connection generation and clears the current client synchronously before calling `deactivate()`. `onConnect`, STOMP error, and each frame callback verify the captured client/generation and current auth user/group. Each handler closes over its own `Client`; it does not dereference mutable `this.client` to subscribe. Frame processing rechecks identity after event observers and before persisted/history side effects.
+- PWA check-in and NotificationCenter each invalidate a client-local `active` flag synchronously in effect cleanup before `deactivate()`. Their callbacks also compare a render-synchronized current-session ref (user/group for check-in; user/group/headman/access-token for NotificationCenter). NotificationCenter checks queued state updaters too, so an update deferred until after a session change is ignored.
+- Existing web-panel and check-in specs now replay delayed old `onConnect` and frame callbacks after an account switch and assert they cannot add subscriptions or notify the new account's handler.
+
+Lifecycle-correction verification:
+
+- `git diff --check` — exit 0 for the correction source/test diff.
+- No Vitest or build rerun: the previous bounded runs already established that the checkout lacks `@analogjs/vite-plugin-angular` and `@vitejs/plugin-react`; the PWA build also failed on missing runtime/type packages. The parent explicitly limited this correction to source plus scoped diff check and requested no dependency installation or repeat build.
+- There is no existing direct NotificationCenterProvider lifecycle spec in the assigned scope; its delayed-callback guards are present in source but not exercised by a dedicated component test here.
+- Runtime evidence remains unavailable: no live browser, STOMP broker, or authenticated ticket session was run.

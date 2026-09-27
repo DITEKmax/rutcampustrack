@@ -137,6 +137,42 @@ describe('NotificationCenterService — M07 G5 exponential backoff', () => {
     expect(client.deactivate).toHaveBeenCalledTimes(1);
   });
 
+  it('не принимает отложенные connect и frame старого клиента после смены пользователя', () => {
+    const service = TestBed.inject(NotificationCenterService);
+    const received: unknown[] = [];
+    service.onEvent$.subscribe((env) => received.push(env));
+
+    authUserSignal.set({ id: 1, role: 'STUDENT', groupId: 5, isHeadman: false });
+    TestBed.flushEffects();
+    const oldClient = capturedClients[0];
+    oldClient.config.onConnect();
+    const oldUserSubscription = oldClient.__subscriptions.find(
+      (subscription) => subscription.destination === '/topic/user/1',
+    );
+    const oldSubscriptionCount = oldClient.__subscriptions.length;
+
+    authUserSignal.set({ id: 2, role: 'STUDENT', groupId: 6, isHeadman: false });
+    TestBed.flushEffects();
+    const currentClient = capturedClients[1];
+    currentClient.config.onConnect();
+    const currentSubscriptionCount = currentClient.__subscriptions.length;
+
+    oldClient.config.onConnect();
+    oldUserSubscription?.callback({
+      body: JSON.stringify({
+        type: 'attendance.marked',
+        payload: { lesson_id: 1, user_id: 1, group_id: 5, status: 'present', marked_by: 'self' },
+      }),
+    });
+
+    expect(oldClient.__subscriptions).toHaveLength(oldSubscriptionCount);
+    expect(currentClient.__subscriptions).toHaveLength(currentSubscriptionCount);
+    expect(currentClient.__subscriptions.map((subscription) => subscription.destination)).toContain('/topic/user/2');
+    expect(currentClient.__subscriptions.map((subscription) => subscription.destination)).not.toContain('/topic/user/1');
+    expect(received).toEqual([]);
+    expect(service.items()).toEqual([]);
+  });
+
   it('attendance.marked envelope прокидывается через onEvent$', () => {
     const service = TestBed.inject(NotificationCenterService);
     authUserSignal.set({ id: 1, role: 'STUDENT', groupId: 5, isHeadman: false });

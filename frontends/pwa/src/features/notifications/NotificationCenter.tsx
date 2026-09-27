@@ -412,6 +412,8 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
   const userId = user?.id ?? null
   const isHeadman = !!user?.isHeadman
   const queryClient = useQueryClient()
+  const currentSessionRef = useRef({ userId, groupId, isHeadman, accessToken })
+  currentSessionRef.current = { userId, groupId, isHeadman, accessToken }
 
   const [items, setItems] = useState<NotificationRecord[]>(() => loadFromStorage())
   const itemsRef = useRef(items)
@@ -433,13 +435,23 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
       && groupId > 0
       ? groupId
       : null
+    let active = true
+    const isCurrentSession = () => {
+      const current = currentSessionRef.current
+      return active && current.userId === userId
+        && current.groupId === groupId
+        && current.isHeadman === isHeadman
+        && current.accessToken === accessToken
+    }
 
     const client = new Client({
       // M03b Группа 6: pre-connect fetch single-use ticket из /auth/ws-ticket.
       webSocketFactory: async () => new SockJS(await buildWsUrl()),
       reconnectDelay: 2000,
       onConnect: () => {
+        if (!isCurrentSession()) return
         const handle = (body: string) => {
+          if (!isCurrentSession()) return
           let envelope: StompEnvelope
           try {
             envelope = JSON.parse(body) as StompEnvelope
@@ -479,6 +491,7 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
           }
 
           if (STUDENT_REQUEST_REFRESH_TYPES.has(envelope.type)) {
+            if (!isCurrentSession()) return
             queryClient.invalidateQueries({ queryKey: ['studentRequests'] })
             queryClient.invalidateQueries({ queryKey: ['studentRecords'] })
           }
@@ -512,7 +525,9 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
             archived: false,
           }
 
+          if (!isCurrentSession()) return
           setItems((prev) => {
+            if (!isCurrentSession()) return prev
             const next = [record, ...prev]
             return next.length > MAX_ITEMS ? next.slice(0, MAX_ITEMS) : next
           })
@@ -520,8 +535,10 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
           // M10 G6: backend consumer после persist делает evict Caffeine
           // unread-count; invalidate TanStack query чтобы badge/список
           // перечитали с сервера без 30s staleTime задержки.
+          if (!isCurrentSession()) return
           queryClient.invalidateQueries({ queryKey: notificationsQueryKeys.all })
 
+          if (!isCurrentSession()) return
           if (!shouldSuppressBanner(envelope.type, prefs)) {
             showNativeNotification(record)
           }
@@ -542,6 +559,7 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
         }
       },
       onStompError: (frame) => {
+        if (!isCurrentSession()) return
         // eslint-disable-next-line no-console
         console.error('[notifications] STOMP error:', frame.headers['message'])
       },
@@ -549,6 +567,7 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
     client.activate()
 
     return () => {
+      active = false
       client.deactivate()
     }
   }, [groupId, userId, isHeadman, accessToken, queryClient])

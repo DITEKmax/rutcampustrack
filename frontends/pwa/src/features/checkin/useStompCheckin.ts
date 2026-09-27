@@ -16,6 +16,9 @@ export function useStompCheckin(
   onMarked: (payload: AttendanceMarkedPayload) => void
 ) {
   const onMarkedRef = useRef(onMarked)
+  const currentSessionRef = useRef({ userId, groupId })
+  currentSessionRef.current = { userId, groupId }
+
   useEffect(() => {
     onMarkedRef.current = onMarked
   }, [onMarked])
@@ -27,15 +30,21 @@ export function useStompCheckin(
       && groupId > 0
       ? groupId
       : null
+    let active = true
+    const isCurrentSession = () => active
+      && currentSessionRef.current.userId === userId
+      && currentSessionRef.current.groupId === groupId
 
     const client = new Client({
       webSocketFactory: async () => new SockJS(await buildWsUrl()),
       reconnectDelay: 1000,
       onConnect: () => {
+        if (!isCurrentSession()) return
         const handle = (message: { body: string }) => {
+          if (!isCurrentSession()) return
           try {
             const envelope = JSON.parse(message.body)
-            if (envelope.type === 'attendance.marked') {
+            if (envelope.type === 'attendance.marked' && isCurrentSession()) {
               onMarkedRef.current(envelope.payload)
             }
           } catch {
@@ -56,6 +65,7 @@ export function useStompCheckin(
     client.activate()
 
     return () => {
+      active = false
       client.deactivate()
     }
   }, [groupId, userId])

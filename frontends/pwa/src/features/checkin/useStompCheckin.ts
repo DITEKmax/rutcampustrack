@@ -11,7 +11,8 @@ import type { AttendanceMarkedPayload } from './types'
  * ws-ticket (axios interceptor ставит Bearer автоматически).
  */
 export function useStompCheckin(
-  groupId: number,
+  groupId: number | null,
+  userId: number | null,
   onMarked: (payload: AttendanceMarkedPayload) => void
 ) {
   const onMarkedRef = useRef(onMarked)
@@ -20,13 +21,18 @@ export function useStompCheckin(
   }, [onMarked])
 
   useEffect(() => {
-    if (!groupId) return
+    if (userId === null || !Number.isSafeInteger(userId) || userId <= 0) return
+    const validGroupId = groupId !== null
+      && Number.isSafeInteger(groupId)
+      && groupId > 0
+      ? groupId
+      : null
 
     const client = new Client({
       webSocketFactory: async () => new SockJS(await buildWsUrl()),
       reconnectDelay: 1000,
       onConnect: () => {
-        client.subscribe(`/topic/group/${groupId}`, (message) => {
+        const handle = (message: { body: string }) => {
           try {
             const envelope = JSON.parse(message.body)
             if (envelope.type === 'attendance.marked') {
@@ -35,7 +41,12 @@ export function useStompCheckin(
           } catch {
             // Ignore malformed messages
           }
-        })
+        }
+
+        client.subscribe(`/topic/user/${userId}`, handle)
+        if (validGroupId !== null) {
+          client.subscribe(`/topic/group/${validGroupId}`, handle)
+        }
       },
       onStompError: (frame) => {
         console.error('STOMP error:', frame.headers['message'])
@@ -47,5 +58,5 @@ export function useStompCheckin(
     return () => {
       client.deactivate()
     }
-  }, [groupId])
+  }, [groupId, userId])
 }

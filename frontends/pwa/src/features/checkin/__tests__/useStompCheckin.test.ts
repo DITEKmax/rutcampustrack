@@ -58,7 +58,7 @@ describe('useStompCheckin', () => {
   })
 
   it('creates Client with webSocketFactory using SockJS and ticket URL', async () => {
-    renderHook(() => useStompCheckin(5, vi.fn()))
+    renderHook(() => useStompCheckin(5, 42, vi.fn()))
 
     expect(mockClientInstances).toHaveLength(1)
     const instance = mockClientInstances[0]
@@ -71,7 +71,7 @@ describe('useStompCheckin', () => {
   })
 
   it('subscribes to /topic/group/{groupId} on connect', () => {
-    renderHook(() => useStompCheckin(5, vi.fn()))
+    renderHook(() => useStompCheckin(5, 42, vi.fn()))
 
     const instance = mockClientInstances[0]
     expect(instance.activate).toHaveBeenCalled()
@@ -81,16 +81,22 @@ describe('useStompCheckin', () => {
       '/topic/group/5',
       expect.any(Function)
     )
+    expect(instance.subscribe).toHaveBeenCalledWith(
+      '/topic/user/42',
+      expect.any(Function)
+    )
   })
 
   it('calls onMarked when attendance.marked event received', () => {
     const onMarked = vi.fn()
-    renderHook(() => useStompCheckin(5, onMarked))
+    renderHook(() => useStompCheckin(5, 42, onMarked))
 
     const instance = mockClientInstances[0]
     instance.onConnect!()
 
-    const subscribeCallback = instance.subscribe.mock.calls[0][1]
+    const subscribeCallback = instance.subscribe.mock.calls.find(
+      ([destination]) => destination === '/topic/user/42'
+    )![1]
 
     subscribeCallback({
       body: JSON.stringify({
@@ -110,12 +116,14 @@ describe('useStompCheckin', () => {
 
   it('ignores events with different type (not attendance.marked)', () => {
     const onMarked = vi.fn()
-    renderHook(() => useStompCheckin(5, onMarked))
+    renderHook(() => useStompCheckin(5, 42, onMarked))
 
     const instance = mockClientInstances[0]
     instance.onConnect!()
 
-    const subscribeCallback = instance.subscribe.mock.calls[0][1]
+    const subscribeCallback = instance.subscribe.mock.calls.find(
+      ([destination]) => destination === '/topic/user/42'
+    )![1]
 
     subscribeCallback({
       body: JSON.stringify({
@@ -128,7 +136,7 @@ describe('useStompCheckin', () => {
   })
 
   it('deactivates client on unmount', () => {
-    const { unmount } = renderHook(() => useStompCheckin(5, vi.fn()))
+    const { unmount } = renderHook(() => useStompCheckin(5, 42, vi.fn()))
 
     const instance = mockClientInstances[0]
     expect(instance.deactivate).not.toHaveBeenCalled()
@@ -142,7 +150,7 @@ describe('useStompCheckin', () => {
   // library so that a careless refactor can't silently drop reconnect.
   describe('reconnect contract (M08 G9)', () => {
     it('passes a finite reconnectDelay to Client — reconnect mandatory', () => {
-      renderHook(() => useStompCheckin(5, vi.fn()))
+      renderHook(() => useStompCheckin(5, 42, vi.fn()))
       const instance = mockClientInstances[0]
 
       expect(instance.reconnectDelay).toBeDefined()
@@ -155,22 +163,22 @@ describe('useStompCheckin', () => {
 
     it('resubscribes on reconnect — onConnect fires again after WebSocket close', () => {
       const onMarked = vi.fn()
-      renderHook(() => useStompCheckin(5, onMarked))
+      renderHook(() => useStompCheckin(5, 42, onMarked))
 
       const instance = mockClientInstances[0]
 
-      // First connect: subscribe once
+      // First connect: subscribe to private and shared destinations.
       instance.onConnect!()
-      expect(instance.subscribe).toHaveBeenCalledTimes(1)
+      expect(instance.subscribe).toHaveBeenCalledTimes(2)
 
       // Simulate disconnect → stompjs внутри делает reconnect + onConnect снова.
       // Мы проверяем что onConnect handler hook'а — idempotent (subscribe,
       // а не cached subscription object с stale callback).
       instance.onConnect!()
-      expect(instance.subscribe).toHaveBeenCalledTimes(2)
+      expect(instance.subscribe).toHaveBeenCalledTimes(4)
 
       // Delivers events after reconnect
-      const subscribeCallback = instance.subscribe.mock.calls[1][1]
+      const subscribeCallback = instance.subscribe.mock.calls[3][1]
       subscribeCallback({
         body: JSON.stringify({
           type: 'attendance.marked',
@@ -183,7 +191,7 @@ describe('useStompCheckin', () => {
     })
 
     it('fresh WebSocket ticket fetched on each connect — no cached ticket replay', async () => {
-      renderHook(() => useStompCheckin(5, vi.fn()))
+      renderHook(() => useStompCheckin(5, 42, vi.fn()))
       const instance = mockClientInstances[0]
 
       await instance.webSocketFactory!()

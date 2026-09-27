@@ -14,8 +14,8 @@ const StompContext = createContext<StompContextValue | null>(null)
 
 export function StompProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  const groupId = user?.groupId ?? 0
-  const userId = user?.id ?? 0
+  const groupId = user?.groupId ?? null
+  const userId = user?.id ?? null
 
   const [attendanceCounts, setAttendanceCounts] = useState<Record<number, number>>({})
   const [personalStatuses, setPersonalStatuses] = useState<Record<number, AttendanceStatus | null>>({})
@@ -37,7 +37,7 @@ export function StompProvider({ children }: { children: ReactNode }) {
   )
 
   // M03b Группа 6: useStompCheckin сам запрашивает ticket (не access token).
-  useStompCheckin(groupId, handleMarked)
+  useStompCheckin(groupId, userId, handleMarked)
 
   const markPersonalStatus = useCallback((lessonId: number, status: AttendanceStatus) => {
     setPersonalStatuses((prev) => ({ ...prev, [lessonId]: status }))

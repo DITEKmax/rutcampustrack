@@ -108,6 +108,7 @@ describe('NotificationCenterService — M07 G5 exponential backoff', () => {
     client.config.onConnect();
 
     const destinations = client.__subscriptions.map((s) => s.destination);
+    expect(destinations).toContain('/topic/user/7');
     expect(destinations).toContain('/topic/group/10');
     expect(destinations).toContain('/topic/group/10/headman');
   });
@@ -121,7 +122,7 @@ describe('NotificationCenterService — M07 G5 exponential backoff', () => {
     client.config.onConnect();
 
     const destinations = client.__subscriptions.map((s) => s.destination);
-    expect(destinations).toEqual(['/topic/group/10']);
+    expect(destinations).toEqual(['/topic/user/7', '/topic/group/10']);
   });
 
   it('logout вызывает deactivate()', () => {
@@ -146,7 +147,7 @@ describe('NotificationCenterService — M07 G5 exponential backoff', () => {
     const received: unknown[] = [];
     service.onEvent$.subscribe((env) => received.push(env));
 
-    const sub = client.__subscriptions.find((s) => s.destination === '/topic/group/5');
+    const sub = client.__subscriptions.find((s) => s.destination === '/topic/user/1');
     sub?.callback({
       body: JSON.stringify({
         type: 'attendance.marked',
@@ -167,7 +168,7 @@ describe('NotificationCenterService — M07 G5 exponential backoff', () => {
 
     const received: unknown[] = [];
     service.onEvent$.subscribe((env) => received.push(env));
-    const sub = client.__subscriptions.find((s) => s.destination === '/topic/group/5');
+    const sub = client.__subscriptions.find((s) => s.destination === '/topic/user/1');
 
     expect(() => sub?.callback({ body: 'not-json ——' })).not.toThrow();
     expect(received).toEqual([]);

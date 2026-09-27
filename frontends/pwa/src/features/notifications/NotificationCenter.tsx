@@ -26,7 +26,8 @@ import { PWA_ICON_URL } from '@/features/push/pushUtils'
  * Global notification center for the PWA.
  *
  * Mirrors the web-panel's NotificationCenterService: one persistent STOMP
- * client per session, subscribed to /topic/group/{groupId} and (for headmen)
+ * client per session, subscribed to /topic/user/{userId} and, when the user
+ * belongs to a valid group, /topic/group/{groupId} and (for headmen)
  * /topic/group/{groupId}/headman. Incoming envelopes are archived in
  * sessionStorage so the notifications tab survives route changes, and each
  * incoming event is also surfaced as a native Notification with sound when
@@ -421,7 +422,17 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
   }, [items])
 
   useEffect(() => {
-    if (!groupId || !userId || !accessToken) return
+    if (
+      userId === null ||
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      !accessToken
+    ) return
+    const validGroupId = groupId !== null
+      && Number.isSafeInteger(groupId)
+      && groupId > 0
+      ? groupId
+      : null
 
     const client = new Client({
       // M03b Группа 6: pre-connect fetch single-use ticket из /auth/ws-ticket.
@@ -516,13 +527,18 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
           }
         }
 
-        client.subscribe(`/topic/group/${groupId}`, (message) =>
+        client.subscribe(`/topic/user/${userId}`, (message) =>
           handle(message.body),
         )
-        if (isHeadman) {
-          client.subscribe(`/topic/group/${groupId}/headman`, (message) =>
+        if (validGroupId !== null) {
+          client.subscribe(`/topic/group/${validGroupId}`, (message) =>
             handle(message.body),
           )
+          if (isHeadman) {
+            client.subscribe(`/topic/group/${validGroupId}/headman`, (message) =>
+              handle(message.body),
+            )
+          }
         }
       },
       onStompError: (frame) => {

@@ -19,11 +19,11 @@ import { NotificationPrefsService } from './notification-prefs.service';
  * веб-канал не работает.
  *
  * NotificationCenterService живёт в корне (providedIn: 'root') и запускается
- * при старте {@link ShellComponent}. Он держит ОДИН клиент на
- * {@code /api/ws?token=...}, подписывается на {@code /topic/group/{gid}} всегда
- * и дополнительно на {@code /topic/group/{gid}/headman} если пользователь —
- * староста. При logout / смене пользователя подключение разрывается и
- * пересоздаётся с новым JWT.
+ * при старте {@link ShellComponent}. Он держит ОДИН ticket-authenticated клиент,
+ * подписывается на личный {@code /topic/user/{uid}} и, если у пользователя есть
+ * валидная группа, на {@code /topic/group/{gid}}; староста дополнительно получает
+ * {@code /topic/group/{gid}/headman}. При logout / смене пользователя подключение
+ * разрывается и пересоздаётся с новой сессией.
  *
  * Публичная поверхность:
  * - {@link items} — сигнал с историей уведомлений (сохраняется в sessionStorage)
@@ -33,8 +33,8 @@ import { NotificationPrefsService } from './notification-prefs.service';
  *   запросов при принятии решения из Telegram)
  * - {@link markAllRead} / {@link clear} — сбросить счётчик
  *
- * Безопасность — как у StudentStompService: JWT передаётся в query-параметре
- * и нигде не логируется; при ошибках STOMP выводится только frame.headers.message.
+ * WebSocket ticket запрашивается отдельно; при ошибках STOMP выводится только
+ * frame.headers.message.
  */
 
 /** События, которые попадают в историю уведомлений (bell + список). */
@@ -107,16 +107,16 @@ export class NotificationCenterService {
     // Реагируем на смену пользователя: на login поднимаем сокет, на logout — рвём.
     effect(() => {
       const user = this.auth.currentUser();
-      if (!user) {
+      if (!user || !Number.isSafeInteger(user.id) || user.id <= 0) {
         this.disconnect();
         return;
       }
-      if (user.groupId == null) {
-        // У админов/преподавателей без группы нет /topic/group/{X} — оставляем без подключения.
-        this.disconnect();
-        return;
-      }
-      this.connectFor(user.id, user.groupId, user.isHeadman);
+      const groupId = user.groupId != null
+        && Number.isSafeInteger(user.groupId)
+        && user.groupId > 0
+        ? user.groupId
+        : null;
+      this.connectFor(user.id, groupId, groupId !== null && user.isHeadman);
     });
   }
 
@@ -135,8 +135,8 @@ export class NotificationCenterService {
     this.persist();
   }
 
-  private connectFor(userId: number, groupId: number, isHeadman: boolean): void {
-    const key = `${userId}:${groupId}:${isHeadman}`;
+  private connectFor(userId: number, groupId: number | null, isHeadman: boolean): void {
+    const key = `${userId}:${groupId ?? '-'}:${isHeadman}`;
     if (this.connectedKey === key && this.client !== null) return;
 
     this.disconnect();
@@ -152,11 +152,18 @@ export class NotificationCenterService {
       maxReconnectDelay: 30_000,
       reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
       onConnect: () => {
-        this.client?.subscribe(`/topic/group/${groupId}`, message => this.handleFrame(message.body, userId));
-        if (isHeadman) {
-          this.client?.subscribe(`/topic/group/${groupId}/headman`, message =>
+        this.client?.subscribe(`/topic/user/${userId}`, message =>
+          this.handleFrame(message.body, userId),
+        );
+        if (groupId !== null) {
+          this.client?.subscribe(`/topic/group/${groupId}`, message =>
             this.handleFrame(message.body, userId),
           );
+          if (isHeadman) {
+            this.client?.subscribe(`/topic/group/${groupId}/headman`, message =>
+              this.handleFrame(message.body, userId),
+            );
+          }
         }
       },
       onStompError: frame => {

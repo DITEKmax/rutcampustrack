@@ -11,11 +11,11 @@ import type {
   TodayLesson,
 } from '../../api/types'
 import { CheckinCommandRecovery } from '../../domain/checkin'
+import type { NotificationHomeworkTarget } from '../../features/notifications/notifications-client'
 import AttendanceScreen from '../../features/attendance/AttendanceScreen.vue'
 import type { AttendanceGraphRange, AttendanceLesson, AttendanceMode } from '../../features/attendance/attendance-view-model'
 import { useAttendance } from '../../features/attendance/use-attendance'
 import HomeworkScreen from '../../features/homework/HomeworkScreen.vue'
-import AssistantHomeworkScreen from '../../features/homework/AssistantHomeworkScreen.vue'
 import type { HeadmanHomeworkApi } from '../../features/homework/headman-homework-client'
 import { useHomework } from '../../features/homework/use-homework'
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue'
@@ -68,6 +68,7 @@ import { createProfileViewPublication } from './profile-view-publication'
 const props = withDefaults(defineProps<{
   api: StudentApi | null
   scope: StudentFeatureScope | null
+  ownerKey?: string | null
   offline: boolean
   readOnly?: boolean
   todayFallback?: StudentToday | null
@@ -87,8 +88,15 @@ const props = withDefaults(defineProps<{
   assistantRequestsApi?: HeadmanRequestsApi | null
   assistantHomeworkApi?: HeadmanHomeworkApi | null
   reportDownload?: ReportDownloadPort | null
+  homeworkNotificationRequest?: {
+    requestId: number
+    generation: number
+    ownerKey: string
+    target: NotificationHomeworkTarget
+  } | null
 }>(), {
   readOnly: false,
+  ownerKey: null,
   todayFallback: null,
   homeworkFallback: null,
   semesterSchedule: null,
@@ -104,12 +112,23 @@ const props = withDefaults(defineProps<{
   assistantRequestsApi: null,
   assistantHomeworkApi: null,
   reportDownload: null,
+  homeworkNotificationRequest: null,
 })
 
 const emit = defineEmits<{
   ownerError: [error: unknown]
   homeworkLoaded: [homework: StudentHomework]
 }>()
+
+type HomeworkNotificationState = {
+  requestId: number
+  target: NotificationHomeworkTarget
+} & (
+  | { status: 'loading' }
+  | { status: 'available' }
+  | { status: 'unavailable'; message: string }
+  | { status: 'error'; message: string }
+)
 
 /** A disabled query still needs a StudentApi instance for composable setup. */
 const inertApi = new StudentApi({ accessToken: () => null })
@@ -124,6 +143,7 @@ const stopScope = watch(() => props.scope, (value) => {
 const offline = computed(() => props.offline || props.api === null)
 const navigation: MobileNavigationStack = createMobileNavigationStack(rootRoute('today'))
 const route = ref<MobileRoute>(navigation.current)
+const homeworkNotificationRoute = nestedRoute('homework', 'homework/notification-target', 'detail')
 const selectedDate = ref(new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }))
 const attendanceSelectedDate = ref(new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }))
 const attendanceMode = ref<AttendanceMode>('days')
@@ -159,6 +179,7 @@ const homework = useHomework(
     fallback: () => props.homeworkFallback,
   },
 )
+const homeworkNotificationState = shallowRef<HomeworkNotificationState | null>(null)
 const requests = useRequests(api, scope, {
   offline,
   readOnly: computed(() => props.readOnly),
@@ -181,10 +202,14 @@ const stopNavigation = navigation.subscribe(() => {
   ensureRequestsRoute(route.value)
 })
 
-watch(() => route.value, (value) => {
+watch(() => route.value, (value, previous) => {
   ensureProfileRoute(value)
   ensureRequestsRoute(value)
   if (value.id !== 'more/statistics') statistics.closeSubject()
+  if (previous?.id === 'homework/notification-target' && value.id !== 'homework/notification-target') {
+    homeworkNotificationState.value = null
+    homework.returnToToday()
+  }
 }, { immediate: true })
 
 const displayToday = computed(() => offline.value
@@ -206,8 +231,161 @@ const homeworkError = computed(() => {
 const todayLoading = computed(() => !displayToday.value && props.api !== null && !offline.value && today.query.isPending.value)
 const homeworkLoading = computed(() => !displayHomework.value && props.api !== null && !offline.value && homework.query.isPending.value)
 const ownerIdentity = computed(() => scope.value ? studentFeatureScopeIdentity(scope.value) : null)
+const activeHomeworkNotification = computed(() => route.value.id === homeworkNotificationRoute.id
+  ? homeworkNotificationState.value
+  : null)
+const homeworkScreenData = computed(() => {
+  const targetState = activeHomeworkNotification.value
+  if (!targetState) {
+    return {
+      homework: displayHomework.value,
+      loading: homeworkLoading.value,
+      error: homeworkError.value,
+      unavailableMessage: null as string | null,
+      focusItemId: null as string | null,
+      focusRequestId: null as number | null,
+    }
+  }
+  if (targetState.status === 'available') {
+    const feed = homework.query.data.value
+    const dateRangeIsCurrent = feed?.from === targetState.target.lessonDate
+      && feed.to === targetState.target.lessonDate
+      && homework.range.value?.from === targetState.target.lessonDate
+      && homework.range.value.to === targetState.target.lessonDate
+    const item = dateRangeIsCurrent
+      ? feed.items.find((entry) => entry.id === targetState.target.homeworkId)
+      : undefined
+    if (!dateRangeIsCurrent) {
+      return {
+        homework: null,
+        loading: true,
+        error: null,
+        unavailableMessage: null,
+        focusItemId: null,
+        focusRequestId: null,
+      }
+    }
+    if (!item) {
+      return {
+        homework: null,
+        loading: false,
+        error: null,
+        unavailableMessage: 'Это задание удалено или больше недоступно в твоей учебной группе.',
+        focusItemId: null,
+        focusRequestId: null,
+      }
+    }
+    return {
+      homework: { ...feed, items: [item] },
+      loading: false,
+      error: null,
+      unavailableMessage: null,
+      focusItemId: item.id,
+      focusRequestId: targetState.requestId,
+    }
+  }
+  return {
+    homework: null,
+    loading: targetState.status === 'loading',
+    error: targetState.status === 'error' ? targetState.message : null,
+    unavailableMessage: targetState.status === 'unavailable' ? targetState.message : null,
+    focusItemId: null,
+    focusRequestId: null,
+  }
+})
+
+function isCurrentHomeworkNotificationRequest(request: NonNullable<typeof props.homeworkNotificationRequest>): boolean {
+  const currentScope = scope.value
+  return !disposed
+    && props.homeworkNotificationRequest?.requestId === request.requestId
+    && request.ownerKey === props.ownerKey
+    && props.ownerKey !== null
+    && props.api !== null
+    && !offline.value
+    && currentScope?.activeRole === 'STUDENT'
+    && currentScope.resetGeneration === request.generation
+    && ownerIdentity.value === studentFeatureScopeIdentity(currentScope)
+}
+
+function isActiveHomeworkNotificationRequest(request: NonNullable<typeof props.homeworkNotificationRequest>): boolean {
+  return isCurrentHomeworkNotificationRequest(request)
+    && route.value.id === homeworkNotificationRoute.id
+    && homeworkNotificationState.value?.requestId === request.requestId
+}
+
+function loadHomeworkNotificationTarget(
+  request: NonNullable<typeof props.homeworkNotificationRequest>,
+  navigate = true,
+): void {
+  if (!isCurrentHomeworkNotificationRequest(request)) return
+  homeworkNotificationState.value = {
+    requestId: request.requestId,
+    target: request.target,
+    status: 'loading',
+  }
+  if (navigate) navigation.push(homeworkNotificationRoute)
+  void (async () => {
+    try {
+      const feed = await homework.openDate(request.target.lessonDate)
+      if (!isActiveHomeworkNotificationRequest(request)) return
+      if (!feed.items.some((item) => item.id === request.target.homeworkId)) {
+        homeworkNotificationState.value = {
+          requestId: request.requestId,
+          target: request.target,
+          status: 'unavailable',
+          message: 'Это задание удалено или больше недоступно в твоей учебной группе.',
+        }
+        return
+      }
+      homeworkNotificationState.value = {
+        requestId: request.requestId,
+        target: request.target,
+        status: 'available',
+      }
+    } catch (error) {
+      if (!isActiveHomeworkNotificationRequest(request)) return
+      const status = error instanceof StudentApiError ? error.response.status : null
+      homeworkNotificationState.value = status === 403 || status === 404
+        ? {
+          requestId: request.requestId,
+          target: request.target,
+          status: 'unavailable',
+          message: 'Это задание удалено или больше недоступно в твоей учебной группе.',
+        }
+        : {
+          requestId: request.requestId,
+          target: request.target,
+          status: 'error',
+          message: 'Не удалось загрузить это задание. Проверь подключение и попробуй ещё раз.',
+        }
+    }
+  })()
+}
+
+function retryHomeworkFeed(): void {
+  const request = props.homeworkNotificationRequest
+  if (activeHomeworkNotification.value?.status === 'error' && request
+    && isCurrentHomeworkNotificationRequest(request)) {
+    loadHomeworkNotificationTarget(request, false)
+    return
+  }
+  retryFeed()
+}
+
+watch(() => props.homeworkNotificationRequest, (request) => {
+  if (request) {
+    loadHomeworkNotificationTarget(request)
+    return
+  }
+  if (homeworkNotificationState.value) {
+    homeworkNotificationState.value = null
+    if (route.value.id === homeworkNotificationRoute.id) navigation.back()
+  }
+}, { flush: 'sync' })
+
 watch(ownerIdentity, (identity, previous) => {
   if (identity === previous) return
+  homeworkNotificationState.value = null
   statistics.closeSubject()
   attendanceActionLessonId.value = null
   attendanceExpandedSubjectId.value = null
@@ -537,7 +715,10 @@ watch(
   [() => today.query.error.value, () => homework.query.error.value],
   ([todayError, homeworkError]) => {
     if (disposed || !scope.value) return
-    const error = terminalAuthError(todayError) ?? terminalAuthError(homeworkError)
+    const homeworkStatus = homeworkError instanceof StudentApiError ? homeworkError.response.status : null
+    const targetUnavailable = activeHomeworkNotification.value?.status === 'loading'
+      && (homeworkStatus === 403 || homeworkStatus === 404)
+    const error = terminalAuthError(todayError) ?? (targetUnavailable ? null : terminalAuthError(homeworkError))
     if (!error || reportedAuthErrors.has(error)) return
     reportedAuthErrors.add(error)
     emit('ownerError', error)
@@ -560,7 +741,7 @@ watch(
 watch(
   () => homework.query.data.value,
   (value) => {
-    if (value && scope.value) emit('homeworkLoaded', value)
+    if (value && scope.value && homework.range.value === null) emit('homeworkLoaded', value)
   },
 )
 
@@ -887,9 +1068,12 @@ onBeforeUnmount(() => {
   />
   <HomeworkScreen
     v-else-if="route.root === 'homework'"
-    :homework="displayHomework"
-    :loading="homeworkLoading"
-    :error="homeworkError"
+    :homework="homeworkScreenData.homework"
+    :loading="homeworkScreenData.loading"
+    :error="homeworkScreenData.error"
+    :focus-item-id="homeworkScreenData.focusItemId"
+    :focus-request-id="homeworkScreenData.focusRequestId"
+    :unavailable-message="homeworkScreenData.unavailableMessage"
     :nav-items="navItems"
     :offline="offline"
     :read-only="readOnly"
@@ -905,11 +1089,12 @@ onBeforeUnmount(() => {
     :item-error="homework.itemError"
     @complete="complete"
     @retry="retry"
-    @retry-feed="retryFeed"
+    @retry-feed="retryHomeworkFeed"
     @open-material="openMaterialFromItem"
     @previous="homework.loadPrevious"
     @return-today="homework.returnToToday"
     @navigate="navigate"
+    @back="navigation.back()"
   />
   <MobileShell
     v-else-if="route.root === 'attendance'"

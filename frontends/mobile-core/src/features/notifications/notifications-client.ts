@@ -1,4 +1,5 @@
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import { isHomeworkDate } from '../../domain/homework'
 
 export type NotificationCategoryKey =
   | 'lessons'
@@ -14,7 +15,16 @@ export interface NotificationHistoryItem {
   sentAt: string
   readAt: string | null
   context: readonly { label: string; value: string }[]
+  target: NotificationTarget | null
 }
+
+export interface NotificationHomeworkTarget {
+  kind: 'homework'
+  homeworkId: string
+  lessonDate: string
+}
+
+export type NotificationTarget = NotificationHomeworkTarget
 
 export interface NotificationHistoryPage {
   items: NotificationHistoryItem[]
@@ -221,7 +231,27 @@ function parseHistoryItem(value: unknown): NotificationHistoryItem | null {
     sentAt: record.sentAt,
     readAt: typeof record.readAt === 'string' ? record.readAt : null,
     context: safeContext(record.payload),
+    target: parseTarget(record.type, record.payload),
   }
+}
+
+function parseTarget(type: string, value: unknown): NotificationTarget | null {
+  if (type !== 'HOMEWORK_PUBLISHED' && type !== 'HOMEWORK_UPDATED') return null
+  const payload = asRecord(value)
+  if (!payload) return null
+  const homeworkId = positiveSafeId(payload.homework_id)
+  const lessonDate = payload.lesson_date
+  if (!homeworkId || typeof lessonDate !== 'string' || !isHomeworkDate(lessonDate)) return null
+  return { kind: 'homework', homeworkId, lessonDate }
+}
+
+function positiveSafeId(value: unknown): string | null {
+  if (typeof value === 'number') {
+    return Number.isSafeInteger(value) && value > 0 ? String(value) : null
+  }
+  if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) return null
+  const parsed = Number(value)
+  return Number.isSafeInteger(parsed) && parsed > 0 ? value : null
 }
 
 function safeContext(value: unknown): NotificationHistoryItem['context'] {

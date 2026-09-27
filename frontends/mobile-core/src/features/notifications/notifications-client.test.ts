@@ -12,13 +12,13 @@ function jsonResponse(value: unknown, status = 200): Response {
   })
 }
 
-function historyResponse(payload: unknown = {}): Response {
+function historyResponse(payload: unknown = {}, type = 'LESSON_REMINDER'): Response {
   return jsonResponse({
     _embedded: {
       notificationHistoryDtoList: [{
         id: 'evt-123',
         userId: 987,
-        type: 'LESSON_REMINDER',
+        type,
         sentAt: '2026-09-25T09:00:00Z',
         readAt: null,
         payload,
@@ -83,6 +83,26 @@ describe('generation-bound notifications API', () => {
     ])
     expect(result.items[0]).not.toHaveProperty('userId')
     expect(result.items[0]).not.toHaveProperty('_links')
+  })
+
+  it('parses only a safe homework ID and real lesson date from supported event payloads', async () => {
+    const owner = sessionOwner()
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(historyResponse({ homework_id: 81, lesson_date: '2026-09-24', link: 'https://invalid.example/' }, 'HOMEWORK_PUBLISHED'))
+      .mockResolvedValueOnce(historyResponse({ homework_id: 82, lesson_date: '2026-02-30' }, 'HOMEWORK_UPDATED'))
+      .mockResolvedValueOnce(historyResponse({ homework_id: '9007199254740992', lesson_date: '2026-09-24' }, 'HOMEWORK_PUBLISHED'))
+      .mockResolvedValueOnce(historyResponse({ homework_id: 83, lesson_date: '2026-09-24' }, 'LESSON_STARTED'))
+    const api = createGenerationBoundNotificationsApi(owner, fetcher)
+
+    const valid = await api.listHistory(0)
+    const invalidDate = await api.listHistory(0)
+    const unsafeId = await api.listHistory(0)
+    const unsupportedType = await api.listHistory(0)
+
+    expect(valid.items[0]?.target).toEqual({ kind: 'homework', homeworkId: '81', lessonDate: '2026-09-24' })
+    expect(invalidDate.items[0]?.target).toBeNull()
+    expect(unsafeId.items[0]?.target).toBeNull()
+    expect(unsupportedType.items[0]?.target).toBeNull()
   })
 
   it('rejects unsafe item IDs before constructing an API request', async () => {

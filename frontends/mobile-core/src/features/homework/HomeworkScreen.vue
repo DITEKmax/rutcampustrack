@@ -45,6 +45,9 @@ const props = withDefaults(defineProps<{
   itemErrors?: Readonly<Record<string, string | null>>
   isItemPending?: (id: string) => boolean
   itemError?: (id: string) => string | null
+  focusItemId?: string | null
+  focusRequestId?: number | null
+  unavailableMessage?: string | null
 }>(), {
   offline: false,
   readOnly: false,
@@ -61,6 +64,9 @@ const props = withDefaults(defineProps<{
   itemErrors: undefined as never,
   isItemPending: undefined as never,
   itemError: undefined as never,
+  focusItemId: null,
+  focusRequestId: null,
+  unavailableMessage: null,
 })
 
 const emit = defineEmits<{
@@ -305,6 +311,21 @@ async function restoreCompletionFocus(): Promise<void> {
 watch(completionSignature, () => { void restoreCompletionFocus() }, { flush: 'post' })
 
 watch(
+  () => [props.focusItemId, props.focusRequestId, props.homework?.items] as const,
+  async ([id, requestId]) => {
+    if (!id || requestId === null || !props.homework?.items.some((item) => item.id === id)) return
+    const next = new Set(expandedIds.value)
+    next.add(id)
+    expandedIds.value = next
+    await nextTick()
+    if (props.focusItemId !== id || props.focusRequestId !== requestId) return
+    const target = trackElements.get(id)
+    if (target?.isConnected) target.focus()
+  },
+  { flush: 'post', immediate: true },
+)
+
+watch(
   () => `${props.ownerKey ?? ''}|${props.route?.id ?? ''}|${props.activeId ?? ''}`,
   () => { focusRequest.value = null },
 )
@@ -379,6 +400,14 @@ onBeforeUnmount(() => {
           >
             Повторить
           </button>
+        </section>
+        <section
+          v-else-if="unavailableMessage"
+          class="homework-state"
+          role="status"
+        >
+          <h2>Домашнее задание недоступно</h2>
+          <p>{{ unavailableMessage }}</p>
         </section>
         <section
           v-else-if="!homework || groups.length === 0"

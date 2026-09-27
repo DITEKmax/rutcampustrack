@@ -1,4 +1,4 @@
-import { computed, reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { computed, nextTick, reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import type { StudentApi } from '../../api/student-client'
 import type { StudentHomework, StudentHomeworkCompletion } from '../../api/types'
@@ -235,6 +235,7 @@ export function useHomework(
   const readOnly = computed(() => Boolean(toValue(optionsValue.readOnly)))
   const fallback = computed(() => toValue(optionsValue.fallback))
   const selectedRange = ref<HomeworkDateRange | null>(normalizeHomeworkRange(optionsValue.initialRange))
+  let rangeRequestRevision = 0
   const range = computed(() => selectedRange.value)
   const scopeIdentity = computed(() => homeworkScopeIdentity(scope.value))
   const queryKey = computed(() => homeworkQueryKey(scope.value, range.value))
@@ -363,11 +364,46 @@ export function useHomework(
   function loadPrevious(): HomeworkDateRange | null {
     const previous = previousHomeworkRange(query.data.value ?? null)
     if (!previous) return null
+    rangeRequestRevision += 1
     selectedRange.value = previous
     return previous
   }
 
+  async function openDate(date: string): Promise<StudentHomework> {
+    const targetRange = normalizeHomeworkRange({ from: date, to: date })
+    if (!targetRange) throw new HomeworkScopeError()
+    if (!scopeReady.value || offline.value) throw new HomeworkScopeError()
+    const requestIdentity = scopeIdentity.value
+    const requestRevision = ++rangeRequestRevision
+    selectedRange.value = targetRange
+    await nextTick()
+    const isCurrentRequest = (): boolean => rangeRequestRevision === requestRevision
+      && scopeIdentity.value === requestIdentity
+      && selectedRange.value?.from === date
+      && selectedRange.value.to === date
+    if (!isCurrentRequest()) {
+      throw new HomeworkStaleResponseError()
+    }
+
+    // Refetch through the existing scoped query observer so notification
+    // navigation uses the same API owner and cache identity as the feed.
+    let result
+    try {
+      result = await query.refetch()
+    } catch (error) {
+      if (!isCurrentRequest()) throw new HomeworkStaleResponseError()
+      throw error
+    }
+    if (!isCurrentRequest()) {
+      throw new HomeworkStaleResponseError()
+    }
+    if (result.isError) throw result.error
+    if (!result.data) throw new HomeworkScopeError()
+    return result.data
+  }
+
   function returnToToday(): void {
+    rangeRequestRevision += 1
     selectedRange.value = null
   }
 
@@ -376,6 +412,7 @@ export function useHomework(
     // across logout/group/semester replacement could replay that intent for a
     // different student when the same homework id is reused.
     retryCommands.clear()
+    rangeRequestRevision += 1
     selectedRange.value = null
     for (const state of Object.values(itemStates)) {
       state.pending = false
@@ -399,6 +436,7 @@ export function useHomework(
     isHistorical: computed(() => selectedRange.value !== null),
     canLoadPrevious,
     loadPrevious,
+    openDate,
     returnToToday,
     submitCompletion,
     retryCompletion,

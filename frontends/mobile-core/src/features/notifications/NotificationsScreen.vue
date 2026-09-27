@@ -6,6 +6,7 @@ import {
   type NotificationCategoryKey,
   type NotificationHistoryItem,
   type NotificationHistoryPage,
+  type NotificationHomeworkTarget,
   type NotificationPreferences,
   type NotificationsApi,
 } from './notifications-client'
@@ -18,11 +19,13 @@ const props = defineProps<{
   api: NotificationsApi
   host?: MobileHostAdapter | null
   offline?: boolean
+  canOpenHomeworkTarget?: boolean
 }>()
 
 const emit = defineEmits<{
   close: []
   'owner-error': [error: unknown]
+  'open-homework-target': [target: NotificationHomeworkTarget]
 }>()
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error'
@@ -312,6 +315,15 @@ function title(item: NotificationHistoryItem): string {
   return eventTitles[item.type] ?? 'Новое уведомление'
 }
 
+function openHomeworkTarget(item: NotificationHistoryItem): void {
+  const target = item.target
+  if (!props.canOpenHomeworkTarget || target?.kind !== 'homework') return
+  // Mark-read is its own best-effort request. The target transition remains
+  // bound to the notification generation by the app adapter.
+  void markRead(item)
+  emit('open-homework-target', target)
+}
+
 function formatDate(value: string): string {
   const date = new Date(value)
   return Number.isFinite(date.getTime())
@@ -529,6 +541,14 @@ onBeforeUnmount(() => {
                 <dd>{{ field.value }}</dd>
               </div>
             </dl>
+            <button
+              v-if="canOpenHomeworkTarget && item.target?.kind === 'homework'"
+              class="notifications-screen__secondary-action"
+              type="button"
+              @click="openHomeworkTarget(item)"
+            >
+              Открыть домашнее задание
+            </button>
             <time :datetime="item.sentAt">{{ formatDate(item.sentAt) }}</time>
             <button
               v-if="!item.readAt"

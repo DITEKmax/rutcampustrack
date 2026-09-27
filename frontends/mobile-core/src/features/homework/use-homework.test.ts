@@ -180,6 +180,36 @@ describe('useHomework scope and completion boundaries', () => {
     expect(api.setHomeworkCompletion).not.toHaveBeenCalled()
   })
 
+  it('loads only the selected lesson date and discards an older overlapping date intent', async () => {
+    let resolveFirst!: (value: StudentHomework) => void
+    let resolveSecond!: (value: StudentHomework) => void
+    const firstFeed = new Promise<StudentHomework>((resolve) => { resolveFirst = resolve })
+    const secondFeed = new Promise<StudentHomework>((resolve) => { resolveSecond = resolve })
+    const firstDate = '2026-09-24'
+    const secondDate = '2026-09-25'
+    const api = {
+      getHomework: vi.fn((from?: string) => from === firstDate
+        ? firstFeed
+        : from === secondDate ? secondFeed : Promise.resolve(feed)),
+      setHomeworkCompletion: vi.fn(),
+    } as unknown as StudentApi
+    const state = mountHomework(api, ref(scopeA))
+    const firstRequest = state.openDate(firstDate)
+    await nextTick()
+    const secondRequest = state.openDate(secondDate)
+    await nextTick()
+
+    resolveFirst({ ...feed, from: firstDate, to: firstDate })
+    await expect(firstRequest).rejects.toBeInstanceOf(HomeworkStaleResponseError)
+    resolveSecond({ ...feed, from: secondDate, to: secondDate })
+    await expect(secondRequest).resolves.toMatchObject({ from: secondDate, to: secondDate })
+
+    expect(api.getHomework).toHaveBeenCalledWith(firstDate, firstDate)
+    expect(api.getHomework).toHaveBeenCalledWith(secondDate, secondDate)
+    expect(state.range.value).toEqual({ from: secondDate, to: secondDate })
+    expect(state.query.data.value?.from).toBe(secondDate)
+  })
+
   it.each([
     ['pending', () => new Promise<StudentHomework>(() => undefined)],
     ['rejected', () => Promise.reject(new Error('feed unavailable'))],

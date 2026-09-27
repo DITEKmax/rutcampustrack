@@ -11,6 +11,8 @@ import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 import ru.rutcampustrack.shared.events.EventIdempotent;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,6 +25,29 @@ public class EventConsumer extends AbstractEventConsumer {
     private static final Set<String> HEADMAN_ONLY_EVENTS = Set.of(
             "excuse.requested",
             "late_checkin.requested"
+    );
+
+    /** Events in this set are delivered only to the user named by payload.user_id. */
+    private static final Set<String> USER_SCOPED_EVENTS = Set.of(
+            "excuse.decided",
+            "late_checkin.decided",
+            "attendance.marked",
+            "homework.weekly_digest",
+            "homework.due_reminder"
+    );
+
+    /** Shared notification events currently produced and eligible for group delivery. */
+    private static final Set<String> GROUP_NOTIFICATION_EVENTS = Set.of(
+            "lesson.started",
+            "lesson.reminder",
+            "lesson.blocked",
+            "lesson.cancelled",
+            "lesson.one_off.created",
+            "lesson.one_off.cancelled",
+            "homework.published",
+            "homework.updated",
+            "group.renamed",
+            "group.archived"
     );
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -72,30 +97,63 @@ public class EventConsumer extends AbstractEventConsumer {
 
             updateReminderAttendanceState(eventType, payload);
 
-            Number groupIdNum = (Number) payload.get("group_id");
-            if (groupIdNum == null) {
-                log.debug("Event {} has no group_id in payload, skipping WebSocket routing", eventType);
-                return;
+            Long groupId = positiveIntegralId(payload.get("group_id"));
+            String destination = null;
+            if (USER_SCOPED_EVENTS.contains(eventType)) {
+                Long userId = positiveIntegralId(payload.get("user_id"));
+                if (userId != null) {
+                    destination = "/topic/user/" + userId;
+                } else {
+                    log.debug("Event {} has no valid user_id; skipping WebSocket routing", eventType);
+                }
+            } else if (HEADMAN_ONLY_EVENTS.contains(eventType)) {
+                if (groupId != null) {
+                    destination = "/topic/group/" + groupId + "/headman";
+                } else {
+                    log.debug("Headman event {} has no valid group_id; skipping WebSocket routing", eventType);
+                }
+            } else if (GROUP_NOTIFICATION_EVENTS.contains(eventType)) {
+                if (groupId != null) {
+                    destination = "/topic/group/" + groupId;
+                } else {
+                    log.debug("Group event {} has no valid group_id; skipping WebSocket routing", eventType);
+                }
+            } else {
+                log.debug("Event {} is not a supported WebSocket notification", eventType);
             }
-            long groupId = groupIdNum.longValue();
 
-            // D-05, Pitfall 2: Headman-only events go to separate sub-topic
-            // so non-headman subscribers on /topic/group/{groupId} never see them
-            String destination = HEADMAN_ONLY_EVENTS.contains(eventType)
-                    ? "/topic/group/" + groupId + "/headman"
-                    : "/topic/group/" + groupId;
-
-            // D-06: Wrap in {type, payload} envelope — no enrichment
-            Map<String, Object> wsMessage = Map.of("type", eventType, "payload", payload);
-            messagingTemplate.convertAndSend(destination, wsMessage);
-            log.debug("Routed {} to {}", eventType, destination);
+            if (destination != null) {
+                // D-06: Wrap in {type, payload} envelope — no enrichment
+                Map<String, Object> wsMessage = Map.of("type", eventType, "payload", payload);
+                messagingTemplate.convertAndSend(destination, wsMessage);
+                log.debug("Routed {} to {}", eventType, destination);
+            }
 
             // D-07, D-08: After STOMP delivery — trigger async Web Push for push-eligible events.
-            if (webPushDeliveryService.shouldPush(eventType)) {
+            if (groupId != null && webPushDeliveryService.shouldPush(eventType)) {
                 webPushDeliveryService.sendToGroup(groupId, eventType, payload);
                 log.debug("Triggered async push for {} to group {}", eventType, groupId);
             }
         });
+    }
+
+    private static Long positiveIntegralId(Object rawValue) {
+        try {
+            long value;
+            if (rawValue instanceof Byte || rawValue instanceof Short
+                    || rawValue instanceof Integer || rawValue instanceof Long) {
+                value = ((Number) rawValue).longValue();
+            } else if (rawValue instanceof BigInteger bigInteger) {
+                value = bigInteger.longValueExact();
+            } else if (rawValue instanceof BigDecimal bigDecimal) {
+                value = bigDecimal.longValueExact();
+            } else {
+                return null;
+            }
+            return value > 0 ? value : null;
+        } catch (ArithmeticException e) {
+            return null;
+        }
     }
 
     private void updateReminderAttendanceState(String eventType, Map<String, Object> payload) {

@@ -9,62 +9,76 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * IMP-01: Validates SUBSCRIBE destinations against user's group from JWT session.
+ * Validates client subscriptions against the identity established by the ticket handshake.
  *
- * <p>Prevents authenticated users from subscribing to topics of groups they don't belong to.
- * Headman-only topics (/topic/group/{id}/headman) additionally require is_headman=true.
+ * <p>Only supported group, headman, and personal destinations are allowed. Client SEND frames
+ * are rejected because this service only publishes broker notifications from server consumers.
  */
 @Component
 @Slf4j
 public class SubscriptionAuthInterceptor implements ChannelInterceptor {
 
-    private static final Pattern GROUP_TOPIC = Pattern.compile("^/topic/group/(\\d+)(/headman)?$");
+    private static final Pattern GROUP_TOPIC = Pattern.compile("^/topic/group/([1-9][0-9]*)(/headman)?$");
+    private static final Pattern USER_TOPIC = Pattern.compile("^/topic/user/([1-9][0-9]*)$");
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-        if (accessor == null || accessor.getCommand() != StompCommand.SUBSCRIBE) {
+        if (accessor == null) {
+            log.warn("Client inbound message rejected — missing STOMP headers");
+            throw new IllegalArgumentException("Unsupported client message");
+        }
+
+        if (accessor.getCommand() == StompCommand.SEND) {
+            log.warn("Client STOMP SEND frame rejected");
+            throw new IllegalArgumentException("Client messages are not supported");
+        }
+
+        if (accessor.getCommand() != StompCommand.SUBSCRIBE) {
             return message;
         }
 
         String destination = accessor.getDestination();
-        if (destination == null) {
-            return message;
-        }
-
-        Matcher matcher = GROUP_TOPIC.matcher(destination);
-        if (!matcher.matches()) {
-            return message;
-        }
-
         Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
         if (sessionAttributes == null) {
             log.warn("SUBSCRIBE rejected — no session attributes for destination {}", destination);
             throw new IllegalArgumentException("Unauthorized subscription");
         }
 
-        long requestedGroupId = Long.parseLong(matcher.group(1));
-        boolean isHeadmanTopic = matcher.group(2) != null;
+        Matcher userMatcher = USER_TOPIC.matcher(destination == null ? "" : destination);
+        if (userMatcher.matches()) {
+            Long requestedUserId = parsePositiveId(userMatcher.group(1));
+            Long sessionUserId = positiveIntegralId(sessionAttributes.get("user_id"));
+            if (requestedUserId == null || sessionUserId == null || !sessionUserId.equals(requestedUserId)) {
+                log.warn("SUBSCRIBE rejected — user identity does not match destination {}", destination);
+                throw new IllegalArgumentException("Unauthorized subscription");
+            }
+            return message;
+        }
 
-        Object groupIdAttr = sessionAttributes.get("group_id");
-        if (groupIdAttr == null) {
-            log.warn("SUBSCRIBE rejected — no group_id in session for destination {}", destination);
+        Matcher groupMatcher = GROUP_TOPIC.matcher(destination == null ? "" : destination);
+        if (!groupMatcher.matches()) {
+            log.warn("SUBSCRIBE rejected — unsupported destination {}", destination);
             throw new IllegalArgumentException("Unauthorized subscription");
         }
 
-        long userGroupId = ((Number) groupIdAttr).longValue();
-        if (userGroupId != requestedGroupId) {
-            log.warn("SUBSCRIBE rejected — user group {} != requested group {} for destination {}",
-                    userGroupId, requestedGroupId, destination);
+        Long requestedGroupId = parsePositiveId(groupMatcher.group(1));
+        Long sessionUserId = positiveIntegralId(sessionAttributes.get("user_id"));
+        Long sessionGroupId = positiveIntegralId(sessionAttributes.get("group_id"));
+        if (requestedGroupId == null || sessionUserId == null || sessionGroupId == null
+                || !sessionGroupId.equals(requestedGroupId)) {
+            log.warn("SUBSCRIBE rejected — authenticated group does not match destination {}", destination);
             throw new IllegalArgumentException("Unauthorized subscription: wrong group");
         }
 
-        if (isHeadmanTopic) {
+        if (groupMatcher.group(2) != null) {
             boolean isHeadman = Boolean.TRUE.equals(sessionAttributes.get("is_headman"));
             if (!isHeadman) {
                 log.warn("SUBSCRIBE rejected — non-headman subscribing to headman topic {}", destination);
@@ -73,5 +87,32 @@ public class SubscriptionAuthInterceptor implements ChannelInterceptor {
         }
 
         return message;
+    }
+
+    private static Long parsePositiveId(String rawValue) {
+        try {
+            return positiveIntegralId(Long.valueOf(rawValue));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static Long positiveIntegralId(Object rawValue) {
+        try {
+            long value;
+            if (rawValue instanceof Byte || rawValue instanceof Short
+                    || rawValue instanceof Integer || rawValue instanceof Long) {
+                value = ((Number) rawValue).longValue();
+            } else if (rawValue instanceof BigInteger bigInteger) {
+                value = bigInteger.longValueExact();
+            } else if (rawValue instanceof BigDecimal bigDecimal) {
+                value = bigDecimal.longValueExact();
+            } else {
+                return null;
+            }
+            return value > 0 ? value : null;
+        } catch (ArithmeticException e) {
+            return null;
+        }
     }
 }

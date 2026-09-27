@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -16,6 +17,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -149,16 +151,65 @@ class EventConsumerTest {
     }
 
     @Test
-    void unknownEventType_routesToGroupTopic() {
+    void unknownEventType_isIgnoredByWebSocketRouting() {
         Map<String, Object> payload = Map.of("group_id", 42);
         Map<String, Object> envelope = Map.of("event_type", "some.unknown", "payload", payload);
 
         consumer.onEvent(envelope);
 
+        verify(messagingTemplate, never()).convertAndSend(any(String.class), any(Object.class));
+    }
+
+    @Test
+    void excuseDecided_routesToPayloadUserWhenProducerOmitsGroupId() {
+        Map<String, Object> payload = Map.of("user_id", 7, "status", "approved");
+        Map<String, Object> envelope = Map.of("event_type", "excuse.decided", "payload", payload);
+
+        consumer.onEvent(envelope);
+
         verify(messagingTemplate).convertAndSend(
-                eq("/topic/group/42"),
-                eq(Map.of("type", "some.unknown", "payload", payload))
+                eq("/topic/user/7"),
+                eq(Map.of("type", "excuse.decided", "payload", payload))
         );
+        verifyNoMoreInteractions(messagingTemplate);
+        verify(webPushDeliveryService, never()).sendToGroup(anyLong(), anyString(), any());
+    }
+
+    @Test
+    void homeworkDueReminder_routesToUserAndKeepsExistingGroupPush() {
+        when(webPushDeliveryService.shouldPush("homework.due_reminder")).thenReturn(true);
+        Map<String, Object> payload = Map.of("group_id", 42, "user_id", 7, "days_before_due", 2);
+        Map<String, Object> envelope = Map.of("event_type", "homework.due_reminder", "payload", payload);
+
+        consumer.onEvent(envelope);
+
+        verify(messagingTemplate).convertAndSend(
+                eq("/topic/user/7"),
+                eq(Map.of("type", "homework.due_reminder", "payload", payload))
+        );
+        verify(messagingTemplate, never()).convertAndSend(eq("/topic/group/42"), any(Object.class));
+        verify(webPushDeliveryService).sendToGroup(42L, "homework.due_reminder", payload);
+    }
+
+    @Test
+    void userScopedEventWithInvalidUserIdDoesNotFallBackToGroup() {
+        Map<String, Object> payload = Map.of("group_id", 42, "user_id", new BigDecimal("7.5"));
+        Map<String, Object> envelope = Map.of("event_type", "homework.due_reminder", "payload", payload);
+
+        consumer.onEvent(envelope);
+
+        verify(messagingTemplate, never()).convertAndSend(any(String.class), any(Object.class));
+    }
+
+    @Test
+    void groupNotificationWithInvalidGroupIdIsIgnored() {
+        Map<String, Object> payload = Map.of("group_id", new BigDecimal("42.5"));
+        Map<String, Object> envelope = Map.of("event_type", "lesson.started", "payload", payload);
+
+        consumer.onEvent(envelope);
+
+        verify(messagingTemplate, never()).convertAndSend(any(String.class), any(Object.class));
+        verify(webPushDeliveryService, never()).sendToGroup(anyLong(), anyString(), any());
     }
 
     // --- New push hook tests ---

@@ -528,6 +528,7 @@ async function save(): Promise<void> {
     notice.value = 'Слот сохранён. Расписание обновлено с сервера.'
     commandKey.value = null
     commandFingerprint.value = null
+    formBusy.value = false
     closeForm()
     await load()
   } catch (cause) {

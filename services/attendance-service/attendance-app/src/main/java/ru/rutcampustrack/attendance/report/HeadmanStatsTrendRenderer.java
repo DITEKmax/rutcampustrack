@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -31,7 +32,16 @@ final class HeadmanStatsTrendRenderer {
     private static final Color PRESENT_OR_EXCUSED = new Color(118, 75, 9);
     private static final Color GRID = new Color(222, 217, 232);
     private static final Color INK = new Color(41, 37, 49);
-    private static final int CHART_HEIGHT = 680;
+    private static final int PNG_WIDTH = 1080;
+    private static final int MAX_PNG_HEIGHT = 8192;
+    private static final int TABLE_TITLE_Y = 430;
+    private static final int TABLE_HEADER_TITLE_Y = 466;
+    private static final int TABLE_HEADER_DETAIL_Y = 484;
+    private static final int TABLE_FIRST_ROW_Y = 512;
+    private static final int TABLE_ROW_HEIGHT = 28;
+    private static final int TABLE_BOTTOM_PADDING = 20;
+    private static final DateTimeFormatter AXIS_DATE = DateTimeFormatter.ofPattern("dd.MM", Locale.forLanguageTag("ru-RU"));
+    private static final DateTimeFormatter FULL_DATE = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.forLanguageTag("ru-RU"));
 
     HeadmanStatsExportResult render(HeadmanStatsTrendResponse trend, HeadmanStatsTrendFormat format) {
         byte[] content = format == HeadmanStatsTrendFormat.PNG ? renderPng(trend) : renderHtml(trend);
@@ -43,25 +53,26 @@ final class HeadmanStatsTrendRenderer {
     }
 
     private static byte[] renderPng(HeadmanStatsTrendResponse trend) {
-        int pointCount = trend.points().size();
-        int width = Math.max(1080, Math.min(8192, 300 + pointCount * 112));
-        BufferedImage image = new BufferedImage(width, CHART_HEIGHT, BufferedImage.TYPE_INT_RGB);
+        List<Point> points = trend.points();
+        int pointCount = points.size();
+        int height = pngHeight(pointCount);
+        BufferedImage image = new BufferedImage(PNG_WIDTH, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();
         try {
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             graphics.setColor(Color.WHITE);
-            graphics.fillRect(0, 0, width, CHART_HEIGHT);
+            graphics.fillRect(0, 0, PNG_WIDTH, height);
             graphics.setColor(INK);
             graphics.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 22));
             graphics.drawString("Динамика посещаемости", 28, 34);
             graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
-            graphics.drawString(fit(graphics, contextLabel(trend), width - 56), 28, 60);
+            graphics.drawString(fit(graphics, contextLabel(trend), PNG_WIDTH - 56), 28, 60);
 
             int left = 132;
-            int right = width - 32;
+            int right = PNG_WIDTH - 32;
             int top = 100;
-            int bottom = 405;
+            int bottom = 355;
             for (int tick : List.of(0, 50, 100)) {
                 int y = y(tick, top, bottom);
                 graphics.setColor(GRID);
@@ -70,38 +81,23 @@ final class HeadmanStatsTrendRenderer {
                 graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
                 graphics.drawString(tick + "%", 88, y + 5);
             }
-            drawSeries(graphics, trend.points(), left, right, top, bottom,
+            drawSeries(graphics, points, left, right, top, bottom,
                     metricSelector(true), PRESENT, false);
-            drawSeries(graphics, trend.points(), left, right, top, bottom,
+            drawSeries(graphics, points, left, right, top, bottom,
                     metricSelector(false), PRESENT_OR_EXCUSED, true);
             drawLegend(graphics, 28, 88);
 
             graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+            int labelStep = dateLabelStep(pointCount, right - left);
             for (int index = 0; index < pointCount; index++) {
+                if (index % labelStep != 0 && index != pointCount - 1) continue;
                 int x = pointX(index, pointCount, left, right);
-                String label = trend.points().get(index).label();
+                String label = points.get(index).from().format(AXIS_DATE);
                 graphics.setColor(INK);
-                var oldTransform = graphics.getTransform();
-                graphics.rotate(-Math.PI / 4, x, 420);
-                graphics.drawString(fit(graphics, label, 150), x, 420);
-                graphics.setTransform(oldTransform);
+                int labelWidth = graphics.getFontMetrics().stringWidth(label);
+                graphics.drawString(label, x - labelWidth / 2, 383);
             }
-            graphics.setColor(INK);
-            graphics.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-            graphics.drawString("Период", 28, 492);
-            graphics.drawString("Числитель / знаменатель", 28, 543);
-            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
-            for (int index = 0; index < pointCount; index++) {
-                int x = pointX(index, pointCount, left, right);
-                Point point = trend.points().get(index);
-                graphics.setColor(PRESENT);
-                graphics.drawString("+ " + count(point.present()), x - 34, 572);
-                graphics.setColor(PRESENT_OR_EXCUSED);
-                graphics.drawString("+у " + count(point.presentOrExcused()), x - 34, 595);
-            }
-            graphics.setColor(new Color(86, 80, 97));
-            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
-            graphics.drawString("+ — присутствовал · +у — присутствовал или освобождён", 28, 646);
+            drawPngTable(graphics, points);
         } finally {
             graphics.dispose();
         }
@@ -113,6 +109,69 @@ final class HeadmanStatsTrendRenderer {
         } catch (IOException impossibleForMemoryStream) {
             throw new IllegalStateException("Не удалось сформировать PNG динамики", impossibleForMemoryStream);
         }
+    }
+
+    private static int pngHeight(int pointCount) {
+        long requiredHeight = (long) TABLE_FIRST_ROW_Y + (long) pointCount * TABLE_ROW_HEIGHT + TABLE_BOTTOM_PADDING;
+        if (requiredHeight > MAX_PNG_HEIGHT) {
+            throw new PayloadTooLargeException("Слишком много периодов для изображения PNG");
+        }
+        return Math.max(680, (int) requiredHeight);
+    }
+
+    private static int dateLabelStep(int pointCount, int plotWidth) {
+        int preferredLabelCount = Math.max(1, plotWidth / 72);
+        return Math.max(1, (pointCount + preferredLabelCount - 1) / preferredLabelCount);
+    }
+
+    private static void drawPngTable(Graphics2D graphics, List<Point> points) {
+        int tableRight = PNG_WIDTH - 28;
+        int presentX = 270;
+        int presentOrExcusedX = 660;
+        int rowTop = TABLE_FIRST_ROW_Y - 20;
+
+        graphics.setColor(INK);
+        graphics.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
+        graphics.drawString("Значения по периодам", 28, TABLE_TITLE_Y);
+
+        graphics.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        graphics.drawString("Период", 28, TABLE_HEADER_TITLE_Y);
+        graphics.drawString("Присутствовал", presentX, TABLE_HEADER_TITLE_Y);
+        graphics.drawString("Присутствовал или освобождён", presentOrExcusedX, TABLE_HEADER_TITLE_Y);
+        graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        graphics.drawString("Числитель / знаменатель / %", presentX, TABLE_HEADER_DETAIL_Y);
+        graphics.drawString("Числитель / знаменатель / %", presentOrExcusedX, TABLE_HEADER_DETAIL_Y);
+
+        for (int index = 0; index < points.size(); index++) {
+            int top = rowTop + index * TABLE_ROW_HEIGHT;
+            int baseline = TABLE_FIRST_ROW_Y + index * TABLE_ROW_HEIGHT;
+            if (index % 2 == 1) {
+                graphics.setColor(new Color(247, 245, 249));
+                graphics.fillRect(28, top, tableRight - 28, TABLE_ROW_HEIGHT);
+            }
+            graphics.setColor(GRID);
+            graphics.drawLine(28, top + TABLE_ROW_HEIGHT, tableRight, top + TABLE_ROW_HEIGHT);
+
+            Point point = points.get(index);
+            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+            graphics.setColor(INK);
+            graphics.drawString(fullPeriod(point), 28, baseline);
+            graphics.setColor(PRESENT);
+            graphics.drawString(tableMetric(point.present()), presentX, baseline);
+            graphics.setColor(PRESENT_OR_EXCUSED);
+            graphics.drawString(tableMetric(point.presentOrExcused()), presentOrExcusedX, baseline);
+        }
+    }
+
+    private static String fullPeriod(Point point) {
+        String from = point.from().format(FULL_DATE);
+        String to = point.to().format(FULL_DATE);
+        return from.equals(to) ? from : from + " – " + to;
+    }
+
+    private static String tableMetric(TrendMetric metric) {
+        String count = metric.numerator() + " / " + metric.denominator();
+        return metric.percent() == null ? "Нет данных · " + count : count + " · " + percent(metric.percent()) + "%";
     }
 
     private static void drawSeries(Graphics2D graphics, List<Point> points, int left, int right, int top, int bottom,
@@ -287,11 +346,6 @@ final class HeadmanStatsTrendRenderer {
     private static String metric(TrendMetric metric) {
         if (metric.percent() == null) return "Нет данных (" + metric.numerator() + "/" + metric.denominator() + ")";
         return percent(metric.percent()) + "% (" + metric.numerator() + "/" + metric.denominator() + ")";
-    }
-
-    private static String count(TrendMetric metric) {
-        return metric.numerator() + "/" + metric.denominator()
-                + (metric.percent() == null ? " · нет данных" : " · " + percent(metric.percent()) + "%");
     }
 
     private static String percent(double value) {

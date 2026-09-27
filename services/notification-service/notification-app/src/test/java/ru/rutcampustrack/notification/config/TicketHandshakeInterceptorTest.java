@@ -6,16 +6,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.socket.WebSocketHandler;
+import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
+import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 
 import java.net.URI;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class TicketHandshakeInterceptorTest {
@@ -36,10 +38,11 @@ class TicketHandshakeInterceptorTest {
     }
 
     @Test
-    void beforeHandshake_validTicket_populatesSessionAttributes() {
+    void beforeHandshake_validTicketStoresOnlyAdmittedSessionIdentity() {
+        ConsumeWsTicketResponse ticketIdentity = identity(42L, "STUDENT", 7L, false);
         when(request.getURI()).thenReturn(URI.create("https://ruttrack.site/ws?ticket=abc-uuid"));
-        when(ticketClient.consume("abc-uuid")).thenReturn(Optional.of(
-                new WsTicketClient.TicketIdentity(42L, "STUDENT", 7L, true, Instant.now())));
+        when(ticketClient.consume("abc-uuid")).thenReturn(Optional.of(ticketIdentity));
+        when(ticketClient.admit(any(WsSessionAdmissionRequest.class))).thenReturn(true);
 
         Map<String, Object> attrs = new HashMap<>();
         boolean result = interceptor.beforeHandshake(request, response, handler, attrs);
@@ -48,7 +51,13 @@ class TicketHandshakeInterceptorTest {
         assertThat(attrs).containsEntry("user_id", 42L);
         assertThat(attrs).containsEntry("group_id", 7L);
         assertThat(attrs).containsEntry("role", "STUDENT");
-        assertThat(attrs).containsEntry("is_headman", true);
+        assertThat(attrs).containsEntry("is_headman", false);
+        assertThat(attrs.get(TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE))
+                .isEqualTo(ticketIdentity.admissionRequest());
+        assertThat(UUID.fromString((String) attrs.get(
+                TicketHandshakeInterceptor.TRANSPORT_BINDING_ID_ATTRIBUTE))).isNotNull();
+        assertThat(attrs).doesNotContainKey("ticket");
+        verify(ticketClient).admit(any(WsSessionAdmissionRequest.class));
         verify(response, never()).setStatusCode(any());
     }
 
@@ -76,10 +85,10 @@ class TicketHandshakeInterceptorTest {
 
     @Test
     void beforeHandshake_sockjsStylePath_stillFindsTicket() {
-        // SockJS session-keyed path: /ws/123/abc/websocket?ticket=<uuid>
         when(request.getURI()).thenReturn(URI.create("https://ruttrack.site/ws/123/abc/websocket?ticket=tkt-42"));
         when(ticketClient.consume("tkt-42")).thenReturn(Optional.of(
-                new WsTicketClient.TicketIdentity(10L, "TEACHER", 0L, false, Instant.now())));
+                identity(10L, "TEACHER", null, false)));
+        when(ticketClient.admit(any(WsSessionAdmissionRequest.class))).thenReturn(true);
 
         Map<String, Object> attrs = new HashMap<>();
         boolean result = interceptor.beforeHandshake(request, response, handler, attrs);
@@ -92,11 +101,31 @@ class TicketHandshakeInterceptorTest {
     void beforeHandshake_ticketWithOtherParams_picksTicketOnly() {
         when(request.getURI()).thenReturn(URI.create("https://ruttrack.site/ws?foo=bar&ticket=xyz&baz=qux"));
         when(ticketClient.consume("xyz")).thenReturn(Optional.of(
-                new WsTicketClient.TicketIdentity(1L, "STUDENT", 2L, false, Instant.now())));
+                identity(1L, "STUDENT", 2L, false)));
+        when(ticketClient.admit(any(WsSessionAdmissionRequest.class))).thenReturn(true);
 
         boolean result = interceptor.beforeHandshake(request, response, handler, new HashMap<>());
 
         assertThat(result).isTrue();
         verify(ticketClient).consume("xyz");
+    }
+
+    @Test
+    void beforeHandshake_revokedIdentityRejectsAfterTicketConsume() {
+        when(request.getURI()).thenReturn(URI.create("https://ruttrack.site/ws?ticket=tkt"));
+        when(ticketClient.consume("tkt")).thenReturn(Optional.of(identity(8L, "STUDENT", 9L, false)));
+        when(ticketClient.admit(any(WsSessionAdmissionRequest.class))).thenReturn(false);
+
+        Map<String, Object> attrs = new HashMap<>();
+        boolean result = interceptor.beforeHandshake(request, response, handler, attrs);
+
+        assertThat(result).isFalse();
+        assertThat(attrs).doesNotContainKey(TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE);
+        verify(response).setStatusCode(HttpStatus.UNAUTHORIZED);
+    }
+
+    private static ConsumeWsTicketResponse identity(long userId, String role, Long groupId, boolean headman) {
+        return new ConsumeWsTicketResponse(userId, UUID.randomUUID().toString(), 1, 1,
+                role, "ACTIVE", groupId, headman, false, Instant.now());
     }
 }

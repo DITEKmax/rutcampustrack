@@ -9,11 +9,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketRequest;
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.dto.WsTicketResponse;
+import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,6 +26,9 @@ class WsTicketIT extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @Test
     void issueTicket_withValidAccessToken_returnsTicket() {
@@ -63,11 +68,67 @@ class WsTicketIT extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().userId()).isPositive();
+        assertThat(response.getBody().sessionId()).isNotBlank();
+        assertThat(response.getBody().sessionVersion()).isPositive();
+        assertThat(response.getBody().rolesVersion()).isPositive();
         assertThat(response.getBody().role()).isEqualTo("STUDENT");
-        // groupId и isHeadman извлекаются из access-JWT — seed-юзер `student`
-        // по phase-1 default уже в группе → groupId > 0, isHeadman=false.
-        assertThat(response.getBody().groupId()).isGreaterThanOrEqualTo(0L);
-        assertThat(response.getBody().isHeadman()).isIn(true, false);
+        assertThat(response.getBody().status()).isEqualTo("ACTIVE");
+        assertThat(response.getBody().groupId()).isPositive();
+        assertThat(response.getBody().isHeadman()).isFalse();
+        assertThat(response.getBody().readOnly()).isFalse();
+
+        ResponseEntity<Void> admitted = admit(response.getBody().admissionRequest());
+        assertThat(admitted.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(admitted.getHeaders().getCacheControl()).contains("no-store");
+    }
+
+    @Test
+    void consumeTicket_revokedBeforeConsume_isRejectedAndBurned() {
+        String accessToken = loginAndGetAccessToken("student");
+        String ticket = issueTicket(accessToken);
+        Long userId = jdbc.queryForObject(
+                "SELECT id FROM users WHERE login = ?", Long.class, "student");
+        String originalStatus = jdbc.queryForObject(
+                "SELECT status FROM user_role_grants WHERE user_id = ? AND role = 'student'",
+                String.class, userId);
+        int changed = jdbc.update("""
+                UPDATE user_role_grants
+                   SET status = 'suspended', updated_at = CURRENT_TIMESTAMP
+                 WHERE user_id = ? AND role = 'student'
+                """, userId);
+        assertThat(changed).isEqualTo(1);
+
+        try {
+            ResponseEntity<String> rejected = restTemplate.exchange(
+                    "/internal/consume-ws-ticket", HttpMethod.POST,
+                    internalEntity(new ConsumeWsTicketRequest(ticket)), String.class);
+            assertThat(rejected.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+            ResponseEntity<String> secondConsume = restTemplate.exchange(
+                    "/internal/consume-ws-ticket", HttpMethod.POST,
+                    internalEntity(new ConsumeWsTicketRequest(ticket)), String.class);
+            assertThat(secondConsume.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        } finally {
+            jdbc.update("""
+                    UPDATE user_role_grants
+                       SET status = ?, updated_at = CURRENT_TIMESTAMP
+                     WHERE user_id = ? AND role = 'student'
+                    """, originalStatus, userId);
+        }
+    }
+
+    @Test
+    void liveAdmission_afterSessionLogout_returnsUnauthorized() {
+        String accessToken = loginAndGetAccessToken("student");
+        ConsumeWsTicketResponse identity = consume(issueTicket(accessToken)).getBody();
+        assertThat(identity).isNotNull();
+        assertThat(logout(accessToken).getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/internal/auth/admit-ws-session", HttpMethod.POST,
+                internalEntity(identity.admissionRequest()), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -127,7 +188,19 @@ class WsTicketIT extends AbstractIntegrationTest {
                 internalEntity(new ConsumeWsTicketRequest(ticket)), ConsumeWsTicketResponse.class);
     }
 
-    private HttpEntity<ConsumeWsTicketRequest> internalEntity(ConsumeWsTicketRequest body) {
+    private ResponseEntity<Void> admit(WsSessionAdmissionRequest identity) {
+        return restTemplate.exchange("/internal/auth/admit-ws-session", HttpMethod.POST,
+                internalEntity(identity), Void.class);
+    }
+
+    private ResponseEntity<Void> logout(String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        return restTemplate.exchange("/auth/logout", HttpMethod.POST,
+                new HttpEntity<>(null, headers), Void.class);
+    }
+
+    private <T> HttpEntity<T> internalEntity(T body) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("X-Internal-Issuer-Secret", INTERNAL_SECRET);

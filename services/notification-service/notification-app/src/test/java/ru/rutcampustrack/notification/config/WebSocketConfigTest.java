@@ -26,7 +26,7 @@ class WebSocketConfigTest {
 
     @Test
     void stompHeartbeatScheduler_isInitializedDaemonThread() {
-        config = new WebSocketConfig(null, null);
+        config = new WebSocketConfig(null, null, null, null);
         scheduler = config.stompHeartbeatScheduler();
 
         assertThat(scheduler).isNotNull();

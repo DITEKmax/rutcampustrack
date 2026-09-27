@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -31,14 +32,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final TicketHandshakeInterceptor ticketHandshakeInterceptor;
     private final SubscriptionAuthInterceptor subscriptionAuthInterceptor;
+    private final WsSessionAdmissionOutboundInterceptor sessionAdmissionOutboundInterceptor;
+    private final WsSessionBindingWebSocketDecoratorFactory sessionBindingDecoratorFactory;
 
     @Value("${notification.ws.allowed-origins:http://localhost:5173,http://localhost:4200,http://localhost:3000,https://ruttrack.site}")
     private String allowedOrigins;
 
     public WebSocketConfig(TicketHandshakeInterceptor ticketHandshakeInterceptor,
-                           SubscriptionAuthInterceptor subscriptionAuthInterceptor) {
+                           SubscriptionAuthInterceptor subscriptionAuthInterceptor,
+                           WsSessionAdmissionOutboundInterceptor sessionAdmissionOutboundInterceptor,
+                           WsSessionBindingWebSocketDecoratorFactory sessionBindingDecoratorFactory) {
         this.ticketHandshakeInterceptor = ticketHandshakeInterceptor;
         this.subscriptionAuthInterceptor = subscriptionAuthInterceptor;
+        this.sessionAdmissionOutboundInterceptor = sessionAdmissionOutboundInterceptor;
+        this.sessionBindingDecoratorFactory = sessionBindingDecoratorFactory;
     }
 
     @Override
@@ -56,6 +63,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureClientInboundChannel(ChannelRegistration registration) {
         // IMP-01: Validate subscription destinations against user's group
         registration.interceptors(subscriptionAuthInterceptor);
+    }
+
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        registration.interceptors(sessionAdmissionOutboundInterceptor);
+    }
+
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
+        registration.addDecoratorFactory(sessionBindingDecoratorFactory);
     }
 
     @Override

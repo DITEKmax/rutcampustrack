@@ -19,6 +19,7 @@ dependencyManagement {
 
 dependencies {
     implementation(project(":services:notification-service:notification-api-contract"))
+    implementation(project(":services:auth-service:auth-api-contract"))
 
     // M01 Shared Foundations — первый сервис-потребитель shared-web/events/logback
     implementation(project(":services:shared:shared-web"))

@@ -11,9 +11,18 @@ import java.time.Instant;
  */
 public record ConsumeWsTicketResponse(
         @JsonProperty("user_id") long userId,
+        @JsonProperty("session_id") String sessionId,
+        @JsonProperty("session_version") long sessionVersion,
+        @JsonProperty("roles_version") long rolesVersion,
         String role,
-        @JsonProperty("group_id") long groupId,
+        String status,
+        @JsonProperty("group_id") Long groupId,
         @JsonProperty("is_headman") boolean isHeadman,
+        @JsonProperty("read_only") boolean readOnly,
         @JsonProperty("expires_at") Instant expiresAt
 ) {
+    public WsSessionAdmissionRequest admissionRequest() {
+        return new WsSessionAdmissionRequest(userId, sessionId, sessionVersion, rolesVersion,
+                role, status, groupId, isHeadman, readOnly);
+    }
 }

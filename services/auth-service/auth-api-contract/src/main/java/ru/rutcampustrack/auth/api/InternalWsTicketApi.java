@@ -27,10 +27,12 @@ import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
 public interface InternalWsTicketApi {
 
     @Operation(summary = "Consume WebSocket ticket",
-            description = "Atomic GET+DEL for single-use ticket. Returns {userId, role} "
-                    + "if ticket was valid + not yet consumed, otherwise 404.")
-    @ApiResponse(responseCode = "200", description = "Ticket consumed, identity returned")
-    @ApiResponse(responseCode = "404", description = "Ticket not found or already consumed/expired")
+            description = "Atomic single-use consume followed by a live session-authority check. "
+                    + "Returns the complete selected session identity without bearer credentials.")
+    @ApiResponse(responseCode = "200", description = "Ticket consumed and selected identity admitted")
+    @ApiResponse(responseCode = "404", description = "Ticket not found, already consumed, or expired")
+    @ApiResponse(responseCode = "401", description = "The selected session identity is no longer valid")
+    @ApiResponse(responseCode = "503", description = "Session authority is unavailable")
     @PostMapping("/consume-ws-ticket")
     ResponseEntity<ConsumeWsTicketResponse> consume(@RequestBody ConsumeWsTicketRequest request);
 }

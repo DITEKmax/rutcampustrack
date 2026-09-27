@@ -18,6 +18,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
+import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
+import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 import ru.rutcampustrack.notification.config.WsTicketClient;
 import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
 
@@ -25,6 +27,7 @@ import java.lang.reflect.Type;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -33,6 +36,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
@@ -115,7 +119,9 @@ class StompIntegrationIT extends ContainerTestBase {
         long groupId = 42L;
         String validTicket = "abc-uuid-ticket";
         when(ticketClient.consume(validTicket)).thenReturn(Optional.of(
-                new WsTicketClient.TicketIdentity(100L, "STUDENT", groupId, false, Instant.now())));
+                new ConsumeWsTicketResponse(100L, UUID.randomUUID().toString(), 1, 1,
+                        "STUDENT", "ACTIVE", groupId, false, false, Instant.now())));
+        when(ticketClient.admit(any(WsSessionAdmissionRequest.class))).thenReturn(true);
 
         // SockJS-enabled endpoint: native WebSocket client ходит на /ws/websocket
         // (Spring SockJS adds /websocket suffix для fallback raw WebSocket transport).

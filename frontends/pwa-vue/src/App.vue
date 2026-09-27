@@ -145,6 +145,10 @@ const bootstrapError = ref<string | null>(null)
 const authView = ref<'login' | 'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-home' | 'admin-map' | 'admin-semesters' | 'admin-users' | 'admin-groups' | 'admin-profile' | 'admin-role-switch'>('login')
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null)
 const authError = shallowRef<ProfileRequestError | null>(null)
+const persistedLogoutState = auth.explicitLogoutState()
+const logoutNotice = ref<string | null>(persistedLogoutState === 'unconfirmed' || persistedLogoutState === 'pending'
+  ? 'Auth не подтвердил отзыв предыдущей сессии. Автоматический вход отключён; войди вручную.'
+  : persistedLogoutState === 'confirmed' ? 'Ты вышел из аккаунта. Чтобы войти снова, введи данные.' : null)
 const authLoading = ref(false)
 const pendingRole = ref<ProfileRole | null>(null)
 const fixtureDiagnosticLines = ref<string[]>([])
@@ -868,6 +872,8 @@ function navigateAdmin(route: 'home' | 'map' | 'semesters' | 'users' | 'groups' 
 
 function openAdminRoleSwitch(): void {
   if (!adminHomeViewVisible.value || authSnapshot.value?.activeRole !== 'ADMIN' || !profilePort.value) return
+  authError.value = null
+  bootstrapError.value = null
   authView.value = 'admin-role-switch'
 }
 
@@ -880,6 +886,13 @@ function assertCandidateCurrent(generation: number): void {
 }
 
 async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
+  if (!auth.canAutoBootstrap()) {
+    authView.value = 'login'
+    sessionReady.value = true
+    offline.value = false
+    readOnly.value = true
+    return
+  }
   if (bootstrapping.value) return
   bootstrapping.value = true
   try {
@@ -984,6 +997,7 @@ async function submitLogin(input: { login: string; password: string }): Promise<
   bootstrapError.value = null
   try {
     const result = await auth.login(input)
+    logoutNotice.value = null
     const profile = await auth.getSessionFor(result.generation)
     authSnapshot.value = profile
     if (profile.activeRole !== 'STUDENT' && profile.activeRole !== 'HEADMAN'
@@ -1071,7 +1085,9 @@ async function selectRole(
     bootstrapError.value = authError.value.message
     // A version conflict belongs to the old generation. Read the new
     // authoritative snapshot before rendering another selection attempt.
-    if (authError.value.code === 'SESSION_VERSION_CONFLICT' || authError.value.code === 'SESSION_STATE_STALE') {
+    if (authError.value.code === 'SESSION_VERSION_CONFLICT'
+      || authError.value.code === 'SESSION_STATE_STALE'
+      || authError.value.status === 503) {
       try {
         const current = await auth.getSessionFor(generation)
         authSnapshot.value = current
@@ -1088,15 +1104,27 @@ async function selectRole(
 }
 
 function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
-  return selectRole(role, expectedSessionVersion, { preserveProfileOwner: true })
+  return selectRole(role, expectedSessionVersion, { preserveProfileOwner: true }).catch(() => undefined)
 }
 
 async function logout(): Promise<void> {
   const previous = invalidateOwnerSynchronously({ clearAuth: false })
-  await auth.logout(async () => { await clearOwnerSnapshot(previous) })
+  let logoutFailure: unknown = null
+  try {
+    await auth.logout(async () => { await clearOwnerSnapshot(previous) })
+  } catch (cause) {
+    logoutFailure = cause
+  }
   authSnapshot.value = null
   authError.value = null
   bootstrapError.value = null
+  logoutNotice.value = auth.explicitLogoutState() === 'unconfirmed'
+    ? `${logoutFailure instanceof PwaAuthError
+      ? logoutFailure.message
+      : 'Не удалось подтвердить отзыв текущей сессии'}. Локальный доступ закрыт; автоматический вход отключён. Войди вручную, чтобы продолжить.`
+    : logoutFailure
+      ? 'Сессия отозвана, но локальная очистка не завершилась. Автоматический вход отключён; повтори вход вручную.'
+      : null
   authView.value = 'login'
   sessionReady.value = true
   offline.value = false
@@ -1321,6 +1349,14 @@ onBeforeUnmount(() => {
     />
     Подключаемся к сессии…
   </section>
+  <p
+    v-if="authView === 'login' && logoutNotice"
+    class="today-state today-state--error"
+    role="alert"
+    aria-live="polite"
+  >
+    {{ logoutNotice }}
+  </p>
   <LoginScreen
     v-if="authView === 'login'"
     :loading="authLoading || bootstrapping"
@@ -1453,6 +1489,7 @@ onBeforeUnmount(() => {
       :snapshot="authSnapshot"
       :pending-role="pendingRole"
       :error="authError"
+      :show-roles-on-error="true"
       :offline="offline"
       :loading="authLoading || bootstrapping"
       :on-back="closeAdminRoleSwitch"

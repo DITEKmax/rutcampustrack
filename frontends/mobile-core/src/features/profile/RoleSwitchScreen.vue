@@ -10,6 +10,7 @@ const props = withDefaults(defineProps<{
   error?: ProfileRequestError | null
   loading?: boolean
   offline?: boolean
+  showRolesOnError?: boolean
   onBack?: (() => void | Promise<void>) | undefined
   onSelectRole?: ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>) | undefined
   theme?: ProfileResolvedTheme
@@ -18,16 +19,22 @@ const props = withDefaults(defineProps<{
   error: null,
   loading: false,
   offline: false,
+  showRolesOnError: false,
   onBack: undefined,
   onSelectRole: undefined,
   theme: 'dark',
 })
 
-function selectRole(role: ProfileRole): void {
+async function selectRole(role: ProfileRole): Promise<void> {
   if (props.offline || !props.snapshot || props.pendingRole !== null) return
   const grant = props.snapshot.roles.find((candidate) => candidate.role === role)
   if (!grant?.selectable) return
-  void props.onSelectRole?.(role, props.snapshot.sessionVersion)
+  try {
+    await props.onSelectRole?.(role, props.snapshot.sessionVersion)
+  } catch {
+    // The owner publishes the failure through the error prop; never leave an
+    // event-handler rejection unobserved.
+  }
 }
 </script>
 
@@ -75,7 +82,7 @@ function selectRole(role: ProfileRole): void {
         Загружаем доступные роли…
       </section>
       <section
-        v-else-if="error"
+        v-else-if="error && (!showRolesOnError || !snapshot)"
         class="profile-state"
         data-error="true"
         role="alert"
@@ -88,6 +95,13 @@ function selectRole(role: ProfileRole): void {
         class="profile-role-list"
         aria-label="Доступные роли"
       >
+        <p
+          v-if="error"
+          class="profile-inline-error"
+          role="alert"
+        >
+          {{ error.message }}
+        </p>
         <button
           v-for="grant in snapshot.roles"
           :key="grant.grantId"

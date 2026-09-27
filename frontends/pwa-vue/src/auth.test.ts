@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { usePwaAuth, type PwaAuthInvalidationChannel, type PwaAuthInvalidationReason } from './auth'
+import {
+  PwaAuthError,
+  usePwaAuth,
+  type PwaAuthInvalidationChannel,
+  type PwaAuthInvalidationReason,
+  type PwaAuthLogoutMarkerStorage,
+} from './auth'
 import { AuthRequestError } from './auth-client'
 import { StaleSessionGenerationError } from '../../mobile-core/src/shared/session-owner'
 import { ProfileState } from '../../mobile-core/src/features/profile/profile-state'
@@ -125,6 +131,22 @@ class TestInvalidationChannel implements PwaAuthInvalidationChannel {
   }
 }
 
+class TestLogoutMarkerStorage implements PwaAuthLogoutMarkerStorage {
+  private readonly values = new Map<string, string>()
+
+  getItem(key: string): string | null {
+    return this.values.get(key) ?? null
+  }
+
+  setItem(key: string, value: string): void {
+    this.values.set(key, value)
+  }
+
+  removeItem(key: string): void {
+    this.values.delete(key)
+  }
+}
+
 describe('PWA memory session', () => {
   it('uses one refresh request for concurrent bootstrap callers and retains only the access token in memory', async () => {
     const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ accessToken: 'memory-only-token' }), { status: 200 }))
@@ -136,14 +158,99 @@ describe('PWA memory session', () => {
     vi.unstubAllGlobals()
   })
 
-  it('clears the user snapshot after an explicit logout even when the remote endpoint is unavailable', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
+  it.each([
+    ['HTTP 503', 503],
+    ['network failure', 0],
+  ] as const)('keeps explicit sign-out locked across reload after %s', async (_label, status) => {
+    const storage = new TestLogoutMarkerStorage()
+    const fetcher = vi.fn<typeof fetch>()
+    if (status === 503) fetcher.mockResolvedValue(new Response(null, { status: 503 }))
+    else fetcher.mockRejectedValue(new TypeError('offline'))
     const clearSnapshot = vi.fn().mockResolvedValue(undefined)
-    const auth = usePwaAuth()
-    await expect(auth.logout(clearSnapshot)).resolves.toBeUndefined()
+    const auth = usePwaAuth({ fetcher, logoutMarkerStorage: storage })
+    auth.setToken('old-admin-token')
+
+    const logout = auth.logout(clearSnapshot)
     expect(auth.accessToken.value).toBeNull()
+    expect(auth.canAutoBootstrap()).toBe(false)
+    await expect(logout).rejects.toMatchObject({
+      name: 'PwaAuthError',
+      status,
+    } satisfies Partial<PwaAuthError>)
+    expect(auth.accessToken.value).toBeNull()
+    expect(auth.explicitLogoutState()).toBe('unconfirmed')
+    expect(auth.canAutoBootstrap()).toBe(false)
     expect(clearSnapshot).toHaveBeenCalledOnce()
-    vi.unstubAllGlobals()
+
+    const reloaded = usePwaAuth({ fetcher, logoutMarkerStorage: storage })
+    expect(reloaded.explicitLogoutState()).toBe('unconfirmed')
+    expect(reloaded.canAutoBootstrap()).toBe(false)
+    expect(fetcher).toHaveBeenCalledOnce()
+    auth.dispose()
+    reloaded.dispose()
+  })
+
+  it('keeps confirmed sign-out locked until a successful manual login', async () => {
+    const storage = new TestLogoutMarkerStorage()
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(response({ accessToken: 'new-admin-token', expiresIn: 3600 }))
+    const auth = usePwaAuth({ fetcher, logoutMarkerStorage: storage })
+    auth.setToken('old-admin-token')
+
+    await expect(auth.logout(async () => undefined)).resolves.toBeUndefined()
+
+    expect(auth.explicitLogoutState()).toBe('confirmed')
+    expect(auth.canAutoBootstrap()).toBe(false)
+    const reloaded = usePwaAuth({ fetcher, logoutMarkerStorage: storage })
+    expect(reloaded.canAutoBootstrap()).toBe(false)
+    await reloaded.login({ login: 'admin', password: 'secret' })
+    expect(reloaded.explicitLogoutState()).toBeNull()
+    expect(reloaded.canAutoBootstrap()).toBe(true)
+    auth.dispose()
+    reloaded.dispose()
+  })
+
+  it.each([
+    ['409 version conflict', 409, 'SESSION_VERSION_CONFLICT'],
+    ['503 service failure', 503, 'AUTHORITY_UNAVAILABLE'],
+  ] as const)('refreshes the active session version after a %s and retries role selection', async (_label, status, code) => {
+    const adminProfile: ProfileSnapshot = {
+      ...profile,
+      activeRole: 'ADMIN',
+      sessionVersion: '4',
+      roles: [...profile.roles, {
+        grantId: '18',
+        role: 'ADMIN',
+        status: 'ACTIVE',
+        selectable: true,
+        readOnly: false,
+      }],
+    }
+    const selectedProfile: ProfileSnapshot = { ...profile, sessionVersion: '5' }
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(response({ status, title: 'Не удалось сменить роль', detail: 'Повтори выбор', extras: { code } }, status))
+      .mockResolvedValueOnce(response(adminProfile))
+      .mockResolvedValueOnce(response({ accessToken: 'student-role-token', expiresIn: 3600, session: selectedProfile }))
+    const auth = usePwaAuth({ fetcher, logoutMarkerStorage: null })
+    auth.setToken('admin-token')
+    const generation = auth.currentGeneration()
+
+    await expect(auth.selectRoleFor(generation, { role: 'STUDENT', expectedSessionVersion: '3' }))
+      .rejects.toMatchObject({ status, code })
+    const current = await auth.getSessionFor(generation)
+    expect(current.sessionVersion).toBe('4')
+
+    const selection = await auth.selectRoleFor(generation, {
+      role: 'STUDENT',
+      expectedSessionVersion: current.sessionVersion,
+    })
+
+    expect(selection.session.activeRole).toBe('STUDENT')
+    expect(JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body))).toEqual({ role: 'STUDENT', expectedSessionVersion: '3' })
+    expect(JSON.parse(String(fetcher.mock.calls[2]?.[1]?.body))).toEqual({ role: 'STUDENT', expectedSessionVersion: '4' })
+    expect(auth.accessToken.value).toBe('student-role-token')
+    auth.dispose()
   })
 
   it('observes a fast snapshot cleanup rejection before the remote logout resolves', async () => {

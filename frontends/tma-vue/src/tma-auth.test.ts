@@ -6,6 +6,29 @@ import { useTmaSession } from './tma-session'
 
 const INIT_DATA = 'query_id=fixture-query&user=%7B%22id%22%3A77%7D&hash=fixture-hash'
 
+function currentSession(sessionVersion: string, activeRole: 'ADMIN' | 'STUDENT' = 'ADMIN') {
+  return {
+    sessionId: '00000000-0000-4000-8000-000000000077',
+    userId: '77',
+    displayName: 'Администратор',
+    activeRole,
+    sessionVersion,
+    rolesVersion: '4',
+    roles: [
+      { grantId: '77', role: 'ADMIN', status: 'ACTIVE', selectable: true, readOnly: false },
+      { grantId: '78', role: 'STUDENT', status: 'ACTIVE', selectable: true, readOnly: false },
+    ],
+    readOnly: false,
+    passwordPolicy: {
+      minCodePoints: 12,
+      maxUtf8Bytes: 72,
+      requiresDecimalDigit: true,
+      specialCategories: ['P', 'S'],
+      normalization: 'NONE',
+    },
+  }
+}
+
 afterEach(() => {
   vi.unstubAllGlobals()
 })
@@ -56,6 +79,41 @@ describe('TMA authentication wire contract', () => {
 })
 
 describe('generation-bound report ticket session', () => {
+  it.each([
+    ['409 version conflict', 409],
+    ['503 service failure', 503],
+  ] as const)('refreshes current sessionVersion after a %s and retries role selection', async (_label, status) => {
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'admin-role-token' }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ status, detail: 'Повтори выбор' }), { status }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(currentSession('4')), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        accessToken: 'student-role-token',
+        expiresIn: 3600,
+        session: currentSession('5', 'STUDENT'),
+      }), { status: 200 }))
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    const generation = session.currentGeneration()
+
+    await expect(session.selectRoleFor(generation, { role: 'STUDENT', expectedSessionVersion: '3' }))
+      .rejects.toMatchObject({ status })
+    const current = await session.getProfileFor(generation)
+    expect(current.sessionVersion).toBe('4')
+
+    const selection = await session.selectRoleFor(generation, {
+      role: 'STUDENT',
+      expectedSessionVersion: current.sessionVersion,
+    })
+
+    expect(selection.session.activeRole).toBe('STUDENT')
+    expect(JSON.parse(String(fetcher.mock.calls[1]?.[1]?.body)))
+      .toEqual({ role: 'STUDENT', expectedSessionVersion: '3' })
+    expect(JSON.parse(String(fetcher.mock.calls[3]?.[1]?.body)))
+      .toEqual({ role: 'STUDENT', expectedSessionVersion: '4' })
+    expect(session.accessToken.value).toBe('student-role-token')
+  })
+
   it('clears the local owner immediately and reports an unconfirmed current-session revocation', async () => {
     let resolveLogout!: (value: Response) => void
     const delayedLogout = new Promise<Response>((resolve) => { resolveLogout = resolve })

@@ -57,7 +57,17 @@ export interface PwaAuthOptions {
   fetcher?: typeof fetch
   /** Injected in tests; production uses a browser BroadcastChannel when available. */
   channel?: PwaAuthInvalidationChannel
+  /** Injected in tests; production uses localStorage to survive reloads and coordinate tabs. */
+  logoutMarkerStorage?: PwaAuthLogoutMarkerStorage | null
 }
+
+export interface PwaAuthLogoutMarkerStorage {
+  getItem(key: string): string | null
+  setItem(key: string, value: string): void
+  removeItem(key: string): void
+}
+
+export type PwaAuthLogoutState = 'pending' | 'confirmed' | 'unconfirmed'
 
 export interface PwaProfilePortOptions {
   onInvalidated?: ProfilePort['onInvalidated']
@@ -82,6 +92,7 @@ export class PwaAuthError extends Error {
 }
 
 const INVALIDATION_MESSAGE = 'rct-auth-invalidate-v1'
+const EXPLICIT_LOGOUT_STORAGE_KEY = 'rct-pwa-explicit-logout-v1'
 
 export function usePwaAuth(options: PwaAuthOptions = {}) {
   const accessToken = ref<string | null>(null)
@@ -94,8 +105,33 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
   let refreshInFlight: { generation: number; promise: Promise<void> } | null = null
   const invalidationListeners = new Set<(reason: PwaAuthInvalidationReason) => void>()
   const channel = options.channel ?? createBrowserChannel()
+  const logoutMarkerStorage = options.logoutMarkerStorage === undefined
+    ? createBrowserLogoutMarkerStorage()
+    : options.logoutMarkerStorage
+  let logoutState: PwaAuthLogoutState | null = null
   let knownProfile: ProfileSnapshot | null = null
   let knownProfileGeneration: number | null = null
+
+  function explicitLogoutState(): PwaAuthLogoutState | null {
+    try {
+      const stored = logoutMarkerStorage?.getItem(EXPLICIT_LOGOUT_STORAGE_KEY)
+      if (stored === 'pending' || stored === 'confirmed' || stored === 'unconfirmed') logoutState = stored
+      else if (stored === null) logoutState = null
+    } catch {
+      // A storage restriction cannot clear this tab's in-memory sign-out latch.
+    }
+    return logoutState
+  }
+
+  function setExplicitLogoutState(state: PwaAuthLogoutState | null): void {
+    logoutState = state
+    try {
+      if (!state) logoutMarkerStorage?.removeItem(EXPLICIT_LOGOUT_STORAGE_KEY)
+      else logoutMarkerStorage?.setItem(EXPLICIT_LOGOUT_STORAGE_KEY, state)
+    } catch {
+      // The in-memory latch still prevents automatic recovery in this tab.
+    }
+  }
 
   function rememberProfile(profile: ProfileSnapshot, generation: number): void {
     knownProfile = profile
@@ -177,6 +213,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     // A successful login replaces any old in-memory authority. The token is
     // installed only in the new generation after the old one is invalidated.
     const nextGeneration = clear()
+    setExplicitLogoutState(null)
     accessToken.value = token.accessToken
     return { ...token, generation: nextGeneration }
   }
@@ -367,6 +404,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
   }
 
   async function logout(clearSnapshot: () => Promise<void>): Promise<void> {
+    setExplicitLogoutState('pending')
     // Invalidate before the remote request so an in-flight 401 cannot retry
     // with a replacement token while logout is still waiting on the network.
     clear()
@@ -378,14 +416,20 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     // is still pending; the original promise is awaited in finally so its
     // failure remains visible to the caller.
     void snapshotCleared.catch(() => undefined)
+    let logoutError: PwaAuthError | null = null
     try {
       // Keep this request shape stable for the cookie-only logout endpoint.
-      await request('/api/auth/logout', { method: 'POST', credentials: 'include' })
-    } catch {
-      // Local token and partition cleanup is still an explicit logout.
-    } finally {
-      await snapshotCleared
+      const response = await request('/api/auth/logout', { method: 'POST', credentials: 'include' })
+      if (!response.ok) throw new PwaAuthError(response.status, 'Не удалось подтвердить отзыв текущей сессии')
+      setExplicitLogoutState('confirmed')
+    } catch (cause) {
+      setExplicitLogoutState('unconfirmed')
+      logoutError = cause instanceof PwaAuthError
+        ? cause
+        : new PwaAuthError(0, 'Не удалось связаться с Auth и подтвердить отзыв текущей сессии')
     }
+    await snapshotCleared
+    if (logoutError) throw logoutError
   }
 
   function dispose(): void {
@@ -408,6 +452,8 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     generation: resetGeneration,
     currentGeneration,
     isCurrent: (generation: number) => generation === currentGeneration(),
+    explicitLogoutState,
+    canAutoBootstrap: () => explicitLogoutState() === null,
     refresh,
     refreshFor,
     login,
@@ -480,6 +526,14 @@ function normalizeRoleGrant(grant: ProfileRoleGrant): readonly [
 function createBrowserChannel(): PwaAuthInvalidationChannel | undefined {
   if (typeof window === 'undefined' || typeof window.BroadcastChannel !== 'function') return undefined
   return new window.BroadcastChannel('rct-auth-invalidation') as unknown as PwaAuthInvalidationChannel
+}
+
+function createBrowserLogoutMarkerStorage(): PwaAuthLogoutMarkerStorage | null {
+  try {
+    return typeof window === 'undefined' ? null : window.localStorage
+  } catch {
+    return null
+  }
 }
 
 function isInvalidationMessage(value: unknown): boolean {

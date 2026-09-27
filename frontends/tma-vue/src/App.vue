@@ -453,6 +453,8 @@ function navigateAdmin(route: 'home' | 'map' | 'semesters' | 'users' | 'groups' 
 
 function openAdminRoleSwitch(): void {
   if (!adminHomeViewVisible.value || profile.value?.activeRole !== 'ADMIN' || !profilePort.value) return
+  roleError.value = null
+  error.value = null
   authView.value = 'admin-role-switch'
 }
 
@@ -678,7 +680,7 @@ async function selectRole(
 }
 
 function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
-  return selectRole(role, expectedSessionVersion, { preserveProfileOwner: true })
+  return selectRole(role, expectedSessionVersion, { preserveProfileOwner: true }).catch(() => undefined)
 }
 
 function handleProfileInvalidated(
@@ -901,6 +903,7 @@ onBeforeUnmount(() => {
       :snapshot="profile"
       :pending-role="pendingRole"
       :error="roleError"
+      :show-roles-on-error="true"
       :offline="offline"
       :loading="roleLoading || bootstrapping"
       :on-back="closeAdminRoleSwitch"

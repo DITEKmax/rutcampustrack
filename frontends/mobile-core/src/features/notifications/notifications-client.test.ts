@@ -4,6 +4,7 @@ import {
   createGenerationBoundNotificationsApi,
   NotificationsApiError,
 } from './notifications-client'
+import type { NotificationTarget } from './notifications-client'
 
 function jsonResponse(value: unknown, status = 200): Response {
   return new Response(JSON.stringify(value), {
@@ -103,6 +104,53 @@ describe('generation-bound notifications API', () => {
     expect(invalidDate.items[0]?.target).toBeNull()
     expect(unsafeId.items[0]?.target).toBeNull()
     expect(unsupportedType.items[0]?.target).toBeNull()
+  })
+
+  it('builds request, lesson and due-reminder targets only from their persisted identifiers', async () => {
+    const owner = sessionOwner()
+    const payloads: readonly [string, unknown][] = [
+      ['EXCUSE_REQUESTED', { ticket_id: 'ticket-42', reason: 'must not become target authority' }],
+      ['EXCUSE_APPROVED', { ticket_id: 'ticket-43' }],
+      ['EXCUSE_REJECTED', { ticket_id: 'ticket-44' }],
+      ['LATE_CHECKIN_REQUESTED', { request_id: 'late-45' }],
+      ['LATE_CHECKIN_REJECTED', { request_id: 'late-44' }],
+      ['LATE_CHECKIN_APPROVED', { request_id: 'late-46' }],
+      ['LESSON_STARTED', { lesson_id: 50 }],
+      ['LESSON_CANCELLED', { lesson_id: 51, date: 'forged-date-is-ignored' }],
+      ['ATTENDANCE_MARKED_BY_HEADMAN', { lesson_id: '52' }],
+      ['HOMEWORK_DUE_REMINDER', { homework: { homework_id: 53, lesson_date: '2026-09-24' } }],
+      ['HOMEWORK_DUE_REMINDER', { homework: { homework_id: 54, lesson_date: '2026-02-30' } }],
+      ['EXCUSE_REJECTED', { ticket_id: '../55' }],
+      ['LATE_CHECKIN_APPROVED', { ticket_id: 'not-request-id' }],
+      ['LESSON_STARTED', { lesson_id: 0 }],
+      ['HOMEWORK_WEEKLY_DIGEST', { homework: { homework_id: 56, lesson_date: '2026-09-24' } }],
+    ]
+    const fetcher = vi.fn()
+    for (const [type, payload] of payloads) fetcher.mockResolvedValueOnce(historyResponse(payload, type))
+    const api = createGenerationBoundNotificationsApi(owner, fetcher)
+
+    const targets: (NotificationTarget | null)[] = []
+    for (let index = 0; index < payloads.length; index += 1) {
+      targets.push((await api.listHistory(index)).items[0]?.target ?? null)
+    }
+
+    expect(targets).toEqual([
+      { kind: 'request', requestId: 'ticket-42', requestKind: 'EXCUSE' },
+      { kind: 'request', requestId: 'ticket-43', requestKind: 'EXCUSE' },
+      { kind: 'request', requestId: 'ticket-44', requestKind: 'EXCUSE' },
+      { kind: 'request', requestId: 'late-45', requestKind: 'LATE_CHECKIN' },
+      { kind: 'request', requestId: 'late-44', requestKind: 'LATE_CHECKIN' },
+      { kind: 'request', requestId: 'late-46', requestKind: 'LATE_CHECKIN' },
+      { kind: 'lesson', lessonId: '50' },
+      { kind: 'lesson', lessonId: '51' },
+      { kind: 'lesson', lessonId: '52' },
+      { kind: 'homework', homeworkId: '53', lessonDate: '2026-09-24' },
+      null,
+      null,
+      null,
+      null,
+      null,
+    ])
   })
 
   it('rejects unsafe item IDs before constructing an API request', async () => {

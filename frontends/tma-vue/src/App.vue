@@ -55,7 +55,8 @@ import {
   type AdminGroupsClient,
   type AdminUsersClient,
   type NotificationsApi,
-  type NotificationHomeworkTarget,
+  type NotificationTarget,
+  type NotificationTargetIntent,
 } from '@rct/mobile-core'
 import { installFixtureTelegramHost, TelegramHost } from './telegram'
 import { useTmaSession } from './tma-session'
@@ -109,13 +110,8 @@ const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
 const notificationsApi = shallowRef<NotificationsApi | null>(null)
 const notificationsOpen = ref(false)
 const notificationsGeneration = ref<number | null>(null)
-const notificationHomeworkRequest = shallowRef<{
-  requestId: number
-  generation: number
-  ownerKey: string
-  target: NotificationHomeworkTarget
-} | null>(null)
-let notificationHomeworkRequestId = 0
+const notificationTargetIntent = shallowRef<NotificationTargetIntent | null>(null)
+let notificationTargetIntentId = 0
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
 const profile = shallowRef<ProfileSnapshot | null>(null)
@@ -144,7 +140,7 @@ const notificationsEntryVisible = computed(() => featureVisible.value
   && profile.value.activeRole !== null
   && authView.value !== 'role')
 const studentViewVisible = computed(() => authView.value === 'student' && api.value !== null)
-const canOpenNotificationHomework = computed(() => studentViewVisible.value
+const canOpenNotificationTarget = computed(() => studentViewVisible.value
   && profile.value?.activeRole === 'STUDENT'
   && scope.value?.activeRole === 'STUDENT'
   && scope.value.resetGeneration === sessionOwner.currentGeneration()
@@ -168,7 +164,7 @@ function currentFetcher(): typeof fetch | undefined {
 
 function openNotifications(): void {
   if (!notificationsEntryVisible.value) return
-  notificationHomeworkRequest.value = null
+  notificationTargetIntent.value = null
   const generation = sessionOwner.currentGeneration()
   notificationsGeneration.value = generation
   notificationsApi.value = createGenerationBoundNotificationsApi({
@@ -188,7 +184,7 @@ function closeNotifications(): void {
   notificationsGeneration.value = null
 }
 
-function openNotificationHomework(target: NotificationHomeworkTarget): void {
+function openNotificationTarget(target: NotificationTarget): void {
   const generation = notificationsGeneration.value
   const currentScope = scope.value
   if (!notificationsOpen.value || !notificationsApi.value || generation === null
@@ -196,8 +192,8 @@ function openNotificationHomework(target: NotificationHomeworkTarget): void {
     || profile.value?.activeRole !== 'STUDENT'
     || !studentViewVisible.value || !currentScope || currentScope.activeRole !== 'STUDENT'
     || currentScope.resetGeneration !== generation || offline.value) return
-  notificationHomeworkRequest.value = {
-    requestId: ++notificationHomeworkRequestId,
+  notificationTargetIntent.value = {
+    requestId: ++notificationTargetIntentId,
     generation,
     ownerKey: ownerKey.value,
     target,
@@ -205,15 +201,23 @@ function openNotificationHomework(target: NotificationHomeworkTarget): void {
   closeNotifications()
 }
 
+function clearNotificationTargetIntent(requestId: number): void {
+  if (notificationTargetIntent.value?.requestId === requestId) notificationTargetIntent.value = null
+}
+
 watch(
   () => [sessionOwner.resetGeneration.value, profile.value?.userId, profile.value?.activeRole, ownerKey.value] as const,
   (current, previous) => {
     if (!previous || (current[0] === previous[0] && current[1] === previous[1]
       && current[2] === previous[2] && current[3] === previous[3])) return
-    notificationHomeworkRequest.value = null
+    notificationTargetIntent.value = null
     if (notificationsOpen.value) closeNotifications()
   },
 )
+
+watch(offline, (isOffline) => {
+  if (isOffline) notificationTargetIntent.value = null
+})
 
 function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof TmaAuthError) return cause.status
@@ -645,9 +649,9 @@ onBeforeUnmount(() => {
       :api="notificationsApi"
       :host="host"
       :offline="offline"
-      :can-open-homework-target="canOpenNotificationHomework"
+      :can-open-target="canOpenNotificationTarget"
       @close="closeNotifications"
-      @open-homework-target="openNotificationHomework"
+      @open-target="openNotificationTarget"
       @owner-error="onOwnerError"
     />
   </Teleport>
@@ -770,13 +774,14 @@ onBeforeUnmount(() => {
     :map-client="mapClient"
     :acquire-checkin-command="acquireCheckinCommand"
     :open-material="openMaterial"
-    :homework-notification-request="notificationHomeworkRequest"
+    :notification-target-intent="notificationTargetIntent"
     :assistant-permissions="assistantPermissions"
     :assistant-journal-api="assistantJournalApi"
     :assistant-stats-api="assistantStatsApi"
     :assistant-requests-api="assistantRequestsApi"
     :assistant-homework-api="assistantHomeworkApi"
     @owner-error="onOwnerError"
+    @clear-notification-target="clearNotificationTargetIntent"
   />
   <section
     v-if="offline && featureVisible"

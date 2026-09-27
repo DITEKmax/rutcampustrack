@@ -6,7 +6,7 @@ import {
   type NotificationCategoryKey,
   type NotificationHistoryItem,
   type NotificationHistoryPage,
-  type NotificationHomeworkTarget,
+  type NotificationTarget,
   type NotificationPreferences,
   type NotificationsApi,
 } from './notifications-client'
@@ -19,13 +19,13 @@ const props = defineProps<{
   api: NotificationsApi
   host?: MobileHostAdapter | null
   offline?: boolean
-  canOpenHomeworkTarget?: boolean
+  canOpenTarget?: boolean
 }>()
 
 const emit = defineEmits<{
   close: []
   'owner-error': [error: unknown]
-  'open-homework-target': [target: NotificationHomeworkTarget]
+  'open-target': [target: NotificationTarget]
 }>()
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error'
@@ -315,13 +315,19 @@ function title(item: NotificationHistoryItem): string {
   return eventTitles[item.type] ?? 'Новое уведомление'
 }
 
-function openHomeworkTarget(item: NotificationHistoryItem): void {
+function targetActionLabel(target: NotificationTarget): string {
+  if (target.kind === 'homework') return 'Открыть домашнее задание'
+  if (target.kind === 'request') return 'Открыть заявку'
+  return 'Открыть занятие'
+}
+
+function openTarget(item: NotificationHistoryItem): void {
   const target = item.target
-  if (!props.canOpenHomeworkTarget || target?.kind !== 'homework') return
+  if (!props.canOpenTarget || !target) return
   // Mark-read is its own best-effort request. The target transition remains
   // bound to the notification generation by the app adapter.
   void markRead(item)
-  emit('open-homework-target', target)
+  emit('open-target', target)
 }
 
 function formatDate(value: string): string {
@@ -542,12 +548,12 @@ onBeforeUnmount(() => {
               </div>
             </dl>
             <button
-              v-if="canOpenHomeworkTarget && item.target?.kind === 'homework'"
+              v-if="canOpenTarget && item.target"
               class="notifications-screen__secondary-action"
               type="button"
-              @click="openHomeworkTarget(item)"
+              @click="openTarget(item)"
             >
-              Открыть домашнее задание
+              {{ targetActionLabel(item.target) }}
             </button>
             <time :datetime="item.sentAt">{{ formatDate(item.sentAt) }}</time>
             <button

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import {
   formatDecisionDate,
   formatLessonDate,
@@ -18,9 +18,11 @@ const props = withDefaults(defineProps<{
   offline: boolean
   cancelling?: boolean
   attachmentStates?: Readonly<Record<string, RequestAttachmentViewState | undefined>> | undefined
+  focusTarget?: boolean
 }>(), {
   cancelling: false,
   attachmentStates: undefined,
+  focusTarget: false,
 })
 
 const emit = defineEmits<{
@@ -34,6 +36,7 @@ const attachments = computed(() => props.detail.attachments ?? [])
 const showCancel = computed(() => summary.value.canCancel === true)
 const detailUnavailable = computed(() => props.detail.detailState !== undefined && props.detail.detailState !== 'ready')
 const statusTone = computed(() => requestStatusTone(summary.value.status))
+const titleElement = ref<HTMLHeadingElement | null>(null)
 const decision = computed(() => props.detail.decision ?? null)
 const decisionComment = computed(() => props.detail.decision?.comment?.trim() || null)
 const decisionDate = computed(() => {
@@ -74,6 +77,12 @@ function attachmentActionState(attachment: RequestAttachment): RequestAttachment
 function attachmentErrorId(attachment: RequestAttachment): string {
   return 'request-attachment-error-' + summary.value.id + '-' + attachment.id
 }
+
+watch(() => props.focusTarget, async (focus) => {
+  if (!focus) return
+  await nextTick()
+  titleElement.value?.focus()
+}, { immediate: true, flush: 'post' })
 </script>
 
 <template>
@@ -82,7 +91,11 @@ function attachmentErrorId(attachment: RequestAttachment): string {
     :aria-labelledby="'request-title-' + summary.id"
   >
     <div class="request-card__head">
-      <h2 :id="'request-title-' + summary.id">
+      <h2
+        :id="'request-title-' + summary.id"
+        ref="titleElement"
+        tabindex="-1"
+      >
         {{ requestKindLabel(summary.kind) }}
       </h2>
       <span

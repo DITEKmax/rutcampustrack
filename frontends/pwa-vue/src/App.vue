@@ -62,7 +62,8 @@ import {
   type AdminGroupsClient,
   type AdminUsersClient,
   type NotificationsApi,
-  type NotificationHomeworkTarget,
+  type NotificationTarget,
+  type NotificationTargetIntent,
 } from '@rct/mobile-core'
 import type { ProfilePort, ProfileRole, ProfileSnapshot } from '@rct/mobile-core'
 import { AuthRequestError } from './auth-client'
@@ -123,13 +124,8 @@ const adminGroupsApi = shallowRef<AdminGroupsClient | null>(null)
 const notificationsApi = shallowRef<NotificationsApi | null>(null)
 const notificationsOpen = ref(false)
 const notificationsGeneration = ref<number | null>(null)
-const notificationHomeworkRequest = shallowRef<{
-  requestId: number
-  generation: number
-  ownerKey: string
-  target: NotificationHomeworkTarget
-} | null>(null)
-let notificationHomeworkRequestId = 0
+const notificationTargetIntent = shallowRef<NotificationTargetIntent | null>(null)
+let notificationTargetIntentId = 0
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
 const profilePort = shallowRef<ProfilePort | null>(null)
@@ -176,7 +172,7 @@ const notificationsEntryVisible = computed(() => featureVisible.value
   && authView.value !== 'login'
   && authView.value !== 'role')
 const studentViewVisible = computed(() => authView.value === 'student' && featureVisible.value)
-const canOpenNotificationHomework = computed(() => studentViewVisible.value
+const canOpenNotificationTarget = computed(() => studentViewVisible.value
   && authSnapshot.value?.activeRole === 'STUDENT'
   && scope.value?.activeRole === 'STUDENT'
   && scope.value.resetGeneration === auth.currentGeneration()
@@ -211,7 +207,7 @@ function authDenialStatus(error: unknown): number | null {
 
 function openNotifications(): void {
   if (!notificationsEntryVisible.value) return
-  notificationHomeworkRequest.value = null
+  notificationTargetIntent.value = null
   const generation = auth.currentGeneration()
   notificationsGeneration.value = generation
   notificationsApi.value = createGenerationBoundNotificationsApi({
@@ -231,7 +227,7 @@ function closeNotifications(): void {
   notificationsGeneration.value = null
 }
 
-function openNotificationHomework(target: NotificationHomeworkTarget): void {
+function openNotificationTarget(target: NotificationTarget): void {
   const generation = notificationsGeneration.value
   const currentScope = scope.value
   if (!notificationsOpen.value || !notificationsApi.value || generation === null
@@ -239,8 +235,8 @@ function openNotificationHomework(target: NotificationHomeworkTarget): void {
     || authSnapshot.value?.activeRole !== 'STUDENT'
     || !studentViewVisible.value || !currentScope || currentScope.activeRole !== 'STUDENT'
     || currentScope.resetGeneration !== generation || offline.value) return
-  notificationHomeworkRequest.value = {
-    requestId: ++notificationHomeworkRequestId,
+  notificationTargetIntent.value = {
+    requestId: ++notificationTargetIntentId,
     generation,
     ownerKey: ownerKey.value,
     target,
@@ -248,15 +244,23 @@ function openNotificationHomework(target: NotificationHomeworkTarget): void {
   closeNotifications()
 }
 
+function clearNotificationTargetIntent(requestId: number): void {
+  if (notificationTargetIntent.value?.requestId === requestId) notificationTargetIntent.value = null
+}
+
 watch(
   () => [auth.resetGeneration.value, authSnapshot.value?.userId, authSnapshot.value?.activeRole, ownerKey.value] as const,
   (current, previous) => {
     if (!previous || (current[0] === previous[0] && current[1] === previous[1]
       && current[2] === previous[2] && current[3] === previous[3])) return
-    notificationHomeworkRequest.value = null
+    notificationTargetIntent.value = null
     if (notificationsOpen.value) closeNotifications()
   },
 )
+
+watch(offline, (isOffline) => {
+  if (isOffline) notificationTargetIntent.value = null
+})
 
 function isConfirmedOnlineAuthDenial(error: unknown): boolean {
   if (authDenialStatus(error) === 401) return true
@@ -1195,9 +1199,9 @@ onBeforeUnmount(() => {
       :api="notificationsApi"
       :host="host"
       :offline="offline"
-      :can-open-homework-target="canOpenNotificationHomework"
+      :can-open-target="canOpenNotificationTarget"
       @close="closeNotifications"
-      @open-homework-target="openNotificationHomework"
+      @open-target="openNotificationTarget"
       @owner-error="onOwnerError"
     />
   </Teleport>
@@ -1346,9 +1350,10 @@ onBeforeUnmount(() => {
     :theme-controller="theme"
     :acquire-checkin-command="acquireCheckinCommand"
     :open-material="openMaterial"
-    :homework-notification-request="notificationHomeworkRequest"
+    :notification-target-intent="notificationTargetIntent"
     @homework-loaded="persistHomework"
     @owner-error="onOwnerError"
+    @clear-notification-target="clearNotificationTargetIntent"
   />
   <button
     v-if="(authView === 'student' && session) || authView === 'teacher' || authView === 'headman' || mapViewVisible || adminMapViewVisible || adminSemesterViewVisible || adminUsersViewVisible"

@@ -310,6 +310,40 @@ describe('RequestsController', () => {
     expect(failed.value.view.open.requests[0]?.attachments).toBeUndefined()
   })
 
+  it('loads an exact notification request directly and rejects wrong or stale detail', async () => {
+    const fetchedIds: string[] = []
+    let listCalls = 0
+    const direct = controller({
+      port: port({
+        listRequests: async () => { listCalls += 1; return page([]) },
+        getRequest: async (id) => { fetchedIds.push(id); return detail(summary(id)) },
+      }),
+    })
+
+    const loaded = await direct.value.loadTargetDetail('ticket-42', 'EXCUSE')
+
+    expect(fetchedIds).toEqual(['ticket-42'])
+    expect(listCalls).toBe(0)
+    expect(loaded.summary.id).toBe('ticket-42')
+    expect(loaded.summary.canCancel).toBe(true)
+
+    const wrongIdentity = controller({ port: port({ getRequest: async () => detail(summary('other-ticket')) }) })
+    await expect(wrongIdentity.value.loadTargetDetail('ticket-42', 'EXCUSE')).rejects.toMatchObject({ code: 'UNAVAILABLE' })
+
+    const wrongKind = controller({
+      port: port({ getRequest: async (id) => detail({ ...summary(id), kind: 'EXCUSE' }) }),
+    })
+    await expect(wrongKind.value.loadTargetDetail('late-42', 'LATE_CHECKIN')).rejects.toMatchObject({ code: 'UNAVAILABLE' })
+
+    const pendingDetail = deferred<StudentRequestDetail>()
+    const stale = controller({ port: port({ getRequest: async () => pendingDetail.promise }) })
+    const pending = stale.value.loadTargetDetail('ticket-43', 'EXCUSE')
+    stale.state.scope = { ...scope, resetGeneration: 2 }
+    stale.value.onContextChanged()
+    pendingDetail.resolve(detail(summary('ticket-43')))
+    await expect(pending).rejects.toMatchObject({ code: 'STALE' })
+  })
+
   it('stops mutations before transport while offline or read-only', async () => {
     let sends = 0
     const transport = port({ submitLateCheckin: async () => { sends += 1; return detail(summary('sent')) } })

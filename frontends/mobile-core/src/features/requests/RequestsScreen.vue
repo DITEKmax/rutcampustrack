@@ -3,6 +3,12 @@ import { computed } from 'vue'
 import RequestCard from './RequestCard.vue'
 import type { RequestAccessState, RequestAttachment, RequestAttachmentViewState, RequestBucket, RequestDetail } from './types'
 
+type NotificationRequestView =
+  | { status: 'loading' }
+  | { status: 'available'; detail: RequestDetail }
+  | { status: 'unavailable'; message: string }
+  | { status: 'error'; message: string }
+
 const props = withDefaults(defineProps<{
   bucket: RequestBucket
   requests: readonly RequestDetail[]
@@ -16,6 +22,7 @@ const props = withDefaults(defineProps<{
   hasNextPage?: boolean
   loadingMore?: boolean
   attachmentStates?: Readonly<Record<string, RequestAttachmentViewState | undefined>> | undefined
+  notificationTarget?: NotificationRequestView | null
 }>(), {
   retrying: false,
   cancellingId: null,
@@ -23,6 +30,7 @@ const props = withDefaults(defineProps<{
   hasNextPage: false,
   loadingMore: false,
   attachmentStates: undefined,
+  notificationTarget: null,
 })
 
 const emit = defineEmits<{
@@ -32,9 +40,12 @@ const emit = defineEmits<{
   cancel: [id: string]
   openAttachment: [value: { requestId: string; attachment: RequestAttachment }]
   loadMore: []
+  backTarget: []
+  retryTarget: []
 }>()
 
 const isArchive = computed(() => props.bucket === 'archive')
+const isNotificationTarget = computed(() => props.notificationTarget !== null)
 const accessBlocked = computed(() => props.access === 'forbidden' || (!isArchive.value && props.access === 'no-active-semester'))
 const canStartRequest = computed(() => !props.offline && !props.readOnly && props.access === 'allowed')
 const emptyTitle = computed(() => isArchive.value ? 'Архив пуст' : 'Нет заявок на рассмотрении')
@@ -58,142 +69,198 @@ const actionHint = computed(() => props.readOnly
     aria-labelledby="requests-title"
   >
     <header class="requests-screen__header">
+      <button
+        v-if="isNotificationTarget"
+        class="requests-secondary-action"
+        type="button"
+        @click="emit('backTarget')"
+      >
+        Назад к заявкам
+      </button>
       <h1 id="requests-title">
-        Заявки
+        {{ isNotificationTarget ? 'Заявка' : 'Заявки' }}
       </h1>
     </header>
 
-    <button
-      class="requests-primary-action"
-      type="button"
-      :disabled="!canStartRequest"
-      :aria-describedby="!canStartRequest ? 'requests-action-hint' : undefined"
-      @click="emit('newRequest')"
-    >
-      Подать
-    </button>
-    <p
-      v-if="!canStartRequest"
-      id="requests-action-hint"
-      class="requests-screen__hint"
-    >
-      {{ actionHint }}
-    </p>
-
-    <div
-      class="requests-tabs"
-      role="tablist"
-      aria-label="Список заявок"
-    >
-      <button
-        class="requests-tab"
-        :class="{ 'requests-tab--active': !isArchive }"
-        type="button"
-        role="tab"
-        :aria-selected="!isArchive"
-        @click="emit('selectBucket', 'open')"
+    <template v-if="notificationTarget">
+      <section
+        v-if="notificationTarget.status === 'loading'"
+        class="requests-state requests-state--loading"
+        aria-busy="true"
+        aria-live="polite"
+        aria-label="Загрузка заявки"
       >
-        Открытые
-      </button>
-      <button
-        class="requests-tab"
-        :class="{ 'requests-tab--active': isArchive }"
-        type="button"
-        role="tab"
-        :aria-selected="isArchive"
-        @click="emit('selectBucket', 'archive')"
+        Загружаем заявку…
+      </section>
+      <section
+        v-else-if="notificationTarget.status === 'unavailable'"
+        class="requests-state"
+        role="status"
       >
-        Архив
-      </button>
-    </div>
-
-    <p
-      v-if="offline"
-      class="requests-offline"
-      role="status"
-    >
-      Офлайн · показываем сохранённые данные
-    </p>
-
-    <section
-      v-if="loading"
-      class="requests-state requests-state--loading"
-      aria-busy="true"
-      aria-live="polite"
-      aria-label="Загрузка заявок"
-    >
-      <span
-        v-for="item in 2"
-        :key="item"
-        class="requests-skeleton"
-        aria-hidden="true"
+        <h2>Заявка недоступна</h2>
+        <p>{{ notificationTarget.message }}</p>
+      </section>
+      <section
+        v-else-if="notificationTarget.status === 'error'"
+        class="requests-state requests-state--error"
+        role="alert"
+      >
+        <h2>Не удалось загрузить заявку</h2>
+        <p>{{ notificationTarget.message }}</p>
+        <button
+          class="requests-secondary-action"
+          type="button"
+          :disabled="retrying"
+          @click="emit('retryTarget')"
+        >
+          {{ retrying ? 'Повторяем…' : 'Повторить' }}
+        </button>
+      </section>
+      <RequestCard
+        v-else-if="notificationTarget.status === 'available'"
+        :detail="notificationTarget.detail"
+        :offline="offline"
+        :cancelling="cancellingId === notificationTarget.detail.summary.id"
+        :attachment-states="attachmentStates"
+        focus-target
+        @cancel="emit('cancel', $event)"
+        @open-attachment="emit('openAttachment', $event)"
       />
-      Загружаем заявки…
-    </section>
+    </template>
 
-    <section
-      v-else-if="error"
-      class="requests-state requests-state--error"
-      role="alert"
-    >
-      <h2>Не удалось получить заявки</h2>
-      <p>{{ error }}</p>
+    <template v-else>
       <button
+        class="requests-primary-action"
+        type="button"
+        :disabled="!canStartRequest"
+        :aria-describedby="!canStartRequest ? 'requests-action-hint' : undefined"
+        @click="emit('newRequest')"
+      >
+        Подать
+      </button>
+      <p
+        v-if="!canStartRequest"
+        id="requests-action-hint"
+        class="requests-screen__hint"
+      >
+        {{ actionHint }}
+      </p>
+
+      <div
+        class="requests-tabs"
+        role="tablist"
+        aria-label="Список заявок"
+      >
+        <button
+          class="requests-tab"
+          :class="{ 'requests-tab--active': !isArchive }"
+          type="button"
+          role="tab"
+          :aria-selected="!isArchive"
+          @click="emit('selectBucket', 'open')"
+        >
+          Открытые
+        </button>
+        <button
+          class="requests-tab"
+          :class="{ 'requests-tab--active': isArchive }"
+          type="button"
+          role="tab"
+          :aria-selected="isArchive"
+          @click="emit('selectBucket', 'archive')"
+        >
+          Архив
+        </button>
+      </div>
+
+      <p
+        v-if="offline"
+        class="requests-offline"
+        role="status"
+      >
+        Офлайн · показываем сохранённые данные
+      </p>
+
+      <section
+        v-if="loading"
+        class="requests-state requests-state--loading"
+        aria-busy="true"
+        aria-live="polite"
+        aria-label="Загрузка заявок"
+      >
+        <span
+          v-for="item in 2"
+          :key="item"
+          class="requests-skeleton"
+          aria-hidden="true"
+        />
+        Загружаем заявки…
+      </section>
+
+      <section
+        v-else-if="error"
+        class="requests-state requests-state--error"
+        role="alert"
+      >
+        <h2>Не удалось получить заявки</h2>
+        <p>{{ error }}</p>
+        <button
+          class="requests-secondary-action"
+          type="button"
+          :disabled="retrying"
+          @click="emit('retry')"
+        >
+          {{ retrying ? 'Повторяем…' : 'Повторить' }}
+        </button>
+      </section>
+
+      <section
+        v-else-if="accessBlocked"
+        class="requests-state"
+        :aria-label="accessTitle"
+      >
+        <h2>{{ accessTitle }}</h2>
+        <p>{{ accessDescription }}</p>
+      </section>
+
+      <section
+        v-else-if="requests.length === 0"
+        class="requests-state"
+        :aria-label="emptyTitle"
+      >
+        <h2>{{ emptyTitle }}</h2>
+        <p>{{ emptyDescription }}</p>
+      </section>
+
+      <ul
+        v-else
+        class="requests-list"
+        aria-label="Заявки"
+      >
+        <li
+          v-for="request in requests"
+          :key="request.summary.id"
+        >
+          <RequestCard
+            :detail="request"
+            :offline="offline"
+            :cancelling="cancellingId === request.summary.id"
+            :attachment-states="attachmentStates"
+            @cancel="emit('cancel', $event)"
+            @open-attachment="emit('openAttachment', $event)"
+          />
+        </li>
+      </ul>
+      <button
+        v-if="!loading && !error && requests.length > 0 && hasNextPage"
         class="requests-secondary-action"
         type="button"
-        :disabled="retrying"
-        @click="emit('retry')"
+        :disabled="loadingMore"
+        @click="emit('loadMore')"
       >
-        {{ retrying ? 'Повторяем…' : 'Повторить' }}
+        {{ loadingMore ? 'Загружаем…' : 'Показать ещё' }}
       </button>
-    </section>
-
-    <section
-      v-else-if="accessBlocked"
-      class="requests-state"
-      :aria-label="accessTitle"
-    >
-      <h2>{{ accessTitle }}</h2>
-      <p>{{ accessDescription }}</p>
-    </section>
-
-    <section
-      v-else-if="requests.length === 0"
-      class="requests-state"
-      :aria-label="emptyTitle"
-    >
-      <h2>{{ emptyTitle }}</h2>
-      <p>{{ emptyDescription }}</p>
-    </section>
-
-    <ul
-      v-else
-      class="requests-list"
-      aria-label="Заявки"
-    >
-      <li
-        v-for="request in requests"
-        :key="request.summary.id"
-      >
-        <RequestCard
-          :detail="request"
-          :offline="offline"
-          :cancelling="cancellingId === request.summary.id"
-          :attachment-states="attachmentStates"
-          @cancel="emit('cancel', $event)"
-          @open-attachment="emit('openAttachment', $event)"
-        />
-      </li>
-    </ul>
-    <button
-      v-if="!loading && !error && requests.length > 0 && hasNextPage"
-      class="requests-secondary-action"
-      type="button"
-      :disabled="loadingMore"
-      @click="emit('loadMore')"
-    >
-      {{ loadingMore ? 'Загружаем…' : 'Показать ещё' }}
-    </button>
+    </template>
   </main>
 </template>
 

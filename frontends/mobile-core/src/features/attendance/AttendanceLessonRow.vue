@@ -13,9 +13,11 @@ import {
 const props = withDefaults(defineProps<{
   lesson: AttendanceLesson
   actionsOpen?: boolean
+  notificationTarget?: boolean
   terminal?: boolean
 }>(), {
   actionsOpen: false,
+  notificationTarget: false,
   terminal: false,
 })
 
@@ -68,7 +70,12 @@ function optionLabel(option: AttendanceRequestOption): string {
     </p>
     <article class="attendance-lesson-row__card">
       <header class="attendance-lesson-row__head">
-        <h3>{{ lesson.subject.name }}</h3>
+        <h3
+          :data-notification-target="notificationTarget || undefined"
+          :tabindex="notificationTarget ? -1 : undefined"
+        >
+          {{ lesson.subject.name }}
+        </h3>
         <button
           v-if="hasRequestOptions"
           class="attendance-status-badge"

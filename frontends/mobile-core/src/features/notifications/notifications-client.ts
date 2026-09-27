@@ -24,7 +24,28 @@ export interface NotificationHomeworkTarget {
   lessonDate: string
 }
 
-export type NotificationTarget = NotificationHomeworkTarget
+export interface NotificationRequestTarget {
+  kind: 'request'
+  requestId: string
+  requestKind: 'EXCUSE' | 'LATE_CHECKIN'
+}
+
+export interface NotificationLessonTarget {
+  kind: 'lesson'
+  lessonId: string
+}
+
+export type NotificationTarget =
+  | NotificationHomeworkTarget
+  | NotificationRequestTarget
+  | NotificationLessonTarget
+
+export interface NotificationTargetIntent {
+  requestId: number
+  generation: number
+  ownerKey: string
+  target: NotificationTarget
+}
 
 export interface NotificationHistoryPage {
   items: NotificationHistoryItem[]
@@ -236,13 +257,41 @@ function parseHistoryItem(value: unknown): NotificationHistoryItem | null {
 }
 
 function parseTarget(type: string, value: unknown): NotificationTarget | null {
-  if (type !== 'HOMEWORK_PUBLISHED' && type !== 'HOMEWORK_UPDATED') return null
   const payload = asRecord(value)
   if (!payload) return null
+  if (type === 'HOMEWORK_PUBLISHED' || type === 'HOMEWORK_UPDATED') {
+    return parseHomeworkTarget(payload)
+  }
+  if (type === 'HOMEWORK_DUE_REMINDER') {
+    const homework = asRecord(payload.homework)
+    return homework ? parseHomeworkTarget(homework) : null
+  }
+  if (type === 'EXCUSE_REQUESTED' || type === 'EXCUSE_APPROVED' || type === 'EXCUSE_REJECTED') {
+    const requestId = safeRequestId(payload.ticket_id)
+    return requestId ? { kind: 'request', requestId, requestKind: 'EXCUSE' } : null
+  }
+  if (type === 'LATE_CHECKIN_REQUESTED' || type === 'LATE_CHECKIN_APPROVED' || type === 'LATE_CHECKIN_REJECTED') {
+    const requestId = safeRequestId(payload.request_id)
+    return requestId ? { kind: 'request', requestId, requestKind: 'LATE_CHECKIN' } : null
+  }
+  if (type === 'LESSON_STARTED' || type === 'LESSON_CANCELLED' || type === 'ATTENDANCE_MARKED_BY_HEADMAN') {
+    const lessonId = positiveSafeId(payload.lesson_id)
+    return lessonId ? { kind: 'lesson', lessonId } : null
+  }
+  return null
+}
+
+function parseHomeworkTarget(payload: Record<string, unknown>): NotificationHomeworkTarget | null {
   const homeworkId = positiveSafeId(payload.homework_id)
   const lessonDate = payload.lesson_date
   if (!homeworkId || typeof lessonDate !== 'string' || !isHomeworkDate(lessonDate)) return null
   return { kind: 'homework', homeworkId, lessonDate }
+}
+
+function safeRequestId(value: unknown): string | null {
+  return typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(value)
+    ? value
+    : null
 }
 
 function positiveSafeId(value: unknown): string | null {

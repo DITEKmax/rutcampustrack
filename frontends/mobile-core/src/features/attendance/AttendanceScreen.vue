@@ -38,6 +38,7 @@ const props = withDefaults(defineProps<{
   graphRange?: AttendanceGraphRange
   expandedSubjectId?: string | null
   actionLessonId?: string | null
+  focusedLessonId?: string | null
   requestLessonId?: string | null
   requestOptionId?: string | null
   theme?: AttendanceTheme
@@ -48,6 +49,7 @@ const props = withDefaults(defineProps<{
   graphRange: 'days',
   expandedSubjectId: null,
   actionLessonId: null,
+  focusedLessonId: null,
   requestLessonId: null,
   requestOptionId: null,
   theme: 'dark',
@@ -104,6 +106,19 @@ watch(() => props.requestLessonId, (nextLessonId, previousLessonId) => {
     void nextTick(() => focusRequestTrigger(returnLessonId))
   }
 })
+
+watch(
+  () => [props.focusedLessonId, props.selectedDate, props.mode] as const,
+  ([lessonId, , mode]) => {
+    if (!lessonId || mode !== 'days') return
+    void nextTick(() => {
+      const row = Array.from(screenRoot.value?.querySelectorAll<HTMLElement>('[data-lesson-id]') ?? [])
+        .find((candidate) => candidate.dataset.lessonId === lessonId)
+      row?.querySelector<HTMLElement>('[data-notification-target]')?.focus()
+    })
+  },
+  { flush: 'post' },
+)
 
 const emptyViewModel: AttendanceViewModel = {
   metrics: {
@@ -182,6 +197,7 @@ function dateLabel(date: string): string {
       >
         <AttendanceLessonRow
           :lesson="selectedLesson"
+          :notification-target="selectedLesson.id === focusedLessonId"
           :terminal="terminal"
         />
       </ol>
@@ -349,6 +365,7 @@ function dateLabel(date: string): string {
               v-for="lesson in selectedLessons"
               :key="lesson.id"
               :lesson="lesson"
+              :notification-target="lesson.id === focusedLessonId"
               :actions-open="lesson.id === actionLessonId"
               :terminal="terminal"
               @toggle-actions="emit('toggle-actions', $event)"

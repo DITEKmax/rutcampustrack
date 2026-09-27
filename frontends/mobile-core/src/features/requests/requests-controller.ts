@@ -71,7 +71,7 @@ export interface RequestsControllerOptions {
 
 export class RequestsError extends Error {
   constructor(
-    readonly code: 'OFFLINE' | 'READ_ONLY' | 'FORBIDDEN' | 'NO_ACTIVE_SEMESTER' | 'AMBIGUOUS' | 'VALIDATION' | 'STALE',
+    readonly code: 'OFFLINE' | 'READ_ONLY' | 'FORBIDDEN' | 'NO_ACTIVE_SEMESTER' | 'AMBIGUOUS' | 'VALIDATION' | 'STALE' | 'UNAVAILABLE',
     message: string,
   ) {
     super(message)
@@ -374,6 +374,31 @@ export class RequestsController {
 
   bucketView(bucket = this.view.bucket): RequestsBucketView {
     return bucket === 'open' ? this.view.open : this.view.archive
+  }
+
+  async loadTargetDetail(id: string, expectedKind: RequestKind): Promise<RequestDetail> {
+    this.contextChanged()
+    const scope = this.options.scope()
+    if (!scope || scope.activeRole !== 'STUDENT' || !scope.userId) {
+      throw new RequestsError('FORBIDDEN', 'Раздел недоступен.')
+    }
+    if (this.options.offline()) throw new RequestsError('OFFLINE', 'Офлайн: заявка станет доступна онлайн.')
+    const identity = this.identity()
+    const contextGeneration = this.contextGeneration
+    const port = this.options.port()
+    if (!identity || !port) throw new RequestsError('FORBIDDEN', 'Раздел недоступен.')
+
+    const detail = await port.getRequest(id)
+    if (!this.isCurrentContext(identity, contextGeneration)) {
+      throw new RequestsError('STALE', 'Сессия заявки больше не актуальна.')
+    }
+    if (detail.summary.id !== id || detail.summary.kind !== expectedKind) {
+      throw new RequestsError('UNAVAILABLE', 'Заявка больше недоступна.')
+    }
+    return mapDetail(detail, this.options.scope(), {
+      offline: this.options.offline(),
+      readOnly: this.options.readOnly(),
+    })
   }
 
   private assertReadable(bucket: RequestBucket): void {

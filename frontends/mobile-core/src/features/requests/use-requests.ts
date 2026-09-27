@@ -67,6 +67,7 @@ export function useRequests(
     selectBucket: (bucket: RequestBucket) => controller.selectBucket(bucket),
     load: (bucket?: RequestBucket) => controller.loadBucket(bucket),
     loadMore: (bucket?: RequestBucket) => controller.loadMore(bucket),
+    loadTargetDetail: (id: string, expectedKind: RequestKind) => controller.loadTargetDetail(id, expectedKind),
     loadOptions: () => controller.loadOptions(),
     submitExcuse: (payload: ExcuseRequestPayload) => controller.submitExcuse(payload),
     submitLateCheckin: (payload: LateCheckinRequestPayload) => controller.submitLateCheckin(payload),

@@ -11,9 +11,15 @@ import type {
   TodayLesson,
 } from '../../api/types'
 import { CheckinCommandRecovery } from '../../domain/checkin'
-import type { NotificationHomeworkTarget } from '../../features/notifications/notifications-client'
+import type {
+  NotificationHomeworkTarget,
+  NotificationLessonTarget,
+  NotificationRequestTarget,
+  NotificationTarget,
+  NotificationTargetIntent,
+} from '../../features/notifications/notifications-client'
 import AttendanceScreen from '../../features/attendance/AttendanceScreen.vue'
-import type { AttendanceGraphRange, AttendanceLesson, AttendanceMode } from '../../features/attendance/attendance-view-model'
+import { findAttendanceLesson, type AttendanceGraphRange, type AttendanceLesson, type AttendanceMode } from '../../features/attendance/attendance-view-model'
 import { useAttendance } from '../../features/attendance/use-attendance'
 import HomeworkScreen from '../../features/homework/HomeworkScreen.vue'
 import type { HeadmanHomeworkApi } from '../../features/homework/headman-homework-client'
@@ -44,8 +50,8 @@ import RequestTypeScreen from '../../features/requests/RequestTypeScreen.vue'
 import { openRequestAttachmentPopup, runRequestAttachmentOpen, type RequestAttachmentPopup } from '../../features/requests/request-attachment-action'
 import { requestsSessionGeneration, getOrCreateRequestsDraft, purgeRequestsDrafts, updateRequestsDraft } from '../../features/requests/state'
 import { useRequests } from '../../features/requests/use-requests'
-import { shouldLoadRequestOptions } from '../../features/requests/requests-controller'
-import type { RequestAttachmentViewState, RequestBucket, RequestFileRef, RequestKind, RequestTypeChoice } from '../../features/requests/types'
+import { RequestsError, shouldLoadRequestOptions } from '../../features/requests/requests-controller'
+import type { RequestAttachmentViewState, RequestBucket, RequestDetail, RequestFileRef, RequestKind, RequestTypeChoice } from '../../features/requests/types'
 import StatisticsScreen from '../../features/statistics/StatisticsScreen.vue'
 import { useStatistics } from '../../features/statistics/use-statistics'
 import MobileShell from './MobileShell.vue'
@@ -88,12 +94,7 @@ const props = withDefaults(defineProps<{
   assistantRequestsApi?: HeadmanRequestsApi | null
   assistantHomeworkApi?: HeadmanHomeworkApi | null
   reportDownload?: ReportDownloadPort | null
-  homeworkNotificationRequest?: {
-    requestId: number
-    generation: number
-    ownerKey: string
-    target: NotificationHomeworkTarget
-  } | null
+  notificationTargetIntent?: NotificationTargetIntent | null
 }>(), {
   readOnly: false,
   ownerKey: null,
@@ -112,15 +113,22 @@ const props = withDefaults(defineProps<{
   assistantRequestsApi: null,
   assistantHomeworkApi: null,
   reportDownload: null,
-  homeworkNotificationRequest: null,
+  notificationTargetIntent: null,
 })
 
 const emit = defineEmits<{
   ownerError: [error: unknown]
   homeworkLoaded: [homework: StudentHomework]
+  clearNotificationTarget: [requestId: number]
 }>()
 
+type TargetLoadState =
+  | { status: 'loading' }
+  | { status: 'unavailable'; message: string }
+  | { status: 'error'; message: string }
+
 type HomeworkNotificationState = {
+  kind: 'homework'
   requestId: number
   target: NotificationHomeworkTarget
 } & (
@@ -129,6 +137,20 @@ type HomeworkNotificationState = {
   | { status: 'unavailable'; message: string }
   | { status: 'error'; message: string }
 )
+
+type RequestNotificationState = {
+  kind: 'request'
+  requestId: number
+  target: NotificationRequestTarget
+} & (TargetLoadState | { status: 'available'; detail: RequestDetail })
+
+type LessonNotificationState = {
+  kind: 'lesson'
+  requestId: number
+  target: NotificationLessonTarget
+} & (TargetLoadState | { status: 'available'; lessonDate: string })
+
+type NotificationTargetState = HomeworkNotificationState | RequestNotificationState | LessonNotificationState
 
 /** A disabled query still needs a StudentApi instance for composable setup. */
 const inertApi = new StudentApi({ accessToken: () => null })
@@ -144,6 +166,13 @@ const offline = computed(() => props.offline || props.api === null)
 const navigation: MobileNavigationStack = createMobileNavigationStack(rootRoute('today'))
 const route = ref<MobileRoute>(navigation.current)
 const homeworkNotificationRoute = nestedRoute('homework', 'homework/notification-target', 'detail')
+const requestNotificationRoute = nestedRoute('more', 'more/requests/notification-target', 'detail')
+const lessonNotificationRoute = nestedRoute('attendance', 'attendance/notification-target', 'detail')
+const notificationTargetRouteIds = new Set<string>([
+  homeworkNotificationRoute.id,
+  requestNotificationRoute.id,
+  lessonNotificationRoute.id,
+])
 const selectedDate = ref(new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }))
 const attendanceSelectedDate = ref(new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }))
 const attendanceMode = ref<AttendanceMode>('days')
@@ -179,7 +208,7 @@ const homework = useHomework(
     fallback: () => props.homeworkFallback,
   },
 )
-const homeworkNotificationState = shallowRef<HomeworkNotificationState | null>(null)
+const notificationTargetState = shallowRef<NotificationTargetState | null>(null)
 const requests = useRequests(api, scope, {
   offline,
   readOnly: computed(() => props.readOnly),
@@ -206,9 +235,12 @@ watch(() => route.value, (value, previous) => {
   ensureProfileRoute(value)
   ensureRequestsRoute(value)
   if (value.id !== 'more/statistics') statistics.closeSubject()
-  if (previous?.id === 'homework/notification-target' && value.id !== 'homework/notification-target') {
-    homeworkNotificationState.value = null
-    if (homework.range.value !== null) homework.returnToToday()
+  if (previous && notificationTargetRouteIds.has(previous.id) && !notificationTargetRouteIds.has(value.id)) {
+    const wasHomeworkTarget = previous.id === homeworkNotificationRoute.id
+    const requestId = notificationTargetState.value?.requestId
+    notificationTargetState.value = null
+    if (wasHomeworkTarget && homework.range.value !== null) homework.returnToToday()
+    if (requestId !== undefined) emit('clearNotificationTarget', requestId)
   }
 }, { immediate: true })
 
@@ -232,7 +264,28 @@ const todayLoading = computed(() => !displayToday.value && props.api !== null &&
 const homeworkLoading = computed(() => !displayHomework.value && props.api !== null && !offline.value && homework.query.isPending.value)
 const ownerIdentity = computed(() => scope.value ? studentFeatureScopeIdentity(scope.value) : null)
 const activeHomeworkNotification = computed(() => route.value.id === homeworkNotificationRoute.id
-  ? homeworkNotificationState.value
+  && notificationTargetState.value?.kind === 'homework'
+  ? notificationTargetState.value
+  : null)
+const activeRequestNotification = computed(() => route.value.id === requestNotificationRoute.id
+  && notificationTargetState.value?.kind === 'request'
+  ? notificationTargetState.value
+  : null)
+const requestNotificationView = computed(() => {
+  const targetState = activeRequestNotification.value
+  if (!targetState) return null
+  if (targetState.status === 'available') return { status: targetState.status, detail: targetState.detail } as const
+  if (targetState.status === 'unavailable' || targetState.status === 'error') {
+    return { status: targetState.status, message: targetState.message } as const
+  }
+  return { status: 'loading' } as const
+})
+const activeLessonNotification = computed(() => route.value.id === lessonNotificationRoute.id
+  && notificationTargetState.value?.kind === 'lesson'
+  ? notificationTargetState.value
+  : null)
+const focusedNotificationLessonId = computed(() => activeLessonNotification.value?.status === 'available'
+  ? activeLessonNotification.value.target.lessonId
   : null)
 const homeworkScreenData = computed(() => {
   const targetState = activeHomeworkNotification.value
@@ -295,10 +348,17 @@ const homeworkScreenData = computed(() => {
   }
 })
 
-function isCurrentHomeworkNotificationRequest(request: NonNullable<typeof props.homeworkNotificationRequest>): boolean {
+function notificationTargetRoute(target: NotificationTarget): MobileRoute {
+  if (target.kind === 'homework') return homeworkNotificationRoute
+  if (target.kind === 'request') return requestNotificationRoute
+  return lessonNotificationRoute
+}
+
+function isCurrentNotificationTargetRequest(request: NotificationTargetIntent): boolean {
   const currentScope = scope.value
   return !disposed
-    && props.homeworkNotificationRequest?.requestId === request.requestId
+    && props.notificationTargetIntent?.requestId === request.requestId
+    && props.notificationTargetIntent.generation === request.generation
     && request.ownerKey === props.ownerKey
     && props.ownerKey !== null
     && props.api !== null
@@ -308,60 +368,155 @@ function isCurrentHomeworkNotificationRequest(request: NonNullable<typeof props.
     && ownerIdentity.value === studentFeatureScopeIdentity(currentScope)
 }
 
-function isActiveHomeworkNotificationRequest(request: NonNullable<typeof props.homeworkNotificationRequest>): boolean {
-  return isCurrentHomeworkNotificationRequest(request)
-    && route.value.id === homeworkNotificationRoute.id
-    && homeworkNotificationState.value?.requestId === request.requestId
+function isActiveNotificationTargetRequest(request: NotificationTargetIntent): boolean {
+  const state = notificationTargetState.value
+  return isCurrentNotificationTargetRequest(request)
+    && route.value.id === notificationTargetRoute(request.target).id
+    && state?.requestId === request.requestId
+    && state.target.kind === request.target.kind
 }
 
-function loadHomeworkNotificationTarget(
-  request: NonNullable<typeof props.homeworkNotificationRequest>,
-  navigate = true,
-): void {
-  if (!isCurrentHomeworkNotificationRequest(request)) return
-  homeworkNotificationState.value = {
-    requestId: request.requestId,
-    target: request.target,
-    status: 'loading',
+function navigateToRequestNotificationTarget(): void {
+  if (route.value.id !== requestNotificationRoute.id) {
+    if (route.value.id !== requestRoute('overview').id) navigation.push(requestRoute('overview'))
+    navigation.push(requestNotificationRoute)
   }
+}
+
+function loadHomeworkNotificationTarget(request: NotificationTargetIntent, navigate = true): void {
+  if (request.target.kind !== 'homework' || !isCurrentNotificationTargetRequest(request)) return
+  const target = request.target
+  notificationTargetState.value = { kind: 'homework', requestId: request.requestId, target, status: 'loading' }
   if (navigate) navigation.push(homeworkNotificationRoute)
   void (async () => {
     try {
-      const feed = await homework.openDate(request.target.lessonDate)
-      if (!isActiveHomeworkNotificationRequest(request)) return
-      if (!feed.items.some((item) => item.id === request.target.homeworkId
-        && item.lessonDate === request.target.lessonDate)) {
-        homeworkNotificationState.value = {
+      const feed = await homework.openDate(target.lessonDate)
+      if (!isActiveNotificationTargetRequest(request)) return
+      if (!feed.items.some((item) => item.id === target.homeworkId
+        && item.lessonDate === target.lessonDate)) {
+        notificationTargetState.value = {
+          kind: 'homework',
           requestId: request.requestId,
-          target: request.target,
+          target,
           status: 'unavailable',
           message: 'Это задание удалено или больше недоступно в твоей учебной группе.',
         }
         return
       }
-      homeworkNotificationState.value = {
+      notificationTargetState.value = {
+        kind: 'homework',
         requestId: request.requestId,
-        target: request.target,
+        target,
         status: 'available',
       }
     } catch (error) {
-      if (!isActiveHomeworkNotificationRequest(request)) return
-      const unavailable = isUnavailableHomeworkNotificationTarget(error, request.target.lessonDate)
-      homeworkNotificationState.value = unavailable
+      if (!isActiveNotificationTargetRequest(request)) return
+      const unavailable = isUnavailableHomeworkNotificationTarget(error, target.lessonDate)
+      notificationTargetState.value = unavailable
         ? {
+          kind: 'homework',
           requestId: request.requestId,
-          target: request.target,
+          target,
           status: 'unavailable',
           message: 'Это задание удалено или больше недоступно в твоей учебной группе.',
         }
         : {
+          kind: 'homework',
           requestId: request.requestId,
-          target: request.target,
+          target,
           status: 'error',
           message: 'Не удалось загрузить это задание. Проверь подключение и попробуй ещё раз.',
         }
     }
   })()
+}
+
+function loadRequestNotificationTarget(request: NotificationTargetIntent, navigate = true): void {
+  if (request.target.kind !== 'request' || !isCurrentNotificationTargetRequest(request)) return
+  const target = request.target
+  notificationTargetState.value = { kind: 'request', requestId: request.requestId, target, status: 'loading' }
+  if (navigate) navigateToRequestNotificationTarget()
+  void (async () => {
+    try {
+      const detail = await requests.loadTargetDetail(target.requestId, target.requestKind)
+      if (!isActiveNotificationTargetRequest(request)) return
+      notificationTargetState.value = { kind: 'request', requestId: request.requestId, target, status: 'available', detail }
+    } catch (error) {
+      if (!isActiveNotificationTargetRequest(request)) return
+      const unavailable = error instanceof RequestsError && error.code === 'UNAVAILABLE'
+        || error instanceof StudentApiError && (error.response.status === 403 || error.response.status === 404)
+      if (error instanceof StudentApiError && error.response.status === 401) {
+        handleRequestsError(error)
+        return
+      }
+      notificationTargetState.value = unavailable
+        ? { kind: 'request', requestId: request.requestId, target, status: 'unavailable', message: 'Эта заявка удалена или больше недоступна.' }
+        : { kind: 'request', requestId: request.requestId, target, status: 'error', message: 'Не удалось загрузить заявку. Проверь подключение и попробуй ещё раз.' }
+    }
+  })()
+}
+
+function loadLessonNotificationTarget(request: NotificationTargetIntent, navigate = true): void {
+  if (request.target.kind !== 'lesson' || !isCurrentNotificationTargetRequest(request)) return
+  const target = request.target
+  notificationTargetState.value = { kind: 'lesson', requestId: request.requestId, target, status: 'loading' }
+  if (navigate) navigation.push(lessonNotificationRoute)
+  void (async () => {
+    try {
+      if (!scope.value?.semesterId) {
+        notificationTargetState.value = {
+          kind: 'lesson',
+          requestId: request.requestId,
+          target,
+          status: 'unavailable',
+          message: 'Это занятие нельзя найти в текущем учебном семестре.',
+        }
+        return
+      }
+      await attendance.query.refetch({ throwOnError: true })
+      if (!isActiveNotificationTargetRequest(request)) return
+      const currentData = attendance.data.value
+      const lesson = currentData ? findAttendanceLesson(currentData, target.lessonId) : null
+      if (!lesson) {
+        notificationTargetState.value = {
+          kind: 'lesson',
+          requestId: request.requestId,
+          target,
+          status: 'unavailable',
+          message: 'Это занятие больше не входит в твою доступную посещаемость.',
+        }
+        return
+      }
+      attendanceSelectedDate.value = lesson.date
+      attendanceMode.value = 'days'
+      attendanceActionLessonId.value = null
+      attendanceExpandedSubjectId.value = null
+      notificationTargetState.value = {
+        kind: 'lesson',
+        requestId: request.requestId,
+        target,
+        status: 'available',
+        lessonDate: lesson.date,
+      }
+    } catch (error) {
+      if (!isActiveNotificationTargetRequest(request)) return
+      const unavailable = error instanceof StudentApiError
+        && (error.response.status === 403 || error.response.status === 404)
+      if (error instanceof StudentApiError && error.response.status === 401) {
+        handleRequestsError(error)
+        return
+      }
+      notificationTargetState.value = unavailable
+        ? { kind: 'lesson', requestId: request.requestId, target, status: 'unavailable', message: 'Это занятие больше не входит в твою доступную посещаемость.' }
+        : { kind: 'lesson', requestId: request.requestId, target, status: 'error', message: 'Не удалось загрузить занятие. Проверь подключение и попробуй ещё раз.' }
+    }
+  })()
+}
+
+function loadNotificationTarget(request: NotificationTargetIntent, navigate = true): void {
+  if (request.target.kind === 'homework') loadHomeworkNotificationTarget(request, navigate)
+  else if (request.target.kind === 'request') loadRequestNotificationTarget(request, navigate)
+  else loadLessonNotificationTarget(request, navigate)
 }
 
 function isUnavailableHomeworkNotificationTarget(error: unknown, targetDate: string): boolean {
@@ -377,9 +532,10 @@ function isUnavailableHomeworkNotificationTarget(error: unknown, targetDate: str
 }
 
 function retryHomeworkFeed(): void {
-  const request = props.homeworkNotificationRequest
+  const request = props.notificationTargetIntent
   if (activeHomeworkNotification.value?.status === 'error' && request
-    && isCurrentHomeworkNotificationRequest(request)) {
+    && request.target.kind === 'homework'
+    && isCurrentNotificationTargetRequest(request)) {
     loadHomeworkNotificationTarget(request, false)
     return
   }
@@ -388,7 +544,9 @@ function retryHomeworkFeed(): void {
 
 function returnHomeworkToToday(): void {
   if (route.value.id === homeworkNotificationRoute.id) {
-    homeworkNotificationState.value = null
+    const requestId = notificationTargetState.value?.requestId
+    if (requestId !== undefined) emit('clearNotificationTarget', requestId)
+    notificationTargetState.value = null
     homework.returnToToday()
     navigation.goRoot('homework')
     return
@@ -396,20 +554,44 @@ function returnHomeworkToToday(): void {
   homework.returnToToday()
 }
 
-watch(() => props.homeworkNotificationRequest, (request) => {
+function backFromRequestNotificationTarget(): void {
+  const requestId = notificationTargetState.value?.requestId
+  if (requestId !== undefined) emit('clearNotificationTarget', requestId)
+  notificationTargetState.value = null
+  if (route.value.id === requestNotificationRoute.id) navigation.back()
+}
+
+function backFromLessonNotificationTarget(): void {
+  const requestId = notificationTargetState.value?.requestId
+  if (requestId !== undefined) emit('clearNotificationTarget', requestId)
+  notificationTargetState.value = null
+  if (route.value.id === lessonNotificationRoute.id) navigation.back()
+}
+
+function retryNotificationTarget(): void {
+  const request = props.notificationTargetIntent
+  if (request && isCurrentNotificationTargetRequest(request)) loadNotificationTarget(request, false)
+}
+
+watch(() => props.notificationTargetIntent, (request) => {
   if (request) {
-    loadHomeworkNotificationTarget(request)
+    loadNotificationTarget(request)
     return
   }
-  if (homeworkNotificationState.value) {
-    homeworkNotificationState.value = null
-    if (route.value.id === homeworkNotificationRoute.id) navigation.back()
+  const state = notificationTargetState.value
+  if (!state) return
+  notificationTargetState.value = null
+  if (route.value.id === notificationTargetRoute(state.target).id) {
+    if (state.kind === 'homework' && homework.range.value !== null) homework.returnToToday()
+    navigation.back()
   }
 }, { flush: 'sync' })
 
 watch(ownerIdentity, (identity, previous) => {
   if (identity === previous) return
-  homeworkNotificationState.value = null
+  const requestId = notificationTargetState.value?.requestId
+  notificationTargetState.value = null
+  if (requestId !== undefined) emit('clearNotificationTarget', requestId)
   statistics.closeSubject()
   attendanceActionLessonId.value = null
   attendanceExpandedSubjectId.value = null
@@ -554,6 +736,7 @@ function updateRequestDraft(patch: Parameters<typeof updateRequestsDraft>[2]): v
 
 function ensureRequestsRoute(routeValue: MobileRoute): void {
   if (routeValue.root !== 'more' || disposed || !routeValue.id.startsWith('more/requests')) return
+  if (routeValue.id === requestNotificationRoute.id) return
   const draft = requestDraft.value
   const bucket = draft?.bucket ?? 'open'
   if (routeValue.id === 'more/requests') {
@@ -1129,7 +1312,46 @@ onBeforeUnmount(() => {
     :host="host"
   >
     <template #back />
+    <main
+      v-if="activeLessonNotification && activeLessonNotification.status !== 'available'"
+      class="attendance-screen"
+    >
+      <section
+        class="attendance-state"
+        :class="{ 'attendance-state--error': activeLessonNotification.status === 'error' }"
+        :role="activeLessonNotification.status === 'error' ? 'alert' : 'status'"
+        aria-live="polite"
+      >
+        <button
+          class="attendance-back-button"
+          type="button"
+          @click="backFromLessonNotificationTarget"
+        >
+          Назад к посещаемости
+        </button>
+        <span
+          v-if="activeLessonNotification.status === 'loading'"
+          class="attendance-state__spinner"
+          aria-hidden="true"
+        />
+        <h2>
+          {{ activeLessonNotification.status === 'loading' ? 'Открываем занятие' : activeLessonNotification.status === 'unavailable' ? 'Занятие недоступно' : 'Не удалось загрузить занятие' }}
+        </h2>
+        <p v-if="activeLessonNotification.status !== 'loading'">
+          {{ activeLessonNotification.message }}
+        </p>
+        <button
+          v-if="activeLessonNotification.status === 'error'"
+          class="attendance-state__retry"
+          type="button"
+          @click="retryNotificationTarget"
+        >
+          Повторить
+        </button>
+      </section>
+    </main>
     <AttendanceScreen
+      v-else
       :state="attendance.state.value"
       :selected-date="attendanceSelectedDate"
       :mode="attendanceMode"
@@ -1137,6 +1359,7 @@ onBeforeUnmount(() => {
       :expanded-subject-id="attendanceExpandedSubjectId"
       :action-lesson-id="attendanceActionLessonId"
       :terminal="offline || props.readOnly || attendance.terminalReadOnly.value"
+      :focused-lesson-id="focusedNotificationLessonId"
       :theme="resolvedTheme"
       @select-date="attendanceSelectedDate = $event"
       @set-mode="setAttendanceMode"
@@ -1279,7 +1502,7 @@ onBeforeUnmount(() => {
       :theme="resolvedTheme"
     />
     <RequestsScreen
-      v-else-if="route.id === 'more/requests'"
+      v-else-if="route.id === 'more/requests' || route.id === requestNotificationRoute.id"
       :bucket="requests.view.bucket"
       :requests="requestBucketView.requests"
       :loading="requestBucketView.loading"
@@ -1291,12 +1514,15 @@ onBeforeUnmount(() => {
       :has-next-page="requestHasNextPage"
       :loading-more="requestBucketView.loadingMore"
       :attachment-states="requestAttachmentStates"
+      :notification-target="requestNotificationView"
       @select-bucket="selectRequestBucket"
       @new-request="newRequest"
       @retry="retryRequests"
       @load-more="loadMoreRequests"
       @cancel="cancelRequest"
       @open-attachment="openRequestAttachment"
+      @back-target="backFromRequestNotificationTarget"
+      @retry-target="retryNotificationTarget"
     />
     <RequestTypeScreen
       v-else-if="route.id === 'more/requests/type'"

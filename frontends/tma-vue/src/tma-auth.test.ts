@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createFixtureTransport, type ReportDownloadTicketRequest } from '@rct/mobile-core'
+import { createFixtureTransport, StaleSessionGenerationError, type ReportDownloadTicketRequest } from '@rct/mobile-core'
 import { installFixtureTelegramHost, TelegramHost } from './telegram'
 import { authenticateTma, TmaAuthError } from './tma-auth'
 import { useTmaSession } from './tma-session'
@@ -89,6 +89,28 @@ describe('generation-bound report ticket session', () => {
       .toBe('Bearer expired-synthetic-bearer')
     expect(new Headers(fetcher.mock.calls[3]?.[1]?.headers).get('Authorization'))
       .toBe('Bearer fresh-synthetic-bearer')
+  })
+
+  it('rejects a profile page body that completes after the TMA session generation is cleared', async () => {
+    let resolvePage!: (value: unknown) => void
+    const delayedResponse = {
+      ok: true,
+      status: 200,
+      json: () => new Promise<unknown>((resolve) => { resolvePage = resolve }),
+    } as unknown as Response
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'profile-session-token' }), { status: 200 }))
+      .mockResolvedValueOnce(delayedResponse)
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    const port = session.createProfilePort()
+
+    const pending = port.listSessions()
+    await vi.waitFor(() => expect(resolvePage).toBeTypeOf('function'))
+    session.clear()
+    resolvePage({ items: [] })
+
+    await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
   })
 })
 

@@ -1,4 +1,4 @@
-export const mobileRootRouteIds = ['today', 'homework', 'attendance', 'more', 'profile'] as const
+export const mobileRootRouteIds = ['today', 'homework', 'attendance', 'more', 'profile', 'teacher-home', 'teacher-stats'] as const
 
 export type MobileRootRouteId = (typeof mobileRootRouteIds)[number]
 

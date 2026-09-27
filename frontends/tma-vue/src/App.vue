@@ -47,6 +47,7 @@ import {
   type HeadmanSubjectsApi,
   type HeadmanStatsApi,
   type HeadmanAssistantPermission,
+  type ProfilePort,
   type ProfileRole,
   type ProfileSnapshot,
   type AdminDashboardClient,
@@ -110,6 +111,7 @@ const notificationsGeneration = ref<number | null>(null)
 const session = shallowRef<StudentSession | null>(null)
 const scope = shallowRef<StudentFeatureScope | null>(null)
 const profile = shallowRef<ProfileSnapshot | null>(null)
+const profilePort = shallowRef<ProfilePort | null>(null)
 const headmanGroupId = ref<number | null>(null)
 const ready = ref(false)
 const offline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false)
@@ -310,6 +312,7 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
   api.value = null
   session.value = null
   profile.value = null
+  profilePort.value = null
   ownerRevision.value += 1
 }
 
@@ -349,6 +352,9 @@ async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<vo
   teacherApi.value = candidate.api
   teacherSemesterId.value = candidate.semesterId
   profile.value = candidate.profile
+  profilePort.value = sessionOwner.createProfilePort(candidate.generation, {
+    onInvalidated: handleTeacherProfileInvalidated,
+  })
   offline.value = false
   error.value = null
   ownerRevision.value += 1
@@ -443,7 +449,11 @@ async function bootstrap(): Promise<void> {
   }
 }
 
-async function selectRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
+async function selectRole(
+  role: ProfileRole,
+  expectedSessionVersion: string,
+  options: { preserveTeacherOwner?: boolean } = {},
+): Promise<void> {
   if (roleLoading.value || offline.value || !profile.value) return
   if (role !== 'STUDENT' && role !== 'HEADMAN' && role !== 'TEACHER' && role !== 'ADMIN') return
   const grant = profile.value.roles.find((candidate) => candidate.role === role)
@@ -505,17 +515,30 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
     if (cause instanceof StaleSessionGenerationError) return
     roleError.value = asProfileError(cause)
     error.value = roleError.value.message
-    authView.value = 'role'
+    if (!options.preserveTeacherOwner) authView.value = 'role'
     try {
       const current = await sessionOwner.getProfileFor(generation)
       profile.value = current
     } catch {
       // Keep the current role snapshot visible until the next authenticated retry.
     }
+    if (options.preserveTeacherOwner) throw cause
   } finally {
     pendingRole.value = null
     roleLoading.value = false
   }
+}
+
+function selectTeacherProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
+  return selectRole(role, expectedSessionVersion, { preserveTeacherOwner: true })
+}
+
+function handleTeacherProfileInvalidated(): void {
+  invalidateOwnerSynchronously()
+  authView.value = 'role'
+  offline.value = false
+  error.value = null
+  void bootstrap()
 }
 
 function openRoleSwitch(): void {
@@ -624,6 +647,11 @@ onBeforeUnmount(() => {
     :api="teacherApi"
     :semester-id="teacherSemesterId"
     :report-download="reportDownload"
+    :profile-port="profilePort"
+    :profile-role-select="selectTeacherProfileRole"
+    :host="host"
+    :theme-controller="theme"
+    :offline="offline"
     @owner-error="onOwnerError"
   />
   <MapScreen

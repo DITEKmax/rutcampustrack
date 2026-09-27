@@ -13,8 +13,10 @@ const props = withDefaults(defineProps<{
   api: TeacherApi | null
   semesterId: number | null
   selectedDate?: string
+  profileEnabled?: boolean
 }>(), {
   selectedDate: '',
+  profileEnabled: false,
 })
 
 const emit = defineEmits<{
@@ -22,6 +24,7 @@ const emit = defineEmits<{
   'open-lesson': [lessonId: number]
   'open-journal': [query: TeacherJournalQuery]
   'open-stats': []
+  'open-profile': []
   error: [cause: unknown]
 }>()
 
@@ -171,6 +174,15 @@ function openJournal(context: TeacherJournalContext): void {
       </span>
       <button class="teacher-screen__secondary" type="button" @click="emit('open-stats')">
         Статистика
+      </button>
+      <button
+        class="teacher-screen__secondary"
+        type="button"
+        :disabled="!profileEnabled"
+        :aria-label="profileEnabled ? undefined : 'Профиль. Раздел пока недоступен'"
+        @click="emit('open-profile')"
+      >
+        Профиль
       </button>
     </header>
 

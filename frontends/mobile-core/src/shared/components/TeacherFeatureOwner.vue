@@ -1,10 +1,23 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue'
+import AppearanceScreen from '../../features/profile/AppearanceScreen.vue'
+import ProfileScreen from '../../features/profile/ProfileScreen.vue'
+import { ProfileState } from '../../features/profile/profile-state'
+import RoleSwitchScreen from '../../features/profile/RoleSwitchScreen.vue'
+import SecurityScreen from '../../features/profile/SecurityScreen.vue'
+import SessionsScreen from '../../features/profile/SessionsScreen.vue'
+import {
+  DEFAULT_PASSWORD_POLICY,
+  ProfileRequestError,
+} from '../../features/profile/profile-types'
 import type {
-  TeacherApi,
-  TeacherJournalQuery,
-} from '../../features/teacher/teacher-client'
-import type { ReportDownloadPort } from '../report-download-client'
+  ProfilePort,
+  ProfileRole,
+  ProfileRoute,
+  ProfileTheme,
+} from '../../features/profile/profile-types'
+import type { TeacherApi, TeacherJournalQuery } from '../../features/teacher/teacher-client'
 import TeacherExcuseScreen from '../../features/teacher/TeacherExcuseScreen.vue'
 import TeacherHomeScreen from '../../features/teacher/TeacherHomeScreen.vue'
 import TeacherJournalScreen from '../../features/teacher/TeacherJournalScreen.vue'
@@ -15,39 +28,89 @@ import {
   clearTeacherStatsRoute,
   hasTeacherStatsRoute,
 } from '../../features/teacher/teacher-stats-route'
+import MobileShell from './MobileShell.vue'
+import { profileOwnerStaleMessage } from '../profile-owner-status'
+import {
+  createMobileNavigationStack,
+  nestedRoute,
+  rootRoute,
+} from '../navigation'
+import type { MobileNavigationStack, MobileRootRouteId, MobileRoute } from '../navigation'
+import { createTeacherNavigationItems } from '../mobile-navigation-items'
+import type { MobileHostAdapter } from '../host'
+import type { MobileThemeController, MobileThemeResolvedMode } from '../theme'
+import type { ReportDownloadPort } from '../report-download-client'
+import { createProfileViewPublication } from './profile-view-publication'
+import './teacher-feature-owner.pcss'
 
 const props = withDefaults(defineProps<{
   api: TeacherApi | null
   semesterId: number | null
   selectedDate?: string
   reportDownload?: ReportDownloadPort | null
+  profilePort?: ProfilePort | null
+  profileRoleSelect?: ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>) | undefined
+  host?: MobileHostAdapter | null
+  themeController?: MobileThemeController | null
+  offline?: boolean
 }>(), {
   selectedDate: '',
   reportDownload: null,
+  profilePort: null,
+  profileRoleSelect: undefined,
+  host: null,
+  themeController: null,
+  offline: false,
 })
 
 const emit = defineEmits<{
   ownerError: [cause: unknown]
 }>()
 
-type Surface = 'home' | 'lesson' | 'journal' | 'excuse' | 'stats'
+type ProfileArea = 'sessions' | 'history'
+type ProfileAccountRoute = Extract<ProfileRoute, 'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'>
 
-const surface = ref<Surface>(hasTeacherStatsRoute() ? 'stats' : 'home')
+const navigation: MobileNavigationStack = createMobileNavigationStack(
+  rootRoute(hasTeacherStatsRoute() ? 'teacher-stats' : 'teacher-home'),
+)
+const route = ref<MobileRoute>(navigation.current)
 const selectedDate = ref(props.selectedDate || moscowToday())
 const lessonId = ref<number | null>(null)
 const journalQuery = ref<TeacherJournalQuery | null>(null)
-const journalReturnSurface = ref<'home' | 'stats'>('home')
 const requestId = ref<string | null>(null)
+const profileState = shallowRef(props.profilePort ? new ProfileState(props.profilePort) : null)
+const profilePendingRole = ref<ProfileRole | null>(null)
+const profileRoleError = shallowRef<ProfileRequestError | null>(null)
+const themeMode = ref<ProfileTheme>(props.themeController?.mode ?? 'system')
+const resolvedTheme = ref<MobileThemeResolvedMode>(props.themeController?.resolvedMode ?? 'dark')
+const navItems = computed(() => createTeacherNavigationItems(props.profilePort !== null))
+const profilePublication = createProfileViewPublication(
+  () => profileState.value?.view ?? null,
+  () => disposed,
+)
+const profileView = profilePublication.view
+const publishProfileView = profilePublication.publish
+const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, props.offline))
+let disposed = false
+let stopTheme = (): void => undefined
+
+const stopNavigation = navigation.subscribe(() => {
+  route.value = navigation.current
+  ensureProfileRoute(route.value)
+})
 
 watch(
-  () => [props.api, props.semesterId, props.selectedDate] as const,
-  ([, , nextDate]) => {
-    surface.value = hasTeacherStatsRoute() ? 'stats' : 'home'
+  () => [props.api, props.semesterId, props.selectedDate, props.profilePort] as const,
+  ([, , nextDate, profilePort]) => {
     lessonId.value = null
     journalQuery.value = null
-    journalReturnSurface.value = 'home'
     requestId.value = null
     if (nextDate) selectedDate.value = nextDate
+    profileState.value = profilePort ? new ProfileState(profilePort) : null
+    profileRoleError.value = null
+    profilePendingRole.value = null
+    publishProfileView()
+    navigation.goRoot(hasTeacherStatsRoute() ? 'teacher-stats' : 'teacher-home')
   },
 )
 
@@ -55,15 +118,121 @@ function moscowToday(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })
 }
 
+function bindTheme(controller: MobileThemeController | null): void {
+  stopTheme()
+  stopTheme = (): void => undefined
+  if (!controller) {
+    themeMode.value = 'system'
+    resolvedTheme.value = 'dark'
+    return
+  }
+  themeMode.value = controller.mode
+  resolvedTheme.value = controller.resolvedMode
+  stopTheme = controller.subscribe((snapshot) => {
+    themeMode.value = snapshot.mode
+    resolvedTheme.value = snapshot.resolvedMode
+  })
+}
+
+watch(() => props.themeController, bindTheme, { immediate: true })
+
+async function runProfile<T>(
+  request: (state: ProfileState) => Promise<T>,
+  options: { rethrow?: boolean } = {},
+): Promise<T | undefined> {
+  const state = profileState.value
+  if (!state || disposed) return undefined
+  let pending: Promise<T>
+  try {
+    pending = request(state)
+    publishProfileView()
+  } catch {
+    publishProfileView()
+    return undefined
+  }
+  try {
+    return await pending
+  } catch (error) {
+    if (options.rethrow) throw error
+    return undefined
+  } finally {
+    publishProfileView()
+    await state.waitForAutomaticStaleReload()
+    publishProfileView()
+  }
+}
+
+async function loadProfileSnapshot(): Promise<void> {
+  const loaded = await runProfile((state) => state.loadSnapshot())
+  if (loaded && !disposed) ensureProfileRoute(route.value)
+}
+
+async function openProfileArea(area: ProfileArea): Promise<void> {
+  const state = profileState.value
+  if (!state || disposed) return
+  if (!state.view.snapshot) {
+    await runProfile((current) => current.loadSnapshot())
+    if (disposed || !state.view.snapshot) return
+  }
+  if (area === 'sessions') await runProfile((current) => current.loadSessions())
+  else await runProfile((current) => current.loadHistory())
+}
+
+function retryProfileSnapshot(): void {
+  void loadProfileSnapshot()
+}
+
+function retryProfileArea(area: ProfileArea): void {
+  void openProfileArea(area)
+}
+
+function loadMoreProfile(area: ProfileArea, cursor: string): void {
+  const state = profileState.value
+  if (!state || disposed) return
+  if (area === 'sessions') void runProfile((current) => current.loadSessions({ cursor }))
+  else void runProfile((current) => current.loadHistory({ cursor }))
+}
+
+function profileRoute(routeName: ProfileAccountRoute) {
+  if (routeName === 'role-switch') return nestedRoute('profile', 'profile/role-switch', 'detail')
+  if (routeName === 'appearance') return nestedRoute('profile', 'profile/appearance', 'detail')
+  if (routeName === 'security') return nestedRoute('profile', 'profile/security', 'detail')
+  if (routeName === 'sessions') return nestedRoute('profile', 'profile/sessions', 'detail')
+  return nestedRoute('profile', 'profile/history', 'detail')
+}
+
+function navigateProfile(routeName: ProfileRoute): void {
+  if (routeName === 'profile') {
+    navigation.goRoot('profile')
+    return
+  }
+  if (routeName === 'role-switch' || routeName === 'appearance' || routeName === 'security'
+    || routeName === 'sessions' || routeName === 'history') {
+    profileRoleError.value = null
+    navigation.push(profileRoute(routeName))
+  }
+}
+
+function navigateRoot(routeName: MobileRootRouteId): void {
+  if (routeName === 'teacher-home') clearTeacherStatsRoute()
+  else if (routeName === 'teacher-stats') activateTeacherStatsRoute()
+  else if (routeName !== 'profile') return
+  navigation.goRoot(routeName)
+}
+
+function backRoute(): void {
+  navigation.back()
+}
+
 function openLesson(nextLessonId: number): void {
   lessonId.value = nextLessonId
-  surface.value = 'lesson'
+  navigation.push(nestedRoute('teacher-home', 'teacher-home/lesson', 'detail'))
 }
 
 function openJournal(query: TeacherJournalQuery, returnSurface: 'home' | 'stats' = 'home'): void {
   journalQuery.value = query
-  journalReturnSurface.value = returnSurface
-  surface.value = 'journal'
+  const parent = returnSurface === 'stats' ? 'teacher-stats' : 'teacher-home'
+  navigation.push(nestedRoute(parent, `${parent}/journal`, 'detail'))
 }
 
 function openStatsJournal(query: TeacherJournalQuery): void {
@@ -71,30 +240,73 @@ function openStatsJournal(query: TeacherJournalQuery): void {
 }
 
 function openExcuse(nextRequestId: string): void {
+  const parent = route.value.root
+  if (parent !== 'teacher-home' && parent !== 'teacher-stats') return
   requestId.value = nextRequestId
-  surface.value = 'excuse'
+  navigation.push(nestedRoute(parent, `${parent}/excuse`, 'task'))
 }
 
-function openStats(): void {
-  activateTeacherStatsRoute()
-  surface.value = 'stats'
+function asProfileError(cause: unknown): ProfileRequestError {
+  if (cause instanceof ProfileRequestError) return cause
+  const status = typeof cause === 'object' && cause !== null && 'status' in cause && typeof cause.status === 'number'
+    ? cause.status
+    : undefined
+  const code = status === 401 ? 'INVALID_SESSION' : status === 403 ? 'ROLE_NOT_GRANTED' : 'NETWORK'
+  return new ProfileRequestError(code, cause instanceof Error ? cause.message : 'Не удалось сменить роль', status, cause)
 }
 
-function backHome(): void {
-  clearTeacherStatsRoute()
-  surface.value = 'home'
-  lessonId.value = null
-  journalQuery.value = null
-  journalReturnSurface.value = 'home'
-  requestId.value = null
+async function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
+  const state = profileState.value
+  if (!state && !props.profileRoleSelect) return
+  profilePendingRole.value = role
+  profileRoleError.value = null
+  try {
+    if (props.profileRoleSelect) await props.profileRoleSelect(role, expectedSessionVersion)
+    else await runProfile((current) => current.selectRole(role), { rethrow: true })
+  } catch (cause) {
+    if (!disposed) {
+      const typed = asProfileError(cause)
+      profileRoleError.value = typed
+      if (typed.code === 'SESSION_VERSION_CONFLICT' || typed.code === 'SESSION_STATE_STALE') {
+        await runProfile((current) => current.loadSnapshot())
+      }
+    }
+  } finally {
+    if (!disposed) {
+      profilePendingRole.value = null
+      publishProfileView()
+    }
+  }
 }
 
-function backFromJournal(): void {
-  const returnSurface = journalReturnSurface.value
-  journalReturnSurface.value = 'home'
-  journalQuery.value = null
-  surface.value = returnSurface
-  if (returnSurface === 'home') clearTeacherStatsRoute()
+function changeProfileTheme(mode: ProfileTheme): void {
+  props.themeController?.setMode(mode)
+}
+
+async function changeProfilePassword(input: { currentPassword: string; newPassword: string }): Promise<void> {
+  if (!profileState.value || disposed) return
+  await runProfile((state) => state.changePassword(input), { rethrow: true })
+}
+
+async function logoutProfileAll(): Promise<void> {
+  if (!profileState.value || disposed) return
+  await runProfile((state) => state.logoutAll())
+}
+
+function ensureProfileRoute(routeValue: MobileRoute): void {
+  const state = profileState.value
+  if (routeValue.root !== 'profile' || !state || disposed) return
+  if (!state.view.snapshot) {
+    if (state.view.snapshotStatus === 'loading') return
+    if (routeValue.id === 'profile/sessions' || routeValue.id === 'profile/history') {
+      void openProfileArea(routeValue.id === 'profile/sessions' ? 'sessions' : 'history')
+    } else {
+      void loadProfileSnapshot()
+    }
+    return
+  }
+  if (routeValue.id === 'profile/sessions' && state.view.sessionsStatus === 'idle') void openProfileArea('sessions')
+  if (routeValue.id === 'profile/history' && state.view.historyStatus === 'idle') void openProfileArea('history')
 }
 
 function forwardError(cause: unknown): void {
@@ -102,57 +314,148 @@ function forwardError(cause: unknown): void {
 }
 
 onBeforeUnmount(() => {
-  surface.value = 'home'
+  disposed = true
   lessonId.value = null
   journalQuery.value = null
-  journalReturnSurface.value = 'home'
   requestId.value = null
+  stopNavigation()
+  stopTheme()
 })
 </script>
 
 <template>
-  <TeacherHomeScreen
-    v-if="surface === 'home'"
-    :api="api"
-    :semester-id="semesterId"
-    :selected-date="selectedDate"
-    @select-date="selectedDate = $event"
-    @open-lesson="openLesson"
-    @open-journal="openJournal"
-    @open-stats="openStats"
-    @error="forwardError"
-  />
-  <TeacherLessonScreen
-    v-else-if="surface === 'lesson'"
-    :api="api"
-    :lesson-id="lessonId"
-    @back="backHome"
-    @open-excuse="openExcuse"
-    @error="forwardError"
-  />
-  <TeacherJournalScreen
-    v-else-if="surface === 'journal'"
-    :api="api"
-    :query="journalQuery"
-    :report-download="reportDownload"
-    @back="backFromJournal"
-    @open-excuse="openExcuse"
-    @error="forwardError"
-  />
-  <TeacherExcuseScreen
-    v-else-if="surface === 'excuse'"
-    :api="api"
-    :request-id="requestId"
-    @back="backHome"
-    @error="forwardError"
-  />
-  <TeacherStatsScreen
-    v-else
-    :api="api"
-    :semester-id="semesterId"
-    :report-download="reportDownload"
-    @back="backHome"
-    @open-journal="openStatsJournal"
-    @error="forwardError"
-  />
+  <MobileShell
+    :route="route"
+    :navigation="navigation"
+    :nav-items="navItems"
+    :active-id="route.root"
+    :host="host"
+  >
+    <template #back />
+    <div
+      class="teacher-feature-owner"
+      :data-host-back="host?.backOwner === 'host'"
+    >
+      <TeacherHomeScreen
+        v-if="route.id === 'teacher-home'"
+        :api="api"
+        :semester-id="semesterId"
+        :selected-date="selectedDate"
+        :profile-enabled="profilePort !== null"
+        @select-date="selectedDate = $event"
+        @open-lesson="openLesson"
+        @open-journal="openJournal"
+        @open-stats="navigateRoot('teacher-stats')"
+        @open-profile="navigateRoot('profile')"
+        @error="forwardError"
+      />
+      <TeacherLessonScreen
+        v-else-if="route.id === 'teacher-home/lesson'"
+        :api="api"
+        :lesson-id="lessonId"
+        @back="backRoute"
+        @open-excuse="openExcuse"
+        @error="forwardError"
+      />
+      <TeacherJournalScreen
+        v-else-if="route.id.endsWith('/journal')"
+        :api="api"
+        :query="journalQuery"
+        :report-download="reportDownload"
+        @back="backRoute"
+        @open-excuse="openExcuse"
+        @error="forwardError"
+      />
+      <TeacherExcuseScreen
+        v-else-if="route.id.endsWith('/excuse')"
+        :api="api"
+        :request-id="requestId"
+        @back="backRoute"
+        @error="forwardError"
+      />
+      <TeacherStatsScreen
+        v-else-if="route.id === 'teacher-stats'"
+        :api="api"
+        :semester-id="semesterId"
+        :report-download="reportDownload"
+        @back="navigateRoot('teacher-home')"
+        @open-journal="openStatsJournal"
+        @error="forwardError"
+      />
+      <template v-else-if="route.root === 'profile'">
+        <p
+          v-if="profileOwnerStatus"
+          class="profile-inline-error profile-owner-status"
+          data-profile-stale="true"
+          role="status"
+          aria-live="polite"
+        >
+          {{ profileOwnerStatus }}
+        </p>
+        <ProfileScreen
+          v-if="route.id === 'profile'"
+          :snapshot="profileView.snapshot"
+          :loading="profileView.snapshotStatus === 'loading'"
+          :error="profileView.snapshotError"
+          :theme="resolvedTheme"
+          :show-active-role="false"
+          :on-retry="retryProfileSnapshot"
+          :on-navigate="navigateProfile"
+        />
+        <RoleSwitchScreen
+          v-else-if="route.id === 'profile/role-switch'"
+          :snapshot="profileView.snapshot"
+          :pending-role="profilePendingRole"
+          :error="profileRoleError ?? profileView.snapshotError"
+          :loading="profileView.snapshotStatus === 'loading'"
+          :offline="offline || profilePort === null"
+          :theme="resolvedTheme"
+          :on-back="backRoute"
+          :on-select-role="selectProfileRole"
+        />
+        <AppearanceScreen
+          v-else-if="route.id === 'profile/appearance'"
+          :theme="themeMode"
+          :resolved-theme="resolvedTheme"
+          :on-back="backRoute"
+          :on-theme-change="changeProfileTheme"
+        />
+        <SecurityScreen
+          v-else-if="route.id === 'profile/security'"
+          :policy="profileView.snapshot?.passwordPolicy ?? DEFAULT_PASSWORD_POLICY"
+          :error="profileView.error"
+          :busy="profileView.mutationBusy === 'password'"
+          :offline="offline || profilePort === null"
+          :theme="resolvedTheme"
+          :on-back="backRoute"
+          :on-change-password="changeProfilePassword"
+        />
+        <SessionsScreen
+          v-else-if="route.id === 'profile/sessions'"
+          :sessions="profileView.sessions"
+          :loading="profileView.sessionsStatus === 'loading'"
+          :error="profileView.sessionsError ?? profileView.error"
+          :next-cursor="profileView.sessionsNextCursor"
+          :busy="profileView.mutationBusy === 'logout-all'"
+          :offline="offline || profilePort === null"
+          :theme="resolvedTheme"
+          :on-back="backRoute"
+          :on-retry="() => retryProfileArea('sessions')"
+          :on-load-more="(cursor) => loadMoreProfile('sessions', cursor)"
+          :on-logout-all="logoutProfileAll"
+        />
+        <AccountHistoryScreen
+          v-else-if="route.id === 'profile/history'"
+          :events="profileView.history"
+          :loading="profileView.historyStatus === 'loading'"
+          :error="profileView.historyError"
+          :next-cursor="profileView.historyNextCursor"
+          :theme="resolvedTheme"
+          :on-back="backRoute"
+          :on-retry="() => retryProfileArea('history')"
+          :on-load-more="(cursor) => loadMoreProfile('history', cursor)"
+        />
+      </template>
+    </div>
+  </MobileShell>
 </template>

@@ -3,6 +3,9 @@ import moreTab from '../assets/more-tab.svg'
 import profileTab from '../assets/profile-tab.svg'
 import scheduleTab from '../assets/schedule-tab.svg'
 import todayTabActive from '../assets/today-tab-active.svg'
+import teacherTodayTab from '../features/profile/assets/profile-nav-today.svg'
+import teacherProfileTab from '../features/profile/assets/profile-nav-profile.svg'
+import teacherStatsTab from '../features/profile/assets/more-statistics.svg'
 import type { MobileBottomNavItems } from './navigation'
 
 export interface StudentNavigationOptions {
@@ -50,6 +53,21 @@ export function createStudentNavigationItems(options: StudentNavigationOptions =
       id: 'profile',
       label: 'Профиль',
       icon: profileTab,
+      route: 'profile',
+      ...(profileEnabled ? {} : { disabled: true, disabledReason: 'Раздел пока недоступен' }),
+    },
+  ] as const satisfies MobileBottomNavItems
+}
+
+/** The teacher dock exposes only the destinations currently owned by Vue. */
+export function createTeacherNavigationItems(profileEnabled = true): MobileBottomNavItems {
+  return [
+    { id: 'teacher-home', label: 'Сегодня', icon: teacherTodayTab, route: 'teacher-home' },
+    { id: 'teacher-stats', label: 'Итоги', icon: teacherStatsTab, route: 'teacher-stats' },
+    {
+      id: 'profile',
+      label: 'Профиль',
+      icon: teacherProfileTab,
       route: 'profile',
       ...(profileEnabled ? {} : { disabled: true, disabledReason: 'Раздел пока недоступен' }),
     },

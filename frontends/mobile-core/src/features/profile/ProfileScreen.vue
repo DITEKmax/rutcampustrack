@@ -14,12 +14,14 @@ const props = withDefaults(defineProps<{
   error?: ProfileRequestError | null
   onRetry?: (() => void | Promise<void>) | undefined
   onNavigate?: ((route: ProfileRoute) => void | Promise<void>) | undefined
+  showActiveRole?: boolean
   theme?: ProfileResolvedTheme
 }>(), {
   loading: false,
   error: null,
   onRetry: undefined,
   onNavigate: undefined,
+  showActiveRole: true,
   theme: 'dark',
 })
 
@@ -93,8 +95,13 @@ function isBootstrapUnavailable(route: ProfileRoute): boolean {
             <p class="profile-card__name">
               {{ snapshot.displayName }}
             </p>
-            <p class="profile-card__meta">
-              {{ snapshot.activeRole ? roleLabel(snapshot.activeRole) : 'Роль не выбрана' }}<span v-if="snapshot.groupLabel"> · {{ snapshot.groupLabel }}</span>
+            <p
+              v-if="showActiveRole || snapshot.groupLabel"
+              class="profile-card__meta"
+            >
+              <template v-if="showActiveRole">
+                {{ snapshot.activeRole ? roleLabel(snapshot.activeRole) : 'Роль не выбрана' }}
+              </template><span v-if="snapshot.groupLabel">{{ showActiveRole ? ' · ' : '' }}{{ snapshot.groupLabel }}</span>
             </p>
           </div>
         </section>

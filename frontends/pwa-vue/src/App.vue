@@ -688,6 +688,10 @@ async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<vo
   assertCandidateCurrent(candidate.generation)
   teacherApi.value = candidate.api
   teacherSemesterId.value = candidate.semesterId
+  profilePort.value = auth.createProfilePort(candidate.generation, {
+    onInvalidated: handleProfileInvalidated,
+    onRefreshAlreadyRotated: () => handleProfileInvalidated('account-invalidated'),
+  })
   authSnapshot.value = candidate.profile
   offline.value = false
   readOnly.value = candidate.profile.readOnly
@@ -876,7 +880,11 @@ async function submitLogin(input: { login: string; password: string }): Promise<
   }
 }
 
-async function selectRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
+async function selectRole(
+  role: ProfileRole,
+  expectedSessionVersion: string,
+  options: { preserveTeacherOwner?: boolean } = {},
+): Promise<void> {
   const request = createPwaRoleSelection(role, expectedSessionVersion)
   if (!request || authLoading.value || !authSnapshot.value) return
   authLoading.value = true
@@ -885,7 +893,7 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
   bootstrapError.value = null
   // Keep the old token available for the role PUT, while hiding the old
   // feature owner until the response has passed the generation boundary.
-  authView.value = 'role'
+  if (!options.preserveTeacherOwner) authView.value = 'role'
   const generation = auth.currentGeneration()
   try {
     const selection = await auth.selectRoleFor(generation, request)
@@ -925,11 +933,16 @@ async function selectRole(role: ProfileRole, expectedSessionVersion: string): Pr
         if (isConfirmedOnlineAuthDenial(refreshError)) await handleOnlineAuthDenial(refreshError)
       }
     }
-    authView.value = 'role'
+    if (!options.preserveTeacherOwner) authView.value = 'role'
+    else throw error
   } finally {
     pendingRole.value = null
     authLoading.value = false
   }
+}
+
+function selectTeacherProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
+  return selectRole(role, expectedSessionVersion, { preserveTeacherOwner: true })
 }
 
 async function logout(): Promise<void> {
@@ -1200,6 +1213,11 @@ onBeforeUnmount(() => {
     :key="`teacher-${ownerRevision}`"
     :api="teacherApi"
     :semester-id="teacherSemesterId"
+    :profile-port="profilePort"
+    :profile-role-select="selectTeacherProfileRole"
+    :host="host"
+    :theme-controller="theme"
+    :offline="offline"
     @owner-error="onOwnerError"
   />
   <MapScreen

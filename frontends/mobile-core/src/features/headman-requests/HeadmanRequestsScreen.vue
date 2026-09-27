@@ -188,8 +188,12 @@ function kindLabel(kind: HeadmanRequestSummary['kind']): string {
 
 function dateLabel(value: string | null): string {
   if (!value) return '—'
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value)
   const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('ru-RU', { dateStyle: 'medium' }).format(date)
+  if (Number.isNaN(date.getTime())) return value
+  const options: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }
+  if (dateOnly) options.timeZone = 'UTC'
+  return new Intl.DateTimeFormat('ru-RU', options).format(date)
 }
 
 function lessonStatusLabel(value: string | null): string {

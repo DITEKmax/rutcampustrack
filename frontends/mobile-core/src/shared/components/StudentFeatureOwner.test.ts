@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { StudentApi } from '../../api/student-client'
 import { CheckinCommandRecovery } from '../../domain/checkin'
 import type { StudentCheckinAck, StudentCheckinCommand, StudentRequestOptions, StudentRequestPage, StudentToday, StudentHomework } from '../../api/types'
+import type { RequestFileRef } from '../../features/requests/types'
 import StudentFeatureOwner from './StudentFeatureOwner.vue'
 import { studentFeatureScopeIdentity, studentOfflineScopeKey, type StudentFeatureScope } from '../session-owner'
 
@@ -50,6 +51,49 @@ vi.mock('../../features/requests/RequestsScreen.vue', () => ({
         type: 'button',
         onClick: () => emit('newRequest'),
       }, 'Подать')
+    },
+  },
+}))
+
+vi.mock('../../features/requests/RequestTypeScreen.vue', () => ({
+  default: {
+    name: 'OwnerTestRequestTypeScreen',
+    emits: ['back', 'choose'],
+    setup(_props: unknown, { emit }: SetupContext) {
+      return () => h('button', {
+        class: 'test-choose-excuse',
+        type: 'button',
+        onClick: () => emit('choose', 'EXCUSE'),
+      }, 'Уважительная причина')
+    },
+  },
+}))
+
+vi.mock('../../features/requests/ExcuseRequestScreen.vue', () => ({
+  default: {
+    name: 'OwnerTestExcuseRequestScreen',
+    props: {
+      files: { type: Array as PropType<RequestFileRef[]>, default: () => [] },
+      lessonIds: { type: Array as PropType<string[]>, default: () => [] },
+      reason: { type: String as PropType<string | null>, default: null },
+    },
+    emits: ['back', 'update:files', 'update:lesson-ids', 'update:reason'],
+    setup(props: { files: RequestFileRef[]; lessonIds: string[]; reason: string | null }, { emit }: SetupContext) {
+      function pickFile(): void {
+        const file = new File(['proof'], 'proof.pdf', { type: 'application/pdf' })
+        emit('update:files', [{ id: 'proof-file', name: file.name, size: file.size, type: file.type, file }])
+      }
+
+      return () => h('section', [
+        h('output', { class: 'test-request-files' }, props.files.map((file) => file.name).join(',')),
+        h('output', { class: 'test-request-lessons' }, props.lessonIds.join(',')),
+        h('output', { class: 'test-request-reason' }, props.reason ?? ''),
+        h('button', { class: 'test-pick-request-file', type: 'button', onClick: pickFile }, 'Добавить файл'),
+        h('button', { class: 'test-remove-request-files', type: 'button', onClick: () => emit('update:files', []) }, 'Удалить файлы'),
+        h('button', { class: 'test-select-request-lessons', type: 'button', onClick: () => emit('update:lesson-ids', ['lesson-1', 'lesson-2']) }, 'Выбрать пары'),
+        h('button', { class: 'test-select-request-reason', type: 'button', onClick: () => emit('update:reason', 'OTHER') }, 'Выбрать причину'),
+        h('button', { class: 'test-back-request-form', type: 'button', onClick: () => emit('back') }, 'Назад'),
+      ])
     },
   },
 }))
@@ -175,6 +219,10 @@ function clickOwnerTestButton(root: OwnerTestHostNode, className: string): void 
   const handler = node.props.onClick
   if (typeof handler !== 'function') throw new Error(`Test button ${className} has no click handler`)
   handler()
+}
+
+function ownerTestOutput(root: OwnerTestHostNode, className: string): string | undefined {
+  return findOwnerTestNode(root, (candidate) => candidate.kind === 'element' && candidate.props.class === className)?.text
 }
 
 async function settleOwnerTestRender(): Promise<void> {
@@ -319,5 +367,65 @@ describe('StudentFeatureOwner requests route', () => {
     await pendingOptions
     await settleOwnerTestRender()
     expect(getRequestOptions).toHaveBeenCalledOnce()
+  })
+
+  it('publishes request draft edits and preserves the latest file, pairs, and reason across form navigation', async () => {
+    const api = {
+      getToday: vi.fn(() => Promise.resolve({} as StudentToday)),
+      getHomework: vi.fn(() => Promise.resolve({} as StudentHomework)),
+      listRequests: vi.fn(() => Promise.resolve(emptyRequestPage())),
+      getRequest: vi.fn(),
+      getRequestOptions: vi.fn(() => Promise.resolve(requestOptions())),
+      submitExcuse: vi.fn(),
+      submitLateCheckin: vi.fn(),
+      cancelRequest: vi.fn(),
+      downloadRequestAttachment: vi.fn(),
+    } as unknown as StudentApi
+    const root = mountOwnerTest(api)
+
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-more')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-requests')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'requests-primary-action')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-choose-excuse')
+    await settleOwnerTestRender()
+
+    clickOwnerTestButton(root, 'test-pick-request-file')
+    clickOwnerTestButton(root, 'test-select-request-lessons')
+    clickOwnerTestButton(root, 'test-select-request-reason')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
+    expect(ownerTestOutput(root, 'test-request-lessons')).toBe('lesson-1,lesson-2')
+    expect(ownerTestOutput(root, 'test-request-reason')).toBe('OTHER')
+
+    clickOwnerTestButton(root, 'test-back-request-form')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-choose-excuse')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
+    expect(ownerTestOutput(root, 'test-request-lessons')).toBe('lesson-1,lesson-2')
+    expect(ownerTestOutput(root, 'test-request-reason')).toBe('OTHER')
+
+    clickOwnerTestButton(root, 'test-remove-request-files')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-files')).toBe('')
+    clickOwnerTestButton(root, 'test-back-request-form')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-choose-excuse')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-files')).toBe('')
+
+    clickOwnerTestButton(root, 'test-pick-request-file')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-back-request-form')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-choose-excuse')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-files')).toBe('proof.pdf')
+    expect(ownerTestOutput(root, 'test-request-lessons')).toBe('lesson-1,lesson-2')
+    expect(ownerTestOutput(root, 'test-request-reason')).toBe('OTHER')
   })
 })

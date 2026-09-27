@@ -51,7 +51,7 @@ import { openRequestAttachmentPopup, runRequestAttachmentOpen, type RequestAttac
 import { requestsSessionGeneration, getOrCreateRequestsDraft, purgeRequestsDrafts, updateRequestsDraft } from '../../features/requests/state'
 import { useRequests } from '../../features/requests/use-requests'
 import { RequestsError, shouldLoadRequestOptions } from '../../features/requests/requests-controller'
-import type { RequestAttachmentViewState, RequestBucket, RequestDetail, RequestFileRef, RequestKind, RequestTypeChoice } from '../../features/requests/types'
+import type { RequestAttachmentViewState, RequestBucket, RequestDetail, RequestFileRef, RequestKind, RequestsDraft, RequestTypeChoice } from '../../features/requests/types'
 import StatisticsScreen from '../../features/statistics/StatisticsScreen.vue'
 import { useStatistics } from '../../features/statistics/use-statistics'
 import MobileShell from './MobileShell.vue'
@@ -218,6 +218,9 @@ const requests = useRequests(api, scope, {
   offline,
   readOnly: computed(() => props.readOnly),
 })
+const requestDraft = shallowRef<RequestsDraft | null>(scope.value?.userId
+  ? getOrCreateRequestsDraft(scope.value.userId, requestsSessionGeneration(scope.value))
+  : null)
 const attendance = useAttendance(api.value, scope, offline)
 const statistics = useStatistics(api.value, scope, offline)
 const stopRequestsScope = watch(
@@ -226,6 +229,9 @@ const stopRequestsScope = watch(
     if (previous && (!value || studentFeatureScopeIdentity(previous) !== studentFeatureScopeIdentity(value))) {
       purgeRequestsDrafts(previous.userId ?? undefined)
     }
+    requestDraft.value = value?.userId
+      ? getOrCreateRequestsDraft(value.userId, requestsSessionGeneration(value))
+      : null
   },
   { flush: 'sync' },
 )
@@ -628,12 +634,6 @@ const profilePublication = createProfileViewPublication(
 const profileView = profilePublication.view
 const publishProfileView = profilePublication.publish
 const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, offline.value))
-const requestDraft = computed(() => {
-  const currentScope = scope.value
-  return currentScope?.userId
-    ? getOrCreateRequestsDraft(currentScope.userId, requestsSessionGeneration(currentScope))
-    : null
-})
 const requestBucketView = computed(() => requests.activeBucket.value)
 const requestHasNextPage = computed(() => requests.hasNextPage.value)
 const requestOptions = computed(() => requests.view.options)
@@ -743,7 +743,7 @@ function requestRoute(surface: 'overview' | 'type' | 'excuse' | 'late'): MobileR
 function updateRequestDraft(patch: Parameters<typeof updateRequestsDraft>[2]): void {
   const currentScope = scope.value
   if (!currentScope?.userId) return
-  updateRequestsDraft(currentScope.userId, requestsSessionGeneration(currentScope), patch)
+  requestDraft.value = updateRequestsDraft(currentScope.userId, requestsSessionGeneration(currentScope), patch)
 }
 
 function ensureRequestsRoute(routeValue: MobileRoute): void {
@@ -1301,6 +1301,7 @@ onBeforeUnmount(() => {
   disposed = true
   const currentScope = scope.value
   if (currentScope?.userId) purgeRequestsDrafts(currentScope.userId)
+  requestDraft.value = null
   for (const popup of [...requestAttachmentPopups]) closeRequestPopup(popup)
   for (const objectUrl of [...requestObjectUrls]) releaseRequestObjectUrl(objectUrl)
   clearRequestAttachmentStates()

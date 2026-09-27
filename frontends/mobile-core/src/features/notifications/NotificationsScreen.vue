@@ -77,6 +77,7 @@ const eventTitles: Readonly<Record<string, string>> = {
   LESSON_REMINDER: 'Напоминание о занятии',
   HOMEWORK_WEEKLY_DIGEST: 'Еженедельное домашнее задание',
   HOMEWORK_PUBLISHED: 'Опубликовано домашнее задание',
+  HOMEWORK_UPDATED: 'Обновлено домашнее задание',
   HOMEWORK_DUE_REMINDER: 'Срок домашнего задания скоро истекает',
   ATTENDANCE_RED_ZONE: 'Обрати внимание на посещаемость',
   ATTENDANCE_MARKED_BY_HEADMAN: 'Староста отметил посещаемость',

@@ -162,6 +162,62 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
     }
 
     @Test
+    void homeworkUpdatedUsesDatedAudienceSanitizedSnapshotAndIdempotentReplay() {
+        String eventId = UUID.randomUUID().toString();
+        LocalDate eventDate = LocalDate.of(2026, 4, 24);
+        Map<String, Object> envelope = event("homework.updated", eventId,
+                Map.ofEntries(
+                        Map.entry("homework_id", 300),
+                        Map.entry("group_id", 7),
+                        Map.entry("subject_id", 9),
+                        Map.entry("lesson_date", "2026-04-25"),
+                        Map.entry("lesson_number", 4),
+                        Map.entry("title", "Read chapter 5"),
+                        Map.entry("description", "private assignment details"),
+                        Map.entry("link", "https://files.example/private-token"),
+                        Map.entry("attachments", List.of("private-file-id"))),
+                "2026-04-24T12:00:00Z");
+        doReturn(List.of(42L, 43L)).when(academicGroupMemberClient).getMemberUserIds(7L, eventDate);
+
+        rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
+
+        await().atMost(ofSeconds(10)).untilAsserted(() -> {
+            List<NotificationHistoryDocument> all = repository.findByEventIdAndUserIdIn(eventId, List.of(42L, 43L));
+            assertThat(all).hasSize(2)
+                    .extracting(NotificationHistoryDocument::getUserId)
+                    .containsExactlyInAnyOrder(42L, 43L);
+            assertThat(all).allSatisfy(document -> {
+                assertThat(document.getType()).isEqualTo(NotificationType.HOMEWORK_UPDATED);
+                assertThat(document.getPayload())
+                        .containsEntry("homework_id", 300L)
+                        .containsEntry("group_id", 7L)
+                        .containsEntry("subject_id", 9L)
+                        .containsEntry("lesson_date", "2026-04-25")
+                        .containsEntry("lesson_number", 4)
+                        .containsEntry("title", "Read chapter 5")
+                        .doesNotContainKeys("description", "link", "attachments");
+            });
+        });
+
+        clearInvocations(mongoTemplate, idempotencyGuard, academicGroupMemberClient);
+        rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
+        await().pollDelay(ofSeconds(2)).atMost(ofSeconds(5)).untilAsserted(() -> {
+            verify(mongoTemplate).exists(ArgumentMatchers.argThat(query -> {
+                org.bson.Document queryDocument = query.getQueryObject();
+                return eventId.equals(queryDocument.getString("event_id"))
+                        && NotificationHistoryConsumer.CONSUMER_ID
+                                .equals(queryDocument.getString("consumer_id"));
+            }), eq(MongoIdempotencyStore.DEFAULT_COLLECTION));
+            assertThat(repository.findByEventIdAndUserIdIn(eventId, List.of(42L, 43L))).hasSize(2);
+            Query claimQuery = Query.query(Criteria.where("consumer_id")
+                    .is(NotificationHistoryConsumer.CONSUMER_ID).and("event_id").is(eventId));
+            assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isEqualTo(1L);
+        });
+        verify(idempotencyGuard, never()).tryClaim(eq(NotificationHistoryConsumer.CONSUMER_ID), any());
+        verify(academicGroupMemberClient, never()).getMemberUserIds(anyLong(), any(LocalDate.class));
+    }
+
+    @Test
     void groupBroadcastIsPersistedForAcademicMembers() {
         String eventId = UUID.randomUUID().toString();
         LocalDate eventDate = LocalDate.of(2026, 4, 24);

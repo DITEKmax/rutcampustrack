@@ -21,6 +21,7 @@ import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -77,6 +78,8 @@ class ReportDownloadTicketServiceTest {
 
         var first = service.redeem(ticket).orElseThrow();
         var retry = service.redeem(ticket).orElseThrow();
+        assertEquals(LocalDate.parse("2026-09-01"), first.report().teacherJournal().dateFrom());
+        assertEquals(LocalDate.parse("2026-09-30"), first.report().teacherJournal().dateTo());
         assertEquals(NOW.plusSeconds(60), first.admission().expiresAt());
         assertEquals(first.admission().expiresAt(), retry.admission().expiresAt());
         assertEquals(2, store.redemptions);
@@ -200,7 +203,8 @@ class ReportDownloadTicketServiceTest {
     private static IssueReportDownloadTicketRequest report() {
         return new IssueReportDownloadTicketRequest(ReportDownloadKind.TEACHER_JOURNAL,
                 new IssueReportDownloadTicketRequest.TeacherJournalParameters(
-                        7L, 31L, 41L, List.of("LECTURE"), ReportDownloadFormat.PDF),
+                        7L, 31L, 41L, List.of("LECTURE"),
+                        LocalDate.parse("2026-09-01"), LocalDate.parse("2026-09-30"), ReportDownloadFormat.PDF),
                 null, null, null, null);
     }
 

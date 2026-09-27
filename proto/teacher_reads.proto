@@ -49,6 +49,8 @@ message TeacherAttendanceExportRequest {
   repeated string lesson_types = 4;
   string format = 5; // docx, pdf, png, html, or xlsx
   TeacherAttendanceReportKind report_kind = 6;
+  string date_from = 7; // ISO-8601 date, inclusive; both empty means full semester
+  string date_to = 8; // ISO-8601 date, inclusive; both empty means full semester
 }
 
 message TeacherAttendanceExportResponse {

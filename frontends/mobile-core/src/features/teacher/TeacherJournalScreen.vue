@@ -4,6 +4,7 @@ import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
 import {
   TeacherApiError,
+  teacherJournalTypes,
   type TeacherApi,
   type TeacherDayLesson,
   type TeacherExportFormat,
@@ -18,11 +19,13 @@ import './teacher-screen.pcss'
 const props = defineProps<{
   api: TeacherApi | null
   query: TeacherJournalQuery | null
+  selectedLessonId?: number | null
   reportDownload?: ReportDownloadPort | null
 }>()
 
 const emit = defineEmits<{
   back: []
+  'open-lesson': [lessonId: number, page: number]
   'open-excuse': [requestId: string]
   error: [cause: unknown]
 }>()
@@ -43,6 +46,7 @@ let formatsRevision = 0
 const exportObjectUrls = new Set<string>()
 
 const orderedLessons = computed(() => state.value?.lessons ?? [])
+const selectedLesson = computed(() => orderedLessons.value.find((lesson) => lesson.id === props.selectedLessonId) ?? null)
 
 watch(
   () => [props.api, queryKey(props.query)] as const,
@@ -158,7 +162,9 @@ async function exportJournal(): Promise<void> {
       semesterId: query.semesterId,
       groupId: query.groupId,
       subjectId: query.subjectId,
-      lessonTypes: [query.lessonType],
+      lessonTypes: teacherJournalTypes(query),
+      ...(query.dateFrom !== undefined ? { dateFrom: query.dateFrom } : {}),
+      ...(query.dateTo !== undefined ? { dateTo: query.dateTo } : {}),
       format,
     })
     if (current !== exportRevision || api !== props.api || queryKey(props.query) !== context) return
@@ -190,7 +196,7 @@ const canExport = computed(() => Boolean(
 
 function queryKey(query: TeacherJournalQuery | null): string {
   if (!query) return ''
-  return [query.semesterId, query.groupId, query.subjectId, query.lessonType].join(':')
+  return [query.semesterId, query.groupId, query.subjectId, teacherJournalTypes(query).slice().sort().join(','), query.dateFrom ?? '', query.dateTo ?? ''].join(':')
 }
 
 function changePage(delta: number): void {
@@ -223,10 +229,13 @@ function cellSymbol(cell: TeacherJournalCell | null): string {
   return cell.symbol ?? '·'
 }
 
-function cellClass(cell: TeacherJournalCell | null): string {
-  if (!cell) return 'teacher-screen__grid-cell--auto'
-  if (cell.pendingTicket) return 'teacher-screen__grid-cell--pending'
-  if (!cell.recordPresent || cell.autoAbsent) return 'teacher-screen__grid-cell--auto'
+function cellStatusClass(cell: TeacherJournalCell | null): string {
+  if (!cell) return 'teacher-screen__status--auto'
+  if (cell.pendingTicket) return 'teacher-screen__status--pending'
+  if (cell.autoAbsent || !cell.recordPresent) return 'teacher-screen__status--auto'
+  if (cell.status === 'excused' || cell.symbol === 'у') return 'teacher-screen__status--excused'
+  if (cell.status === 'absent' || cell.symbol === 'н') return 'teacher-screen__status--absent'
+  if (cell.status === 'present' || cell.symbol === 'б') return 'teacher-screen__status--present'
   return ''
 }
 
@@ -254,15 +263,15 @@ function shortLesson(lesson: TeacherDayLesson): string {
       type="button"
       @click="emit('back')"
     >
-      ← Назад
+      {{ props.selectedLessonId != null ? '← К занятиям' : '← Назад' }}
     </button>
     <header class="teacher-screen__header">
       <div>
         <p class="teacher-screen__muted">
-          Конкретные занятия
+          {{ props.selectedLessonId ? 'Студенты и отметки' : 'Конкретные занятия' }}
         </p>
         <h1 id="teacher-journal-title">
-          Журнал группы
+          {{ props.selectedLessonId ? 'Посещаемость пары' : 'Журнал группы' }}
         </h1>
       </div>
     </header>
@@ -300,7 +309,7 @@ function shortLesson(lesson: TeacherDayLesson): string {
         {{ exportLoading ? 'Готовим файл…' : 'Скачать журнал' }}
       </button>
       <p class="teacher-screen__muted teacher-screen__export-message">
-        Выгрузка включает весь семестр; у ещё не начавшихся пар отметок нет.
+        Выгрузка включает весь выбранный период и все типы занятий; у ещё не начавшихся пар отметок нет.
       </p>
       <p
         v-if="exportLoading"
@@ -346,81 +355,118 @@ function shortLesson(lesson: TeacherDayLesson): string {
       {{ error }}
     </section>
     <section
-      v-else-if="!state || state.students.length === 0"
+      v-else-if="!state || state.lessons.length === 0"
       class="teacher-screen__state"
       role="status"
     >
-      Для выбранных занятий строк журнала нет.
+      Для выбранного периода занятий нет.
+    </section>
+    <section
+      v-else-if="props.selectedLessonId !== undefined && props.selectedLessonId !== null"
+      class="teacher-screen__lesson-detail"
+    >
+      <p
+        v-if="!selectedLesson"
+        class="teacher-screen__state"
+        role="status"
+      >
+        Этой пары нет на текущей странице журнала.
+      </p>
+      <template v-else>
+        <article class="teacher-screen__lesson">
+          <strong class="teacher-screen__lesson-title">{{ shortLesson(selectedLesson) }}</strong>
+          <span class="teacher-screen__lesson-meta">{{ selectedLesson.groupName }} · {{ selectedLesson.subjectName }}</span>
+          <span class="teacher-screen__lesson-meta">Занятие {{ selectedLesson.lessonNumber }}<template v-if="selectedLesson.room"> · {{ selectedLesson.room }}</template></span>
+        </article>
+        <ul
+          v-if="state.students.length > 0"
+          class="teacher-screen__roster"
+          aria-label="Студенты и посещаемость"
+        >
+          <li
+            v-for="student in state.students"
+            :key="student.studentId"
+            class="teacher-screen__roster-row teacher-journal__student-row"
+          >
+            <div class="teacher-journal__student-info">
+              <strong class="teacher-screen__student">{{ student.displayName }}</strong>
+              <span class="teacher-screen__muted">{{ cellLabel(cellFor(student.studentId, selectedLesson.id)) }}</span>
+              <span
+                v-if="cellFor(student.studentId, selectedLesson.id)?.excuseReason"
+                class="teacher-journal__reason"
+              >
+                Уважительная причина: {{ cellFor(student.studentId, selectedLesson.id)?.excuseReason }}
+              </span>
+            </div>
+            <button
+              class="teacher-screen__status"
+              :class="cellStatusClass(cellFor(student.studentId, selectedLesson.id))"
+              type="button"
+              :disabled="!canOpenExcuse(cellFor(student.studentId, selectedLesson.id))"
+              :aria-label="`${student.displayName}: ${cellLabel(cellFor(student.studentId, selectedLesson.id))}`"
+              @click="openExcuse(cellFor(student.studentId, selectedLesson.id))"
+            >
+              {{ cellSymbol(cellFor(student.studentId, selectedLesson.id)) }}
+            </button>
+          </li>
+        </ul>
+        <p
+          v-else
+          class="teacher-screen__state"
+          role="status"
+        >
+          В списке группы нет студентов.
+        </p>
+      </template>
     </section>
     <section
       v-else
-      class="teacher-screen__grid-wrap"
-      aria-label="Журнал посещаемости"
+      class="teacher-screen__lesson-list"
+      aria-label="Занятия группы"
     >
-      <table class="teacher-screen__grid">
-        <thead>
-          <tr>
-            <th scope="col">
-              Студент
-            </th>
-            <th
-              v-for="lesson in orderedLessons"
-              :key="lesson.id"
-              scope="col"
-            >
-              {{ lesson.groupName }}<br>{{ shortLesson(lesson) }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="student in state.students"
-            :key="student.studentId"
-          >
-            <th scope="row">
-              {{ student.displayName }}
-            </th>
-            <td
-              v-for="lesson in orderedLessons"
-              :key="lesson.id"
-            >
-              <button
-                class="teacher-screen__grid-cell"
-                :class="cellClass(cellFor(student.studentId, lesson.id))"
-                :title="cellLabel(cellFor(student.studentId, lesson.id))"
-                :disabled="!canOpenExcuse(cellFor(student.studentId, lesson.id))"
-                type="button"
-                @click="openExcuse(cellFor(student.studentId, lesson.id))"
-              >
-                {{ cellSymbol(cellFor(student.studentId, lesson.id)) }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <nav
-        v-if="state.page > 0 || state.hasMore"
-        class="teacher-screen__pagination"
-        aria-label="Страницы журнала"
+      <button
+        v-for="lesson in orderedLessons"
+        :key="lesson.id"
+        class="teacher-screen__lesson teacher-screen__lesson-button teacher-journal__lesson"
+        type="button"
+        @click="emit('open-lesson', lesson.id, state.page)"
       >
-        <button
-          class="teacher-screen__secondary"
-          type="button"
-          :disabled="loading || state.page === 0"
-          @click="changePage(-1)"
-        >
-          ← Ранее
-        </button>
-        <span class="teacher-screen__muted">Страница {{ state.page + 1 }}</span>
-        <button
-          class="teacher-screen__secondary"
-          type="button"
-          :disabled="loading || !state.hasMore"
-          @click="changePage(1)"
-        >
-          Позже →
-        </button>
-      </nav>
+        <span class="teacher-screen__lesson-title">{{ shortLesson(lesson) }} · {{ lesson.lessonNumber }}-я пара</span>
+        <span class="teacher-screen__lesson-meta">{{ lesson.groupName }} · {{ lesson.subjectName }}</span>
+        <span class="teacher-screen__lesson-meta">
+          {{ lesson.room ?? 'Аудитория не указана' }} · {{ lesson.cancelled ? 'Отменена' : lesson.status === 'CLOSED' ? 'Завершена' : lesson.status === 'PLANNED' ? 'Запланирована' : 'Проведена' }}
+        </span>
+      </button>
+      <p
+        v-if="state.lessons.length === 0"
+        class="teacher-screen__state"
+        role="status"
+      >
+        Занятий на этой странице нет.
+      </p>
     </section>
+    <nav
+      v-if="props.selectedLessonId == null && state && (state.page > 0 || state.hasMore)"
+      class="teacher-screen__pagination"
+      aria-label="Страницы журнала"
+    >
+      <button
+        class="teacher-screen__secondary"
+        type="button"
+        :disabled="loading || state.page === 0"
+        @click="changePage(-1)"
+      >
+        ← Ранее
+      </button>
+      <span class="teacher-screen__muted">{{ state.totalLessons }} занятий · страница {{ state.page + 1 }}</span>
+      <button
+        class="teacher-screen__secondary"
+        type="button"
+        :disabled="loading || !state.hasMore"
+        @click="changePage(1)"
+      >
+        Позже →
+      </button>
+    </nav>
   </main>
 </template>

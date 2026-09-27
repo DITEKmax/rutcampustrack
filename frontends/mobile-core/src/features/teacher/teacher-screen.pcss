@@ -99,6 +99,11 @@
 
 .teacher-screen__roster { display: grid; gap: var(--rct-space-2); margin: 0; padding: 0; list-style: none; }
 .teacher-screen__roster-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--rct-space-2); align-items: center; padding: var(--rct-space-2) 0; border-block-end: var(--rct-border-hairline) solid var(--rct-color-border-default); }
+.teacher-screen__lesson-detail { display: grid; gap: var(--rct-space-3); }
+.teacher-screen__lesson-list { display: grid; gap: var(--rct-space-3); }
+.teacher-journal__student-info { display: grid; gap: var(--rct-space-1); min-inline-size: 0; }
+.teacher-journal__reason { color: var(--rct-color-warning-text); font-size: var(--rct-font-size-caption); overflow-wrap: anywhere; }
+.teacher-journal__lesson { inline-size: 100%; text-align: start; }
 .teacher-screen__student { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .teacher-screen__status { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 2.75rem; min-block-size: 2.75rem; border-radius: var(--rct-radius-lg); color: var(--rct-color-text-primary); background: var(--rct-color-surface-float); font-weight: var(--rct-font-weight-bold); }
 .teacher-screen__status--present { color: var(--rct-color-success-text); }

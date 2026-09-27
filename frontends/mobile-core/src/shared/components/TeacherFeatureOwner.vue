@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import type { CampusMapClient } from '../../api/map-client'
+import MapScreen from '../../features/map/MapScreen.vue'
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue'
 import AppearanceScreen from '../../features/profile/AppearanceScreen.vue'
 import ProfileScreen from '../../features/profile/ProfileScreen.vue'
@@ -19,6 +21,7 @@ import type {
 } from '../../features/profile/profile-types'
 import type { TeacherApi, TeacherJournalQuery } from '../../features/teacher/teacher-client'
 import TeacherExcuseScreen from '../../features/teacher/TeacherExcuseScreen.vue'
+import TeacherAttendanceScreen from '../../features/teacher/TeacherAttendanceScreen.vue'
 import TeacherHomeScreen from '../../features/teacher/TeacherHomeScreen.vue'
 import TeacherJournalScreen from '../../features/teacher/TeacherJournalScreen.vue'
 import TeacherLessonScreen from '../../features/teacher/TeacherLessonScreen.vue'
@@ -46,6 +49,7 @@ import './teacher-feature-owner.pcss'
 const props = withDefaults(defineProps<{
   api: TeacherApi | null
   semesterId: number | null
+  mapClient?: CampusMapClient | null
   selectedDate?: string
   reportDownload?: ReportDownloadPort | null
   profilePort?: ProfilePort | null
@@ -55,6 +59,7 @@ const props = withDefaults(defineProps<{
   offline?: boolean
 }>(), {
   selectedDate: '',
+  mapClient: null,
   reportDownload: null,
   profilePort: null,
   profileRoleSelect: undefined,
@@ -77,6 +82,7 @@ const route = ref<MobileRoute>(navigation.current)
 const selectedDate = ref(props.selectedDate || moscowToday())
 const lessonId = ref<number | null>(null)
 const journalQuery = ref<TeacherJournalQuery | null>(null)
+const attendanceQuery = ref<TeacherJournalQuery | null>(null)
 const requestId = ref<string | null>(null)
 const profileState = shallowRef(props.profilePort ? new ProfileState(props.profilePort) : null)
 const profilePendingRole = ref<ProfileRole | null>(null)
@@ -104,6 +110,7 @@ watch(
   ([, , nextDate, profilePort]) => {
     lessonId.value = null
     journalQuery.value = null
+    attendanceQuery.value = null
     requestId.value = null
     if (nextDate) selectedDate.value = nextDate
     profileState.value = profilePort ? new ProfileState(profilePort) : null
@@ -216,7 +223,8 @@ function navigateProfile(routeName: ProfileRoute): void {
 function navigateRoot(routeName: MobileRootRouteId): void {
   if (routeName === 'teacher-home') clearTeacherStatsRoute()
   else if (routeName === 'teacher-stats') activateTeacherStatsRoute()
-  else if (routeName !== 'profile') return
+  else if (routeName !== 'teacher-attendance' && routeName !== 'teacher-map' && routeName !== 'profile') return
+  lessonId.value = null
   navigation.goRoot(routeName)
 }
 
@@ -231,8 +239,28 @@ function openLesson(nextLessonId: number): void {
 
 function openJournal(query: TeacherJournalQuery, returnSurface: 'home' | 'stats' = 'home'): void {
   journalQuery.value = query
+  lessonId.value = null
   const parent = returnSurface === 'stats' ? 'teacher-stats' : 'teacher-home'
   navigation.push(nestedRoute(parent, `${parent}/journal`, 'detail'))
+}
+
+function openAttendanceJournal(query: TeacherJournalQuery): void {
+  attendanceQuery.value = query
+  journalQuery.value = query
+  lessonId.value = null
+  navigation.push(nestedRoute('teacher-attendance', 'teacher-attendance/journal', 'detail'))
+}
+
+function openJournalLesson(nextLessonId: number, page: number): void {
+  if (!route.value.id.endsWith('/journal')) return
+  if (route.value.root === 'teacher-attendance' && attendanceQuery.value) {
+    attendanceQuery.value = { ...attendanceQuery.value, page }
+  } else if (journalQuery.value) {
+    journalQuery.value = { ...journalQuery.value, page }
+  }
+  lessonId.value = nextLessonId
+  const parent = route.value.root
+  navigation.push(nestedRoute(parent, `${parent}/journal/lesson`, 'detail'))
 }
 
 function openStatsJournal(query: TeacherJournalQuery): void {
@@ -241,7 +269,7 @@ function openStatsJournal(query: TeacherJournalQuery): void {
 
 function openExcuse(nextRequestId: string): void {
   const parent = route.value.root
-  if (parent !== 'teacher-home' && parent !== 'teacher-stats') return
+  if (parent !== 'teacher-home' && parent !== 'teacher-stats' && parent !== 'teacher-attendance') return
   requestId.value = nextRequestId
   navigation.push(nestedRoute(parent, `${parent}/excuse`, 'task'))
 }
@@ -358,11 +386,13 @@ onBeforeUnmount(() => {
         @error="forwardError"
       />
       <TeacherJournalScreen
-        v-else-if="route.id.endsWith('/journal')"
+        v-else-if="route.id.endsWith('/journal') || route.id.endsWith('/journal/lesson')"
         :api="api"
-        :query="journalQuery"
+        :query="route.root === 'teacher-attendance' ? attendanceQuery : journalQuery"
+        :selected-lesson-id="route.id.endsWith('/journal/lesson') ? lessonId : null"
         :report-download="reportDownload"
         @back="backRoute"
+        @open-lesson="openJournalLesson"
         @open-excuse="openExcuse"
         @error="forwardError"
       />
@@ -382,6 +412,18 @@ onBeforeUnmount(() => {
         @open-journal="openStatsJournal"
         @error="forwardError"
       />
+      <MapScreen
+        v-else-if="route.id === 'teacher-map' && mapClient"
+        :client="mapClient"
+        :theme="resolvedTheme"
+      />
+      <p
+        v-else-if="route.id === 'teacher-map'"
+        class="teacher-screen__state"
+        role="status"
+      >
+        Карта сейчас недоступна.
+      </p>
       <template v-else-if="route.root === 'profile'">
         <p
           v-if="profileOwnerStatus"
@@ -456,6 +498,13 @@ onBeforeUnmount(() => {
           :on-load-more="(cursor) => loadMoreProfile('history', cursor)"
         />
       </template>
+      <TeacherAttendanceScreen
+        v-show="route.id === 'teacher-attendance'"
+        :api="api"
+        :semester-id="semesterId"
+        @apply="openAttendanceJournal"
+        @error="forwardError"
+      />
     </div>
   </MobileShell>
 </template>

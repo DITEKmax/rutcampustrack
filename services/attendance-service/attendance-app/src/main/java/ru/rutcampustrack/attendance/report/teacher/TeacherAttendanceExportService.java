@@ -104,7 +104,7 @@ public final class TeacherAttendanceExportService {
         if (semesterTo.isBefore(semesterFrom)) {
             throw new AcademicServiceUnavailableException("Academic returned an invalid semester date range");
         }
-        LocalDate periodTo = semesterTo;
+        DateRange period = requestedPeriod(request.getDateFrom(), request.getDateTo(), semesterFrom, semesterTo);
 
         GroupResponse group = academic.getGroup(groupId);
         if (group == null || group.getId() != groupId || group.getName().isBlank()) {
@@ -118,7 +118,7 @@ public final class TeacherAttendanceExportService {
 
         List<LessonResponse> lessons = new ArrayList<>();
         for (LessonResponse lesson : schedule.getLessonsByGroup(
-                groupId, semesterId, semesterFrom.toString(), periodTo.toString()).getLessonsList()) {
+                groupId, semesterId, period.from().toString(), period.to().toString()).getLessonsList()) {
             if (lesson.getGroupId() != groupId || lesson.getSemesterId() != semesterId
                     || lesson.getSubjectId() != subjectId
                     || types.stream().noneMatch(type -> type.equalsIgnoreCase(lesson.getLessonType()))) {
@@ -128,7 +128,7 @@ public final class TeacherAttendanceExportService {
                 throw new AcademicServiceUnavailableException("Schedule returned an invalid lesson identity");
             }
             LocalDate lessonDate = parseDate(lesson.getDate(), "lesson.date");
-            if (!lessonDate.isBefore(semesterFrom) && !lessonDate.isAfter(periodTo)) lessons.add(lesson);
+            if (!lessonDate.isBefore(period.from()) && !lessonDate.isAfter(period.to())) lessons.add(lesson);
         }
         lessons.sort(Comparator.comparing((LessonResponse value) -> parseDate(value.getDate(), "lesson.date"))
                 .thenComparing(value -> parseTime(value.getStartTime()),
@@ -148,7 +148,7 @@ public final class TeacherAttendanceExportService {
         ReportService.TeacherStatsResult stats = lessonIds.isEmpty() ? emptyScope
                 : reportService.getTeacherStats(statsQuery(lessonIds, semesterId, groupId, subjectId, types), teacherId);
         TeacherAttendanceExportModel model = buildModel(lessons, types, group, subject, subjectId,
-                semesterId, semesterFrom, periodTo, stats, teacherId);
+                semesterId, period.from(), period.to(), stats, teacherId);
         byte[] content = format.render(model, docxRenderer, renderer);
         if (content == null || content.length == 0) {
             throw new ReportExportUnavailableException("Teacher attendance export returned no content");
@@ -160,7 +160,7 @@ public final class TeacherAttendanceExportService {
         }
         String extension = format == ExportFormat.PNG ? "zip" : format.code();
         String filename = "teacher-journal-g" + groupId + "-s" + subjectId + "-"
-                + SAFE_DATE.format(semesterFrom) + "-" + SAFE_DATE.format(periodTo) + "." + extension;
+                + SAFE_DATE.format(period.from()) + "-" + SAFE_DATE.format(period.to()) + "." + extension;
         return TeacherAttendanceExportResponse.newBuilder()
                 .setContent(com.google.protobuf.ByteString.copyFrom(content))
                 .setFileName(filename)
@@ -317,6 +317,31 @@ public final class TeacherAttendanceExportService {
         } catch (RuntimeException error) {
             throw new AcademicServiceUnavailableException("Academic or Schedule returned invalid " + field);
         }
+    }
+
+    private static DateRange requestedPeriod(String fromValue, String toValue,
+                                             LocalDate semesterFrom, LocalDate semesterTo) {
+        boolean hasFrom = fromValue != null && !fromValue.isBlank();
+        boolean hasTo = toValue != null && !toValue.isBlank();
+        if (!hasFrom && !hasTo) return new DateRange(semesterFrom, semesterTo);
+        if (hasFrom != hasTo) throw new BadRequestException("date_from and date_to must be provided together");
+        LocalDate from = requestedDate(fromValue, "date_from");
+        LocalDate to = requestedDate(toValue, "date_to");
+        if (to.isBefore(from) || from.isBefore(semesterFrom) || to.isAfter(semesterTo)) {
+            throw new BadRequestException("The selected period must be inside the semester");
+        }
+        return new DateRange(from, to);
+    }
+
+    private static LocalDate requestedDate(String value, String field) {
+        try {
+            return LocalDate.parse(value);
+        } catch (RuntimeException error) {
+            throw new BadRequestException(field + " must be an ISO-8601 date");
+        }
+    }
+
+    private record DateRange(LocalDate from, LocalDate to) {
     }
 
     private static LocalTime parseTime(String value) {

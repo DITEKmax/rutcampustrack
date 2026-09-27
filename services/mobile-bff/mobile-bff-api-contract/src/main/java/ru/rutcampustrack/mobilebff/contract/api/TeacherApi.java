@@ -54,7 +54,9 @@ public interface TeacherApi {
             @RequestParam String semesterId,
             @RequestParam String groupId,
             @RequestParam String subjectId,
-            @RequestParam String lessonType,
+            @RequestParam(name = "lessonType") List<String> lessonTypes,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
             @RequestParam(defaultValue = "0") String page,
             @RequestParam(defaultValue = "100") String pageSize
     );
@@ -70,6 +72,8 @@ public interface TeacherApi {
             @RequestParam String groupId,
             @RequestParam String subjectId,
             @RequestParam(name = "lessonType") List<String> lessonTypes,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
             @RequestParam String format
     );
 

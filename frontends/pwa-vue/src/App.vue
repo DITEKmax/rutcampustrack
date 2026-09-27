@@ -1221,6 +1221,7 @@ onBeforeUnmount(() => {
     :key="`teacher-${ownerRevision}`"
     :api="teacherApi"
     :semester-id="teacherSemesterId"
+    :map-client="mapClient"
     :profile-port="profilePort"
     :profile-role-select="selectTeacherProfileRole"
     :host="host"

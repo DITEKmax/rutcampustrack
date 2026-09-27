@@ -141,22 +141,25 @@ public final class TeacherReadFacade {
     public TeacherApiModels.JournalResponse journal(long semesterId,
                                                      long groupId,
                                                      long subjectId,
-                                                     String lessonType,
+                                                     List<String> lessonTypes,
+                                                     LocalDate dateFrom,
+                                                     LocalDate dateTo,
                                                      int page,
                                                      int pageSize) {
         InternalJwtClaims claims = requireTeacher();
         if (semesterId <= 0 || groupId <= 0 || subjectId <= 0
-                || lessonType == null || lessonType.isBlank()
                 || page < 0 || pageSize < 1 || pageSize > 100) {
             throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
                     "Некорректный контекст журнала");
         }
+        List<String> selectedTypes = journalTypes(lessonTypes);
 
         if (!currentTeacherGroupIds(claims).contains(groupId)) {
             throw new MobileBffException(HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE,
                     "Журнал недоступен в текущем scope");
         }
-        DateRange range = semesterRange(academic.teacherAssignmentsForSemester(semesterId));
+        DateRange range = selectedPeriod(
+                semesterRange(academic.teacherAssignmentsForSemester(semesterId)), dateFrom, dateTo);
         LessonsResponse scheduled = schedule.lessons(groupId, semesterId,
                 range.from(), range.to());
         List<LessonResponse> concrete = scheduled.getLessonsList().stream()
@@ -164,7 +167,8 @@ public final class TeacherReadFacade {
                 .filter(lesson -> lesson.getSemesterId() == semesterId
                         && lesson.getGroupId() == groupId
                         && lesson.getSubjectId() == subjectId
-                        && lessonType.equalsIgnoreCase(lesson.getLessonType()))
+                        && selectedTypes.stream().anyMatch(type -> type.equalsIgnoreCase(lesson.getLessonType())))
+                .filter(lesson -> inRange(lesson, range))
                 .sorted(Comparator.comparing(LessonResponse::getDate)
                         .thenComparing(LessonResponse::getStartTime,
                                 Comparator.nullsLast(Comparator.naturalOrder()))
@@ -199,6 +203,8 @@ public final class TeacherReadFacade {
                                   long groupId,
                                   long subjectId,
                                   List<String> lessonTypes,
+                                  LocalDate dateFrom,
+                                  LocalDate dateTo,
                                   String format) {
         InternalJwtClaims claims = requireTeacher();
         if (semesterId <= 0 || groupId <= 0 || subjectId <= 0) {
@@ -208,22 +214,15 @@ public final class TeacherReadFacade {
                 .filter(value -> value.code().equals(format))
                 .findFirst()
                 .orElseThrow(() -> invalidExport("Неизвестный формат журнала"));
-        if (lessonTypes == null || lessonTypes.isEmpty() || lessonTypes.size() > 3
-                || lessonTypes.stream().anyMatch(value -> value == null || value.isBlank() || value.length() > 64)) {
-            throw invalidExport("Выбери от одного до трёх разных типов занятий");
-        }
-        List<String> selectedTypes = lessonTypes.stream()
-                .map(value -> value.trim().toLowerCase(Locale.ROOT))
-                .toList();
-        if (new HashSet<>(selectedTypes).size() != selectedTypes.size()) {
-            throw invalidExport("Выбери от одного до трёх разных типов занятий");
-        }
+        List<String> selectedTypes = journalTypes(lessonTypes);
         if (!currentTeacherGroupIds(claims).contains(groupId)) {
             throw new MobileBffException(HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE,
                     "Журнал недоступен в текущем scope");
         }
+        DateRange period = selectedPeriod(
+                semesterRange(academic.teacherAssignmentsForSemester(semesterId)), dateFrom, dateTo);
         TeacherAttendanceExportResponse response = attendance.exportTeacherAttendance(
-                semesterId, groupId, subjectId, selectedTypes, selectedFormat.code());
+                semesterId, groupId, subjectId, selectedTypes, period.from(), period.to(), selectedFormat.code());
         String filename = response.getFileName();
         if (response.getContent().isEmpty() || filename.isBlank()
                 || !filename.matches("[A-Za-z0-9._-]+")
@@ -378,6 +377,38 @@ public final class TeacherReadFacade {
                     ProblemCode.DEPENDENCY_UNAVAILABLE, "Сервис вернул некорректный срок семестра");
         }
         return new DateRange(from, to);
+    }
+
+    private static DateRange selectedPeriod(DateRange semester, LocalDate from, LocalDate to) {
+        if ((from == null) != (to == null)) {
+            throw invalidJournal("Укажи обе границы периода");
+        }
+        if (from == null) return semester;
+        if (to.isBefore(from) || from.isBefore(semester.from()) || to.isAfter(semester.to())) {
+            throw invalidJournal("Период должен находиться внутри семестра");
+        }
+        return new DateRange(from, to);
+    }
+
+    private static List<String> journalTypes(List<String> values) {
+        if (values == null || values.isEmpty() || values.size() > 3
+                || values.stream().anyMatch(value -> value == null || value.isBlank() || value.length() > 64)) {
+            throw invalidJournal("Выбери от одного до трёх типов занятий");
+        }
+        List<String> selected = values.stream().map(value -> value.trim().toLowerCase(Locale.ROOT)).toList();
+        if (new HashSet<>(selected).size() != selected.size()) {
+            throw invalidJournal("Выбери разные типы занятий");
+        }
+        return selected;
+    }
+
+    private static boolean inRange(LessonResponse lesson, DateRange range) {
+        LocalDate date = parseDate(lesson.getDate());
+        return !date.isBefore(range.from()) && !date.isAfter(range.to());
+    }
+
+    private static MobileBffException invalidJournal(String message) {
+        return new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST, message);
     }
 
     public TeacherApiModels.ExcuseResponse excuse(String requestId) {

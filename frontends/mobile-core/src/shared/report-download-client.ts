@@ -8,6 +8,8 @@ export interface TeacherJournalReportSelector {
   readonly groupId: number
   readonly subjectId: number
   readonly lessonTypes: readonly string[]
+  readonly dateFrom?: string
+  readonly dateTo?: string
   readonly format: ReportDownloadFormat
 }
 
@@ -285,7 +287,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
   }
 
   const allowedSelectorFields: Readonly<Record<ReportDownloadTicketRequest['kind'], readonly string[]>> = {
-    TEACHER_JOURNAL: ['semesterId', 'groupId', 'subjectId', 'lessonTypes', 'format'],
+    TEACHER_JOURNAL: ['semesterId', 'groupId', 'subjectId', 'lessonTypes', 'dateFrom', 'dateTo', 'format'],
     TEACHER_STATS: ['semesterId', 'scope', 'groupId', 'subjectId', 'lessonTypes', 'sorts', 'filters', 'format'],
     HEADMAN_WEEKLY_CURRENT: ['weekStart', 'format'],
     HEADMAN_WEEKLY_SELECTED: ['weekStarts', 'format'],
@@ -310,7 +312,13 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
   switch (request.kind) {
     case 'TEACHER_JOURNAL':
       if (![selector.semesterId, selector.groupId, selector.subjectId].every(isPositiveInteger)
-        || !isStringList(selector.lessonTypes, 1, 3, 64)) throw new RangeError('Проверь параметры журнала.')
+        || !isStringList(selector.lessonTypes, 1, 3, 64)
+        || (selector.dateFrom === undefined) !== (selector.dateTo === undefined)
+        || (selector.dateFrom !== undefined
+          && (!isIsoDate(selector.dateFrom) || !isIsoDate(selector.dateTo)
+            || selector.dateTo < selector.dateFrom))) {
+        throw new RangeError('Проверь параметры журнала.')
+      }
       break
     case 'TEACHER_STATS':
       if (!isPositiveInteger(selector.semesterId) || (selector.scope !== 'students' && selector.scope !== 'groups')

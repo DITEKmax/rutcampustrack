@@ -1,0 +1,11 @@
+@import '../../styles/tokens.pcss';
+
+.teacher-attendance__filters { display: grid; gap: var(--rct-space-4); }
+.teacher-attendance__field { display: grid; gap: var(--rct-space-1); min-inline-size: 0; color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-caption); }
+.teacher-attendance__field .teacher-screen__date { inline-size: 100%; }
+.teacher-attendance__dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--rct-space-3); }
+.teacher-attendance__types { display: flex; flex-wrap: wrap; gap: var(--rct-space-2); margin: 0; border: 0; padding: 0; }
+.teacher-attendance__types legend { inline-size: 100%; margin-block-end: var(--rct-space-1); color: var(--rct-color-text-secondary); font-size: var(--rct-font-size-caption); }
+.teacher-attendance__type { display: inline-flex; align-items: center; gap: var(--rct-space-2); min-block-size: var(--rct-control-min-touch); border: var(--rct-border-hairline) solid var(--rct-color-border-default); border-radius: var(--rct-radius-lg); padding-inline: var(--rct-space-3); background: var(--rct-color-surface-raised); }
+.teacher-attendance__type input { inline-size: 1.125rem; block-size: 1.125rem; accent-color: var(--rct-color-accent-now); }
+.teacher-attendance__semester { margin-block-start: calc(-1 * var(--rct-space-2)); }

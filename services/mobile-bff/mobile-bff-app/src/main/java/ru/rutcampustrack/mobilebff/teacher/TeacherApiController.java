@@ -55,14 +55,18 @@ public final class TeacherApiController implements TeacherApi {
     public ResponseEntity<JournalResponse> journal(String semesterId,
                                                    String groupId,
                                                    String subjectId,
-                                                   String lessonType,
+                                                   List<String> lessonTypes,
+                                                   String dateFrom,
+                                                   String dateTo,
                                                    String page,
                                                    String pageSize) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(facade.journal(
                 parseId(semesterId),
                 parseId(groupId),
                 parseId(subjectId),
-                parseText(lessonType, "lessonType"),
+                lessonTypes,
+                parseOptionalDate(dateFrom),
+                parseOptionalDate(dateTo),
                 parsePage(page, "page", 0),
                 parsePage(pageSize, "pageSize", 100)));
     }
@@ -77,9 +81,12 @@ public final class TeacherApiController implements TeacherApi {
                                                 String groupId,
                                                 String subjectId,
                                                 List<String> lessonTypes,
+                                                String dateFrom,
+                                                String dateTo,
                                                 String format) {
         TeacherReadFacade.Download download = facade.exportJournal(
                 parseId(semesterId), parseId(groupId), parseId(subjectId), lessonTypes,
+                parseOptionalDate(dateFrom), parseOptionalDate(dateTo),
                 parseText(format, "format"));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(download.contentType()));
@@ -176,6 +183,10 @@ public final class TeacherApiController implements TeacherApi {
                     ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode.INVALID_REQUEST,
                     "Дата должна быть в формате ISO-8601");
         }
+    }
+
+    private static LocalDate parseOptionalDate(String value) {
+        return value == null ? null : parseDate(value);
     }
 
     private static String parseText(String value, String field) {

@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/** Semester journal discovery must load concrete lessons across dates in one server scope. */
+/** The server filters a selected journal period and types before pagination. */
 @ExtendWith(MockitoExtension.class)
 class TeacherReadFacadeTest {
     @Mock
@@ -40,7 +40,7 @@ class TeacherReadFacadeTest {
     private MobileAttendanceClient attendance;
 
     @Test
-    void journalDiscoversConcreteLessonsOnTwoDatesForOneContext() {
+    void journalFiltersSelectedTypesAndPeriodBeforePaginationForActiveGroup() {
         when(requestContext.claims()).thenReturn(new InternalJwtClaims(
                 71L, UUID.fromString("33333333-3333-4333-8333-333333333333"),
                 1L, 1L, "TEACHER", "ACTIVE", null, false, false));
@@ -68,21 +68,28 @@ class TeacherReadFacadeTest {
                 .toBuilder().setAssignedTeacherId(72L).build();
         LessonResponse sep8 = lesson(108L, "2026-09-08", 2, "10:40:00")
                 .toBuilder().setAssignedTeacherId(72L).build();
-        when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
-                .thenReturn(LessonsResponse.newBuilder().addLessons(sep8).addLessons(sep1).build());
-        when(attendance.teacherJournal(List.of(101L, 108L))).thenReturn(journalResponse());
+        LessonResponse sep7Lab = lesson(107L, "2026-09-07", 3, "12:20:00")
+                .toBuilder().setLessonType("lab").build();
+        LessonResponse sep6OtherType = lesson(106L, "2026-09-06", 4, "14:00:00")
+                .toBuilder().setLessonType("seminar").build();
+        when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 2), LocalDate.of(2026, 9, 8)))
+                .thenReturn(LessonsResponse.newBuilder()
+                        .addLessons(sep8).addLessons(sep6OtherType).addLessons(sep1).addLessons(sep7Lab).build());
+        when(attendance.teacherJournal(List.of(107L))).thenReturn(journalResponse(107L));
 
         TeacherReadFacade facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
-        var result = facade.journal(9L, 33L, 22L, "lecture", 0, 100);
+        var result = facade.journal(9L, 33L, 22L, List.of("lecture", "lab"),
+                LocalDate.of(2026, 9, 2), LocalDate.of(2026, 9, 8), 0, 1);
 
         assertThat(result.totalLessons()).isEqualTo(2);
+        assertThat(result.hasMore()).isTrue();
         assertThat(result.lessons()).extracting(lesson -> lesson.date())
-                .containsExactly(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 8));
+                .containsExactly(LocalDate.of(2026, 9, 7));
         assertThat(result.students()).singleElement().satisfies(student ->
-                assertThat(student.cells()).hasSize(2));
+                assertThat(student.cells()).hasSize(1));
         verify(schedule).lessons(33L, 9L,
-                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30));
-        verify(attendance).teacherJournal(List.of(101L, 108L));
+                LocalDate.of(2026, 9, 2), LocalDate.of(2026, 9, 8));
+        verify(attendance).teacherJournal(List.of(107L));
     }
 
     @Test
@@ -160,24 +167,18 @@ class TeacherReadFacadeTest {
                 .build();
     }
 
-    private static TeacherJournalResponse journalResponse() {
-        TeacherJournalCell sep1 = TeacherJournalCell.newBuilder()
-                .setLessonId(101L).setStatus("present").setSymbol("+")
-                .setRecordPresent(true).build();
-        TeacherJournalCell sep8 = TeacherJournalCell.newBuilder()
-                .setLessonId(108L).setStatus("present").setSymbol("+")
-                .setRecordPresent(true).build();
-        return TeacherJournalResponse.newBuilder()
-                .addLessons(summary(101L, "2026-09-01", 1, "09:00:00"))
-                .addLessons(summary(108L, "2026-09-08", 2, "10:40:00"))
-                .addStudents(TeacherJournalStudent.newBuilder()
-                        .setStudentId(501L)
-                        .setDisplayName("Иван Иванов")
-                        .addCells(sep1)
-                        .addCells(sep8)
-                        .build())
-                .setServerNow("2026-09-09T09:00:00Z")
-                .build();
+    private static TeacherJournalResponse journalResponse(long... lessonIds) {
+        TeacherJournalResponse.Builder response = TeacherJournalResponse.newBuilder()
+                .setServerNow("2026-09-09T09:00:00Z");
+        TeacherJournalStudent.Builder student = TeacherJournalStudent.newBuilder()
+                .setStudentId(501L).setDisplayName("Иван Иванов");
+        for (long lessonId : lessonIds) {
+            response.addLessons(summary(lessonId, "2026-09-07", 3, "12:20:00"));
+            student.addCells(TeacherJournalCell.newBuilder()
+                    .setLessonId(lessonId).setStatus("present").setSymbol("+").setRecordPresent(true));
+        }
+        response.addStudents(student);
+        return response.build();
     }
 
     private static TeacherLessonSummary summary(long id, String date, int number, String startTime) {

@@ -96,13 +96,23 @@ export interface TeacherJournalStudent {
   readonly cells: readonly TeacherJournalCell[]
 }
 
-export interface TeacherJournalQuery {
+interface TeacherJournalQueryBase {
   readonly semesterId: number
   readonly groupId: number
   readonly subjectId: number
-  readonly lessonType: string
+  readonly dateFrom?: string
+  readonly dateTo?: string
   readonly page?: number
   readonly pageSize?: number
+}
+
+export type TeacherJournalQuery = TeacherJournalQueryBase & (
+  | { readonly lessonType: string; readonly lessonTypes?: never }
+  | { readonly lessonType?: never; readonly lessonTypes: readonly string[] }
+)
+
+export function teacherJournalTypes(query: TeacherJournalQuery): readonly string[] {
+  return query.lessonTypes ?? (query.lessonType ? [query.lessonType] : [])
 }
 
 export function toTeacherJournalReportRequest(
@@ -115,7 +125,9 @@ export function toTeacherJournalReportRequest(
       semesterId: query.semesterId,
       groupId: query.groupId,
       subjectId: query.subjectId,
-      lessonTypes: [query.lessonType],
+      lessonTypes: teacherJournalTypes(query),
+      ...(query.dateFrom !== undefined ? { dateFrom: query.dateFrom } : {}),
+      ...(query.dateTo !== undefined ? { dateTo: query.dateTo } : {}),
       format,
     },
   }
@@ -153,6 +165,8 @@ export interface TeacherJournalExportQuery {
   readonly groupId: number
   readonly subjectId: number
   readonly lessonTypes: readonly string[]
+  readonly dateFrom?: string
+  readonly dateTo?: string
   readonly format: TeacherExportFormatCode
 }
 
@@ -338,7 +352,12 @@ export class TeacherApi {
     assertPositiveInteger(query.semesterId, 'semesterId')
     assertPositiveInteger(query.groupId, 'groupId')
     assertPositiveInteger(query.subjectId, 'subjectId')
-    assertText(query.lessonType, 'lessonType')
+    const lessonTypes = teacherJournalTypes(query)
+    if (lessonTypes.length < 1 || lessonTypes.length > 3) {
+      throw new RangeError('lessonTypes must contain one to three values')
+    }
+    lessonTypes.forEach((lessonType) => assertText(lessonType, 'lessonType'))
+    const period = journalPeriod(query.dateFrom, query.dateTo)
     const page = query.page ?? 0
     const pageSize = query.pageSize ?? 100
     assertNonNegativeInteger(page, 'page')
@@ -347,10 +366,14 @@ export class TeacherApi {
       semesterId: String(query.semesterId),
       groupId: String(query.groupId),
       subjectId: String(query.subjectId),
-      lessonType: query.lessonType,
       page: String(page),
       pageSize: String(pageSize),
     })
+    for (const lessonType of lessonTypes) params.append('lessonType', lessonType)
+    if (period) {
+      params.set('dateFrom', period.dateFrom)
+      params.set('dateTo', period.dateTo)
+    }
     return this.request<unknown>(`/api/v1/teacher/journal?${params.toString()}`)
       .then(normalizeJournal)
   }
@@ -376,14 +399,19 @@ export class TeacherApi {
     if (query.lessonTypes.length < 1 || query.lessonTypes.length > 3) {
       throw new RangeError('lessonTypes must contain one to three values')
     }
+    query.lessonTypes.forEach((lessonType) => assertText(lessonType, 'lessonType'))
+    const period = journalPeriod(query.dateFrom, query.dateTo)
     const params = new URLSearchParams({
       semesterId: String(query.semesterId),
       groupId: String(query.groupId),
       subjectId: String(query.subjectId),
       format: query.format,
     })
+    if (period) {
+      params.set('dateFrom', period.dateFrom)
+      params.set('dateTo', period.dateTo)
+    }
     for (const lessonType of query.lessonTypes) {
-      assertText(lessonType, 'lessonType')
       params.append('lessonType', lessonType)
     }
     const response = await this.response(
@@ -921,6 +949,24 @@ function assertPositiveInteger(value: number, field: string): void {
 
 function assertDate(value: string, field: string): void {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new RangeError(`${field} must be an ISO date`)
+  const parsed = new Date(`${value}T00:00:00.000Z`)
+  if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
+    throw new RangeError(`${field} must be a valid ISO date`)
+  }
+}
+
+function journalPeriod(
+  dateFrom: string | undefined,
+  dateTo: string | undefined,
+): { dateFrom: string; dateTo: string } | null {
+  if ((dateFrom === undefined) !== (dateTo === undefined)) {
+    throw new RangeError('dateFrom and dateTo must be provided together')
+  }
+  if (dateFrom === undefined || dateTo === undefined) return null
+  assertDate(dateFrom, 'dateFrom')
+  assertDate(dateTo, 'dateTo')
+  if (dateFrom > dateTo) throw new RangeError('dateFrom must be before or equal to dateTo')
+  return { dateFrom, dateTo }
 }
 
 function assertNonNegativeInteger(value: number, field: string): void {

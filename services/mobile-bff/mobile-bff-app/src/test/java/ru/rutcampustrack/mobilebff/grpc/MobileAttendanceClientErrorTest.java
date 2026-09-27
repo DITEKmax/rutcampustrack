@@ -24,6 +24,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceReadServiceGrpc;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -79,7 +80,7 @@ class MobileAttendanceClientErrorTest {
         ReflectionTestUtils.setField(client, "teacherStub", teacherStub);
 
         assertThatThrownBy(() -> client.exportTeacherAttendance(9L, 33L, 22L,
-                List.of("lecture"), "png"))
+                List.of("lecture"), LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30), "png"))
                 .isInstanceOfSatisfying(MobileBffException.class, problem -> {
                     assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.PAYLOAD_TOO_LARGE);
                     assertThat(problem.code()).isEqualTo(ProblemCode.PAYLOAD_TOO_LARGE);

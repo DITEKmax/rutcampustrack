@@ -87,6 +87,8 @@ public record IssueReportDownloadTicketRequest(
                 append(canonical, teacherJournal.groupId());
                 append(canonical, teacherJournal.subjectId());
                 appendList(canonical, teacherJournal.lessonTypes());
+                append(canonical, teacherJournal.dateFrom());
+                append(canonical, teacherJournal.dateTo());
                 append(canonical, teacherJournal.format().code());
             }
             case TEACHER_STATS -> {
@@ -216,10 +218,24 @@ public record IssueReportDownloadTicketRequest(
             @NotNull @Positive Long subjectId,
             @NotNull @Size(min = 1, max = 3)
             List<@NotBlank @Size(max = 64) String> lessonTypes,
+            LocalDate dateFrom,
+            LocalDate dateTo,
             @NotNull ReportDownloadFormat format
     ) {
         public TeacherJournalParameters {
             lessonTypes = immutable(lessonTypes);
+        }
+
+        public TeacherJournalParameters(Long semesterId, Long groupId, Long subjectId,
+                                        List<String> lessonTypes, ReportDownloadFormat format) {
+            this(semesterId, groupId, subjectId, lessonTypes, null, null, format);
+        }
+
+        @AssertTrue(message = "Teacher journal period must provide both ordered dates or neither")
+        @JsonIgnore
+        public boolean isDateRangeConsistent() {
+            return dateFrom == null && dateTo == null
+                    || dateFrom != null && dateTo != null && !dateTo.isBefore(dateFrom);
         }
     }
 

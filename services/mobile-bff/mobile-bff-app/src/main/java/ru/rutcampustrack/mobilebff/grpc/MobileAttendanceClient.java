@@ -33,6 +33,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherStatsSort;
 
 import java.time.Instant;
 import java.util.List;
+import java.time.LocalDate;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -85,6 +86,8 @@ public class MobileAttendanceClient {
                                                                    long groupId,
                                                                    long subjectId,
                                                                    List<String> lessonTypes,
+                                                                   LocalDate dateFrom,
+                                                                   LocalDate dateTo,
                                                                    String format) {
         TeacherAttendanceExportRequest request = TeacherAttendanceExportRequest.newBuilder()
                 .setSemesterId(semesterId)
@@ -93,6 +96,8 @@ public class MobileAttendanceClient {
                 .addAllLessonTypes(lessonTypes)
                 .setFormat(format)
                 .setReportKind(TeacherAttendanceReportKind.TEACHER_ATTENDANCE_REPORT_KIND_SUBJECT_JOURNAL)
+                .setDateFrom(dateFrom.toString())
+                .setDateTo(dateTo.toString())
                 .build();
         try {
             return auth.attach(teacherStub).withDeadlineAfter(60, TimeUnit.SECONDS)

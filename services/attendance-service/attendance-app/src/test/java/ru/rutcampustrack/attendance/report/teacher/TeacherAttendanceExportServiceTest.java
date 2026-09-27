@@ -97,6 +97,28 @@ class TeacherAttendanceExportServiceTest {
     }
 
     @Test
+    void selectedInclusivePeriodBoundsScheduleReadAndExport() {
+        Fixture fixture = fixture(1, false);
+        LocalDate from = LocalDate.parse("2026-09-10");
+        LocalDate to = LocalDate.parse("2026-09-20");
+        when(fixture.schedule().getLessonsByGroup(GROUP_ID, SEMESTER_ID, from.toString(), to.toString()))
+                .thenReturn(LessonsResponse.newBuilder()
+                        .addLessons(lesson(301L, LocalDate.parse("2026-09-09"), "CLOSED", 1))
+                        .addLessons(lesson(302L, LocalDate.parse("2026-09-15"), "CLOSED", 2))
+                        .addLessons(lesson(303L, LocalDate.parse("2026-09-21"), "CLOSED", 3))
+                        .build());
+        TeacherAttendanceExportRequest request = request("html").toBuilder()
+                .setDateFrom(from.toString()).setDateTo(to.toString()).build();
+
+        TeacherAttendanceExportResponse response = fixture.service().export(request, TEACHER_ID);
+        String html = response.getContent().toStringUtf8();
+
+        assertThat(html).contains("2026-09-10 — 2026-09-20").contains("2026-09-15")
+                .doesNotContain("2026-09-09").doesNotContain("2026-09-21");
+        verify(fixture.schedule()).getLessonsByGroup(GROUP_ID, SEMESTER_ID, from.toString(), to.toString());
+    }
+
+    @Test
     void activeGroupAuthorizationRunsBeforeScheduleOrRendering() {
         ReportService report = mock(ReportService.class);
         ScheduleGrpcClient schedule = mock(ScheduleGrpcClient.class);

@@ -2,19 +2,31 @@
 
 .admin-role-navigation {
   display: flex;
-  overflow-x: auto;
+  align-items: center;
   max-inline-size: 26.625rem;
   margin-inline: auto;
   padding: calc(env(safe-area-inset-top) + var(--rct-space-3)) var(--rct-space-4) 0;
   gap: var(--rct-space-2);
   background: var(--rct-color-surface-base);
   font-family: var(--rct-font-family-sans);
+}
+
+.admin-role-navigation__sections {
+  display: flex;
+  min-inline-size: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  gap: var(--rct-space-2);
   scrollbar-width: none;
   overscroll-behavior-inline: contain;
 }
 
-.admin-role-navigation::-webkit-scrollbar {
+.admin-role-navigation__sections::-webkit-scrollbar {
   display: none;
+}
+
+.admin-role-navigation__profile {
+  flex: 0 0 auto;
 }
 
 .admin-role-navigation button {

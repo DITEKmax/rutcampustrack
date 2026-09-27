@@ -44,6 +44,7 @@ export { default as AdminMapScreen } from './features/admin-map/AdminMapScreen.v
 export { default as AdminSemesterScreen } from './features/admin-semester/AdminSemesterScreen.vue'
 export { default as AdminDashboardScreen } from './features/admin-dashboard/AdminDashboardScreen.vue'
 export { default as AdminRoleNavigation } from './features/admin-semester/AdminRoleNavigation.vue'
+export { default as AdminProfileOwner } from './shared/components/AdminProfileOwner.vue'
 export { default as AdminUsersScreen } from './features/admin-users/AdminUsersScreen.vue'
 export { default as AdminGroupsScreen } from './features/admin-groups/AdminGroupsScreen.vue'
 export * from './features/headman-journal/headman-journal-client'

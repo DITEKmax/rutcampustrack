@@ -56,6 +56,50 @@ describe('TMA authentication wire contract', () => {
 })
 
 describe('generation-bound report ticket session', () => {
+  it('clears the local owner immediately and reports an unconfirmed current-session revocation', async () => {
+    let resolveLogout!: (value: Response) => void
+    const delayedLogout = new Promise<Response>((resolve) => { resolveLogout = resolve })
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'admin-session-token' }), { status: 200 }))
+      .mockReturnValueOnce(delayedLogout)
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    const generation = session.currentGeneration()
+
+    const pending = session.logoutCurrent()
+    expect(session.accessToken.value).toBeNull()
+    expect(session.currentGeneration()).toBe(generation + 1)
+    expect(fetcher.mock.calls[1]?.[0]).toBe('/api/auth/logout')
+    expect(fetcher.mock.calls[1]?.[1]?.method).toBe('POST')
+    expect(new Headers(fetcher.mock.calls[1]?.[1]?.headers).get('Authorization'))
+      .toBe('Bearer admin-session-token')
+    expect(fetcher.mock.calls[1]?.[1]?.credentials).toBe('include')
+
+    resolveLogout(new Response(null, { status: 503 }))
+    await expect(pending).rejects.toMatchObject({
+      name: 'TmaAuthError',
+      status: 503,
+      message: 'Не удалось подтвердить отзыв текущей сессии',
+    })
+    expect(session.accessToken.value).toBeNull()
+  })
+
+  it('keeps local sign-out final and reports a network failure while Auth revocation is pending', async () => {
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'offline-admin-session-token' }), { status: 200 }))
+      .mockRejectedValueOnce(new TypeError('network unavailable'))
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+
+    await expect(session.logoutCurrent()).rejects.toMatchObject({
+      name: 'TmaAuthError',
+      status: 0,
+      message: 'Не удалось связаться с Auth и подтвердить отзыв текущей сессии',
+    })
+    expect(session.accessToken.value).toBeNull()
+    expect(session.currentGeneration()).toBe(1)
+  })
+
   it('refreshes the TMA auth session once after a ticket 401 and retries with the fresh bearer', async () => {
     const fetcher = vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'expired-synthetic-bearer' }), { status: 200 }))

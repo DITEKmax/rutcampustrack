@@ -11,6 +11,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'owner-error': [error: unknown]
+  'open-role-switch': []
 }>()
 
 const stats = ref<AdminDashboardStats | null>(null)
@@ -72,15 +73,24 @@ onBeforeUnmount(() => {
         <p class="admin-dashboard-screen__eyebrow">Администрирование</p>
         <h1 id="admin-dashboard-title">Главная</h1>
       </div>
-      <button
-        class="admin-dashboard-screen__refresh"
-        type="button"
-        :disabled="loading"
-        :aria-busy="loading"
-        @click="refresh"
-      >
-        {{ loading ? 'Обновляем…' : 'Обновить' }}
-      </button>
+      <div class="admin-dashboard-screen__actions">
+        <button
+          class="admin-dashboard-screen__refresh"
+          type="button"
+          @click="emit('open-role-switch')"
+        >
+          Сменить роль
+        </button>
+        <button
+          class="admin-dashboard-screen__refresh"
+          type="button"
+          :disabled="loading"
+          :aria-busy="loading"
+          @click="refresh"
+        >
+          {{ loading ? 'Обновляем…' : 'Обновить' }}
+        </button>
+      </div>
     </header>
 
     <p

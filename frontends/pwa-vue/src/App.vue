@@ -11,6 +11,7 @@ import {
   AdminUsersApiError,
   AdminUsersScreen,
   AdminRoleNavigation,
+  AdminProfileOwner,
   CampusMapClient,
   SemesterSnapshotStore,
   HeadmanScheduleApiError,
@@ -141,7 +142,7 @@ const readOnly = ref(false)
 const sessionReady = ref(false)
 const bootstrapping = ref(false)
 const bootstrapError = ref<string | null>(null)
-const authView = ref<'login' | 'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-home' | 'admin-map' | 'admin-semesters' | 'admin-users' | 'admin-groups'>('login')
+const authView = ref<'login' | 'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-home' | 'admin-map' | 'admin-semesters' | 'admin-users' | 'admin-groups' | 'admin-profile' | 'admin-role-switch'>('login')
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null)
 const authError = shallowRef<ProfileRequestError | null>(null)
 const authLoading = ref(false)
@@ -168,8 +169,11 @@ const adminMapViewVisible = computed(() => authView.value === 'admin-map')
 const adminSemesterViewVisible = computed(() => authView.value === 'admin-semesters')
 const adminUsersViewVisible = computed(() => authView.value === 'admin-users')
 const adminGroupsViewVisible = computed(() => authView.value === 'admin-groups')
+const adminProfileViewVisible = computed(() => authView.value === 'admin-profile')
+const adminRoleSwitchViewVisible = computed(() => authView.value === 'admin-role-switch')
 const featureVisible = computed(() => api.value !== null || headmanApi.value !== null || snapshot.value !== null
-  || teacherApi.value !== null || mapViewVisible.value || adminHomeViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value || adminUsersViewVisible.value || adminGroupsViewVisible.value)
+  || teacherApi.value !== null || mapViewVisible.value || adminHomeViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value || adminUsersViewVisible.value || adminGroupsViewVisible.value
+  || adminProfileViewVisible.value || adminRoleSwitchViewVisible.value)
 const notificationsEntryVisible = computed(() => featureVisible.value
   && authSnapshot.value !== null
   && authSnapshot.value.activeRole !== null
@@ -839,6 +843,12 @@ async function activateMapRole(profile: ProfileSnapshot, generation: number): Pr
   adminGroupsApi.value = profile.activeRole === 'ADMIN'
     ? auth.createAdminGroupsApi(currentFetcher())
     : null
+  profilePort.value = profile.activeRole === 'ADMIN'
+    ? auth.createProfilePort(generation, {
+      onInvalidated: (reason) => handleProfileInvalidated(reason, generation),
+      onRefreshAlreadyRotated: () => handleProfileInvalidated('account-invalidated', generation),
+    })
+    : null
   offline.value = false
   readOnly.value = profile.readOnly
   bootstrapError.value = null
@@ -846,13 +856,23 @@ async function activateMapRole(profile: ProfileSnapshot, generation: number): Pr
   authView.value = profile.activeRole === 'ADMIN' ? 'admin-home' : 'map'
 }
 
-function navigateAdmin(route: 'home' | 'map' | 'semesters' | 'users' | 'groups'): void {
+function navigateAdmin(route: 'home' | 'map' | 'semesters' | 'users' | 'groups' | 'profile'): void {
   if (authSnapshot.value?.activeRole !== 'ADMIN'
     || !adminDashboardApi.value || !adminSemesterApi.value || !adminUsersApi.value || !adminGroupsApi.value) return
-  authView.value = route === 'home' ? 'admin-home'
-    : route === 'map' ? 'admin-map'
-      : route === 'semesters' ? 'admin-semesters'
-        : route === 'users' ? 'admin-users' : 'admin-groups'
+  authView.value = route === 'profile' ? 'admin-profile'
+    : route === 'home' ? 'admin-home'
+      : route === 'map' ? 'admin-map'
+        : route === 'semesters' ? 'admin-semesters'
+          : route === 'users' ? 'admin-users' : 'admin-groups'
+}
+
+function openAdminRoleSwitch(): void {
+  if (!adminHomeViewVisible.value || authSnapshot.value?.activeRole !== 'ADMIN' || !profilePort.value) return
+  authView.value = 'admin-role-switch'
+}
+
+function closeAdminRoleSwitch(): void {
+  if (authSnapshot.value?.activeRole === 'ADMIN') authView.value = 'admin-home'
 }
 
 function assertCandidateCurrent(generation: number): void {
@@ -1365,6 +1385,7 @@ onBeforeUnmount(() => {
       :client="adminDashboardApi"
       theme="dark"
       @owner-error="onOwnerError"
+      @open-role-switch="openAdminRoleSwitch"
     />
   </template>
   <template v-else-if="adminMapViewVisible">
@@ -1410,6 +1431,34 @@ onBeforeUnmount(() => {
       @owner-error="onOwnerError"
     />
   </template>
+  <template v-else-if="adminProfileViewVisible && profilePort">
+    <AdminRoleNavigation
+      active="profile"
+      @navigate="navigateAdmin"
+    />
+    <AdminProfileOwner
+      :key="'admin-profile-' + ownerRevision"
+      :profile-port="profilePort"
+      :theme-controller="theme"
+      :offline="offline"
+      :on-logout="logout"
+    />
+  </template>
+  <template v-else-if="adminRoleSwitchViewVisible && authSnapshot">
+    <AdminRoleNavigation
+      active="home"
+      @navigate="navigateAdmin"
+    />
+    <RoleSwitchScreen
+      :snapshot="authSnapshot"
+      :pending-role="pendingRole"
+      :error="authError"
+      :offline="offline"
+      :loading="authLoading || bootstrapping"
+      :on-back="closeAdminRoleSwitch"
+      :on-select-role="selectProfileRole"
+    />
+  </template>
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
     :key="ownerKey"
@@ -1440,7 +1489,7 @@ onBeforeUnmount(() => {
     @clear-notification-target="clearNotificationTargetIntent"
   />
   <button
-    v-if="(authView === 'student' && session) || authView === 'teacher' || authView === 'headman' || mapViewVisible || adminMapViewVisible || adminSemesterViewVisible || adminUsersViewVisible"
+    v-if="(authView === 'student' && session) || authView === 'teacher' || authView === 'headman' || mapViewVisible"
     class="pwa-logout"
     type="button"
     :disabled="authLoading"

@@ -11,6 +11,7 @@ import {
   AdminUsersApiError,
   AdminUsersScreen,
   AdminRoleNavigation,
+  AdminProfileOwner,
   CampusMapClient,
   HeadmanScheduleApiError,
   HeadmanJournalApiError,
@@ -124,9 +125,11 @@ const headmanGroupId = ref<number | null>(null)
 const ready = ref(false)
 const offline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false)
 const error = ref<string | null>(null)
+const logoutPending = ref(false)
+const logoutUnconfirmed = ref(false)
 const bootstrapping = ref(false)
 const ownerRevision = ref(0)
-const authView = ref<'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-home' | 'admin-map' | 'admin-semesters' | 'admin-users' | 'admin-groups'>('role')
+const authView = ref<'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-home' | 'admin-map' | 'admin-semesters' | 'admin-users' | 'admin-groups' | 'admin-profile' | 'admin-role-switch' | 'signed-out'>('role')
 const pendingRole = ref<ProfileRole | null>(null)
 const roleError = shallowRef<ProfileRequestError | null>(null)
 const roleLoading = ref(false)
@@ -137,8 +140,19 @@ const adminMapViewVisible = computed(() => authView.value === 'admin-map')
 const adminSemesterViewVisible = computed(() => authView.value === 'admin-semesters')
 const adminUsersViewVisible = computed(() => authView.value === 'admin-users')
 const adminGroupsViewVisible = computed(() => authView.value === 'admin-groups')
+const adminProfileViewVisible = computed(() => authView.value === 'admin-profile')
+const adminRoleSwitchViewVisible = computed(() => authView.value === 'admin-role-switch')
+const signedOutTitle = computed(() => logoutUnconfirmed.value
+  ? 'Отзыв сессии не подтверждён'
+  : logoutPending.value ? 'Завершаем сеанс…' : 'Сессия завершена')
+const signedOutMessage = computed(() => logoutUnconfirmed.value
+  ? `${error.value ?? 'Не удалось подтвердить отзыв текущей сессии'}. Локальные данные удалены; закрой окно вручную.`
+  : logoutPending.value
+    ? 'Локальный доступ уже закрыт. Проверяем отзыв сессии на сервере.'
+    : 'Ты вышел из аккаунта. Закрой это окно, чтобы завершить работу.')
 const featureVisible = computed(() => api.value !== null || headmanApi.value !== null
-  || teacherApi.value !== null || mapViewVisible.value || adminHomeViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value || adminUsersViewVisible.value || adminGroupsViewVisible.value)
+  || teacherApi.value !== null || mapViewVisible.value || adminHomeViewVisible.value || adminMapViewVisible.value || adminSemesterViewVisible.value || adminUsersViewVisible.value || adminGroupsViewVisible.value
+  || adminProfileViewVisible.value || adminRoleSwitchViewVisible.value)
 const notificationsEntryVisible = computed(() => featureVisible.value
   && profile.value !== null
   && profile.value.activeRole !== null
@@ -415,19 +429,59 @@ function activateMapRole(value: ProfileSnapshot): void {
   adminGroupsApi.value = value.activeRole === 'ADMIN'
     ? sessionOwner.createAdminGroupsApi(currentFetcher())
     : null
+  const generation = sessionOwner.currentGeneration()
+  profilePort.value = value.activeRole === 'ADMIN'
+    ? sessionOwner.createProfilePort(generation, {
+      onInvalidated: (reason) => handleProfileInvalidated(generation, reason),
+    })
+    : null
   offline.value = false
   error.value = null
   ownerRevision.value += 1
   authView.value = value.activeRole === 'ADMIN' ? 'admin-home' : 'map'
 }
 
-function navigateAdmin(route: 'home' | 'map' | 'semesters' | 'users' | 'groups'): void {
+function navigateAdmin(route: 'home' | 'map' | 'semesters' | 'users' | 'groups' | 'profile'): void {
   if (profile.value?.activeRole !== 'ADMIN'
     || !adminDashboardApi.value || !adminSemesterApi.value || !adminUsersApi.value || !adminGroupsApi.value) return
-  authView.value = route === 'home' ? 'admin-home'
-    : route === 'map' ? 'admin-map'
-      : route === 'semesters' ? 'admin-semesters'
-        : route === 'users' ? 'admin-users' : 'admin-groups'
+  authView.value = route === 'profile' ? 'admin-profile'
+    : route === 'home' ? 'admin-home'
+      : route === 'map' ? 'admin-map'
+        : route === 'semesters' ? 'admin-semesters'
+          : route === 'users' ? 'admin-users' : 'admin-groups'
+}
+
+function openAdminRoleSwitch(): void {
+  if (!adminHomeViewVisible.value || profile.value?.activeRole !== 'ADMIN' || !profilePort.value) return
+  authView.value = 'admin-role-switch'
+}
+
+function closeAdminRoleSwitch(): void {
+  if (profile.value?.activeRole === 'ADMIN') authView.value = 'admin-home'
+}
+
+async function logout(): Promise<void> {
+  if (authView.value === 'signed-out') return
+  logoutPending.value = true
+  logoutUnconfirmed.value = false
+  const logoutRequest = sessionOwner.logoutCurrent()
+  invalidateOwnerSynchronously({ clearAuth: false })
+  authView.value = 'signed-out'
+  error.value = null
+  offline.value = false
+  ready.value = true
+  bootstrapping.value = false
+  try {
+    await logoutRequest
+    logoutPending.value = false
+    host.close()
+  } catch (cause) {
+    logoutPending.value = false
+    logoutUnconfirmed.value = true
+    error.value = cause instanceof Error
+      ? cause.message
+      : 'Не удалось подтвердить отзыв текущей сессии. Локальные данные удалены; закрой окно вручную.'
+  }
 }
 
 async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<void> {
@@ -474,7 +528,7 @@ function activateHeadmanOwner(value: ProfileSnapshot, generation: number): void 
 }
 
 async function bootstrap(): Promise<void> {
-  if (bootstrapping.value) return
+  if (bootstrapping.value || authView.value === 'signed-out') return
   if (browserIsOffline()) {
     offline.value = true
     ready.value = true
@@ -627,12 +681,21 @@ function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): P
   return selectRole(role, expectedSessionVersion, { preserveProfileOwner: true })
 }
 
-function handleProfileInvalidated(generation: number): void {
+function handleProfileInvalidated(
+  generation: number,
+  reason: 'logout-all' | 'password-changed' | 'account-invalidated' = 'account-invalidated',
+): void {
   if (!sessionOwner.isCurrent(generation)) return
   invalidateOwnerSynchronously()
-  authView.value = 'role'
   offline.value = false
   error.value = null
+  if (reason === 'logout-all' || reason === 'password-changed') {
+    authView.value = 'signed-out'
+    ready.value = true
+    host.close()
+    return
+  }
+  authView.value = 'role'
   void bootstrap()
 }
 
@@ -666,6 +729,7 @@ function offlineNow(): void {
 }
 
 function onlineNow(): void {
+  if (authView.value === 'signed-out') return
   // Browser online is only a transport hint. Keep the owner read-only until
   // Telegram authentication and the session identity have been checked.
   offline.value = true
@@ -769,6 +833,7 @@ onBeforeUnmount(() => {
       :client="adminDashboardApi"
       theme="dark"
       @owner-error="onOwnerError"
+      @open-role-switch="openAdminRoleSwitch"
     />
   </template>
   <template v-else-if="adminMapViewVisible">
@@ -814,6 +879,34 @@ onBeforeUnmount(() => {
       @owner-error="onOwnerError"
     />
   </template>
+  <template v-else-if="adminProfileViewVisible && profilePort">
+    <AdminRoleNavigation
+      active="profile"
+      @navigate="navigateAdmin"
+    />
+    <AdminProfileOwner
+      :key="'admin-profile-' + ownerRevision"
+      :profile-port="profilePort"
+      :theme-controller="theme"
+      :offline="offline"
+      :on-logout="logout"
+    />
+  </template>
+  <template v-else-if="adminRoleSwitchViewVisible && profile">
+    <AdminRoleNavigation
+      active="home"
+      @navigate="navigateAdmin"
+    />
+    <RoleSwitchScreen
+      :snapshot="profile"
+      :pending-role="pendingRole"
+      :error="roleError"
+      :offline="offline"
+      :loading="roleLoading || bootstrapping"
+      :on-back="closeAdminRoleSwitch"
+      :on-select-role="selectProfileRole"
+    />
+  </template>
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
     :key="ownerKey"
@@ -840,6 +933,24 @@ onBeforeUnmount(() => {
     @owner-error="onOwnerError"
     @clear-notification-target="clearNotificationTargetIntent"
   />
+  <section
+    v-if="authView === 'signed-out'"
+    class="today-state"
+    role="status"
+    aria-live="polite"
+  >
+    <h2>{{ signedOutTitle }}</h2>
+    <p>
+      {{ signedOutMessage }}
+    </p>
+    <button
+      type="button"
+      :disabled="logoutPending"
+      @click="host.close()"
+    >
+      Закрыть
+    </button>
+  </section>
   <section
     v-if="offline && featureVisible"
     class="today-state today-state--error"

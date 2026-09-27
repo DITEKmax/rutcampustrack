@@ -244,6 +244,26 @@ export function useTmaSession(options: TmaSessionOptions) {
     return { accessToken: value.accessToken, expiresIn: value.expiresIn ?? 0, session, generation: nextGeneration }
   }
 
+  async function logoutCurrent(): Promise<void> {
+    const generation = currentGeneration()
+    const token = accessTokenFor(generation)
+    clear()
+    if (!token) return
+    try {
+      const response = await options.fetcher('/api/auth/logout', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token },
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new TmaAuthError(response.status, 'Не удалось подтвердить отзыв текущей сессии')
+      }
+    } catch (cause) {
+      if (cause instanceof TmaAuthError) throw cause
+      throw new TmaAuthError(0, 'Не удалось связаться с Auth и подтвердить отзыв текущей сессии')
+    }
+  }
+
   function createProfilePort(generation = currentGeneration(), profileOptions: TmaProfilePortOptions = {}): ProfilePort {
     return {
       getSnapshot: async () => {
@@ -356,6 +376,7 @@ export function useTmaSession(options: TmaSessionOptions) {
     getProfileFor,
     selectRoleFor,
     createProfilePort,
+    logoutCurrent,
     clear,
   }
 }

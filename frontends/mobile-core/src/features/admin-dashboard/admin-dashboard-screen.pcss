@@ -59,6 +59,13 @@
   @mixin rct-focus-ring;
 }
 
+.admin-dashboard-screen__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--rct-space-2);
+}
+
 .admin-dashboard-screen__refresh:disabled {
   color: var(--rct-color-disabled-text);
   background: var(--rct-color-disabled-surface);

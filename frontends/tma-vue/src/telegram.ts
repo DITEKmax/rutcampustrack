@@ -15,6 +15,7 @@ interface TelegramButton {
 
 interface TelegramWebApp {
   initData: string
+  close?: () => void
   ready(): void
   expand(): void
   viewportHeight: number
@@ -87,6 +88,10 @@ export class TelegramHost implements MobileHostAdapter {
   private primaryActionHandler: (() => void) | null = null
   private backRequestedVisible = false
   private backSuspensions = 0
+
+  close(): void {
+    this.app?.close?.()
+  }
 
   start(): string | null {
     if (!this.app?.initData) return null

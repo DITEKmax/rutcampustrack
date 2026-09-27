@@ -98,6 +98,8 @@ const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const headmanGroupApi = shallowRef<HeadmanGroupApi | null>(null)
 const headmanSubjectsApi = shallowRef<HeadmanSubjectsApi | null>(null)
 const headmanStatsApi = shallowRef<HeadmanStatsApi | null>(null)
+const headmanHomeworkApi = shallowRef<HeadmanHomeworkApi | null>(null)
+const headmanHomeworkActorUserId = ref<number | null>(null)
 const assistantJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const assistantStatsApi = shallowRef<HeadmanStatsApi | null>(null)
 const assistantRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
@@ -300,6 +302,12 @@ function authorizedHeadmanGroupId(value: ProfileSnapshot): number | null {
   return Number.isSafeInteger(groupId) && groupId > 0 ? groupId : null
 }
 
+function positiveSafeHomeworkActorUserId(value: ProfileSnapshot): number | null {
+  if (!/^[1-9]\d*$/.test(value.userId)) return null
+  const userId = Number(value.userId)
+  return Number.isSafeInteger(userId) && userId > 0 ? userId : null
+}
+
 type TeacherCandidate = {
   generation: number
   api: TeacherApi
@@ -333,6 +341,8 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): vo
   headmanGroupApi.value = null
   headmanSubjectsApi.value = null
   headmanStatsApi.value = null
+  headmanHomeworkApi.value = null
+  headmanHomeworkActorUserId.value = null
   assistantJournalApi.value = null
   assistantStatsApi.value = null
   assistantRequestsApi.value = null
@@ -388,12 +398,40 @@ async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<vo
   teacherSemesterId.value = candidate.semesterId
   profile.value = candidate.profile
   profilePort.value = sessionOwner.createProfilePort(candidate.generation, {
-    onInvalidated: () => handleTeacherProfileInvalidated(candidate.generation),
+    onInvalidated: () => handleProfileInvalidated(candidate.generation),
   })
   offline.value = false
   error.value = null
   ownerRevision.value += 1
   authView.value = 'teacher'
+}
+
+function activateHeadmanOwner(value: ProfileSnapshot, generation: number): void {
+  invalidateOwnerSynchronously({ clearAuth: false })
+  authView.value = 'role'
+  if (!sessionOwner.isCurrent(generation)) throw new StaleSessionGenerationError()
+  profile.value = value
+  const groupId = authorizedHeadmanGroupId(value)
+  if (groupId === null) {
+    throw new ProfileRequestError('BOOTSTRAP_SCOPE_DENIED', 'Для роли старосты не определена учебная группа')
+  }
+  profile.value = value
+  headmanApi.value = sessionOwner.createHeadmanApi(currentFetcher())
+  headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
+  headmanStatsApi.value = sessionOwner.createHeadmanStatsApi(currentFetcher())
+  headmanRequestsApi.value = sessionOwner.createHeadmanRequestsApi(currentFetcher())
+  headmanGroupApi.value = sessionOwner.createHeadmanGroupApi(currentFetcher())
+  headmanSubjectsApi.value = sessionOwner.createHeadmanSubjectsApi(currentFetcher())
+  headmanHomeworkApi.value = sessionOwner.createHeadmanHomeworkApi(currentFetcher())
+  headmanHomeworkActorUserId.value = positiveSafeHomeworkActorUserId(value)
+  headmanGroupId.value = groupId
+  profilePort.value = sessionOwner.createProfilePort(generation, {
+    onInvalidated: () => handleProfileInvalidated(generation),
+  })
+  offline.value = false
+  error.value = null
+  ownerRevision.value += 1
+  authView.value = 'headman'
 }
 
 async function bootstrap(): Promise<void> {
@@ -410,20 +448,7 @@ async function bootstrap(): Promise<void> {
     profile.value = candidateProfile.profile
     roleError.value = null
     if (candidateProfile.profile.activeRole === 'HEADMAN') {
-      const groupId = authorizedHeadmanGroupId(candidateProfile.profile)
-      if (groupId === null) throw new ProfileRequestError('BOOTSTRAP_SCOPE_DENIED', 'Для роли старосты не определена учебная группа')
-      api.value = null
-      session.value = null
-      scope.value = null
-      headmanApi.value = sessionOwner.createHeadmanApi(currentFetcher())
-      headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
-      headmanStatsApi.value = sessionOwner.createHeadmanStatsApi(currentFetcher())
-      headmanRequestsApi.value = sessionOwner.createHeadmanRequestsApi(currentFetcher())
-      headmanGroupApi.value = sessionOwner.createHeadmanGroupApi(currentFetcher())
-      headmanSubjectsApi.value = sessionOwner.createHeadmanSubjectsApi(currentFetcher())
-      headmanGroupId.value = groupId
-      authView.value = 'headman'
-      ownerRevision.value += 1
+      activateHeadmanOwner(candidateProfile.profile, candidateProfile.generation)
     } else if (candidateProfile.profile.activeRole === 'STUDENT') {
       const candidate = await fetchSessionForCurrentGeneration()
       const assistant = await fetchAssistantCapabilities(candidate.generation, candidate.session)
@@ -443,6 +468,8 @@ async function bootstrap(): Promise<void> {
       headmanRequestsApi.value = null
       headmanGroupApi.value = null
       headmanSubjectsApi.value = null
+      headmanHomeworkApi.value = null
+      headmanHomeworkActorUserId.value = null
       headmanGroupId.value = null
       assistantJournalApi.value = assistant.journalApi
       assistantStatsApi.value = assistant.statsApi
@@ -487,7 +514,7 @@ async function bootstrap(): Promise<void> {
 async function selectRole(
   role: ProfileRole,
   expectedSessionVersion: string,
-  options: { preserveTeacherOwner?: boolean } = {},
+  options: { preserveProfileOwner?: boolean } = {},
 ): Promise<void> {
   if (roleLoading.value || offline.value || !profile.value) return
   if (role !== 'STUDENT' && role !== 'HEADMAN' && role !== 'TEACHER' && role !== 'ADMIN') return
@@ -500,26 +527,13 @@ async function selectRole(
   const generation = sessionOwner.currentGeneration()
   try {
     const selection = await sessionOwner.selectRoleFor(generation, { role, expectedSessionVersion })
-    if (options.preserveTeacherOwner) {
+    if (options.preserveProfileOwner) {
       invalidateOwnerSynchronously({ clearAuth: false })
       authView.value = 'role'
     }
     profile.value = selection.session
     if (role === 'HEADMAN') {
-      const groupId = authorizedHeadmanGroupId(selection.session)
-      if (groupId === null) throw new ProfileRequestError('BOOTSTRAP_SCOPE_DENIED', 'Для роли старосты не определена учебная группа')
-      api.value = null
-      session.value = null
-      scope.value = null
-      headmanApi.value = sessionOwner.createHeadmanApi(currentFetcher())
-      headmanJournalApi.value = sessionOwner.createHeadmanJournalApi(currentFetcher())
-      headmanStatsApi.value = sessionOwner.createHeadmanStatsApi(currentFetcher())
-      headmanRequestsApi.value = sessionOwner.createHeadmanRequestsApi(currentFetcher())
-      headmanGroupApi.value = sessionOwner.createHeadmanGroupApi(currentFetcher())
-      headmanSubjectsApi.value = sessionOwner.createHeadmanSubjectsApi(currentFetcher())
-      headmanGroupId.value = groupId
-      authView.value = 'headman'
-      ownerRevision.value += 1
+      activateHeadmanOwner(selection.session, selection.generation)
     } else if (role === 'TEACHER') {
       const candidate = await fetchTeacherCandidate(selection.generation, selection.session)
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль преподавателя недоступна')
@@ -537,6 +551,8 @@ async function selectRole(
       headmanRequestsApi.value = null
       headmanGroupApi.value = null
       headmanSubjectsApi.value = null
+      headmanHomeworkApi.value = null
+      headmanHomeworkActorUserId.value = null
       headmanGroupId.value = null
       assistantJournalApi.value = assistant.journalApi
       assistantStatsApi.value = assistant.statsApi
@@ -554,36 +570,31 @@ async function selectRole(
     if (cause instanceof StaleSessionGenerationError) return
     roleError.value = asProfileError(cause)
     error.value = roleError.value.message
-    if (!options.preserveTeacherOwner) authView.value = 'role'
+    if (!options.preserveProfileOwner) authView.value = 'role'
     try {
       const current = await sessionOwner.getProfileFor(generation)
       profile.value = current
     } catch {
       // Keep the current role snapshot visible until the next authenticated retry.
     }
-    if (options.preserveTeacherOwner) throw cause
+    if (options.preserveProfileOwner) throw cause
   } finally {
     pendingRole.value = null
     roleLoading.value = false
   }
 }
 
-function selectTeacherProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
-  return selectRole(role, expectedSessionVersion, { preserveTeacherOwner: true })
+function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
+  return selectRole(role, expectedSessionVersion, { preserveProfileOwner: true })
 }
 
-function handleTeacherProfileInvalidated(generation: number): void {
+function handleProfileInvalidated(generation: number): void {
   if (!sessionOwner.isCurrent(generation)) return
   invalidateOwnerSynchronously()
   authView.value = 'role'
   offline.value = false
   error.value = null
   void bootstrap()
-}
-
-function openRoleSwitch(): void {
-  roleError.value = null
-  authView.value = 'role'
 }
 
 function acquireCheckinCommand(): Promise<StudentCheckinCommand> {
@@ -673,14 +684,18 @@ onBeforeUnmount(() => {
     :requests-api="headmanRequestsApi"
     :group-api="headmanGroupApi"
     :subjects-api="headmanSubjectsApi"
+    :homework-api="headmanHomeworkApi"
+    :homework-actor-user-id="headmanHomeworkActorUserId"
     :profile="profile"
+    :profile-port="profilePort"
+    :profile-role-select="selectProfileRole"
     :group-id="headmanGroupId"
     :offline="offline"
     :read-only="profile?.readOnly ?? true"
     :host="host"
     :report-download="reportDownload"
     :map-client="mapClient"
-    :on-role-switch="openRoleSwitch"
+    :theme-controller="theme"
     @error="onOwnerError"
   />
   <TeacherFeatureOwner
@@ -691,7 +706,7 @@ onBeforeUnmount(() => {
     :map-client="mapClient"
     :report-download="reportDownload"
     :profile-port="profilePort"
-    :profile-role-select="selectTeacherProfileRole"
+    :profile-role-select="selectProfileRole"
     :host="host"
     :theme-controller="theme"
     :offline="offline"

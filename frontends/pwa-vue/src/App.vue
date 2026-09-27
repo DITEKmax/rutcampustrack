@@ -112,6 +112,8 @@ const headmanRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
 const headmanGroupApi = shallowRef<HeadmanGroupApi | null>(null)
 const headmanSubjectsApi = shallowRef<HeadmanSubjectsApi | null>(null)
 const headmanStatsApi = shallowRef<HeadmanStatsApi | null>(null)
+const headmanHomeworkApi = shallowRef<HeadmanHomeworkApi | null>(null)
+const headmanHomeworkActorUserId = ref<number | null>(null)
 const assistantJournalApi = shallowRef<HeadmanJournalApi | null>(null)
 const assistantStatsApi = shallowRef<HeadmanStatsApi | null>(null)
 const assistantRequestsApi = shallowRef<HeadmanRequestsApi | null>(null)
@@ -334,6 +336,8 @@ async function loadOfflineSnapshot(): Promise<boolean> {
   headmanGroupApi.value = null
   headmanSubjectsApi.value = null
   headmanStatsApi.value = null
+  headmanHomeworkApi.value = null
+  headmanHomeworkActorUserId.value = null
   assistantJournalApi.value = null
   assistantStatsApi.value = null
   assistantRequestsApi.value = null
@@ -403,6 +407,8 @@ function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): St
   headmanGroupApi.value = null
   headmanSubjectsApi.value = null
   headmanStatsApi.value = null
+  headmanHomeworkApi.value = null
+  headmanHomeworkActorUserId.value = null
   assistantJournalApi.value = null
   assistantStatsApi.value = null
   assistantRequestsApi.value = null
@@ -543,8 +549,16 @@ type HeadmanCandidate = {
   requestsApi: HeadmanRequestsApi
   groupApi: HeadmanGroupApi
   subjectsApi: HeadmanSubjectsApi
+  homeworkApi: HeadmanHomeworkApi
+  homeworkActorUserId: number | null
   profile: ProfileSnapshot
   groupId: number
+}
+
+function positiveSafeHomeworkActorUserId(profile: ProfileSnapshot): number | null {
+  if (!/^[1-9]\d*$/.test(profile.userId)) return null
+  const userId = Number(profile.userId)
+  return Number.isSafeInteger(userId) && userId > 0 ? userId : null
 }
 
 function authorizedHeadmanGroupId(profile: ProfileSnapshot): number | null {
@@ -570,6 +584,7 @@ async function fetchHeadmanCandidate(
   const candidateRequestsApi = auth.createHeadmanRequestsApi(currentFetcher())
   const candidateGroupApi = auth.createHeadmanGroupApi(currentFetcher())
   const candidateSubjectsApi = auth.createHeadmanSubjectsApi(currentFetcher())
+  const candidateHomeworkApi = auth.createHeadmanHomeworkApi(currentFetcher())
   assertCandidateCurrent(generation)
   return {
     generation,
@@ -579,6 +594,8 @@ async function fetchHeadmanCandidate(
     requestsApi: candidateRequestsApi,
     groupApi: candidateGroupApi,
     subjectsApi: candidateSubjectsApi,
+    homeworkApi: candidateHomeworkApi,
+    homeworkActorUserId: positiveSafeHomeworkActorUserId(profile),
     profile,
     groupId,
   }
@@ -714,7 +731,13 @@ async function activateHeadmanCandidate(candidate: HeadmanCandidate): Promise<vo
   headmanRequestsApi.value = candidate.requestsApi
   headmanGroupApi.value = candidate.groupApi
   headmanSubjectsApi.value = candidate.subjectsApi
+  headmanHomeworkApi.value = candidate.homeworkApi
+  headmanHomeworkActorUserId.value = candidate.homeworkActorUserId
   headmanGroupId.value = candidate.groupId
+  profilePort.value = auth.createProfilePort(candidate.generation, {
+    onInvalidated: (reason) => handleProfileInvalidated(reason, candidate.generation),
+    onRefreshAlreadyRotated: () => handleProfileInvalidated('account-invalidated', candidate.generation),
+  })
   authSnapshot.value = candidate.profile
   offline.value = false
   readOnly.value = candidate.profile.readOnly
@@ -922,7 +945,7 @@ async function submitLogin(input: { login: string; password: string }): Promise<
 async function selectRole(
   role: ProfileRole,
   expectedSessionVersion: string,
-  options: { preserveTeacherOwner?: boolean } = {},
+  options: { preserveProfileOwner?: boolean } = {},
 ): Promise<void> {
   const request = createPwaRoleSelection(role, expectedSessionVersion)
   if (!request || authLoading.value || !authSnapshot.value) return
@@ -932,11 +955,11 @@ async function selectRole(
   bootstrapError.value = null
   // Keep the old token available for the role PUT, while hiding the old
   // feature owner until the response has passed the generation boundary.
-  if (!options.preserveTeacherOwner) authView.value = 'role'
+  if (!options.preserveProfileOwner) authView.value = 'role'
   const generation = auth.currentGeneration()
   try {
     const selection = await auth.selectRoleFor(generation, request)
-    if (options.preserveTeacherOwner) {
+    if (options.preserveProfileOwner) {
       invalidateOwnerSynchronously({ clearAuth: false })
       authView.value = 'role'
     }
@@ -976,7 +999,7 @@ async function selectRole(
         if (isConfirmedOnlineAuthDenial(refreshError)) await handleOnlineAuthDenial(refreshError)
       }
     }
-    if (!options.preserveTeacherOwner) authView.value = 'role'
+    if (!options.preserveProfileOwner) authView.value = 'role'
     else throw error
   } finally {
     pendingRole.value = null
@@ -984,8 +1007,8 @@ async function selectRole(
   }
 }
 
-function selectTeacherProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
-  return selectRole(role, expectedSessionVersion, { preserveTeacherOwner: true })
+function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
+  return selectRole(role, expectedSessionVersion, { preserveProfileOwner: true })
 }
 
 async function logout(): Promise<void> {
@@ -1115,12 +1138,6 @@ function goOnline(): void {
   void bootstrap()
 }
 
-function openRoleSwitch(): void {
-  authError.value = null
-  bootstrapError.value = null
-  authView.value = 'role'
-}
-
 const onServiceWorkerControllerChange = (): void => { void refreshFixtureDiagnostics() }
 
 async function refreshFixtureDiagnostics(): Promise<void> {
@@ -1244,13 +1261,17 @@ onBeforeUnmount(() => {
     :requests-api="headmanRequestsApi"
     :group-api="headmanGroupApi"
     :subjects-api="headmanSubjectsApi"
+    :homework-api="headmanHomeworkApi"
+    :homework-actor-user-id="headmanHomeworkActorUserId"
     :profile="authSnapshot"
+    :profile-port="profilePort"
+    :profile-role-select="selectProfileRole"
     :group-id="headmanGroupId"
     :offline="offline"
     :read-only="readOnly"
     :host="host"
     :map-client="mapClient"
-    :on-role-switch="openRoleSwitch"
+    :theme-controller="theme"
     @error="onOwnerError"
   />
   <TeacherFeatureOwner
@@ -1260,7 +1281,7 @@ onBeforeUnmount(() => {
     :semester-id="teacherSemesterId"
     :map-client="mapClient"
     :profile-port="profilePort"
-    :profile-role-select="selectTeacherProfileRole"
+    :profile-role-select="selectProfileRole"
     :host="host"
     :theme-controller="theme"
     :offline="offline"

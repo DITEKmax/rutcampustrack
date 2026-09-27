@@ -156,7 +156,8 @@ const publishProfileView = profilePublication.publish
 const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, props.offline))
 const moreAvailability = computed(() => ({
   stats: props.statsApi !== null && props.groupId !== null,
-  homework: props.homeworkApi !== null && props.journalApi !== null && props.groupId !== null,
+  homework: props.homeworkApi !== null && props.journalApi !== null && props.groupId !== null
+    && Number.isSafeInteger(props.homeworkActorUserId) && (props.homeworkActorUserId ?? 0) > 0,
   map: props.mapClient !== null,
   group: props.groupApi !== null && props.groupId !== null,
   subjects: props.subjectsApi !== null && props.groupId !== null,
@@ -383,7 +384,8 @@ function openStats(): void {
 }
 
 function openHomework(): void {
-  if (!props.homeworkApi || !props.journalApi || props.groupId === null) return
+  if (!props.homeworkApi || !props.journalApi || props.groupId === null
+    || !Number.isSafeInteger(props.homeworkActorUserId) || (props.homeworkActorUserId ?? 0) <= 0) return
   navigation.push(nestedRoute('headman-more', homeworkRouteId, 'task'))
 }
 

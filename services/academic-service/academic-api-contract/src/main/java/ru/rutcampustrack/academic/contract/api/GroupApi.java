@@ -30,6 +30,8 @@ import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentPreviewRes
 import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentResponse;
 import ru.rutcampustrack.academic.contract.dto.group.HeadmanRosterResponse;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewRequest;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionExecuteRequest;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 
@@ -145,27 +147,34 @@ public interface GroupApi {
 
     /**
      * 58-06 / BUG-006-6: Dry-run промоушена групп. Возвращает {@link PromotionSummary}
-     * с планом (toPromote / toArchive / conflicts), без изменений в БД. ADMIN-only.
+     * с планом (toPromote / toArchive / skipped / conflicts), без изменений в БД.
+     * {@code groupId} отсутствует для массовой операции и задаётся для одиночной.
      */
     @Operation(summary = "Preview промоушена групп (dry-run, ADMIN)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "План промоушена"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Группа не найдена"),
+            @ApiResponse(responseCode = "409", description = "Нет завершённого весеннего семестра")
     })
     @PostMapping("/promote/preview")
-    ResponseEntity<PromotionSummary> promotePreview();
+    ResponseEntity<PromotionSummary> promotePreview(
+            @Valid @RequestBody PromotionPreviewRequest request);
 
     /**
-     * 58-06 / BUG-006-6: Выполнить промоушен. Применяет план (per-prefix),
-     * публикует {@code group.renamed} и {@code group.archived} события.
+     * Выполнить только подтверждённый preview. Цикл, область и version должны
+     * совпасть с актуальным серверным планом; устаревший запрос получает 409.
      */
     @Operation(summary = "Выполнить промоушен групп (ADMIN). Запускать после preview.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Результат промоушена"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Весенний семестр или группа не найдены"),
+            @ApiResponse(responseCode = "409", description = "Предпросмотр устарел или группа уже обработана")
     })
     @PostMapping("/promote")
-    ResponseEntity<PromotionSummary> promote();
+    ResponseEntity<PromotionSummary> promote(
+            @Valid @RequestBody PromotionExecuteRequest request);
 
     @Operation(summary = "Полное обновление группы (PUT, ADMIN)")
     @ApiResponses({

@@ -11,6 +11,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Collections;
 
 /**
  * Read model for the ADMIN registry. Status, student count and headman are
@@ -94,6 +98,30 @@ public class GroupRegistryReadRepository {
                         rs.getLong("active_count"),
                         rs.getLong("draft_count"),
                         rs.getLong("archived_count")));
+    }
+
+    /** Counts the same current student population exposed by the ADMIN registry. */
+    public Map<Long, Long> countActiveStudentsByGroupIds(Collection<Long> groupIds) {
+        List<Long> ids = groupIds.stream().distinct().sorted().toList();
+        if (ids.isEmpty()) return Map.of();
+
+        String placeholders = String.join(",", Collections.nCopies(ids.size(), "?"));
+        String query = """
+                SELECT sg.group_id, count(*) AS student_count
+                FROM user_role_grants sg
+                JOIN users su ON su.id = sg.user_id
+                WHERE sg.role = 'student' AND sg.status = 'active'
+                  AND su.status <> 'archived'
+                  AND sg.group_id IN (%s)
+                GROUP BY sg.group_id
+                """.formatted(placeholders);
+        Map<Long, Long> result = new HashMap<>();
+        jdbcTemplate.query(query, statement -> {
+            for (int i = 0; i < ids.size(); i++) statement.setLong(i + 1, ids.get(i));
+        }, rs -> {
+            result.put(rs.getLong("group_id"), rs.getLong("student_count"));
+        });
+        return result;
     }
 
     private long count(AdminGroupStatus status, String search) {

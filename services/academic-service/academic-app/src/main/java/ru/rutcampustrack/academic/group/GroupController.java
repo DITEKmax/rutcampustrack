@@ -20,6 +20,8 @@ import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentPreviewRes
 import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentResponse;
 import ru.rutcampustrack.academic.contract.dto.group.HeadmanRosterResponse;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewRequest;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionExecuteRequest;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.entity.Group;
@@ -153,14 +155,14 @@ public class GroupController implements GroupApi {
 
     @Override
     @RequireRole({ADMIN})
-    public ResponseEntity<PromotionSummary> promotePreview() {
-        return ResponseEntity.ok(promotionService.preview());
+    public ResponseEntity<PromotionSummary> promotePreview(PromotionPreviewRequest request) {
+        return ResponseEntity.ok(promotionService.preview(request.getGroupId()));
     }
 
     @Override
     @RequireRole({ADMIN})
-    public ResponseEntity<PromotionSummary> promote() {
-        return ResponseEntity.ok(promotionService.execute());
+    public ResponseEntity<PromotionSummary> promote(PromotionExecuteRequest request) {
+        return ResponseEntity.ok(promotionService.execute(request));
     }
 
     @Override

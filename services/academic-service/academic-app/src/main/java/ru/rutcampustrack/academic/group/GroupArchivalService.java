@@ -38,11 +38,16 @@ public class GroupArchivalService {
      */
     @Transactional
     public void archive(Group group) {
+        archive(group, LocalDate.now(clock).getYear());
+    }
+
+    /** Archive as part of a semester cycle, using that semester's graduation year. */
+    @Transactional
+    public void archive(Group group, int graduationYear) {
         if (!group.isActive()) {
             throw new IllegalStateException("Group already archived: " + group.getId());
         }
-        int year = LocalDate.now(clock).getYear();
-        group.setName(buildArchivedName(group.getName(), year));
+        group.setName(buildArchivedName(group.getName(), graduationYear));
         group.setActive(false);
         group.setArchivedAt(OffsetDateTime.now(clock));
         publisher.publishEvent(new GroupArchivedEvent(this, group.getId()));

@@ -33,4 +33,9 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
 
     /** Все активные группы — используется {@code GroupPromotionService} для planning. */
     List<Group> findAllByIsActiveTrue();
+
+    /** Lock active groups in a stable order while a confirmed promotion plan is applied. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select g from Group g where g.isActive = true order by g.id")
+    List<Group> findAllActiveForPromotionUpdate();
 }

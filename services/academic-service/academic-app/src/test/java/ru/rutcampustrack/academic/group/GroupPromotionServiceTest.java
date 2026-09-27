@@ -6,38 +6,49 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem.Action;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionExecuteRequest;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
 import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.entity.Semester;
+import ru.rutcampustrack.academic.contract.enums.SemesterType;
 import ru.rutcampustrack.academic.event.GroupArchivedEvent;
 import ru.rutcampustrack.academic.event.GroupRenamedEvent;
+import ru.rutcampustrack.academic.repository.GroupPromotionCycleRecordRepository;
+import ru.rutcampustrack.academic.repository.GroupRegistryReadRepository;
 import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.SemesterRepository;
 
 import java.lang.reflect.Field;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-/**
- * Unit tests для {@link GroupPromotionService} (BUG-006-6 / план 58-06).
- *
- * <p>Используется fixed clock (2026-09-01) — 14 дней до осеннего семестра. Это
- * типовой trigger-момент scheduled промоушена.
- */
+/** Unit tests for prefix planning within a completed spring promotion cycle. */
 class GroupPromotionServiceTest {
 
     private static final Clock FIXED_CLOCK = Clock.fixed(
             Instant.parse("2026-09-01T00:00:00Z"), ZoneOffset.UTC);
 
     private GroupRepository groupRepository;
+    private SemesterRepository semesterRepository;
+    private GroupPromotionCycleRecordRepository cycleRecordRepository;
+    private GroupRegistryReadRepository registryReadRepository;
+    private Semester cycle;
     private ApplicationEventPublisher publisher;
     private GroupArchivalService archivalService;
     private GroupPromotionService service;
@@ -47,10 +58,23 @@ class GroupPromotionServiceTest {
     @BeforeEach
     void setUp() {
         groupRepository = mock(GroupRepository.class);
+        semesterRepository = mock(SemesterRepository.class);
+        cycleRecordRepository = mock(GroupPromotionCycleRecordRepository.class);
+        registryReadRepository = mock(GroupRegistryReadRepository.class);
         publisher = mock(ApplicationEventPublisher.class);
         archivalService = new GroupArchivalService(publisher, FIXED_CLOCK);
+        cycle = mock(Semester.class);
+        when(cycle.getId()).thenReturn(1L);
+        when(cycle.getDateTo()).thenReturn(LocalDate.of(2026, 6, 30));
+        when(cycle.getSemesterType()).thenReturn(SemesterType.SPRING);
+        when(semesterRepository.findFirstBySemesterTypeAndDateToBeforeOrderByDateToDescIdDesc(
+                eq(SemesterType.SPRING), any(LocalDate.class))).thenReturn(Optional.of(cycle));
+        when(semesterRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(cycle));
+        when(cycleRecordRepository.findAllByCycleSemesterIdOrderByGroupId(1L)).thenReturn(List.of());
+        when(registryReadRepository.countActiveStudentsByGroupIds(anyCollection())).thenReturn(Map.of());
         service = new GroupPromotionService(
-                groupRepository, new GroupNameParser(), archivalService, publisher);
+                groupRepository, semesterRepository, cycleRecordRepository, registryReadRepository,
+                new GroupNameParser(), archivalService, publisher, FIXED_CLOCK);
     }
 
     private Group group(String name) {
@@ -69,7 +93,22 @@ class GroupPromotionServiceTest {
     }
 
     private void seed(Group... groups) {
-        when(groupRepository.findAllByIsActiveTrue()).thenReturn(new ArrayList<>(Arrays.asList(groups)));
+        ArrayList<Group> active = new ArrayList<>(Arrays.asList(groups));
+        when(groupRepository.findAllByIsActiveTrue()).thenReturn(active);
+        when(groupRepository.findAllActiveForPromotionUpdate()).thenReturn(active);
+    }
+
+    private PromotionSummary preview() {
+        return service.preview(null);
+    }
+
+    private PromotionSummary execute() {
+        PromotionSummary preview = preview();
+        PromotionExecuteRequest request = new PromotionExecuteRequest();
+        request.setCycleSemesterId(cycle.getId());
+        request.setPreviewVersion(preview.getPreviewVersion());
+        request.setGroupId(null);
+        return service.execute(request);
     }
 
     // ---- preview --------------------------------------------------------
@@ -77,7 +116,7 @@ class GroupPromotionServiceTest {
     @Test
     void preview_emptyDb_returnsEmptySummary() {
         seed();
-        PromotionSummary s = service.preview();
+        PromotionSummary s = preview();
         assertThat(s.getToPromote()).isEmpty();
         assertThat(s.getToArchive()).isEmpty();
         assertThat(s.getConflicts()).isEmpty();
@@ -91,7 +130,7 @@ class GroupPromotionServiceTest {
         Group g4 = group("УИТ-411");
         seed(g1, g4);
 
-        PromotionSummary s = service.preview();
+        PromotionSummary s = preview();
 
         assertThat(s.getToPromote())
                 .extracting(PromotionPreviewItem::getFrom, PromotionPreviewItem::getTo, PromotionPreviewItem::getAction)
@@ -115,7 +154,7 @@ class GroupPromotionServiceTest {
         Group g2 = group("УИТ-251"); // type=5, неизвестен
         seed(g1, g2);
 
-        PromotionSummary s = service.preview();
+        PromotionSummary s = preview();
 
         assertThat(s.getToPromote()).isEmpty();
         assertThat(s.getConflicts()).hasSize(1);
@@ -131,7 +170,7 @@ class GroupPromotionServiceTest {
         Group g2 = group("УИТ-211");
         seed(g1, g2);
 
-        PromotionSummary s = service.preview();
+        PromotionSummary s = preview();
 
         assertThat(s.getConflicts()).isEmpty();
         assertThat(s.getToPromote()).hasSize(2);
@@ -146,7 +185,7 @@ class GroupPromotionServiceTest {
         Group g = group("УИТ-351");
         seed(g);
 
-        PromotionSummary s = service.preview();
+        PromotionSummary s = preview();
 
         assertThat(s.getToPromote()).isEmpty();
         assertThat(s.getConflicts()).hasSize(1);
@@ -161,7 +200,7 @@ class GroupPromotionServiceTest {
         Group badUvp = group("УВП-151"); // type=5 → unknown
         seed(ok, badUvp);
 
-        PromotionSummary s = service.preview();
+        PromotionSummary s = preview();
 
         assertThat(s.getToPromote()).hasSize(1);
         assertThat(s.getToPromote().get(0).getFrom()).isEqualTo("УИТ-111");
@@ -177,7 +216,7 @@ class GroupPromotionServiceTest {
         Group g = group("УИТ-111");
         seed(g);
 
-        service.execute();
+        execute();
 
         assertThat(g.getName()).isEqualTo("УИТ-211");
         assertThat(g.isActive()).isTrue();
@@ -195,7 +234,7 @@ class GroupPromotionServiceTest {
         Group g = group("УИТ-411");
         seed(g);
 
-        service.execute();
+        execute();
 
         assertThat(g.getName()).isEqualTo("УИТ-411 (выпуск 2026)");
         assertThat(g.isActive()).isFalse();
@@ -219,7 +258,7 @@ class GroupPromotionServiceTest {
         g.setTrainingDurationYears(2);
         seed(g);
 
-        service.execute();
+        execute();
 
         assertThat(g.isActive()).isFalse();
         assertThat(g.getName()).isEqualTo("УИТ-211 (выпуск 2026)");
@@ -235,7 +274,7 @@ class GroupPromotionServiceTest {
         g.setTrainingDurationYears(4);
         seed(g);
 
-        service.execute();
+        execute();
 
         assertThat(g.getName()).isEqualTo("УИТ-211");
         assertThat(g.getAlphabeticCode()).isEqualTo("УИТ");
@@ -251,27 +290,13 @@ class GroupPromotionServiceTest {
         Group badUvp = group("УВП-151");
         seed(ok, badUvp);
 
-        service.execute();
+        execute();
 
         // УИТ-префикс применён:
         assertThat(ok.getName()).isEqualTo("УИТ-211");
         // УВП-префикс — не тронут:
         assertThat(badUvp.getName()).isEqualTo("УВП-151");
         assertThat(badUvp.isActive()).isTrue();
-    }
-
-    @Test
-    void execute_twiceAdvancesCourseByOne() {
-        Group g = group("УИТ-111");
-        seed(g);
-
-        service.execute(); // УИТ-111 → УИТ-211
-        assertThat(g.getName()).isEqualTo("УИТ-211");
-
-        // Re-seed, second run
-        seed(g);
-        service.execute(); // УИТ-211 → УИТ-311
-        assertThat(g.getName()).isEqualTo("УИТ-311");
     }
 
     @Test
@@ -284,7 +309,7 @@ class GroupPromotionServiceTest {
         Group g4 = group("УИТ-411");
         seed(g1, g2, g3, g4);
 
-        PromotionSummary s = service.execute();
+        PromotionSummary s = execute();
 
         assertThat(s.getConflicts()).isEmpty();
         assertThat(g1.getName()).isEqualTo("УИТ-211");
@@ -302,7 +327,7 @@ class GroupPromotionServiceTest {
         garbage.setName("УИТ-411 (выпуск 2026)");
         seed(garbage);
 
-        PromotionSummary s = service.preview();
+        PromotionSummary s = preview();
 
         assertThat(s.getToPromote()).isEmpty();
         assertThat(s.getToArchive()).isEmpty();

@@ -81,6 +81,60 @@ export interface HeadmanAssignment {
   readonly assistantsRevoked: number
 }
 
+export type PromotionAction = 'PROMOTE' | 'ARCHIVE'
+export type PromotionSkipReason = 'ALREADY_PROCESSED' | 'CREATED_AFTER_CYCLE_END'
+
+export interface PromotionPreviewItem {
+  readonly id: number
+  readonly from: string
+  readonly to: string | null
+  readonly action: PromotionAction
+  readonly studentCount: number
+}
+
+export interface PromotionSkippedItem {
+  readonly id: number
+  readonly name: string
+  readonly studentCount: number
+  readonly reason: PromotionSkipReason
+  readonly previousAction: PromotionAction | null
+  readonly previousFrom: string | null
+  readonly previousTo: string | null
+}
+
+export interface PromotionConflict {
+  readonly prefix: string
+  readonly reason: string
+  readonly message: string
+  readonly groupIds: readonly number[]
+}
+
+export interface PromotionSummary {
+  readonly toPromote: readonly PromotionPreviewItem[]
+  readonly toArchive: readonly PromotionPreviewItem[]
+  readonly skipped: readonly PromotionSkippedItem[]
+  readonly conflicts: readonly PromotionConflict[]
+  readonly cycleSemesterId: number
+  readonly cycleDateTo: string
+  readonly groupId: number | null
+  readonly previewVersion: string
+  readonly promoteCount: number
+  readonly archiveCount: number
+  readonly promotedStudentCount: number
+  readonly archivedStudentCount: number
+  readonly skippedGroupCount: number
+  readonly skippedStudentCount: number
+  readonly conflictCount: number
+  readonly dryRun: boolean
+  readonly executed: boolean
+}
+
+export interface PromotionExecuteInput {
+  readonly cycleSemesterId: number
+  readonly previewVersion: string
+  readonly groupId: number | null
+}
+
 export interface AdminGroupsApiOptions {
   readonly accessToken: () => string | null
   readonly onUnauthorized?: () => Promise<void>
@@ -152,6 +206,28 @@ export class AdminGroupsClient {
       body: JSON.stringify({ studentId, expectedHeadmanId: input.expectedHeadmanId }),
       ...(signal ? { signal } : {}),
     }).then(normalizeHeadmanAssignment)
+  }
+
+  previewPromotion(groupId?: number, signal?: AbortSignal): Promise<PromotionSummary> {
+    const payload = groupId === undefined
+      ? {}
+      : { groupId: positiveInteger(groupId, 'groupId') }
+    return this.request<unknown>('/api/academic/groups/promote/preview', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      ...(signal ? { signal } : {}),
+    }).then(normalizePromotionSummary)
+  }
+
+  executePromotion(input: PromotionExecuteInput, signal?: AbortSignal): Promise<PromotionSummary> {
+    const cycleSemesterId = positiveInteger(input.cycleSemesterId, 'cycleSemesterId')
+    const previewVersion = requiredText(input.previewVersion, 'previewVersion')
+    const groupId = input.groupId === null ? null : positiveInteger(input.groupId, 'groupId')
+    return this.request<unknown>('/api/academic/groups/promote', {
+      method: 'POST',
+      body: JSON.stringify({ cycleSemesterId, previewVersion, groupId }),
+      ...(signal ? { signal } : {}),
+    }).then(normalizePromotionSummary)
   }
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
@@ -272,6 +348,112 @@ function normalizeHeadmanAssignment(value: unknown): HeadmanAssignment {
     activatesDraft: requiredBoolean(record.activatesDraft, 'headman assignment.activatesDraft'),
     assistantsRevoked: nonNegativeInteger(record.assistantsRevoked, 'headman assignment.assistantsRevoked'),
   }
+}
+
+function normalizePromotionSummary(value: unknown): PromotionSummary {
+  const record = requiredRecord(value, 'promotion summary')
+  const toPromote = Array.isArray(record.toPromote) ? record.toPromote.map(normalizePromotionItem) : []
+  const toArchive = Array.isArray(record.toArchive) ? record.toArchive.map(normalizePromotionItem) : []
+  const skipped = Array.isArray(record.skipped) ? record.skipped.map(normalizePromotionSkippedItem) : []
+  const conflicts = Array.isArray(record.conflicts) ? record.conflicts.map(normalizePromotionConflict) : []
+  const dryRun = requiredBoolean(record.dryRun, 'promotion summary.dryRun')
+  const executed = requiredBoolean(record.executed, 'promotion summary.executed')
+  if (dryRun === executed) throw new Error('Сервер вернул некорректный статус перевода групп.')
+
+  const result: PromotionSummary = {
+    toPromote,
+    toArchive,
+    skipped,
+    conflicts,
+    cycleSemesterId: positiveInteger(record.cycleSemesterId, 'promotion summary.cycleSemesterId'),
+    cycleDateTo: requiredDate(record.cycleDateTo, 'promotion summary.cycleDateTo'),
+    groupId: nullablePositiveInteger(record.groupId, 'promotion summary.groupId'),
+    previewVersion: requiredText(record.previewVersion, 'promotion summary.previewVersion'),
+    promoteCount: nonNegativeInteger(record.promoteCount, 'promotion summary.promoteCount'),
+    archiveCount: nonNegativeInteger(record.archiveCount, 'promotion summary.archiveCount'),
+    promotedStudentCount: nonNegativeInteger(record.promotedStudentCount, 'promotion summary.promotedStudentCount'),
+    archivedStudentCount: nonNegativeInteger(record.archivedStudentCount, 'promotion summary.archivedStudentCount'),
+    skippedGroupCount: nonNegativeInteger(record.skippedGroupCount, 'promotion summary.skippedGroupCount'),
+    skippedStudentCount: nonNegativeInteger(record.skippedStudentCount, 'promotion summary.skippedStudentCount'),
+    conflictCount: nonNegativeInteger(record.conflictCount, 'promotion summary.conflictCount'),
+    dryRun,
+    executed,
+  }
+  const promotedStudents = toPromote.reduce((total, item) => total + item.studentCount, 0)
+  const archivedStudents = toArchive.reduce((total, item) => total + item.studentCount, 0)
+  const skippedStudents = skipped.reduce((total, item) => total + item.studentCount, 0)
+  if (result.promoteCount !== toPromote.length
+    || result.archiveCount !== toArchive.length
+    || result.promotedStudentCount !== promotedStudents
+    || result.archivedStudentCount !== archivedStudents
+    || result.skippedGroupCount !== skipped.length
+    || result.skippedStudentCount !== skippedStudents
+    || result.conflictCount !== conflicts.length) {
+    throw new Error('Числа предпросмотра не совпадают со списком групп.')
+  }
+  return result
+}
+
+function normalizePromotionItem(value: unknown): PromotionPreviewItem {
+  const record = requiredRecord(value, 'promotion item')
+  const action = promotionAction(record.action, 'promotion item.action')
+  const to = nullableText(record.to)
+  if ((action === 'PROMOTE' && to === null) || (action === 'ARCHIVE' && to !== null)) {
+    throw new Error('Сервер вернул некорректное действие для группы.')
+  }
+  return {
+    id: positiveInteger(record.id, 'promotion item.id'),
+    from: requiredText(record.from, 'promotion item.from'),
+    to,
+    action,
+    studentCount: nonNegativeInteger(record.studentCount, 'promotion item.studentCount'),
+  }
+}
+
+function normalizePromotionSkippedItem(value: unknown): PromotionSkippedItem {
+  const record = requiredRecord(value, 'promotion skipped item')
+  const reason = record.reason
+  if (reason !== 'ALREADY_PROCESSED' && reason !== 'CREATED_AFTER_CYCLE_END') {
+    throw new Error('Сервер вернул неизвестную причину пропуска группы.')
+  }
+  const previousAction = record.previousAction === null || record.previousAction === undefined
+    ? null
+    : promotionAction(record.previousAction, 'promotion skipped item.previousAction')
+  return {
+    id: positiveInteger(record.id, 'promotion skipped item.id'),
+    name: requiredText(record.name, 'promotion skipped item.name'),
+    studentCount: nonNegativeInteger(record.studentCount, 'promotion skipped item.studentCount'),
+    reason,
+    previousAction,
+    previousFrom: nullableText(record.previousFrom),
+    previousTo: nullableText(record.previousTo),
+  }
+}
+
+function normalizePromotionConflict(value: unknown): PromotionConflict {
+  const record = requiredRecord(value, 'promotion conflict')
+  const groupIds = Array.isArray(record.groupIds)
+    ? record.groupIds.map((id, index) => positiveInteger(id, `promotion conflict.groupIds[${index}]`))
+    : []
+  return {
+    prefix: typeof record.prefix === 'string' ? record.prefix : '',
+    reason: requiredText(record.reason, 'promotion conflict.reason'),
+    message: requiredText(record.message, 'promotion conflict.message'),
+    groupIds,
+  }
+}
+
+function promotionAction(value: unknown, field: string): PromotionAction {
+  if (value === 'PROMOTE' || value === 'ARCHIVE') return value
+  throw new Error(`Неизвестное действие ${field}.`)
+}
+
+function requiredDate(value: unknown, field: string): string {
+  const date = requiredText(value, field)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) {
+    throw new Error(`Некорректная дата ${field}.`)
+  }
+  return date
 }
 
 function normalizeCreateInput(input: CreateAdminGroupInput): CreateAdminGroupInput {

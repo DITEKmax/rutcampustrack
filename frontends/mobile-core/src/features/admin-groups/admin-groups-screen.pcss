@@ -207,6 +207,7 @@
 .admin-groups-table tbody th { font-weight: var(--rct-font-weight-bold); }
 
 .admin-groups-table__action,
+.admin-groups-table__promotion,
 .admin-groups-headman__close {
   min-block-size: var(--rct-control-min-touch);
   border: var(--rct-border-hairline) solid var(--rct-color-border-default);
@@ -222,6 +223,12 @@
 }
 
 .admin-groups-table__action:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
+.admin-groups-table__promotion:disabled {
   color: var(--rct-color-disabled-text);
   background: var(--rct-color-disabled-surface);
   cursor: not-allowed;
@@ -274,6 +281,174 @@
   @mixin rct-focus-ring;
 }
 
+.admin-groups-promotion__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--rct-space-3);
+  margin-block-end: var(--rct-space-3);
+}
+
+.admin-groups-promotion__toolbar p {
+  margin: 0 auto 0 0;
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-groups-promotion__open,
+.admin-groups-promotion__refresh,
+.admin-groups-promotion__confirm,
+.admin-groups-promotion__dialog-confirm {
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  font: inherit;
+  font-weight: var(--rct-font-weight-bold);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.admin-groups-promotion__refresh,
+.admin-groups-promotion__dialog-cancel {
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+}
+
+.admin-groups-promotion__open:disabled,
+.admin-groups-promotion__refresh:disabled,
+.admin-groups-promotion__confirm:disabled,
+.admin-groups-promotion__dialog-confirm:disabled,
+.admin-groups-promotion__dialog-cancel:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
+.admin-groups-promotion,
+.admin-groups-promotion__result {
+  margin-block-end: var(--rct-space-4);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  background: var(--rct-color-surface-raised);
+}
+
+.admin-groups-promotion__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+
+.admin-groups-promotion__header h2,
+.admin-groups-promotion__result h3 {
+  margin-block-end: var(--rct-space-2);
+  font-size: var(--rct-font-size-title);
+}
+
+.admin-groups-promotion__cycle {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-groups-promotion__counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rct-space-2);
+  margin: 0 0 var(--rct-space-4);
+}
+
+.admin-groups-promotion__counts > div {
+  min-inline-size: 0;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-3);
+  background: var(--rct-color-surface-base);
+}
+
+.admin-groups-promotion__counts dt {
+  color: var(--rct-color-text-muted);
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-groups-promotion__counts dd {
+  margin: var(--rct-space-1) 0 0;
+  font-weight: var(--rct-font-weight-bold);
+}
+
+.admin-groups-promotion__details h3 {
+  margin-block: var(--rct-space-4) var(--rct-space-2);
+  font-size: var(--rct-font-size-title);
+}
+
+.admin-groups-promotion__list {
+  display: grid;
+  gap: var(--rct-space-2);
+  margin: 0;
+  padding-inline-start: var(--rct-space-5);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-groups-promotion__error {
+  border-inline-start: 0.1875rem solid var(--rct-color-danger-text);
+  padding-inline-start: var(--rct-space-3);
+}
+
+.admin-groups-promotion__result {
+  border-color: var(--rct-color-success-text);
+}
+
+.admin-groups-promotion__result h3 {
+  color: var(--rct-color-success-text);
+}
+
+.admin-groups-promotion__dialog {
+  inline-size: min(34rem, calc(100vw - var(--rct-space-6)));
+  max-block-size: calc(100dvh - var(--rct-space-6));
+  overflow: auto;
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-5);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+}
+
+.admin-groups-promotion__dialog::backdrop {
+  background: rgb(11 11 12 / 0.72);
+}
+
+.admin-groups-promotion__dialog h2 {
+  margin-block-end: var(--rct-space-3);
+  font-size: var(--rct-font-size-title);
+}
+
+.admin-groups-promotion__dialog p {
+  color: var(--rct-color-text-secondary);
+  line-height: 1.5;
+}
+
+.admin-groups-promotion__dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--rct-space-2);
+  margin-block-start: var(--rct-space-4);
+}
+
+.admin-groups-promotion__dialog-cancel {
+  min-block-size: var(--rct-control-min-touch);
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  font: inherit;
+  font-weight: var(--rct-font-weight-bold);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
 .admin-groups-pagination {
   display: flex;
   align-items: center;
@@ -307,4 +482,12 @@
   .admin-groups-search button { inline-size: 100%; }
   .admin-groups-headman__header { flex-direction: column; }
   .admin-groups-headman__close { align-self: stretch; }
+  .admin-groups-promotion__toolbar { align-items: stretch; flex-direction: column; }
+  .admin-groups-promotion__toolbar p { margin: 0; }
+  .admin-groups-promotion__open { inline-size: 100%; }
+  .admin-groups-promotion__header { flex-direction: column; }
+  .admin-groups-promotion__refresh { align-self: stretch; }
+  .admin-groups-promotion__counts { grid-template-columns: 1fr; }
+  .admin-groups-promotion__dialog-actions { flex-direction: column-reverse; }
+  .admin-groups-promotion__dialog-actions button { inline-size: 100%; }
 }

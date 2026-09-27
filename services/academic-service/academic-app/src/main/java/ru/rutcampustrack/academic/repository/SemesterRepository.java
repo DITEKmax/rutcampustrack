@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.rutcampustrack.academic.entity.Semester;
+import ru.rutcampustrack.academic.contract.enums.SemesterType;
 import jakarta.persistence.LockModeType;
 
 import java.time.LocalDate;
@@ -16,6 +17,9 @@ public interface SemesterRepository extends JpaRepository<Semester, Long> {
     Optional<Semester> findByIsActiveTrue();
 
     List<Semester> findAllByIsActiveTrueOrderByIdAsc();
+
+    Optional<Semester> findFirstBySemesterTypeAndDateToBeforeOrderByDateToDescIdDesc(
+            SemesterType semesterType, LocalDate dateTo);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from Semester s where s.id = :id")

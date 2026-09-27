@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import {
   AdminGroupsApiError,
@@ -8,6 +8,7 @@ import {
   type HeadmanAssignmentPreview,
   type HeadmanRoster,
   type AdminGroupsClient,
+  type PromotionSummary,
 } from './admin-groups-client'
 import './admin-groups-screen.pcss'
 
@@ -44,6 +45,15 @@ const assignmentPreview = ref<HeadmanAssignmentPreview | null>(null)
 const headmanLoading = ref(false)
 const headmanSaving = ref(false)
 const headmanMutationPending = ref(false)
+const promotionPanelVisible = ref(false)
+const promotionScopeGroup = ref<AdminGroup | null>(null)
+const promotionPreview = ref<PromotionSummary | null>(null)
+const promotionResult = ref<PromotionSummary | null>(null)
+const promotionLoading = ref(false)
+const promotionSaving = ref(false)
+const promotionMutationPending = ref(false)
+const promotionError = ref<string | null>(null)
+const promotionConfirmDialog = ref<HTMLDialogElement | null>(null)
 
 let disposed = false
 let listRevision = 0
@@ -53,6 +63,11 @@ let headmanContextRevision = 0
 let headmanController: AbortController | null = null
 let headmanMutationRevision = 0
 let headmanMutationController: AbortController | null = null
+let promotionContextRevision = 0
+let promotionPreviewRevision = 0
+let promotionPreviewController: AbortController | null = null
+let promotionMutationRevision = 0
+let promotionMutationController: AbortController | null = null
 
 const tabs: readonly { value: AdminGroupStatus; label: string }[] = [
   { value: 'ACTIVE', label: 'Активные' },
@@ -237,6 +252,189 @@ async function confirmHeadman(): Promise<void> {
   }
 }
 
+async function openPromotion(group?: AdminGroup): Promise<void> {
+  if (promotionMutationPending.value) return
+  closePromotion(false)
+  promotionScopeGroup.value = group ?? null
+  promotionPanelVisible.value = true
+  promotionResult.value = null
+  promotionError.value = null
+  notice.value = null
+  await loadPromotionPreview()
+}
+
+async function loadPromotionPreview(): Promise<void> {
+  if (!promotionPanelVisible.value) return
+  const context = promotionContextRevision
+  const groupId = promotionScopeGroup.value?.id
+  promotionPreviewController?.abort()
+  const revision = ++promotionPreviewRevision
+  const controller = new AbortController()
+  promotionPreviewController = controller
+  promotionLoading.value = true
+  promotionError.value = null
+  promotionPreview.value = null
+  try {
+    const result = await props.client.previewPromotion(groupId, controller.signal)
+    if (!isPromotionPreviewCurrent(revision, controller, context, groupId)) return
+    promotionPreview.value = result
+  } catch (cause) {
+    if (!isPromotionPreviewCurrent(revision, controller, context, groupId)
+      || cause instanceof StaleSessionGenerationError || isAbortError(cause)) return
+    promotionError.value = promotionApiErrorMessage(cause, 'Предпросмотр перевода не удалось загрузить.')
+    emitPromotionAuthError(cause)
+  } finally {
+    if (isPromotionPreviewCurrent(revision, controller, context, groupId)) {
+      promotionLoading.value = false
+      promotionPreviewController = null
+    }
+  }
+}
+
+function isPromotionPreviewCurrent(
+  revision: number,
+  controller: AbortController,
+  context: number,
+  groupId: number | undefined,
+): boolean {
+  return !disposed
+    && promotionPanelVisible.value
+    && revision === promotionPreviewRevision
+    && context === promotionContextRevision
+    && promotionPreviewController === controller
+    && promotionScopeGroup.value?.id === groupId
+}
+
+function requestPromotionConfirmation(): void {
+  const preview = promotionPreview.value
+  if (preview === null || !preview.dryRun || preview.executed
+    || preview.groupId !== (promotionScopeGroup.value?.id ?? null)
+    || (preview.toPromote.length === 0 && preview.toArchive.length === 0)
+    || promotionMutationPending.value) return
+  promotionConfirmDialog.value?.showModal()
+}
+
+async function confirmPromotion(): Promise<void> {
+  if (promotionMutationPending.value) return
+  const preview = promotionPreview.value
+  const context = promotionContextRevision
+  if (preview === null || !preview.dryRun || preview.executed
+    || preview.groupId !== (promotionScopeGroup.value?.id ?? null)) return
+
+  const groupId = preview.groupId
+  const previousIndex = groupId === null
+    ? -1
+    : groups.value.findIndex(group => group.id === groupId)
+  promotionSaving.value = true
+  promotionMutationPending.value = true
+  promotionError.value = null
+  error.value = null
+  const revision = ++promotionMutationRevision
+  const controller = new AbortController()
+  promotionMutationController = controller
+  try {
+    const result = await props.client.executePromotion({
+      cycleSemesterId: preview.cycleSemesterId,
+      previewVersion: preview.previewVersion,
+      groupId: preview.groupId,
+    }, controller.signal)
+    if (!isPromotionMutationCurrent(revision, controller, context)) {
+      void refresh(true)
+      return
+    }
+    if (!result.executed || result.dryRun
+      || result.cycleSemesterId !== preview.cycleSemesterId
+      || result.previewVersion !== preview.previewVersion
+      || result.groupId !== preview.groupId) {
+      throw new Error('Сервер не подтвердил выполнение показанного плана.')
+    }
+    promotionResult.value = result
+    promotionPreview.value = null
+    promotionError.value = null
+    promotionConfirmDialog.value?.close()
+    notice.value = promotionResultMessage(result)
+    await refresh(true)
+    if (groupId !== null && result.toArchive.some(item => item.id === groupId)) {
+      await focusAfterArchivedGroup(groupId, previousIndex)
+    }
+  } catch (cause) {
+    void refresh(true)
+    if (!isPromotionMutationCurrent(revision, controller, context)
+      || cause instanceof StaleSessionGenerationError) return
+    const stale = cause instanceof AdminGroupsApiError && cause.response.status === 409
+    promotionPreview.value = null
+    promotionConfirmDialog.value?.close()
+    promotionError.value = promotionApiErrorMessage(
+      cause,
+      stale
+        ? 'Предпросмотр устарел. Реестр обновлён; подготовь новый предпросмотр.'
+        : 'Сервер не подтвердил результат. Обнови реестр и подготовь новый предпросмотр.',
+    )
+    emitPromotionAuthError(cause)
+  } finally {
+    if (promotionMutationRevision === revision && promotionMutationController === controller) {
+      promotionMutationPending.value = false
+      promotionMutationController = null
+      if (isPromotionContextCurrent(context)) promotionSaving.value = false
+    }
+  }
+}
+
+function isPromotionMutationCurrent(
+  revision: number,
+  controller: AbortController,
+  context: number,
+): boolean {
+  return !disposed
+    && revision === promotionMutationRevision
+    && promotionMutationController === controller
+    && isPromotionContextCurrent(context)
+}
+
+function isPromotionContextCurrent(context: number): boolean {
+  return !disposed && promotionPanelVisible.value && context === promotionContextRevision
+}
+
+function closePromotion(clearResult = true): void {
+  promotionContextRevision += 1
+  promotionPreviewRevision += 1
+  promotionPreviewController?.abort()
+  promotionPreviewController = null
+  promotionPanelVisible.value = false
+  promotionScopeGroup.value = null
+  promotionPreview.value = null
+  promotionLoading.value = false
+  promotionSaving.value = false
+  promotionError.value = null
+  if (clearResult) promotionResult.value = null
+  if (promotionConfirmDialog.value?.open) promotionConfirmDialog.value.close()
+}
+
+async function focusAfterArchivedGroup(groupId: number, previousIndex: number): Promise<void> {
+  await nextTick()
+  const rows = Array.from(document.querySelectorAll<HTMLTableRowElement>('.admin-groups-table tbody tr'))
+  const target = rows.find(row => row.dataset.groupId === String(groupId))
+    ?? rows[Math.min(Math.max(previousIndex, 0), rows.length - 1)]
+  target?.querySelector<HTMLButtonElement>('button')?.focus()
+}
+
+function promotionResultMessage(result: PromotionSummary): string {
+  return 'Сервер завершил перевод: ' + result.promoteCount + ' групп и '
+    + result.promotedStudentCount + ' студентов переведено, ' + result.archiveCount + ' групп и '
+    + result.archivedStudentCount + ' студентов отправлено в архив; уже обработано '
+    + result.skippedGroupCount + ' групп.'
+}
+
+function promotionApiErrorMessage(cause: unknown, fallback: string): string {
+  if (cause instanceof AdminGroupsApiError) return cause.problem?.detail ?? fallback
+  return cause instanceof Error ? cause.message : fallback
+}
+
+function emitPromotionAuthError(cause: unknown): void {
+  if (cause instanceof AdminGroupsApiError
+    && (cause.response.status === 401 || cause.response.status === 403)) emit('ownerError', cause)
+}
+
 function closeHeadman(clearNotice = true): void {
   headmanContextRevision += 1
   headmanRevision += 1
@@ -354,6 +552,11 @@ onBeforeUnmount(() => {
   headmanRevision += 1
   headmanController?.abort()
   headmanController = null
+  promotionContextRevision += 1
+  promotionPreviewRevision += 1
+  promotionPreviewController?.abort()
+  promotionPreviewController = null
+  promotionMutationRevision += 1
 })
 </script>
 
@@ -427,11 +630,215 @@ onBeforeUnmount(() => {
           <span class="sr-only">: {{ statusCount(tab.value) }} групп</span>
         </button>
       </div>
+      <div
+        v-if="status !== 'ARCHIVED'"
+        class="admin-groups-promotion__toolbar"
+      >
+        <p>
+          Цикл перевода определяется последним завершённым весенним семестром.
+        </p>
+        <button
+          class="admin-groups-action admin-groups-promotion__open"
+          type="button"
+          :disabled="promotionMutationPending || counts.active + counts.draft === 0"
+          @click="openPromotion()"
+        >
+          Перевести все группы на следующий курс
+        </button>
+      </div>
       <form class="admin-groups-search" role="search" @submit.prevent="submitSearch">
         <label for="admin-groups-search-input">Поиск по названию группы</label>
         <input id="admin-groups-search-input" v-model="search" type="search" autocomplete="off">
         <button type="submit">Найти</button>
       </form>
+
+      <section
+        v-if="promotionPanelVisible"
+        id="admin-groups-promotion-panel"
+        class="admin-groups-promotion"
+        aria-labelledby="admin-groups-promotion-title"
+      >
+        <div class="admin-groups-promotion__header">
+          <div>
+            <h2 id="admin-groups-promotion-title">
+              {{ promotionScopeGroup ? 'Перевод группы ' + displayCode(promotionScopeGroup) : 'Предпросмотр массового перевода' }}
+            </h2>
+            <p>Серверный план привязан к завершённому весеннему семестру.</p>
+          </div>
+          <button
+            class="admin-groups-headman__close admin-groups-promotion__refresh"
+            type="button"
+            :disabled="promotionMutationPending"
+            @click="closePromotion()"
+          >
+            Закрыть
+          </button>
+        </div>
+
+        <p
+          v-if="promotionLoading"
+          class="admin-groups-state"
+          role="status"
+        >
+          Считаем последствия…
+        </p>
+        <div
+          v-if="promotionError"
+          class="admin-groups-promotion__error"
+        >
+          <p
+            class="admin-groups-state admin-groups-state--error"
+            role="alert"
+          >
+            {{ promotionError }}
+          </p>
+          <button
+            v-if="!promotionMutationPending"
+            class="admin-groups-table__action"
+            type="button"
+            @click="loadPromotionPreview"
+          >
+            Подготовить предпросмотр
+          </button>
+        </div>
+
+        <section
+          v-if="promotionPreview"
+          class="admin-groups-promotion__details"
+          role="status"
+        >
+          <p class="admin-groups-promotion__cycle">
+            Цикл: весенний семестр завершился {{ promotionPreview.cycleDateTo.split('-').reverse().join('.') }}.
+          </p>
+          <dl class="admin-groups-promotion__counts">
+            <div><dt>Перейдут на курс выше</dt><dd>{{ promotionPreview.promoteCount }} групп · {{ promotionPreview.promotedStudentCount }} студентов</dd></div>
+            <div><dt>Уйдут в архив</dt><dd>{{ promotionPreview.archiveCount }} групп · {{ promotionPreview.archivedStudentCount }} студентов</dd></div>
+            <div><dt>Пропущено</dt><dd>{{ promotionPreview.skippedGroupCount }} групп · {{ promotionPreview.skippedStudentCount }} студентов</dd></div>
+            <div><dt>Конфликтные префиксы</dt><dd>{{ promotionPreview.conflictCount }}</dd></div>
+          </dl>
+
+          <section
+            v-if="promotionPreview.toPromote.length"
+            aria-labelledby="admin-groups-promotion-next-title"
+          >
+            <h3 id="admin-groups-promotion-next-title">
+              Перевод на следующий курс
+            </h3>
+            <ul class="admin-groups-promotion__list">
+              <li
+                v-for="item in promotionPreview.toPromote"
+                :key="'promote-' + item.id"
+              >
+                <strong>{{ item.from }} → {{ item.to }}</strong>
+                <span>{{ item.studentCount }} студентов · ID {{ item.id }}</span>
+              </li>
+            </ul>
+          </section>
+
+          <section
+            v-if="promotionPreview.toArchive.length"
+            aria-labelledby="admin-groups-promotion-archive-title"
+          >
+            <h3 id="admin-groups-promotion-archive-title">
+              Архивация выпускных групп
+            </h3>
+            <ul class="admin-groups-promotion__list">
+              <li
+                v-for="item in promotionPreview.toArchive"
+                :key="'archive-' + item.id"
+              >
+                <strong>{{ item.from }} — выпуск</strong>
+                <span>{{ item.studentCount }} студентов · ID {{ item.id }}</span>
+              </li>
+            </ul>
+          </section>
+
+          <section
+            v-if="promotionPreview.skipped.length"
+            aria-labelledby="admin-groups-promotion-skipped-title"
+          >
+            <h3 id="admin-groups-promotion-skipped-title">
+              Группы без изменений
+            </h3>
+            <ul class="admin-groups-promotion__list">
+              <li
+                v-for="item in promotionPreview.skipped"
+                :key="'skip-' + item.id"
+              >
+                <strong>{{ item.name }}</strong>
+                <span>
+                  {{ item.reason === 'ALREADY_PROCESSED'
+                    ? 'Уже обработана в этом цикле'
+                    : 'Создана после окончания семестра' }}
+                  · {{ item.studentCount }} студентов · ID {{ item.id }}
+                </span>
+              </li>
+            </ul>
+          </section>
+
+          <section
+            v-if="promotionPreview.conflicts.length"
+            aria-labelledby="admin-groups-promotion-conflicts-title"
+          >
+            <h3 id="admin-groups-promotion-conflicts-title">
+              Нужна проверка данных
+            </h3>
+            <ul class="admin-groups-promotion__list">
+              <li
+                v-for="(conflict, index) in promotionPreview.conflicts"
+                :key="conflict.prefix + '-' + conflict.reason + '-' + index"
+              >
+                <strong>{{ conflict.prefix || 'Группа' }}</strong>
+                <span>{{ conflict.message }}</span>
+              </li>
+            </ul>
+          </section>
+
+          <button
+            class="admin-groups-action admin-groups-promotion__confirm"
+            type="button"
+            :disabled="promotionMutationPending || promotionLoading
+              || (promotionPreview.toPromote.length === 0 && promotionPreview.toArchive.length === 0)"
+            @click="requestPromotionConfirmation"
+          >
+            Подтвердить показанный план
+          </button>
+        </section>
+
+        <section
+          v-if="promotionResult"
+          class="admin-groups-promotion__result"
+          role="status"
+          aria-labelledby="admin-groups-promotion-result-title"
+        >
+          <h3 id="admin-groups-promotion-result-title">
+            Результат сервера
+          </h3>
+          <p>{{ promotionResultMessage(promotionResult) }}</p>
+          <ul class="admin-groups-promotion__list">
+            <li
+              v-for="item in promotionResult.toPromote"
+              :key="'result-promote-' + item.id"
+            >
+              <strong>{{ item.from }} → {{ item.to }}</strong>
+              <span>{{ item.studentCount }} студентов · ID {{ item.id }}</span>
+            </li>
+            <li
+              v-for="item in promotionResult.toArchive"
+              :key="'result-archive-' + item.id"
+            >
+              <strong>{{ item.from }} — отправлена в архив</strong>
+              <span>{{ item.studentCount }} студентов · ID {{ item.id }}</span>
+            </li>
+          </ul>
+          <p
+            v-if="promotionResult.conflicts.length"
+            class="admin-groups-state"
+          >
+            Пропущено конфликтов: {{ promotionResult.conflictCount }}.
+          </p>
+        </section>
+      </section>
 
       <p v-if="loading" class="admin-groups-state" role="status">Загружаем группы…</p>
       <div v-else-if="groups.length === 0" class="admin-groups-empty">
@@ -453,7 +860,11 @@ onBeforeUnmount(() => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="group in groups" :key="group.id">
+            <tr
+              v-for="group in groups"
+              :key="group.id"
+              :data-group-id="group.id"
+            >
               <th scope="row">{{ displayCode(group) }}</th>
               <td>{{ group.currentCourse ?? '—' }}</td>
               <td>{{ durationLabel(group) }}</td>
@@ -461,6 +872,15 @@ onBeforeUnmount(() => {
               <td>{{ group.headmanFio ?? 'Не назначен' }}</td>
               <td v-if="status === 'DRAFT'">{{ group.draftReason ?? 'Причина не указана' }}</td>
               <td>
+                <button
+                  v-if="status !== 'ARCHIVED'"
+                  class="admin-groups-table__promotion"
+                  type="button"
+                  :disabled="promotionMutationPending"
+                  @click="openPromotion(group)"
+                >
+                  Перевести на следующий курс
+                </button>
                 <button
                   class="admin-groups-table__action"
                   type="button"
@@ -521,6 +941,49 @@ onBeforeUnmount(() => {
           </button>
         </form>
       </section>
+
+      <dialog
+        ref="promotionConfirmDialog"
+        class="admin-groups-promotion__dialog"
+        aria-labelledby="admin-groups-promotion-confirm-title"
+        aria-describedby="admin-groups-promotion-confirm-detail"
+      >
+        <h2 id="admin-groups-promotion-confirm-title">
+          Подтверди перевод групп
+        </h2>
+        <p
+          v-if="promotionPreview"
+          id="admin-groups-promotion-confirm-detail"
+        >
+          {{ promotionScopeGroup ? 'Группа ' + displayCode(promotionScopeGroup) : 'В выбранном цикле' }}:
+          весенний семестр завершился {{ promotionPreview.cycleDateTo.split('-').reverse().join('.') }}.
+          {{ promotionPreview.promoteCount }} групп перейдут на курс выше
+          ({{ promotionPreview.promotedStudentCount }} студентов), {{ promotionPreview.archiveCount }}
+          групп уйдут в архив ({{ promotionPreview.archivedStudentCount }} студентов).
+          {{ promotionPreview.skippedGroupCount }} групп будут пропущены
+          ({{ promotionPreview.skippedStudentCount }} студентов), конфликтных префиксов: {{ promotionPreview.conflictCount }}.
+          Пропущенные группы останутся без изменений.
+        </p>
+        <div class="admin-groups-promotion__dialog-actions">
+          <button
+            class="admin-groups-table__action admin-groups-promotion__dialog-cancel"
+            type="button"
+            :disabled="promotionMutationPending"
+            @click="promotionConfirmDialog?.close()"
+          >
+            Назад
+          </button>
+          <button
+            class="admin-groups-action admin-groups-promotion__dialog-confirm"
+            type="button"
+            :disabled="promotionMutationPending || promotionPreview === null"
+            :aria-busy="promotionSaving"
+            @click="confirmPromotion"
+          >
+            {{ promotionSaving ? 'Сохраняем…' : 'Подтвердить перевод' }}
+          </button>
+        </div>
+      </dialog>
 
       <footer v-if="!loading" class="admin-groups-pagination">
         <span>{{ totalElements }} групп · {{ formatPage() }}</span>

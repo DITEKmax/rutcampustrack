@@ -17,14 +17,20 @@ public class PromotionPreviewItem {
     private String from;
     private String to;
     private Action action;
+    private long studentCount;
 
     public PromotionPreviewItem() {}
 
     public PromotionPreviewItem(Long id, String from, String to, Action action) {
+        this(id, from, to, action, 0L);
+    }
+
+    public PromotionPreviewItem(Long id, String from, String to, Action action, long studentCount) {
         this.id = id;
         this.from = from;
         this.to = to;
         this.action = action;
+        this.studentCount = studentCount;
     }
 
     public Long getId() { return id; }
@@ -38,4 +44,7 @@ public class PromotionPreviewItem {
 
     public Action getAction() { return action; }
     public void setAction(Action action) { this.action = action; }
+
+    public long getStudentCount() { return studentCount; }
+    public void setStudentCount(long studentCount) { this.studentCount = studentCount; }
 }

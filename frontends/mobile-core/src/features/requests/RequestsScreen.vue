@@ -7,7 +7,7 @@ type NotificationRequestView =
   | { status: 'loading' }
   | { status: 'available'; detail: RequestDetail }
   | { status: 'unavailable'; message: string }
-  | { status: 'error'; message: string }
+  | { status: 'error'; message: string; title?: string }
 
 const props = withDefaults(defineProps<{
   bucket: RequestBucket
@@ -105,7 +105,7 @@ const actionHint = computed(() => props.readOnly
         class="requests-state requests-state--error"
         role="alert"
       >
-        <h2>Не удалось загрузить заявку</h2>
+        <h2>{{ notificationTarget.title ?? 'Не удалось загрузить заявку' }}</h2>
         <p>{{ notificationTarget.message }}</p>
         <button
           class="requests-secondary-action"

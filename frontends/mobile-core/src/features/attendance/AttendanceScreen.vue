@@ -117,7 +117,7 @@ watch(
       row?.querySelector<HTMLElement>('[data-notification-target]')?.focus()
     })
   },
-  { flush: 'post' },
+  { flush: 'post', immediate: true },
 )
 
 const emptyViewModel: AttendanceViewModel = {

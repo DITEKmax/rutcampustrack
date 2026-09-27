@@ -1,0 +1,47 @@
+{
+  "worktree": ".agent/worktrees/admin-group-promotion-20260927",
+  "branch": "codex/notification-student-routes-20260927",
+  "base_revision": "2b2aa97f721a50ae4124b278897f99573a9923fa",
+  "environment": "Windows PowerShell; commands run from frontends/",
+  "checks": [
+    {
+      "command": "npm run typecheck --workspace @rct/mobile-core",
+      "exit_code": 0,
+      "evidence": "tsc -p tsconfig.json --noEmit"
+    },
+    {
+      "command": "npm run typecheck --workspace @rct/pwa-vue",
+      "exit_code": 0,
+      "evidence": "vue-tsc -p tsconfig.json --noEmit"
+    },
+    {
+      "command": "npm run typecheck --workspace @rct/tma-vue",
+      "exit_code": 0,
+      "evidence": "vue-tsc -p tsconfig.json --noEmit"
+    },
+    {
+      "command": "npm exec -- eslint mobile-core/src/features/requests/RequestsScreen.vue mobile-core/src/features/requests/requests-controller.ts mobile-core/src/features/requests/requests-controller.test.ts mobile-core/src/features/requests/use-requests.ts mobile-core/src/features/attendance/AttendanceScreen.vue mobile-core/src/shared/components/StudentFeatureOwner.vue --max-warnings=0",
+      "exit_code": 0,
+      "evidence": "scoped ESLint; no warnings"
+    },
+    {
+      "command": "npm exec -- vitest run --root mobile-core src/features/requests/requests-controller.test.ts",
+      "exit_code": 0,
+      "evidence": "1 test file; 16 tests passed, including direct empty-bucket cancellation for EXCUSE and LATE_CHECKIN, stale-context guard, and 403 rejection"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0,
+      "evidence": "no whitespace errors"
+    },
+    {
+      "command": "$ErrorActionPreference = 'Stop'; Get-Content -Raw .agent/checks.json | ConvertFrom-Json | Out-Null",
+      "exit_code": 0,
+      "evidence": "checks.json parsed successfully"
+    }
+  ],
+  "runtime": {
+    "status": "not_run",
+    "evidence": "No authenticated live PWA/TMA session or browser flow was available in this worktree; Vitest ran in Node."
+  }
+}

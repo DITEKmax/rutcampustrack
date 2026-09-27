@@ -401,6 +401,56 @@ export class RequestsController {
     })
   }
 
+  async cancelTargetRequest(id: string, expectedKind: RequestKind): Promise<RequestDetail> {
+    this.assertMutable()
+    const identity = this.identity()
+    const contextGeneration = this.contextGeneration
+    const port = this.options.port()
+    if (!identity || !port) throw new RequestsError('FORBIDDEN', 'Раздел недоступен.')
+
+    const current = await port.getRequest(id)
+    if (!this.isCurrentContext(identity, contextGeneration)) {
+      throw new RequestsError('STALE', 'Сессия заявки больше не актуальна.')
+    }
+    this.assertMutable()
+    if (!this.isCurrentContext(identity, contextGeneration)) {
+      throw new RequestsError('STALE', 'Сессия заявки больше не актуальна.')
+    }
+    if (current.summary.id !== id || current.summary.kind !== expectedKind) {
+      throw new RequestsError('UNAVAILABLE', 'Заявка больше недоступна.')
+    }
+    if (!canCancelRequest(current.summary, this.options.scope(), {
+      offline: this.options.offline(),
+      readOnly: this.options.readOnly(),
+    })) {
+      throw new RequestsError('VALIDATION', 'Эту заявку сейчас нельзя отменить.')
+    }
+
+    this.view.mutation = 'cancelling'
+    this.view.mutationError = null
+    try {
+      const refreshed = await port.cancelRequest(id)
+      if (!this.isCurrentContext(identity, contextGeneration)) {
+        throw new RequestsError('STALE', 'Сессия заявки больше не актуальна.')
+      }
+      if (refreshed.summary.id !== id || refreshed.summary.kind !== expectedKind) {
+        throw new RequestsError('UNAVAILABLE', 'Заявка больше недоступна.')
+      }
+      return mapDetail(refreshed, this.options.scope(), {
+        offline: this.options.offline(),
+        readOnly: this.options.readOnly(),
+      })
+    } catch (error) {
+      if (!this.isCurrentContext(identity, contextGeneration)) {
+        throw new RequestsError('STALE', 'Сессия заявки больше не актуальна.')
+      }
+      this.view.mutationError = errorMessage(error, 'Не удалось отменить заявку.')
+      throw error
+    } finally {
+      if (this.isCurrentContext(identity, contextGeneration)) this.view.mutation = 'idle'
+    }
+  }
+
   private assertReadable(bucket: RequestBucket): void {
     this.contextChanged()
     const access = this.refreshAccess(bucket)

@@ -142,7 +142,12 @@ type RequestNotificationState = {
   kind: 'request'
   requestId: number
   target: NotificationRequestTarget
-} & (TargetLoadState | { status: 'available'; detail: RequestDetail })
+} & (
+  | { status: 'loading' }
+  | { status: 'unavailable'; message: string }
+  | { status: 'error'; message: string; title?: string }
+  | { status: 'available'; detail: RequestDetail }
+)
 
 type LessonNotificationState = {
   kind: 'lesson'
@@ -275,7 +280,14 @@ const requestNotificationView = computed(() => {
   const targetState = activeRequestNotification.value
   if (!targetState) return null
   if (targetState.status === 'available') return { status: targetState.status, detail: targetState.detail } as const
-  if (targetState.status === 'unavailable' || targetState.status === 'error') {
+  if (targetState.status === 'error') {
+    return {
+      status: targetState.status,
+      message: targetState.message,
+      ...(targetState.title ? { title: targetState.title } : {}),
+    } as const
+  }
+  if (targetState.status === 'unavailable') {
     return { status: targetState.status, message: targetState.message } as const
   }
   return { status: 'loading' } as const
@@ -1078,6 +1090,55 @@ function loadMoreRequests(): void {
 
 function cancelRequest(id: string): void {
   if (requestCancellingId.value) return
+  const targetIntent = props.notificationTargetIntent
+  const targetState = notificationTargetState.value
+  if (targetIntent?.target.kind === 'request'
+    && targetState?.kind === 'request'
+    && targetState.status === 'available'
+    && targetState.detail.summary.id === id
+    && targetState.target.requestId === targetIntent.target.requestId
+    && targetState.target.requestKind === targetIntent.target.requestKind
+    && isActiveNotificationTargetRequest(targetIntent)) {
+    requestCancellingId.value = id
+    void requests.cancelTargetRequest(id, targetState.target.requestKind)
+      .then((detail) => {
+        if (!isActiveNotificationTargetRequest(targetIntent)) return
+        const current = notificationTargetState.value
+        if (current?.kind !== 'request'
+          || current.status !== 'available'
+          || current.requestId !== targetIntent.requestId
+          || current.detail.summary.id !== id) return
+        notificationTargetState.value = { ...current, detail }
+      })
+      .catch((error: unknown) => {
+        if (!isActiveNotificationTargetRequest(targetIntent)) return
+        if (error instanceof StudentApiError && error.response.status === 401) {
+          handleRequestsError(error)
+          return
+        }
+        const current = notificationTargetState.value
+        if (current?.kind !== 'request'
+          || current.status !== 'available'
+          || current.requestId !== targetIntent.requestId
+          || current.detail.summary.id !== id) return
+        const unavailable = error instanceof RequestsError && error.code === 'UNAVAILABLE'
+          || error instanceof StudentApiError && (error.response.status === 403 || error.response.status === 404)
+        notificationTargetState.value = unavailable
+          ? { ...current, status: 'unavailable', message: 'Эта заявка удалена или больше недоступна.' }
+          : {
+            ...current,
+            status: 'error',
+            title: 'Не удалось отменить заявку',
+            message: error instanceof RequestsError
+              ? error.message
+              : 'Не удалось отменить заявку. Проверь подключение и попробуй ещё раз.',
+          }
+      })
+      .finally(() => {
+        if (!disposed) requestCancellingId.value = null
+      })
+    return
+  }
   requestCancellingId.value = id
   void requests.cancelRequest(id)
     .catch(handleRequestsError)

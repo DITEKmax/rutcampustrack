@@ -68,6 +68,7 @@ export function useRequests(
     load: (bucket?: RequestBucket) => controller.loadBucket(bucket),
     loadMore: (bucket?: RequestBucket) => controller.loadMore(bucket),
     loadTargetDetail: (id: string, expectedKind: RequestKind) => controller.loadTargetDetail(id, expectedKind),
+    cancelTargetRequest: (id: string, expectedKind: RequestKind) => controller.cancelTargetRequest(id, expectedKind),
     loadOptions: () => controller.loadOptions(),
     submitExcuse: (payload: ExcuseRequestPayload) => controller.submitExcuse(payload),
     submitLateCheckin: (payload: LateCheckinRequestPayload) => controller.submitLateCheckin(payload),

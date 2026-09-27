@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { StudentApiError } from '../../api/student-client'
 import type {
   StudentRequestDetail,
   StudentRequestOptions,
@@ -8,7 +9,7 @@ import type {
 import type { StudentFeatureScope } from '../../shared/session-owner'
 import { RequestsController, shouldLoadRequestOptions, validateExcusePayload } from './requests-controller'
 import type { RequestsPort } from './requests-port'
-import type { ExcuseRequestPayload, RequestOptions } from './types'
+import type { ExcuseRequestPayload, RequestKind, RequestOptions } from './types'
 
 function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void; reject: (reason?: unknown) => void } {
   let resolve!: (value: T) => void
@@ -32,10 +33,10 @@ const scope: StudentFeatureScope = {
   resetGeneration: 1,
 }
 
-function summary(id: string): StudentRequestSummary {
+function summary(id: string, kind: RequestKind = 'EXCUSE'): StudentRequestSummary {
   return {
     id,
-    kind: 'EXCUSE',
+    kind,
     status: 'PENDING',
     origin: 'MANUAL',
     createdAt: '2026-09-13T08:00:00Z',
@@ -342,6 +343,61 @@ describe('RequestsController', () => {
     stale.value.onContextChanged()
     pendingDetail.resolve(detail(summary('ticket-43')))
     await expect(pending).rejects.toMatchObject({ code: 'STALE' })
+  })
+
+  it.each(['EXCUSE', 'LATE_CHECKIN'] as const)('cancels a %s notification target without bucket data', async (kind) => {
+    let listCalls = 0
+    const fetchedIds: string[] = []
+    const cancelledIds: string[] = []
+    const refreshed = detail({ ...summary('target-51', kind), status: 'CANCELLED' })
+    const direct = controller({
+      port: port({
+        listRequests: async () => { listCalls += 1; return page([]) },
+        getRequest: async (id) => { fetchedIds.push(id); return detail(summary(id, kind)) },
+        cancelRequest: async (id) => { cancelledIds.push(id); return refreshed },
+      }),
+    })
+
+    const updated = await direct.value.cancelTargetRequest('target-51', kind)
+
+    expect(listCalls).toBe(0)
+    expect(fetchedIds).toEqual(['target-51'])
+    expect(cancelledIds).toEqual(['target-51'])
+    expect(direct.value.view.open.requests).toEqual([])
+    expect(direct.value.view.archive.requests).toEqual([])
+    expect(updated.summary.status).toBe('CANCELLED')
+    expect(updated.summary.canCancel).toBe(false)
+  })
+
+  it('does not cancel a notification target after its student context changes', async () => {
+    const pendingDetail = deferred<StudentRequestDetail>()
+    let cancelCalls = 0
+    const stale = controller({
+      port: port({
+        getRequest: async () => pendingDetail.promise,
+        cancelRequest: async () => { cancelCalls += 1; return detail({ ...summary('target-52'), status: 'CANCELLED' }) },
+      }),
+    })
+    const pending = stale.value.cancelTargetRequest('target-52', 'EXCUSE')
+    stale.state.scope = { ...scope, resetGeneration: 2 }
+    stale.value.onContextChanged()
+    pendingDetail.resolve(detail(summary('target-52')))
+
+    await expect(pending).rejects.toMatchObject({ code: 'STALE' })
+    expect(cancelCalls).toBe(0)
+  })
+
+  it('preserves a 403 cancellation failure instead of returning target success', async () => {
+    const forbidden = new StudentApiError(new Response(null, { status: 403 }), null)
+    let cancelCalls = 0
+    const denied = controller({
+      port: port({
+        cancelRequest: async () => { cancelCalls += 1; throw forbidden },
+      }),
+    })
+
+    await expect(denied.value.cancelTargetRequest('target-53', 'EXCUSE')).rejects.toBe(forbidden)
+    expect(cancelCalls).toBe(1)
   })
 
   it('stops mutations before transport while offline or read-only', async () => {

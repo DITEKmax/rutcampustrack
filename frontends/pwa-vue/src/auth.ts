@@ -116,7 +116,8 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     try {
       const stored = logoutMarkerStorage?.getItem(EXPLICIT_LOGOUT_STORAGE_KEY)
       if (stored === 'pending' || stored === 'confirmed' || stored === 'unconfirmed') logoutState = stored
-      else if (stored === null) logoutState = null
+      // A missing persistent marker cannot clear this instance's latch: the
+      // preceding storage write may have failed, but logout still happened.
     } catch {
       // A storage restriction cannot clear this tab's in-memory sign-out latch.
     }

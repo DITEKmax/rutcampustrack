@@ -134,11 +134,14 @@ class TestInvalidationChannel implements PwaAuthInvalidationChannel {
 class TestLogoutMarkerStorage implements PwaAuthLogoutMarkerStorage {
   private readonly values = new Map<string, string>()
 
+  constructor(private readonly failWrites = false) {}
+
   getItem(key: string): string | null {
     return this.values.get(key) ?? null
   }
 
   setItem(key: string, value: string): void {
+    if (this.failWrites) throw new Error('storage quota exceeded')
     this.values.set(key, value)
   }
 
@@ -209,6 +212,34 @@ describe('PWA memory session', () => {
     expect(reloaded.canAutoBootstrap()).toBe(true)
     auth.dispose()
     reloaded.dispose()
+  })
+
+  it.each([
+    ['HTTP 503', 503],
+    ['network failure', 0],
+  ] as const)('keeps the in-memory sign-out latch when marker storage fails after %s', async (_label, status) => {
+    const storage = new TestLogoutMarkerStorage(true)
+    const fetcher = vi.fn<typeof fetch>()
+    if (status === 503) {
+      fetcher.mockResolvedValueOnce(new Response(null, { status: 503 }))
+    } else {
+      fetcher.mockRejectedValueOnce(new TypeError('offline'))
+    }
+    fetcher.mockResolvedValueOnce(response({ accessToken: 'manual-login-token', expiresIn: 3600 }))
+    const auth = usePwaAuth({ fetcher, logoutMarkerStorage: storage })
+    auth.setToken('old-admin-token')
+
+    await expect(auth.logout(async () => undefined)).rejects.toMatchObject({ status })
+    expect(storage.getItem('rct-pwa-explicit-logout-v1')).toBeNull()
+    expect(auth.explicitLogoutState()).toBe('unconfirmed')
+    // App's initial, online, and retry bootstrap paths all consult this gate.
+    expect(auth.canAutoBootstrap()).toBe(false)
+    expect(fetcher).toHaveBeenCalledOnce()
+
+    await auth.login({ login: 'admin', password: 'secret' })
+    expect(auth.explicitLogoutState()).toBeNull()
+    expect(auth.canAutoBootstrap()).toBe(true)
+    auth.dispose()
   })
 
   it.each([

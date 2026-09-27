@@ -17,3 +17,5 @@ Runtime evidence: no runtime check of the newly corrected failure/retry paths wa
 Diff inventory: `frontends/mobile-core/src/features/profile/RoleSwitchScreen.vue`; `frontends/pwa-vue/src/App.vue`, `src/auth.ts`, `src/auth.test.ts`; `frontends/tma-vue/src/App.vue`, `src/tma-auth.test.ts`.
 
 Limits: no backend/API change; no full lint, build, Docker, or runtime stand run here. Historical and concurrent untracked `.agent` items were left untouched and are outside the scoped commit.
+
+Follow-up latch edge: a missing storage value no longer clears a non-null same-instance logout latch after `setItem` fails. Targeted PWA auth test with the stock Vite config — exit 0; 30 tests, including 503/network + throwing storage writes, bootstrap gate, and manual-login release. Scoped auth ESLint and `git diff --check` — exit 0.

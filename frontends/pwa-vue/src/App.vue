@@ -146,6 +146,7 @@ const authView = ref<'login' | 'role' | 'student' | 'teacher' | 'headman' | 'map
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null)
 const authError = shallowRef<ProfileRequestError | null>(null)
 const persistedLogoutState = auth.explicitLogoutState()
+const logoutPending = ref(false)
 const logoutNotice = ref<string | null>(persistedLogoutState === 'unconfirmed' || persistedLogoutState === 'pending'
   ? 'Auth не подтвердил отзыв предыдущей сессии. Автоматический вход отключён; войди вручную.'
   : persistedLogoutState === 'confirmed' ? 'Ты вышел из аккаунта. Чтобы войти снова, введи данные.' : null)
@@ -1108,27 +1109,44 @@ function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): P
 }
 
 async function logout(): Promise<void> {
+  if (logoutPending.value) return
   const previous = invalidateOwnerSynchronously({ clearAuth: false })
-  let logoutFailure: unknown = null
-  try {
-    await auth.logout(async () => { await clearOwnerSnapshot(previous) })
-  } catch (cause) {
-    logoutFailure = cause
-  }
+  logoutPending.value = true
+  logoutNotice.value = null
   authSnapshot.value = null
   authError.value = null
   bootstrapError.value = null
-  logoutNotice.value = auth.explicitLogoutState() === 'unconfirmed'
-    ? `${logoutFailure instanceof PwaAuthError
-      ? logoutFailure.message
-      : 'Не удалось подтвердить отзыв текущей сессии'}. Локальный доступ закрыт; автоматический вход отключён. Войди вручную, чтобы продолжить.`
-    : logoutFailure
-      ? 'Сессия отозвана, но локальная очистка не завершилась. Автоматический вход отключён; повтори вход вручную.'
-      : null
   authView.value = 'login'
   sessionReady.value = true
   offline.value = false
   readOnly.value = true
+
+  const logoutRequest = auth.logout(async () => { await clearOwnerSnapshot(previous) })
+  const logoutGeneration = auth.currentGeneration()
+  let logoutFailure: unknown = null
+  try {
+    await logoutRequest
+  } catch (cause) {
+    logoutFailure = cause
+  } finally {
+    if (auth.isCurrent(logoutGeneration)) {
+      authSnapshot.value = null
+      authError.value = null
+      bootstrapError.value = null
+      logoutNotice.value = auth.explicitLogoutState() === 'unconfirmed'
+        ? `${logoutFailure instanceof PwaAuthError
+          ? logoutFailure.message
+          : 'Не удалось подтвердить отзыв текущей сессии'}. Локальный доступ закрыт; автоматический вход отключён. Войди вручную, чтобы продолжить.`
+        : logoutFailure
+          ? 'Сессия отозвана, но локальная очистка не завершилась. Автоматический вход отключён; повтори вход вручную.'
+          : 'Ты вышел из аккаунта. Чтобы войти снова, введи данные.'
+      authView.value = 'login'
+      sessionReady.value = true
+      offline.value = false
+      readOnly.value = true
+    }
+    logoutPending.value = false
+  }
 }
 
 function handleExternalInvalidation(reason: PwaAuthInvalidationReason = 'external'): void {
@@ -1349,20 +1367,34 @@ onBeforeUnmount(() => {
     />
     Подключаемся к сессии…
   </section>
-  <p
-    v-if="authView === 'login' && logoutNotice"
-    class="today-state today-state--error"
-    role="alert"
+  <section
+    v-if="authView === 'login' && logoutPending"
+    class="today-state"
+    role="status"
     aria-live="polite"
+    aria-busy="true"
   >
-    {{ logoutNotice }}
-  </p>
-  <LoginScreen
-    v-if="authView === 'login'"
-    :loading="authLoading || bootstrapping"
-    :error="authError"
-    @submit="submitLogin"
-  />
+    <span
+      class="today-state__spinner"
+      aria-hidden="true"
+    />
+    Выполняется выход из аккаунта…
+  </section>
+  <template v-else-if="authView === 'login'">
+    <p
+      v-if="logoutNotice"
+      class="today-state today-state--error"
+      role="alert"
+      aria-live="polite"
+    >
+      {{ logoutNotice }}
+    </p>
+    <LoginScreen
+      :loading="authLoading || bootstrapping"
+      :error="authError"
+      @submit="submitLogin"
+    />
+  </template>
   <RoleSwitchScreen
     v-else-if="authView === 'role'"
     :snapshot="authSnapshot"

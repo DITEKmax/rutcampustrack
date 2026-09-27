@@ -93,6 +93,7 @@ export class PwaAuthError extends Error {
 
 const INVALIDATION_MESSAGE = 'rct-auth-invalidate-v1'
 const EXPLICIT_LOGOUT_STORAGE_KEY = 'rct-pwa-explicit-logout-v1'
+const LOGOUT_TIMEOUT_MS = 10_000
 
 export function usePwaAuth(options: PwaAuthOptions = {}) {
   const accessToken = ref<string | null>(null)
@@ -408,7 +409,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     setExplicitLogoutState('pending')
     // Invalidate before the remote request so an in-flight 401 cannot retry
     // with a replacement token while logout is still waiting on the network.
-    clear()
+    const logoutGeneration = clear()
     // Start local invalidation before the remote request completes. The
     // storage owner has its own generation gate, so a queued old write cannot
     // recreate the pointer while the logout request is in flight.
@@ -420,11 +421,15 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     let logoutError: PwaAuthError | null = null
     try {
       // Keep this request shape stable for the cookie-only logout endpoint.
-      const response = await request('/api/auth/logout', { method: 'POST', credentials: 'include' })
+      const response = await request('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        signal: AbortSignal.timeout(LOGOUT_TIMEOUT_MS),
+      })
       if (!response.ok) throw new PwaAuthError(response.status, 'Не удалось подтвердить отзыв текущей сессии')
-      setExplicitLogoutState('confirmed')
+      if (currentGeneration() === logoutGeneration) setExplicitLogoutState('confirmed')
     } catch (cause) {
-      setExplicitLogoutState('unconfirmed')
+      if (currentGeneration() === logoutGeneration) setExplicitLogoutState('unconfirmed')
       logoutError = cause instanceof PwaAuthError
         ? cause
         : new PwaAuthError(0, 'Не удалось связаться с Auth и подтвердить отзыв текущей сессии')

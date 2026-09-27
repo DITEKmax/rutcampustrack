@@ -214,6 +214,31 @@ describe('PWA memory session', () => {
     reloaded.dispose()
   })
 
+  it('does not let a late logout response overwrite a newer manual login', async () => {
+    const storage = new TestLogoutMarkerStorage()
+    let resolveLogout!: (response: Response) => void
+    const delayedLogout = new Promise<Response>((resolve) => { resolveLogout = resolve })
+    const fetcher = vi.fn<typeof fetch>()
+      .mockReturnValueOnce(delayedLogout)
+      .mockResolvedValueOnce(response({ accessToken: 'new-admin-token', expiresIn: 3600 }))
+    const auth = usePwaAuth({ fetcher, logoutMarkerStorage: storage })
+    auth.setToken('old-admin-token')
+
+    const logout = auth.logout(async () => undefined)
+    expect(auth.accessToken.value).toBeNull()
+    expect(auth.canAutoBootstrap()).toBe(false)
+    await auth.login({ login: 'admin', password: 'secret' })
+    expect(auth.accessToken.value).toBe('new-admin-token')
+    expect(auth.explicitLogoutState()).toBeNull()
+
+    resolveLogout(new Response(null, { status: 503 }))
+    await expect(logout).rejects.toMatchObject({ status: 503 })
+    expect(auth.accessToken.value).toBe('new-admin-token')
+    expect(auth.explicitLogoutState()).toBeNull()
+    expect(auth.canAutoBootstrap()).toBe(true)
+    auth.dispose()
+  })
+
   it.each([
     ['HTTP 503', 503],
     ['network failure', 0],
@@ -298,7 +323,11 @@ describe('PWA memory session', () => {
 
     const logout = auth.logout(clearSnapshot)
     await Promise.resolve()
-    expect(fetcher).toHaveBeenCalledWith('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    expect(fetcher).toHaveBeenCalledWith('/api/auth/logout', expect.objectContaining({
+      method: 'POST',
+      credentials: 'include',
+      signal: expect.any(AbortSignal),
+    }))
     resolveRemote(new Response(null, { status: 204 }))
     await expect(logout).rejects.toBe(cleanupError)
     await new Promise<void>((resolve) => setImmediate(resolve))

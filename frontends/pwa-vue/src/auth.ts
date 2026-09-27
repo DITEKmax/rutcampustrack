@@ -312,7 +312,13 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
 
     async function guarded<T>(requestProfile: () => Promise<T>): Promise<T> {
       assertPortCurrent()
-      const value = await requestProfile()
+      let value: T
+      try {
+        value = await requestProfile()
+      } catch (cause) {
+        assertPortCurrent()
+        throw cause
+      }
       assertPortCurrent()
       return value
     }

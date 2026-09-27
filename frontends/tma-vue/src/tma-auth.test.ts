@@ -112,6 +112,28 @@ describe('generation-bound report ticket session', () => {
 
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
   })
+
+  it('rejects a profile error body that completes after the TMA session generation is cleared', async () => {
+    let resolveProblem!: (value: unknown) => void
+    const delayedUnauthorized = {
+      ok: false,
+      status: 403,
+      json: () => new Promise<unknown>((resolve) => { resolveProblem = resolve }),
+    } as unknown as Response
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'late-error-session-token' }), { status: 200 }))
+      .mockResolvedValueOnce(delayedUnauthorized)
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    const port = session.createProfilePort()
+
+    const pending = port.listSessions()
+    await vi.waitFor(() => expect(resolveProblem).toBeTypeOf('function'))
+    session.clear()
+    resolveProblem({ extras: { code: 'INVALID_SESSION' }, detail: 'Сессия отозвана' })
+
+    await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+  })
 })
 
 describe('Telegram host boundary', () => {

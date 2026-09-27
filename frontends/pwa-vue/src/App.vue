@@ -404,7 +404,11 @@ async function clearOwnerSnapshot(previous: StudentSession | null): Promise<Snap
   return result
 }
 
-async function handleProfileInvalidated(reason: 'logout-all' | 'password-changed' | 'account-invalidated'): Promise<void> {
+async function handleProfileInvalidated(
+  reason: 'logout-all' | 'password-changed' | 'account-invalidated',
+  generation: number,
+): Promise<void> {
+  if (!auth.isCurrent(generation)) return
   const previous = invalidateOwnerSynchronously()
   await clearOwnerSnapshot(previous)
   authSnapshot.value = null
@@ -655,8 +659,8 @@ async function activateCandidate(candidate: StudentCandidate): Promise<void> {
   scope.value = nextScope
   if (!sameOwner || profilePort.value === null) {
     profilePort.value = auth.createProfilePort(candidate.generation, {
-      onInvalidated: handleProfileInvalidated,
-      onRefreshAlreadyRotated: () => handleProfileInvalidated('account-invalidated'),
+      onInvalidated: (reason) => handleProfileInvalidated(reason, candidate.generation),
+      onRefreshAlreadyRotated: () => handleProfileInvalidated('account-invalidated', candidate.generation),
     })
   }
   if (needsFreshOwner) ownerRevision.value += 1
@@ -689,8 +693,8 @@ async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<vo
   teacherApi.value = candidate.api
   teacherSemesterId.value = candidate.semesterId
   profilePort.value = auth.createProfilePort(candidate.generation, {
-    onInvalidated: handleProfileInvalidated,
-    onRefreshAlreadyRotated: () => handleProfileInvalidated('account-invalidated'),
+    onInvalidated: (reason) => handleProfileInvalidated(reason, candidate.generation),
+    onRefreshAlreadyRotated: () => handleProfileInvalidated('account-invalidated', candidate.generation),
   })
   authSnapshot.value = candidate.profile
   offline.value = false
@@ -897,6 +901,10 @@ async function selectRole(
   const generation = auth.currentGeneration()
   try {
     const selection = await auth.selectRoleFor(generation, request)
+    if (options.preserveTeacherOwner) {
+      invalidateOwnerSynchronously({ clearAuth: false })
+      authView.value = 'role'
+    }
     authSnapshot.value = selection.session
     if (selection.session.activeRole === 'HEADMAN') {
       const candidate = await fetchHeadmanCandidate(selection.generation, selection.session)

@@ -353,7 +353,7 @@ async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<vo
   teacherSemesterId.value = candidate.semesterId
   profile.value = candidate.profile
   profilePort.value = sessionOwner.createProfilePort(candidate.generation, {
-    onInvalidated: handleTeacherProfileInvalidated,
+    onInvalidated: () => handleTeacherProfileInvalidated(candidate.generation),
   })
   offline.value = false
   error.value = null
@@ -465,6 +465,10 @@ async function selectRole(
   const generation = sessionOwner.currentGeneration()
   try {
     const selection = await sessionOwner.selectRoleFor(generation, { role, expectedSessionVersion })
+    if (options.preserveTeacherOwner) {
+      invalidateOwnerSynchronously({ clearAuth: false })
+      authView.value = 'role'
+    }
     profile.value = selection.session
     if (role === 'HEADMAN') {
       const groupId = authorizedHeadmanGroupId(selection.session)
@@ -533,7 +537,8 @@ function selectTeacherProfileRole(role: ProfileRole, expectedSessionVersion: str
   return selectRole(role, expectedSessionVersion, { preserveTeacherOwner: true })
 }
 
-function handleTeacherProfileInvalidated(): void {
+function handleTeacherProfileInvalidated(generation: number): void {
+  if (!sessionOwner.isCurrent(generation)) return
   invalidateOwnerSynchronously()
   authView.value = 'role'
   offline.value = false

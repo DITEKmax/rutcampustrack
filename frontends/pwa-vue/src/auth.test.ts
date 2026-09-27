@@ -221,6 +221,32 @@ describe('PWA memory session', () => {
     expect(auth.currentGeneration()).toBe(1)
   })
 
+  it('does not invalidate a newer owner when a delayed profile 401 arrives after the generation changed', async () => {
+    let resolveProblem!: (value: unknown) => void
+    const unauthorized = new Response(null, { status: 401 })
+    Object.defineProperty(unauthorized, 'json', {
+      value: vi.fn(() => new Promise<unknown>((resolve) => { resolveProblem = resolve })),
+    })
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(response(profile))
+      .mockResolvedValueOnce(unauthorized)
+    const auth = usePwaAuth({ fetcher })
+    auth.setToken('owner-token')
+    const onInvalidated = vi.fn()
+    const state = new ProfileState(auth.createProfilePort(0, { onInvalidated }))
+    await state.loadSnapshot()
+
+    const pending = state.loadSessions()
+    await vi.waitFor(() => expect(resolveProblem).toBeTypeOf('function'))
+    auth.clear({ broadcast: false })
+    resolveProblem({ status: 401, title: 'Сессия больше недействительна' })
+
+    await expect(pending).rejects.toMatchObject({ code: 'NETWORK' })
+    expect(onInvalidated).not.toHaveBeenCalled()
+    expect(auth.accessToken.value).toBeNull()
+    expect(auth.currentGeneration()).toBe(1)
+  })
+
   it('keeps typed Auth conflict details available to the role UI', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({
       status: 409,

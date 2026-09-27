@@ -302,12 +302,17 @@ export function useTmaSession(options: TmaSessionOptions) {
       }
     } catch (cause) {
       if (cause instanceof StaleSessionGenerationError) throw cause
+      assertCurrent(generation)
       const status = isRecord(cause) && typeof cause.status === 'number' ? cause.status : undefined
       if (status === 401) throw new ProfileRequestError('INVALID_SESSION', 'Сессия больше недействительна', status, cause)
       throw new ProfileRequestError('NETWORK', `Не удалось загрузить данные профиля: ${operation}`, status, cause)
     }
     assertCurrent(generation)
-    if (!response.ok) throw await profileResponseError(response, operation)
+    if (!response.ok) {
+      const error = await profileResponseError(response, operation)
+      assertCurrent(generation)
+      throw error
+    }
     return response
   }
 

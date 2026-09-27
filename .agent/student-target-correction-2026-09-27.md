@@ -9,3 +9,5 @@ Initial check batch found the same `exactOptionalPropertyTypes` error in PWA/TMA
 Checks ran from `frontends/` on Windows PowerShell; exact commands and exit codes are in `.agent/checks.json`.
 Runtime evidence: no authenticated live PWA/TMA session or browser flow was run; controller tests are Node-level evidence only.
 Limitations: no live UI acceptance; `BRAND_DIRECTION.md`, `A11Y_REQUIREMENTS.md`, and `docs/wireframes/` are absent in this worktree; the focus fix changes no styling.
+Correction 2 (base `700a6aed900affd362c4358e679958c867864a51`): target cancel refreshes only loaded/in-flight buckets at page 0 through `loadBucket`; list refresh failures stay in the bucket error state and do not reject cancellation.
+Follow-up checks: mobile-core typecheck exit 0; focused controller Vitest exit 0, 18 tests, including open→archive refresh and best-effort refresh failure. No live runtime was run.

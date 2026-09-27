@@ -369,6 +369,66 @@ describe('RequestsController', () => {
     expect(updated.summary.canCancel).toBe(false)
   })
 
+  it('refreshes loaded request buckets after notification target cancellation', async () => {
+    const pending = summary('target-54')
+    const cancelled = { ...pending, status: 'CANCELLED' as const }
+    let hasCancelled = false
+    let openListCalls = 0
+    let archiveListCalls = 0
+    const direct = controller({
+      port: port({
+        listRequests: async (bucket) => {
+          if (bucket === 'OPEN') {
+            openListCalls += 1
+            return page(hasCancelled ? [] : [pending])
+          }
+          archiveListCalls += 1
+          return page(hasCancelled ? [cancelled] : [])
+        },
+        getRequest: async () => detail(hasCancelled ? cancelled : pending),
+        cancelRequest: async () => {
+          hasCancelled = true
+          return detail(cancelled)
+        },
+      }),
+    })
+
+    await direct.value.loadBucket('open')
+    await direct.value.loadBucket('archive')
+    expect(direct.value.view.open.requests[0]?.summary.status).toBe('PENDING')
+
+    await direct.value.cancelTargetRequest('target-54', 'EXCUSE')
+
+    expect(openListCalls).toBe(2)
+    expect(archiveListCalls).toBe(2)
+    expect(direct.value.view.open.requests).toEqual([])
+    expect(direct.value.view.archive.requests.map((request) => [request.summary.id, request.summary.status]))
+      .toEqual([['target-54', 'CANCELLED']])
+  })
+
+  it('keeps target cancellation successful when a loaded bucket refresh fails', async () => {
+    let listCalls = 0
+    const cancelled = detail({ ...summary('target-55'), status: 'CANCELLED' })
+    const direct = controller({
+      port: port({
+        listRequests: async () => {
+          listCalls += 1
+          if (listCalls > 1) throw new Error('Список недоступен')
+          return page([summary('target-55')])
+        },
+        getRequest: async () => detail(summary('target-55')),
+        cancelRequest: async () => cancelled,
+      }),
+    })
+
+    await direct.value.loadBucket('open')
+    const updated = await direct.value.cancelTargetRequest('target-55', 'EXCUSE')
+
+    expect(updated.summary.status).toBe('CANCELLED')
+    expect(direct.value.view.mutationError).toBeNull()
+    expect(direct.value.view.open.error).toBe('Список недоступен')
+  })
+
   it('does not cancel a notification target after its student context changes', async () => {
     const pendingDetail = deferred<StudentRequestDetail>()
     let cancelCalls = 0

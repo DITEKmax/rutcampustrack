@@ -436,10 +436,15 @@ export class RequestsController {
       if (refreshed.summary.id !== id || refreshed.summary.kind !== expectedKind) {
         throw new RequestsError('UNAVAILABLE', 'Заявка больше недоступна.')
       }
-      return mapDetail(refreshed, this.options.scope(), {
+      const mapped = mapDetail(refreshed, this.options.scope(), {
         offline: this.options.offline(),
         readOnly: this.options.readOnly(),
       })
+      await this.refreshLoadedBuckets()
+      if (!this.isCurrentContext(identity, contextGeneration)) {
+        throw new RequestsError('STALE', 'Сессия заявки больше не актуальна.')
+      }
+      return mapped
     } catch (error) {
       if (!this.isCurrentContext(identity, contextGeneration)) {
         throw new RequestsError('STALE', 'Сессия заявки больше не актуальна.')
@@ -752,6 +757,14 @@ export class RequestsController {
     if (this.view.open.requests.some((item) => item.summary.id === id)) return 'open'
     if (this.view.archive.requests.some((item) => item.summary.id === id)) return 'archive'
     return null
+  }
+
+  private async refreshLoadedBuckets(): Promise<void> {
+    const loadedBuckets = (['open', 'archive'] as const).filter((bucket) => {
+      const state = this.bucketView(bucket)
+      return state.page >= 0 || state.loading || state.loadingMore
+    })
+    await Promise.all(loadedBuckets.map((bucket) => this.loadBucket(bucket, 0).catch(() => undefined)))
   }
 }
 

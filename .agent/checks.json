@@ -43,5 +43,25 @@
   "runtime": {
     "status": "not_run",
     "evidence": "No authenticated live PWA/TMA session or browser flow was available in this worktree; Vitest ran in Node."
+  },
+  "follow_up_correction": {
+    "base_revision": "700a6aed900affd362c4358e679958c867864a51",
+    "scope": [
+      "frontends/mobile-core/src/features/requests/requests-controller.ts",
+      "frontends/mobile-core/src/features/requests/requests-controller.test.ts"
+    ],
+    "checks": [
+      {
+        "command": "npm run typecheck --workspace @rct/mobile-core",
+        "exit_code": 0,
+        "evidence": "tsc -p tsconfig.json --noEmit"
+      },
+      {
+        "command": "npm exec -- vitest run --root mobile-core src/features/requests/requests-controller.test.ts",
+        "exit_code": 0,
+        "evidence": "1 test file; 18 tests passed, including loaded open/archive refresh and cancellation success despite bucket refresh failure"
+      }
+    ],
+    "runtime": "not_run"
   }
 }

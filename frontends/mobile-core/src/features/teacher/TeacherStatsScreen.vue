@@ -39,20 +39,51 @@ const emit = defineEmits<{
   'open-journal': [query: TeacherJournalQuery]
 }>()
 
+interface TeacherStatsScopeMemory {
+  lessonTypes: string[]
+  search: string
+  sort: TeacherStatsSort
+}
+
+function createDefaultScopeMemory(): Record<TeacherStatsScope, TeacherStatsScopeMemory> {
+  return {
+    students: {
+      lessonTypes: [],
+      search: '',
+      sort: { column: 'present', descending: false },
+    },
+    groups: {
+      lessonTypes: [],
+      search: '',
+      sort: { column: 'present', descending: false },
+    },
+  }
+}
+
 const scope = ref<TeacherStatsScope>('groups')
 const semester = ref<{ id: number; dateFrom: string; dateTo: string } | null>(null)
 const authorizedGroups = ref<readonly { id: number; name: string }[]>([])
 const authorizedSubjectOptions = ref<readonly TeacherStatsSubjectOption[]>([])
 const selectedGroupId = ref<number | null>(props.initialGroupId)
 const selectedSubjectId = ref<number | null>(null)
-const selectedTypes = ref<string[]>([])
-const search = ref('')
+const scopeMemory = ref(createDefaultScopeMemory())
+const selectedTypes = computed({
+  get: () => scopeMemory.value[scope.value].lessonTypes,
+  set: (value: string[]) => { scopeMemory.value[scope.value].lessonTypes = value },
+})
+const search = computed({
+  get: () => scopeMemory.value[scope.value].search,
+  set: (value: string) => { scopeMemory.value[scope.value].search = value },
+})
 const stats = ref<TeacherStatsResponse | null>(null)
 const statsQuery = ref<TeacherStatsQuery | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const revision = ref(0)
-const sort = ref<TeacherStatsSort>({ column: 'present', descending: false })
+const sort = computed({
+  get: () => scopeMemory.value[scope.value].sort,
+  set: (value: TeacherStatsSort) => { scopeMemory.value[scope.value].sort = value },
+})
 const formats = ref<readonly TeacherExportFormat[]>([])
 const selectedFormat = ref<TeacherExportFormatCode>('docx')
 const formatsLoading = ref(false)
@@ -66,7 +97,9 @@ let disposed = false
 
 const groups = computed(() => authorizedGroups.value)
 const subjects = computed(() => subjectsForGroup(selectedGroupId.value))
-const types = computed(() => lessonTypesForContext(selectedGroupId.value, selectedSubjectId.value))
+const types = computed(() => scope.value === 'students'
+  ? lessonTypesForContext(selectedGroupId.value, selectedSubjectId.value)
+  : lessonTypesForContext(null, null))
 const selectedTypeLabel = computed(() => selectedTypes.value.length === 0 || selectedTypes.value.length === types.value.length
   ? 'все типы занятий' : selectedTypes.value.join(', '))
 const groupRows = computed(() => stats.value?.groups ?? [])
@@ -84,9 +117,8 @@ watch(
   () => {
     selectedGroupId.value = props.initialGroupId
     selectedSubjectId.value = null
-    selectedTypes.value = []
-    search.value = ''
-    sort.value = { column: 'present', descending: false }
+    scope.value = 'groups'
+    scopeMemory.value = createDefaultScopeMemory()
     stats.value = null
     statsQuery.value = null
     authorizedGroups.value = []
@@ -369,18 +401,18 @@ function canReuseUnfilteredGroupStats(): boolean {
 
 function switchScope(next: TeacherStatsScope): void {
   if (scope.value === next) return
-  scope.value = next
   if (next === 'students') {
     const groupId = selectedGroupId.value && groups.value.some((value) => value.id === selectedGroupId.value)
       ? selectedGroupId.value : groups.value[0]?.id ?? null
     selectedGroupId.value = groupId
-    selectedSubjectId.value = subjectsForGroup(groupId)[0]?.id ?? null
-  } else {
-    selectedGroupId.value = null
-    selectedSubjectId.value = null
+    const availableSubjects = subjectsForGroup(groupId)
+    if (!availableSubjects.some((value) => value.id === selectedSubjectId.value)) {
+      selectedSubjectId.value = availableSubjects[0]?.id ?? null
+    }
   }
-  selectedTypes.value = []
-  sort.value = normalizeSort(next, sort.value)
+  // Group and subject belong to the student cut; keep them while its controls
+  // are hidden so returning to that cut restores the same context.
+  scope.value = next
   persistContext()
   void loadStats()
 }

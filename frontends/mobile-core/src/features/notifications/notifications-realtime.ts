@@ -173,6 +173,7 @@ export function createGenerationBoundNotificationsRealtime(
         destination,
         () => scheduleInvalidation(),
       ))
+      scheduleInvalidation()
     },
     onWebSocketClose: () => {
       subscriptions = []

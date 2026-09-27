@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Both Vue apps now bind a private STOMP/SockJS notification lifecycle to the current authenticated user, role, group, and auth generation. A received frame only invalidates the existing server-backed history; while the history screen is open it coalesces one refresh of canonical history and unread count. Reconnects fetch a fresh ticket and use capped exponential backoff, including failures while obtaining a ticket. Old lifecycles are synchronously disabled before transport teardown and late callbacks are ignored.
+Both Vue apps now bind a private STOMP/SockJS notification lifecycle to the current authenticated user, role, group, and auth generation. A received frame only invalidates the existing server-backed history; while the history screen is open it coalesces one refresh of canonical history and unread count. Every successful connect also queues this refresh, so a reconnect covers events missed during the disconnect even when the broker does not replay them. Reconnects fetch a fresh ticket and use capped exponential backoff, including failures while obtaining a ticket. Old lifecycles are synchronously disabled before transport teardown and late callbacks are ignored.
 
 The PWA bootstrap now treats an initial anonymous `current-session` 401 as a normal login state without a technical error card. Existing known-owner and explicit-revocation handling still clears owner/cache data and shows a Russian session message. Network/5xx errors and login-form errors are not suppressed. This narrow behavior change follows the root-reported reproduction recorded in `contract.md`.
 
@@ -24,7 +24,7 @@ The package lock adds `@stomp/stompjs` 7.3.0, `sockjs-client` 1.6.1, and `@types
 
 ## Evidence and checks
 
-`checks.json` contains commands and exit codes. Mobile-core, PWA, and TMA typechecks passed; scoped ESLint over every changed source/test file passed; the focused lifecycle test passed; both PWA/TMA production builds passed; `git diff --check` passed. The PWA package-wide lint command separately reports two unused arguments in untouched `pwa-vue/vite.config.ts:28`; the changed-file lint is clean. A package-wide mobile-core lint attempt was made before correcting a test mock parameter; it is recorded as a diagnostic, not a passing acceptance check.
+`checks.json` contains commands and exit codes. Mobile-core, PWA, and TMA typechecks passed; scoped ESLint over every changed source/test file passed; the focused lifecycle test passed; both PWA/TMA production builds passed; `git diff --check` passed. After review, the focused test was extended for reconnect-without-replay and rerun with mobile-core typecheck and scoped lint; all three exited 0. The PWA package-wide lint command separately reports two unused arguments in untouched `pwa-vue/vite.config.ts:28`; the changed-file lint is clean. A package-wide mobile-core lint attempt was made before correcting a test mock parameter; it is recorded as a diagnostic, not a passing acceptance check.
 
 Build output included Vite's warning that the main JavaScript chunks exceed 500 kB. No bundle-size change was made from the warning alone. Root owns live verification against the shared runtime; this leaf did not start Docker or claim that the new WebSocket client has runtime acceptance.
 

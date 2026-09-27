@@ -4,7 +4,7 @@ import { StaleSessionGenerationError } from '../../shared/session-owner'
 import { createGenerationBoundNotificationsRealtime } from './notifications-realtime'
 
 describe('generation-bound notifications realtime lifecycle', () => {
-  it('gets a fresh ticket for reconnects and drops events after the owner changes', async () => {
+  it('refreshes on reconnect after missed frames and drops events after the owner changes', async () => {
     vi.useFakeTimers()
     try {
       let generation = 4
@@ -59,19 +59,18 @@ describe('generation-bound notifications realtime lifecycle', () => {
 
       await clientConfiguration.beforeConnect?.(fakeClient as Client)
       clientConfiguration.webSocketFactory?.()
-      await clientConfiguration.beforeConnect?.(fakeClient as Client)
-      clientConfiguration.webSocketFactory?.()
 
-      expect(fetcher).toHaveBeenCalledTimes(3)
+      expect(fetcher).toHaveBeenCalledTimes(2)
       expect(sockets).toEqual([
         '/api/ws?ticket=123e4567-e89b-42d3-a456-426614174000',
-        '/api/ws?ticket=123e4567-e89b-42d3-a456-426614174001',
       ])
       const requestInit = fetcher.mock.calls[0]?.[1] as RequestInit
       expect((requestInit.headers as Headers).get('Authorization')).toBe('Bearer session-token')
       expect(sockets[0]).not.toContain('session-token')
 
       clientConfiguration.onConnect?.({} as never)
+      await vi.advanceTimersByTimeAsync(0)
+      expect(onChanged).toHaveBeenCalledTimes(1)
       expect(subscribedDestinations).toEqual([
         '/topic/user/9007199254740993',
         '/topic/group/27',
@@ -80,18 +79,38 @@ describe('generation-bound notifications realtime lifecycle', () => {
       eventHandlers[0]?.()
       eventHandlers[1]?.()
       await vi.advanceTimersByTimeAsync(750)
-      expect(onChanged).toHaveBeenCalledTimes(1)
+      expect(onChanged).toHaveBeenCalledTimes(2)
+
+      clientConfiguration.onWebSocketClose?.({} as never)
+      await clientConfiguration.beforeConnect?.(fakeClient as Client)
+      clientConfiguration.webSocketFactory?.()
+      clientConfiguration.onConnect?.({} as never)
+      expect(fetcher).toHaveBeenCalledTimes(3)
+      expect(sockets).toEqual([
+        '/api/ws?ticket=123e4567-e89b-42d3-a456-426614174000',
+        '/api/ws?ticket=123e4567-e89b-42d3-a456-426614174001',
+      ])
+      expect(subscribedDestinations.slice(3)).toEqual([
+        '/topic/user/9007199254740993',
+        '/topic/group/27',
+        '/topic/group/27/headman',
+      ])
+      // No second-connection event was received; the onConnect refresh closes
+      // the disconnect window for frames that were not replayed by the broker.
+      await vi.advanceTimersByTimeAsync(750)
+      expect(onChanged).toHaveBeenCalledTimes(3)
 
       generation += 1
       eventHandlers[0]?.()
+      eventHandlers[5]?.()
       await vi.advanceTimersByTimeAsync(1_000)
-      expect(onChanged).toHaveBeenCalledTimes(1)
+      expect(onChanged).toHaveBeenCalledTimes(3)
 
       lifecycle.dispose()
-      eventHandlers[2]?.()
+      eventHandlers[5]?.()
       expect(fakeClient.deactivate).toHaveBeenCalledWith({ force: true })
       await vi.advanceTimersByTimeAsync(1_000)
-      expect(onChanged).toHaveBeenCalledTimes(1)
+      expect(onChanged).toHaveBeenCalledTimes(3)
     } finally {
       vi.useRealTimers()
     }

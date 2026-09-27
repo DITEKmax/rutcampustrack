@@ -27,7 +27,7 @@
     {
       "command": "npm exec -- vitest run mobile-core/src/features/notifications/notifications-realtime.test.ts",
       "exitCode": 0,
-      "result": "PASS; 1 test verifies fresh ticket after transient ticket request failure, exact private destinations, event coalescing, stale owner suppression, and forced deactivation"
+      "result": "PASS; 1 test verifies ticket retry/reconnect, exact private destinations, event coalescing, stale owner suppression, and forced deactivation. After review correction it also proves reconnect triggers a canonical refresh without a replayed event."
     },
     {
       "command": "npm exec -- eslint mobile-core/src/features/notifications/notifications-realtime.ts mobile-core/src/features/notifications/notifications-realtime.test.ts mobile-core/src/features/notifications/NotificationsScreen.vue mobile-core/src/index.ts pwa-vue/src/App.vue tma-vue/src/App.vue --max-warnings=0",
@@ -60,6 +60,27 @@
       "result": "PASS; no scoped product changes in original main checkout"
     }
   ],
+  "postReviewCorrection": {
+    "finding": "A connected socket can miss notification frames while disconnected; a broker without replay would leave history stale until another frame arrives.",
+    "change": "Call the existing coalesced invalidation scheduler after subscriptions are installed on every successful STOMP connect, including reconnects.",
+    "checks": [
+      {
+        "command": "npm exec -- vitest run mobile-core/src/features/notifications/notifications-realtime.test.ts",
+        "exitCode": 0,
+        "result": "PASS; test closes the first connection, reconnects with a fresh ticket, sends no event on the new connection, and verifies one refresh occurs"
+      },
+      {
+        "command": "npm run typecheck --workspace @rct/mobile-core",
+        "exitCode": 0,
+        "result": "PASS"
+      },
+      {
+        "command": "npm exec -- eslint mobile-core/src/features/notifications/notifications-realtime.ts mobile-core/src/features/notifications/notifications-realtime.test.ts --max-warnings=0",
+        "exitCode": 0,
+        "result": "PASS"
+      }
+    ]
+  },
   "diagnostics": [
     {
       "command": "npm run lint --workspace @rct/pwa-vue",

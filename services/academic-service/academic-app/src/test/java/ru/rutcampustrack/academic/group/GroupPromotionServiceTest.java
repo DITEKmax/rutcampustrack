@@ -33,6 +33,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -122,6 +124,48 @@ class GroupPromotionServiceTest {
         assertThat(s.getConflicts()).isEmpty();
         assertThat(s.isDryRun()).isTrue();
         assertThat(s.isExecuted()).isFalse();
+    }
+
+    @Test
+    void automaticExecutionWaitsForMoscowAugustEighteenthAndACompletedSpringCycle() {
+        Group group = group("УИТ-111");
+        seed(group);
+        Clock beforeDue = Clock.fixed(
+                Instant.parse("2026-08-17T20:59:59Z"), java.time.ZoneId.of("Europe/Moscow"));
+        GroupPromotionService beforeDueService = serviceWithClock(beforeDue);
+
+        assertThat(beforeDueService.executeAutomaticallyIfDue()).isEmpty();
+        assertThat(group.getName()).isEqualTo("УИТ-111");
+
+        when(semesterRepository.findFirstBySemesterTypeAndDateToBeforeOrderByDateToDescIdDesc(
+                eq(SemesterType.SPRING), any(LocalDate.class))).thenReturn(Optional.empty());
+        GroupPromotionService noCycleService = serviceWithClock(Clock.fixed(
+                Instant.parse("2026-08-17T21:00:00Z"), java.time.ZoneId.of("Europe/Moscow")));
+
+        assertThat(noCycleService.executeAutomaticallyIfDue()).isEmpty();
+        assertThat(group.getName()).isEqualTo("УИТ-111");
+        verify(groupRepository, never()).findAllActiveForPromotionUpdate();
+    }
+
+    @Test
+    void automaticExecutionStartsAtMidnightAugustEighteenthInMoscow() {
+        Group group = group("УИТ-111");
+        seed(group);
+        Clock dueAtMidnight = Clock.fixed(
+                Instant.parse("2026-08-17T21:00:00Z"), java.time.ZoneId.of("Europe/Moscow"));
+        GroupPromotionService dueService = serviceWithClock(dueAtMidnight);
+
+        Optional<PromotionSummary> result = dueService.executeAutomaticallyIfDue();
+
+        assertThat(result).isPresent();
+        assertThat(result.orElseThrow().getToPromote()).hasSize(1);
+        assertThat(group.getName()).isEqualTo("УИТ-211");
+    }
+
+    private GroupPromotionService serviceWithClock(Clock selectedClock) {
+        return new GroupPromotionService(
+                groupRepository, semesterRepository, cycleRecordRepository, registryReadRepository,
+                new GroupNameParser(), new GroupArchivalService(publisher, selectedClock), publisher, selectedClock);
     }
 
     @Test

@@ -4,17 +4,25 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /** Real PostgreSQL proof for the completed-spring promotion cycle ledger. */
 @AutoConfigureMockMvc
 @Transactional
+@Import(GroupPromotionCycleIT.PromotionTestClockConfig.class)
 class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
 
     private static final LocalDate CYCLE_END = LocalDate.of(2026, 6, 30);
@@ -32,6 +41,16 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private ObjectMapper objectMapper;
+    @Autowired private GroupPromotionJob groupPromotionJob;
+
+    @TestConfiguration
+    static class PromotionTestClockConfig {
+        @Bean
+        @Primary
+        Clock promotionTestClock() {
+            return Clock.fixed(Instant.parse("2026-09-01T00:00:00Z"), ZoneId.of("Europe/Moscow"));
+        }
+    }
 
     @Test
     void singleThenMassPromotionRejectsStaleAndRetriedPlansWithoutChangingIdentityOrHistory() throws Exception {
@@ -112,6 +131,51 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
                 Long.class, cycleId, massGroup)).isEqualTo(1L);
+    }
+
+    @Test
+    void automaticCatchUpReusesManualLedgerAndReplayDoesNotPromoteTwice() throws Exception {
+        Long cycleId = prepareCompletedSpringCycle();
+        Long adminId = userId("admin");
+        Long manualGroup = addGroup("УИТ-111", beforeCycleEnd());
+        Long automaticGroup = addGroup("УВП-111", beforeCycleEnd());
+        Long graduatingGroup = addGroup("РЕГ-411", beforeCycleEnd());
+        Long lateGroup = addGroup("РЕГ-111", afterCycleEnd());
+        Long studentId = addStudent(automaticGroup, "auto_" + System.nanoTime());
+        jdbc.update("INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
+                        + "VALUES (?, ?, ?, ?)",
+                studentId, automaticGroup, CYCLE_END.minusDays(20), "automatic-promotion-cycle-it");
+
+        JsonNode manualPreview = response(previewRequest(
+                adminId, "ADMIN", "{\"groupId\":" + manualGroup + "}"));
+        response(executeRequest(adminId, cycleId, manualPreview.path("previewVersion").asText(), manualGroup));
+
+        groupPromotionJob.checkDueSpringCycle();
+
+        assertThat(groupName(manualGroup)).isEqualTo("УИТ-211");
+        assertThat(groupName(automaticGroup)).isEqualTo("УВП-211");
+        assertThat(groupName(graduatingGroup)).isEqualTo("РЕГ-411 (выпуск 2026)");
+        assertThat(groupName(lateGroup)).isEqualTo("РЕГ-111");
+        assertThat(groupIdByName("УВП-211")).isEqualTo(automaticGroup);
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
+                Long.class, studentId, automaticGroup)).isEqualTo(1L);
+        for (Long groupId : List.of(manualGroup, automaticGroup, graduatingGroup)) {
+            assertThat(jdbc.queryForObject(
+                    "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                    Long.class, cycleId, groupId)).isEqualTo(1L);
+        }
+
+        groupPromotionJob.checkDueSpringCycle();
+
+        assertThat(groupName(automaticGroup)).isEqualTo("УВП-211");
+        assertThat(groupName(graduatingGroup)).isEqualTo("РЕГ-411 (выпуск 2026)");
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ?",
+                Long.class, cycleId)).isEqualTo(3L);
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
+                Long.class, studentId, automaticGroup)).isEqualTo(1L);
     }
 
     @Test

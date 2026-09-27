@@ -27,6 +27,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -36,6 +37,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -111,6 +113,50 @@ public class GroupPromotionService {
                 plan.getPreviewVersion(),
                 false,
                 true);
+    }
+
+    /**
+     * Applies the latest completed spring cycle once its Moscow August 18 date
+     * has arrived. The same cycle lock, plan and ledger as manual execution are
+     * used so manual and scheduled work cannot promote a group twice.
+     */
+    @Transactional
+    public Optional<PromotionSummary> executeAutomaticallyIfDue() {
+        LocalDate today = LocalDate.now(clock);
+        Optional<Semester> candidate = semesterRepository
+                .findFirstBySemesterTypeAndDateToBeforeOrderByDateToDescIdDesc(
+                        SemesterType.SPRING, today);
+        if (candidate.isEmpty() || today.isBefore(automaticDate(candidate.get()))) {
+            return Optional.empty();
+        }
+
+        Semester cycle = requireCurrentCycleForUpdate(candidate.get().getId());
+        if (today.isBefore(automaticDate(cycle))) {
+            return Optional.empty();
+        }
+
+        List<Group> active = groupRepository.findAllActiveForPromotionUpdate();
+        List<GroupPromotionCycleRecord> processed =
+                cycleRecordRepository.findAllByCycleSemesterIdOrderByGroupId(cycle.getId());
+        PromotionSummary plan = buildSummary(cycle, active, processed, null, true);
+        if (!plan.getToPromote().isEmpty() || !plan.getToArchive().isEmpty()) {
+            apply(plan, active, cycle);
+        }
+        return Optional.of(new PromotionSummary(
+                plan.getToPromote(),
+                plan.getToArchive(),
+                plan.getSkipped(),
+                plan.getConflicts(),
+                plan.getCycleSemesterId(),
+                plan.getCycleDateTo(),
+                null,
+                plan.getPreviewVersion(),
+                false,
+                true));
+    }
+
+    private LocalDate automaticDate(Semester cycle) {
+        return LocalDate.of(cycle.getDateTo().getYear(), Month.AUGUST, 18);
     }
 
     private Semester findLatestCompletedSpring() {

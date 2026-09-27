@@ -1,5 +1,7 @@
 package ru.rutcampustrack.notification.history;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -25,9 +27,12 @@ import java.util.UUID;
 
 /** One Mongo transaction owns the event claim and all recipient history rows. */
 @Component
+@Slf4j
 public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
 
     private static final ZoneId EVENT_ZONE = ZoneId.of("Europe/Moscow");
+    private static final Map<String, String> HISTORY_CHANGED_SIGNAL =
+            Map.of("type", "notification.history.changed");
     private static final Set<String> GROUP_EVENT_TYPES = Set.of(
             "lesson.started", "lesson.cancelled", "homework.published", "homework.updated");
     private static final Set<String> GROUP_ID_FIELDS = Set.of(
@@ -37,15 +42,18 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
     private final NotificationHistoryService historyService;
     private final IdempotencyGuard idempotencyGuard;
     private final AcademicGroupMemberClient academicGroupMemberClient;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public NotificationHistoryEventProcessor(NotificationHistoryRepository repository,
                                              NotificationHistoryService historyService,
                                              IdempotencyGuard idempotencyGuard,
-                                             AcademicGroupMemberClient academicGroupMemberClient) {
+                                             AcademicGroupMemberClient academicGroupMemberClient,
+                                             SimpMessagingTemplate messagingTemplate) {
         this.repository = repository;
         this.historyService = historyService;
         this.idempotencyGuard = idempotencyGuard;
         this.academicGroupMemberClient = academicGroupMemberClient;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Transactional
@@ -119,17 +127,28 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
     }
 
     private void invalidateUnreadAfterCommit(Set<Long> userIds) {
-        Runnable invalidate = () -> userIds.forEach(historyService::invalidateUnreadCount);
+        Runnable invalidateAndNotify = () -> {
+            userIds.forEach(historyService::invalidateUnreadCount);
+            userIds.forEach(this::publishHistoryChanged);
+        };
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            invalidate.run();
+            invalidateAndNotify.run();
             return;
         }
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                invalidate.run();
+                invalidateAndNotify.run();
             }
         });
+    }
+
+    private void publishHistoryChanged(Long userId) {
+        try {
+            messagingTemplate.convertAndSend("/topic/user/" + userId, HISTORY_CHANGED_SIGNAL);
+        } catch (RuntimeException error) {
+            log.debug("Unable to publish notification history change for user {}", userId, error);
+        }
     }
 
     private static List<Long> validateRecipientIds(List<Long> recipientIds) {

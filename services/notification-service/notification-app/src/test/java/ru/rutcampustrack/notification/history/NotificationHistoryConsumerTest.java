@@ -5,10 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionSynchronizationUtils;
 import ru.rutcampustrack.notification.contract.enums.NotificationType;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
@@ -19,13 +24,17 @@ import java.util.UUID;
 import java.util.stream.StreamSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +47,7 @@ class NotificationHistoryConsumerTest {
     @Mock private IdempotencyGuard idempotencyGuard;
     @Mock private AcademicGroupMemberClient academicGroupMemberClient;
     @Mock private MongoTemplate mongoTemplate;
+    @Mock private SimpMessagingTemplate messagingTemplate;
 
     @Captor private ArgumentCaptor<Iterable<NotificationHistoryDocument>> savedDocuments;
 
@@ -49,7 +59,7 @@ class NotificationHistoryConsumerTest {
         lenient().when(mongoTemplate.exists(any(Query.class), anyString())).thenReturn(false);
         lenient().when(repository.findByEventIdAndUserIdIn(anyString(), anyList())).thenReturn(List.of());
         NotificationHistoryEventProcessor processor = new NotificationHistoryEventProcessor(
-                repository, historyService, idempotencyGuard, academicGroupMemberClient);
+                repository, historyService, idempotencyGuard, academicGroupMemberClient, messagingTemplate);
         consumer = new NotificationHistoryConsumer(mongoTemplate, processor);
     }
 
@@ -97,6 +107,68 @@ class NotificationHistoryConsumerTest {
         });
         verify(historyService).invalidateUnreadCount(42L);
         verify(historyService).invalidateUnreadCount(43L);
+    }
+
+    @Test
+    void sendsMinimalHistorySignalAfterCommitAndCacheEvictionForNewRecipientsOnly() {
+        Map<String, Object> envelope = event("lesson.started", Map.of(
+                "group_id", 7, "lesson_id", 100, "room", "Room 101"));
+        String eventId = envelope.get("event_id").toString();
+        LocalDate moscowEventDate = LocalDate.of(2026, 4, 25);
+        NotificationHistoryDocument existingRecipient = NotificationHistoryDocument.builder()
+                .eventId(eventId)
+                .userId(42L)
+                .build();
+        when(academicGroupMemberClient.getMemberUserIds(7L, moscowEventDate))
+                .thenReturn(List.of(42L, 43L, 44L));
+        when(repository.findByEventIdAndUserIdIn(eventId, List.of(42L, 43L, 44L)))
+                .thenReturn(List.of(existingRecipient));
+        doThrow(new IllegalStateException("transport unavailable"))
+                .when(messagingTemplate).convertAndSend(org.mockito.ArgumentMatchers.eq("/topic/user/43"),
+                        any(Object.class));
+
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            consumer.onEvent(envelope);
+
+            verify(repository).saveAll(savedDocuments.capture());
+            assertThat(StreamSupport.stream(savedDocuments.getValue().spliterator(), false)
+                    .map(NotificationHistoryDocument::getUserId))
+                    .containsExactly(43L, 44L);
+            verify(historyService, never()).invalidateUnreadCount(anyLong());
+            verify(messagingTemplate, never()).convertAndSend(anyString(), any(Object.class));
+
+            assertThatCode(TransactionSynchronizationUtils::triggerAfterCommit).doesNotThrowAnyException();
+
+            InOrder afterCommitEffects = inOrder(historyService, messagingTemplate);
+            afterCommitEffects.verify(historyService).invalidateUnreadCount(43L);
+            afterCommitEffects.verify(historyService).invalidateUnreadCount(44L);
+            afterCommitEffects.verify(messagingTemplate).convertAndSend(
+                    "/topic/user/43", Map.of("type", "notification.history.changed"));
+            afterCommitEffects.verify(messagingTemplate).convertAndSend(
+                    "/topic/user/44", Map.of("type", "notification.history.changed"));
+            verify(messagingTemplate, never()).convertAndSend(
+                    org.mockito.ArgumentMatchers.eq("/topic/user/42"), any(Object.class));
+            verify(messagingTemplate, times(2)).convertAndSend(anyString(), any(Object.class));
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
+    @Test
+    void rolledBackHistoryDoesNotInvalidateUnreadOrPublishSignal() {
+        Map<String, Object> envelope = event("excuse.requested",
+                Map.of("user_id", 42, "group_id", 7, "excuse_type", "illness"));
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            consumer.onEvent(envelope);
+            TransactionSynchronizationUtils.triggerAfterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+
+        verify(historyService, never()).invalidateUnreadCount(anyLong());
+        verify(messagingTemplate, never()).convertAndSend(anyString(), any(Object.class));
     }
 
     @Test

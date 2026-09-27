@@ -28,6 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import ru.rutcampustrack.attendance.config.MongoConvertersConfig;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -36,6 +37,8 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.StudentRequestKind;
+import ru.rutcampustrack.attendance.contract.enums.StudentRequestOrigin;
+import ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageResponse;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
@@ -82,6 +85,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -110,7 +114,8 @@ import static org.mockito.Mockito.when;
  */
 @DataMongoTest
 @Testcontainers(disabledWithoutDocker = true)
-@Import({StudentRequestService.class, HeadmanRequestService.class, StudentRequestDomainIT.TestConfig.class})
+@Import({StudentRequestService.class, HeadmanRequestService.class, MongoConvertersConfig.class,
+        StudentRequestDomainIT.TestConfig.class})
 class StudentRequestDomainIT {
 
     private static final String RUN_ID = UUID.randomUUID().toString().replace("-", "");
@@ -651,28 +656,75 @@ class StudentRequestDomainIT {
 
     @Test
     void mixedOwnerListAndOptionsExposeBothPendingKindsWithoutPeerData() {
-        seedAbsent(50L);
-        seedAbsent(51L);
-        RequestDetail excuse = service.submitExcuse(STUDENT, excuse(List.of(50L), "mixed-excuse-key-01", List.of()));
-        RequestDetail late = service.submitLateCheckin(STUDENT, new LateCheckinSubmission(51L, "mixed-late-key-0001"));
+        TimeZone previousTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"));
+        try {
+            assertThat(TimeZone.getDefault().toZoneId()).isEqualTo(ZoneId.of("Europe/Moscow"));
+            seedAbsent(50L);
+            seedAbsent(51L);
+            RequestDetail excuse = service.submitExcuse(STUDENT,
+                    excuse(List.of(50L), "mixed-excuse-key-01", List.of()));
+            RequestDetail late = service.submitLateCheckin(STUDENT,
+                    new LateCheckinSubmission(51L, "mixed-late-key-0001"));
 
-        RequestPage ownerPage = service.list(STUDENT, RequestBucket.OPEN, 0, 20);
-        assertThat(ownerPage.totalElements()).isEqualTo(2);
-        assertThat(ownerPage.content()).extracting(summary -> summary.kind())
-                .containsExactlyInAnyOrder(StudentRequestKind.EXCUSE, StudentRequestKind.LATE_CHECKIN);
+            Document storedExcuse = mongoTemplate.getCollection("excuse_tickets")
+                    .find(Filters.eq("_id", new ObjectId(excuse.summary().id()))).first();
+            assertThat(storedExcuse).isNotNull();
+            assertThat(storedExcuse.getString("status")).isEqualTo("submitted");
 
-        assertThatThrownBy(() -> service.get(student(200L), excuse.summary().id()))
-                .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
-        assertThat(service.list(student(200L), RequestBucket.OPEN, 0, 20).content()).isEmpty();
+            RequestPage ownerPage = service.list(STUDENT, RequestBucket.OPEN, 0, 20);
+            assertThat(ownerPage.totalElements()).isEqualTo(2);
+            assertThat(ownerPage.content()).extracting(summary -> summary.kind())
+                    .containsExactlyInAnyOrder(StudentRequestKind.EXCUSE, StudentRequestKind.LATE_CHECKIN);
+            RequestDetail mappedExcuse = service.get(STUDENT, excuse.summary().id());
+            var listedExcuse = ownerPage.content().stream()
+                    .filter(summary -> summary.id().equals(excuse.summary().id()))
+                    .findFirst().orElseThrow();
+            assertThat(listedExcuse.status()).isEqualTo(StudentRequestStatus.PENDING);
+            assertThat(listedExcuse.lessons()).containsExactlyElementsOf(mappedExcuse.summary().lessons());
+            assertThat(listedExcuse.lessons()).singleElement().satisfies(lesson -> {
+                assertThat(lesson.date()).isEqualTo(LocalDate.of(2026, 9, 7));
+                assertThat(lesson.startsAt()).isEqualTo(LocalTime.of(10, 0));
+                assertThat(lesson.endsAt()).isEqualTo(LocalTime.of(11, 0));
+            });
+            var listedLate = ownerPage.content().stream()
+                    .filter(summary -> summary.id().equals(late.summary().id()))
+                    .findFirst().orElseThrow();
+            assertThat(listedLate.lessons()).containsExactlyElementsOf(late.summary().lessons());
 
-        LessonSnapshot snapshot = snapshot(50L);
-        var options = service.options(STUDENT, List.of(snapshot));
-        assertThat(options.lessons()).singleElement().satisfies(option -> {
-            assertThat(option.pendingRequests()).extracting(ref -> ref.kind())
-                    .containsExactly(StudentRequestKind.EXCUSE);
-            assertThat(option.excuseEligible()).isFalse();
-        });
-        assertThat(late.summary().kind()).isEqualTo(StudentRequestKind.LATE_CHECKIN);
+            RequestPage firstPage = service.list(STUDENT, RequestBucket.OPEN, 0, 1);
+            RequestPage secondPage = service.list(STUDENT, RequestBucket.OPEN, 1, 1);
+            assertThat(firstPage.totalElements()).isEqualTo(2);
+            assertThat(firstPage.totalPages()).isEqualTo(2);
+            assertThat(List.of(firstPage.content().getFirst().id(), secondPage.content().getFirst().id()))
+                    .containsExactlyInAnyOrder(excuse.summary().id(), late.summary().id());
+
+            assertThatThrownBy(() -> service.get(student(200L), excuse.summary().id()))
+                    .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
+            assertThat(service.list(student(200L), RequestBucket.OPEN, 0, 20).content()).isEmpty();
+
+            var options = service.options(STUDENT, List.of(snapshot(50L)));
+            assertThat(options.lessons()).singleElement().satisfies(option -> {
+                assertThat(option.pendingRequests()).singleElement().satisfies(ref -> {
+                    assertThat(ref.id()).isEqualTo(excuse.summary().id());
+                    assertThat(ref.kind()).isEqualTo(StudentRequestKind.EXCUSE);
+                    assertThat(ref.origin()).isEqualTo(StudentRequestOrigin.MANUAL);
+                });
+                assertThat(option.excuseEligible()).isFalse();
+            });
+
+            seedAbsent(52L);
+            RequestDetail approved = service.submitExcuse(STUDENT,
+                    excuse(List.of(52L), "mixed-approved-key-01", List.of()));
+            service.decideExcuse(headman(777L), approved.summary().id(), true, "approved");
+            RequestPage archivePage = service.list(STUDENT, RequestBucket.ARCHIVE, 0, 20);
+            assertThat(archivePage.content()).singleElement().satisfies(summary -> {
+                assertThat(summary.id()).isEqualTo(approved.summary().id());
+                assertThat(summary.status()).isEqualTo(StudentRequestStatus.APPROVED);
+            });
+        } finally {
+            TimeZone.setDefault(previousTimeZone);
+        }
     }
 
     @Test

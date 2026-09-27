@@ -1033,7 +1033,7 @@ public class StudentRequestService {
         List<PendingRequestRef> refs = new ArrayList<>();
         Query excuseQuery = Query.query(Criteria.where("student_id").is(studentId)
                 .and("lesson_ids").is(lessonId)
-                .and("status").is(ExcuseTicketStatus.SUBMITTED.name()));
+                .and("status").is(ExcuseTicketStatus.SUBMITTED));
         for (ExcuseTicket ticket : mongoTemplate.find(excuseQuery, ExcuseTicket.class)) {
             refs.add(new PendingRequestRef(ticket.getId(), StudentRequestKind.EXCUSE,
                     StudentRequestOrigin.MANUAL));
@@ -1058,9 +1058,11 @@ public class StudentRequestService {
                 .append("request_kind", "EXCUSE")
                 .append("origin", "MANUAL")
                 .append("status", new Document("$switch", new Document("branches", List.of(
-                        new Document("case", new Document("$eq", List.of("$status", "SUBMITTED")))
+                        new Document("case", new Document("$eq", List.of(
+                                new Document("$toUpper", "$status"), "SUBMITTED")))
                                 .append("then", "PENDING"),
-                        new Document("case", new Document("$eq", List.of("$status", "DRAFT")))
+                        new Document("case", new Document("$eq", List.of(
+                                new Document("$toUpper", "$status"), "DRAFT")))
                                 .append("then", "PENDING")
                 )).append("default", new Document("$toUpper", "$status"))))
                 .append("lesson_snapshots", 1)
@@ -1133,35 +1135,37 @@ public class StudentRequestService {
                 }
             }
         } else {
-            lessons.add(new LessonSnapshot(
-                    numberAsLong(document.get("late_lesson_id")),
-                    numberAsLong(document.get("late_group_id")),
-                    numberAsLong(document.get("late_subject_id")),
-                    valueAsNullableString(document.get("late_subject_name")),
-                    valueAsNullableString(document.get("late_subject_type")),
-                    numberAsLong(document.get("late_semester_id")),
-                    numberAsInt(document.get("late_lesson_number")),
-                    localDate(document.get("late_lesson_date")), null, null,
-                    "closed", false));
+            lessons.add(snapshotFromDocument(new Document("lesson_id", document.get("late_lesson_id"))
+                    .append("group_id", document.get("late_group_id"))
+                    .append("subject_id", document.get("late_subject_id"))
+                    .append("subject_name", document.get("late_subject_name"))
+                    .append("subject_type", document.get("late_subject_type"))
+                    .append("semester_id", document.get("late_semester_id"))
+                    .append("lesson_number", document.get("late_lesson_number"))
+                    .append("date", document.get("late_lesson_date"))
+                    .append("status", "closed")
+                    .append("blocked", false)));
         }
         return new RequestSummary(id, kind, status, origin, lessons,
                 instant(document.get("created_at")), instant(document.get("updated_at")));
     }
 
     private LessonSnapshot snapshotFromDocument(Document document) {
+        StudentLessonSnapshotDocument snapshot = mongoTemplate.getConverter()
+                .read(StudentLessonSnapshotDocument.class, document);
         return new LessonSnapshot(
-                numberAsLong(document.get("lesson_id")),
-                numberAsLong(document.get("group_id")),
-                numberAsLong(document.get("subject_id")),
-                valueAsNullableString(document.get("subject_name")),
-                valueAsNullableString(document.get("subject_type")),
-                numberAsLong(document.get("semester_id")),
-                numberAsInt(document.get("lesson_number")),
-                localDate(document.get("date")),
-                localTime(document.get("starts_at")),
-                localTime(document.get("ends_at")),
-                valueAsString(document.get("status")),
-                Boolean.TRUE.equals(document.get("blocked")));
+                snapshot.getLessonId() == null ? 0 : snapshot.getLessonId(),
+                snapshot.getGroupId() == null ? 0 : snapshot.getGroupId(),
+                snapshot.getSubjectId() == null ? 0 : snapshot.getSubjectId(),
+                snapshot.getSubjectName(),
+                snapshot.getSubjectType(),
+                snapshot.getSemesterId() == null ? 0 : snapshot.getSemesterId(),
+                snapshot.getLessonNumber() == null ? 0 : snapshot.getLessonNumber(),
+                snapshot.getDate(),
+                snapshot.getStartsAt(),
+                snapshot.getEndsAt(),
+                snapshot.getStatus(),
+                snapshot.isBlocked());
     }
 
     private static Document firstDocument(Iterable<Document> documents) {
@@ -1930,39 +1934,6 @@ public class StudentRequestService {
             return result;
         }
         return value == null || value.toString().isBlank() ? null : Instant.parse(value.toString());
-    }
-
-    private static LocalDate localDate(Object value) {
-        if (value instanceof LocalDate date) {
-            return date;
-        }
-        if (value instanceof java.util.Date date) {
-            return date.toInstant().atZone(ZoneOffset.UTC).toLocalDate();
-        }
-        if (value instanceof Instant instant) {
-            return instant.atZone(ZoneOffset.UTC).toLocalDate();
-        }
-        return value == null || value.toString().isBlank() ? null : LocalDate.parse(value.toString());
-    }
-
-    private static LocalTime localTime(Object value) {
-        if (value instanceof LocalTime time) {
-            return time;
-        }
-        if (value == null || value.toString().isBlank()) {
-            return null;
-        }
-        if (value instanceof java.util.Date date) {
-            return date.toInstant().atZone(ZoneOffset.UTC).toLocalTime();
-        }
-        if (value instanceof Instant instant) {
-            return instant.atZone(ZoneOffset.UTC).toLocalTime();
-        }
-        String string = value.toString();
-        if (string.contains("T")) {
-            string = string.substring(string.indexOf('T') + 1);
-        }
-        return LocalTime.parse(string);
     }
 
     private static String sha256(byte[] value) {

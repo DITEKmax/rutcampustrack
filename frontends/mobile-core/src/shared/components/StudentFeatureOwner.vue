@@ -208,7 +208,7 @@ watch(() => route.value, (value, previous) => {
   if (value.id !== 'more/statistics') statistics.closeSubject()
   if (previous?.id === 'homework/notification-target' && value.id !== 'homework/notification-target') {
     homeworkNotificationState.value = null
-    homework.returnToToday()
+    if (homework.range.value !== null) homework.returnToToday()
   }
 }, { immediate: true })
 
@@ -253,7 +253,8 @@ const homeworkScreenData = computed(() => {
       && homework.range.value?.from === targetState.target.lessonDate
       && homework.range.value.to === targetState.target.lessonDate
     const item = dateRangeIsCurrent
-      ? feed.items.find((entry) => entry.id === targetState.target.homeworkId)
+      ? feed.items.find((entry) => entry.id === targetState.target.homeworkId
+        && entry.lessonDate === targetState.target.lessonDate)
       : undefined
     if (!dateRangeIsCurrent) {
       return {
@@ -328,7 +329,8 @@ function loadHomeworkNotificationTarget(
     try {
       const feed = await homework.openDate(request.target.lessonDate)
       if (!isActiveHomeworkNotificationRequest(request)) return
-      if (!feed.items.some((item) => item.id === request.target.homeworkId)) {
+      if (!feed.items.some((item) => item.id === request.target.homeworkId
+        && item.lessonDate === request.target.lessonDate)) {
         homeworkNotificationState.value = {
           requestId: request.requestId,
           target: request.target,
@@ -344,8 +346,8 @@ function loadHomeworkNotificationTarget(
       }
     } catch (error) {
       if (!isActiveHomeworkNotificationRequest(request)) return
-      const status = error instanceof StudentApiError ? error.response.status : null
-      homeworkNotificationState.value = status === 403 || status === 404
+      const unavailable = isUnavailableHomeworkNotificationTarget(error, request.target.lessonDate)
+      homeworkNotificationState.value = unavailable
         ? {
           requestId: request.requestId,
           target: request.target,
@@ -362,6 +364,18 @@ function loadHomeworkNotificationTarget(
   })()
 }
 
+function isUnavailableHomeworkNotificationTarget(error: unknown, targetDate: string): boolean {
+  if (!(error instanceof StudentApiError)) return false
+  const { response, problem } = error
+  if (response.status === 403 || response.status === 404) return true
+  if (response.status !== 400
+    || problem?.code !== 'INVALID_REQUEST'
+    || problem.detail !== 'Диапазон ДЗ должен входить в активный семестр') return false
+
+  const semester = homework.query.data.value?.semester
+  return !semester || targetDate < semester.dateFrom || targetDate > semester.dateTo
+}
+
 function retryHomeworkFeed(): void {
   const request = props.homeworkNotificationRequest
   if (activeHomeworkNotification.value?.status === 'error' && request
@@ -370,6 +384,16 @@ function retryHomeworkFeed(): void {
     return
   }
   retryFeed()
+}
+
+function returnHomeworkToToday(): void {
+  if (route.value.id === homeworkNotificationRoute.id) {
+    homeworkNotificationState.value = null
+    homework.returnToToday()
+    navigation.goRoot('homework')
+    return
+  }
+  homework.returnToToday()
 }
 
 watch(() => props.homeworkNotificationRequest, (request) => {
@@ -1092,7 +1116,7 @@ onBeforeUnmount(() => {
     @retry-feed="retryHomeworkFeed"
     @open-material="openMaterialFromItem"
     @previous="homework.loadPrevious"
-    @return-today="homework.returnToToday"
+    @return-today="returnHomeworkToToday"
     @navigate="navigate"
     @back="navigation.back()"
   />

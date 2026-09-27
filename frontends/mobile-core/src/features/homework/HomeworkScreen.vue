@@ -81,6 +81,7 @@ const emit = defineEmits<{
 }>()
 
 const homeworkRoute = rootRoute('homework')
+const homeworkTitle = ref<HTMLElement | null>(null)
 const shellOptionalProps = computed(() => props.keyboardVisible === undefined
   ? {}
   : { keyboardVisible: props.keyboardVisible })
@@ -320,7 +321,8 @@ watch(
     await nextTick()
     if (props.focusItemId !== id || props.focusRequestId !== requestId) return
     const target = trackElements.get(id)
-    if (target?.isConnected) target.focus()
+    if (target?.isConnected && !target.matches(':disabled')) target.focus()
+    else homeworkTitle.value?.focus()
   },
   { flush: 'post', immediate: true },
 )
@@ -352,7 +354,11 @@ onBeforeUnmount(() => {
       aria-labelledby="homework-title"
     >
       <div class="homework-content">
-        <h1 id="homework-title">
+        <h1
+          id="homework-title"
+          ref="homeworkTitle"
+          tabindex="-1"
+        >
           Задания
         </h1>
 

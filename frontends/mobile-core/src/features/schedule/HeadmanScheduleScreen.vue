@@ -3,18 +3,29 @@ import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import MobileShell from '../../shared/components/MobileShell.vue'
 import type { CampusMapClient } from '../../api/map-client'
 import MapScreen from '../map/MapScreen.vue'
-import { createStudentNavigationItems } from '../../shared/mobile-navigation-items'
+import { createHeadmanNavigationItems } from '../../shared/mobile-navigation-items'
 import {
   createMobileNavigationStack,
   nestedRoute,
+  rootRoute,
   type MobileBottomNavItems,
   type MobileNavigationStack,
+  type MobileRootRouteId,
   type MobileRoute,
 } from '../../shared/navigation'
 import type { MobileHostAdapter } from '../../shared/host'
-import type { ProfileSnapshot } from '../profile/profile-types'
+import type { MobileThemeController, MobileThemeResolvedMode } from '../../shared/theme'
+import type { ProfilePort, ProfileRole, ProfileRoute, ProfileSnapshot, ProfileTheme } from '../profile/profile-types'
+import { DEFAULT_PASSWORD_POLICY, ProfileRequestError } from '../profile/profile-types'
+import { ProfileState } from '../profile/profile-state'
+import ProfileScreen from '../profile/ProfileScreen.vue'
+import RoleSwitchScreen from '../profile/RoleSwitchScreen.vue'
+import AppearanceScreen from '../profile/AppearanceScreen.vue'
+import SecurityScreen from '../profile/SecurityScreen.vue'
+import SessionsScreen from '../profile/SessionsScreen.vue'
+import AccountHistoryScreen from '../profile/AccountHistoryScreen.vue'
 import HeadmanJournalScreen from '../headman-journal/HeadmanJournalScreen.vue'
-import type { HeadmanJournalApi } from '../headman-journal/headman-journal-client'
+import type { HeadmanJournalApi, HeadmanJournalLesson } from '../headman-journal/headman-journal-client'
 import HeadmanRequestsScreen from '../headman-requests/HeadmanRequestsScreen.vue'
 import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
 import HeadmanGroupScreen from '../headman-group/HeadmanGroupScreen.vue'
@@ -24,7 +35,13 @@ import HeadmanSubjectsScreen from '../headman-subjects/HeadmanSubjectsScreen.vue
 import type { HeadmanSubjectsApi } from '../headman-subjects/headman-subjects-client'
 import HeadmanStatsScreen from '../headman-stats/HeadmanStatsScreen.vue'
 import type { HeadmanStatsApi } from '../headman-stats/headman-stats-client'
+import HeadmanHomeScreen from '../headman-home/HeadmanHomeScreen.vue'
+import HeadmanMoreScreen from '../headman-home/HeadmanMoreScreen.vue'
+import AssistantHomeworkScreen from '../homework/AssistantHomeworkScreen.vue'
+import type { HeadmanHomeworkApi } from '../homework/headman-homework-client'
 import type { ReportDownloadPort } from '../../shared/report-download-client'
+import { profileOwnerStaleMessage } from '../../shared/profile-owner-status'
+import { createProfileViewPublication } from '../../shared/components/profile-view-publication'
 import {
   HeadmanScheduleApiError,
   type HeadmanScheduleApi,
@@ -52,6 +69,12 @@ const props = withDefaults(defineProps<{
   navItems?: MobileBottomNavItems
   onRoleSwitch?: (() => void | Promise<void>) | undefined
   reportDownload?: ReportDownloadPort | null
+  homeworkApi?: HeadmanHomeworkApi | null
+  homeworkActorUserId?: number | null
+  profilePort?: ProfilePort | null
+  profileRoleSelect?: ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>) | undefined
+  themeController?: MobileThemeController | null
+  selectedDate?: string
 }>(), {
   journalApi: null,
   requestsApi: null,
@@ -66,17 +89,23 @@ const props = withDefaults(defineProps<{
   navItems: undefined as never,
   onRoleSwitch: undefined,
   reportDownload: null,
+  homeworkApi: null,
+  homeworkActorUserId: null,
+  profilePort: null,
+  profileRoleSelect: undefined,
+  themeController: null,
+  selectedDate: '',
 })
 
 const emit = defineEmits<{
   error: [cause: unknown]
 }>()
 
-const navigation: MobileNavigationStack = createMobileNavigationStack(
-  nestedRoute('more', 'more/headman-schedule/list', 'task'),
-)
+const navigation: MobileNavigationStack = createMobileNavigationStack(rootRoute('headman-today'))
 const route = shallowRef<MobileRoute>(navigation.current)
-const navigationItems = computed(() => props.navItems ?? createStudentNavigationItems())
+const navigationItems = computed(() => props.navItems ?? createHeadmanNavigationItems(
+  props.profilePort !== null || props.profile !== null || props.onRoleSwitch !== undefined,
+))
 const loading = ref(true)
 const error = ref<string | null>(null)
 const denied = ref(false)
@@ -90,6 +119,7 @@ const requestsOpen = ref(false)
 const groupOpen = ref(false)
 const subjectsOpen = ref(false)
 const statsOpen = ref(false)
+const scheduleOpen = ref(false)
 const formBusy = ref(false)
 const formError = ref<string | null>(null)
 const notice = ref<string | null>(null)
@@ -101,74 +131,52 @@ const startTime = ref('')
 const endTime = ref('')
 const room = ref('')
 const commandFingerprint = ref<string | null>(null)
-const journalRouteId = 'more/headman-journal/journal' as const
-const requestsRouteId = 'more/headman-requests/list' as const
-const groupRouteId = 'more/headman-group/list' as const
-const subjectsRouteId = 'more/headman-subjects/list' as const
-const statsRouteId = 'more/headman-stats/stats' as const
+const journalRouteId = 'headman-attendance/lesson' as const
+const requestsRouteId = 'headman-requests' as const
+const groupRouteId = 'headman-more/group' as const
+const subjectsRouteId = 'headman-more/subjects' as const
+const statsRouteId = 'headman-more/stats' as const
+const homeworkRouteId = 'headman-more/homework' as const
+const lessonManagementRouteId = 'headman-more/lessons' as const
+const scheduleRouteId = 'headman-more/schedule/list' as const
+const scheduleFormRouteId = 'headman-more/schedule/form' as const
+const selectedDate = ref(props.selectedDate || moscowToday())
+const selectedLessonId = ref<number | null>(null)
+const profileState = shallowRef(props.profilePort ? new ProfileState(props.profilePort) : null)
+const profilePendingRole = ref<ProfileRole | null>(null)
+const profileRoleError = shallowRef<ProfileRequestError | null>(null)
+const themeMode = ref<ProfileTheme>(props.themeController?.mode ?? 'system')
+const resolvedTheme = ref<MobileThemeResolvedMode>(props.themeController?.resolvedMode ?? 'dark')
+const profilePublication = createProfileViewPublication(
+  () => profileState.value?.view ?? null,
+  () => disposed,
+)
+const profileView = profilePublication.view
+const publishProfileView = profilePublication.publish
+const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, props.offline))
+const moreAvailability = computed(() => ({
+  stats: props.statsApi !== null && props.groupId !== null,
+  homework: props.homeworkApi !== null && props.journalApi !== null && props.groupId !== null,
+  map: props.mapClient !== null,
+  group: props.groupApi !== null && props.groupId !== null,
+  subjects: props.subjectsApi !== null && props.groupId !== null,
+  schedule: props.api !== null && props.groupId !== null,
+  lessons: props.journalApi !== null && props.groupId !== null,
+}))
 let loadRevision = 0
+let disposed = false
+let stopTheme = (): void => undefined
 let stopNavigation = navigation.subscribe(() => {
   const next = navigation.current
-  const previous = route.value
   route.value = next
-  if (next.kind === 'root' && previous.kind === 'nested') {
-    formOpen.value = false
-    journalOpen.value = false
-    requestsOpen.value = false
-    groupOpen.value = false
-    subjectsOpen.value = false
-    statsOpen.value = false
-    void props.onRoleSwitch?.()
-  } else if (next.id === journalRouteId) {
-    formOpen.value = false
-    journalOpen.value = true
-    requestsOpen.value = false
-    groupOpen.value = false
-    subjectsOpen.value = false
-    statsOpen.value = false
-  } else if (next.id === requestsRouteId) {
-    formOpen.value = false
-    journalOpen.value = false
-    requestsOpen.value = true
-    groupOpen.value = false
-    subjectsOpen.value = false
-    statsOpen.value = false
-  } else if (next.id === groupRouteId) {
-    formOpen.value = false
-    journalOpen.value = false
-    requestsOpen.value = false
-    groupOpen.value = true
-    subjectsOpen.value = false
-    statsOpen.value = false
-  } else if (next.id === subjectsRouteId) {
-    formOpen.value = false
-    journalOpen.value = false
-    requestsOpen.value = false
-    groupOpen.value = false
-    subjectsOpen.value = true
-    statsOpen.value = false
-  } else if (next.id === statsRouteId) {
-    formOpen.value = false
-    journalOpen.value = false
-    requestsOpen.value = false
-    groupOpen.value = false
-    subjectsOpen.value = false
-    statsOpen.value = true
-  } else if (next.id === 'more/headman-schedule/list') {
-    formOpen.value = false
-    journalOpen.value = false
-    requestsOpen.value = false
-    groupOpen.value = false
-    subjectsOpen.value = false
-    statsOpen.value = false
-  } else if (next.id === 'more/headman-schedule/form') {
-    journalOpen.value = false
-    requestsOpen.value = false
-    groupOpen.value = false
-    subjectsOpen.value = false
-    statsOpen.value = false
-    formOpen.value = true
-  }
+  journalOpen.value = next.root === 'headman-attendance' || next.id === lessonManagementRouteId
+  requestsOpen.value = next.id === requestsRouteId
+  groupOpen.value = next.id === groupRouteId
+  subjectsOpen.value = next.id === subjectsRouteId
+  statsOpen.value = next.id === statsRouteId
+  scheduleOpen.value = next.id === scheduleRouteId || next.id === scheduleFormRouteId
+  formOpen.value = next.id === scheduleFormRouteId
+  ensureProfileRoute(next)
 })
 
 const days = [
@@ -179,6 +187,241 @@ const days = [
   { value: 5, label: 'Пт' },
   { value: 6, label: 'Сб' },
 ] as const
+
+function moscowToday(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })
+}
+
+function bindTheme(controller: MobileThemeController | null): void {
+  stopTheme()
+  stopTheme = (): void => undefined
+  if (!controller) {
+    themeMode.value = 'system'
+    resolvedTheme.value = 'dark'
+    return
+  }
+  themeMode.value = controller.mode
+  resolvedTheme.value = controller.resolvedMode
+  stopTheme = controller.subscribe((snapshot) => {
+    themeMode.value = snapshot.mode
+    resolvedTheme.value = snapshot.resolvedMode
+  })
+}
+
+watch(() => props.themeController, bindTheme, { immediate: true })
+
+async function runProfile<T>(
+  request: (state: ProfileState) => Promise<T>,
+  options: { rethrow?: boolean } = {},
+): Promise<T | undefined> {
+  const state = profileState.value
+  if (!state || disposed) return undefined
+  let pending: Promise<T>
+  try {
+    pending = request(state)
+    publishProfileView()
+  } catch {
+    publishProfileView()
+    return undefined
+  }
+  try {
+    return await pending
+  } catch (cause) {
+    if (options.rethrow) throw cause
+    return undefined
+  } finally {
+    publishProfileView()
+    await state.waitForAutomaticStaleReload()
+    publishProfileView()
+  }
+}
+
+async function loadProfileSnapshot(): Promise<void> {
+  const loaded = await runProfile((state) => state.loadSnapshot())
+  if (loaded && !disposed) ensureProfileRoute(route.value)
+}
+
+async function openProfileArea(area: 'sessions' | 'history'): Promise<void> {
+  const state = profileState.value
+  if (!state || disposed) return
+  if (!state.view.snapshot) {
+    await runProfile((current) => current.loadSnapshot())
+    if (disposed || !state.view.snapshot) return
+  }
+  if (area === 'sessions') await runProfile((current) => current.loadSessions())
+  else await runProfile((current) => current.loadHistory())
+}
+
+function profileRoute(routeName: Extract<ProfileRoute, 'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'>) {
+  if (routeName === 'role-switch') return nestedRoute('profile', 'profile/role-switch', 'detail')
+  if (routeName === 'appearance') return nestedRoute('profile', 'profile/appearance', 'detail')
+  if (routeName === 'security') return nestedRoute('profile', 'profile/security', 'detail')
+  if (routeName === 'sessions') return nestedRoute('profile', 'profile/sessions', 'detail')
+  return nestedRoute('profile', 'profile/history', 'detail')
+}
+
+function navigateProfile(routeName: ProfileRoute): void {
+  if (routeName === 'profile') {
+    navigation.goRoot('profile')
+    return
+  }
+  if (routeName === 'role-switch' || routeName === 'appearance' || routeName === 'security'
+    || routeName === 'sessions' || routeName === 'history') {
+    profileRoleError.value = null
+    navigation.push(profileRoute(routeName))
+  }
+}
+
+function asProfileError(cause: unknown): ProfileRequestError {
+  if (cause instanceof ProfileRequestError) return cause
+  const status = typeof cause === 'object' && cause !== null && 'status' in cause && typeof cause.status === 'number'
+    ? cause.status
+    : undefined
+  const code = status === 401 ? 'INVALID_SESSION' : status === 403 ? 'ROLE_NOT_GRANTED' : 'NETWORK'
+  return new ProfileRequestError(code, cause instanceof Error ? cause.message : 'Не удалось сменить роль', status, cause)
+}
+
+async function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
+  const state = profileState.value
+  if (!state && !props.profileRoleSelect) {
+    await props.onRoleSwitch?.()
+    return
+  }
+  profilePendingRole.value = role
+  profileRoleError.value = null
+  try {
+    if (props.profileRoleSelect) await props.profileRoleSelect(role, expectedSessionVersion)
+    else await runProfile((current) => current.selectRole(role), { rethrow: true })
+  } catch (cause) {
+    if (!disposed) {
+      const typed = asProfileError(cause)
+      profileRoleError.value = typed
+      if (typed.code === 'SESSION_VERSION_CONFLICT' || typed.code === 'SESSION_STATE_STALE') {
+        await runProfile((current) => current.loadSnapshot())
+      }
+    }
+  } finally {
+    if (!disposed) {
+      profilePendingRole.value = null
+      publishProfileView()
+    }
+  }
+}
+
+function changeProfileTheme(mode: ProfileTheme): void {
+  props.themeController?.setMode(mode)
+}
+
+async function changeProfilePassword(input: { currentPassword: string; newPassword: string }): Promise<void> {
+  if (!profileState.value || disposed) return
+  await runProfile((state) => state.changePassword(input), { rethrow: true })
+}
+
+async function logoutProfileAll(): Promise<void> {
+  if (!profileState.value || disposed) return
+  await runProfile((state) => state.logoutAll())
+}
+
+function loadMoreProfile(area: 'sessions' | 'history', cursor: string): void {
+  const state = profileState.value
+  if (!state || disposed) return
+  if (area === 'sessions') void runProfile((current) => current.loadSessions({ cursor }))
+  else void runProfile((current) => current.loadHistory({ cursor }))
+}
+
+function ensureProfileRoute(routeValue: MobileRoute): void {
+  const state = profileState.value
+  if (routeValue.root !== 'profile' || !state || disposed) return
+  if (!state.view.snapshot) {
+    if (state.view.snapshotStatus === 'loading') return
+    if (routeValue.id === 'profile/sessions' || routeValue.id === 'profile/history') {
+      void openProfileArea(routeValue.id === 'profile/sessions' ? 'sessions' : 'history')
+    } else {
+      void loadProfileSnapshot()
+    }
+    return
+  }
+  if (routeValue.id === 'profile/sessions' && state.view.sessionsStatus === 'idle') void openProfileArea('sessions')
+  if (routeValue.id === 'profile/history' && state.view.historyStatus === 'idle') void openProfileArea('history')
+}
+
+function forwardError(cause: unknown): void {
+  emit('error', cause)
+}
+
+function handleTaskBack(): void {
+  navigation.back()
+}
+
+function navigateRoot(routeName: MobileRootRouteId): void {
+  if (routeName !== 'headman-today' && routeName !== 'headman-attendance' && routeName !== 'headman-requests'
+    && routeName !== 'headman-more' && routeName !== 'headman-map' && routeName !== 'profile') return
+  if (routeName !== 'headman-attendance') selectedLessonId.value = null
+  navigation.goRoot(routeName)
+}
+
+function openHomeLesson(lesson: HeadmanJournalLesson): void {
+  selectedDate.value = lesson.date
+  selectedLessonId.value = lesson.id
+  navigation.goRoot('headman-attendance')
+  navigation.push(nestedRoute('headman-attendance', journalRouteId, 'detail'))
+}
+
+function openGroup(): void {
+  if (!props.groupApi || props.groupId === null) return
+  navigation.push(nestedRoute('headman-more', groupRouteId, 'detail'))
+}
+
+function openSubjects(): void {
+  if (!props.subjectsApi || props.groupId === null) return
+  navigation.push(nestedRoute('headman-more', subjectsRouteId, 'detail'))
+}
+
+function openStats(): void {
+  if (!props.statsApi || props.groupId === null) return
+  navigation.push(nestedRoute('headman-more', statsRouteId, 'detail'))
+}
+
+function openHomework(): void {
+  if (!props.homeworkApi || !props.journalApi || props.groupId === null) return
+  navigation.push(nestedRoute('headman-more', homeworkRouteId, 'task'))
+}
+
+function openSchedule(): void {
+  if (!props.api || props.groupId === null) return
+  navigation.push(nestedRoute('headman-more', scheduleRouteId, 'task'))
+}
+
+function openLessonManagement(): void {
+  if (!props.journalApi || props.groupId === null) return
+  selectedDate.value = moscowToday()
+  selectedLessonId.value = null
+  navigation.push(nestedRoute('headman-more', lessonManagementRouteId, 'task'))
+}
+
+function selectMore(destination: 'stats' | 'homework' | 'map' | 'group' | 'subjects' | 'schedule' | 'lessons'): void {
+  if (!moreAvailability.value[destination]) return
+  if (destination === 'map') {
+    openMap()
+  } else if (destination === 'stats') {
+    openStats()
+  } else if (destination === 'homework') {
+    openHomework()
+  } else if (destination === 'group') {
+    openGroup()
+  } else if (destination === 'subjects') {
+    openSubjects()
+  } else if (destination === 'schedule') {
+    openSchedule()
+  } else {
+    openLessonManagement()
+  }
+}
+
+function openMap(): void {
+  if (!props.mapClient) return
+  navigateRoot('headman-map')
+}
 
 const activeAssignments = computed(() => assignments.value.filter((item) => item.id !== undefined && item.subjectId !== undefined))
 const selectedAssignment = computed(() => activeAssignments.value.find((item) => item.id === assignmentId.value) ?? null)
@@ -224,55 +467,12 @@ function openForm(): void {
   endTime.value = ''
   room.value = ''
   formOpen.value = true
-  navigation.push(nestedRoute('more', 'more/headman-schedule/form', 'editor'))
+  navigation.push(nestedRoute('headman-more', scheduleFormRouteId, 'editor'))
 }
 
 function closeForm(): void {
   if (formBusy.value) return
-  navigation.replace(nestedRoute('more', 'more/headman-schedule/list', 'task'))
-}
-
-function openJournal(): void {
-  if (!props.journalApi || props.groupId === null) return
-  journalOpen.value = true
-  navigation.push(nestedRoute('more', journalRouteId, 'task'))
-}
-
-function openRequests(): void {
-  if (!props.requestsApi || props.offline) return
-  requestsOpen.value = true
-  navigation.push(nestedRoute('more', requestsRouteId, 'task'))
-}
-
-function openGroup(): void {
-  if (!props.groupApi || props.groupId === null || props.offline) return
-  groupOpen.value = true
-  navigation.push(nestedRoute('more', groupRouteId, 'task'))
-}
-
-function openSubjects(): void {
-  if (!props.subjectsApi || props.groupId === null || props.offline) return
-  subjectsOpen.value = true
-  navigation.push(nestedRoute('more', subjectsRouteId, 'task'))
-}
-
-function openStats(): void {
-  if (!props.statsApi || props.groupId === null || props.offline) return
-  statsOpen.value = true
-  navigation.push(nestedRoute('more', statsRouteId, 'task'))
-}
-
-function closeStats(): void {
-  navigation.replace(nestedRoute('more', 'more/headman-schedule/list', 'task'))
-}
-
-function closeRequests(): void {
-  navigation.replace(nestedRoute('more', 'more/headman-schedule/list', 'task'))
-}
-
-function openMap(): void {
-  if (!props.mapClient || props.offline) return
-  navigation.push(nestedRoute('more', 'more/map', 'overview'))
+  navigation.back()
 }
 
 function validTime(value: string): boolean {
@@ -383,9 +583,37 @@ async function load(): Promise<void> {
 }
 
 watch(
-  () => [props.api, props.groupId, props.offline] as const,
-  () => { void load() },
+  () => [props.api, props.groupId, props.offline, scheduleOpen.value] as const,
+  ([, , , isOpen]) => {
+    if (isOpen) void load()
+    else {
+      loadRevision += 1
+      loading.value = false
+    }
+  },
   { immediate: true },
+)
+
+watch(() => props.profilePort, (port) => {
+  profileState.value = port ? new ProfileState(port) : null
+  profilePendingRole.value = null
+  profileRoleError.value = null
+  publishProfileView()
+  ensureProfileRoute(route.value)
+})
+
+watch(
+  () => [props.api, props.groupId, props.profile?.sessionId, props.profile?.activeRole] as const,
+  ([api, groupId, sessionId, activeRole], previous) => {
+    if (previous && previous[0] === api && previous[1] === groupId
+      && previous[2] === sessionId && previous[3] === activeRole) return
+    selectedLessonId.value = null
+    selectedDate.value = props.selectedDate || moscowToday()
+    profileRoleError.value = null
+    profilePendingRole.value = null
+    navigation.goRoot('headman-today')
+  },
+  { flush: 'sync' },
 )
 
 watch(
@@ -400,8 +628,10 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  disposed = true
   loadRevision += 1
   stopNavigation()
+  stopTheme()
   props.host?.setPrimaryAction?.(null)
 })
 </script>
@@ -411,13 +641,55 @@ onBeforeUnmount(() => {
     :route="route"
     :navigation="navigation"
     :nav-items="navigationItems"
-    active-id="more"
+    :active-id="route.root === 'headman-map' ? 'headman-more' : route.root"
     :host="host"
     back-label="Назад"
   >
+    <template #back="{ visible, onBack }">
+      <button
+        v-if="visible && route.root !== 'profile'"
+        class="mobile-shell__back"
+        type="button"
+        @click="onBack"
+      >
+        Назад
+      </button>
+    </template>
     <MapScreen
-      v-if="route.id === 'more/map' && props.mapClient"
+      v-if="route.id === 'headman-map' && props.mapClient"
       :client="props.mapClient"
+      :theme="resolvedTheme"
+    />
+    <p
+      v-else-if="route.id === 'headman-map'"
+      class="headman-schedule__state"
+      role="status"
+    >
+      Карта кампуса пока недоступна.
+    </p>
+    <HeadmanHomeScreen
+      v-else-if="route.id === 'headman-today'"
+      :api="journalApi"
+      :group-id="groupId"
+      :selected-date="selectedDate"
+      :offline="offline"
+      @select-date="selectedDate = $event"
+      @open-lesson="openHomeLesson"
+      @error="forwardError"
+    />
+    <HeadmanRequestsScreen
+      v-else-if="requestsOpen"
+      :api="requestsApi"
+      :assistant-permissions="assistantPermissions"
+      :offline="offline"
+      :read-only="readOnly"
+      :show-back="false"
+      @error="forwardError"
+    />
+    <HeadmanMoreScreen
+      v-else-if="route.id === 'headman-more'"
+      :availability="moreAvailability"
+      @select="selectMore"
     />
     <HeadmanStatsScreen
       v-else-if="statsOpen"
@@ -426,8 +698,8 @@ onBeforeUnmount(() => {
       :assistant-permissions="assistantPermissions"
       :offline="offline"
       :report-download="reportDownload"
-      @back="closeStats"
-      @error="emit('error', $event)"
+      :show-back="false"
+      @error="forwardError"
     />
     <HeadmanJournalScreen
       v-else-if="journalOpen"
@@ -437,15 +709,8 @@ onBeforeUnmount(() => {
       :offline="offline"
       :read-only="readOnly"
       :report-download="reportDownload"
-      @error="emit('error', $event)"
-    />
-    <HeadmanRequestsScreen
-      v-else-if="requestsOpen"
-      :api="requestsApi"
-      :assistant-permissions="assistantPermissions"
-      :offline="offline"
-      :read-only="readOnly"
-      @back="closeRequests"
+      :initial-date="selectedDate"
+      :initial-lesson-id="selectedLessonId"
       @error="emit('error', $event)"
     />
     <HeadmanGroupScreen
@@ -466,30 +731,107 @@ onBeforeUnmount(() => {
       :read-only="readOnly"
       @error="emit('error', $event)"
     />
+    <AssistantHomeworkScreen
+      v-else-if="route.id === homeworkRouteId"
+      :api="homeworkApi"
+      :journal-api="journalApi"
+      :group-id="groupId"
+      :user-id="homeworkActorUserId"
+      :offline="offline"
+      :read-only="readOnly"
+      @error="forwardError"
+    />
+    <template v-else-if="route.root === 'profile'">
+      <p
+        v-if="profileOwnerStatus"
+        class="profile-inline-error profile-owner-status"
+        data-profile-stale="true"
+        role="status"
+        aria-live="polite"
+      >
+        {{ profileOwnerStatus }}
+      </p>
+      <ProfileScreen
+        v-if="route.id === 'profile'"
+        :snapshot="profileView.snapshot ?? profile"
+        :loading="profileView.snapshotStatus === 'loading' && profile === null"
+        :error="profileView.snapshotError"
+        :theme="resolvedTheme"
+        :show-active-role="false"
+        :on-retry="loadProfileSnapshot"
+        :on-navigate="navigateProfile"
+      />
+      <RoleSwitchScreen
+        v-else-if="route.id === 'profile/role-switch'"
+        :snapshot="profileView.snapshot ?? profile"
+        :pending-role="profilePendingRole"
+        :error="profileRoleError ?? profileView.snapshotError"
+        :loading="profileView.snapshotStatus === 'loading'"
+        :offline="offline || (profilePort === null && profileRoleSelect === undefined && onRoleSwitch === undefined)"
+        :theme="resolvedTheme"
+        :on-back="handleTaskBack"
+        :on-select-role="selectProfileRole"
+      />
+      <AppearanceScreen
+        v-else-if="route.id === 'profile/appearance'"
+        :theme="themeMode"
+        :resolved-theme="resolvedTheme"
+        :on-back="handleTaskBack"
+        :on-theme-change="changeProfileTheme"
+      />
+      <SecurityScreen
+        v-else-if="route.id === 'profile/security'"
+        :policy="profileView.snapshot?.passwordPolicy ?? profile?.passwordPolicy ?? DEFAULT_PASSWORD_POLICY"
+        :error="profileView.error"
+        :busy="profileView.mutationBusy === 'password'"
+        :offline="offline || profilePort === null"
+        :theme="resolvedTheme"
+        :on-back="handleTaskBack"
+        :on-change-password="changeProfilePassword"
+      />
+      <SessionsScreen
+        v-else-if="route.id === 'profile/sessions'"
+        :sessions="profileView.sessions"
+        :loading="profileView.sessionsStatus === 'loading'"
+        :error="profileView.sessionsError ?? profileView.error"
+        :next-cursor="profileView.sessionsNextCursor"
+        :busy="profileView.mutationBusy === 'logout-all'"
+        :offline="offline || profilePort === null"
+        :theme="resolvedTheme"
+        :on-back="handleTaskBack"
+        :on-retry="() => openProfileArea('sessions')"
+        :on-load-more="(cursor) => loadMoreProfile('sessions', cursor)"
+        :on-logout-all="logoutProfileAll"
+      />
+      <AccountHistoryScreen
+        v-else-if="route.id === 'profile/history'"
+        :events="profileView.history"
+        :loading="profileView.historyStatus === 'loading'"
+        :error="profileView.historyError"
+        :next-cursor="profileView.historyNextCursor"
+        :theme="resolvedTheme"
+        :on-back="handleTaskBack"
+        :on-retry="() => openProfileArea('history')"
+        :on-load-more="(cursor) => loadMoreProfile('history', cursor)"
+      />
+    </template>
     <main
-      v-else
+      v-else-if="scheduleOpen"
       class="headman-schedule"
       aria-labelledby="headman-schedule-title"
     >
       <header class="headman-schedule__header">
         <div>
           <p class="headman-schedule__eyebrow">
-            Староста · расписание
+            Староста · управление
           </p>
           <h1 id="headman-schedule-title">
-            Расписание группы
+            Конструктор расписания
           </h1>
           <p class="headman-schedule__context">
             {{ profile?.roles.find((grant) => grant.role === 'HEADMAN')?.contextLabel || 'Авторизованная группа' }}
           </p>
         </div>
-        <button
-          class="headman-schedule__role-button"
-          type="button"
-          @click="onRoleSwitch"
-        >
-          Сменить роль
-        </button>
       </header>
 
       <p
@@ -513,61 +855,6 @@ onBeforeUnmount(() => {
       >
         {{ notice }}
       </p>
-
-      <button
-        v-if="journalApi && groupId !== null"
-        class="headman-schedule__journal"
-        type="button"
-        :disabled="offline"
-        @click="openJournal"
-      >
-        Открыть журнал посещаемости
-      </button>
-      <button
-        v-if="requestsApi"
-        class="headman-schedule__journal"
-        type="button"
-        :disabled="offline"
-        @click="openRequests"
-      >
-        Открыть заявки группы
-      </button>
-      <button
-        v-if="groupApi && groupId !== null"
-        class="headman-schedule__journal"
-        type="button"
-        :disabled="offline"
-        @click="openGroup"
-      >
-        Управление помощниками
-      </button>
-      <button
-        v-if="subjectsApi && groupId !== null"
-        class="headman-schedule__journal"
-        type="button"
-        :disabled="offline"
-        @click="openSubjects"
-      >
-        Управление предметами
-      </button>
-      <button
-        v-if="statsApi && groupId !== null"
-        class="headman-schedule__journal"
-        type="button"
-        :disabled="offline"
-        @click="openStats"
-      >
-        Статистика группы
-      </button>
-      <button
-        v-if="mapClient"
-        class="headman-schedule__journal"
-        type="button"
-        :disabled="offline"
-        @click="openMap"
-      >
-        Открыть карту кампуса
-      </button>
 
       <section
         v-if="loading"

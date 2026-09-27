@@ -8,6 +8,7 @@ import teacherProfileTab from '../features/profile/assets/profile-nav-profile.sv
 import teacherAttendanceTab from '../features/profile/assets/profile-nav-attendance.svg'
 import teacherMapTab from '../features/profile/assets/more-map.svg'
 import teacherStatsTab from '../features/profile/assets/more-statistics.svg'
+import headmanRequestsTab from '../features/profile/assets/more-requests.svg'
 import type { MobileBottomNavItems } from './navigation'
 
 export interface StudentNavigationOptions {
@@ -74,6 +75,23 @@ export function createTeacherNavigationItems(profileEnabled = true): MobileBotto
       icon: teacherProfileTab,
       route: 'profile',
       ...(profileEnabled ? {} : { disabled: true, disabledReason: 'Раздел пока недоступен' }),
+    },
+  ] as const satisfies MobileBottomNavItems
+}
+
+/** The headman dock stays at five destinations; the map is opened from More. */
+export function createHeadmanNavigationItems(profileEnabled = true): MobileBottomNavItems {
+  return [
+    { id: 'headman-today', label: 'Сегодня', icon: todayTabActive, route: 'headman-today' },
+    { id: 'headman-attendance', label: 'Учёт', accessibleLabel: 'Посещаемость', icon: attendanceTab, route: 'headman-attendance' },
+    { id: 'headman-requests', label: 'Заявки', icon: headmanRequestsTab, route: 'headman-requests' },
+    { id: 'headman-more', label: 'Ещё', icon: moreTab, route: 'headman-more' },
+    {
+      id: 'profile',
+      label: 'Профиль',
+      icon: profileTab,
+      route: 'profile',
+      ...(profileEnabled ? {} : { disabled: true, disabledReason: 'Профиль пока недоступен' }),
     },
   ] as const satisfies MobileBottomNavItems
 }

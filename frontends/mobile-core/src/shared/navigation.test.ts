@@ -14,4 +14,12 @@ describe('Requests navigation stack', () => {
     expect(navigation.back()?.id).toBe('more')
     expect(navigation.back()).toBeNull()
   })
+
+  it('opens the headman map as its own root and keeps it outside task Back history', () => {
+    const navigation = createMobileNavigationStack(rootRoute('headman-more'))
+    navigation.goRoot('headman-map')
+
+    expect(navigation.current).toMatchObject({ id: 'headman-map', root: 'headman-map', surface: 'root' })
+    expect(navigation.back()).toBeNull()
+  })
 })

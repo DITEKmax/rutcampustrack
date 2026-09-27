@@ -17,10 +17,12 @@ const props = withDefaults(defineProps<{
   assistantPermissions?: readonly HeadmanAssistantPermission[] | null
   offline?: boolean
   readOnly?: boolean
+  showBack?: boolean
 }>(), {
   assistantPermissions: null,
   offline: false,
   readOnly: false,
+  showBack: true,
 })
 
 const emit = defineEmits<{
@@ -45,6 +47,14 @@ const decisionError = ref<Record<string, string>>({})
 let loadRevision = 0
 
 const pageCount = () => page.value?.totalPages ?? 0
+
+function apiFailureMessage(cause: unknown, fallback: string, forbidden: string): string {
+  if (cause instanceof HeadmanRequestsApiError && cause.response.status === 401) {
+    return 'Сессия истекла. Повтори вход и открой заявки снова.'
+  }
+  if (cause instanceof HeadmanRequestsApiError && cause.response.status === 403) return forbidden
+  return cause instanceof Error ? cause.message : fallback
+}
 
 function canManageExcuses(): boolean {
   return props.assistantPermissions === null || props.assistantPermissions.includes('MANAGE_EXCUSES')
@@ -78,7 +88,7 @@ async function load(): Promise<void> {
     page.value = next
   } catch (cause) {
     if (revision !== loadRevision) return
-    error.value = cause instanceof Error ? cause.message : 'Не удалось загрузить заявки.'
+    error.value = apiFailureMessage(cause, 'Не удалось загрузить заявки.', 'Нет доступа к заявкам этой группы.')
     emit('error', cause)
   } finally {
     if (revision === loadRevision) loading.value = false
@@ -118,7 +128,11 @@ async function toggle(item: HeadmanRequestSummary): Promise<void> {
   } catch (cause) {
     next.delete(item.id)
     expanded.value = next
-    decisionError.value = { ...decisionError.value, [item.id]: cause instanceof Error ? cause.message : 'Не удалось открыть детали.' }
+    decisionError.value = { ...decisionError.value, [item.id]: apiFailureMessage(
+      cause,
+      'Не удалось открыть детали.',
+      'Нет доступа к деталям этой заявки.',
+    ) }
     emit('error', cause)
   }
 }
@@ -139,7 +153,7 @@ async function decide(item: HeadmanRequestSummary, decision: 'APPROVED' | 'REJEC
   } catch (cause) {
     const message = cause instanceof HeadmanRequestsApiError && cause.response.status === 409
       ? 'Заявка уже обработана другим оператором. Обнови список.'
-      : cause instanceof Error ? cause.message : 'Не удалось принять решение.'
+      : apiFailureMessage(cause, 'Не удалось принять решение.', 'Недостаточно прав для решения заявки.')
     decisionError.value = { ...decisionError.value, [item.id]: message }
     emit('error', cause)
   } finally {
@@ -159,7 +173,7 @@ async function downloadAttachment(item: HeadmanRequestSummary, attachmentId: str
     link.click()
     URL.revokeObjectURL(url)
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : 'Не удалось скачать вложение.'
+    error.value = apiFailureMessage(cause, 'Не удалось скачать вложение.', 'Нет доступа к вложению этой заявки.')
     emit('error', cause)
   }
 }
@@ -199,7 +213,7 @@ onBeforeUnmount(() => { loadRevision += 1 })
 <template>
   <main class="headman-requests" aria-labelledby="headman-requests-title">
     <header class="headman-requests__header">
-      <button class="headman-requests__back" type="button" @click="emit('back')">
+      <button v-if="showBack" class="headman-requests__back" type="button" @click="emit('back')">
         Назад
       </button>
       <div>
@@ -209,7 +223,8 @@ onBeforeUnmount(() => { loadRevision += 1 })
       </div>
     </header>
 
-    <div class="headman-requests__tabs" role="tablist" aria-label="Раздел заявок">
+    <template v-if="api && !offline">
+      <div class="headman-requests__tabs" role="tablist" aria-label="Раздел заявок">
       <button type="button" role="tab" :aria-selected="bucket === 'OPEN'" :data-selected="bucket === 'OPEN'" @click="setBucket('OPEN')">
         Входящие
       </button>
@@ -242,9 +257,13 @@ onBeforeUnmount(() => { loadRevision += 1 })
       <button class="headman-requests__filter-submit" type="submit" :disabled="loading || offline">
         Применить
       </button>
-    </form>
+      </form>
+    </template>
 
     <p v-if="offline" class="headman-requests__state" role="status">Заявки доступны только онлайн.</p>
+    <p v-else-if="!api" class="headman-requests__state headman-requests__state--error" role="alert">
+      Заявки недоступны: источник данных не подключён.
+    </p>
     <p v-else-if="loading" class="headman-requests__state" role="status" aria-live="polite">Загружаем заявки…</p>
     <p v-else-if="error" class="headman-requests__state headman-requests__state--error" role="alert">{{ error }}</p>
     <p v-else-if="page && page.content.length === 0" class="headman-requests__state">Заявок по заданным условиям нет.</p>

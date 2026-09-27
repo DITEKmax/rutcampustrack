@@ -38,10 +38,12 @@ const props = withDefaults(defineProps<{
   assistantPermissions?: readonly string[] | null
   offline?: boolean
   reportDownload?: ReportDownloadPort | null
+  showBack?: boolean
 }>(), {
   assistantPermissions: null,
   offline: false,
   reportDownload: null,
+  showBack: true,
 })
 
 const emit = defineEmits<{ error: [cause: unknown]; back: [] }>()
@@ -792,6 +794,7 @@ onBeforeUnmount(() => {
         </p>
       </div>
       <button
+        v-if="showBack"
         class="headman-stats__back"
         type="button"
         @click="emit('back')"

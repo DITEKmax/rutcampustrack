@@ -1,0 +1,81 @@
+@import '../../styles/tokens.pcss';
+
+.headman-more {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rct-space-5);
+  min-block-size: 100dvh;
+  max-inline-size: 26.625rem;
+  margin-inline: auto;
+  padding: var(--rct-space-5) var(--rct-space-4) 8rem;
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+  font-family: var(--rct-font-family-sans);
+}
+
+.headman-more__header h1,
+.headman-more__section h2 {
+  margin: 0;
+  color: var(--rct-color-text-primary);
+  font-size: var(--rct-font-size-title-screen);
+  line-height: var(--rct-leading-tight);
+}
+
+.headman-more__eyebrow {
+  margin: 0 0 var(--rct-space-1);
+  color: var(--rct-color-accent-now);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-medium);
+}
+
+.headman-more__section h2 {
+  margin-block-end: var(--rct-space-3);
+  font-size: var(--rct-font-size-title);
+}
+
+.headman-more__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rct-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.headman-more__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+  inline-size: 100%;
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-3) var(--rct-space-4);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  font: inherit;
+  font-weight: var(--rct-font-weight-medium);
+  text-align: start;
+  cursor: pointer;
+}
+
+.headman-more__item:focus-visible {
+  outline: var(--rct-focus-width) solid var(--rct-color-border-focus);
+  outline-offset: var(--rct-focus-offset);
+}
+
+.headman-more__item:disabled {
+  color: var(--rct-color-text-muted);
+  cursor: not-allowed;
+}
+
+.headman-more__status,
+.headman-more__reason {
+  color: var(--rct-color-text-muted);
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-more__reason {
+  margin: var(--rct-space-1) var(--rct-space-3) 0;
+}

@@ -1,6 +1,7 @@
 export const mobileRootRouteIds = [
   'today', 'homework', 'attendance', 'more', 'profile',
   'teacher-home', 'teacher-attendance', 'teacher-stats', 'teacher-map',
+  'headman-today', 'headman-attendance', 'headman-requests', 'headman-more', 'headman-map',
 ] as const
 
 export type MobileRootRouteId = (typeof mobileRootRouteIds)[number]

@@ -26,11 +26,15 @@ const props = withDefaults(defineProps<{
   offline?: boolean
   readOnly?: boolean
   reportDownload?: ReportDownloadPort | null
+  initialDate?: string
+  initialLessonId?: number | null
 }>(), {
   assistantPermissions: null,
   offline: false,
   readOnly: false,
   reportDownload: null,
+  initialDate: '',
+  initialLessonId: null,
 })
 
 const emit = defineEmits<{
@@ -42,7 +46,7 @@ const todayIso = (): string => {
   if (value === null) throw new Error('Не удалось определить дату журнала.')
   return value
 }
-const selectedDate = ref(todayIso())
+const selectedDate = ref(props.initialDate || todayIso())
 const lessons = shallowRef<readonly HeadmanJournalLesson[]>([])
 const report = shallowRef<HeadmanJournalReport | null>(null)
 const selectedLessonId = ref<number | null>(null)
@@ -680,7 +684,15 @@ async function loadLessons(): Promise<void> {
     const next = await api.listLessons(props.groupId, selectedDate.value, selectedDate.value)
     if (revision !== lessonsRevision) return
     lessons.value = next
-    const first = next[0]
+    const wantsInitialLesson = props.initialLessonId !== null && selectedDate.value === props.initialDate
+    const requestedLesson = wantsInitialLesson
+      ? next.find((lesson) => lesson.id === props.initialLessonId) ?? null
+      : null
+    if (wantsInitialLesson && requestedLesson === null) {
+      error.value = 'Выбранная пара недоступна на этой дате. Вернись в «Сегодня» и выбери занятие ещё раз.'
+      return
+    }
+    const first = requestedLesson ?? next[0]
     if (first && canViewReport()) {
       selectedLessonId.value = first.id
       await loadReport(first.id)
@@ -906,6 +918,20 @@ onBeforeUnmount(() => {
       {{ error }}
     </p>
     <p
+      v-else-if="groupId === null"
+      class="headman-journal__state headman-journal__state--error"
+      role="alert"
+    >
+      Не удалось определить группу старосты.
+    </p>
+    <p
+      v-else-if="!api"
+      class="headman-journal__state headman-journal__state--error"
+      role="alert"
+    >
+      Журнал недоступен: источник данных не подключён.
+    </p>
+    <p
       v-if="notice"
       class="headman-journal__state headman-journal__state--notice"
       role="status"
@@ -928,7 +954,7 @@ onBeforeUnmount(() => {
         Загружаем пары…
       </p>
       <p
-        v-else-if="lessons.length === 0"
+        v-else-if="!offline && api && groupId !== null && lessons.length === 0"
         class="headman-journal__empty"
       >
         На эту дату сервер не вернул пар.

@@ -209,6 +209,22 @@ class GroupPromotionServiceTest {
         assertThat(s.getConflicts().get(0).getReason()).isEqualTo("unknown_type");
     }
 
+    @Test
+    void preview_unrepresentableNextCourseReturnsBlockingConflict() {
+        Group g = group("УИТ-911");
+        g.setTrainingDurationYears(10);
+        seed(g);
+
+        PromotionSummary s = preview();
+
+        assertThat(s.getToPromote()).isEmpty();
+        assertThat(s.getToArchive()).isEmpty();
+        assertThat(s.getConflicts()).hasSize(1);
+        assertThat(s.getConflicts().get(0).getReason()).isEqualTo("unrepresentable_next_course");
+        assertThat(s.getConflicts().get(0).getMessage())
+                .contains("УИТ-911", "трёхзначный код");
+    }
+
     // ---- execute --------------------------------------------------------
 
     @Test

@@ -421,7 +421,7 @@ async function focusAfterArchivedGroup(groupId: number, previousIndex: number): 
 function promotionResultMessage(result: PromotionSummary): string {
   return 'Сервер завершил перевод: ' + result.promoteCount + ' групп и '
     + result.promotedStudentCount + ' студентов переведено, ' + result.archiveCount + ' групп и '
-    + result.archivedStudentCount + ' студентов отправлено в архив; уже обработано '
+    + result.archivedStudentCount + ' студентов отправлено в архив; пропущено '
     + result.skippedGroupCount + ' групп.'
 }
 
@@ -831,6 +831,28 @@ onBeforeUnmount(() => {
               <span>{{ item.studentCount }} студентов · ID {{ item.id }}</span>
             </li>
           </ul>
+          <section
+            v-if="promotionResult.skipped.length"
+            aria-labelledby="admin-groups-promotion-result-skipped-title"
+          >
+            <h4 id="admin-groups-promotion-result-skipped-title">
+              Группы без изменений
+            </h4>
+            <ul class="admin-groups-promotion__list">
+              <li
+                v-for="item in promotionResult.skipped"
+                :key="'result-skip-' + item.id"
+              >
+                <strong>{{ item.name }}</strong>
+                <span>
+                  {{ item.reason === 'ALREADY_PROCESSED'
+                    ? 'Уже обработана в этом цикле'
+                    : 'Создана после окончания семестра' }}
+                  · {{ item.studentCount }} студентов · ID {{ item.id }}
+                </span>
+              </li>
+            </ul>
+          </section>
           <p
             v-if="promotionResult.conflicts.length"
             class="admin-groups-state"

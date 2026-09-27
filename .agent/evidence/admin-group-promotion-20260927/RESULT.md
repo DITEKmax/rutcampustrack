@@ -58,3 +58,21 @@ Two earlier scoped Gradle attempts stopped at test compilation because the adapt
 - No full Academic suite or PWA/TMA production build was run. The shared PWA/TMA build is intentionally deferred until the parallel teacher branch is integrated; UI was checked with typecheck and scoped lint only, without browser screenshot/runtime review.
 - The migration was applied only by the disposable/reusable integration-test database, not to production or another environment.
 - The automatic scheduler trigger remains undecided and unimplemented.
+
+## Independent-review corrections
+
+- The execution path now flushes each graduation archive before starting promotions, then flushes each promotion in descending source-course order. The PostgreSQL 16 integration case applies the adjacent `УИТ-111 → 211 → 311 → 411` chain and archives the former `411`; final IDs remain attached to their original rows, the cycle ledger contains four rows, and student history remains on the same group ID.
+- A group with course 9 and stored duration 10 now appears as a blocking `unrepresentable_next_course` preview conflict; preview returns no promote/archive action instead of propagating `InvalidCodeException`. The create-duration policy is unchanged.
+- The execution result now says only that N groups were skipped and lists each skipped group's server-provided reason, including groups created after cycle end.
+- First correction run exited 1 before reaching the promotion endpoint because the new test fixture login exceeded the database's `VARCHAR(32)`. The fixture login was shortened; no product code changed in response to that setup failure. The targeted recheck then passed.
+
+| Correction check | Command / evidence | Result |
+|---|---|---|
+| Mobile-core typecheck after UI correction | `npm run typecheck --workspace @rct/mobile-core` from `frontends` | Exit 0 |
+| Admin group client and screen lint | Client: `../node_modules/.bin/eslint.cmd src/features/admin-groups/admin-groups-client.ts --max-warnings=0`; screen lint JSON | Client exit 0; screen 0 errors, 98 pre-existing warnings |
+| Academic unit + PostgreSQL integration recheck | Same scoped Gradle command above; retained in `correction-gradle-recheck.log` | Exit 0; `BUILD SUCCESSFUL`; 14 unit cases and 2 PostgreSQL ITs, no failures |
+| Unit XML after correction | `services/academic-service/academic-app/build/test-results/test/TEST-ru.rutcampustrack.academic.group.GroupPromotionServiceTest.xml` | tests=14, skipped=0, failures=0, errors=0 |
+| PostgreSQL IT XML after correction | `services/academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.group.GroupPromotionCycleIT.xml` | tests=2, skipped=0, failures=0, errors=0 |
+| Correction diff whitespace | `git diff --check` | Exit 0 |
+
+Correction diff inventory: `GroupPromotionService.java`, `GroupPromotionCycleIT.java`, `GroupPromotionServiceTest.java`, and `AdminGroupsScreen.vue`; evidence adds this section and the two captured scoped Gradle logs.

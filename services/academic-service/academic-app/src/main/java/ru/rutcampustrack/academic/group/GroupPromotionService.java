@@ -265,7 +265,15 @@ public class GroupPromotionService {
         for (Group group : eligible) {
             GroupCodeRules.CanonicalCode current =
                     GroupCodeRules.fromName(group.getName(), group.getTrainingDurationYears());
-            GroupCodeRules.CanonicalCode next = current.next();
+            GroupCodeRules.CanonicalCode next;
+            try {
+                next = current.next();
+            } catch (GroupCodeRules.InvalidCodeException e) {
+                return conflict(prefix, "unrepresentable_next_course",
+                        "Следующий курс группы «" + group.getName()
+                                + "» нельзя записать в трёхзначный код. Перевод этого префикса невозможен.",
+                        eligible, List.of(group.getId()));
+            }
             long students = studentCount(studentCounts, group.getId());
             if (next == null) {
                 prefixArchive.add(new PromotionPreviewItem(
@@ -315,6 +323,7 @@ public class GroupPromotionService {
             GroupCodeRules.apply(group,
                     GroupCodeRules.fromName(group.getName(), group.getTrainingDurationYears()));
             archivalService.archive(group, cycle.getDateTo().getYear());
+            groupRepository.flush();
             records.add(new GroupPromotionCycleRecord(
                     cycle.getId(), group.getId(), Action.ARCHIVE,
                     item.getFrom(), group.getName(), item.getStudentCount(), processedAt));
@@ -326,6 +335,7 @@ public class GroupPromotionService {
             Group group = byId.get(item.getId());
             GroupCodeRules.apply(group,
                     GroupCodeRules.fromName(item.getTo(), group.getTrainingDurationYears()));
+            groupRepository.flush();
             publisher.publishEvent(new GroupRenamedEvent(this, group.getId(), group.getName()));
             records.add(new GroupPromotionCycleRecord(
                     cycle.getId(), group.getId(), Action.PROMOTE,

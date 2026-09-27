@@ -114,6 +114,46 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
                 Long.class, cycleId, massGroup)).isEqualTo(1L);
     }
 
+    @Test
+    void massPromotionAdjacentCoursesFlushesInVacatedNameOrderAndRetainsHistory() throws Exception {
+        Long cycleId = prepareCompletedSpringCycle();
+        Long adminId = userId("admin");
+        Long first = addGroup("УИТ-111", beforeCycleEnd());
+        Long second = addGroup("УИТ-211", beforeCycleEnd());
+        Long third = addGroup("УИТ-311", beforeCycleEnd());
+        Long graduating = addGroup("УИТ-411", beforeCycleEnd());
+        Long studentId = addStudent(second, "adj_" + System.nanoTime());
+        jdbc.update("INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
+                        + "VALUES (?, ?, ?, ?)",
+                studentId, second, CYCLE_END.minusDays(20), "adjacent-promotion-cycle-it");
+
+        JsonNode preview = response(previewRequest(adminId, "ADMIN", "{}"));
+        assertThat(preview.path("conflicts").size()).isZero();
+        assertThat(preview.path("toPromote").size()).isEqualTo(3);
+        assertThat(preview.path("toArchive").size()).isEqualTo(1);
+
+        JsonNode result = response(executeRequest(
+                adminId, cycleId, preview.path("previewVersion").asText(), null));
+
+        assertThat(result.path("executed").asBoolean()).isTrue();
+        assertThat(groupName(first)).isEqualTo("УИТ-211");
+        assertThat(groupName(second)).isEqualTo("УИТ-311");
+        assertThat(groupName(third)).isEqualTo("УИТ-411");
+        assertThat(groupName(graduating)).isEqualTo("УИТ-411 (выпуск 2026)");
+        assertThat(groupIdByName("УИТ-211")).isEqualTo(first);
+        assertThat(groupIdByName("УИТ-311")).isEqualTo(second);
+        assertThat(groupIdByName("УИТ-411")).isEqualTo(third);
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id = ?",
+                Long.class, cycleId)).isEqualTo(4L);
+        assertThat(jdbc.queryForObject(
+                "SELECT action FROM group_promotion_cycle_record WHERE cycle_semester_id = ? AND group_id = ?",
+                String.class, cycleId, graduating)).isEqualTo("ARCHIVE");
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM student_group_history WHERE user_id = ? AND group_id = ?",
+                Long.class, studentId, second)).isEqualTo(1L);
+    }
+
     private Long prepareCompletedSpringCycle() {
         Long cycleId = jdbc.queryForObject(
                 "SELECT id FROM semesters WHERE name = 'Spring 2026' AND date_to = ? ORDER BY id LIMIT 1",

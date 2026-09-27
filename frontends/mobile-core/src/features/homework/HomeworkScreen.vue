@@ -81,12 +81,12 @@ const emit = defineEmits<{
 }>()
 
 const homeworkRoute = rootRoute('homework')
-const homeworkTitle = ref<HTMLElement | null>(null)
 const shellOptionalProps = computed(() => props.keyboardVisible === undefined
   ? {}
   : { keyboardVisible: props.keyboardVisible })
 const expandedIds = ref<Set<string>>(new Set())
 const trackElements = new Map<string, HTMLElement>()
+const cardHeadingElements = new Map<string, HTMLElement>()
 const focusRequest = ref<HomeworkFocusRequest | null>(null)
 const drag = ref<{ id: string; startX: number; latestX: number; pointerId: number; width: number } | null>(null)
 const suppressClickId = ref<string | null>(null)
@@ -174,6 +174,14 @@ function setTrackRef(id: string, element: unknown): void {
   // Vue can clear the previous ref after assigning the moved keyed node. Keep
   // a connected replacement so ACK reorder still has a focus target.
   if (!trackElements.get(id)?.isConnected) trackElements.delete(id)
+}
+
+function setCardHeadingRef(id: string, element: unknown): void {
+  if (typeof HTMLElement !== 'undefined' && element instanceof HTMLElement) {
+    cardHeadingElements.set(id, element)
+    return
+  }
+  if (!cardHeadingElements.get(id)?.isConnected) cardHeadingElements.delete(id)
 }
 
 function rememberCompletionFocus(item: StudentHomeworkItem, expectedCompleted: boolean): void {
@@ -322,7 +330,10 @@ watch(
     if (props.focusItemId !== id || props.focusRequestId !== requestId) return
     const target = trackElements.get(id)
     if (target?.isConnected && !target.matches(':disabled')) target.focus()
-    else homeworkTitle.value?.focus()
+    else {
+      const heading = cardHeadingElements.get(id)
+      if (heading?.isConnected) heading.focus()
+    }
   },
   { flush: 'post', immediate: true },
 )
@@ -335,6 +346,7 @@ watch(
 onBeforeUnmount(() => {
   focusRequest.value = null
   trackElements.clear()
+  cardHeadingElements.clear()
 })
 </script>
 
@@ -354,11 +366,7 @@ onBeforeUnmount(() => {
       aria-labelledby="homework-title"
     >
       <div class="homework-content">
-        <h1
-          id="homework-title"
-          ref="homeworkTitle"
-          tabindex="-1"
-        >
+        <h1 id="homework-title">
           Задания
         </h1>
 
@@ -461,7 +469,12 @@ onBeforeUnmount(() => {
                 :data-pending="itemPending(item.id)"
                 :data-material="item.link === null ? 'none' : materialState(item).supported ? 'available' : 'unsafe'"
               >
-                <h3>{{ item.subject.name }}</h3>
+                <h3
+                  :ref="(element) => setCardHeadingRef(item.id, element)"
+                  tabindex="-1"
+                >
+                  {{ item.subject.name }}
+                </h3>
                 <p class="homework-card__title">
                   {{ item.title }}
                 </p>

@@ -248,6 +248,43 @@ public class GroupService {
         @CacheEvict(value = "group_members", key = "#id")
     })
     @Transactional
+    public void restoreGroup(Long id) {
+        Group group = groupRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Group", "id", id));
+        // A retry after a committed restore is a successful no-op.  In
+        // particular it must not emit a second group.updated event.
+        if (group.isActive()) {
+            return;
+        }
+        if (archivalService == null) {
+            throw HistoricalMembershipException.precondition(
+                    "Group archival writer is unavailable");
+        }
+
+        GroupArchivalService.RestorableName restoredName = archivalService.restorableName(group);
+        if (groupRepository.existsByName(restoredName.name())) {
+            throw new ConflictException("name", restoredName.name(),
+                    "Группа с таким названием уже существует");
+        }
+        if (restoredName.alphabeticCode() != null
+                && groupRepository.existsByAlphabeticCodeAndNumericCodeAndIsActiveTrue(
+                restoredName.alphabeticCode(), restoredName.numericCode())) {
+            throw new ConflictException("numericCode", restoredName.numericCode(),
+                    "Группа с таким кодом уже существует");
+        }
+
+        if (groupRepository.restoreArchivedGroup(id, restoredName.name()) != 1) {
+            throw new ConflictException("archived", id,
+                    "Группа изменилась во время восстановления");
+        }
+        eventPublisher.publishEvent(new GroupUpdatedEvent(this, id));
+    }
+
+    @Caching(evict = {
+        @CacheEvict(value = "groups", key = "#id"),
+        @CacheEvict(value = "group_members", key = "#id")
+    })
+    @Transactional
     public void deleteGroup(Long id) {
         Group group = findGroupById(id);
         if (coverageRepository != null && coverageRepository.existsById(id)) {

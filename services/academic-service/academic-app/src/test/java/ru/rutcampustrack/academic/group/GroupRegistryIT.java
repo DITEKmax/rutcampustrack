@@ -19,7 +19,9 @@ import java.time.LocalDate;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -137,6 +139,82 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
     }
 
     @Test
+    void restoreArchivedGroupsIsAdminOnlyIdempotentAndKeepsLegacyNamesAndRegistryCounts()
+            throws Exception {
+        Long adminId = jdbc.queryForObject(
+                "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        String suffix = Long.toUnsignedString(System.nanoTime());
+        String letters = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ";
+        String alphabeticCode = "Р" + letters.charAt(Math.floorMod((int) System.nanoTime(), letters.length()));
+        String numericCode = "3" + suffix.substring(0, 2);
+        String canonicalName = alphabeticCode + "-" + numericCode;
+        Long canonicalGroupId = addArchivedGroup(
+                canonicalName + " (выпуск 2026)", alphabeticCode, numericCode, 3, 5, "KNOWN");
+
+        String legacyName = "Old-" + suffix.substring(2, 6);
+        Long legacyGroupId = addArchivedGroup(
+                legacyName + " (выпуск 2025)", null, null, null, null, "LEGACY_UNKNOWN");
+
+        String occupiedName = "Old-" + suffix.substring(6, 10);
+        Long occupiedGroupId = addArchivedGroup(
+                occupiedName + " (выпуск 2024)", null, null, null, null, "LEGACY_UNKNOWN");
+        addGroup(occupiedName, true);
+
+        mockMvc.perform(restoreRequest(adminId, legacyGroupId, "TEACHER"))
+                .andExpect(status().isForbidden());
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+                "SELECT name FROM groups WHERE id = ?", String.class, legacyGroupId))
+                .isEqualTo(legacyName + " (выпуск 2025)");
+
+        mockMvc.perform(restoreRequest(adminId, canonicalGroupId, "ADMIN"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+        mockMvc.perform(restoreRequest(adminId, canonicalGroupId, "ADMIN"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+                "SELECT name FROM groups WHERE id = ?", String.class, canonicalGroupId))
+                .isEqualTo(canonicalName);
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+                "SELECT is_active FROM groups WHERE id = ?", Boolean.class, canonicalGroupId))
+                .isTrue();
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+                "SELECT archived_at IS NULL FROM groups WHERE id = ?", Boolean.class, canonicalGroupId))
+                .isTrue();
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+                "SELECT current_course FROM groups WHERE id = ?", Integer.class, canonicalGroupId))
+                .isEqualTo(3);
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+                "SELECT training_duration_years FROM groups WHERE id = ?", Integer.class, canonicalGroupId))
+                .isEqualTo(5);
+
+        mockMvc.perform(registryRequest(adminId, canonicalName, "DRAFT"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.items[0].id", equalTo(Math.toIntExact(canonicalGroupId))))
+                .andExpect(jsonPath("$.items[0].status", equalTo("DRAFT")))
+                .andExpect(jsonPath("$.draftCount", equalTo(1)))
+                .andExpect(jsonPath("$.archivedCount", equalTo(0)))
+                .andExpect(jsonPath("$.activeCount", equalTo(0)));
+
+        mockMvc.perform(restoreRequest(adminId, legacyGroupId, "ADMIN"))
+                .andExpect(status().isNoContent());
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+                "SELECT name FROM groups WHERE id = ?", String.class, legacyGroupId))
+                .isEqualTo(legacyName);
+
+        String occupiedArchivedName = occupiedName + " (выпуск 2024)";
+        mockMvc.perform(restoreRequest(adminId, occupiedGroupId, "ADMIN"))
+                .andExpect(status().isConflict());
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+                "SELECT name FROM groups WHERE id = ?", String.class, occupiedGroupId))
+                .isEqualTo(occupiedArchivedName);
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+                "SELECT is_active FROM groups WHERE id = ?", Boolean.class, occupiedGroupId))
+                .isFalse();
+    }
+
+    @Test
     void dashboardCountsOnlyActiveRoleGrantsAndRegistryActiveGroups() throws Exception {
         Long adminId = jdbc.queryForObject(
                 "SELECT id FROM users WHERE login = 'admin'", Long.class);
@@ -208,5 +286,24 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
                 .param("status", status)
                 .param("search", search)
                 .param("size", "20");
+    }
+
+    private Long addArchivedGroup(String name, String alphabeticCode, String numericCode,
+                                  Integer currentCourse, Integer duration, String durationStatus) {
+        return jdbc.queryForObject(
+                "INSERT INTO groups (name, is_active, created_at, archived_at, alphabetic_code, "
+                        + "numeric_code, current_course, training_duration_years, duration_status) "
+                        + "VALUES (?, false, NOW(), NOW(), CAST(? AS varchar), CAST(? AS varchar), "
+                        + "CAST(? AS integer), CAST(? AS integer), ?) RETURNING id",
+                Long.class, name, alphabeticCode, numericCode, currentCourse, duration, durationStatus);
+    }
+
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder restoreRequest(
+            Long userId, Long groupId, String role) {
+        return post("/academic/groups/{id}/restore", groupId)
+                .header("X-User-Id", userId)
+                .header("X-User-Role", role)
+                .header("X-Group-Id", "")
+                .header("X-Is-Headman", "false");
     }
 }

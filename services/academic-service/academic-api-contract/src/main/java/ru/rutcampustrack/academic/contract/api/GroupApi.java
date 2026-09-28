@@ -188,6 +188,17 @@ public interface GroupApi {
             @PathVariable Long id,
             @Valid @RequestBody UpdateGroupRequest request);
 
+    /** Restore an archived group without recreating its membership or history. */
+    @Operation(summary = "Восстановить группу из архива (ADMIN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Группа восстановлена или уже активна"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Группа не найдена"),
+            @ApiResponse(responseCode = "409", description = "Имя или код группы заняты либо архивное имя не распознано")
+    })
+    @PostMapping("/{id}/restore")
+    ResponseEntity<Void> restoreGroup(@PathVariable Long id);
+
     @Operation(summary = "Удалить группу (ADMIN)")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Группа удалена"),

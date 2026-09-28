@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.rutcampustrack.academic.entity.Group;
@@ -30,6 +31,16 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select g from Group g where g.id = :id")
     Optional<Group> findByIdForUpdate(@Param("id") Long id);
+
+    /**
+     * Restore only the archived row markers after the caller validates the
+     * exact reversible suffix. Native SQL also permits old display names that
+     * predate the current entity's stricter name validation.
+     */
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "UPDATE groups SET name = :name, is_active = true, archived_at = NULL "
+            + "WHERE id = :id AND is_active = false", nativeQuery = true)
+    int restoreArchivedGroup(@Param("id") Long id, @Param("name") String name);
 
     /** Все активные группы — используется {@code GroupPromotionService} для planning. */
     List<Group> findAllByIsActiveTrue();

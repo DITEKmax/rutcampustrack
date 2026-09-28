@@ -98,6 +98,13 @@ public class GroupController implements GroupApi {
 
     @Override
     @RequireRole({ADMIN})
+    public ResponseEntity<Void> restoreGroup(Long id) {
+        groupService.restoreGroup(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @RequireRole({ADMIN})
     public ResponseEntity<Void> deleteGroup(Long id) {
         groupService.deleteGroup(id);
         return ResponseEntity.noContent().build();

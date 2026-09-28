@@ -165,13 +165,14 @@ export class AdminGroupsClient {
     const params = new URLSearchParams()
     params.set('status', input.status ?? 'ACTIVE')
     if (input.search?.trim()) params.set('search', input.search.trim())
-    params.set('page', String(nonNegativeInteger(input.page ?? 0, 'page')))
+    const requestedPage = nonNegativeInteger(input.page ?? 0, 'page')
+    params.set('page', String(requestedPage))
     params.set('size', String(positiveInteger(input.size ?? 20, 'size')))
     const value = await this.request<unknown>(
       `${AdminGroupsClient.basePath}?${params.toString()}`,
       signal ? { signal } : undefined,
     )
-    return normalizePage(value)
+    return normalizePage(value, requestedPage)
   }
 
   createGroup(input: CreateAdminGroupInput, signal?: AbortSignal): Promise<AdminGroup> {
@@ -181,6 +182,14 @@ export class AdminGroupsClient {
       body: JSON.stringify(payload),
       ...(signal ? { signal } : {}),
     }).then(normalizeGroup)
+  }
+
+  async restoreGroup(groupId: number, signal?: AbortSignal): Promise<void> {
+    positiveInteger(groupId, 'groupId')
+    await this.requestResponse(`/api/academic/groups/${groupId}/restore`, {
+      method: 'POST',
+      ...(signal ? { signal } : {}),
+    })
   }
 
   getHeadmanRoster(groupId: number, signal?: AbortSignal): Promise<HeadmanRoster> {
@@ -262,15 +271,21 @@ export class AdminGroupsClient {
   }
 }
 
-function normalizePage(value: unknown): AdminGroupsPage {
+function normalizePage(value: unknown, requestedPage: number): AdminGroupsPage {
   const record = requiredRecord(value, 'groups page')
   const items = Array.isArray(record.items) ? record.items.map(normalizeGroup) : []
   const number = nonNegativeInteger(record.number, 'groups page.number')
   const size = positiveInteger(record.size, 'groups page.size')
   const totalElements = nonNegativeInteger(record.totalElements, 'groups page.totalElements')
   const totalPages = nonNegativeInteger(record.totalPages, 'groups page.totalPages')
-  if (totalPages === 0 && number !== 0) throw new Error('Сервер вернул некорректную страницу групп.')
-  if (totalPages > 0 && number >= totalPages) throw new Error('Сервер вернул некорректную страницу групп.')
+  if (number !== requestedPage) throw new Error('Сервер вернул некорректную страницу групп.')
+  if (totalPages === 0 && (totalElements !== 0 || items.length !== 0)) {
+    throw new Error('Сервер вернул некорректную страницу групп.')
+  }
+  if (totalPages > 0 && number >= totalPages
+    && (items.length !== 0 || totalElements > number * size)) {
+    throw new Error('Сервер вернул некорректную страницу групп.')
+  }
   return {
     items,
     number,

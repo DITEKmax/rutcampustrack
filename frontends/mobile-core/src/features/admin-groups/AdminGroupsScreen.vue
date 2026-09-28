@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import {
   AdminGroupsApiError,
@@ -32,6 +32,8 @@ const totalElements = ref(0)
 const counts = ref({ active: 0, draft: 0, archived: 0 })
 const loading = ref(true)
 const saving = ref(false)
+const restoreSavingId = ref<number | null>(null)
+const restoreRefreshPendingIds = ref<ReadonlySet<number>>(new Set())
 const formVisible = ref(false)
 const alphabeticCode = ref('')
 const numericCode = ref('')
@@ -58,6 +60,9 @@ const promotionConfirmDialog = ref<HTMLDialogElement | null>(null)
 let disposed = false
 let listRevision = 0
 let listController: AbortController | null = null
+let registryScopeRevision = 0
+let restoreMutationRevision = 0
+let restoreMutationController: AbortController | null = null
 let headmanRevision = 0
 let headmanContextRevision = 0
 let headmanController: AbortController | null = null
@@ -77,7 +82,7 @@ const tabs: readonly { value: AdminGroupStatus; label: string }[] = [
 
 onMounted(() => void refresh())
 
-async function refresh(preserveMessages = false): Promise<void> {
+async function refresh(preserveMessages = false): Promise<'success' | 'failed' | 'stale'> {
   const revision = ++listRevision
   listController?.abort()
   const controller = new AbortController()
@@ -91,8 +96,14 @@ async function refresh(preserveMessages = false): Promise<void> {
       page: page.value,
       size: 20,
     }, controller.signal)
-    if (!isCurrent(revision, controller)) return
+    if (!isCurrent(revision, controller)) return 'stale'
     groups.value = result.items
+    if (status.value === 'ARCHIVED') {
+      const returnedArchivedIds = new Set(result.items.map(group => group.id))
+      restoreRefreshPendingIds.value = new Set(
+        [...restoreRefreshPendingIds.value].filter(id => !returnedArchivedIds.has(id)),
+      )
+    }
     totalPages.value = result.totalPages
     totalElements.value = result.totalElements
     counts.value = {
@@ -100,13 +111,19 @@ async function refresh(preserveMessages = false): Promise<void> {
       draft: result.draftCount,
       archived: result.archivedCount,
     }
+    if (result.totalPages === 0 && page.value !== 0) {
+      page.value = 0
+      return await refresh(preserveMessages)
+    }
     if (result.totalPages > 0 && page.value >= result.totalPages) {
       page.value = result.totalPages - 1
-      return
+      return await refresh(preserveMessages)
     }
+    return 'success'
   } catch (cause) {
-    if (!isCurrent(revision, controller) || cause instanceof StaleSessionGenerationError || isAbortError(cause)) return
+    if (!isCurrent(revision, controller) || cause instanceof StaleSessionGenerationError || isAbortError(cause)) return 'stale'
     if (!preserveMessages) showError(cause, 'Реестр групп не удалось загрузить.')
+    return 'failed'
   } finally {
     if (isCurrent(revision, controller)) {
       loading.value = false
@@ -121,14 +138,81 @@ function isCurrent(revision: number, controller: AbortController): boolean {
 
 function selectStatus(next: AdminGroupStatus): void {
   if (status.value === next) return
+  invalidateRestoreForScopeChange()
   status.value = next
   page.value = 0
   void refresh()
 }
 
 function submitSearch(): void {
+  invalidateRestoreForScopeChange()
   page.value = 0
   void refresh()
+}
+
+function changePage(next: number): void {
+  if (next === page.value) return
+  invalidateRestoreForScopeChange()
+  page.value = next
+  void refresh()
+}
+
+watch(search, () => invalidateRestoreForScopeChange(), { flush: 'sync' })
+
+function invalidateRestoreForScopeChange(): void {
+  registryScopeRevision += 1
+  restoreMutationRevision += 1
+  restoreMutationController?.abort()
+  restoreMutationController = null
+  restoreSavingId.value = null
+}
+
+function isRestoreCurrent(
+  revision: number,
+  controller: AbortController,
+  scopeRevision: number,
+): boolean {
+  return !disposed
+    && revision === restoreMutationRevision
+    && restoreMutationController === controller
+    && registryScopeRevision === scopeRevision
+    && status.value === 'ARCHIVED'
+}
+
+async function restoreGroup(group: AdminGroup): Promise<void> {
+  if (status.value !== 'ARCHIVED'
+    || restoreSavingId.value !== null
+    || restoreRefreshPendingIds.value.has(group.id)) return
+
+  const revision = ++restoreMutationRevision
+  const scopeRevision = registryScopeRevision
+  const controller = new AbortController()
+  restoreMutationController = controller
+  restoreSavingId.value = group.id
+  error.value = null
+  notice.value = null
+  try {
+    await props.client.restoreGroup(group.id, controller.signal)
+    if (!isRestoreCurrent(revision, controller, scopeRevision)) return
+
+    restoreRefreshPendingIds.value = new Set([...restoreRefreshPendingIds.value, group.id])
+    notice.value = `Группа ${displayCode(group)} восстановлена.`
+    const refreshed = await refresh(true)
+    if (!isRestoreCurrent(revision, controller, scopeRevision)) return
+    if (refreshed === 'failed') {
+      error.value = 'Группа восстановлена, но список и счётчики не удалось обновить. Обнови реестр.'
+    }
+  } catch (cause) {
+    if (!isRestoreCurrent(revision, controller, scopeRevision)
+      || cause instanceof StaleSessionGenerationError
+      || isAbortError(cause)) return
+    showError(cause, 'Группу не удалось восстановить.')
+  } finally {
+    if (revision === restoreMutationRevision && restoreMutationController === controller) {
+      restoreSavingId.value = null
+      restoreMutationController = null
+    }
+  }
 }
 
 async function openHeadman(group: AdminGroup): Promise<void> {
@@ -502,6 +586,7 @@ async function createGroup(): Promise<void> {
     status.value = 'DRAFT'
     page.value = 0
     search.value = ''
+    invalidateRestoreForScopeChange()
     notice.value = 'Группа создана и добавлена в черновики.'
     await refresh()
   } catch (cause) {
@@ -545,6 +630,9 @@ function formatPage(): string {
 
 onBeforeUnmount(() => {
   disposed = true
+  restoreMutationRevision += 1
+  restoreMutationController?.abort()
+  restoreMutationController = null
   listRevision += 1
   listController?.abort()
   listController = null
@@ -911,6 +999,16 @@ onBeforeUnmount(() => {
                 >
                   {{ group.headmanFio ? 'Изменить старосту' : 'Назначить старосту' }}
                 </button>
+                <button
+                  v-if="status === 'ARCHIVED'"
+                  class="admin-groups-table__action"
+                  type="button"
+                  :disabled="restoreSavingId !== null || restoreRefreshPendingIds.has(group.id)"
+                  :aria-busy="restoreSavingId === group.id"
+                  @click="restoreGroup(group)"
+                >
+                  {{ restoreSavingId === group.id ? 'Восстанавливаем…' : restoreRefreshPendingIds.has(group.id) ? 'Восстановлена' : 'Восстановить группу' }}
+                </button>
               </td>
             </tr>
           </tbody>
@@ -1010,8 +1108,8 @@ onBeforeUnmount(() => {
       <footer v-if="!loading" class="admin-groups-pagination">
         <span>{{ totalElements }} групп · {{ formatPage() }}</span>
         <div>
-          <button type="button" :disabled="page === 0" @click="page -= 1; refresh()">Назад</button>
-          <button type="button" :disabled="totalPages === 0 || page + 1 >= totalPages" @click="page += 1; refresh()">Дальше</button>
+          <button type="button" :disabled="page === 0" @click="changePage(page - 1)">Назад</button>
+          <button type="button" :disabled="totalPages === 0 || page + 1 >= totalPages" @click="changePage(page + 1)">Дальше</button>
         </div>
       </footer>
     </section>

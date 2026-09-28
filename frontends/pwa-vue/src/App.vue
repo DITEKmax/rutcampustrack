@@ -38,7 +38,6 @@ import {
   createGenerationBoundNotificationsApi,
   createGenerationBoundNotificationsRealtime,
   createMobileTheme,
-  offlineToday,
   studentFeatureScope,
   studentFeatureScopeIdentity,
   studentOfflineScopeKey,
@@ -67,6 +66,7 @@ import {
   type NotificationTarget,
   type NotificationTargetIntent,
 } from '@rct/mobile-core'
+import { createMoscowDayClock, useOfflineTodayFallback } from './offline-today-fallback'
 import type { ProfilePort, ProfileRole, ProfileSnapshot } from '@rct/mobile-core'
 import { AuthRequestError } from './auth-client'
 import { PwaAuthError, usePwaAuth, type PwaAuthInvalidationReason } from './auth'
@@ -160,12 +160,8 @@ let cleanupUiGeneration = 0
 let stopAuthInvalidation = (): void => undefined
 let queuedBootstrapAfterInvalidation = false
 
-const cachedToday = computed(() => {
-  const value = snapshot.value
-  if (!value) return null
-  const asOf = value.cachedAt ? new Date(value.cachedAt) : undefined
-  return offlineToday(value.schedule, asOf && Number.isFinite(asOf.getTime()) ? asOf : undefined)
-})
+const moscowDayClock = createMoscowDayClock()
+const cachedToday = useOfflineTodayFallback(() => snapshot.value?.schedule ?? null, moscowDayClock.currentDate)
 const cachedHomework = computed(() => snapshot.value?.homework ?? null)
 const displayedSemesterSchedule = computed(() => offline.value ? semesterSchedule.value : onlineSemesterSchedule.value)
 const mapViewVisible = computed(() => authView.value === 'map')
@@ -1310,6 +1306,7 @@ async function refreshFixtureDiagnostics(): Promise<void> {
 }
 
 onMounted(() => {
+  moscowDayClock.start()
   stopAuthInvalidation = auth.subscribeInvalidation(handleExternalInvalidation)
   window.addEventListener('offline', goOffline)
   window.addEventListener('online', goOnline)
@@ -1319,6 +1316,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  moscowDayClock.stop()
   disposeNotificationsRealtime()
   disposeNotificationsRealtime = (): void => undefined
   stopAuthInvalidation()

@@ -13,6 +13,10 @@ import java.util.UUID;
 public interface HomeworkRepository extends JpaRepository<Homework, Long> {
     Optional<Homework> findByActorIdAndRequestKey(Long actorId, UUID requestKey);
 
+    Optional<Homework> findByBindingId(Long bindingId);
+
+    boolean existsByBindingId(Long bindingId);
+
     List<Homework> findByGroupIdAndSemesterId(Long groupId, Long semesterId);
     List<Homework> findByGroupIdAndSemesterIdAndPublicationState(
             Long groupId, Long semesterId, HomeworkPublicationState publicationState);

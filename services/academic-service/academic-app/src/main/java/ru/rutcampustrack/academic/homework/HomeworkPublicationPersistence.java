@@ -5,8 +5,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.entity.Homework;
+import ru.rutcampustrack.academic.entity.HomeworkBindingArchiveMarker;
 import ru.rutcampustrack.academic.event.HomeworkPublishedEvent;
 import ru.rutcampustrack.academic.exception.ConflictException;
+import ru.rutcampustrack.academic.repository.HomeworkBindingArchiveMarkerRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 
 import java.time.LocalDate;
@@ -24,11 +26,17 @@ import java.util.UUID;
 public class HomeworkPublicationPersistence {
 
     private final HomeworkRepository homeworkRepository;
+    private final HomeworkBindingArchiveMarkerRepository archiveMarkerRepository;
+    private final HomeworkBindingArchiveCoordinator archiveCoordinator;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public HomeworkPublicationPersistence(HomeworkRepository homeworkRepository,
+                                          HomeworkBindingArchiveMarkerRepository archiveMarkerRepository,
+                                          HomeworkBindingArchiveCoordinator archiveCoordinator,
                                           org.springframework.context.ApplicationEventPublisher eventPublisher) {
         this.homeworkRepository = homeworkRepository;
+        this.archiveMarkerRepository = archiveMarkerRepository;
+        this.archiveCoordinator = archiveCoordinator;
         this.eventPublisher = eventPublisher;
     }
 
@@ -37,29 +45,67 @@ public class HomeworkPublicationPersistence {
                                    String title, String description, String link,
                                    Long actorId, LocalDate lessonDate, Integer lessonNumber,
                                    Long bindingId, UUID requestKey, byte[] payloadHash) {
+        archiveCoordinator.lock(bindingId);
+        Optional<HomeworkBindingArchiveMarker> terminalMarker = archiveCoordinator.findMarker(
+                bindingId, actorId, requestKey);
         Optional<Homework> existing = homeworkRepository.findByActorIdAndRequestKey(actorId, requestKey);
         if (existing.isPresent()) {
             Homework homework = existing.get();
             verifyIdentity(homework, actorId, requestKey, payloadHash, bindingId);
+            if (terminalMarker.isPresent()) {
+                archiveCoordinator.ensureMarker(bindingId, actorId, requestKey, homework.getId());
+                if (homework.getPublicationState() != HomeworkPublicationState.ARCHIVED) {
+                    homework.archivePublication();
+                    homeworkRepository.save(homework);
+                }
+                homeworkRepository.flush();
+                archiveMarkerRepository.flush();
+            }
             return homework;
+        }
+        if (homeworkRepository.existsByBindingId(bindingId)) {
+            throw new ConflictException("binding already points to different Academic content");
         }
 
         Homework homework = new Homework(
                 groupId, subjectId, semesterId, title, description, link,
                 actorId, lessonDate, lessonNumber,
                 bindingId, actorId, requestKey, payloadHash);
+        if (terminalMarker.isPresent()) {
+            // Cancellation can commit before the corresponding publication
+            // content exists. Preserve the original command as history, already
+            // terminal, so retries cannot create a fresh active publication.
+            homework.archivePublication();
+        }
         Homework saved = homeworkRepository.save(homework);
         homeworkRepository.flush();
+        if (terminalMarker.isPresent()) {
+            archiveCoordinator.ensureMarker(bindingId, actorId, requestKey, saved.getId());
+            archiveMarkerRepository.flush();
+        }
         return saved;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Homework activate(long homeworkId, Long actorId, UUID requestKey,
                              Long bindingId, byte[] payloadHash) {
+        archiveCoordinator.lock(bindingId);
         Homework homework = homeworkRepository.findById(homeworkId)
                 .orElseThrow(() -> new ConflictException(
                         "confirmed binding points to missing Academic content"));
         verifyIdentity(homework, actorId, requestKey, payloadHash, bindingId);
+        Optional<HomeworkBindingArchiveMarker> terminalMarker = archiveCoordinator.findMarker(
+                bindingId, actorId, requestKey);
+        if (terminalMarker.isPresent()) {
+            archiveCoordinator.ensureMarker(bindingId, actorId, requestKey, homework.getId());
+            if (homework.getPublicationState() != HomeworkPublicationState.ARCHIVED) {
+                homework.archivePublication();
+                homeworkRepository.save(homework);
+            }
+            homeworkRepository.flush();
+            archiveMarkerRepository.flush();
+            return homework;
+        }
         if (homework.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
             throw new ConflictException("archived homework cannot be activated");
         }
@@ -76,10 +122,34 @@ public class HomeworkPublicationPersistence {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Homework currentPublication(long homeworkId, Long actorId, UUID requestKey,
+                                       Long bindingId, byte[] payloadHash) {
+        archiveCoordinator.lock(bindingId);
+        Homework homework = homeworkRepository.findById(homeworkId)
+                .orElseThrow(() -> new ConflictException(
+                        "homework binding points to missing Academic content"));
+        verifyIdentity(homework, actorId, requestKey, payloadHash, bindingId);
+
+        Optional<HomeworkBindingArchiveMarker> terminalMarker = archiveCoordinator.findMarker(
+                bindingId, actorId, requestKey);
+        if (terminalMarker.isPresent()) {
+            archiveCoordinator.ensureMarker(bindingId, actorId, requestKey, homework.getId());
+            if (homework.getPublicationState() != HomeworkPublicationState.ARCHIVED) {
+                homework.archivePublication();
+                homeworkRepository.save(homework);
+            }
+            homeworkRepository.flush();
+            archiveMarkerRepository.flush();
+        }
+        return homework;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Homework archive(long homeworkId, Long actorId, UUID requestKey, Long bindingId) {
         // actorId is authenticated by Academic's permission guard and by the
         // directed Schedule binding call; archive is intentionally not tied to
         // the original creator's actor_id.
+        archiveCoordinator.lock(bindingId);
         Homework homework = homeworkRepository.findById(homeworkId)
                 .orElseThrow(() -> new ConflictException(
                         "homework content disappeared before terminal archive"));
@@ -87,11 +157,7 @@ public class HomeworkPublicationPersistence {
                 || !bindingId.equals(homework.getBindingId())) {
             throw new ConflictException("homework archive identity does not match the binding");
         }
-        if (homework.getPublicationState() != HomeworkPublicationState.ARCHIVED) {
-            homework.archivePublication();
-            homework = homeworkRepository.save(homework);
-            homeworkRepository.flush();
-        }
+        archiveCoordinator.archiveExistingHomework(homework, bindingId, requestKey);
         return homework;
     }
 

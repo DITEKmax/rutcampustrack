@@ -226,16 +226,16 @@ public class HomeworkService {
                     || !actorId.equals(existing.getActorId())) {
                 throw new ConflictException("idempotency key resolves to another homework payload");
             }
-            if (existing.getPublicationState() == ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState.PENDING) {
-                if (publicationPersistence == null) {
+            if (publicationPersistence == null) {
+                if (existing.getPublicationState() == HomeworkPublicationState.PENDING) {
                     throw new IllegalStateException("homework publication persistence is not configured");
                 }
-                Homework activated = publicationPersistence.activate(
-                        existing.getId(), actorId, requestKey,
-                        reservation.getBindingId(), payloadHash);
-                return activated;
+                return existing;
             }
-            return existing;
+            Homework activated = publicationPersistence.activate(
+                    existing.getId(), actorId, requestKey,
+                    reservation.getBindingId(), payloadHash);
+            return requireNotArchived(activated);
         }
         if (reservation.getState() != HomeworkBindingState.HOMEWORK_BINDING_STATE_PENDING) {
             throw new ConflictException("homework binding is not pending");
@@ -292,7 +292,7 @@ public class HomeworkService {
             saved = publicationPersistence.activate(
                     saved.getId(), actorId, requestKey,
                     reservation.getBindingId(), payloadHash);
-            return saved;
+            return requireNotArchived(saved);
         }
         publishHomeworkPublished(saved);
         return saved;
@@ -302,28 +302,41 @@ public class HomeworkService {
                                              CreateHomeworkRequest request,
                                              long actorId,
                                              UUID requestKey) {
-        if (!sameRequest(existing, request) || !Long.valueOf(actorId).equals(existing.getActorId())) {
+        if (!Long.valueOf(actorId).equals(existing.getActorId())) {
             throw new ConflictException("idempotency key resolves to another homework payload");
         }
-        if (existing.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
+        Homework current = publicationPersistence.currentPublication(
+                existing.getId(), actorId, requestKey,
+                existing.getBindingId(), existing.getPayloadHash());
+        if (!sameRequest(current, request)) {
+            throw new ConflictException("idempotency key resolves to another homework payload");
+        }
+        if (current.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
             throw new ConflictException("archived homework cannot be recreated");
         }
-        if (existing.getPublicationState() == HomeworkPublicationState.ACTIVE) {
-            return existing;
+        if (current.getPublicationState() == HomeworkPublicationState.ACTIVE) {
+            return current;
         }
 
         HomeworkBindingResponse confirmation;
         try {
             confirmation = scheduleGrpcClient.confirmHomeworkBinding(
-                    existing.getBindingId(), existing.getId(), requestKey);
+                    current.getBindingId(), current.getId(), requestKey);
         } catch (ScheduleServiceUnavailableException e) {
             throw new HomeworkPublicationPendingException(
-                    existing.getId(), existing.getBindingId(), requestKey);
+                    current.getId(), current.getBindingId(), requestKey);
         }
-        validateReplayConfirmation(confirmation, existing);
-        return publicationPersistence.activate(
-                existing.getId(), actorId, requestKey,
-                existing.getBindingId(), existing.getPayloadHash());
+        validateReplayConfirmation(confirmation, current);
+        return requireNotArchived(publicationPersistence.activate(
+                current.getId(), actorId, requestKey,
+                current.getBindingId(), current.getPayloadHash()));
+    }
+
+    private static Homework requireNotArchived(Homework homework) {
+        if (homework.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
+            throw new ConflictException("archived homework cannot be activated");
+        }
+        return homework;
     }
 
     private static boolean sameRequest(Homework existing, CreateHomeworkRequest request) {
@@ -526,12 +539,10 @@ public class HomeworkService {
         Homework homework = homeworkRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Homework", "id", id));
         assertCanReadGroup(homework.getGroupId());
-        if (homework.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
-            return;
-        }
-
-        Long actorId = requestContext.getUserId();
         if (publicationPersistence == null) {
+            if (homework.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
+                return;
+            }
             // Fixture-only constructor: retain content as terminally archived
             // even when no Schedule client is installed.
             homework.archivePublication();
@@ -542,6 +553,17 @@ public class HomeworkService {
         if (homework.getBindingId() == null || homework.getRequestKey() == null) {
             throw new ConflictException("homework has no durable binding identity");
         }
+        // Read publication state only after the shared binding lock, using the
+        // fresh row from its own persistence transaction instead of this
+        // request's possibly stale managed entity.
+        homework = publicationPersistence.currentPublication(
+                homework.getId(), homework.getActorId(), homework.getRequestKey(),
+                homework.getBindingId(), homework.getPayloadHash());
+        if (homework.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
+            return;
+        }
+
+        Long actorId = requestContext.getUserId();
         HomeworkBindingResponse archived = scheduleGrpcClient.archiveHomeworkBinding(
                 homework.getBindingId(), homework.getId(), homework.getRequestKey());
         if (archived.getBindingId() != homework.getBindingId()

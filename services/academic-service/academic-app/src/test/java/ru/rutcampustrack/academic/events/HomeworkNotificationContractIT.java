@@ -115,7 +115,7 @@ class HomeworkNotificationContractIT extends AbstractAcademicEventIntegrationTes
         when(semesterRepository.findByIsActiveTrue()).thenReturn(Optional.of(semester));
         when(groupRepository.findAllByIsActiveTrue()).thenReturn(List.of(group));
         when(homeworkRepository
-                .findBySemesterIdAndLessonDateAndDueReminderSentAtIsNullOrderByGroupIdAscLessonNumberAscIdAsc(
+                .findBySemesterIdAndLessonDateOrderByGroupIdAscLessonNumberAscIdAsc(
                         SEMESTER_ID, TODAY.plusDays(2)))
                 .thenReturn(List.of(homework));
         when(subjectRepository.findAllById(anySet())).thenReturn(List.of(subject));

@@ -68,6 +68,7 @@ class HomeworkNotificationJobTest {
     @Mock private GroupRepository groupRepository;
     @Mock private UserRepository userRepository;
     @Mock private SubjectRepository subjectRepository;
+    @Mock private HomeworkBindingArchiveCoordinator archiveCoordinator;
     @Mock private ApplicationEventPublisher eventPublisher;
 
     private HomeworkNotificationJob job;
@@ -83,6 +84,7 @@ class HomeworkNotificationJobTest {
                 groupRepository,
                 userRepository,
                 subjectRepository,
+                archiveCoordinator,
                 eventPublisher,
                 clock);
         when(semesterRepository.findByIsActiveTrue()).thenReturn(Optional.of(activeSemester()));
@@ -95,7 +97,7 @@ class HomeworkNotificationJobTest {
     @Test
     void publishDueReminders_sendsOnlyToIncompleteStudentsAndMarksHomeworkSent() {
         Homework homework = homework(100L, SUBJECT_ID, DUE_DATE, 2, "Essay");
-        when(homeworkRepository.findBySemesterIdAndLessonDateAndDueReminderSentAtIsNullOrderByGroupIdAscLessonNumberAscIdAsc(
+        when(homeworkRepository.findBySemesterIdAndLessonDateOrderByGroupIdAscLessonNumberAscIdAsc(
                 SEMESTER_ID, DUE_DATE))
                 .thenReturn(List.of(homework));
         when(userRepository.findByGroupId(GROUP_ID)).thenReturn(List.of(
@@ -182,7 +184,7 @@ class HomeworkNotificationJobTest {
         job.publishDueReminders();
 
         verify(homeworkRepository, never())
-                .findBySemesterIdAndLessonDateAndDueReminderSentAtIsNullOrderByGroupIdAscLessonNumberAscIdAsc(
+                .findBySemesterIdAndLessonDateOrderByGroupIdAscLessonNumberAscIdAsc(
                         any(), any());
         verify(eventPublisher, never()).publishEvent(any());
     }

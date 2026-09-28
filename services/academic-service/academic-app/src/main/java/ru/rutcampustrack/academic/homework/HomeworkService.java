@@ -56,6 +56,7 @@ public class HomeworkService {
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final Clock clock;
     private final HomeworkPublicationPersistence publicationPersistence;
+    private final HomeworkBindingArchiveCoordinator archiveCoordinator;
     private final UserRoleGrantRepository grantRepository;
 
     /** Spring constructor. The persistence bean supplies real transaction boundaries. */
@@ -68,6 +69,7 @@ public class HomeworkService {
                             ScheduleGrpcClient scheduleGrpcClient,
                             Clock clock,
                             HomeworkPublicationPersistence publicationPersistence,
+                            HomeworkBindingArchiveCoordinator archiveCoordinator,
                             UserRoleGrantRepository grantRepository) {
         this.homeworkRepository = homeworkRepository;
         this.completionRepository = completionRepository;
@@ -77,6 +79,7 @@ public class HomeworkService {
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.clock = clock;
         this.publicationPersistence = publicationPersistence;
+        this.archiveCoordinator = archiveCoordinator;
         this.grantRepository = grantRepository;
     }
 
@@ -89,7 +92,7 @@ public class HomeworkService {
                            ScheduleGrpcClient scheduleGrpcClient,
                            Clock clock) {
         this(homeworkRepository, completionRepository, assistantRepository, requestContext,
-                eventPublisher, scheduleGrpcClient, clock, null, null);
+                eventPublisher, scheduleGrpcClient, clock, null, null, null);
     }
 
     /**
@@ -521,6 +524,13 @@ public class HomeworkService {
         requireHeadmanOrManageHomework();
         Homework homework = getHomework(id);
         requireAuthor(homework); // D-05
+        if (archiveCoordinator != null) {
+            archiveCoordinator.lockAndRefresh(homework);
+            requireAuthor(homework); // immutable author check after the fresh read
+            if (homework.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
+                throw new ConflictException("archived homework cannot be updated");
+            }
+        }
         homework.setTitle(request.title());
         homework.setDescription(request.description());
         homework.setLink(request.link());

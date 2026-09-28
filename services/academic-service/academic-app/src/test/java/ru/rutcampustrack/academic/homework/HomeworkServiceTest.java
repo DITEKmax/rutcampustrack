@@ -92,6 +92,7 @@ class HomeworkServiceTest {
                 scheduleGrpcClient,
                 clock,
                 null,
+                null,
                 grantRepository);
     }
 

@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.homework;
 
+import jakarta.persistence.EntityManager;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -24,14 +25,17 @@ import java.util.UUID;
 public class HomeworkBindingArchiveCoordinator {
 
     private final JdbcTemplate jdbcTemplate;
+    private final EntityManager entityManager;
     private final HomeworkBindingArchiveMarkerRepository markerRepository;
     private final HomeworkRepository homeworkRepository;
 
     public HomeworkBindingArchiveCoordinator(
             JdbcTemplate jdbcTemplate,
+            EntityManager entityManager,
             HomeworkBindingArchiveMarkerRepository markerRepository,
             HomeworkRepository homeworkRepository) {
         this.jdbcTemplate = jdbcTemplate;
+        this.entityManager = entityManager;
         this.markerRepository = markerRepository;
         this.homeworkRepository = homeworkRepository;
     }
@@ -52,6 +56,21 @@ public class HomeworkBindingArchiveCoordinator {
             }
             return null;
         });
+    }
+
+    /**
+     * Acquires the binding lock before refreshing a previously selected entity.
+     * Callers must not inspect mutable Homework fields between the selection and
+     * this method; refresh prevents the persistence context from flushing a stale
+     * publication state over a cancellation committed while the caller waited.
+     */
+    public void lockAndRefresh(Homework homework) {
+        Long bindingId = homework.getBindingId();
+        if (bindingId == null || bindingId <= 0) {
+            throw new ConflictException("homework has no durable binding identity");
+        }
+        lock(bindingId);
+        entityManager.refresh(homework);
     }
 
     /** Caller must hold {@link #lock(long)} before looking up the marker. */

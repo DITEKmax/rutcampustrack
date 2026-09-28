@@ -29,6 +29,8 @@ public interface HomeworkRepository extends JpaRepository<Homework, Long> {
             LocalDate from, LocalDate to);
     List<Homework> findBySemesterIdAndLessonDateAndDueReminderSentAtIsNullOrderByGroupIdAscLessonNumberAscIdAsc(
             Long semesterId, LocalDate lessonDate);
+    List<Homework> findBySemesterIdAndLessonDateOrderByGroupIdAscLessonNumberAscIdAsc(
+            Long semesterId, LocalDate lessonDate);
     List<Homework> findBySemesterIdAndPublicationStateAndLessonDateAndDueReminderSentAtIsNullOrderByGroupIdAscLessonNumberAscIdAsc(
             Long semesterId, HomeworkPublicationState publicationState, LocalDate lessonDate);
 }

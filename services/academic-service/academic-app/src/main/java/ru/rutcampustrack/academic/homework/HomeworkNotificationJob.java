@@ -31,6 +31,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +54,7 @@ public class HomeworkNotificationJob {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
+    private final HomeworkBindingArchiveCoordinator archiveCoordinator;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
@@ -63,6 +65,7 @@ public class HomeworkNotificationJob {
                                    GroupRepository groupRepository,
                                    UserRepository userRepository,
                                    SubjectRepository subjectRepository,
+                                   HomeworkBindingArchiveCoordinator archiveCoordinator,
                                    ApplicationEventPublisher eventPublisher,
                                    Clock clock) {
         this.homeworkRepository = homeworkRepository;
@@ -72,6 +75,7 @@ public class HomeworkNotificationJob {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.subjectRepository = subjectRepository;
+        this.archiveCoordinator = archiveCoordinator;
         this.eventPublisher = eventPublisher;
         this.clock = clock;
     }
@@ -155,8 +159,8 @@ public class HomeworkNotificationJob {
                 .map(Group::getId)
                 .collect(Collectors.toSet());
         List<Homework> dueHomeworks = homeworkRepository
-                .findBySemesterIdAndPublicationStateAndLessonDateAndDueReminderSentAtIsNullOrderByGroupIdAscLessonNumberAscIdAsc(
-                        semester.getId(), HomeworkPublicationState.ACTIVE, dueDate).stream()
+                .findBySemesterIdAndLessonDateOrderByGroupIdAscLessonNumberAscIdAsc(
+                        semester.getId(), dueDate).stream()
                 .filter(hw -> activeGroupIds.contains(hw.getGroupId()))
                 .toList();
         if (dueHomeworks.isEmpty()) {
@@ -164,8 +168,24 @@ public class HomeworkNotificationJob {
         }
 
         Map<Long, String> subjectNames = subjectNames(dueHomeworks);
+        List<Homework> eligibleDueHomeworks = new ArrayList<>();
         int eventsPublished = 0;
         for (Homework homework : dueHomeworks) {
+            // The initial query is only a candidate scan. It may have loaded
+            // ACTIVE before cancellation committed while this job waited for
+            // the binding lock, so refresh the managed row before eligibility
+            // checks or any reminder side effect.
+            if (homework.getBindingId() != null) {
+                archiveCoordinator.lockAndRefresh(homework);
+            }
+            if (homework.getPublicationState() != HomeworkPublicationState.ACTIVE
+                    || homework.getDueReminderSentAt() != null
+                    || !semester.getId().equals(homework.getSemesterId())
+                    || !dueDate.equals(homework.getLessonDate())
+                    || !activeGroupIds.contains(homework.getGroupId())) {
+                continue;
+            }
+
             Set<Long> completedStudentIds = completionRepository.findByHomeworkId(homework.getId()).stream()
                     .map(HomeworkCompletion::getStudentId)
                     .collect(Collectors.toSet());
@@ -186,11 +206,14 @@ public class HomeworkNotificationJob {
                 eventsPublished++;
             }
             homework.setDueReminderSentAt(OffsetDateTime.now(clock));
+            eligibleDueHomeworks.add(homework);
         }
 
-        homeworkRepository.saveAll(dueHomeworks);
+        if (!eligibleDueHomeworks.isEmpty()) {
+            homeworkRepository.saveAll(eligibleDueHomeworks);
+        }
         log.info("Homework due reminders published: homeworks={}, events={}, dueDate={}",
-                dueHomeworks.size(), eventsPublished, dueDate);
+                eligibleDueHomeworks.size(), eventsPublished, dueDate);
     }
 
     private Optional<Semester> activeSemester(LocalDate today) {

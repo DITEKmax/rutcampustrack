@@ -102,8 +102,9 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
     }
 
     @ParameterizedTest(name = "{0}")
-    @ValueSource(strings = {"GetCampusMapManifest", "GetCampusFloorPlan", "ReadCampusMapAsset"})
-    void validTokenBindsClaimsForEveryCampusMapRead(String methodName) {
+    @ValueSource(strings = {
+            "GetCampusMapManifest", "GetCampusFloorPlan", "ReadCampusMapAsset", "RecordCampusFloorOpen"})
+    void validTokenBindsClaimsForEveryCampusMapOperation(String methodName) {
         InternalJwtClaims claims = new InternalJwtClaims(
                 100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
         when(validator.validate("signed")).thenReturn(claims);
@@ -250,7 +251,9 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
                 arguments("missing token", "GetCampusFloorPlan", (String) null),
                 arguments("bad token", "GetCampusFloorPlan", "bad"),
                 arguments("missing token", "ReadCampusMapAsset", (String) null),
-                arguments("bad token", "ReadCampusMapAsset", "bad"));
+                arguments("bad token", "ReadCampusMapAsset", "bad"),
+                arguments("missing token", "RecordCampusFloorOpen", (String) null),
+                arguments("bad token", "RecordCampusFloorOpen", "bad"));
     }
 
     private static AcademicGrpcServiceImpl service(

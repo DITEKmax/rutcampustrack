@@ -14,8 +14,8 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 /**
  * Authenticates the student homework, projection, and campus-map read RPCs
- * with the same signed Internal JWT used at the HTTP BFF and attendance gRPC
- * student boundary. Existing Academic RPCs retain their established
+ * and the campus-map open RPC with the same signed Internal JWT used at the
+ * HTTP BFF and attendance gRPC student boundary. Existing Academic RPCs retain their established
  * shared-secret contract.
  */
 @GrpcGlobalServerInterceptor
@@ -30,6 +30,8 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/GetCampusFloorPlan";
     static final String MAP_ASSET_METHOD_NAME =
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/ReadCampusMapAsset";
+    static final String MAP_OPEN_METHOD_NAME =
+            AcademicGrpcServiceGrpc.SERVICE_NAME + "/RecordCampusFloorOpen";
     static final String ASSISTANT_PERMISSION_METHOD_NAME =
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/CheckAssistantPermission";
     static final Metadata.Key<String> INTERNAL_TOKEN =
@@ -53,6 +55,7 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
                 && !MAP_MANIFEST_METHOD_NAME.equals(methodName)
                 && !MAP_FLOOR_PLAN_METHOD_NAME.equals(methodName)
                 && !MAP_ASSET_METHOD_NAME.equals(methodName)
+                && !MAP_OPEN_METHOD_NAME.equals(methodName)
                 && !ASSISTANT_PERMISSION_METHOD_NAME.equals(methodName)) {
             return next.startCall(call, headers);
         }

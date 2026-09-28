@@ -17,6 +17,8 @@ const loadingAsset = ref(false)
 const error = ref<string | null>(null)
 const selectedBuildingId = ref<string | null>(null)
 const selectedFloorId = ref<string | null>(null)
+const currentPlan = ref<MapPlan | null>(null)
+const currentPlanFloorKey = ref<string | null>(null)
 const svgUrl = ref<string | null>(null)
 const pngUrl = ref<string | null>(null)
 const usageError = ref<string | null>(null)
@@ -35,7 +37,12 @@ const buildings = computed<readonly MapBuilding[]>(() => manifest.value?.buildin
 const selectedBuilding = computed(() => buildings.value.find((item) => item.id === selectedBuildingId.value) ?? null)
 const floors = computed<readonly MapFloor[]>(() => selectedBuilding.value?.floors ?? [])
 const selectedFloor = computed(() => floors.value.find((item) => item.id === selectedFloorId.value) ?? null)
-const selectedPlan = computed<MapPlan | null>(() => selectedFloor.value?.plan ?? null)
+const selectedPlan = computed<MapPlan | null>(() => {
+  const building = selectedBuilding.value
+  const floor = selectedFloor.value
+  if (!building || !floor || currentPlanFloorKey.value !== `${building.id}:${floor.id}`) return null
+  return currentPlan.value
+})
 const svgMissing = computed(() => selectedPlan.value?.svg.state !== 'ready')
 const pngMissing = computed(() => selectedPlan.value?.png.state !== 'ready')
 
@@ -56,7 +63,7 @@ watch(selectedBuildingId, () => {
   selectedFloorId.value = firstFloor?.id ?? null
 })
 
-watch(selectedFloor, () => void loadAssets())
+watch([selectedBuildingId, selectedFloorId], () => void loadCurrentFloorPlan())
 
 async function loadManifest(): Promise<void> {
   const requestGeneration = lifecycleGeneration
@@ -78,65 +85,87 @@ async function loadManifest(): Promise<void> {
   }
 }
 
-async function loadAssets(): Promise<void> {
-  const plan = selectedPlan.value
+async function loadCurrentFloorPlan(): Promise<void> {
   const floor = selectedFloor.value
   const building = selectedBuilding.value
   const requestId = ++assetRequest
   requestController?.abort()
   const controller = new AbortController()
   requestController = controller
+  const floorKey = floor && building ? `${building.id}:${floor.id}` : null
+  currentPlan.value = null
+  currentPlanFloorKey.value = floorKey
   revokeAsset('svg')
   revokeAsset('png')
-  if (!plan || !floor || !building) {
+  invalidateOpenIntent()
+  error.value = null
+  if (!floor || !building) {
     loadingAsset.value = false
-    invalidateOpenIntent()
     return
   }
 
-  const currentOpenKey = `${building.id}:${floor.id}:${plan.version}`
-  const currentGeneration = props.client.currentGeneration()
-  if (openIntentKey !== currentOpenKey
+  loadingAsset.value = true
+  let planResolved = false
+  try {
+    const plan = await props.client.getFloorPlan(building.id, floor.id, controller.signal)
+    if (!isCurrentFloorRequest(requestId, floorKey)) return
+    currentPlan.value = plan
+    planResolved = true
+    if (!plan) return
+
+    const currentOpenKey = `${building.id}:${floor.id}:${plan.version}`
+    const currentGeneration = props.client.currentGeneration()
+    if (openIntentKey !== currentOpenKey
       || openIntentGeneration !== currentGeneration
       || !openIntentId) {
-    openIntentKey = currentOpenKey
-    openIntentGeneration = currentGeneration
-    openIntentId = globalThis.crypto?.randomUUID?.() ?? null
-    openRecorded = false
-    openRecording = false
-  }
-  if (!openRecorded) openRecording = false
-  usageError.value = openIntentId
-    ? null
-    : 'Просмотр доступен, но статистику открытия сохранить не удалось.'
+      openIntentKey = currentOpenKey
+      openIntentGeneration = currentGeneration
+      openIntentId = globalThis.crypto?.randomUUID?.() ?? null
+      openRecorded = false
+      openRecording = false
+    }
+    if (!openRecorded) openRecording = false
+    usageError.value = openIntentId
+      ? null
+      : 'Просмотр доступен, но статистику открытия сохранить не удалось.'
 
-  loadingAsset.value = true
-  error.value = null
-  try {
     const downloads: Promise<void>[] = []
     if (plan.svg.state === 'ready' && plan.svg.id) {
-      downloads.push(props.client.downloadAsset(building.id, floor.id, plan.version, 'svg', plan.svg.id)
+      downloads.push(props.client.downloadAsset(building.id, floor.id, plan.version, 'svg', plan.svg.id, controller.signal)
         .then((blob) => {
-          if (requestId === assetRequest && !disposed) {
+          if (isCurrentFloorRequest(requestId, floorKey)) {
             svgUrl.value = URL.createObjectURL(blob)
             svgAssetRequest.value = requestId
           }
         }))
     }
     if (plan.png.state === 'ready' && plan.png.id) {
-      downloads.push(props.client.downloadAsset(building.id, floor.id, plan.version, 'png', plan.png.id)
+      downloads.push(props.client.downloadAsset(building.id, floor.id, plan.version, 'png', plan.png.id, controller.signal)
         .then((blob) => {
-          if (requestId === assetRequest && !disposed) pngUrl.value = URL.createObjectURL(blob)
+          if (isCurrentFloorRequest(requestId, floorKey)) pngUrl.value = URL.createObjectURL(blob)
         }))
     }
     await Promise.all(downloads)
   } catch (cause) {
-    if (requestId === assetRequest && !disposed && !isAbortError(cause)) {
-      error.value = 'Схему не удалось открыть. Попробуй позже.'
+    if (isCurrentFloorRequest(requestId, floorKey) && !isAbortError(cause)) {
+      error.value = planResolved
+        ? 'Схему не удалось открыть. Попробуй позже.'
+        : 'Актуальную схему выбранного этажа не удалось загрузить. Попробуй обновить раздел.'
     }
   } finally {
-    if (requestId === assetRequest && !disposed) loadingAsset.value = false
+    if (isCurrentFloorRequest(requestId, floorKey)) loadingAsset.value = false
   }
+}
+
+function isCurrentFloorRequest(requestId: number, floorKey: string | null): boolean {
+  const building = selectedBuilding.value
+  const floor = selectedFloor.value
+  return !disposed
+    && requestId === assetRequest
+    && floorKey !== null
+    && building !== null
+    && floor !== null
+    && floorKey === `${building.id}:${floor.id}`
 }
 
 function handleSvgLoaded(): void {
@@ -275,8 +304,15 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
           </select>
         </label>
 
+        <p
+          v-if="loadingAsset && selectedFloor && !selectedPlan"
+          class="map-state"
+          role="status"
+        >
+          Загружаем актуальную схему выбранного этажа…
+        </p>
         <section
-          v-if="selectedFloor && selectedPlan"
+          v-else-if="selectedFloor && selectedPlan"
           class="map-card"
           aria-live="polite"
         >
@@ -337,7 +373,7 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
           </p>
         </section>
         <p
-          v-else
+          v-else-if="selectedFloor && !error"
           class="map-state"
           role="status"
         >

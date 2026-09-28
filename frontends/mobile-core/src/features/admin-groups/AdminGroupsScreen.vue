@@ -301,8 +301,8 @@ async function confirmHeadman(): Promise<void> {
   const revision = ++headmanMutationRevision
   const controller = new AbortController()
   headmanMutationController = controller
-  const refreshAfterOutcome = (): Promise<void> => {
-    return disposed ? Promise.resolve() : refresh(true)
+  const refreshAfterOutcome = async (): Promise<void> => {
+    if (!disposed) await refresh(true)
   }
   try {
     const result = await props.client.assignHeadman(currentGroup.id, {

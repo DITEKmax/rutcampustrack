@@ -14,9 +14,9 @@ const props = withDefaults(defineProps<{
 const buildings = ref<readonly AdminMapBuildingResponse[]>([])
 const selectedBuildingId = ref<string | null>(null)
 const selectedFloorId = ref<string | null>(null)
-const buildingCode = ref('')
+const buildingCode = ref<number | string>('')
 const buildingLabel = ref('')
-const floorCode = ref('')
+const floorCode = ref<number | string>('')
 const floorLabel = ref('')
 const png = ref<File | undefined>()
 const svg = ref<File | undefined>()
@@ -55,12 +55,13 @@ async function refresh(): Promise<void> {
 }
 
 async function addBuilding(): Promise<void> {
-  if (!/^[1-9][0-9]*$/.test(buildingCode.value.trim())) {
+  const code = normalizePositiveInteger(buildingCode.value)
+  if (!code) {
     error.value = 'Номер корпуса должен быть положительным числом.'
     return
   }
   await runSave(async () => {
-    await props.client.createBuilding(buildingCode.value.trim(), buildingLabel.value.trim() || undefined)
+    await props.client.createBuilding(code, buildingLabel.value.trim() || undefined)
     buildingCode.value = ''
     buildingLabel.value = ''
     notice.value = 'Корпус добавлен.'
@@ -69,17 +70,32 @@ async function addBuilding(): Promise<void> {
 }
 
 async function addFloor(): Promise<void> {
-  if (!selectedBuildingId.value || !/^[1-9][0-9]*$/.test(floorCode.value.trim())) {
+  const code = normalizePositiveInteger(floorCode.value)
+  if (!selectedBuildingId.value || !code) {
     error.value = 'Выбери корпус и укажи положительный номер этажа.'
     return
   }
   await runSave(async () => {
-    await props.client.createFloor(selectedBuildingId.value!, floorCode.value.trim(), floorLabel.value.trim() || undefined)
+    await props.client.createFloor(selectedBuildingId.value!, code, floorLabel.value.trim() || undefined)
     floorCode.value = ''
     floorLabel.value = ''
     notice.value = 'Этаж добавлен.'
     await refresh()
   })
+}
+
+function normalizePositiveInteger(value: number | string): string | null {
+  if (typeof value === 'number') {
+    return Number.isSafeInteger(value) && value > 0 ? String(value) : null
+  }
+
+  const trimmed = value.trim()
+  if (!/^[1-9][0-9]*$/.test(trimmed)) {
+    return null
+  }
+
+  const parsed = Number(trimmed)
+  return Number.isSafeInteger(parsed) ? String(parsed) : null
 }
 
 function choosePng(event: Event): void {

@@ -134,10 +134,10 @@ async function exportJournal(): Promise<void> {
   const api = props.api
   const reportDownload = props.reportDownload ?? null
   const query = props.query
+  if (!api || !query || loading.value || exportLoading.value || !canExport.value) return
   const current = ++exportRevision
   const context = queryKey(query)
   const format = selectedFormat.value
-  if (!api || !query || loading.value || exportLoading.value || !canExport.value) return
   exportLoading.value = true
   exportError.value = null
   exportStatus.value = null
@@ -191,7 +191,8 @@ async function exportJournal(): Promise<void> {
 
 const canExport = computed(() => Boolean(
   props.api && props.query && state.value && state.value.totalLessons > 0
-  && !loading.value && !formatsLoading.value && formats.value.some((format) => format.code === selectedFormat.value),
+  && !loading.value && !formatsLoading.value && !exportLoading.value
+  && formats.value.some((format) => format.code === selectedFormat.value),
 ))
 
 function queryKey(query: TeacherJournalQuery | null): string {

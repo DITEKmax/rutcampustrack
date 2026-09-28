@@ -96,6 +96,9 @@ const exportObjectUrls = new Set<string>()
 let disposed = false
 
 const groups = computed(() => authorizedGroups.value)
+const singleAuthorizedGroup = computed(() => authorizedGroups.value.length === 1
+  ? authorizedGroups.value[0] ?? null
+  : null)
 const subjects = computed(() => subjectsForGroup(selectedGroupId.value))
 const types = computed(() => scope.value === 'students'
   ? lessonTypesForContext(selectedGroupId.value, selectedSubjectId.value)
@@ -791,6 +794,18 @@ function isCurrent(requestRevision: number): boolean {
       >
         Пар ещё не было по выбранному контексту.
       </p>
+      <template v-else-if="scope === 'groups' && singleAuthorizedGroup">
+        <p class="teacher-stats__state">
+          У тебя одна группа, поэтому сравнить группы между собой нельзя.
+        </p>
+        <button
+          type="button"
+          class="teacher-stats__row-link"
+          @click="openGroup(singleAuthorizedGroup.id)"
+        >
+          Студенты · {{ singleAuthorizedGroup.name }}
+        </button>
+      </template>
       <div
         v-else-if="stats"
         class="teacher-stats__table-wrap"

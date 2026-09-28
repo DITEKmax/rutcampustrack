@@ -56,7 +56,10 @@ describe('HeadmanJournalApi', () => {
       room: 'А-101',
       lessonType: null,
     }])
-    expect(paths).toEqual(['/api/schedule/groups/7/lessons?dateFrom=2026-09-21&dateTo=2026-09-21&page=0&size=100'])
+    expect(paths).toEqual([
+      '/api/schedule/groups/7/lessons?dateFrom=2026-09-21&dateTo=2026-09-21&page=0&size=100'
+        + '&status=PLANNED&status=ACTIVE&status=CLOSED&status=CANCELLED',
+    ])
   })
 
   it('keeps unmarked and cancelled states distinct and refuses legacy FREE_ATTENDANCE normalization', async () => {

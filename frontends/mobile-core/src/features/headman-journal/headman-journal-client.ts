@@ -177,6 +177,9 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
         page: String(page),
         size: '100',
       })
+      for (const status of ['PLANNED', 'ACTIVE', 'CLOSED', 'CANCELLED'] as const) {
+        query.append('status', status)
+      }
       return `/api/schedule/groups/${groupId}/lessons?${query.toString()}`
     }, 'lessonResponseList', normalizeLesson)
   }

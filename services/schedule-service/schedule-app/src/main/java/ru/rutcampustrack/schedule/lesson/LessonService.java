@@ -1,11 +1,13 @@
 package ru.rutcampustrack.schedule.lesson;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
 import ru.rutcampustrack.schedule.event.LessonBlockedEvent;
 import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
@@ -15,7 +17,6 @@ import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
-import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
@@ -42,17 +43,24 @@ public class LessonService {
     private final AcademicGrpcClient academicGrpcClient;
     private final RequestContext requestContext;
     private final ApplicationEventPublisher eventPublisher;
+    private final RecurringLessonLifecycleWriter recurringLifecycleWriter;
+    private final EntityManager entityManager;
 
+    @Autowired
     public LessonService(LessonRepository lessonRepository,
                          ScheduleItemRepository scheduleItemRepository,
                          AcademicGrpcClient academicGrpcClient,
                          RequestContext requestContext,
-                         ApplicationEventPublisher eventPublisher) {
+                         ApplicationEventPublisher eventPublisher,
+                         RecurringLessonLifecycleWriter recurringLifecycleWriter,
+                         EntityManager entityManager) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.academicGrpcClient = academicGrpcClient;
         this.requestContext = requestContext;
         this.eventPublisher = eventPublisher;
+        this.recurringLifecycleWriter = recurringLifecycleWriter;
+        this.entityManager = entityManager;
     }
 
     /**
@@ -130,16 +138,20 @@ public class LessonService {
             throw new InvalidLessonStateException(
                     "Lesson is already cancelled");
         }
-        // M09 G5 (02 P2-11/5) — фиксируем ПОЛНЫЙ контекст отмены в самой строке
-        // (cancelled_by/cancelled_at), чтобы downstream read из БД и full snapshot
-        // event совпадали. Ранее эти поля отсутствовали, audit делался только
-        // через Rabbit payload.
-        OffsetDateTime cancelledAt = OffsetDateTime.now();
-        lesson.setStatus(LessonStatus.CANCELLED);
-        lesson.setCancelReason(request.reason());
-        lesson.setCancelledBy(requestContext.getUserId());
-        lesson.setCancelledAt(cancelledAt);
-        Lesson saved = lessonRepository.save(lesson);
+        Lesson saved;
+        if (lesson.getOccurrenceId() != null && lesson.getScheduleItemId() != null) {
+            recurringLifecycleWriter.cancel(lessonId, request.reason(), requestContext.getUserId());
+            entityManager.refresh(lesson);
+            saved = lesson;
+        } else {
+            // Legacy non-recurring lessons still use the existing entity path.
+            OffsetDateTime cancelledAt = OffsetDateTime.now();
+            lesson.setStatus(LessonStatus.CANCELLED);
+            lesson.setCancelReason(request.reason());
+            lesson.setCancelledBy(requestContext.getUserId());
+            lesson.setCancelledAt(cancelledAt);
+            saved = lessonRepository.save(lesson);
+        }
         java.time.LocalTime startTime = saved.getStartTime() != null
                 ? saved.getStartTime() : item.getStartTime();
         java.time.LocalTime endTime = saved.getEndTime() != null
@@ -164,12 +176,23 @@ public class LessonService {
     public LessonWithItem restoreLesson(Long lessonId) {
         LessonWithItem lwi = findLessonAndValidateGroup(lessonId, "CANCEL_LESSONS");
         Lesson lesson = lwi.lesson();
-        if (lesson.getOccurrenceId() != null) {
-            throw new RecurringLifecycleNotReadyException("restore canonical recurring lesson");
-        }
         if (lesson.getStatus() != LessonStatus.CANCELLED) {
             throw new InvalidLessonStateException(
                     "Only cancelled lessons can be restored, current status: " + lesson.getStatus());
+        }
+        if (lesson.getOccurrenceId() != null && lesson.getScheduleItemId() != null) {
+            long currentLessonId = recurringLifecycleWriter.restore(lessonId, requestContext.getUserId());
+            if (currentLessonId == lessonId) {
+                entityManager.refresh(lesson);
+                return new LessonWithItem(lesson, lwi.scheduleItem());
+            }
+            entityManager.clear();
+            Lesson restored = lessonRepository.findById(currentLessonId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Lesson", "id", currentLessonId));
+            ScheduleItem restoredItem = scheduleItemRepository.findById(restored.getScheduleItemId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "ScheduleItem", "id", restored.getScheduleItemId()));
+            return new LessonWithItem(restored, restoredItem);
         }
         lesson.setStatus(LessonStatus.PLANNED);
         lesson.setCancelReason(null);

@@ -9,6 +9,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.fasterxml.jackson.databind.JsonNode;
+import ru.rutcampustrack.schedule.events.EventSchemaValidator;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
@@ -19,7 +21,10 @@ import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -71,11 +76,18 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
     }
 
     private ScheduleItem createScheduleItem() {
+        jdbcTemplate.update("""
+                INSERT INTO schedule_assignment_fences
+                    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
+                     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive)
+                VALUES (?, ?, 100, 10, 700, 'lecture', DATE '2026-01-01',
+                        DATE '2027-01-01', DATE '2027-01-01')
+                """, testGroupId, testGroupId);
         Long itemId = jdbcTemplate.queryForObject("""
                 INSERT INTO schedule_items
                     (assignment_id, group_id, subject_id, semester_id, day_of_week,
                      lesson_number, start_time, end_time, week_type, room)
-                VALUES (?, ?, 100, 10, 1, 1, '08:30'::time, '10:00'::time, 'all', 'A-101')
+                VALUES (?, ?, 100, 10, 3, 1, '08:30'::time, '10:00'::time, 'all', 'A-101')
                 RETURNING id
                 """, Long.class, testGroupId, testGroupId);
         return scheduleItemRepository.findById(itemId).orElseThrow();
@@ -93,15 +105,31 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
                 INSERT INTO lessons
                     (schedule_item_id, occurrence_id, assignment_id, group_id, subject_id,
                      semester_id, assigned_teacher_id, lesson_type, lesson_number,
-                     start_time, end_time, generation, revision, date, status, is_geo_blocked)
-                VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture', 1,
+                     day_of_week, week_type_snapshot, start_time, end_time,
+                     generation, revision, date, status, is_geo_blocked)
+                VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture', 1, 3, 'all',
                         '08:30'::time, '10:00'::time, 1, 1, ?, ?::lesson_status, false)
                 RETURNING id
                 """, Long.class, scheduleItemId, occurrenceId, testGroupId, testGroupId,
                 date, status.name().toLowerCase());
         jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?",
                 lessonId, occurrenceId);
+        jdbcTemplate.update("""
+                INSERT INTO lesson_lifecycle_entries
+                    (occurrence_id, revision, action, lesson_id, generation, actor_id, occurred_at)
+                VALUES (?, 1, 'CREATED', ?, 1, ?, NOW())
+                """, occurrenceId, lessonId, USER_ID);
         return lessonRepository.findById(lessonId).orElseThrow();
+    }
+
+    private Long insertHomeworkBinding(long occurrenceId, long lessonId, long authorId, UUID requestKey) {
+        return jdbcTemplate.queryForObject("""
+                INSERT INTO lesson_homework_bindings
+                    (occurrence_id, current_lesson_id, homework_id, actor_id, request_key,
+                     payload_hash, state, revision)
+                VALUES (?, ?, 8801, ?, ?, ?, 'ACTIVE', 1)
+                RETURNING binding_id
+                """, Long.class, occurrenceId, lessonId, authorId, requestKey, new byte[32]);
     }
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder withHeadmanHeaders(
@@ -227,6 +255,68 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         org.assertj.core.api.Assertions.assertThat(saved.getCancelReason()).isNull();
         org.assertj.core.api.Assertions.assertThat(saved.getCancelledBy()).isNull();
         org.assertj.core.api.Assertions.assertThat(saved.getCancelledAt()).isNull();
+    }
+
+    @Test
+    void cancelThenRestore_archivesExactHomeworkBindingAndKeepsCanonicalHistory() throws Exception {
+        ScheduleItem item = createScheduleItem();
+        Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 1));
+        UUID requestKey = UUID.randomUUID();
+        long bindingId = insertHomeworkBinding(lesson.getOccurrenceId(), lesson.getId(), 77L, requestKey);
+
+        mockMvc.perform(withHeadmanHeaders(
+                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("reason", "Teacher replaced")))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("CANCELLED")));
+
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM lesson_homework_bindings
+                 WHERE binding_id = ? AND occurrence_id = ? AND current_lesson_id = ?
+                   AND homework_id = 8801 AND state = 'ARCHIVED' AND revision = 2
+                """, Long.class, bindingId, lesson.getOccurrenceId(), lesson.getId())).isEqualTo(1L);
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT revision FROM lesson_occurrences WHERE id = ?
+                """, Long.class, lesson.getOccurrenceId())).isEqualTo(2L);
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT action FROM lesson_lifecycle_entries
+                 WHERE occurrence_id = ? AND revision = 2
+                """, String.class, lesson.getOccurrenceId())).isEqualTo("CANCELLED");
+
+        var archived = outboxStorage.findPending(1000).stream()
+                .filter(record -> "homework.binding.archived".equals(record.eventType()))
+                .filter(record -> record.payload().contains(requestKey.toString()))
+                .findFirst().orElseThrow();
+        assertThat(EventSchemaValidator.validate("homework.binding.archived.json", archived.payload()))
+                .isEmpty();
+        JsonNode archivePayload = objectMapper.readTree(archived.payload()).path("payload");
+        assertThat(archivePayload.path("binding_id").asLong()).isEqualTo(bindingId);
+        assertThat(archivePayload.path("actor_id").asLong()).isEqualTo(77L);
+        assertThat(archivePayload.path("request_key").asText()).isEqualTo(requestKey.toString());
+        assertThat(archivePayload.path("occurrence_id").asLong()).isEqualTo(lesson.getOccurrenceId());
+        assertThat(archivePayload.path("lesson_id").asLong()).isEqualTo(lesson.getId());
+        assertThat(archivePayload.path("homework_id").asLong()).isEqualTo(8801L);
+        assertThat(archivePayload.path("binding_revision").asLong()).isEqualTo(2L);
+
+        mockMvc.perform(withHeadmanHeaders(
+                patch("/schedule/lessons/" + lesson.getId() + "/restore")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("PLANNED")));
+
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT current_lesson_id FROM lesson_occurrences WHERE id = ?
+                """, Long.class, lesson.getOccurrenceId())).isEqualTo(lesson.getId());
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT revision FROM lesson_occurrences WHERE id = ?
+                """, Long.class, lesson.getOccurrenceId())).isEqualTo(3L);
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT action FROM lesson_lifecycle_entries
+                 WHERE occurrence_id = ? AND revision = 3
+                """, String.class, lesson.getOccurrenceId())).isEqualTo("RESTORED");
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT state FROM lesson_homework_bindings WHERE binding_id = ?
+                """, String.class, bindingId)).isEqualTo("ARCHIVED");
     }
 
     @Test

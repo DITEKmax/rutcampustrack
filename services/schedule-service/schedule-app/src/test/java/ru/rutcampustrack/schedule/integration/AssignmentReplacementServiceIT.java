@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.academic.grpc.PreparedAssignmentCloseResponse;
@@ -20,6 +21,8 @@ import ru.rutcampustrack.schedule.recurring.RecurringAssignmentAuthority;
 import ru.rutcampustrack.schedule.recurring.RecurringScheduleItemWriter;
 import ru.rutcampustrack.schedule.replacement.AssignmentReplacementService;
 import ru.rutcampustrack.schedule.exception.ConflictException;
+import ru.rutcampustrack.schedule.lesson.RecurringLessonLifecycleWriter;
+import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -66,6 +69,12 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
 
     @Autowired
     RecurringScheduleItemWriter recurringWriter;
+
+    @Autowired
+    RecurringLessonLifecycleWriter lifecycleWriter;
+
+    @Autowired
+    LessonRepository lessonRepository;
 
     @BeforeEach
     void resetData() {
@@ -240,6 +249,105 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
+    void cancelledOccurrenceRestoresThroughExactReplacementAndConflictRollsBack() {
+        long sourceTemplateId = insertSourceTemplate();
+        LocalDate occurrenceDate = LocalDate.of(2026, 10, 6);
+        SeededOccurrence source = seedOccurrence(sourceTemplateId, occurrenceDate, "planned");
+        long bindingId = insertHomeworkBinding(source);
+        UUID bindingRequestKey = jdbc.queryForObject("""
+                SELECT request_key FROM lesson_homework_bindings WHERE binding_id = ?
+                """, UUID.class, bindingId);
+
+        lifecycleWriter.cancel(source.lessonId(), "Teacher replaced", ACTOR_ID);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM lesson_homework_bindings
+                 WHERE binding_id = ? AND state = 'ARCHIVED' AND revision = 2
+                """, Long.class, bindingId)).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM lesson_lifecycle_entries
+                 WHERE occurrence_id = ? AND revision = 2 AND action = 'CANCELLED'
+                """, Long.class, source.occurrenceId())).isEqualTo(1L);
+
+        long conflictingTemplateId = insertConflictingTemplate();
+        SeededOccurrence conflict = seedOccurrence(conflictingTemplateId, occurrenceDate,
+                "planned", OTHER_ASSIGNMENT_ID, OTHER_TEACHER_ID);
+        installAuthority(PAYLOAD_HASH);
+        replacementService.install(installRequest(PAYLOAD_HASH));
+        activateAuthority(PAYLOAD_HASH);
+        AssignmentCloseReceipt committed = replacementService.commit(commitRequest(PAYLOAD_HASH));
+        assertThat(committed.getState()).isEqualTo("COMMITTED");
+        assertThat(jdbc.queryForObject("""
+                SELECT result FROM schedule_assignment_rebind_ledger
+                 WHERE operation_id = ? AND occurrence_id = ?
+                """, String.class, OPERATION_ID, source.occurrenceId())).isEqualTo("SKIPPED_CANCELLED");
+
+        assertThatThrownBy(() -> lifecycleWriter.restore(source.lessonId(), ACTOR_ID))
+                .isInstanceOf(ConflictException.class);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM lesson_restore_authorities WHERE occurrence_id = ?
+                """, Long.class, source.occurrenceId())).isZero();
+        assertThat(jdbc.queryForObject("""
+                SELECT current_lesson_id FROM lesson_occurrences WHERE id = ?
+                """, Long.class, source.occurrenceId())).isEqualTo(source.lessonId());
+        assertThat(jdbc.queryForObject("""
+                SELECT revision FROM lesson_occurrences WHERE id = ?
+                """, Long.class, source.occurrenceId())).isEqualTo(2L);
+
+        lifecycleWriter.cancel(conflict.lessonId(), "Free the slot", ACTOR_ID);
+        long restoredLessonId = lifecycleWriter.restore(source.lessonId(), ACTOR_ID);
+        assertThat(restoredLessonId).isNotEqualTo(source.lessonId());
+        Long targetTemplateId = jdbc.queryForObject("""
+                SELECT target_schedule_item_id FROM schedule_assignment_replacement_templates
+                 WHERE operation_id = ? AND source_schedule_item_id = ?
+                """, Long.class, OPERATION_ID, sourceTemplateId);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM lesson_occurrences occurrence
+                JOIN lessons lesson ON lesson.id = occurrence.current_lesson_id
+                 WHERE occurrence.id = ? AND occurrence.current_lesson_id = ?
+                   AND occurrence.schedule_item_id = ? AND occurrence.assignment_id = ?
+                   AND occurrence.assigned_teacher_id = ? AND occurrence.generation = 2
+                   AND occurrence.revision = 3 AND lesson.id = ?
+                   AND lesson.schedule_item_id = ? AND lesson.assignment_id = ?
+                   AND lesson.assigned_teacher_id = ? AND lesson.generation = 2
+                   AND lesson.revision = 1 AND lesson.status::text = 'planned'
+                """, Long.class, source.occurrenceId(), restoredLessonId, targetTemplateId,
+                TARGET_ASSIGNMENT_ID, TARGET_TEACHER_ID, restoredLessonId, targetTemplateId,
+                TARGET_ASSIGNMENT_ID, TARGET_TEACHER_ID)).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM lesson_lifecycle_entries
+                 WHERE occurrence_id = ? AND revision = 3 AND action = 'RESTORED'
+                   AND lesson_id = ? AND target_lesson_id = ? AND generation = 2
+                   AND restore_operation_id IS NOT NULL
+                """, Long.class, source.occurrenceId(), source.lessonId(), restoredLessonId)).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM lesson_homework_bindings
+                 WHERE binding_id = ? AND occurrence_id = ? AND current_lesson_id = ?
+                   AND request_key = ? AND state = 'ARCHIVED' AND revision = 2
+                """, Long.class, bindingId, source.occurrenceId(), source.lessonId(),
+                bindingRequestKey)).isEqualTo(1L);
+
+        assertThatThrownBy(() -> lifecycleWriter.restore(source.lessonId(), ACTOR_ID))
+                .isInstanceOf(ConflictException.class);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM lesson_restore_authorities WHERE occurrence_id = ?
+                """, Long.class, source.occurrenceId())).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM lessons WHERE occurrence_id = ?
+                """, Long.class, source.occurrenceId())).isEqualTo(2L);
+        assertThat(jdbc.queryForObject("""
+                SELECT current_lesson_id FROM lesson_occurrences WHERE id = ?
+                """, Long.class, source.occurrenceId())).isEqualTo(restoredLessonId);
+        var listedGenerations = lessonRepository.pageByGroupIdAndDateBetweenAndStatusIn(
+                        GROUP_ID, occurrenceDate, occurrenceDate,
+                        List.of("planned", "cancelled"), PageRequest.of(0, 20))
+                .getContent().stream()
+                .filter(lesson -> lesson.getOccurrenceId().equals(source.occurrenceId()))
+                .map(lesson -> lesson.getId())
+                .toList();
+        assertThat(listedGenerations).containsExactly(restoredLessonId);
+    }
+
+    @Test
     void exactReplayReturnsDurableReceiptAndAnotherHashCannotReuseOperation() {
         insertSourceTemplate();
         installAuthority(PAYLOAD_HASH);
@@ -397,6 +505,17 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
         return id;
     }
 
+    private long insertConflictingTemplate() {
+        return jdbc.queryForObject("""
+                INSERT INTO schedule_items
+                    (assignment_id, group_id, subject_id, semester_id, day_of_week,
+                     lesson_number, start_time, end_time, week_type, room, is_active, created_at)
+                VALUES (?, ?, ?, ?, 2, 1, TIME '08:30', TIME '10:00',
+                        'all'::week_type, 'R-101', FALSE, NOW())
+                RETURNING id
+                """, Long.class, OTHER_ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID);
+    }
+
     private void assertPendingTargetWritesBlocked() {
         assertThatThrownBy(() -> jdbc.update("""
                 INSERT INTO schedule_items
@@ -416,6 +535,14 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
     }
 
     private SeededOccurrence seedOccurrence(long templateId, LocalDate date, String status) {
+        return seedOccurrence(templateId, date, status, SOURCE_ASSIGNMENT_ID, SOURCE_TEACHER_ID);
+    }
+
+    private SeededOccurrence seedOccurrence(long templateId,
+                                             LocalDate date,
+                                             String status,
+                                             long assignmentId,
+                                             long teacherId) {
         Long occurrenceId = jdbc.queryForObject("""
                 INSERT INTO lesson_occurrences
                     (schedule_item_id, occurrence_date, assignment_id, group_id,
@@ -423,8 +550,8 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
                      generation, revision, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, 'lecture', 1, 1, NOW())
                 RETURNING id
-                """, Long.class, templateId, date, SOURCE_ASSIGNMENT_ID,
-                GROUP_ID, SUBJECT_ID, SEMESTER_ID, SOURCE_TEACHER_ID);
+                """, Long.class, templateId, date, assignmentId,
+                GROUP_ID, SUBJECT_ID, SEMESTER_ID, teacherId);
         if (status == null) return new SeededOccurrence(occurrenceId, null);
         Long lessonId = jdbc.queryForObject("""
                 INSERT INTO lessons
@@ -436,8 +563,8 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
                         TIME '08:30', TIME '10:00', 'R-101', 'all', 1, 1, ?,
                         ?::lesson_status, FALSE, NOW())
                 RETURNING id
-                """, Long.class, templateId, occurrenceId, SOURCE_ASSIGNMENT_ID,
-                GROUP_ID, SUBJECT_ID, SEMESTER_ID, SOURCE_TEACHER_ID, date, status);
+                """, Long.class, templateId, occurrenceId, assignmentId,
+                GROUP_ID, SUBJECT_ID, SEMESTER_ID, teacherId, date, status);
         jdbc.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?",
                 lessonId, occurrenceId);
         jdbc.update("""

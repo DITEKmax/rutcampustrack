@@ -1,5 +1,6 @@
 package ru.rutcampustrack.schedule.recurring;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
@@ -12,6 +13,7 @@ import ru.rutcampustrack.schedule.item.ScheduleItemService;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.LessonGenerationService;
+import ru.rutcampustrack.schedule.lesson.RecurringLessonLifecycleWriter;
 import ru.rutcampustrack.schedule.lesson.LessonService;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
@@ -76,12 +78,14 @@ class RecurringLifecycleGateTest {
     }
 
     @Test
-    void canonicalRestoreIsRejectedBeforeStateOrEventMutation() {
+    void canonicalRestoreUsesTransactionalLifecycleWriter() {
         LessonRepository lessons = mock(LessonRepository.class);
         ScheduleItemRepository items = mock(ScheduleItemRepository.class);
         AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
         RequestContext context = mock(RequestContext.class);
         ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
+        RecurringLessonLifecycleWriter lifecycleWriter = mock(RecurringLessonLifecycleWriter.class);
+        EntityManager entityManager = mock(EntityManager.class);
 
         Lesson lesson = new Lesson();
         lesson.setScheduleItemId(7L);
@@ -91,11 +95,15 @@ class RecurringLifecycleGateTest {
         when(lessons.findById(11L)).thenReturn(Optional.of(lesson));
         when(items.findById(7L)).thenReturn(Optional.of(scheduleItem(7L)));
         when(context.getRole()).thenReturn(UserRole.ADMIN);
+        when(context.getUserId()).thenReturn(42L);
+        when(lifecycleWriter.restore(11L, 42L)).thenReturn(11L);
 
-        LessonService service = new LessonService(lessons, items, academic, context, events);
+        LessonService service = new LessonService(
+                lessons, items, academic, context, events, lifecycleWriter, entityManager);
 
-        assertThatThrownBy(() -> service.restoreLesson(11L))
-                .isInstanceOf(RecurringLifecycleNotReadyException.class);
+        service.restoreLesson(11L);
+        verify(lifecycleWriter).restore(11L, 42L);
+        verify(entityManager).refresh(lesson);
         verify(lessons, never()).save(any());
         verify(events, never()).publishEvent(any());
     }

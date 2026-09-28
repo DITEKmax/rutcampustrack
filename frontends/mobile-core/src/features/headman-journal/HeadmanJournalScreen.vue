@@ -63,6 +63,18 @@ const excuseComment = ref('')
 const excuseFile = ref<File | null>(null)
 const cancelReason = ref('')
 const lessonActionBusy = ref(false)
+type LessonActionConfirmation = {
+  action: 'cancel' | 'restore'
+  api: HeadmanJournalApi
+  groupId: number | null
+  lessonId: number
+  lessonDate: string
+  lessonNumber: number | null
+  permissions: readonly HeadmanAssistantPermission[] | null
+  reason: string | null
+}
+const lessonActionConfirmationDialog = ref<HTMLDialogElement | null>(null)
+const pendingLessonActionConfirmation = shallowRef<LessonActionConfirmation | null>(null)
 const attachmentStates = ref<Readonly<Record<number, RequestAttachmentViewState>>>({})
 const attachmentOwnerIdentity = ref<string | null>(props.api ? 'headman-journal' : null)
 const attachmentOwnerGeneration = ref(0)
@@ -350,6 +362,53 @@ function canCancelLessons(): boolean {
   return Boolean(props.api && !props.offline && !props.readOnly && hasAssistantPermission('CANCEL_LESSONS'))
 }
 
+function assistantPermissionSnapshot(): readonly HeadmanAssistantPermission[] | null {
+  return props.assistantPermissions === null ? null : [...props.assistantPermissions].sort()
+}
+
+function assistantPermissionsMatch(snapshot: readonly HeadmanAssistantPermission[] | null): boolean {
+  const current = assistantPermissionSnapshot()
+  return snapshot === null || current === null
+    ? snapshot === current
+    : snapshot.length === current.length && snapshot.every((permission, index) => permission === current[index])
+}
+
+function isLessonActionConfirmationCurrent(confirmation: LessonActionConfirmation): boolean {
+  const lesson = selectedLesson.value
+  if (lessonActionBusy.value || !lesson || lesson.id !== confirmation.lessonId
+    || selectedLessonId.value !== confirmation.lessonId || props.api !== confirmation.api
+    || props.groupId !== confirmation.groupId || props.offline || props.readOnly
+    || !canCancelLessons() || !assistantPermissionsMatch(confirmation.permissions)) return false
+
+  if (confirmation.action === 'cancel') {
+    return lesson.status !== 'CANCELLED' && confirmation.reason !== null
+      && cancelReason.value.trim() === confirmation.reason
+  }
+  return lesson.status === 'CANCELLED'
+}
+
+const lessonActionConfirmationCurrent = computed(() => {
+  const confirmation = pendingLessonActionConfirmation.value
+  return confirmation !== null && isLessonActionConfirmationCurrent(confirmation)
+})
+
+function closeLessonActionConfirmation(): void {
+  pendingLessonActionConfirmation.value = null
+  const dialog = lessonActionConfirmationDialog.value
+  if (dialog?.open) dialog.close()
+}
+
+function invalidateLessonActionConfirmation(): void {
+  if (pendingLessonActionConfirmation.value !== null) closeLessonActionConfirmation()
+}
+
+function openLessonActionConfirmation(confirmation: LessonActionConfirmation): void {
+  const dialog = lessonActionConfirmationDialog.value
+  if (!dialog || dialog.open || !isLessonActionConfirmationCurrent(confirmation)) return
+  pendingLessonActionConfirmation.value = confirmation
+  dialog.showModal()
+}
+
 function canManageExcuses(): boolean {
   return hasAssistantPermission('MANAGE_EXCUSES')
 }
@@ -364,10 +423,10 @@ function canWriteExcuse(entry: HeadmanJournalRosterEntry): boolean {
   return canManageExcuses() && canWrite(entry)
 }
 
-async function cancelSelectedLesson(): Promise<void> {
+function requestCancelSelectedLesson(): void {
   const api = props.api
   const lesson = selectedLesson.value
-  if (lessonActionBusy.value || !api || !lesson || !canCancelLessons()) return
+  if (lessonActionBusy.value || !api || !lesson || lesson.status === 'CANCELLED' || !canCancelLessons()) return
   const reason = cancelReason.value.trim()
   if (!reason) {
     notice.value = 'Укажи причину отмены пары.'
@@ -377,12 +436,57 @@ async function cancelSelectedLesson(): Promise<void> {
     notice.value = 'Причина отмены не может быть длиннее 512 символов.'
     return
   }
+  openLessonActionConfirmation({
+    action: 'cancel',
+    api,
+    groupId: props.groupId,
+    lessonId: lesson.id,
+    lessonDate: lesson.date,
+    lessonNumber: lesson.lessonNumber,
+    permissions: assistantPermissionSnapshot(),
+    reason,
+  })
+}
+
+function requestRestoreSelectedLesson(): void {
+  const api = props.api
+  const lesson = selectedLesson.value
+  if (lessonActionBusy.value || !api || !lesson || lesson.status !== 'CANCELLED' || !canCancelLessons()) return
+  openLessonActionConfirmation({
+    action: 'restore',
+    api,
+    groupId: props.groupId,
+    lessonId: lesson.id,
+    lessonDate: lesson.date,
+    lessonNumber: lesson.lessonNumber,
+    permissions: assistantPermissionSnapshot(),
+    reason: null,
+  })
+}
+
+async function confirmLessonAction(): Promise<void> {
+  const confirmation = pendingLessonActionConfirmation.value
+  if (!confirmation) return
+  if (!isLessonActionConfirmationCurrent(confirmation)) {
+    closeLessonActionConfirmation()
+    return
+  }
+  closeLessonActionConfirmation()
+  if (confirmation.action === 'cancel' && confirmation.reason !== null) {
+    await cancelSelectedLesson(confirmation.api, confirmation.lessonId, confirmation.reason)
+  } else {
+    await restoreSelectedLesson(confirmation.api, confirmation.lessonId)
+  }
+}
+
+async function cancelSelectedLesson(api: HeadmanJournalApi, lessonId: number, reason: string): Promise<void> {
+  if (lessonActionBusy.value || api !== props.api || selectedLessonId.value !== lessonId || !canCancelLessons()) return
   const revision = ++lessonActionRevision
   lessonActionBusy.value = true
   error.value = null
   notice.value = null
   try {
-    await api.cancelLesson(lesson.id, reason)
+    await api.cancelLesson(lessonId, reason)
     if (disposed || revision !== lessonActionRevision) return
     notice.value = 'Пара отменена. Список обновлён с сервера.'
     cancelReason.value = ''
@@ -396,16 +500,14 @@ async function cancelSelectedLesson(): Promise<void> {
   }
 }
 
-async function restoreSelectedLesson(): Promise<void> {
-  const api = props.api
-  const lesson = selectedLesson.value
-  if (lessonActionBusy.value || !api || !lesson || !canCancelLessons()) return
+async function restoreSelectedLesson(api: HeadmanJournalApi, lessonId: number): Promise<void> {
+  if (lessonActionBusy.value || api !== props.api || selectedLessonId.value !== lessonId || !canCancelLessons()) return
   const revision = ++lessonActionRevision
   lessonActionBusy.value = true
   error.value = null
   notice.value = null
   try {
-    await api.restoreLesson(lesson.id)
+    await api.restoreLesson(lessonId)
     if (disposed || revision !== lessonActionRevision) return
     notice.value = 'Пара восстановлена. Список обновлён с сервера.'
     await loadLessons()
@@ -734,6 +836,25 @@ watch(
 )
 
 watch(
+  () => [
+    props.api,
+    props.groupId,
+    props.offline,
+    props.readOnly,
+    props.assistantPermissions,
+    assistantPermissionSnapshot()?.join('\u0000'),
+    selectedDate.value,
+    selectedLessonId.value,
+    selectedLesson.value?.id,
+    selectedLesson.value?.status,
+    cancelReason.value.trim(),
+    canCancelLessons(),
+  ] as const,
+  invalidateLessonActionConfirmation,
+  { flush: 'sync' },
+)
+
+watch(
   () => [props.api, props.groupId, selectedLessonId.value] as const,
   () => {
     attachmentOwnerGeneration.value += 1
@@ -745,6 +866,7 @@ watch(
 
 onBeforeUnmount(() => {
   disposed = true
+  closeLessonActionConfirmation()
   lessonActionRevision += 1
   attachmentDisposed = true
   lessonsRevision += 1
@@ -1021,7 +1143,7 @@ onBeforeUnmount(() => {
           <button
             type="button"
             :disabled="lessonActionBusy || offline || readOnly"
-            @click="restoreSelectedLesson"
+            @click="requestRestoreSelectedLesson"
           >
             {{ lessonActionBusy ? 'Восстанавливаем…' : 'Восстановить пару' }}
           </button>
@@ -1040,12 +1162,47 @@ onBeforeUnmount(() => {
           <button
             type="button"
             :disabled="lessonActionBusy || offline || readOnly || !cancelReason.trim()"
-            @click="cancelSelectedLesson"
+            @click="requestCancelSelectedLesson"
           >
             {{ lessonActionBusy ? 'Отменяем…' : 'Отменить пару' }}
           </button>
         </template>
       </section>
+
+      <dialog
+        ref="lessonActionConfirmationDialog"
+        aria-labelledby="headman-journal-lesson-action-confirmation-title"
+        aria-describedby="headman-journal-lesson-action-confirmation-detail"
+        @close="pendingLessonActionConfirmation = null"
+      >
+        <h2 id="headman-journal-lesson-action-confirmation-title">
+          {{ pendingLessonActionConfirmation?.action === 'cancel' ? 'Отменить пару?' : 'Восстановить пару?' }}
+        </h2>
+        <p id="headman-journal-lesson-action-confirmation-detail">
+          <template v-if="pendingLessonActionConfirmation?.action === 'cancel'">
+            {{ formatShortDate(pendingLessonActionConfirmation.lessonDate) }} · пара {{ pendingLessonActionConfirmation.lessonNumber ?? '—' }}.
+            Причина: {{ pendingLessonActionConfirmation.reason }}.
+            Отмена удалит отметки посещаемости, архивирует домашние задания и пересчитает статистику.
+          </template>
+          <template v-else-if="pendingLessonActionConfirmation?.action === 'restore'">
+            {{ formatShortDate(pendingLessonActionConfirmation.lessonDate) }} · пара {{ pendingLessonActionConfirmation.lessonNumber ?? '—' }}.
+            Удалённые отметки посещаемости не вернутся.
+          </template>
+        </p>
+        <button
+          type="button"
+          @click="closeLessonActionConfirmation"
+        >
+          Назад
+        </button>
+        <button
+          type="button"
+          :disabled="lessonActionBusy || !lessonActionConfirmationCurrent"
+          @click="void confirmLessonAction()"
+        >
+          {{ pendingLessonActionConfirmation?.action === 'cancel' ? 'Отменить пару' : 'Восстановить пару' }}
+        </button>
+      </dialog>
 
       <p
         v-if="canViewReport() && loadingReport"

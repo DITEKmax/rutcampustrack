@@ -4,5 +4,6 @@ package ru.rutcampustrack.academic.contract.enums;
 public enum SemesterArchiveParticipantCommand {
     PREPARE_ARCHIVE,
     PREPARE_RESTORE,
-    RELEASE_RESTORE
+    RELEASE_RESTORE,
+    SEAL_ARCHIVE
 }

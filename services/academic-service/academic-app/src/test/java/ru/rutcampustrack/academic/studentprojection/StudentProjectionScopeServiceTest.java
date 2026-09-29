@@ -65,6 +65,31 @@ class StudentProjectionScopeServiceTest {
     }
 
     @Test
+    void rankSubjectsIncludeSemesterAssignmentsThatEndedBeforeLateJoin() {
+        FakeQuery query = baseQuery();
+        query.history = List.of(
+                history(1L, 10L, LocalDate.of(2026, 9, 10), null));
+        query.assignments = List.of(
+                assignment(701L, 501L, 10L, LocalDate.of(2026, 9, 1),
+                        LocalDate.of(2026, 9, 6), "LECTURE"));
+        query.subjects.put(501L, subject(501L, "Mathematics", "LECTURE", 10L));
+
+        StudentProjectionScope scope = service(query, at("2026-09-15T10:00:00Z"))
+                .resolve(SEMESTER_ID, claims("ACTIVE", false, 10L));
+
+        assertThat(scope.rankEligible()).isTrue();
+        assertThat(scope.rankSubjects()).singleElement()
+                .satisfies(subject -> {
+                    assertThat(subject.subjectId()).isEqualTo(501L);
+                    assertThat(subject.groupId()).isEqualTo(10L);
+                });
+        assertThat(scope.subjects()).isEmpty();
+        assertThat(scope.ownMembershipSegments()).singleElement()
+                .satisfies(segment -> assertThat(segment.subjectIds()).isEmpty());
+        assertThat(query.assignmentCalls).isEqualTo(2);
+    }
+
+    @Test
     void pastTransferredScopeHidesRankAndDoesNotQueryRoster() {
         FakeQuery query = baseQuery();
         query.history = List.of(

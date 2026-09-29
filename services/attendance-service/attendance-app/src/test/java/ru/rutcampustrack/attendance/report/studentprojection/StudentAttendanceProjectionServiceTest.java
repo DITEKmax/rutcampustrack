@@ -172,7 +172,7 @@ class StudentAttendanceProjectionServiceTest {
                                 .build();
                     }
                     return LessonsResponse.newBuilder()
-                            .addLessons(lesson(10L, 110L, "2026-09-05", "closed"))
+                            .addLessons(lesson(10L, 110L, "2026-09-05", "closed", 502L))
                             .addLessons(lesson(11L, 111L, "2026-09-15", "closed"))
                             .addLessons(lesson(12L, 112L, "2026-09-16", "planned"))
                             .build();
@@ -183,7 +183,7 @@ class StudentAttendanceProjectionServiceTest {
                 .thenReturn(Map.of(
                         OWN_ID, List.of(mark(11L, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15")),
                         200L, List.of(
-                                mark(10L, 200L, AttendanceStatus.PRESENT, "2026-09-05"),
+                                mark(10L, 200L, AttendanceStatus.PRESENT, "2026-09-05", 502L),
                                 mark(11L, 200L, AttendanceStatus.PRESENT, "2026-09-15"))));
 
         StudentAttendanceProjectionService.Projection projection = service.project(
@@ -193,6 +193,8 @@ class StudentAttendanceProjectionServiceTest {
                 "weeks",
                 List.of());
 
+        assertThat(projection.metrics().heldCount()).isEqualTo(1);
+        assertThat(projection.metrics().presentCount()).isEqualTo(1);
         // The viewer owns one of two canonical held lessons (1/2); the peer
         // owns both (2/2). The public response exposes only the viewer rank.
         assertThat(projection.ownRank().position()).isEqualTo(2);
@@ -337,6 +339,20 @@ class StudentAttendanceProjectionServiceTest {
                         .setGroupId(RANK_GROUP_ID)
                         .addLessonTypes("LECTURE")
                         .build())
+                .addRankSubjects(AcademicSubjectInfo.newBuilder()
+                        .setSubjectId(SUBJECT_ID)
+                        .setSubjectName("Математика")
+                        .setSubjectType("discipline")
+                        .setGroupId(RANK_GROUP_ID)
+                        .addLessonTypes("LECTURE")
+                        .build())
+                .addRankSubjects(AcademicSubjectInfo.newBuilder()
+                        .setSubjectId(502L)
+                        .setSubjectName("Физика")
+                        .setSubjectType("discipline")
+                        .setGroupId(RANK_GROUP_ID)
+                        .addLessonTypes("LECTURE")
+                        .build())
                 .setRankVisibility(StudentProjectionRankVisibility
                         .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE)
                 .setRankGroupId(RANK_GROUP_ID)
@@ -349,11 +365,20 @@ class StudentAttendanceProjectionServiceTest {
             long occurrenceId,
             String date,
             String status) {
+        return lesson(lessonId, occurrenceId, date, status, SUBJECT_ID);
+    }
+
+    private static LessonResponse lesson(
+            long lessonId,
+            long occurrenceId,
+            String date,
+            String status,
+            long subjectId) {
         return LessonResponse.newBuilder()
                 .setId(lessonId)
                 .setOccurrenceId(occurrenceId)
                 .setGroupId(RANK_GROUP_ID)
-                .setSubjectId(SUBJECT_ID)
+                .setSubjectId(subjectId)
                 .setSemesterId(SEMESTER_ID)
                 .setDate(date)
                 .setLessonNumber((int) (lessonId - 9))
@@ -373,11 +398,20 @@ class StudentAttendanceProjectionServiceTest {
             long userId,
             AttendanceStatus status,
             String date) {
+        return mark(lessonId, userId, status, date, SUBJECT_ID);
+    }
+
+    private static AttendanceRecord mark(
+            long lessonId,
+            long userId,
+            AttendanceStatus status,
+            String date,
+            long subjectId) {
         return new AttendanceRecord(
                 lessonId,
                 userId,
                 RANK_GROUP_ID,
-                SUBJECT_ID,
+                subjectId,
                 java.time.LocalDate.parse(date),
                 null,
                 status,

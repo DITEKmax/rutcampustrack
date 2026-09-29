@@ -14,6 +14,7 @@ public record StudentProjectionScope(
         List<Long> activeRosterUserIds,
         List<Subject> subjects,
         List<MembershipSegment> ownMembershipSegments,
+        List<Subject> rankSubjects,
         RankVisibility rankVisibility,
         Long rankGroupId,
         boolean rankEligible,
@@ -25,6 +26,7 @@ public record StudentProjectionScope(
         subjects = List.copyOf(Objects.requireNonNull(subjects, "subjects"));
         ownMembershipSegments = List.copyOf(Objects.requireNonNull(ownMembershipSegments,
                 "ownMembershipSegments"));
+        rankSubjects = List.copyOf(Objects.requireNonNull(rankSubjects, "rankSubjects"));
         rankVisibility = Objects.requireNonNull(rankVisibility, "rankVisibility");
         Objects.requireNonNull(dateFrom, "dateFrom");
         Objects.requireNonNull(dateTo, "dateTo");

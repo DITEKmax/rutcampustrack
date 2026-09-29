@@ -498,7 +498,8 @@ public class StudentAttendanceProjectionService {
             return new RankedCohort(new Rank(null, roster.size(), false), List.of());
         }
         long rankGroup = scope.getRankGroupId();
-        List<Lesson> rankLessons = canonicalRankLessons(scope, subjects, semesterId, rankGroup);
+        Map<Long, AcademicSubjectInfo> rankSubjects = rankSubjectMap(scope, semesterId, rankGroup);
+        List<Lesson> rankLessons = canonicalRankLessons(scope, rankSubjects, semesterId, rankGroup);
         Set<Long> ownAuthorizedLessonIds = ownLessons.stream()
                 .filter(lesson -> lesson.groupId() == rankGroup)
                 .map(Lesson::lessonId)
@@ -544,27 +545,44 @@ public class StudentAttendanceProjectionService {
 
     private List<Lesson> canonicalRankLessons(
             StudentProjectionScopeResponse scope,
-            Map<Long, AcademicSubjectInfo> subjects,
+            Map<Long, AcademicSubjectInfo> rankSubjectsById,
             long semesterId,
             long rankGroup) {
-        List<Long> rankSubjects = subjects.values().stream()
-                .filter(subject -> subject.getGroupId() == rankGroup)
-                .map(AcademicSubjectInfo::getSubjectId)
-                .distinct()
-                .sorted()
-                .toList();
-        if (rankSubjects.isEmpty()) return List.of();
+        List<Long> rankSubjectIds = rankSubjectsById.keySet().stream().sorted().toList();
+        if (rankSubjectIds.isEmpty()) return List.of();
         LocalDate from = parseRequiredDate(scope.getDateFrom(), "date_from");
         LocalDate to = parseRequiredDate(scope.getDateTo(), "date_to");
         StudentProjectionMembershipSegment canonicalSegment = StudentProjectionMembershipSegment.newBuilder()
                 .setGroupId(rankGroup)
                 .setDateFrom(from.toString())
                 .setDateUntilExclusive(to.plusDays(1).toString())
-                .addAllSubjectIds(rankSubjects)
+                .addAllSubjectIds(rankSubjectIds)
                 .build();
-        return loadLessons(List.of(canonicalSegment), semesterId, subjects, null, Set.of()).stream()
+        return loadLessons(List.of(canonicalSegment), semesterId, rankSubjectsById, null, Set.of()).stream()
                 .filter(lesson -> lesson.groupId() == rankGroup)
                 .toList();
+    }
+
+    private static Map<Long, AcademicSubjectInfo> rankSubjectMap(
+            StudentProjectionScopeResponse scope,
+            long semesterId,
+            long rankGroup) {
+        if (scope.getSemesterId() != semesterId
+                || !scope.hasRankGroupId()
+                || scope.getRankGroupId() != rankGroup) {
+            throw StudentProjectionException.invalidOccurrence("Academic rank scope authority is inconsistent");
+        }
+        Map<Long, AcademicSubjectInfo> result = new LinkedHashMap<>();
+        for (AcademicSubjectInfo subject : scope.getRankSubjectsList()) {
+            if (subject == null || subject.getSubjectId() <= 0 || subject.getGroupId() != rankGroup
+                    || subject.getSubjectName().isBlank() || subject.getSubjectType().isBlank()) {
+                throw StudentProjectionException.invalidOccurrence("Academic rank subject is invalid");
+            }
+            if (result.putIfAbsent(subject.getSubjectId(), subject) != null) {
+                throw StudentProjectionException.invalidOccurrence("Academic rank subjects contain duplicates");
+            }
+        }
+        return Map.copyOf(result);
     }
 
     private MetricsBundle metrics(Collection<Lesson> lessons) {

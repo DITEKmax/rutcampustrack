@@ -53,6 +53,8 @@ class StudentProjectionGrpcServiceTest {
                         LocalDate.of(2026, 9, 1),
                         LocalDate.of(2026, 10, 1),
                         List.of(501L))),
+                List.of(new StudentProjectionScope.Subject(
+                        502L, "Databases", "lecture", 10L, List.of("lecture"))),
                 StudentProjectionScope.RankVisibility.VISIBLE,
                 10L,
                 true,
@@ -81,6 +83,11 @@ class StudentProjectionGrpcServiceTest {
                     assertThat(subject.getSubjectId()).isEqualTo(501L);
                     assertThat(subject.getGroupId()).isEqualTo(10L);
                     assertThat(subject.getLessonTypesList()).containsExactly("lecture", "seminar");
+                });
+        assertThat(observer.value.getRankSubjectsList()).singleElement()
+                .satisfies(subject -> {
+                    assertThat(subject.getSubjectId()).isEqualTo(502L);
+                    assertThat(subject.getGroupId()).isEqualTo(10L);
                 });
         assertThat(observer.value.getActiveRosterUserIdsList()).containsExactly(1001L, 1002L);
         assertThat(observer.value.getRankVisibility())

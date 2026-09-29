@@ -34,18 +34,35 @@ Source/policy evidence: root approved the compact API and reserved `proto/attend
 
 The compile diagnostic log is `.agent/student-ranking-compileJava-info-20260929.log`; the retry and exact classpath/source diagnostic are in `.agent/student-ranking-attendance-rerun-20260929.log` and `.agent/student-ranking-classpath-diag-20260929.log`. The temporary diagnostic init script is `.agent/student-ranking-classpath-diag-20260929.init.gradle`. Pre-existing untracked `.agent` fixtures and other agents' files were left untouched.
 
+## Correction after independent review
+
+Review finding: Attendance derived the ranking denominator's subjects from the viewer's personal membership segments. A late joiner therefore lost group lessons for a subject whose assignment ended before the viewer joined. The correction adds a distinct full-semester `rankSubjects` set from the authorized rank group, serializes it in the existing Academic projection response, and uses it only for canonical ranking lessons. Personal `subjects`, membership segments, and metrics remain based on the viewer's own membership.
+
+Regression evidence: the Academic fixture has a Sep 1–6 subject assignment and a viewer joining Sep 10; it asserts the rank subject is present while personal subjects/segment subject IDs stay empty. The Attendance fixture adds the pre-join held cohort lesson and asserts the viewer still has personal `heldCount=1`/`presentCount=1` while ranking is position 2 of 2.
+
+Correction files (seven):
+
+- `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java`
+- `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScope.java`
+- `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java`
+- `services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentProjectionGrpcServiceTest.java`
+- `services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java`
+- `services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java`
+- `services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java`
+
+Correction diff against `9267c41a`: seven code/test files plus this evidence update, 156 insertions and 25 deletions.
+
 ## Checks and evidence
 
-- `git diff --check` — exit 0 (after implementation and diagnostic run).
-- `:services:attendance-service:attendance-app:test --tests 'ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest' --tests 'ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest' --no-daemon --no-parallel --max-workers=1` — exit 1. Proto generation completed, but `attendance-app:compileJava` failed before tests with 100 unresolved-package/symbol diagnostics.
-- `:services:attendance-service:attendance-app:compileJava --info --no-daemon --no-parallel --max-workers=1` — exit 1. Full output saved in the diagnostic log. It says the app classpath snapshot removed old `attendance-api-contract` and `shared-web` jars and added class output files; then javac cannot resolve attendance contract enum packages and cross-module packages even though sources and class files exist in the worktree. Gradle required full recompilation due changed module-info metadata for `docx4j_xalan_serializer`. This is not evidence of a ranking assertion failure; compiler/classpath state remains undiagnosed.
-- The same two Attendance tests with `--rerun-tasks --no-daemon --no-parallel --max-workers=1` — exit 1. Rebuilding dependencies exposed the first error one module earlier: `attendance-api-contract:compileJava` cannot resolve `ru.rutcampustrack.shared.web.api.exception.ErrorResponse` from `shared-web-api`.
-- `:services:attendance-service:attendance-api-contract:compileJava --init-script .agent/student-ranking-classpath-diag-20260929.init.gradle --rerun-tasks --no-daemon --no-parallel --max-workers=1` — exit 1. The diagnostic printed all contract Java source paths and an 18-entry classpath that includes `services/shared/shared-web-api/build/classes/java/main`. `ErrorResponse.class` exists there; `javap` reports the expected package/class and Java 21 class version. Despite this, javac still reports the package missing. Root cause remains undiagnosed; no more compiler retry is claimed.
-- BFF targeted tests — not run, blocked by upstream attendance compile failure per root direction.
-- Runtime endpoint evidence — not collected. No server was started; no runtime acceptance is claimed.
+- `git diff --check` — exit 0 on the correction diff.
+- Environment: `JAVA_HOME=C:\Users\maksd\.jdks\ms-21.0.10` (Microsoft OpenJDK 21); approved elevated execution; Gradle wrapper; one consumer at a time; `--no-problems-report --no-daemon --no-parallel --max-workers=1`.
+- `:services:academic-service:academic-app:test --tests 'ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeServiceTest' --tests 'ru.rutcampustrack.academic.grpc.StudentProjectionGrpcServiceTest' --no-problems-report --no-daemon --no-parallel --max-workers=1` — exit 0. JUnit XML: scope service 19/19 and gRPC serializer 7/7; failures/errors/skipped 0. Log: `.agent/student-ranking-academic-correction-tests-20260929.log`.
+- `:services:attendance-service:attendance-app:test --tests 'ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest' --tests 'ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest' --no-problems-report --no-daemon --no-parallel --max-workers=1` — exit 0. JUnit XML: rank calculator 9/9 and projection service 4/4; failures/errors/skipped 0. Log: `.agent/student-ranking-attendance-correction-tests-20260929.log`.
+- The earlier feature BFF target passed under the same JDK21 setup with `--no-problems-report`; XML was 25/25 `MobileAttendanceClientErrorTest`, 4/4 `StudentApiControllerCacheControlTest`, and 9/9 `StudentQueryHomeworkTest`, all with zero failures/errors/skips. It was not rerun because this correction changes no BFF source or Attendance response contract. Logs: `.agent/student-ranking-bff-elevated-tests-no-problems-report-20260929.log`.
+- Initial non-elevated Attendance compile attempts failed before ranking assertions while resolving cross-project classes. The approved elevated compile/test runs above pass; no product or build workaround was made. Earlier diagnostic logs remain local and are not part of the correction commit.
+- Root reports the independent Sol source recheck passed for the corrected denominator finding. The full integration/final gate remains with root.
+- Runtime endpoint evidence — not collected. No server was started; no HTTP runtime acceptance is claimed.
 
 ## Limits / follow-up
 
-The separate transfer writer owns transfer event reconciliation and pending-operation reads. This implementation deliberately does not alter those paths. Before integrated runtime acceptance, confirm attendance reads exclude marks for pending transfers and reconcile completed transfers; otherwise a transfer may be counted against the source or destination cohort incorrectly. Do not interpret this change as transfer-aware acceptance until that contract is integrated and checked.
-
-The attendance compile failure blocks a verified commit / Sol handoff. Resolve the worktree/Gradle project-classpath compilation state without broad cleaning or ranking-code workarounds, then rerun the targeted attendance tests and, sequentially, BFF tests under the shared HEAVY lease.
+The separate transfer writer owns transfer event reconciliation and pending-operation reads. This ranking change does not alter `LessonEventService`, `AttendanceDocument`, repositories, journal services, or base write services. Before integrated runtime acceptance, verify pending/completed transfer marks are reconciled so a partial transfer is not silently counted against either cohort. No transfer-aware runtime result is claimed.

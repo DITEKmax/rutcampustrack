@@ -94,6 +94,8 @@ public class StudentProjectionScopeService {
                 dateUntilExclusive,
                 semester.dateTo(),
                 serverDate);
+        List<StudentProjectionScope.Subject> rankSubjects = resolveRankSubjects(
+                semesterId, semester.dateFrom(), dateUntilExclusive, rank);
 
         return new StudentProjectionScope(
                 authorization.userId(),
@@ -104,10 +106,33 @@ public class StudentProjectionScopeService {
                 rank.rosterUserIds(),
                 subjects.subjects(),
                 subjects.segments(),
+                rankSubjects,
                 rank.visibility(),
                 rank.groupId(),
                 rank.eligible(),
                 serverDate);
+    }
+
+    private List<StudentProjectionScope.Subject> resolveRankSubjects(
+            long semesterId,
+            LocalDate semesterFrom,
+            LocalDate semesterUntilExclusive,
+            RankDecision rank) {
+        if (!rank.eligible()) {
+            return List.of();
+        }
+        if (rank.groupId() == null || rank.groupId() <= 0) {
+            throw StudentProjectionException.inconsistent("Eligible rank scope has no authoritative group");
+        }
+
+        // Ranking uses the whole semester cohort, not only the student's own
+        // membership intervals. A subject whose assignment ended before a
+        // late joiner arrived still contributes the group's semester lessons.
+        StudentProjectionScope.MembershipSegment semesterGroup =
+                new StudentProjectionScope.MembershipSegment(
+                        rank.groupId(), semesterFrom, semesterUntilExclusive, List.of());
+        return resolveSubjects(semesterId, semesterFrom, semesterUntilExclusive, List.of(semesterGroup))
+                .subjects();
     }
 
     private Authorization authorize(InternalJwtClaims claims) {

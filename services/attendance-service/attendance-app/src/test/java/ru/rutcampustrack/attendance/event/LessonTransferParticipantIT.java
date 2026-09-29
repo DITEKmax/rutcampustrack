@@ -366,7 +366,7 @@ class LessonTransferParticipantIT {
         envelope.put("event_version", 1);
         envelope.put("occurred_at", "2026-09-01T00:00:00Z");
         envelope.put("source", "schedule-service");
-        envelope.put("trace_id", UUID.randomUUID().toString());
+        envelope.put("trace_id", "00000000000000000000000000000001");
         envelope.put("payload", payload);
         return envelope;
     }

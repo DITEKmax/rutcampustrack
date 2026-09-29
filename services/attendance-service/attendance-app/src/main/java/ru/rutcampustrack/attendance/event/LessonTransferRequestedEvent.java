@@ -36,7 +36,7 @@ public record LessonTransferRequestedEvent(
             throw invalid("unsupported or untrusted lesson.transfer.requested envelope");
         }
         uuid(envelope.get("event_id"), "event_id");
-        uuid(envelope.get("trace_id"), "trace_id");
+        string(envelope.get("trace_id"), "trace_id");
         try {
             OffsetDateTime.parse(string(envelope.get("occurred_at"), "occurred_at"));
         } catch (RuntimeException error) {

@@ -126,6 +126,11 @@ message LessonResponse {
   string valid_from = 23;
   string valid_until = 24;
   bool current = 25;
+  // Non-empty only when this physical lesson participates in a durable
+  // transfer operation. Consumers must gate attendance/homework writes while
+  // transfer_state is PENDING.
+  string transfer_operation_id = 26;
+  string transfer_state = 27; // PENDING, COMPLETED, ERROR, or empty
 }
 
 message LessonsResponse {

@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import ru.rutcampustrack.notification.history.AcademicGroupMemberClient;
 import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 
@@ -61,7 +62,8 @@ public class WebPushDeliveryService {
     /** Events that fan out only to headmen of the group (старостам). */
     private static final Set<String> HEADMAN_ONLY_EVENT_TYPES = Set.of(
             "excuse.requested",
-            "late_checkin.requested"
+            "late_checkin.requested",
+            "lesson.closed"
     );
 
     /** Events that are sent to a single subscriber identified by payload.user_id. */
@@ -80,6 +82,7 @@ public class WebPushDeliveryService {
     private final Clock clock;
     private final NotificationPreferencesService preferencesService;
     private final ReminderAttendanceStateService reminderAttendanceStateService;
+    private final AcademicGroupMemberClient academicGroupMemberClient;
 
     @Autowired
     public WebPushDeliveryService(PushSubscriptionRepository repository,
@@ -88,7 +91,8 @@ public class WebPushDeliveryService {
                                    MongoTemplate mongoTemplate,
                                    Clock clock,
                                    NotificationPreferencesService preferencesService,
-                                   ReminderAttendanceStateService reminderAttendanceStateService) {
+                                   ReminderAttendanceStateService reminderAttendanceStateService,
+                                   AcademicGroupMemberClient academicGroupMemberClient) {
         this.repository = repository;
         this.webPushService = webPushService;
         this.objectMapper = objectMapper;
@@ -96,6 +100,18 @@ public class WebPushDeliveryService {
         this.clock = clock;
         this.preferencesService = preferencesService;
         this.reminderAttendanceStateService = reminderAttendanceStateService;
+        this.academicGroupMemberClient = academicGroupMemberClient;
+    }
+
+    public WebPushDeliveryService(PushSubscriptionRepository repository,
+                                   PushService webPushService,
+                                   ObjectMapper objectMapper,
+                                   MongoTemplate mongoTemplate,
+                                   Clock clock,
+                                   NotificationPreferencesService preferencesService,
+                                   ReminderAttendanceStateService reminderAttendanceStateService) {
+        this(repository, webPushService, objectMapper, mongoTemplate, clock,
+                preferencesService, reminderAttendanceStateService, null);
     }
 
     public WebPushDeliveryService(PushSubscriptionRepository repository,
@@ -103,7 +119,7 @@ public class WebPushDeliveryService {
                                    ObjectMapper objectMapper,
                                    MongoTemplate mongoTemplate,
                                    Clock clock) {
-        this(repository, webPushService, objectMapper, mongoTemplate, clock, null, null);
+        this(repository, webPushService, objectMapper, mongoTemplate, clock, null, null, null);
     }
 
     /**
@@ -127,7 +143,22 @@ public class WebPushDeliveryService {
             return CompletableFuture.completedFuture(null);
         }
 
-        List<PushSubscriptionDocument> targets = filterRecipients(subs, eventType, payload);
+        Set<Long> currentHeadmanIds = null;
+        if ("lesson.closed".equals(eventType)) {
+            if (academicGroupMemberClient == null) {
+                log.warn("Skipping lesson.closed Web Push because current headman resolver is unavailable group={}",
+                        groupId);
+                return CompletableFuture.completedFuture(null);
+            }
+            try {
+                currentHeadmanIds = Set.copyOf(academicGroupMemberClient.getCurrentHeadmanUserIds(groupId));
+            } catch (RuntimeException error) {
+                log.warn("Skipping lesson.closed Web Push because current headman lookup failed group={}: {}",
+                        groupId, error.toString());
+                return CompletableFuture.completedFuture(null);
+            }
+        }
+        List<PushSubscriptionDocument> targets = filterRecipients(subs, eventType, payload, currentHeadmanIds);
         if (targets.isEmpty()) {
             log.info(
                     "Push delivery skipped event={} group={} subscriptions={} targets=0 reason=no_eligible_recipients",
@@ -185,19 +216,30 @@ public class WebPushDeliveryService {
     /**
      * Narrows subscribers to those eligible for this event:
      * <ul>
-     *   <li>HEADMAN_ONLY events → only subscribers with headman=true</li>
+     *   <li>Existing headman requests → subscriptions captured with headman=true</li>
+     *   <li>{@code lesson.closed} → only subscriptions whose user is the current Academic headman</li>
      *   <li>USER_SCOPED events  → only subscriber matching payload.user_id</li>
      *   <li>everyone else       → all group subscribers</li>
      * </ul>
      */
     private List<PushSubscriptionDocument> filterRecipients(List<PushSubscriptionDocument> subs,
                                                             String eventType,
-                                                            Map<String, Object> payload) {
+                                                            Map<String, Object> payload,
+                                                            Set<Long> currentHeadmanIds) {
         if ("late_checkin.decided".equals(eventType)
                 && "cancelled".equals(payload.get("status"))) {
             return List.of();
         }
         if (HEADMAN_ONLY_EVENT_TYPES.contains(eventType)) {
+            if ("lesson.closed".equals(eventType)) {
+                if (currentHeadmanIds == null || currentHeadmanIds.isEmpty()) {
+                    return List.of();
+                }
+                return subs.stream()
+                        .filter(s -> s.getUserId() != null && currentHeadmanIds.contains(s.getUserId()))
+                        .filter(s -> preferencesEnabled(s, eventType))
+                        .collect(Collectors.toList());
+            }
             return subs.stream()
                     .filter(PushSubscriptionDocument::isHeadman)
                     .filter(s -> preferencesEnabled(s, eventType))
@@ -271,6 +313,7 @@ public class WebPushDeliveryService {
         return switch (eventType) {
             case "lesson.started" -> "Пара началась";
             case "lesson.reminder" -> "Не забудьте отметиться";
+            case "lesson.closed" -> "Пара завершена";
             case "lesson.blocked" -> "Пара заблокирована";
             case "attendance.marked" -> "Староста изменил статус";
             case "lesson.cancelled" -> "Пара отменена";
@@ -298,6 +341,7 @@ public class WebPushDeliveryService {
         return switch (eventType) {
             case "lesson.started" -> lessonBody(payload, "Время отметиться");
             case "lesson.reminder" -> lessonBody(payload, "Сейчас идёт пара");
+            case "lesson.closed" -> "Откройте расписание для подробностей";
             case "lesson.blocked" -> {
                 String base = lessonBody(payload, "Самостоятельная отметка невозможна");
                 yield base + " · отмечает староста";

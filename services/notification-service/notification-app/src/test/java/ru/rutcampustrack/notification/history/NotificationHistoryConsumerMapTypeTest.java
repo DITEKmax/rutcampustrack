@@ -119,9 +119,10 @@ class NotificationHistoryConsumerMapTypeTest {
                 .contains(NotificationType.LESSON_STARTED);
         assertThat(NotificationHistoryEventProcessor.mapType("lesson.cancelled", EMPTY))
                 .contains(NotificationType.LESSON_CANCELLED);
+        assertThat(NotificationHistoryEventProcessor.mapType("lesson.closed", EMPTY))
+                .contains(NotificationType.LESSON_CLOSED);
         assertThat(NotificationHistoryEventProcessor.mapType("homework.published", EMPTY))
                 .contains(NotificationType.HOMEWORK_PUBLISHED);
-        assertThat(NotificationHistoryEventProcessor.mapType("lesson.closed", EMPTY)).isEmpty();
         // lesson.reminder тоже broadcast по группе — в per-user history не пишется.
         assertThat(NotificationHistoryEventProcessor.mapType("lesson.reminder", EMPTY)).isEmpty();
     }

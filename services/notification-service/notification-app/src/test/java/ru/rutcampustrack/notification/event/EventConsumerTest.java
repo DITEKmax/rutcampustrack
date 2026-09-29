@@ -10,6 +10,7 @@ import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -120,6 +121,29 @@ class EventConsumerTest {
                 eq("/topic/group/42"),
                 any(Object.class)
         );
+    }
+
+    @Test
+    void lessonClosed_routesOnlyToHeadmanAndExistingGuardDropsReplay() {
+        when(webPushDeliveryService.shouldPush("lesson.closed")).thenReturn(true);
+        Map<String, Object> payload = Map.of("group_id", 42, "lesson_id", 101, "subject_id", 8);
+        Map<String, Object> envelope = Map.of(
+                "event_type", "lesson.closed",
+                "event_id", UUID.randomUUID().toString(),
+                "payload", payload);
+        when(idempotencyGuard.tryClaim(eq(EventConsumer.CONSUMER_ID), eq(envelope)))
+                .thenReturn(true, false);
+
+        consumer.onEvent(envelope);
+        consumer.onEvent(envelope);
+
+        verify(messagingTemplate).convertAndSend(
+                eq("/topic/group/42/headman"),
+                eq(Map.of("type", "lesson.closed", "payload", payload)));
+        verify(messagingTemplate, never()).convertAndSend(eq("/topic/group/42"), any(Object.class));
+        verify(webPushDeliveryService).sendToGroup(42L, "lesson.closed", payload);
+        verify(idempotencyGuard, org.mockito.Mockito.times(2))
+                .tryClaim(EventConsumer.CONSUMER_ID, envelope);
     }
 
     @Test

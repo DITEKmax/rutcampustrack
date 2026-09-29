@@ -24,7 +24,8 @@ public class EventConsumer extends AbstractEventConsumer {
 
     private static final Set<String> HEADMAN_ONLY_EVENTS = Set.of(
             "excuse.requested",
-            "late_checkin.requested"
+            "late_checkin.requested",
+            "lesson.closed"
     );
 
     /** Events in this set are delivered only to the user named by payload.user_id. */

@@ -6,6 +6,7 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
+import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
 import ru.rutcampustrack.academic.grpc.GroupMemberIdsAsOfRequest;
 
 import java.time.LocalDate;
@@ -63,5 +64,35 @@ public class AcademicGroupMemberClient {
             }
         }
         return List.copyOf(ids);
+    }
+
+    /** Returns the current headman IDs from Academic's current group-members snapshot. */
+    public List<Long> getCurrentHeadmanUserIds(long groupId) {
+        if (groupId <= 0) {
+            throw new IllegalArgumentException("groupId must be positive");
+        }
+        if (sharedSecret == null || sharedSecret.isBlank()) {
+            throw new IllegalStateException("Academic gRPC shared secret is not configured");
+        }
+
+        Metadata headers = new Metadata();
+        headers.put(GRPC_SECRET, sharedSecret);
+        var request = GroupMembersRequest.newBuilder()
+                .setGroupId(groupId)
+                .build();
+        var response = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
+                .withDeadlineAfter(3, TimeUnit.SECONDS)
+                .getGroupMembers(request);
+        Set<Long> uniqueIds = new HashSet<>();
+        for (var student : response.getStudentsList()) {
+            if (!student.getIsHeadman()) {
+                continue;
+            }
+            long userId = student.getUserId();
+            if (userId <= 0 || !uniqueIds.add(userId)) {
+                throw new IllegalStateException("Academic returned invalid current headman IDs");
+            }
+        }
+        return List.copyOf(uniqueIds);
     }
 }

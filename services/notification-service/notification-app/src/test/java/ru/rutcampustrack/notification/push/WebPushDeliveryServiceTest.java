@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.rutcampustrack.notification.history.AcademicGroupMemberClient;
 import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 
@@ -48,6 +49,9 @@ class WebPushDeliveryServiceTest {
     @Mock
     private ReminderAttendanceStateService reminderAttendanceStateService;
 
+    @Mock
+    private AcademicGroupMemberClient academicGroupMemberClient;
+
     private WebPushDeliveryService service;
 
     @BeforeEach
@@ -60,7 +64,8 @@ class WebPushDeliveryServiceTest {
                 mongoTemplate,
                 Clock.systemUTC(),
                 preferencesService,
-                reminderAttendanceStateService));
+                reminderAttendanceStateService,
+                academicGroupMemberClient));
         // Stub createNotification to avoid real EC key parsing in all tests
         doReturn(mockNotification).when(service).createNotification(any(PushSubscriptionDocument.class), any(byte[].class));
     }
@@ -160,6 +165,41 @@ class WebPushDeliveryServiceTest {
         assertThat(payloadStr).contains("Физика");
     }
 
+    @Test
+    void sendToGroup_lessonClosed_targetsCurrentHeadmanAndUsesExistingNotificationPayload() throws Exception {
+        PushSubscriptionDocument currentHeadman = sub(1L, "https://push.example.com/current-headman");
+        currentHeadman.setGroupId(42L);
+        // The stored subscription flag can predate a reassignment; Academic is authoritative for this event.
+        currentHeadman.setHeadman(false);
+        PushSubscriptionDocument student = sub(2L, "https://push.example.com/student");
+        student.setGroupId(42L);
+        PushSubscriptionDocument formerHeadman = sub(3L, "https://push.example.com/former-headman");
+        formerHeadman.setGroupId(42L);
+        formerHeadman.setHeadman(true);
+        when(repository.findAllByGroupId(42L)).thenReturn(List.of(currentHeadman, student, formerHeadman));
+        when(academicGroupMemberClient.getCurrentHeadmanUserIds(42L)).thenReturn(List.of(1L));
+
+        ArgumentCaptor<PushSubscriptionDocument> subscriptionCaptor =
+                ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        ArgumentCaptor<byte[]> payloadCaptor = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service)
+                .createNotification(subscriptionCaptor.capture(), payloadCaptor.capture());
+
+        service.sendToGroup(42L, "lesson.closed", Map.of(
+                "group_id", 42,
+                "lesson_id", 101,
+                "subject_id", 8)).join();
+
+        assertThat(subscriptionCaptor.getAllValues()).containsExactly(currentHeadman);
+        verify(academicGroupMemberClient).getCurrentHeadmanUserIds(42L);
+        verify(preferencesService).isEnabledForUser(1L, "lesson.closed");
+        var notification = new ObjectMapper().readTree(payloadCaptor.getValue());
+        assertThat(notification.get("title").asText()).isEqualTo("Пара завершена");
+        assertThat(notification.get("body").asText()).isEqualTo("Откройте расписание для подробностей");
+        assertThat(notification.get("event_type").asText()).isEqualTo("lesson.closed");
+        assertThat(notification.get("data").get("lesson_id").asLong()).isEqualTo(101L);
+    }
+
     // --- 58-07 / BUG-006-6: group.renamed / group.archived ---
 
     @Test
@@ -175,6 +215,11 @@ class WebPushDeliveryServiceTest {
     @Test
     void shouldPush_lessonReminder_isTrue() {
         assertThat(service.shouldPush("lesson.reminder")).isTrue();
+    }
+
+    @Test
+    void shouldPush_lessonClosed_isTrue() {
+        assertThat(service.shouldPush("lesson.closed")).isTrue();
     }
 
     @Test

@@ -33,6 +33,7 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
     private static final ZoneId EVENT_ZONE = ZoneId.of("Europe/Moscow");
     private static final Map<String, String> HISTORY_CHANGED_SIGNAL =
             Map.of("type", "notification.history.changed");
+    private static final Set<String> HEADMAN_EVENT_TYPES = Set.of("lesson.closed");
     private static final Set<String> GROUP_EVENT_TYPES = Set.of(
             "lesson.started", "lesson.cancelled", "homework.published", "homework.updated");
     private static final Set<String> GROUP_ID_FIELDS = Set.of(
@@ -76,6 +77,14 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
 
             String eventId = UUID.fromString(envelope.get("event_id").toString()).toString();
             String traceId = envelope.get("trace_id") instanceof String value ? value : null;
+            if (HEADMAN_EVENT_TYPES.contains(eventType)) {
+                long groupId = requirePositiveLong(payload.get("group_id"), "group_id");
+                List<Long> recipientIds = validateRecipientIds(
+                        academicGroupMemberClient.getCurrentHeadmanUserIds(groupId));
+                persistForRecipients(eventId, recipientIds, maybeType.get(),
+                        groupDisplayPayload(eventType, payload), traceId);
+                return;
+            }
             if (GROUP_EVENT_TYPES.contains(eventType)) {
                 long groupId = requirePositiveLong(payload.get("group_id"), "group_id");
                 LocalDate eventDate = eventDate(envelope.get("occurred_at"));
@@ -176,7 +185,7 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
     }
 
     /**
-     * New group-fanout history stores only the sanctioned display snapshot.
+     * History stores only the sanctioned display snapshot.
      * Full cancellation and homework details are left to their protected
      * detail APIs; unknown fields are never copied into history.
      */
@@ -184,6 +193,7 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
         List<String> fields = switch (eventType) {
             case "lesson.started" -> List.of(
                     "lesson_id", "group_id", "subject_id", "lesson_number", "start_time", "end_time", "room");
+            case "lesson.closed" -> List.of("lesson_id", "group_id", "subject_id");
             case "lesson.cancelled" -> List.of(
                     "lesson_id", "group_id", "subject_id", "date", "start_time", "end_time",
                     "lesson_number", "cancelled_at");
@@ -257,7 +267,7 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
         throw new IllegalArgumentException(field + " must be a positive integer");
     }
 
-    /** Mapped broadcast types persist to each historically resolved recipient. */
+    /** Mapped event types persist to their resolved recipients. */
     static Optional<NotificationType> mapType(String eventType, Map<String, Object> payload) {
         return switch (eventType) {
             case "excuse.requested" -> Optional.of(NotificationType.EXCUSE_REQUESTED);
@@ -275,6 +285,7 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
             case "homework.weekly_digest" -> Optional.of(NotificationType.HOMEWORK_WEEKLY_DIGEST);
             case "homework.due_reminder" -> Optional.of(NotificationType.HOMEWORK_DUE_REMINDER);
             case "lesson.started" -> Optional.of(NotificationType.LESSON_STARTED);
+            case "lesson.closed" -> Optional.of(NotificationType.LESSON_CLOSED);
             case "lesson.cancelled" -> Optional.of(NotificationType.LESSON_CANCELLED);
             case "homework.published" -> Optional.of(NotificationType.HOMEWORK_PUBLISHED);
             case "homework.updated" -> Optional.of(NotificationType.HOMEWORK_UPDATED);

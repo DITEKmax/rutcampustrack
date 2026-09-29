@@ -16,10 +16,10 @@ export interface AssistantPermissionRefresherOptions {
   apply(permissions: readonly HeadmanAssistantPermission[]): void
   now?: () => number
   foregroundCooldownMs?: number
-  forbiddenCooldownMs?: number
 }
 
 interface RefreshFlight {
+  readonly requestId: number
   readonly generation: number
   readonly ownerKey: string
   readonly promise: Promise<boolean>
@@ -31,54 +31,54 @@ interface RefreshTimestamp {
   readonly at: number
 }
 
-/** Coalesces refreshes and prevents a late response from changing another owner. */
+/** Coalesces safe refreshes and prevents stale or late responses from changing permissions. */
 export function createAssistantPermissionRefresher(options: AssistantPermissionRefresherOptions) {
   const now = options.now ?? Date.now
   const foregroundCooldownMs = options.foregroundCooldownMs ?? 30_000
-  const forbiddenCooldownMs = options.forbiddenCooldownMs ?? 1_000
   let flight: RefreshFlight | null = null
   let lastForeground: RefreshTimestamp | null = null
-  let lastForbidden: RefreshTimestamp | null = null
+  let latestRequestId = 0
 
   async function refresh(reason: AssistantPermissionRefreshReason): Promise<boolean> {
     const generation = options.currentGeneration()
     const ownerKey = options.currentOwnerKey()
     if (ownerKey === null) return false
 
-    if (flight?.generation === generation && flight.ownerKey === ownerKey) {
+    if (reason === 'foreground' && flight?.generation === generation && flight.ownerKey === ownerKey) {
       return flight.promise
     }
 
-    const timestamp = reason === 'foreground' ? lastForeground : lastForbidden
-    const cooldown = reason === 'foreground' ? foregroundCooldownMs : forbiddenCooldownMs
-    if (timestamp?.generation === generation && timestamp.ownerKey === ownerKey
-      && now() - timestamp.at < cooldown) {
-      return false
+    if (reason === 'foreground') {
+      if (lastForeground?.generation === generation && lastForeground.ownerKey === ownerKey
+        && now() - lastForeground.at < foregroundCooldownMs) {
+        return false
+      }
     }
 
     const started: RefreshTimestamp = { generation, ownerKey, at: now() }
     if (reason === 'foreground') lastForeground = started
-    else lastForbidden = started
+    const requestId = ++latestRequestId
 
     const promise = Promise.resolve()
       .then(() => options.load(generation, ownerKey))
       .then((permissions) => {
-        if (options.currentGeneration() !== generation || options.currentOwnerKey() !== ownerKey) return false
+        if (requestId !== latestRequestId || options.currentGeneration() !== generation
+          || options.currentOwnerKey() !== ownerKey) return false
         options.apply(permissions)
         return true
       })
       .catch((cause: unknown) => {
-        if (options.currentGeneration() !== generation || options.currentOwnerKey() !== ownerKey) return false
+        if (requestId !== latestRequestId || options.currentGeneration() !== generation
+          || options.currentOwnerKey() !== ownerKey) return false
         throw cause
       })
       .finally(() => {
-        if (flight?.generation === generation && flight.ownerKey === ownerKey
-          && flight.promise === promise) {
+        if (flight?.requestId === requestId) {
           flight = null
         }
       })
 
-    flight = { generation, ownerKey, promise }
+    flight = { requestId, generation, ownerKey, promise }
     return promise
   }
 

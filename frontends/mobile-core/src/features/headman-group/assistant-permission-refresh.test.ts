@@ -16,14 +16,16 @@ function deferred<T>() {
 }
 
 describe('assistant permission refresh ownership', () => {
-  it('coalesces requests and ignores a late result after the owner changes', async () => {
+  it('refreshes after denial, coalesces safe requests, and ignores late results', async () => {
     let generation = 4
     let ownerKey: string | null = 'student-a:group-1'
     const oldResponse = deferred<readonly HeadmanAssistantPermission[]>()
+    const postDenialResponse = deferred<readonly HeadmanAssistantPermission[]>()
     const newResponse = deferred<readonly HeadmanAssistantPermission[]>()
     const load = vi.fn()
       .mockReturnValueOnce(oldResponse.promise)
       .mockReturnValueOnce(newResponse.promise)
+      .mockReturnValueOnce(postDenialResponse.promise)
       .mockResolvedValue(['VIEW_STATS'])
     const apply = vi.fn()
     const refresher = createAssistantPermissionRefresher({
@@ -33,23 +35,32 @@ describe('assistant permission refresh ownership', () => {
       apply,
     })
 
-    const oldRefresh = refresher.refresh('forbidden')
-    const coalesced = refresher.refresh('foreground')
+    const oldRefresh = refresher.refresh('foreground')
     await Promise.resolve()
     expect(load).toHaveBeenCalledTimes(1)
+
+    const postDenialRefresh = refresher.refresh('forbidden')
+    const coalesced = refresher.refresh('foreground')
+    await Promise.resolve()
+    expect(load).toHaveBeenCalledTimes(2)
+
+    oldResponse.resolve(['MANAGE_HOMEWORK', 'VIEW_STATS'])
+    expect(await oldRefresh).toBe(false)
+    expect(apply).not.toHaveBeenCalled()
+
+    newResponse.resolve(['VIEW_STATS'])
+    expect(await postDenialRefresh).toBe(true)
+    expect(await coalesced).toBe(true)
+    expect(apply).toHaveBeenCalledExactlyOnceWith(['VIEW_STATS'])
 
     ownerKey = 'student-b:group-1'
     const newRefresh = refresher.refresh('forbidden')
     await Promise.resolve()
-    expect(load).toHaveBeenCalledTimes(2)
+    expect(load).toHaveBeenCalledTimes(3)
 
-    oldResponse.resolve(['MANAGE_HOMEWORK'])
-    expect(await oldRefresh).toBe(false)
-    expect(await coalesced).toBe(false)
-    expect(apply).not.toHaveBeenCalled()
-
-    newResponse.resolve(['VIEW_STATS'])
-    expect(await newRefresh).toBe(true)
+    ownerKey = 'student-c:group-1'
+    postDenialResponse.resolve(['MANAGE_HOMEWORK', 'VIEW_STATS'])
+    expect(await newRefresh).toBe(false)
     expect(apply).toHaveBeenCalledExactlyOnceWith(['VIEW_STATS'])
 
     generation += 1
@@ -66,7 +77,6 @@ describe('assistant permission refresh ownership', () => {
       apply: () => undefined,
       now: () => currentTime,
       foregroundCooldownMs: 30_000,
-      forbiddenCooldownMs: 1_000,
     })
 
     expect(await refresher.refresh('foreground')).toBe(true)

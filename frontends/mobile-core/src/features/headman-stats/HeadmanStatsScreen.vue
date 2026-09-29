@@ -430,6 +430,7 @@ async function loadTrend(): Promise<void> {
     if (api !== props.api || groupId !== props.groupId || props.offline || !canView.value || denied.value) return
     if (cause instanceof HeadmanStatsApiError && cause.response.status === 403) {
       clearOnDenied()
+      emit('error', cause)
       return
     }
     trendError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить динамику посещаемости.'
@@ -487,6 +488,7 @@ async function loadStudentDetail(): Promise<void> {
       || props.offline || !canView.value || denied.value) return
     if (cause instanceof HeadmanStatsApiError && cause.response.status === 403) {
       clearOnDenied()
+      emit('error', cause)
       return
     }
     detailError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить подробности студента.'
@@ -666,8 +668,7 @@ async function exportCurrent(): Promise<void> {
     window.setTimeout(() => URL.revokeObjectURL(url), 0)
   } catch (cause) {
     if (currentRevision !== revision || cause instanceof StaleSessionGenerationError) return
-    denied.value = cause instanceof HeadmanStatsApiError && cause.response.status === 403
-    if (denied.value) response.value = null
+    if (cause instanceof HeadmanStatsApiError && cause.response.status === 403) clearOnDenied()
     error.value = cause instanceof Error ? cause.message : 'Не удалось скачать статистику.'
     emit('error', cause)
   } finally {
@@ -726,6 +727,7 @@ async function exportTrend(formatCode: HeadmanStatsTrendFormat['code']): Promise
     if (cause instanceof StaleSessionGenerationError) return
     if (cause instanceof HeadmanStatsApiError && cause.response.status === 403) {
       clearOnDenied()
+      emit('error', cause)
       return
     }
     trendExportError.value = cause instanceof Error ? cause.message : 'Не удалось скачать график.'

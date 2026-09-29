@@ -1,0 +1,60 @@
+{
+  "worktree": ".agent/worktrees/headman-assistants-delivery-20260922",
+  "branch": "codex/assistant-complete-20260929",
+  "base_revision": "dc1e9b071b24826716d968be24c81613b5d4578c",
+  "rules_sha256": "F4986A1834A9175ADBB7DCB3C49483168111A0B60C7EB13ACDA9FBF9D74927F8",
+  "environment": "Windows PowerShell; Node v24.14.0; npm 11.9.0; Vitest 4.1.4; commands run from frontends/ unless stated",
+  "scope": [
+    "frontends/mobile-core/src/features/headman-group/assistant-permission-refresh.ts",
+    "frontends/mobile-core/src/features/headman-group/assistant-permission-refresh.test.ts",
+    "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue"
+  ],
+  "checks": [
+    {
+      "kind": "pre_fix_reproduction",
+      "criterion": "A permission read started before an operational 403 cannot satisfy the post-denial refresh.",
+      "command": "npm exec -- vitest run mobile-core/src/features/headman-group/assistant-permission-refresh.test.ts",
+      "exit_code": 1,
+      "evidence": "The deferred test expected 2 permission loads after the 403 and observed 1; the other 3 tests passed."
+    },
+    {
+      "kind": "scoped_vitest",
+      "criterion": "Post-denial permission refresh, owner/generation guards, and homework retry identity remain correct.",
+      "command": "npm exec -- vitest run mobile-core/src/features/headman-group/assistant-permission-refresh.test.ts mobile-core/src/features/homework/assistant-homework-create-intent.test.ts",
+      "exit_code": 0,
+      "evidence": "2 test files passed; 6 tests passed."
+    },
+    {
+      "kind": "diff_check",
+      "criterion": "Scoped code diff has no whitespace errors.",
+      "command": "git --no-optional-locks diff --check",
+      "exit_code": 0,
+      "working_directory": ".agent/worktrees/headman-assistants-delivery-20260922",
+      "evidence": "No whitespace errors."
+    },
+    {
+      "kind": "evidence_json_parse",
+      "criterion": "Task-scoped check evidence is valid JSON.",
+      "command": "Get-Content -Raw .agent/evidence/assistant-permission-repair-20260929/checks.json | ConvertFrom-Json -ErrorAction Stop | Out-Null",
+      "exit_code": 0,
+      "working_directory": ".agent/worktrees/headman-assistants-delivery-20260922",
+      "evidence": "PowerShell ConvertFrom-Json succeeded."
+    },
+    {
+      "kind": "staged_diff_check",
+      "criterion": "The exact staged correction and evidence have no whitespace errors.",
+      "command": "git --no-optional-locks diff --cached --check",
+      "exit_code": 0,
+      "working_directory": ".agent/worktrees/headman-assistants-delivery-20260922",
+      "evidence": "No whitespace errors."
+    }
+  ],
+  "runtime": {
+    "status": "not_run",
+    "evidence": "No app, browser or backend was started under this packet; root owns grouped runtime acceptance."
+  },
+  "limitations": [
+    "No component/browser runtime, full build or broader test suite was run.",
+    "Independent bounded Sol recheck remains required."
+  ]
+}

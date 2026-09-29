@@ -119,12 +119,14 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
     @Query(value = "SELECT l.* FROM lessons l WHERE l.group_id = :groupId "
             + "AND l.date BETWEEN :from AND :to AND l.status::text IN :statuses "
-            + "AND (l.occurrence_id IS NULL OR EXISTS (SELECT 1 FROM lesson_occurrences lo "
+            + "AND (l.status::text = 'transferred' OR l.occurrence_id IS NULL "
+            + "OR EXISTS (SELECT 1 FROM lesson_occurrences lo "
             + "     WHERE lo.id = l.occurrence_id AND lo.current_lesson_id = l.id)) "
             + "ORDER BY l.date ASC, l.id ASC",
            countQuery = "SELECT COUNT(*) FROM lessons l WHERE l.group_id = :groupId "
                    + "AND l.date BETWEEN :from AND :to AND l.status::text IN :statuses "
-                   + "AND (l.occurrence_id IS NULL OR EXISTS (SELECT 1 FROM lesson_occurrences lo "
+                   + "AND (l.status::text = 'transferred' OR l.occurrence_id IS NULL "
+                   + "OR EXISTS (SELECT 1 FROM lesson_occurrences lo "
                    + "     WHERE lo.id = l.occurrence_id AND lo.current_lesson_id = l.id))",
            nativeQuery = true)
     Page<Lesson> pageByGroupIdAndDateBetweenAndStatusIn(

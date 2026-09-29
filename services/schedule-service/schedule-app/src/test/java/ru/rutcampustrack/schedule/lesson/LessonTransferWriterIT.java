@@ -8,11 +8,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
 import ru.rutcampustrack.schedule.event.EventConsumer;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
+import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
@@ -42,6 +44,7 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private OutboxStorage outboxStorage;
     @Autowired private MockMvc mockMvc;
+    @Autowired private LessonRepository lessonRepository;
 
     private final List<UUID> ackEventIds = new ArrayList<>();
     private Fixture fixture;
@@ -142,6 +145,33 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
                 .isEqualTo("COMPLETED");
 
         long firstTargetId = Long.parseLong(pending.targetLessonId());
+        var transferredPage = lessonRepository.pageByGroupIdAndDateBetweenAndStatusIn(
+                fixture.groupId(), fixture.sourceDate(), fixture.targetDate(),
+                List.of("transferred"), PageRequest.of(0, 10));
+        assertThat(transferredPage.getContent().stream().map(lesson -> lesson.getId()).toList())
+                .containsExactly(fixture.sourceLessonId());
+        assertThat(transferredPage.getTotalElements()).isEqualTo(1);
+
+        var plannedPage = lessonRepository.pageByGroupIdAndDateBetweenAndStatusIn(
+                fixture.groupId(), fixture.sourceDate(), fixture.targetDate(),
+                List.of("planned"), PageRequest.of(0, 10));
+        assertThat(plannedPage.getContent().stream().map(lesson -> lesson.getId()).toList())
+                .containsExactly(firstTargetId);
+        assertThat(plannedPage.getTotalElements()).isEqualTo(1);
+
+        var firstHistoryPage = lessonRepository.pageByGroupIdAndDateBetweenAndStatusIn(
+                fixture.groupId(), fixture.sourceDate(), fixture.targetDate(),
+                List.of("transferred", "planned"), PageRequest.of(0, 1));
+        var secondHistoryPage = lessonRepository.pageByGroupIdAndDateBetweenAndStatusIn(
+                fixture.groupId(), fixture.sourceDate(), fixture.targetDate(),
+                List.of("transferred", "planned"), PageRequest.of(1, 1));
+        assertThat(firstHistoryPage.getTotalElements()).isEqualTo(2);
+        assertThat(firstHistoryPage.getTotalPages()).isEqualTo(2);
+        assertThat(firstHistoryPage.getContent().stream().map(lesson -> lesson.getId()).toList())
+                .containsExactly(fixture.sourceLessonId());
+        assertThat(secondHistoryPage.getContent().stream().map(lesson -> lesson.getId()).toList())
+                .containsExactly(firstTargetId);
+
         JsonNode reloadedTarget = reloadLesson(firstTargetId, fixture.targetDate(),
                 fixture.targetDate().plusDays(4));
         assertThat(reloadedTarget.path("revision").asLong()).isEqualTo(1);

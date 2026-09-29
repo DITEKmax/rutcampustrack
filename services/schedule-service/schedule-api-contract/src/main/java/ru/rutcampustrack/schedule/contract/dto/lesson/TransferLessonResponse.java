@@ -2,6 +2,7 @@ package ru.rutcampustrack.schedule.contract.dto.lesson;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -15,7 +16,8 @@ public record TransferLessonResponse(
         String targetLessonId,
         String revision,
         boolean retryable,
-        String errorCode
+        String errorCode,
+        LocalDate targetDate
 ) {
     private static final Set<String> ERROR_CODES = Set.of(
             "TARGET_DATA_CONFLICT", "SOURCE_STATE_CONFLICT", "SCOPE_MISMATCH",
@@ -31,6 +33,7 @@ public record TransferLessonResponse(
         requirePositiveDecimal(sourceLessonId, "sourceLessonId");
         requirePositiveDecimal(targetLessonId, "targetLessonId");
         requirePositiveDecimal(revision, "revision");
+        Objects.requireNonNull(targetDate, "targetDate");
         if (state.equals("ERROR") == (errorCode == null || errorCode.isBlank())) {
             throw new IllegalArgumentException("errorCode is required only for ERROR transfers");
         }

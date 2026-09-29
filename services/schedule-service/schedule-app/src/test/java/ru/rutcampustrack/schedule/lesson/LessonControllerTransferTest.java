@@ -24,7 +24,7 @@ class LessonControllerTransferTest {
                 LocalDate.of(2090, 1, 3), 2, null, null, null, "1", UUID.randomUUID());
         TransferLessonResponse error = new TransferLessonResponse(
                 UUID.randomUUID().toString(), "ERROR", "500", "600", "601", "2", false,
-                "TARGET_DATA_CONFLICT");
+                "TARGET_DATA_CONFLICT", request.targetDate());
         when(transferService.transfer(600L, request)).thenReturn(error);
 
         var response = controller.transferLesson(600L, request);

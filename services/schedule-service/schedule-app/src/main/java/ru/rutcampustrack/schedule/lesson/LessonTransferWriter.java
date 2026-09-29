@@ -219,7 +219,7 @@ public class LessonTransferWriter {
         try {
             row = jdbc.queryForMap("""
                 SELECT operation_id, state, occurrence_id, source_lesson_id, target_lesson_id,
-                       result_occurrence_revision, error_code
+                       result_occurrence_revision, error_code, target_snapshot ->> 'date' AS target_date
                   FROM lesson_transfer_operations WHERE operation_id = ?
                 """, operationId);
         } catch (org.springframework.dao.EmptyResultDataAccessException missing) {
@@ -437,6 +437,7 @@ public class LessonTransferWriter {
                 SELECT operation.operation_id, operation.state, operation.occurrence_id,
                        operation.source_lesson_id, operation.target_lesson_id,
                        operation.result_occurrence_revision, operation.error_code,
+                       operation.target_snapshot ->> 'date' AS target_date,
                        replay.payload_hash
                   FROM schedule_transfer_replay replay
                   JOIN lesson_transfer_operations operation
@@ -805,7 +806,8 @@ public class LessonTransferWriter {
                 Long.toString(number(row.get("source_lesson_id"))),
                 Long.toString(number(row.get("target_lesson_id"))),
                 Long.toString(number(row.get("result_occurrence_revision"))),
-                state.equals("PENDING"), row.get("error_code") == null ? null : String.valueOf(row.get("error_code")));
+                state.equals("PENDING"), row.get("error_code") == null ? null : String.valueOf(row.get("error_code")),
+                LocalDate.parse(String.valueOf(row.get("target_date"))));
     }
 
     public record TransferState(String operationId, String state) { }

@@ -17,6 +17,8 @@ import {
   HeadmanScheduleApiError,
   HeadmanJournalApiError,
   HeadmanRequestsApiError,
+  HeadmanHomeworkApiError,
+  HeadmanStatsApiError,
   HeadmanGroupApiError,
   HeadmanSubjectsApiError,
   HeadmanScheduleScreen,
@@ -33,6 +35,9 @@ import {
   ProfileRequestError,
   RoleSwitchScreen,
   StaleSessionGenerationError,
+  createAssistantPermissionRefresher,
+  isAssistantCapabilityForbiddenError,
+  isAssistantPermissionReadForbidden,
   commandFromCoordinates,
   createFixtureTransport,
   createGenerationBoundNotificationsApi,
@@ -197,6 +202,34 @@ function currentFetcher(): typeof fetch {
   return requestFetcher
 }
 
+function currentAssistantOwnerKey(): string | null {
+  const currentScope = scope.value
+  if (authView.value !== 'student' || offline.value || !currentScope
+    || currentScope.activeRole !== 'STUDENT'
+    || currentScope.resetGeneration !== auth.currentGeneration()) return null
+  return ownerKey.value
+}
+
+const assistantPermissionRefresher = createAssistantPermissionRefresher({
+  currentGeneration: () => auth.currentGeneration(),
+  currentOwnerKey: currentAssistantOwnerKey,
+  load: async (generation, expectedOwnerKey) => {
+    const current = session.value
+    if (!auth.isCurrent(generation) || currentAssistantOwnerKey() !== expectedOwnerKey || !current) {
+      throw new StaleSessionGenerationError()
+    }
+    const groupId = current.group?.id ? Number(current.group.id) : null
+    if (groupId === null || !Number.isSafeInteger(groupId) || groupId <= 0) return []
+    const permissions = (await auth.createHeadmanGroupApi(currentFetcher()).listMyPermissions())
+      .map((option) => option.code)
+    if (!auth.isCurrent(generation) || currentAssistantOwnerKey() !== expectedOwnerKey) {
+      throw new StaleSessionGenerationError()
+    }
+    return permissions
+  },
+  apply: (permissions) => { assistantPermissions.value = permissions },
+})
+
 function authDenialStatus(error: unknown): number | null {
   if (error instanceof PwaAuthError) return error.status
   if (error instanceof AuthRequestError) return error.status ?? null
@@ -206,6 +239,8 @@ function authDenialStatus(error: unknown): number | null {
   if (error instanceof HeadmanScheduleApiError) return error.response.status
   if (error instanceof HeadmanJournalApiError) return error.response.status
   if (error instanceof HeadmanRequestsApiError) return error.response.status
+  if (error instanceof HeadmanHomeworkApiError) return error.response.status
+  if (error instanceof HeadmanStatsApiError) return error.response.status
   if (error instanceof HeadmanGroupApiError) return error.response.status
   if (error instanceof HeadmanSubjectsApiError) return error.response.status
   if (error instanceof AdminSemesterApiError) return error.response.status
@@ -588,9 +623,14 @@ async function fetchStudentCandidate(
   const candidateRequestsApi = auth.createHeadmanRequestsApi(currentFetcher())
   const candidateHomeworkApi = auth.createHeadmanHomeworkApi(currentFetcher())
   const groupId = candidateSession.group?.id ? Number(candidateSession.group.id) : null
-  const permissions = groupId !== null && Number.isSafeInteger(groupId) && groupId > 0
-    ? (await candidateGroupApi.listMyPermissions()).map((option) => option.code)
-    : []
+  let permissions: readonly HeadmanAssistantPermission[] = []
+  if (groupId !== null && Number.isSafeInteger(groupId) && groupId > 0) {
+    try {
+      permissions = (await candidateGroupApi.listMyPermissions()).map((option) => option.code)
+    } catch (cause) {
+      if (!isAssistantPermissionReadForbidden(cause) || isConfirmedOnlineAuthDenial(cause)) throw cause
+    }
+  }
   assertCandidateCurrent(generation)
   assertAuthBffCoherence(profile, candidateSession)
   return {
@@ -1242,6 +1282,11 @@ function onOwnerError(error: unknown): void {
     void handleOnlineAuthDenial(error)
     return
   }
+  if (isAssistantCapabilityForbiddenError(error)) {
+    void assistantPermissionRefresher.refresh('forbidden').catch((cause: unknown) => {
+      if (isConfirmedOnlineAuthDenial(cause)) void handleOnlineAuthDenial(cause)
+    })
+  }
   if (error instanceof StudentApiError) bootstrapError.value = error.problem?.detail ?? error.message
   else if (error instanceof Error) bootstrapError.value = error.message
 }
@@ -1258,6 +1303,13 @@ function goOnline(): void {
   offline.value = true
   readOnly.value = true
   void bootstrap()
+}
+
+function onAssistantForeground(): void {
+  if (typeof document === 'undefined' || document.visibilityState !== 'visible') return
+  void assistantPermissionRefresher.refresh('foreground').catch((cause: unknown) => {
+    if (isConfirmedOnlineAuthDenial(cause)) void handleOnlineAuthDenial(cause)
+  })
 }
 
 const onServiceWorkerControllerChange = (): void => { void refreshFixtureDiagnostics() }
@@ -1310,6 +1362,7 @@ onMounted(() => {
   stopAuthInvalidation = auth.subscribeInvalidation(handleExternalInvalidation)
   window.addEventListener('offline', goOffline)
   window.addEventListener('online', goOnline)
+  document.addEventListener('visibilitychange', onAssistantForeground)
   if (fixtureDiagnosticsMode && 'serviceWorker' in navigator) navigator.serviceWorker.addEventListener('controllerchange', onServiceWorkerControllerChange)
   void bootstrap()
   void refreshFixtureDiagnostics()
@@ -1324,6 +1377,7 @@ onBeforeUnmount(() => {
   invalidateOwnerSynchronously()
   window.removeEventListener('offline', goOffline)
   window.removeEventListener('online', goOnline)
+  document.removeEventListener('visibilitychange', onAssistantForeground)
   if (fixtureDiagnosticsMode && 'serviceWorker' in navigator) navigator.serviceWorker.removeEventListener('controllerchange', onServiceWorkerControllerChange)
   theme?.dispose()
 })

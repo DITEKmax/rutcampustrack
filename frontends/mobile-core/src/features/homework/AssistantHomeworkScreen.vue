@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { moscowDate } from '../../domain/homework'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { HeadmanJournalApi, HeadmanJournalLesson } from '../headman-journal/headman-journal-client'
@@ -9,6 +9,13 @@ import {
   type HeadmanHomeworkSemester,
   type HeadmanManagedHomework,
 } from './headman-homework-client'
+import {
+  intentAfterHomeworkCreateFailure,
+  reuseOrCreateAssistantHomeworkIntent,
+  sameAssistantHomeworkDraftContext,
+  type AssistantHomeworkCreateIntent,
+  type AssistantHomeworkDraftContext,
+} from './assistant-homework-create-intent'
 import './assistant-homework-screen.pcss'
 
 const props = withDefaults(defineProps<{
@@ -45,8 +52,12 @@ const formId = ref<number | 'new' | null>(null)
 const title = ref('')
 const description = ref('')
 const link = ref('')
+const draftContext = shallowRef<AssistantHomeworkDraftContext | null>(null)
+const createIntent = shallowRef<AssistantHomeworkCreateIntent | null>(null)
+const createConflict = ref(false)
 const mutationBusy = ref(false)
 const mutationId = ref<number | null>(null)
+let draftApi: HeadmanHomeworkApi | null = null
 let loadRevision = 0
 let mutationRevision = 0
 let disposed = false
@@ -65,6 +76,9 @@ const canCreate = computed(() => Boolean(
     && selectedLesson.value.subjectId && selectedLesson.value.lessonNumber
     && selectedLesson.value.status !== 'CANCELLED',
 ))
+const retryLocked = computed(() => formId.value === 'new'
+  && createIntent.value !== null && !mutationBusy.value)
+const uncertainCreate = computed(() => retryLocked.value && !createConflict.value)
 
 function formatDate(value: string): string {
   const date = new Date(`${value}T12:00:00Z`)
@@ -83,9 +97,65 @@ function lessonLabel(lesson: HeadmanJournalLesson): string {
   return `Пара ${lesson.lessonNumber ?? '—'} · ${time}`
 }
 
+function currentDraftContext(): AssistantHomeworkDraftContext | null {
+  const lesson = selectedLesson.value
+  if (!lesson || props.userId === null || props.groupId === null || semester.value === null
+    || lesson.subjectId === null || lesson.lessonNumber === null) return null
+  return {
+    userId: props.userId,
+    groupId: props.groupId,
+    semesterId: semester.value.id,
+    selectedDate: selectedDate.value,
+    lessonId: lesson.id,
+    lessonDate: lesson.date,
+    subjectId: lesson.subjectId,
+    lessonNumber: lesson.lessonNumber,
+  }
+}
+
+function clearDraft(): void {
+  formId.value = null
+  title.value = ''
+  description.value = ''
+  link.value = ''
+  draftContext.value = null
+  createIntent.value = null
+  createConflict.value = false
+  draftApi = null
+}
+
+function invalidateDraft(): void {
+  mutationRevision += 1
+  mutationBusy.value = false
+  mutationId.value = null
+  clearDraft()
+}
+
+function resetContextData(): void {
+  loadRevision += 1
+  invalidateDraft()
+  semester.value = null
+  lessons.value = []
+  homeworks.value = []
+  selectedLessonId.value = null
+  loading.value = false
+  error.value = null
+  notice.value = null
+}
+
+function isCurrentDraftContext(context: AssistantHomeworkDraftContext): boolean {
+  return draftApi !== null
+    && draftApi === props.api
+    && sameAssistantHomeworkDraftContext(context, currentDraftContext())
+}
+
 function openCreate(): void {
-  if (!canCreate.value) return
+  if (!canCreate.value || formId.value !== null || !props.api) return
+  const context = currentDraftContext()
+  if (!context) return
   formId.value = 'new'
+  draftContext.value = context
+  draftApi = props.api
   title.value = ''
   description.value = ''
   link.value = ''
@@ -93,8 +163,13 @@ function openCreate(): void {
 }
 
 function openEdit(item: HeadmanManagedHomework): void {
-  if (props.userId === null || item.publishedBy !== props.userId || props.offline || props.readOnly) return
+  if (props.userId === null || item.publishedBy !== props.userId || props.offline || props.readOnly
+    || formId.value !== null || createIntent.value !== null || !props.api) return
+  const context = currentDraftContext()
+  if (!context) return
   formId.value = item.id
+  draftContext.value = context
+  draftApi = props.api
   title.value = item.title
   description.value = item.description ?? ''
   link.value = item.link ?? ''
@@ -102,7 +177,7 @@ function openEdit(item: HeadmanManagedHomework): void {
 }
 
 function closeForm(): void {
-  if (!mutationBusy.value) formId.value = null
+  if (!mutationBusy.value && !retryLocked.value) clearDraft()
 }
 
 function requestKey(): string {
@@ -119,28 +194,25 @@ function validForm(): boolean {
 
 async function save(): Promise<void> {
   const api = props.api
-  const lesson = selectedLesson.value
-  const currentSemester = semester.value
+  const context = draftContext.value
   const currentForm = formId.value
-  if (mutationBusy.value || !api || !lesson || !currentSemester || !validForm()
-    || lesson.subjectId === null || lesson.lessonNumber === null || !canCreate.value) return
+  if (mutationBusy.value || !api || !context || !isCurrentDraftContext(context) || !validForm()
+    || (currentForm === 'new' && !canCreate.value)) return
   const revision = ++mutationRevision
   mutationBusy.value = true
   error.value = null
   notice.value = null
   try {
     if (currentForm === 'new') {
-      await api.createHomework({
+      const intent = reuseOrCreateAssistantHomeworkIntent(createIntent.value, context, {
         title: title.value,
         description: description.value,
         link: link.value,
-        subjectId: lesson.subjectId,
-        groupId: props.groupId ?? 0,
-        semesterId: currentSemester.id,
-        lessonDate: lesson.date,
-        lessonNumber: lesson.lessonNumber,
-        requestKey: requestKey(),
-      })
+      }, requestKey)
+      if (!intent) return
+      createIntent.value = intent
+      createConflict.value = false
+      await api.createHomework(intent.input)
     } else if (typeof currentForm === 'number') {
       const existing = selectedHomeworks.value.find((item) => item.id === currentForm)
       if (!existing || props.userId === null || existing.publishedBy !== props.userId) return
@@ -153,11 +225,26 @@ async function save(): Promise<void> {
       return
     }
     if (disposed || revision !== mutationRevision) return
-    formId.value = null
+    clearDraft()
     notice.value = 'ДЗ сохранено. Список обновлён с сервера.'
     await load()
   } catch (cause) {
-    if (disposed || revision !== mutationRevision || cause instanceof StaleSessionGenerationError) return
+    if (disposed || cause instanceof StaleSessionGenerationError) return
+    if (revision !== mutationRevision) {
+      // The request may still receive a current-owner capability denial after
+      // the user changed dates or lessons. Refresh permissions without
+      // restoring the stale draft or its error state.
+      if (cause instanceof HeadmanHomeworkApiError && cause.response.status === 403) emit('error', cause)
+      return
+    }
+    if (currentForm === 'new') {
+      const status = cause instanceof HeadmanHomeworkApiError ? cause.response.status : null
+      createIntent.value = intentAfterHomeworkCreateFailure(
+        createIntent.value,
+        status,
+      )
+      createConflict.value = status === 409 && createIntent.value !== null
+    }
     error.value = cause instanceof Error ? cause.message : 'Не удалось сохранить ДЗ.'
     emit('error', cause)
   } finally {
@@ -167,7 +254,7 @@ async function save(): Promise<void> {
 
 async function remove(item: HeadmanManagedHomework): Promise<void> {
   const api = props.api
-  if (mutationBusy.value || !api || props.offline || props.readOnly || props.userId === null
+  if (mutationBusy.value || retryLocked.value || !api || props.offline || props.readOnly || props.userId === null
     || item.publishedBy !== props.userId) return
   if (typeof window !== 'undefined' && !window.confirm(`Удалить задание «${item.title}»?`)) return
   const revision = ++mutationRevision
@@ -181,7 +268,11 @@ async function remove(item: HeadmanManagedHomework): Promise<void> {
     notice.value = 'ДЗ удалено. Список обновлён с сервера.'
     await load()
   } catch (cause) {
-    if (disposed || revision !== mutationRevision || cause instanceof StaleSessionGenerationError) return
+    if (disposed || cause instanceof StaleSessionGenerationError) return
+    if (revision !== mutationRevision) {
+      if (cause instanceof HeadmanHomeworkApiError && cause.response.status === 403) emit('error', cause)
+      return
+    }
     error.value = cause instanceof Error ? cause.message : 'Не удалось удалить ДЗ.'
     emit('error', cause)
   } finally {
@@ -206,6 +297,12 @@ async function load(): Promise<void> {
   try {
     const currentSemester = await api.activeSemester()
     if (disposed || revision !== loadRevision) return
+    if ((semester.value?.id ?? null) !== (currentSemester?.id ?? null)) {
+      invalidateDraft()
+      lessons.value = []
+      homeworks.value = []
+      selectedLessonId.value = null
+    }
     semester.value = currentSemester
     if (!currentSemester) {
       lessons.value = []
@@ -235,9 +332,25 @@ async function load(): Promise<void> {
 }
 
 watch(
-  () => [props.api, props.journalApi, props.groupId, props.offline, selectedDate.value] as const,
-  () => { void load() },
-  { immediate: true },
+  () => [props.api, props.journalApi, props.groupId, props.userId, props.offline, props.readOnly, selectedDate.value] as const,
+  () => {
+    resetContextData()
+    void load()
+  },
+  { immediate: true, flush: 'sync' },
+)
+
+watch(
+  () => {
+    const lesson = selectedLesson.value
+    return lesson ? [lesson.id, lesson.date, lesson.subjectId, lesson.lessonNumber] as const : null
+  },
+  () => {
+    invalidateDraft()
+    error.value = null
+    notice.value = null
+  },
+  { flush: 'sync' },
 )
 
 onBeforeUnmount(() => {
@@ -298,7 +411,7 @@ onBeforeUnmount(() => {
           <button
             v-if="canCreate"
             type="button"
-            :disabled="mutationBusy"
+            :disabled="mutationBusy || formId !== null"
             @click="openCreate"
           >
             Добавить
@@ -313,8 +426,8 @@ onBeforeUnmount(() => {
             <a v-if="item.link" :href="item.link" target="_blank" rel="noopener noreferrer">Открыть материал</a>
           </div>
           <div v-if="userId !== null && item.publishedBy === userId" class="assistant-homework__item-actions">
-            <button type="button" :disabled="mutationBusy" @click="openEdit(item)">Изменить</button>
-            <button type="button" :disabled="mutationBusy && mutationId !== item.id" @click="remove(item)">
+            <button type="button" :disabled="mutationBusy || formId !== null" @click="openEdit(item)">Изменить</button>
+            <button type="button" :disabled="mutationBusy || formId !== null" @click="remove(item)">
               {{ mutationId === item.id ? 'Удаляем…' : 'Удалить' }}
             </button>
           </div>
@@ -322,13 +435,21 @@ onBeforeUnmount(() => {
 
         <form v-if="formId !== null" class="assistant-homework__form" @submit.prevent="save">
           <h3>{{ formId === 'new' ? 'Новое ДЗ' : 'Изменить ДЗ' }}</h3>
-          <label><span>Название</span><input v-model="title" maxlength="255" required :disabled="mutationBusy"></label>
-          <label><span>Описание</span><textarea v-model="description" maxlength="4000" rows="3" :disabled="mutationBusy" /></label>
-          <label><span>Ссылка</span><input v-model="link" maxlength="2048" type="url" :disabled="mutationBusy"></label>
+          <p v-if="createConflict" class="assistant-homework__state assistant-homework__state--error" role="alert">
+            Сервер вернул конфликт. Повтор отправит тот же запрос с тем же ключом.
+          </p>
+          <p v-else-if="uncertainCreate" class="assistant-homework__state" role="status">
+            Результат отправки неизвестен. Повтори сохранение, чтобы отправить тот же запрос.
+          </p>
+          <label><span>Название</span><input v-model="title" maxlength="255" required :disabled="mutationBusy || retryLocked"></label>
+          <label><span>Описание</span><textarea v-model="description" maxlength="4000" rows="3" :disabled="mutationBusy || retryLocked" /></label>
+          <label><span>Ссылка</span><input v-model="link" maxlength="2048" type="url" :disabled="mutationBusy || retryLocked"></label>
           <p v-if="title.trim() === '' || !validForm()" class="assistant-homework__form-error">Проверь название и длину полей.</p>
           <div class="assistant-homework__form-actions">
-            <button type="button" :disabled="mutationBusy" @click="closeForm">Отмена</button>
-            <button type="submit" :disabled="mutationBusy || !validForm()">{{ mutationBusy ? 'Сохраняем…' : 'Сохранить' }}</button>
+            <button type="button" :disabled="mutationBusy || retryLocked" @click="closeForm">Отмена</button>
+            <button type="submit" :disabled="mutationBusy || !validForm()">
+              {{ mutationBusy ? 'Сохраняем…' : retryLocked ? 'Повторить запрос' : 'Сохранить' }}
+            </button>
           </div>
         </form>
       </section>

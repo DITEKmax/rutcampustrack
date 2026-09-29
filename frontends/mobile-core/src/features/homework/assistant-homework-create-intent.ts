@@ -1,0 +1,82 @@
+import type { HeadmanHomeworkCreateInput } from './headman-homework-client'
+
+export interface AssistantHomeworkDraftContext {
+  readonly userId: number
+  readonly groupId: number
+  readonly semesterId: number
+  readonly selectedDate: string
+  readonly lessonId: number
+  readonly lessonDate: string
+  readonly subjectId: number
+  readonly lessonNumber: number
+}
+
+export interface AssistantHomeworkCreateValues {
+  readonly title: string
+  readonly description: string
+  readonly link: string
+}
+
+export interface AssistantHomeworkCreateIntent {
+  readonly context: AssistantHomeworkDraftContext
+  readonly input: Readonly<HeadmanHomeworkCreateInput>
+}
+
+export function createAssistantHomeworkCreateIntent(
+  context: AssistantHomeworkDraftContext,
+  values: AssistantHomeworkCreateValues,
+  requestKey: string,
+): AssistantHomeworkCreateIntent {
+  const frozenContext = Object.freeze({ ...context })
+  const input = Object.freeze({
+    title: values.title,
+    description: values.description,
+    link: values.link,
+    subjectId: frozenContext.subjectId,
+    groupId: frozenContext.groupId,
+    semesterId: frozenContext.semesterId,
+    lessonDate: frozenContext.lessonDate,
+    lessonNumber: frozenContext.lessonNumber,
+    requestKey,
+  })
+  return Object.freeze({ context: frozenContext, input })
+}
+
+export function sameAssistantHomeworkDraftContext(
+  left: AssistantHomeworkDraftContext,
+  right: AssistantHomeworkDraftContext | null,
+): boolean {
+  return right !== null
+    && left.userId === right.userId
+    && left.groupId === right.groupId
+    && left.semesterId === right.semesterId
+    && left.selectedDate === right.selectedDate
+    && left.lessonId === right.lessonId
+    && left.lessonDate === right.lessonDate
+    && left.subjectId === right.subjectId
+    && left.lessonNumber === right.lessonNumber
+}
+
+export function isDefinitiveHomeworkCreateRejection(status: number | null): boolean {
+  return status === 400 || status === 422
+}
+
+export function reuseOrCreateAssistantHomeworkIntent(
+  existing: AssistantHomeworkCreateIntent | null,
+  context: AssistantHomeworkDraftContext,
+  values: AssistantHomeworkCreateValues,
+  requestKey: () => string,
+): AssistantHomeworkCreateIntent | null {
+  if (existing !== null) {
+    return sameAssistantHomeworkDraftContext(existing.context, context) ? existing : null
+  }
+  return createAssistantHomeworkCreateIntent(context, values, requestKey())
+}
+
+/** Keep uncertain and conflicting operations bound to their original request. */
+export function intentAfterHomeworkCreateFailure(
+  intent: AssistantHomeworkCreateIntent | null,
+  status: number | null,
+): AssistantHomeworkCreateIntent | null {
+  return isDefinitiveHomeworkCreateRejection(status) ? null : intent
+}

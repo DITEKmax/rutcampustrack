@@ -16,6 +16,8 @@ import {
   HeadmanScheduleApiError,
   HeadmanJournalApiError,
   HeadmanRequestsApiError,
+  HeadmanHomeworkApiError,
+  HeadmanStatsApiError,
   HeadmanGroupApiError,
   HeadmanSubjectsApiError,
   HeadmanScheduleScreen,
@@ -26,6 +28,9 @@ import {
   ProfileRequestError,
   RoleSwitchScreen,
   StaleSessionGenerationError,
+  createAssistantPermissionRefresher,
+  isAssistantCapabilityForbiddenError,
+  isAssistantPermissionReadForbidden,
   StudentApi,
   StudentApiError,
   StudentFeatureOwner,
@@ -167,6 +172,34 @@ const teacherViewVisible = computed(() => authView.value === 'teacher' && teache
 const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
 const ownerKey = computed(() => `${scope.value ? studentFeatureScopeIdentity(scope.value) : 'tma-unavailable'}|${ownerRevision.value}`)
 
+function currentAssistantOwnerKey(): string | null {
+  const currentScope = scope.value
+  if (authView.value !== 'student' || offline.value || !currentScope
+    || currentScope.activeRole !== 'STUDENT'
+    || currentScope.resetGeneration !== sessionOwner.currentGeneration()) return null
+  return ownerKey.value
+}
+
+const assistantPermissionRefresher = createAssistantPermissionRefresher({
+  currentGeneration: () => sessionOwner.currentGeneration(),
+  currentOwnerKey: currentAssistantOwnerKey,
+  load: async (generation, expectedOwnerKey) => {
+    const current = session.value
+    if (!sessionOwner.isCurrent(generation) || currentAssistantOwnerKey() !== expectedOwnerKey || !current) {
+      throw new StaleSessionGenerationError()
+    }
+    const groupId = current.group?.id ? Number(current.group.id) : null
+    if (groupId === null || !Number.isSafeInteger(groupId) || groupId <= 0) return []
+    const permissions = (await sessionOwner.createHeadmanGroupApi(currentFetcher()).listMyPermissions())
+      .map((option) => option.code)
+    if (!sessionOwner.isCurrent(generation) || currentAssistantOwnerKey() !== expectedOwnerKey) {
+      throw new StaleSessionGenerationError()
+    }
+    return permissions
+  },
+  apply: (permissions) => { assistantPermissions.value = permissions },
+})
+
 function sessionIdentity(value: StudentSession): string {
   return JSON.stringify([
     value.user.id,
@@ -283,6 +316,8 @@ function authDenialStatus(cause: unknown): number | null {
   if (cause instanceof HeadmanScheduleApiError) return cause.response.status
   if (cause instanceof HeadmanJournalApiError) return cause.response.status
   if (cause instanceof HeadmanRequestsApiError) return cause.response.status
+  if (cause instanceof HeadmanHomeworkApiError) return cause.response.status
+  if (cause instanceof HeadmanStatsApiError) return cause.response.status
   if (cause instanceof HeadmanGroupApiError) return cause.response.status
   if (cause instanceof AdminSemesterApiError) return cause.response.status
   if (cause instanceof AdminGroupsApiError) return cause.response.status
@@ -291,11 +326,14 @@ function authDenialStatus(cause: unknown): number | null {
 }
 
 function isAuthDenied(cause: unknown): boolean {
-  if (cause instanceof NotificationsApiError && cause.status === 403) return false
-  if ((cause instanceof HeadmanScheduleApiError || cause instanceof HeadmanJournalApiError)
-    && cause.response.status === 403) return false
+  if (cause instanceof TmaAuthError) return cause.status === 401 || cause.status === 403
   const status = authDenialStatus(cause)
-  return status === 401 || status === 403
+  if (status === 401) return true
+  if (cause instanceof StudentApiError) {
+    const code = cause.problem?.extras?.code
+    return code === 'INVALID_SESSION' || code === 'SESSION_REVOKED' || code === 'ACCOUNT_INVALIDATED'
+  }
+  return false
 }
 
 function browserIsOffline(): boolean {
@@ -331,9 +369,14 @@ async function fetchAssistantCapabilities(
   const requestsApi = sessionOwner.createHeadmanRequestsApi(currentFetcher())
   const homeworkApi = sessionOwner.createHeadmanHomeworkApi(currentFetcher())
   const groupId = studentSession.group?.id ? Number(studentSession.group.id) : null
-  const permissions = groupId !== null && Number.isSafeInteger(groupId) && groupId > 0
-    ? (await groupApi.listMyPermissions()).map((option) => option.code)
-    : []
+  let permissions: readonly HeadmanAssistantPermission[] = []
+  if (groupId !== null && Number.isSafeInteger(groupId) && groupId > 0) {
+    try {
+      permissions = (await groupApi.listMyPermissions()).map((option) => option.code)
+    } catch (cause) {
+      if (!isAssistantPermissionReadForbidden(cause) || isAuthDenied(cause)) throw cause
+    }
+  }
   if (!sessionOwner.isCurrent(generation)) throw new StaleSessionGenerationError()
   return { journalApi, statsApi, requestsApi, homeworkApi, permissions }
 }
@@ -719,6 +762,13 @@ function onOwnerError(cause: unknown): void {
   if (isAuthDenied(cause)) {
     invalidateOwnerSynchronously()
     offline.value = false
+  } else if (isAssistantCapabilityForbiddenError(cause)) {
+    void assistantPermissionRefresher.refresh('forbidden').catch((refreshError: unknown) => {
+      if (isAuthDenied(refreshError)) {
+        invalidateOwnerSynchronously()
+        offline.value = false
+      }
+    })
   }
   error.value = cause instanceof StudentApiError
     ? cause.problem?.detail ?? cause.message
@@ -739,9 +789,20 @@ function onlineNow(): void {
   void bootstrap()
 }
 
+function onAssistantForeground(): void {
+  if (typeof document === 'undefined' || document.visibilityState !== 'visible') return
+  void assistantPermissionRefresher.refresh('foreground').catch((cause: unknown) => {
+    if (isAuthDenied(cause)) {
+      invalidateOwnerSynchronously()
+      offline.value = false
+    }
+  })
+}
+
 onMounted(() => {
   window.addEventListener('offline', offlineNow)
   window.addEventListener('online', onlineNow)
+  document.addEventListener('visibilitychange', onAssistantForeground)
   void bootstrap()
 })
 
@@ -751,6 +812,7 @@ onBeforeUnmount(() => {
   invalidateOwnerSynchronously()
   window.removeEventListener('offline', offlineNow)
   window.removeEventListener('online', onlineNow)
+  document.removeEventListener('visibilitychange', onAssistantForeground)
   theme?.dispose()
 })
 </script>

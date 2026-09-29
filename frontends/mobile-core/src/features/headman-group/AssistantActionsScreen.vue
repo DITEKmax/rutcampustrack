@@ -61,9 +61,23 @@ function reportError(cause: unknown): void {
   emit('error', cause)
 }
 
-watch(canStats, (allowed) => {
-  if (!allowed && surface.value === 'stats') surface.value = 'home'
-})
+watch(
+  () => ({
+    journal: canJournal.value,
+    stats: canStats.value,
+    requests: canRequests.value,
+    homework: canHomework.value,
+  }),
+  (allowed) => {
+    if (surface.value === 'journal' && !allowed.journal
+      || surface.value === 'stats' && !allowed.stats
+      || surface.value === 'requests' && !allowed.requests
+      || surface.value === 'homework' && !allowed.homework) {
+      surface.value = 'home'
+    }
+  },
+  { flush: 'sync' },
+)
 </script>
 
 <template>

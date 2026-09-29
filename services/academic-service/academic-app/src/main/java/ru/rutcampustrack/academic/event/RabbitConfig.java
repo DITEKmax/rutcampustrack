@@ -39,6 +39,8 @@ public class RabbitConfig {
 
     public static final String HOMEWORK_ARCHIVE_EVENTS_QUEUE = "academic-service.homework-archive.events";
     private static final String HOMEWORK_ARCHIVE_EVENTS_DLQ = HOMEWORK_ARCHIVE_EVENTS_QUEUE + ".dlq";
+    public static final String LESSON_TRANSFER_EVENTS_QUEUE = "academic-service.lesson-transfer.events";
+    private static final String LESSON_TRANSFER_EVENTS_DLQ = LESSON_TRANSFER_EVENTS_QUEUE + ".dlq";
     private static final int MAX_LISTENER_ATTEMPTS = 3;
     private static final long LISTENER_INITIAL_BACKOFF_MILLIS = 100L;
     private static final long LISTENER_MAX_BACKOFF_MILLIS = 500L;
@@ -67,9 +69,28 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Queue lessonTransferEventsQueue() {
+        return QueueBuilder.durable(LESSON_TRANSFER_EVENTS_QUEUE)
+                .withArgument("x-dead-letter-exchange", "rut-uit.events.dlq")
+                .withArgument("x-dead-letter-routing-key", LESSON_TRANSFER_EVENTS_DLQ)
+                .build();
+    }
+
+    @Bean
+    public Queue lessonTransferEventsDeadLetterQueue() {
+        return QueueBuilder.durable(LESSON_TRANSFER_EVENTS_DLQ).build();
+    }
+
+    @Bean
     public Binding homeworkArchiveEventsBinding(FanoutExchange academicEventsExchange,
             @Qualifier("homeworkArchiveEventsQueue") Queue homeworkArchiveEventsQueue) {
         return BindingBuilder.bind(homeworkArchiveEventsQueue).to(academicEventsExchange);
+    }
+
+    @Bean
+    public Binding lessonTransferEventsBinding(FanoutExchange academicEventsExchange,
+            @Qualifier("lessonTransferEventsQueue") Queue lessonTransferEventsQueue) {
+        return BindingBuilder.bind(lessonTransferEventsQueue).to(academicEventsExchange);
     }
 
     @Bean
@@ -79,6 +100,15 @@ public class RabbitConfig {
         return BindingBuilder.bind(homeworkArchiveEventsDeadLetterQueue)
                 .to(academicEventsDeadLetterExchange)
                 .with(HOMEWORK_ARCHIVE_EVENTS_DLQ);
+    }
+
+    @Bean
+    public Binding lessonTransferEventsDeadLetterBinding(
+            DirectExchange academicEventsDeadLetterExchange,
+            @Qualifier("lessonTransferEventsDeadLetterQueue") Queue lessonTransferEventsDeadLetterQueue) {
+        return BindingBuilder.bind(lessonTransferEventsDeadLetterQueue)
+                .to(academicEventsDeadLetterExchange)
+                .with(LESSON_TRANSFER_EVENTS_DLQ);
     }
 
     @Bean

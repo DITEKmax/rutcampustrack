@@ -133,6 +133,22 @@ public class Homework {
         publicationState = HomeworkPublicationState.ARCHIVED;
     }
 
+    /** Moves only the lesson slot while preserving publication and content identity. */
+    public void transferLessonSlot(LocalDate targetDate, Integer targetLessonNumber) {
+        if (publicationState == HomeworkPublicationState.ARCHIVED) {
+            throw new IllegalStateException("archived homework cannot follow a lesson transfer");
+        }
+        if (targetDate == null || targetLessonNumber == null
+                || targetLessonNumber < 1 || targetLessonNumber > 8) {
+            throw new IllegalArgumentException("target lesson slot is invalid");
+        }
+        if (targetDate.equals(lessonDate) && targetLessonNumber.equals(lessonNumber)) return;
+        lessonDate = targetDate;
+        lessonNumber = targetLessonNumber;
+        dueReminderSentAt = null;
+        updatedAt = OffsetDateTime.now();
+    }
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

@@ -8,6 +8,7 @@ import ru.rutcampustrack.schedule.homework.HomeworkBindingService;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+import ru.rutcampustrack.schedule.lesson.LessonTransferWriter;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
 import ru.rutcampustrack.schedule.replacement.AssignmentReplacementService;
@@ -37,12 +38,13 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
     private final OneOffLessonRepository oneOffLessonRepository;
     private final HomeworkBindingService homeworkBindingService;
     private final AssignmentReplacementService assignmentReplacementService;
+    private final LessonTransferWriter lessonTransferWriter;
 
     /** Legacy constructor kept for focused tests of the pre-V17 read RPCs. */
     public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
                                    ScheduleItemRepository scheduleItemRepository,
                                    OneOffLessonRepository oneOffLessonRepository) {
-        this(lessonRepository, scheduleItemRepository, oneOffLessonRepository, null, null);
+        this(lessonRepository, scheduleItemRepository, oneOffLessonRepository, null, null, null);
     }
 
     /** Compatibility constructor retained for focused pre-replacement tests. */
@@ -51,7 +53,17 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                    OneOffLessonRepository oneOffLessonRepository,
                                    HomeworkBindingService homeworkBindingService) {
         this(lessonRepository, scheduleItemRepository, oneOffLessonRepository,
-                homeworkBindingService, null);
+                homeworkBindingService, null, null);
+    }
+
+    /** Compatibility constructor retained for focused pre-transfer tests. */
+    public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
+                                   ScheduleItemRepository scheduleItemRepository,
+                                   OneOffLessonRepository oneOffLessonRepository,
+                                   HomeworkBindingService homeworkBindingService,
+                                   AssignmentReplacementService assignmentReplacementService) {
+        this(lessonRepository, scheduleItemRepository, oneOffLessonRepository,
+                homeworkBindingService, assignmentReplacementService, null);
     }
 
     @Autowired
@@ -59,12 +71,14 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                    ScheduleItemRepository scheduleItemRepository,
                                    OneOffLessonRepository oneOffLessonRepository,
                                    HomeworkBindingService homeworkBindingService,
-                                   AssignmentReplacementService assignmentReplacementService) {
+                                   AssignmentReplacementService assignmentReplacementService,
+                                   LessonTransferWriter lessonTransferWriter) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.oneOffLessonRepository = oneOffLessonRepository;
         this.homeworkBindingService = homeworkBindingService;
         this.assignmentReplacementService = assignmentReplacementService;
+        this.lessonTransferWriter = lessonTransferWriter;
     }
 
     /**
@@ -130,8 +144,10 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                         .distinct().toList()).stream()
                 .collect(Collectors.toMap(ScheduleItem::getId, i -> i));
 
+        Map<Long, LessonTransferWriter.TransferState> transferStates = transferStates(
+                lessons.stream().map(Lesson::getId).toList());
         List<LessonResponse> responses = lessons.stream()
-                .map(l -> buildResponse(l, itemById.get(l.getScheduleItemId())))
+                .map(l -> buildResponse(l, itemById.get(l.getScheduleItemId()), transferStates.get(l.getId())))
                 .toList();
 
         OffsetDateTime updatedAt = itemById.values().stream()
@@ -179,6 +195,14 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
             responseObserver.onNext(LessonsByIdsResponse.newBuilder().build());
             responseObserver.onCompleted();
             return;
+        }
+
+        Map<Long, LessonTransferWriter.TransferState> transferStates = transferStates(
+                lessons.stream().map(Lesson::getId).toList());
+        if (transferStates.values().stream().anyMatch(state -> !"COMPLETED".equals(state.state()))) {
+            throw io.grpc.Status.FAILED_PRECONDITION
+                    .withDescription("lesson transfer is not complete")
+                    .asRuntimeException();
         }
 
         List<Long> scheduleItemIds = lessons.stream()
@@ -311,13 +335,18 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
     }
 
     private LessonResponse buildResponse(Lesson lesson, ScheduleItem item) {
+        return buildResponse(lesson, item, transferStates(List.of(lesson.getId())).get(lesson.getId()));
+    }
+
+    private LessonResponse buildResponse(Lesson lesson, ScheduleItem item,
+                                         LessonTransferWriter.TransferState transferState) {
         Long groupId = lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId();
         Long subjectId = lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId();
         Short lessonNumber = lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber();
         java.time.LocalTime start = lesson.getStartTime() != null ? lesson.getStartTime() : item.getStartTime();
         java.time.LocalTime end = lesson.getEndTime() != null ? lesson.getEndTime() : item.getEndTime();
         String room = lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item.getRoom();
-        return LessonResponse.newBuilder()
+        LessonResponse.Builder response = LessonResponse.newBuilder()
                 .setId(lesson.getId())
                 .setScheduleItemId(lesson.getScheduleItemId() == null ? 0 : lesson.getScheduleItemId())
                 .setGroupId(groupId)
@@ -339,8 +368,17 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .setLessonType(lesson.getLessonType() == null ? "" : lesson.getLessonType())
                 .setGeneration(lesson.getGeneration() == null ? 0 : lesson.getGeneration())
                 .setRevision(lesson.getRevision() == null ? 0 : lesson.getRevision())
-                .setCurrent(lesson.isCurrent())
-                .build();
+                .setCurrent(lesson.isCurrent());
+        if (transferState != null) {
+            response.setTransferOperationId(transferState.operationId())
+                    .setTransferState(transferState.state());
+        }
+        return response.build();
+    }
+
+    private Map<Long, LessonTransferWriter.TransferState> transferStates(List<Long> lessonIds) {
+        return lessonTransferWriter == null ? Map.of()
+                : lessonTransferWriter.pendingStatesForLessons(lessonIds);
     }
 
     private LessonInfo lessonInfo(Lesson lesson, ScheduleItem item) {

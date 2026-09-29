@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,7 +18,7 @@ public record TransferLessonRequest(
         @NotNull @Min(1) @Max(8) Integer targetLessonNumber,
         @Schema(nullable = true) LocalTime targetStartTime,
         @Schema(nullable = true) LocalTime targetEndTime,
-        @Schema(nullable = true) String targetRoom,
+        @Schema(nullable = true) @Size(max = 64) String targetRoom,
         @NotNull @Pattern(regexp = "^[1-9][0-9]*$") String expectedRevision,
         @NotNull UUID requestKey
 ) {
@@ -30,6 +31,9 @@ public record TransferLessonRequest(
         if (targetStartTime != null && targetEndTime != null
                 && !targetEndTime.isAfter(targetStartTime)) {
             throw new IllegalArgumentException("targetEndTime must be after targetStartTime");
+        }
+        if ((targetStartTime == null) != (targetEndTime == null)) {
+            throw new IllegalArgumentException("targetStartTime and targetEndTime must be supplied together");
         }
         requirePositiveDecimal(expectedRevision, "expectedRevision");
         Objects.requireNonNull(requestKey, "requestKey");

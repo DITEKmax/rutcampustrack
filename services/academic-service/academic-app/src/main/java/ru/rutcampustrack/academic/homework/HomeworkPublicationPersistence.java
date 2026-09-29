@@ -28,15 +28,18 @@ public class HomeworkPublicationPersistence {
     private final HomeworkRepository homeworkRepository;
     private final HomeworkBindingArchiveMarkerRepository archiveMarkerRepository;
     private final HomeworkBindingArchiveCoordinator archiveCoordinator;
+    private final HomeworkBindingTransferCoordinator transferCoordinator;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public HomeworkPublicationPersistence(HomeworkRepository homeworkRepository,
                                           HomeworkBindingArchiveMarkerRepository archiveMarkerRepository,
                                           HomeworkBindingArchiveCoordinator archiveCoordinator,
+                                          HomeworkBindingTransferCoordinator transferCoordinator,
                                           org.springframework.context.ApplicationEventPublisher eventPublisher) {
         this.homeworkRepository = homeworkRepository;
         this.archiveMarkerRepository = archiveMarkerRepository;
         this.archiveCoordinator = archiveCoordinator;
+        this.transferCoordinator = transferCoordinator;
         this.eventPublisher = eventPublisher;
     }
 
@@ -52,15 +55,19 @@ public class HomeworkPublicationPersistence {
         if (existing.isPresent()) {
             Homework homework = existing.get();
             verifyIdentity(homework, actorId, requestKey, payloadHash, bindingId);
+            transferCoordinator.applyPendingMarker(homework, bindingId, actorId, requestKey, payloadHash);
             if (terminalMarker.isPresent()) {
                 archiveCoordinator.ensureMarker(bindingId, actorId, requestKey, homework.getId());
                 if (homework.getPublicationState() != HomeworkPublicationState.ARCHIVED) {
                     homework.archivePublication();
                     homeworkRepository.save(homework);
                 }
-                homeworkRepository.flush();
                 archiveMarkerRepository.flush();
             }
+            homeworkRepository.save(homework);
+            homeworkRepository.flush();
+            transferCoordinator.associateMaterialized(bindingId, actorId, requestKey, payloadHash,
+                    homework.getId(), homework.getGroupId(), homework.getSubjectId(), homework.getSemesterId());
             return homework;
         }
         if (homeworkRepository.existsByBindingId(bindingId)) {
@@ -71,6 +78,7 @@ public class HomeworkPublicationPersistence {
                 groupId, subjectId, semesterId, title, description, link,
                 actorId, lessonDate, lessonNumber,
                 bindingId, actorId, requestKey, payloadHash);
+        transferCoordinator.applyPendingMarker(homework, bindingId, actorId, requestKey, payloadHash);
         if (terminalMarker.isPresent()) {
             // Cancellation can commit before the corresponding publication
             // content exists. Preserve the original command as history, already
@@ -79,6 +87,8 @@ public class HomeworkPublicationPersistence {
         }
         Homework saved = homeworkRepository.save(homework);
         homeworkRepository.flush();
+        transferCoordinator.associateMaterialized(bindingId, actorId, requestKey, payloadHash,
+                saved.getId(), saved.getGroupId(), saved.getSubjectId(), saved.getSemesterId());
         if (terminalMarker.isPresent()) {
             archiveCoordinator.ensureMarker(bindingId, actorId, requestKey, saved.getId());
             archiveMarkerRepository.flush();

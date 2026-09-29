@@ -54,6 +54,7 @@ public class RecurringLessonLifecycleWriter {
             lockFences(List.of(before.occurrence().assignmentId()));
             lockItems(List.of(before.occurrence().scheduleItemId()));
             LockedCurrent current = lockCurrent(before.occurrenceId());
+            requireNoUnfinishedTransfer(before.occurrenceId());
             requireRequestedLessonIsCurrent(lessonId, current);
             if (!"planned".equals(current.lesson().status())
                     && !"active".equals(current.lesson().status())
@@ -105,6 +106,7 @@ public class RecurringLessonLifecycleWriter {
             lockItems(targetBeforeLocks.scheduleItemIds());
             lockReplacementOperations(targetBeforeLocks.operationIds());
             LockedCurrent current = lockCurrent(before.occurrenceId());
+            requireNoUnfinishedTransfer(before.occurrenceId());
             requireRequestedLessonIsCurrent(lessonId, current);
             if (!"cancelled".equals(current.lesson().status())) {
                 throw new InvalidLessonStateException(
@@ -441,6 +443,16 @@ public class RecurringLessonLifecycleWriter {
     private void requireRequestedLessonIsCurrent(long lessonId, LockedCurrent current) {
         if (current.occurrence().currentLessonId() != lessonId) {
             throw new ConflictException("Эта версия пары уже заменена; обнови журнал перед повтором");
+        }
+    }
+
+    private void requireNoUnfinishedTransfer(long occurrenceId) {
+        Integer count = jdbc.queryForObject("""
+                SELECT COUNT(*) FROM lesson_transfer_operations
+                 WHERE occurrence_id = ? AND state <> 'COMPLETED'
+                """, Integer.class, occurrenceId);
+        if (count != null && count > 0) {
+            throw new ConflictException("Предыдущий перенос пары ещё не завершён");
         }
     }
 

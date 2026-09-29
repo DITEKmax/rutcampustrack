@@ -25,6 +25,11 @@ public class LessonAssembler {
      * Used when building pages — the caller wraps in EntityModel separately.
      */
     public LessonResponse toResponse(LessonWithItem lwi) {
+        return toResponse(lwi, null);
+    }
+
+    public LessonResponse toResponse(LessonWithItem lwi,
+                                     LessonTransferWriter.TransferState transferState) {
         Lesson l = lwi.lesson();
         ScheduleItem si = lwi.scheduleItem();
         Short dayOfWeek = l.getDayOfWeek() != null ? l.getDayOfWeek() : si.getDayOfWeek();
@@ -36,7 +41,7 @@ public class LessonAssembler {
         String room = l.getRoomSnapshot() != null ? l.getRoomSnapshot() : si.getRoom();
         Long groupId = l.getGroupId() != null ? l.getGroupId() : si.getGroupId();
         Long subjectId = l.getSubjectId() != null ? l.getSubjectId() : si.getSubjectId();
-        return new LessonResponse(
+        LessonResponse response = new LessonResponse(
                 l.getId(),
                 l.getScheduleItemId(),
                 groupId,
@@ -66,6 +71,10 @@ public class LessonAssembler {
                 l.getRevision(),
                 l.isCurrent()
         );
+        if (transferState != null) {
+            response.setTransferState(transferState.operationId(), transferState.state());
+        }
+        return response;
     }
 
     /**

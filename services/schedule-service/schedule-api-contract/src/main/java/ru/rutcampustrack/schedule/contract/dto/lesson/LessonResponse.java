@@ -56,6 +56,8 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
     private Long generation;
     private Long revision;
     private boolean current;
+    private String transferOperationId;
+    private String transferState;
 
     public LessonResponse() {}
 
@@ -246,5 +248,18 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
 
     public boolean isCurrent() {
         return current;
+    }
+
+    public String getTransferOperationId() {
+        return transferOperationId;
+    }
+
+    public String getTransferState() {
+        return transferState;
+    }
+
+    public void setTransferState(String operationId, String state) {
+        this.transferOperationId = operationId;
+        this.transferState = state;
     }
 }

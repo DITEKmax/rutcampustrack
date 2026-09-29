@@ -22,10 +22,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
+import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
+import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * REST API contract for lesson operations and schedule view.
@@ -35,6 +38,25 @@ import java.util.List;
 @Tag(name = "Lessons", description = "Управление уроками и расписание")
 @RequestMapping("/schedule")
 public interface LessonApi {
+
+    @Operation(summary = "Перенести будущую пару с сохранением её логической истории")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Перенос завершён обеими системами"),
+            @ApiResponse(responseCode = "202", description = "Перенос принят, применение участниками ожидается"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Пара не найдена"),
+            @ApiResponse(responseCode = "409", description = "Версия или новый слот конфликтуют")
+    })
+    @PostMapping("/lessons/{id}/transfer")
+    ResponseEntity<TransferLessonResponse> transferLesson(
+            @PathVariable Long id,
+            @Valid @RequestBody TransferLessonRequest request);
+
+    @Operation(summary = "Прочитать состояние операции переноса")
+    @ApiResponse(responseCode = "200", description = "Состояние операции переноса")
+    @GetMapping("/lesson-transfers/{operationId}")
+    ResponseEntity<TransferLessonResponse> getLessonTransfer(
+            @PathVariable UUID operationId);
 
     @Operation(summary = "Отменить урок (HEADMAN/ADMIN). Допускается отмена PLANNED/ACTIVE/CLOSED.")
     @ApiResponses({

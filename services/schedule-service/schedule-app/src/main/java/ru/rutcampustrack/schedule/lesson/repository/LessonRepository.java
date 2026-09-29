@@ -141,7 +141,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      * Uses native query with status::text cast (same pattern as other queries in this repo).
      */
     @Modifying
-    @Query(value = "DELETE FROM lessons WHERE schedule_item_id = :itemId AND status::text = 'planned' AND date >= :fromDate",
+    @Query(value = "DELETE FROM lessons l WHERE l.schedule_item_id = :itemId AND l.status::text = 'planned' AND l.date >= :fromDate "
+            + "AND NOT EXISTS (SELECT 1 FROM lesson_transfer_operations transfer "
+            + "WHERE transfer.target_lesson_id = l.id AND transfer.state <> 'COMPLETED')",
            nativeQuery = true)
     void deletePlannedFromDate(@Param("itemId") Long scheduleItemId,
                                @Param("fromDate") LocalDate fromDate);
@@ -157,8 +159,10 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      * attendance data and cannot legitimately exist in a future date anyway.
      */
     @Modifying
-    @Query(value = "DELETE FROM lessons WHERE schedule_item_id = :itemId "
-            + "AND status::text IN ('planned','cancelled') AND date >= :fromDate",
+    @Query(value = "DELETE FROM lessons l WHERE l.schedule_item_id = :itemId "
+            + "AND l.status::text IN ('planned','cancelled') AND l.date >= :fromDate "
+            + "AND NOT EXISTS (SELECT 1 FROM lesson_transfer_operations transfer "
+            + "WHERE transfer.target_lesson_id = l.id AND transfer.state <> 'COMPLETED')",
            nativeQuery = true)
     void deletePlannedOrCancelledFromDate(@Param("itemId") Long scheduleItemId,
                                           @Param("fromDate") LocalDate fromDate);
@@ -169,8 +173,10 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      * so the caller can publish {@code lesson.deleted} events before the physical
      * delete (attendance-service drops dependent records).
      */
-    @Query(value = "SELECT id FROM lessons WHERE schedule_item_id = :itemId "
-            + "AND status::text IN ('planned','cancelled') AND date >= :fromDate",
+    @Query(value = "SELECT l.id FROM lessons l WHERE l.schedule_item_id = :itemId "
+            + "AND l.status::text IN ('planned','cancelled') AND l.date >= :fromDate "
+            + "AND NOT EXISTS (SELECT 1 FROM lesson_transfer_operations transfer "
+            + "WHERE transfer.target_lesson_id = l.id AND transfer.state <> 'COMPLETED')",
            nativeQuery = true)
     List<Long> findPlannedOrCancelledIdsFromDate(@Param("itemId") Long scheduleItemId,
                                                  @Param("fromDate") LocalDate fromDate);
@@ -181,7 +187,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      * calling {@link #deletePlannedFromDate} so downstream services (attendance-service)
      * can drop dependent records keyed to the about-to-be-deleted lesson ids.
      */
-    @Query(value = "SELECT id FROM lessons WHERE schedule_item_id = :itemId AND status::text = 'planned' AND date >= :fromDate",
+    @Query(value = "SELECT l.id FROM lessons l WHERE l.schedule_item_id = :itemId AND l.status::text = 'planned' AND l.date >= :fromDate "
+            + "AND NOT EXISTS (SELECT 1 FROM lesson_transfer_operations transfer "
+            + "WHERE transfer.target_lesson_id = l.id AND transfer.state <> 'COMPLETED')",
            nativeQuery = true)
     List<Long> findPlannedIdsFromDate(@Param("itemId") Long scheduleItemId,
                                       @Param("fromDate") LocalDate fromDate);
@@ -215,6 +223,12 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
           AND l.lesson_number = :lessonNumber
           AND l.date = CAST(:date AS date)
           AND l.status::text IN ('planned','active','closed')
+          AND NOT EXISTS (SELECT 1 FROM lesson_transfer_operations transfer
+                           WHERE transfer.occurrence_id = l.occurrence_id
+                             AND transfer.state <> 'COMPLETED')
+          AND NOT EXISTS (SELECT 1 FROM lesson_transfer_operations transfer
+                           WHERE transfer.occurrence_id = l.occurrence_id
+                             AND transfer.state <> 'COMPLETED')
         ORDER BY l.date
         LIMIT 1
         """, nativeQuery = true)
@@ -232,6 +246,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     @Query(value = """
         SELECT l.* FROM lessons l
         WHERE l.status::text = 'planned'
+          AND NOT EXISTS (SELECT 1 FROM lesson_transfer_operations transfer
+                           WHERE transfer.occurrence_id = l.occurrence_id
+                             AND transfer.state <> 'COMPLETED')
           AND (l.date + l.start_time) <= CAST(:now AS timestamp)
         ORDER BY l.date, l.start_time
         """, nativeQuery = true)
@@ -243,6 +260,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     @Query(value = """
         SELECT l.* FROM lessons l
         WHERE l.status::text = 'active'
+          AND NOT EXISTS (SELECT 1 FROM lesson_transfer_operations transfer
+                           WHERE transfer.occurrence_id = l.occurrence_id
+                             AND transfer.state <> 'COMPLETED')
           AND (l.date + l.end_time + INTERVAL '5 minutes') <= CAST(:now AS timestamp)
         ORDER BY l.date, l.end_time
         """, nativeQuery = true)
@@ -260,6 +280,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     @Query(value = """
         SELECT l.* FROM lessons l
         WHERE l.status::text = 'active'
+          AND NOT EXISTS (SELECT 1 FROM lesson_transfer_operations transfer
+                           WHERE transfer.occurrence_id = l.occurrence_id
+                             AND transfer.state <> 'COMPLETED')
           AND l.reminder_midpoint_sent_at IS NULL
           AND (l.date + l.start_time + (l.end_time - l.start_time) / 2)
                   <= CAST(:now AS timestamp)
@@ -271,6 +294,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     @Query(value = """
         SELECT l.* FROM lessons l
         WHERE l.status::text = 'active'
+          AND NOT EXISTS (SELECT 1 FROM lesson_transfer_operations transfer
+                           WHERE transfer.occurrence_id = l.occurrence_id
+                             AND transfer.state <> 'COMPLETED')
           AND l.reminder_near_end_sent_at IS NULL
           AND (l.date + l.end_time - INTERVAL '5 minutes') <= CAST(:now AS timestamp)
           AND (l.date + l.end_time) > CAST(:now AS timestamp)

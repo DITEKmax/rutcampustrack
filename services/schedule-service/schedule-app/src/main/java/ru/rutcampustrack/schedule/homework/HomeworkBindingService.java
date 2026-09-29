@@ -343,6 +343,9 @@ public class HomeworkBindingService {
                    AND l.date = ?
                    AND l.lesson_number = ?
                    AND l.status::text IN ('planned', 'active', 'closed')
+                   AND NOT EXISTS (
+                       SELECT 1 FROM lesson_transfer_operations transfer
+                        WHERE transfer.occurrence_id = lo.id AND transfer.state <> 'COMPLETED')
                  ORDER BY l.id
                  LIMIT 1
                 """, HomeworkBindingService::mapOccurrence,
@@ -394,6 +397,13 @@ public class HomeworkBindingService {
                 () -> new ConflictException("lesson occurrence has no current physical lesson"));
         if (!List.of("planned", "active", "closed").contains(current.status())) {
             throw new ConflictException("homework cannot be bound to a cancelled or transferred lesson");
+        }
+        Integer unfinishedTransfers = jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM lesson_transfer_operations
+                 WHERE occurrence_id = ? AND state <> 'COMPLETED'
+                """, Integer.class, occurrenceId);
+        if (unfinishedTransfers != null && unfinishedTransfers > 0) {
+            throw new ConflictException("lesson homework binding is blocked while transfer is unresolved");
         }
         return current;
     }

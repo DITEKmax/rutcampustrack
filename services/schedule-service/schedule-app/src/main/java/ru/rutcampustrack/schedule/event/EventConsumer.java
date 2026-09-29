@@ -2,15 +2,19 @@ package ru.rutcampustrack.schedule.event;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.subject.SubjectDeletedCascadeService;
+import ru.rutcampustrack.schedule.lesson.LessonTransferWriter;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 import ru.rutcampustrack.shared.events.EventIdempotent;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
 import java.util.Map;
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Generic RabbitMQ event consumer for Schedule Service.
@@ -33,11 +37,15 @@ public class EventConsumer extends AbstractEventConsumer {
 
     private final SubjectDeletedCascadeService subjectDeletedCascadeService;
     private final IdempotencyGuard idempotencyGuard;
+    private final LessonTransferWriter lessonTransferWriter;
 
+    @Autowired
     public EventConsumer(SubjectDeletedCascadeService subjectDeletedCascadeService,
-                         IdempotencyGuard idempotencyGuard) {
+                         IdempotencyGuard idempotencyGuard,
+                         LessonTransferWriter lessonTransferWriter) {
         this.subjectDeletedCascadeService = subjectDeletedCascadeService;
         this.idempotencyGuard = idempotencyGuard;
+        this.lessonTransferWriter = lessonTransferWriter;
     }
 
     @RabbitListener(queues = "schedule-service.events")
@@ -58,6 +66,7 @@ public class EventConsumer extends AbstractEventConsumer {
             log.debug("Received event: {}", eventType);
             switch (eventType) {
                 case "subject.deleted" -> handleSubjectDeleted(envelope);
+                case "lesson.transfer.participant.applied" -> handleLessonTransferAcknowledged(envelope);
                 default -> log.trace("Ignoring unknown event type: {}", eventType);
             }
         });
@@ -77,5 +86,61 @@ public class EventConsumer extends AbstractEventConsumer {
             return;
         }
         subjectDeletedCascadeService.cascade(id.longValue());
+    }
+
+    @SuppressWarnings("unchecked")
+    private void handleLessonTransferAcknowledged(Map<String, Object> envelope) {
+        if (!List.of("academic-service", "attendance-service").contains(envelope.get("source"))) {
+            throw new IllegalArgumentException("lesson transfer acknowledgement has an untrusted source");
+        }
+        if (exactLong(envelope.get("event_version"), "event_version") != 1) {
+            throw new IllegalArgumentException("lesson transfer acknowledgement has an unsupported version");
+        }
+        Object rawPayload = envelope.get("payload");
+        if (!(rawPayload instanceof Map<?, ?> raw)) {
+            throw new IllegalArgumentException("lesson transfer acknowledgement has no payload object");
+        }
+        Map<String, Object> payload = (Map<String, Object>) raw;
+        String participant = requiredString(payload.get("participant"), "participant");
+        String expectedSource = "ACADEMIC".equals(participant) ? "academic-service"
+                : "ATTENDANCE".equals(participant) ? "attendance-service" : null;
+        if (expectedSource == null || !expectedSource.equals(envelope.get("source"))) {
+            throw new IllegalArgumentException("lesson transfer acknowledgement participant does not match source");
+        }
+        String result = requiredString(payload.get("result"), "result");
+        Object rawErrorCode = payload.get("error_code");
+        String errorCode = rawErrorCode == null ? null : requiredString(rawErrorCode, "error_code");
+        Object rawRetryable = payload.get("retryable");
+        if (!(rawRetryable instanceof Boolean retryable)) {
+            throw new IllegalArgumentException("lesson transfer acknowledgement has invalid retryable flag");
+        }
+        lessonTransferWriter.acknowledge(
+                requiredString(payload.get("operation_id"), "operation_id"),
+                participant,
+                Math.toIntExact(exactLong(payload.get("batch_index"), "batch_index")),
+                result,
+                errorCode,
+                requiredString(payload.get("payload_hash"), "payload_hash"),
+                exactLong(payload.get("source_lesson_id"), "source_lesson_id"),
+                exactLong(payload.get("target_lesson_id"), "target_lesson_id"),
+                retryable);
+    }
+
+    private static String requiredString(Object raw, String field) {
+        if (!(raw instanceof String value) || value.isBlank()) {
+            throw new IllegalArgumentException("lesson transfer acknowledgement has invalid " + field);
+        }
+        return value;
+    }
+
+    private static long exactLong(Object raw, String field) {
+        if (!(raw instanceof Number number)) {
+            throw new IllegalArgumentException("lesson transfer acknowledgement has invalid " + field);
+        }
+        try {
+            return new BigDecimal(number.toString()).longValueExact();
+        } catch (NumberFormatException | ArithmeticException invalid) {
+            throw new IllegalArgumentException("lesson transfer acknowledgement has invalid " + field, invalid);
+        }
     }
 }

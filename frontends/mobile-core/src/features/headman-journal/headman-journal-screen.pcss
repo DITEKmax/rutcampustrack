@@ -195,12 +195,17 @@
 }
 
 .headman-journal__lesson-actions h3,
+.headman-journal__lesson-actions h4,
 .headman-journal__lesson-actions p {
   margin: 0;
 }
 
 .headman-journal__lesson-actions h3 {
   font-size: var(--rct-font-size-body);
+}
+
+.headman-journal__lesson-actions h4 {
+  font-size: var(--rct-font-size-caption);
 }
 
 .headman-journal__lesson-actions p {
@@ -215,7 +220,8 @@
   font-size: var(--rct-font-size-caption);
 }
 
-.headman-journal__lesson-actions input {
+.headman-journal__lesson-actions input,
+.headman-journal__lesson-actions select {
   min-block-size: var(--rct-control-min-touch);
   border: var(--rct-border-hairline) solid var(--rct-color-border-default);
   border-radius: var(--rct-radius-lg);
@@ -239,10 +245,37 @@
 }
 
 .headman-journal__lesson-actions button:disabled,
-.headman-journal__lesson-actions input:disabled {
+.headman-journal__lesson-actions input:disabled,
+.headman-journal__lesson-actions select:disabled {
   color: var(--rct-color-disabled-text);
   background: var(--rct-color-disabled-surface);
   cursor: not-allowed;
+}
+
+.headman-journal__transfer-task,
+.headman-journal__transfer-status {
+  display: grid;
+  gap: var(--rct-space-2);
+  border-block-start: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  padding-block-start: var(--rct-space-3);
+}
+
+.headman-journal__transfer-task-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rct-space-2);
+}
+
+.headman-journal__lesson-actions .headman-journal__transfer-secondary {
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+}
+
+.headman-journal__lesson-actions .headman-journal__transfer-error {
+  display: grid;
+  gap: var(--rct-space-2);
+  color: var(--rct-color-danger-text);
 }
 
 .headman-journal__server-flag {

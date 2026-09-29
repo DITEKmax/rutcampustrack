@@ -3,12 +3,21 @@ import { StaleSessionGenerationError } from '../../shared/session-owner'
 import { moscowDate } from '../../domain/homework'
 import {
   HeadmanJournalApi,
+  HeadmanJournalApiError,
+  createHeadmanLessonTransferRequest,
   createGenerationBoundHeadmanJournalApi,
 } from './headman-journal-client'
 
 function jsonResponse(value: unknown): Response {
   return new Response(JSON.stringify(value), {
     status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+function jsonResponseWithStatus(value: unknown, status: number): Response {
+  return new Response(JSON.stringify(value), {
+    status,
     headers: { 'Content-Type': 'application/json' },
   })
 }
@@ -33,6 +42,7 @@ describe('HeadmanJournalApi', () => {
               subjectId: 9,
               date: '2026-09-21',
               status: 'CANCELLED',
+              current: true,
               lessonNumber: 2,
               startTime: '10:00:00',
               endTime: '11:30:00',
@@ -55,11 +65,224 @@ describe('HeadmanJournalApi', () => {
       endTime: '11:30:00',
       room: 'А-101',
       lessonType: null,
+      occurrenceRevision: null,
+      current: true,
+      transferOperationId: null,
+      transferState: null,
     }])
     expect(paths).toEqual([
       '/api/schedule/groups/7/lessons?dateFrom=2026-09-21&dateTo=2026-09-21&page=0&size=100'
         + '&status=PLANNED&status=ACTIVE&status=CLOSED&status=CANCELLED',
     ])
+  })
+
+  it('sends the frozen transfer payload and follows the scoped operation status', async () => {
+    const requests: Array<{ path: string; init: RequestInit }> = []
+    const pending = {
+      operationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+      state: 'PENDING',
+      occurrenceId: '73',
+      sourceLessonId: '42',
+      targetLessonId: '91',
+      targetDate: '2026-10-02',
+      revision: '18',
+      retryable: true,
+      errorCode: null,
+    }
+    const completed = { ...pending, state: 'COMPLETED', revision: '19', retryable: false }
+    const api = new HeadmanJournalApi({
+      accessToken: () => 'token',
+      fetcher: async (input, init = {}) => {
+        requests.push({ path: String(input), init })
+        return jsonResponseWithStatus(requests.length === 1 ? pending : completed, 200)
+      },
+    })
+    const request = createHeadmanLessonTransferRequest(
+      '2026-10-02',
+      3,
+      '17',
+      '2507aed5-9905-4b02-a91f-bf98799e18b6',
+    )
+
+    await expect(api.transferLesson(42, request)).rejects.toThrow('не соответствующее HTTP-ответу')
+
+    const acceptedApi = new HeadmanJournalApi({
+      accessToken: () => 'token',
+      fetcher: async (input, init = {}) => {
+        requests.push({ path: String(input), init })
+        return requests.length === 2
+          ? jsonResponseWithStatus(pending, 202)
+          : jsonResponseWithStatus(completed, 200)
+      },
+    })
+    const accepted = await acceptedApi.transferLesson(42, request)
+    expect(accepted).toMatchObject({
+      operationId: pending.operationId,
+      state: 'PENDING',
+      targetDate: '2026-10-02',
+      retryable: true,
+    })
+    expect(requests[1]?.path).toBe('/api/schedule/lessons/42/transfer')
+    expect(requests[1]?.init.method).toBe('POST')
+    expect(JSON.parse(String(requests[1]?.init.body))).toEqual({
+      targetDate: '2026-10-02',
+      targetLessonNumber: 3,
+      targetStartTime: null,
+      targetEndTime: null,
+      targetRoom: null,
+      expectedRevision: '17',
+      requestKey: '2507aed5-9905-4b02-a91f-bf98799e18b6',
+    })
+
+    await expect(acceptedApi.getLessonTransfer(accepted.operationId)).resolves.toMatchObject({
+      operationId: pending.operationId,
+      state: 'COMPLETED',
+      retryable: false,
+    })
+    expect(requests[2]?.path).toBe(`/api/schedule/lesson-transfers/${pending.operationId}`)
+    expect(requests[2]?.init.method).toBeUndefined()
+  })
+
+  it('retains occurrence revision and a resumable transfer operation from the latest lesson list', async () => {
+    const api = new HeadmanJournalApi({
+      accessToken: () => 'token',
+      fetcher: async () => jsonResponse({
+        _embedded: {
+          lessonResponseList: [{
+            id: 42,
+            groupId: 7,
+            date: '2026-09-30',
+            status: 'PLANNED',
+            lessonNumber: 2,
+            occurrenceRevision: 17,
+            current: true,
+            transferOperationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+            transferState: 'PENDING',
+          }],
+        },
+        page: { totalPages: 1 },
+      }),
+    })
+
+    await expect(api.listLessons(7, '2026-09-30', '2026-09-30')).resolves.toMatchObject([{
+      id: 42,
+      occurrenceRevision: '17',
+      transferOperationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+      transferState: 'PENDING',
+    }])
+  })
+
+  it('preserves the same request key and payload when an uncertain transfer is retried', async () => {
+    const bodies: string[] = []
+    let attempt = 0
+    const response = {
+      operationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+      state: 'PENDING',
+      occurrenceId: '73',
+      sourceLessonId: '42',
+      targetLessonId: '91',
+      targetDate: '2026-10-02',
+      revision: '18',
+      retryable: true,
+      errorCode: null,
+    }
+    const api = new HeadmanJournalApi({
+      accessToken: () => 'token',
+      fetcher: async (_input, init = {}) => {
+        bodies.push(String(init.body))
+        attempt += 1
+        if (attempt === 1) throw new TypeError('network response was lost')
+        return jsonResponseWithStatus(response, 202)
+      },
+    })
+    const request = createHeadmanLessonTransferRequest(
+      '2026-10-02',
+      3,
+      '17',
+      '2507aed5-9905-4b02-a91f-bf98799e18b6',
+    )
+
+    await expect(api.transferLesson(42, request)).rejects.toThrow('network response was lost')
+    await expect(api.transferLesson(42, request)).resolves.toMatchObject({ state: 'PENDING' })
+
+    expect(Object.isFrozen(request)).toBe(true)
+    expect(bodies).toHaveLength(2)
+    expect(bodies[0]).toBe(bodies[1])
+    expect(JSON.parse(bodies[0] ?? '{}')).toMatchObject({
+      expectedRevision: '17',
+      requestKey: '2507aed5-9905-4b02-a91f-bf98799e18b6',
+    })
+  })
+
+  it('refreshes an expired session once and retries the exact transfer payload', async () => {
+    const requests: Array<{ authorization: string | null; body: string }> = []
+    let token = 'old-token'
+    let refreshed = false
+    const api = new HeadmanJournalApi({
+      accessToken: () => token,
+      onUnauthorized: async () => {
+        refreshed = true
+        token = 'new-token'
+      },
+      fetcher: async (_input, init = {}) => {
+        requests.push({
+          authorization: new Headers(init.headers).get('Authorization'),
+          body: String(init.body),
+        })
+        if (requests.length === 1) return new Response(null, { status: 401 })
+        return jsonResponseWithStatus({
+          operationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+          state: 'PENDING',
+          occurrenceId: '73',
+          sourceLessonId: '42',
+          targetLessonId: '91',
+          targetDate: '2026-10-02',
+          revision: '18',
+          retryable: true,
+          errorCode: null,
+        }, 202)
+      },
+    })
+    const request = createHeadmanLessonTransferRequest(
+      '2026-10-02',
+      3,
+      '17',
+      '2507aed5-9905-4b02-a91f-bf98799e18b6',
+    )
+
+    await expect(api.transferLesson(42, request)).resolves.toMatchObject({ state: 'PENDING' })
+
+    expect(refreshed).toBe(true)
+    expect(requests.map((item) => item.authorization)).toEqual(['Bearer old-token', 'Bearer new-token'])
+    expect(requests[0]?.body).toBe(requests[1]?.body)
+  })
+
+  it('surfaces a transfer conflict body without treating it as accepted', async () => {
+    const api = new HeadmanJournalApi({
+      accessToken: () => 'token',
+      fetcher: async () => jsonResponseWithStatus({
+        operationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+        state: 'ERROR',
+        occurrenceId: '73',
+        sourceLessonId: '42',
+        targetLessonId: '91',
+        targetDate: '2026-10-02',
+        revision: '17',
+        retryable: false,
+        errorCode: 'SOURCE_STATE_CONFLICT',
+      }, 409),
+    })
+    const request = createHeadmanLessonTransferRequest(
+      '2026-10-02',
+      3,
+      '17',
+      '2507aed5-9905-4b02-a91f-bf98799e18b6',
+    )
+
+    await expect(api.transferLesson(42, request)).rejects.toMatchObject({
+      response: { status: 409 },
+      problem: { errorCode: 'SOURCE_STATE_CONFLICT' },
+    } satisfies Partial<HeadmanJournalApiError>)
   })
 
   it('keeps unmarked and cancelled states distinct and refuses legacy FREE_ATTENDANCE normalization', async () => {
@@ -86,7 +309,7 @@ describe('HeadmanJournalApi', () => {
     ])
   })
 
-  it('rejects a late response after the session generation changes', async () => {
+  it('rejects a late transfer response after the session owner changes', async () => {
     let generation = 0
     let release: ((response: Response) => void) | undefined
     const api = createGenerationBoundHeadmanJournalApi({
@@ -95,9 +318,24 @@ describe('HeadmanJournalApi', () => {
       refreshFor: async () => undefined,
     }, async () => new Promise<Response>((resolve) => { release = resolve }))
 
-    const pending = api.getLessonAttendance(42)
+    const pending = api.transferLesson(42, createHeadmanLessonTransferRequest(
+      '2026-10-02',
+      3,
+      '17',
+      '2507aed5-9905-4b02-a91f-bf98799e18b6',
+    ))
     generation = 1
-    release?.(jsonResponse({ lessonId: 42, entries: [] }))
+    release?.(jsonResponseWithStatus({
+      operationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+      state: 'COMPLETED',
+      occurrenceId: '73',
+      sourceLessonId: '42',
+      targetLessonId: '91',
+      targetDate: '2026-10-02',
+      revision: '18',
+      retryable: false,
+      errorCode: null,
+    }, 200))
 
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
   })

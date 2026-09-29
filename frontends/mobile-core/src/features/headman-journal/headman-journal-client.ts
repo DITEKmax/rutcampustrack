@@ -5,6 +5,14 @@ import {
 } from '../../shared/report-download-client'
 
 export type HeadmanJournalLessonStatus = 'PLANNED' | 'ACTIVE' | 'CLOSED' | 'CANCELLED' | 'UNSUPPORTED'
+export type HeadmanLessonTransferState = 'PENDING' | 'COMPLETED' | 'ERROR'
+export type HeadmanLessonTransferErrorCode =
+  | 'TARGET_DATA_CONFLICT'
+  | 'SOURCE_STATE_CONFLICT'
+  | 'SCOPE_MISMATCH'
+  | 'INVALID_SNAPSHOT'
+  | 'DEPENDENCY_UNAVAILABLE'
+  | 'ARCHIVED_SEMESTER'
 export type HeadmanJournalAttendanceStatus = 'PRESENT' | 'ABSENT' | 'EXCUSED' | 'EMPTY' | 'CANCELLED' | 'UNSUPPORTED'
 export type HeadmanJournalExcuseType =
   | 'ILLNESS'
@@ -27,6 +35,55 @@ export interface HeadmanJournalLesson {
   readonly endTime: string | null
   readonly room: string | null
   readonly lessonType: string | null
+  readonly occurrenceRevision: string | null
+  readonly current: boolean
+  readonly transferOperationId: string | null
+  readonly transferState: HeadmanLessonTransferState | null
+}
+
+export interface HeadmanLessonTransferRequest {
+  readonly targetDate: string
+  readonly targetLessonNumber: number
+  readonly targetStartTime: string | null
+  readonly targetEndTime: string | null
+  readonly targetRoom: string | null
+  readonly expectedRevision: string
+  readonly requestKey: string
+}
+
+export interface HeadmanLessonTransferResponse {
+  readonly operationId: string
+  readonly state: HeadmanLessonTransferState
+  readonly occurrenceId: string
+  readonly sourceLessonId: string
+  readonly targetLessonId: string
+  readonly targetDate: string
+  readonly revision: string
+  readonly retryable: boolean
+  readonly errorCode: HeadmanLessonTransferErrorCode | null
+}
+
+export function createHeadmanLessonTransferRequest(
+  targetDate: string,
+  targetLessonNumber: number,
+  expectedRevision: string,
+  requestKey: string,
+): HeadmanLessonTransferRequest {
+  assertDate(targetDate, 'targetDate')
+  if (!Number.isInteger(targetLessonNumber) || targetLessonNumber < 1 || targetLessonNumber > 8) {
+    throw new RangeError('targetLessonNumber должен быть от 1 до 8')
+  }
+  assertPositiveDecimalString(expectedRevision, 'expectedRevision')
+  assertUuid(requestKey, 'requestKey')
+  return Object.freeze({
+    targetDate,
+    targetLessonNumber,
+    targetStartTime: null,
+    targetEndTime: null,
+    targetRoom: null,
+    expectedRevision,
+    requestKey,
+  })
 }
 
 export interface HeadmanJournalRosterEntry {
@@ -255,6 +312,40 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     return lesson
   }
 
+  async transferLesson(lessonId: number, request: HeadmanLessonTransferRequest): Promise<HeadmanLessonTransferResponse> {
+    assertPositiveInteger(lessonId, 'lessonId')
+    const payload = snapshotHeadmanLessonTransferRequest(request)
+    const response = await this.response(`/api/schedule/lessons/${lessonId}/transfer`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+    if (response.status !== 200 && response.status !== 202) throw await this.apiError(response)
+    const result = normalizeHeadmanLessonTransferResponse(await response.json())
+    this.options.assertCurrent?.()
+    if (result.sourceLessonId !== String(lessonId)) {
+      throw new Error('Сервер вернул операцию переноса для другой пары.')
+    }
+    if (result.targetDate !== payload.targetDate) {
+      throw new Error('Сервер вернул другую дату целевого переноса.')
+    }
+    if ((response.status === 200 && result.state !== 'COMPLETED')
+      || (response.status === 202 && result.state !== 'PENDING')) {
+      throw new Error('Сервер вернул состояние переноса, не соответствующее HTTP-ответу.')
+    }
+    return result
+  }
+
+  async getLessonTransfer(operationId: string): Promise<HeadmanLessonTransferResponse> {
+    assertUuid(operationId, 'operationId')
+    const result = normalizeHeadmanLessonTransferResponse(
+      await this.request<unknown>(`/api/schedule/lesson-transfers/${encodeURIComponent(operationId)}`),
+    )
+    if (result.operationId !== operationId) {
+      throw new Error('Сервер вернул состояние другой операции переноса.')
+    }
+    return result
+  }
+
   mark(lessonId: number, userId: number, command: HeadmanJournalMarkCommand): Promise<HeadmanJournalMarkAck> {
     if (this.writePort) return this.writePort.mark(lessonId, userId, command)
     assertPositiveInteger(lessonId, 'lessonId')
@@ -394,6 +485,15 @@ function normalizeLesson(value: unknown): HeadmanJournalLesson | null {
   const date = stringValue(record.date)
   if (id === null || date === null) return null
   const status = normalizeLessonStatus(record.status)
+  const occurrenceRevision = positiveDecimalValue(record.occurrenceRevision)
+  if (record.occurrenceRevision !== null && record.occurrenceRevision !== undefined && occurrenceRevision === null) {
+    throw new Error('Сервер вернул некорректную revision пары в расписании.')
+  }
+  const transferOperationId = nullableUuid(record.transferOperationId, 'transferOperationId')
+  const transferState = nullableTransferState(record.transferState)
+  if ((transferOperationId === null) !== (transferState === null)) {
+    throw new Error('Сервер вернул неполный статус операции переноса пары.')
+  }
   return {
     id,
     groupId: positiveInteger(record.groupId),
@@ -405,7 +505,60 @@ function normalizeLesson(value: unknown): HeadmanJournalLesson | null {
     endTime: stringValue(record.endTime),
     room: stringValue(record.room),
     lessonType: stringValue(record.lessonType),
+    occurrenceRevision,
+    current: booleanValue(record.current) ?? false,
+    transferOperationId,
+    transferState,
   }
+}
+
+function normalizeHeadmanLessonTransferResponse(value: unknown): HeadmanLessonTransferResponse {
+  const record = unwrapContent(value)
+  if (!record) throw new Error('Сервер вернул пустой ответ о переносе пары.')
+  const operationId = nullableUuid(record.operationId, 'operationId')
+  const state = nullableTransferState(record.state)
+  const occurrenceId = positiveDecimalValue(record.occurrenceId)
+  const sourceLessonId = positiveDecimalValue(record.sourceLessonId)
+  const targetLessonId = positiveDecimalValue(record.targetLessonId)
+  const targetDate = isoDateValue(record.targetDate)
+  const revision = positiveDecimalValue(record.revision)
+  const retryable = booleanValue(record.retryable)
+  const errorCode = nullableTransferErrorCode(record.errorCode)
+  if (operationId === null || state === null || occurrenceId === null || sourceLessonId === null
+    || targetLessonId === null || targetDate === null || revision === null || retryable === null || errorCode === undefined) {
+    throw new Error('Сервер вернул неполный ответ о переносе пары.')
+  }
+  if ((state === 'ERROR') !== (errorCode !== null) || retryable !== (state === 'PENDING')) {
+    throw new Error('Сервер вернул противоречивое состояние операции переноса.')
+  }
+  return { operationId, state, occurrenceId, sourceLessonId, targetLessonId, targetDate, revision, retryable, errorCode }
+}
+
+function snapshotHeadmanLessonTransferRequest(value: HeadmanLessonTransferRequest): HeadmanLessonTransferRequest {
+  if (!value || typeof value !== 'object') throw new TypeError('request обязателен')
+  assertDate(value.targetDate, 'targetDate')
+  if (!Number.isInteger(value.targetLessonNumber) || value.targetLessonNumber < 1 || value.targetLessonNumber > 8) {
+    throw new RangeError('targetLessonNumber должен быть от 1 до 8')
+  }
+  assertPositiveDecimalString(value.expectedRevision, 'expectedRevision')
+  assertUuid(value.requestKey, 'requestKey')
+  const hasStart = value.targetStartTime !== null
+  const hasEnd = value.targetEndTime !== null
+  if (hasStart !== hasEnd || (hasStart && (!isTimeValue(value.targetStartTime) || !isTimeValue(value.targetEndTime)))) {
+    throw new RangeError('targetStartTime и targetEndTime должны задаваться вместе корректным временем')
+  }
+  if (value.targetRoom !== null && (typeof value.targetRoom !== 'string' || Array.from(value.targetRoom).length > 64)) {
+    throw new RangeError('targetRoom не может быть длиннее 64 символов')
+  }
+  return Object.freeze({
+    targetDate: value.targetDate,
+    targetLessonNumber: value.targetLessonNumber,
+    targetStartTime: value.targetStartTime,
+    targetEndTime: value.targetEndTime,
+    targetRoom: value.targetRoom,
+    expectedRevision: value.expectedRevision,
+    requestKey: value.requestKey,
+  })
 }
 
 function normalizeWeeklyExportOptions(value: unknown): HeadmanWeeklyExportOptions {
@@ -579,6 +732,53 @@ function assertPositiveInteger(value: number, name: string): void {
 
 function assertDate(value: string, name: string): void {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new RangeError(`${name} must be an ISO date`)
+}
+
+function assertPositiveDecimalString(value: string, name: string): void {
+  if (typeof value !== 'string' || !/^[1-9][0-9]*$/.test(value)) {
+    throw new RangeError(`${name} must be a positive decimal string`)
+  }
+}
+
+function assertUuid(value: string, name: string): void {
+  if (typeof value !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)) {
+    throw new RangeError(`${name} must be a UUID`)
+  }
+}
+
+function positiveDecimalValue(value: unknown): string | null {
+  if (typeof value === 'string' && /^[1-9][0-9]*$/.test(value)) return value
+  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0 ? String(value) : null
+}
+
+function nullableUuid(value: unknown, name: string): string | null {
+  if (value === null || value === undefined) return null
+  if (typeof value !== 'string') throw new Error(`Сервер вернул некорректный ${name}.`)
+  try {
+    assertUuid(value, name)
+  } catch {
+    throw new Error(`Сервер вернул некорректный ${name}.`)
+  }
+  return value.toLowerCase()
+}
+
+function nullableTransferState(value: unknown): HeadmanLessonTransferState | null {
+  if (value === null || value === undefined || value === '') return null
+  if (value === 'PENDING' || value === 'COMPLETED' || value === 'ERROR') return value
+  throw new Error('Сервер вернул неподдерживаемое состояние переноса пары.')
+}
+
+function nullableTransferErrorCode(value: unknown): HeadmanLessonTransferErrorCode | null | undefined {
+  if (value === null || value === undefined || value === '') return null
+  if (value === 'TARGET_DATA_CONFLICT' || value === 'SOURCE_STATE_CONFLICT' || value === 'SCOPE_MISMATCH'
+    || value === 'INVALID_SNAPSHOT' || value === 'DEPENDENCY_UNAVAILABLE' || value === 'ARCHIVED_SEMESTER') {
+    return value
+  }
+  return undefined
+}
+
+function isTimeValue(value: unknown): value is string {
+  return typeof value === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,9})?)?$/.test(value)
 }
 
 function positiveInteger(value: unknown): number | null {

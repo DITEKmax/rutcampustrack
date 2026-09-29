@@ -7,12 +7,16 @@ import { openRequestAttachmentPopup, runRequestAttachmentOpen, type RequestAttac
 import type { RequestAttachmentViewState } from '../requests/types'
 import {
   HeadmanJournalApiError,
+  createHeadmanLessonTransferRequest,
   type HeadmanJournalApi,
   type HeadmanJournalAttendanceStatus,
   type HeadmanJournalExcuseType,
   type HeadmanJournalLesson,
   type HeadmanJournalReport,
   type HeadmanJournalRosterEntry,
+  type HeadmanLessonTransferErrorCode,
+  type HeadmanLessonTransferRequest,
+  type HeadmanLessonTransferResponse,
   type HeadmanWeeklyExportOptions,
   toHeadmanWeeklyReportRequest,
 } from './headman-journal-client'
@@ -64,7 +68,7 @@ const excuseFile = ref<File | null>(null)
 const cancelReason = ref('')
 const lessonActionBusy = ref(false)
 type LessonActionConfirmation = {
-  action: 'cancel' | 'restore'
+  action: 'cancel' | 'restore' | 'transfer'
   api: HeadmanJournalApi
   groupId: number | null
   lessonId: number
@@ -72,9 +76,33 @@ type LessonActionConfirmation = {
   lessonNumber: number | null
   permissions: readonly HeadmanAssistantPermission[] | null
   reason: string | null
+  transferRequest: HeadmanLessonTransferRequest | null
+}
+type TransferOperationPhase = 'submitting' | 'pending' | 'checking' | 'uncertain' | 'completed' | 'error'
+type TransferOperation = {
+  readonly key: string
+  readonly api: HeadmanJournalApi
+  readonly groupId: number
+  readonly sourceLessonId: number
+  readonly sourceDate: string
+  readonly targetDate: string | null
+  readonly targetLessonNumber: number | null
+  readonly request: HeadmanLessonTransferRequest | null
+  readonly operationId: string | null
+  readonly response: HeadmanLessonTransferResponse | null
+  readonly phase: TransferOperationPhase
+  readonly message: string | null
 }
 const lessonActionConfirmationDialog = ref<HTMLDialogElement | null>(null)
 const pendingLessonActionConfirmation = shallowRef<LessonActionConfirmation | null>(null)
+const transferTaskOpen = ref(false)
+const transferTargetDate = ref('')
+const transferTargetLessonNumber = ref<number | null>(null)
+const transferTargetLessons = shallowRef<readonly HeadmanJournalLesson[]>([])
+const transferTargetLessonsDate = ref<string | null>(null)
+const transferTargetLoading = ref(false)
+const transferTargetError = ref<string | null>(null)
+const transferOperations = shallowRef<readonly TransferOperation[]>([])
 const attachmentStates = ref<Readonly<Record<number, RequestAttachmentViewState>>>({})
 const attachmentOwnerIdentity = ref<string | null>(props.api ? 'headman-journal' : null)
 const attachmentOwnerGeneration = ref(0)
@@ -88,9 +116,14 @@ const weeklyExportStatus = ref<string | null>(null)
 let lessonsRevision = 0
 let reportRevision = 0
 let lessonActionRevision = 0
+let transferTargetRevision = 0
+let transferContextGeneration = 0
+const transferRunRevisions = new Map<string, number>()
 let weeklyOptionsRevision = 0
 let weeklyExportRevision = 0
 let weeklyExportAbort: AbortController | null = null
+let activeLessonsLoad: Promise<void> = Promise.resolve()
+let preferredLessonAfterDateChange: number | null = null
 let disposed = false
 let attachmentDisposed = false
 const attachmentPopups = new Set<RequestAttachmentPopup>()
@@ -113,6 +146,16 @@ const busy = computed(() => loadingLessons.value || loadingReport.value || loadi
 const selectedWeeklyFormat = computed(() => weeklyExportOptions.value?.formats
   .find((format) => format.code === weeklyExportFormatCode.value) ?? null)
 const selectedWeeklyCount = computed(() => selectedWeeklyStarts.value.length)
+const transferTargetDateMin = computed(() => shiftIsoDate(todayIso(), 1))
+const transferTargetSlots = computed(() => Array.from({ length: 8 }, (_, index) => index + 1))
+const availableTransferTargetSlots = computed(() => transferTargetSlots.value.filter((slot) => !isTransferTargetSlotUnavailable(slot)))
+const selectedTransferOperation = computed(() => selectedLesson.value ? transferOperationForLesson(selectedLesson.value.id) : null)
+const selectedServerTransferState = computed(() => selectedLesson.value?.transferState ?? null)
+const canSubmitTransfer = computed(() => Boolean(transferTaskOpen.value && selectedLesson.value
+  && canStartTransfer(selectedLesson.value) && !lessonActionBusy.value
+  && transferTargetLessonsDate.value === transferTargetDate.value && !transferTargetLoading.value
+  && transferTargetError.value === null && transferTargetLessonNumber.value !== null
+  && availableTransferTargetSlots.value.includes(transferTargetLessonNumber.value)))
 
 function formatDate(value: string): string {
   const date = new Date(`${value}T12:00:00Z`)
@@ -163,9 +206,14 @@ function lessonStatusLabel(status: HeadmanJournalLesson['status']): string {
 }
 
 function shiftDate(delta: number): void {
-  const date = new Date(`${selectedDate.value}T12:00:00Z`)
+  selectedDate.value = shiftIsoDate(selectedDate.value, delta)
+}
+
+function shiftIsoDate(value: string, delta: number): string {
+  const date = new Date(`${value}T12:00:00Z`)
+  if (Number.isNaN(date.getTime())) return value
   date.setUTCDate(date.getUTCDate() + delta)
-  selectedDate.value = date.toISOString().slice(0, 10)
+  return date.toISOString().slice(0, 10)
 }
 
 function setToday(): void {
@@ -362,6 +410,243 @@ function canCancelLessons(): boolean {
   return Boolean(props.api && !props.offline && !props.readOnly && hasAssistantPermission('CANCEL_LESSONS'))
 }
 
+function isTransferOperationActive(operation: TransferOperation): boolean {
+  return operation.phase === 'submitting' || operation.phase === 'pending'
+    || operation.phase === 'checking' || operation.phase === 'uncertain'
+}
+
+function transferOperationForLesson(lessonId: number): TransferOperation | null {
+  for (let index = transferOperations.value.length - 1; index >= 0; index -= 1) {
+    const operation = transferOperations.value[index]
+    if (operation?.api === props.api && operation.groupId === props.groupId && operation.sourceLessonId === lessonId) {
+      return operation
+    }
+  }
+  return null
+}
+
+function isLessonTransferLocked(lesson: HeadmanJournalLesson | null): boolean {
+  if (!lesson) return false
+  if (lesson.transferState === 'PENDING') return true
+  return transferOperations.value.some((operation) => operation.api === props.api
+    && operation.groupId === props.groupId && isTransferOperationActive(operation)
+    && (operation.sourceLessonId === lesson.id
+      || (operation.targetDate === lesson.date && operation.targetLessonNumber === lesson.lessonNumber)))
+}
+
+function isTransferSourceEligible(lesson: HeadmanJournalLesson): boolean {
+  return lesson.current && lesson.status === 'PLANNED' && lesson.date > todayIso()
+    && lesson.occurrenceRevision !== null && /^[1-9][0-9]*$/.test(lesson.occurrenceRevision)
+    && lesson.transferState !== 'PENDING'
+}
+
+function canStartTransfer(lesson: HeadmanJournalLesson): boolean {
+  return Boolean(canCancelLessons() && props.groupId !== null && isTransferSourceEligible(lesson)
+    && !isLessonTransferLocked(lesson))
+}
+
+function isTransferTargetSlotUnavailable(slot: number): boolean {
+  const source = selectedLesson.value
+  const targetDate = transferTargetDate.value
+  if (!transferTaskOpen.value || !source || transferTargetDateProblem(targetDate) !== null
+    || transferTargetLessonsDate.value !== targetDate || transferTargetLoading.value
+    || transferTargetError.value !== null) return true
+  if (source.date === targetDate && source.lessonNumber === slot) return true
+  if (transferTargetLessons.value.some((lesson) => lesson.current && lesson.id !== source.id
+    && lesson.lessonNumber === slot && lesson.status !== 'CANCELLED')) return true
+  return transferOperations.value.some((operation) => operation.api === props.api
+    && operation.groupId === props.groupId && isTransferOperationActive(operation)
+    && operation.targetDate === targetDate && operation.targetLessonNumber === slot)
+}
+
+function transferTargetSlotLabel(slot: number): string {
+  if (selectedLesson.value?.date === transferTargetDate.value && selectedLesson.value.lessonNumber === slot) {
+    return `${slot}-я пара · исходное место`
+  }
+  if (transferTargetLessons.value.some((lesson) => lesson.current && lesson.id !== selectedLesson.value?.id
+    && lesson.lessonNumber === slot && lesson.status !== 'CANCELLED')) return `${slot}-я пара · занято`
+  if (transferOperations.value.some((operation) => operation.api === props.api
+    && operation.groupId === props.groupId && isTransferOperationActive(operation)
+    && operation.targetDate === transferTargetDate.value && operation.targetLessonNumber === slot)) {
+    return `${slot}-я пара · ожидает переноса`
+  }
+  return `${slot}-я пара`
+}
+
+function transferTargetDateProblem(date: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return 'Выбери будущую дату.'
+  const parsed = new Date(`${date}T12:00:00Z`)
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
+    return 'Дата переноса указана некорректно.'
+  }
+  if (date <= todayIso()) return 'Выбери будущую дату.'
+  if (parsed.getUTCDay() === 0) return 'Перенос возможен только на учебный день с понедельника по субботу.'
+  return null
+}
+
+function transferErrorMessage(cause: unknown): string {
+  if (!(cause instanceof HeadmanJournalApiError)) {
+    return cause instanceof Error ? cause.message : 'Не удалось подтвердить перенос пары.'
+  }
+  const problem = cause.problem
+  const code = typeof problem === 'object' && problem !== null && 'errorCode' in problem
+    ? problem.errorCode
+    : null
+  const knownCode = code === 'TARGET_DATA_CONFLICT' || code === 'SOURCE_STATE_CONFLICT'
+    || code === 'SCOPE_MISMATCH' || code === 'INVALID_SNAPSHOT'
+    || code === 'DEPENDENCY_UNAVAILABLE' || code === 'ARCHIVED_SEMESTER'
+    ? code as HeadmanLessonTransferErrorCode
+    : null
+  if (knownCode) return transferErrorCodeMessage(knownCode)
+  if (cause.response.status === 401) return 'Сеанс истёк. Войди снова и проверь состояние переноса.'
+  if (cause.response.status === 403) return 'У тебя нет прав на перенос этой пары.'
+  if (cause.response.status === 404) return 'Пара не найдена. Обнови журнал и выбери её ещё раз.'
+  if (cause.response.status === 409) return 'Пара или выбранное место в расписании изменились. Обнови журнал и выбери свободное место.'
+  if (cause.response.status >= 500 || cause.response.status === 408 || cause.response.status === 429) {
+    return 'Сервер не подтвердил запрос. Повтори его тем же запросом или проверь состояние операции.'
+  }
+  return cause.message
+}
+
+function transferErrorCodeMessage(code: HeadmanLessonTransferErrorCode): string {
+  switch (code) {
+    case 'TARGET_DATA_CONFLICT': return 'Выбранная дата или пара уже заняты. Обнови список и выбери другое место.'
+    case 'SOURCE_STATE_CONFLICT': return 'Исходная пара изменилась. Обнови журнал перед новым переносом.'
+    case 'SCOPE_MISMATCH': return 'Перенос этой пары в выбранную дату недоступен.'
+    case 'INVALID_SNAPSHOT': return 'Данные пары изменились. Обнови журнал и начни перенос заново.'
+    case 'DEPENDENCY_UNAVAILABLE': return 'Перенос ожидает проверки сервиса. Проверь состояние операции позже.'
+    case 'ARCHIVED_SEMESTER': return 'Семестр закрыт. Перенос в нём недоступен.'
+  }
+}
+
+function transferPhaseMessage(operation: TransferOperation): string {
+  if (operation.message) return operation.message
+  switch (operation.phase) {
+    case 'submitting': return 'Отправляем запрос на перенос…'
+    case 'pending': return 'Перенос принят и ожидает завершения.'
+    case 'checking': return 'Проверяем состояние переноса…'
+    case 'uncertain': return 'Ответ не получен. Повтор запроса безопасен: будет использован тот же ключ и payload.'
+    case 'completed': return 'Перенос завершён.'
+    case 'error': return 'Перенос завершился ошибкой.'
+  }
+}
+
+function serverTransferStateMessage(state: HeadmanJournalLesson['transferState']): string {
+  switch (state) {
+    case 'PENDING': return 'Перенос выполняется. Проверь его состояние перед другими действиями с парой.'
+    case 'COMPLETED': return 'Сервер подтвердил завершение переноса. Проверь дату операции, чтобы открыть новую пару.'
+    case 'ERROR': return 'Сервер сохранил ошибку переноса. Обнови журнал перед новым действием.'
+    case null: return ''
+  }
+}
+
+function canRunTransferOperation(operation: TransferOperation): boolean {
+  return !disposed && operation.api === props.api && operation.groupId === props.groupId
+    && selectedDate.value === operation.sourceDate && selectedLessonId.value === operation.sourceLessonId
+    && selectedLesson.value?.id === operation.sourceLessonId && !props.offline && !props.readOnly
+    && canCancelLessons()
+}
+
+function replaceTransferOperation(key: string, patch: Partial<TransferOperation>): void {
+  const index = transferOperations.value.findIndex((operation) => operation.key === key)
+  if (index < 0) return
+  const next = [...transferOperations.value]
+  const current = next[index]
+  if (!current) return
+  next[index] = { ...current, ...patch }
+  transferOperations.value = next
+}
+
+async function loadTransferTargetLessons(): Promise<void> {
+  const revision = ++transferTargetRevision
+  const api = props.api
+  const groupId = props.groupId
+  const source = selectedLesson.value
+  const date = transferTargetDate.value
+  transferTargetLessons.value = []
+  transferTargetLessonsDate.value = null
+  transferTargetError.value = null
+  transferTargetLessonNumber.value = null
+  if (!transferTaskOpen.value || !api || groupId === null || !source || !canStartTransfer(source)) {
+    transferTargetLoading.value = false
+    return
+  }
+  const dateProblem = transferTargetDateProblem(date)
+  if (dateProblem !== null) {
+    transferTargetError.value = dateProblem
+    transferTargetLoading.value = false
+    return
+  }
+  transferTargetLoading.value = true
+  try {
+    const next = await api.listLessons(groupId, date, date)
+    if (disposed || revision !== transferTargetRevision || api !== props.api || groupId !== props.groupId
+      || selectedDate.value !== source.date || selectedLessonId.value !== source.id
+      || transferTargetDate.value !== date || !transferTaskOpen.value) return
+    transferTargetLessons.value = next
+    transferTargetLessonsDate.value = date
+    transferTargetLoading.value = false
+    transferTargetLessonNumber.value = transferTargetSlots.value.find((slot) => !isTransferTargetSlotUnavailable(slot)) ?? null
+  } catch (cause) {
+    if (disposed || revision !== transferTargetRevision || cause instanceof StaleSessionGenerationError) return
+    transferTargetError.value = transferErrorMessage(cause)
+    emit('error', cause)
+  } finally {
+    if (revision === transferTargetRevision) transferTargetLoading.value = false
+  }
+}
+
+function openTransferTask(): void {
+  const lesson = selectedLesson.value
+  if (!lesson || !canStartTransfer(lesson) || lessonActionBusy.value) return
+  transferTargetDate.value = lesson.date
+  transferTargetLessonNumber.value = null
+  transferTaskOpen.value = true
+}
+
+function closeTransferTask(): void {
+  transferTaskOpen.value = false
+  transferTargetDate.value = ''
+  transferTargetLessonNumber.value = null
+  transferTargetLessons.value = []
+  transferTargetLessonsDate.value = null
+  transferTargetError.value = null
+}
+
+function requestTransferSelectedLesson(): void {
+  const api = props.api
+  const lesson = selectedLesson.value
+  const groupId = props.groupId
+  const targetDate = transferTargetDate.value
+  const targetLessonNumber = transferTargetLessonNumber.value
+  if (!api || groupId === null || !lesson || !canSubmitTransfer.value || targetLessonNumber === null
+    || lesson.occurrenceRevision === null) return
+  try {
+    if (!globalThis.crypto || typeof globalThis.crypto.randomUUID !== 'function') {
+      throw new Error('Безопасный ключ запроса недоступен в этой версии браузера.')
+    }
+    const transferRequest = createHeadmanLessonTransferRequest(
+      targetDate,
+      targetLessonNumber,
+      lesson.occurrenceRevision,
+      globalThis.crypto.randomUUID(),
+    )
+    openLessonActionConfirmation({
+      action: 'transfer',
+      api,
+      groupId,
+      lessonId: lesson.id,
+      lessonDate: lesson.date,
+      lessonNumber: lesson.lessonNumber,
+      permissions: assistantPermissionSnapshot(),
+      reason: null,
+      transferRequest,
+    })
+  } catch (cause) {
+    notice.value = cause instanceof Error ? cause.message : 'Не удалось подготовить запрос переноса.'
+  }
+}
+
 function assistantPermissionSnapshot(): readonly HeadmanAssistantPermission[] | null {
   return props.assistantPermissions === null ? null : [...props.assistantPermissions].sort()
 }
@@ -382,9 +667,15 @@ function isLessonActionConfirmationCurrent(confirmation: LessonActionConfirmatio
 
   if (confirmation.action === 'cancel') {
     return lesson.status !== 'CANCELLED' && confirmation.reason !== null
-      && cancelReason.value.trim() === confirmation.reason
+      && cancelReason.value.trim() === confirmation.reason && !isLessonTransferLocked(lesson)
   }
-  return lesson.status === 'CANCELLED'
+  if (confirmation.action === 'restore') return lesson.status === 'CANCELLED' && !isLessonTransferLocked(lesson)
+  const transferRequest = confirmation.transferRequest
+  return transferRequest !== null && transferTaskOpen.value && canStartTransfer(lesson)
+    && transferTargetDate.value === transferRequest.targetDate
+    && transferTargetLessonNumber.value === transferRequest.targetLessonNumber
+    && transferTargetLessonsDate.value === transferRequest.targetDate
+    && !isTransferTargetSlotUnavailable(transferRequest.targetLessonNumber)
 }
 
 const lessonActionConfirmationCurrent = computed(() => {
@@ -426,7 +717,8 @@ function canWriteExcuse(entry: HeadmanJournalRosterEntry): boolean {
 function requestCancelSelectedLesson(): void {
   const api = props.api
   const lesson = selectedLesson.value
-  if (lessonActionBusy.value || !api || !lesson || lesson.status === 'CANCELLED' || !canCancelLessons()) return
+  if (lessonActionBusy.value || !api || !lesson || lesson.status === 'CANCELLED'
+    || !canCancelLessons() || isLessonTransferLocked(lesson)) return
   const reason = cancelReason.value.trim()
   if (!reason) {
     notice.value = 'Укажи причину отмены пары.'
@@ -445,13 +737,15 @@ function requestCancelSelectedLesson(): void {
     lessonNumber: lesson.lessonNumber,
     permissions: assistantPermissionSnapshot(),
     reason,
+    transferRequest: null,
   })
 }
 
 function requestRestoreSelectedLesson(): void {
   const api = props.api
   const lesson = selectedLesson.value
-  if (lessonActionBusy.value || !api || !lesson || lesson.status !== 'CANCELLED' || !canCancelLessons()) return
+  if (lessonActionBusy.value || !api || !lesson || lesson.status !== 'CANCELLED'
+    || !canCancelLessons() || isLessonTransferLocked(lesson)) return
   openLessonActionConfirmation({
     action: 'restore',
     api,
@@ -461,7 +755,38 @@ function requestRestoreSelectedLesson(): void {
     lessonNumber: lesson.lessonNumber,
     permissions: assistantPermissionSnapshot(),
     reason: null,
+    transferRequest: null,
   })
+}
+
+function transferOperationKey(requestKey: string): string {
+  return `request:${requestKey}`
+}
+
+function beginConfirmedTransfer(confirmation: LessonActionConfirmation): void {
+  const request = confirmation.transferRequest
+  const api = confirmation.api
+  const groupId = confirmation.groupId
+  const lesson = selectedLesson.value
+  if (confirmation.action !== 'transfer' || !request || groupId === null || !lesson
+    || lesson.id !== confirmation.lessonId || !canStartTransfer(lesson)) return
+  const operation: TransferOperation = {
+    key: transferOperationKey(request.requestKey),
+    api,
+    groupId,
+    sourceLessonId: lesson.id,
+    sourceDate: lesson.date,
+    targetDate: request.targetDate,
+    targetLessonNumber: request.targetLessonNumber,
+    request,
+    operationId: null,
+    response: null,
+    phase: 'submitting',
+    message: null,
+  }
+  closeTransferTask()
+  transferOperations.value = [...transferOperations.value, operation]
+  void runTransferOperation(operation, 'submit')
 }
 
 async function confirmLessonAction(): Promise<void> {
@@ -472,15 +797,212 @@ async function confirmLessonAction(): Promise<void> {
     return
   }
   closeLessonActionConfirmation()
-  if (confirmation.action === 'cancel' && confirmation.reason !== null) {
+  if (confirmation.action === 'transfer') {
+    beginConfirmedTransfer(confirmation)
+  } else if (confirmation.action === 'cancel' && confirmation.reason !== null) {
     await cancelSelectedLesson(confirmation.api, confirmation.lessonId, confirmation.reason)
   } else {
     await restoreSelectedLesson(confirmation.api, confirmation.lessonId)
   }
 }
 
+async function runTransferOperation(operation: TransferOperation, mode: 'submit' | 'status'): Promise<void> {
+  if (!canRunTransferOperation(operation)) return
+  if ((mode === 'submit' && operation.request === null)
+    || (mode === 'status' && operation.operationId === null)) return
+  const runRevision = (transferRunRevisions.get(operation.key) ?? 0) + 1
+  transferRunRevisions.set(operation.key, runRevision)
+  const contextGeneration = transferContextGeneration
+  const isCurrentRun = (): boolean => transferRunRevisions.get(operation.key) === runRevision
+    && transferContextGeneration === contextGeneration && canRunTransferOperation(operation)
+  replaceTransferOperation(operation.key, {
+    phase: mode === 'submit' ? 'submitting' : 'checking',
+    message: null,
+  })
+  try {
+    const response = mode === 'submit'
+      ? await operation.api.transferLesson(operation.sourceLessonId, operation.request!)
+      : await operation.api.getLessonTransfer(operation.operationId!)
+    if (!isCurrentRun()) return
+    if (response.sourceLessonId !== String(operation.sourceLessonId)
+      || (operation.operationId !== null && response.operationId !== operation.operationId)
+      || (operation.targetDate !== null && response.targetDate !== operation.targetDate)) {
+      throw new Error('Сервер вернул состояние другого переноса.')
+    }
+    await applyTransferResponse(operation, response, isCurrentRun)
+  } catch (cause) {
+    if (!isCurrentRun()) return
+    if (cause instanceof StaleSessionGenerationError) {
+      replaceTransferOperation(operation.key, {
+        phase: operation.operationId === null ? 'uncertain' : 'pending',
+        message: 'Сеанс изменился. После входа проверь состояние операции переноса.',
+      })
+      return
+    }
+    if (mode === 'status') {
+      replaceTransferOperation(operation.key, {
+        phase: 'pending',
+        message: `Состояние пока не получено. ${transferErrorMessage(cause)} Проверь его ещё раз.`,
+      })
+      emit('error', cause)
+      return
+    }
+    const definitive = cause instanceof HeadmanJournalApiError
+      && cause.response.status >= 400 && cause.response.status < 500
+      && cause.response.status !== 401 && cause.response.status !== 408 && cause.response.status !== 429
+    replaceTransferOperation(operation.key, {
+      phase: definitive ? 'error' : 'uncertain',
+      message: transferErrorMessage(cause),
+    })
+    emit('error', cause)
+  }
+}
+
+async function applyTransferResponse(
+  operation: TransferOperation,
+  response: HeadmanLessonTransferResponse,
+  isCurrentRun: () => boolean,
+): Promise<void> {
+  if (!isCurrentRun()) return
+  if (response.state === 'PENDING') {
+    replaceTransferOperation(operation.key, {
+      operationId: response.operationId,
+      targetDate: response.targetDate,
+      response,
+      phase: 'pending',
+      message: null,
+    })
+    await pollTransferStatus(operation, response, isCurrentRun)
+    return
+  }
+  if (response.state === 'ERROR') {
+    replaceTransferOperation(operation.key, {
+      operationId: response.operationId,
+      targetDate: response.targetDate,
+      response,
+      phase: 'error',
+      message: response.errorCode ? transferErrorCodeMessage(response.errorCode) : 'Перенос завершился ошибкой.',
+    })
+    return
+  }
+  const completedOperation = { ...operation, targetDate: response.targetDate }
+  replaceTransferOperation(operation.key, {
+    operationId: response.operationId,
+    targetDate: response.targetDate,
+    response,
+    phase: 'completed',
+    message: 'Перенос завершён. Журнал обновляется на новой дате.',
+  })
+  await reloadTransferredLesson(completedOperation, response, isCurrentRun)
+}
+
+async function pollTransferStatus(
+  operation: TransferOperation,
+  accepted: HeadmanLessonTransferResponse,
+  isCurrentRun: () => boolean,
+): Promise<void> {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    await new Promise<void>((resolve) => setTimeout(resolve, 750))
+    if (!isCurrentRun()) return
+    try {
+      const response = await operation.api.getLessonTransfer(accepted.operationId)
+      if (!isCurrentRun()) return
+      if (response.sourceLessonId !== String(operation.sourceLessonId)
+        || response.operationId !== accepted.operationId
+        || response.targetDate !== accepted.targetDate) {
+        throw new Error('Сервер вернул состояние другого переноса.')
+      }
+      if (response.state === 'PENDING') {
+        replaceTransferOperation(operation.key, {
+          operationId: response.operationId,
+          response,
+          phase: 'pending',
+          message: null,
+        })
+        continue
+      }
+      await applyTransferResponse(operation, response, isCurrentRun)
+      return
+    } catch (cause) {
+      if (!isCurrentRun()) return
+      replaceTransferOperation(operation.key, {
+        operationId: accepted.operationId,
+        phase: 'pending',
+        message: `Не удалось проверить состояние. ${transferErrorMessage(cause)} Проверь его ещё раз.`,
+      })
+      emit('error', cause)
+      return
+    }
+  }
+  if (isCurrentRun()) {
+    replaceTransferOperation(operation.key, {
+      operationId: accepted.operationId,
+      phase: 'pending',
+      message: 'Перенос ещё выполняется. Проверь состояние пары через журнал.',
+    })
+  }
+}
+
+async function reloadTransferredLesson(
+  operation: TransferOperation,
+  response: HeadmanLessonTransferResponse,
+  isCurrentRun: () => boolean,
+): Promise<void> {
+  const targetDate = response.targetDate
+  if (!isCurrentRun()) return
+  const targetLessonId = Number(response.targetLessonId)
+  const preferredId = Number.isSafeInteger(targetLessonId) && targetLessonId > 0 ? targetLessonId : null
+  transferTaskOpen.value = false
+  if (selectedDate.value === targetDate) {
+    activeLessonsLoad = loadLessons(preferredId)
+  } else {
+    preferredLessonAfterDateChange = preferredId
+    selectedDate.value = targetDate
+  }
+  const reload = activeLessonsLoad
+  await reload
+  if (props.api !== operation.api || props.groupId !== operation.groupId || selectedDate.value !== targetDate) return
+  const targetVisible = preferredId === null || lessons.value.some((lesson) => lesson.id === preferredId)
+  notice.value = targetVisible
+    ? 'Перенос завершён. Журнал обновлён на новой дате.'
+    : 'Перенос завершён, но новая пара не появилась в списке. Обнови журнал ещё раз.'
+}
+
+function resumeTransferForSelectedLesson(retryUncertain: boolean): void {
+  const lesson = selectedLesson.value
+  const api = props.api
+  const groupId = props.groupId
+  if (!lesson || !api || groupId === null || !canCancelLessons() || props.offline || props.readOnly) return
+  let operation = transferOperationForLesson(lesson.id)
+  if (!operation && lesson.transferOperationId) {
+    const key = `operation:${lesson.transferOperationId}`
+    operation = {
+      key,
+      api,
+      groupId,
+      sourceLessonId: lesson.id,
+      sourceDate: lesson.date,
+      targetDate: null,
+      targetLessonNumber: null,
+      request: null,
+      operationId: lesson.transferOperationId,
+      response: null,
+      phase: 'pending',
+      message: null,
+    }
+    transferOperations.value = [...transferOperations.value, operation]
+  }
+  if (!operation || !canRunTransferOperation(operation)) return
+  if (retryUncertain && operation.operationId === null && operation.request !== null) {
+    void runTransferOperation(operation, 'submit')
+  } else if (operation.operationId !== null) {
+    void runTransferOperation(operation, 'status')
+  }
+}
+
 async function cancelSelectedLesson(api: HeadmanJournalApi, lessonId: number, reason: string): Promise<void> {
-  if (lessonActionBusy.value || api !== props.api || selectedLessonId.value !== lessonId || !canCancelLessons()) return
+  if (lessonActionBusy.value || api !== props.api || selectedLessonId.value !== lessonId
+    || !canCancelLessons() || isLessonTransferLocked(selectedLesson.value)) return
   const revision = ++lessonActionRevision
   lessonActionBusy.value = true
   error.value = null
@@ -501,7 +1023,8 @@ async function cancelSelectedLesson(api: HeadmanJournalApi, lessonId: number, re
 }
 
 async function restoreSelectedLesson(api: HeadmanJournalApi, lessonId: number): Promise<void> {
-  if (lessonActionBusy.value || api !== props.api || selectedLessonId.value !== lessonId || !canCancelLessons()) return
+  if (lessonActionBusy.value || api !== props.api || selectedLessonId.value !== lessonId
+    || !canCancelLessons() || isLessonTransferLocked(selectedLesson.value)) return
   const revision = ++lessonActionRevision
   lessonActionBusy.value = true
   error.value = null
@@ -766,7 +1289,7 @@ async function loadReport(lessonId: number): Promise<void> {
   }
 }
 
-async function loadLessons(): Promise<void> {
+async function loadLessons(preferredLessonId: number | null = null): Promise<void> {
   const revision = ++lessonsRevision
   reportRevision += 1
   loadingLessons.value = true
@@ -790,11 +1313,18 @@ async function loadLessons(): Promise<void> {
     const requestedLesson = wantsInitialLesson
       ? next.find((lesson) => lesson.id === props.initialLessonId) ?? null
       : null
+    const preferredLesson = preferredLessonId === null
+      ? null
+      : next.find((lesson) => lesson.id === preferredLessonId) ?? null
     if (wantsInitialLesson && requestedLesson === null) {
       error.value = 'Выбранная пара недоступна на этой дате. Вернись в «Сегодня» и выбери занятие ещё раз.'
       return
     }
-    const first = requestedLesson ?? next[0]
+    if (preferredLessonId !== null && preferredLesson === null) {
+      error.value = 'Перенос завершён, но новая пара не появилась в списке. Обнови журнал ещё раз.'
+      return
+    }
+    const first = requestedLesson ?? preferredLesson ?? next[0]
     if (first && canViewReport()) {
       selectedLessonId.value = first.id
       await loadReport(first.id)
@@ -816,8 +1346,51 @@ async function loadLessons(): Promise<void> {
 
 watch(
   () => [props.api, props.groupId, props.offline, selectedDate.value, props.assistantPermissions] as const,
-  () => { void loadLessons() },
-  { immediate: true },
+  () => {
+    const preferredId = preferredLessonAfterDateChange
+    preferredLessonAfterDateChange = null
+    activeLessonsLoad = loadLessons(preferredId)
+  },
+  { immediate: true, flush: 'sync' },
+)
+
+watch(
+  () => [
+    props.api,
+    props.groupId,
+    props.offline,
+    props.readOnly,
+    assistantPermissionSnapshot()?.join('\u0000') ?? null,
+    selectedDate.value,
+    selectedLessonId.value,
+  ] as const,
+  (next, previous) => {
+    transferContextGeneration += 1
+    transferTargetRevision += 1
+    transferTargetLoading.value = false
+    const ownerChanged = next[0] !== previous[0] || next[1] !== previous[1]
+    if (ownerChanged) {
+      transferOperations.value = []
+      transferRunRevisions.clear()
+    } else {
+      transferOperations.value = transferOperations.value.map((operation) => {
+        if (!isTransferOperationActive(operation)) return operation
+        return {
+          ...operation,
+          phase: operation.operationId === null ? 'uncertain' : 'pending',
+          message: 'Контекст журнала изменился. Выбери исходную пару, чтобы безопасно проверить перенос.',
+        }
+      })
+    }
+    closeTransferTask()
+  },
+  { flush: 'sync' },
+)
+
+watch(
+  () => [transferTaskOpen.value, transferTargetDate.value, selectedDate.value, selectedLessonId.value, props.api, props.groupId] as const,
+  () => { void loadTransferTargetLessons() },
+  { flush: 'sync' },
 )
 
 watch(
@@ -847,6 +1420,9 @@ watch(
     selectedLessonId.value,
     selectedLesson.value?.id,
     selectedLesson.value?.status,
+    transferTargetDate.value,
+    transferTargetLessonNumber.value,
+    transferTargetLessonsDate.value,
     cancelReason.value.trim(),
     canCancelLessons(),
   ] as const,
@@ -1142,7 +1718,7 @@ onBeforeUnmount(() => {
           <p>Пара отменена сервером.</p>
           <button
             type="button"
-            :disabled="lessonActionBusy || offline || readOnly"
+            :disabled="lessonActionBusy || offline || readOnly || isLessonTransferLocked(selectedLesson)"
             @click="requestRestoreSelectedLesson"
           >
             {{ lessonActionBusy ? 'Восстанавливаем…' : 'Восстановить пару' }}
@@ -1155,18 +1731,137 @@ onBeforeUnmount(() => {
               v-model="cancelReason"
               type="text"
               maxlength="512"
-              :disabled="lessonActionBusy || offline || readOnly"
+              :disabled="lessonActionBusy || offline || readOnly || isLessonTransferLocked(selectedLesson)"
               placeholder="Например, преподаватель болен"
             >
           </label>
           <button
             type="button"
-            :disabled="lessonActionBusy || offline || readOnly || !cancelReason.trim()"
+            :disabled="lessonActionBusy || offline || readOnly || !cancelReason.trim() || isLessonTransferLocked(selectedLesson)"
             @click="requestCancelSelectedLesson"
           >
             {{ lessonActionBusy ? 'Отменяем…' : 'Отменить пару' }}
           </button>
+          <button
+            v-if="canStartTransfer(selectedLesson) && !transferTaskOpen"
+            type="button"
+            :disabled="lessonActionBusy || offline || readOnly"
+            @click="openTransferTask"
+          >
+            Перенести пару
+          </button>
         </template>
+
+        <section
+          v-if="transferTaskOpen"
+          class="headman-journal__transfer-task"
+          aria-labelledby="headman-journal-transfer-title"
+        >
+          <h4 id="headman-journal-transfer-title">
+            Новая дата и номер пары
+          </h4>
+          <p>
+            {{ formatShortDate(selectedLesson.date) }} · пара {{ selectedLesson.lessonNumber ?? '—' }}
+          </p>
+          <label>
+            <span>Новая дата</span>
+            <input
+              v-model="transferTargetDate"
+              type="date"
+              :min="transferTargetDateMin"
+              :disabled="lessonActionBusy || offline || readOnly"
+            >
+          </label>
+          <label>
+            <span>Номер пары</span>
+            <select
+              v-model.number="transferTargetLessonNumber"
+              :disabled="lessonActionBusy || offline || readOnly || transferTargetLoading || transferTargetLessonsDate !== transferTargetDate || transferTargetError !== null"
+            >
+              <option :value="null" disabled>
+                Выбери свободное место
+              </option>
+              <option
+                v-for="slot in transferTargetSlots"
+                :key="slot"
+                :value="slot"
+                :disabled="isTransferTargetSlotUnavailable(slot)"
+              >
+                {{ transferTargetSlotLabel(slot) }}
+              </option>
+            </select>
+          </label>
+          <p
+            v-if="transferTargetLoading"
+            role="status"
+          >
+            Проверяем расписание на выбранную дату…
+          </p>
+          <div
+            v-else-if="transferTargetError"
+            class="headman-journal__transfer-error"
+            role="alert"
+          >
+            {{ transferTargetError }}
+            <button type="button" @click="void loadTransferTargetLessons()">
+              Проверить дату ещё раз
+            </button>
+          </div>
+          <p
+            v-else-if="transferTargetLessonsDate === transferTargetDate && availableTransferTargetSlots.length === 0"
+            role="status"
+          >
+            На эту дату нет свободных мест для переноса.
+          </p>
+          <div class="headman-journal__transfer-task-actions">
+            <button
+              type="button"
+              :disabled="!canSubmitTransfer"
+              @click="requestTransferSelectedLesson"
+            >
+              Продолжить
+            </button>
+            <button
+              type="button"
+              class="headman-journal__transfer-secondary"
+              @click="closeTransferTask"
+            >
+              Закрыть
+            </button>
+          </div>
+        </section>
+
+        <section
+          v-if="selectedTransferOperation || selectedServerTransferState !== null"
+          class="headman-journal__transfer-status"
+          aria-labelledby="headman-journal-transfer-status-title"
+        >
+          <h4 id="headman-journal-transfer-status-title">
+            Состояние переноса
+          </h4>
+          <p role="status">
+            {{ selectedTransferOperation ? transferPhaseMessage(selectedTransferOperation) : serverTransferStateMessage(selectedServerTransferState) }}
+          </p>
+          <p v-if="selectedTransferOperation?.targetDate || selectedTransferOperation?.response?.targetDate">
+            Новая дата: {{ formatShortDate(selectedTransferOperation?.targetDate ?? selectedTransferOperation?.response?.targetDate ?? '') }}
+          </p>
+          <button
+            v-if="selectedTransferOperation?.operationId || selectedLesson.transferOperationId"
+            type="button"
+            :disabled="offline || readOnly || lessonActionBusy || selectedTransferOperation?.phase === 'submitting' || selectedTransferOperation?.phase === 'checking'"
+            @click="resumeTransferForSelectedLesson(false)"
+          >
+            Проверить состояние
+          </button>
+          <button
+            v-if="selectedTransferOperation?.phase === 'uncertain' && selectedTransferOperation.request"
+            type="button"
+            :disabled="offline || readOnly || lessonActionBusy"
+            @click="resumeTransferForSelectedLesson(true)"
+          >
+            Повторить тот же запрос
+          </button>
+        </section>
       </section>
 
       <dialog
@@ -1176,7 +1871,7 @@ onBeforeUnmount(() => {
         @close="pendingLessonActionConfirmation = null"
       >
         <h2 id="headman-journal-lesson-action-confirmation-title">
-          {{ pendingLessonActionConfirmation?.action === 'cancel' ? 'Отменить пару?' : 'Восстановить пару?' }}
+          {{ pendingLessonActionConfirmation?.action === 'cancel' ? 'Отменить пару?' : pendingLessonActionConfirmation?.action === 'restore' ? 'Восстановить пару?' : 'Перенести пару?' }}
         </h2>
         <p id="headman-journal-lesson-action-confirmation-detail">
           <template v-if="pendingLessonActionConfirmation?.action === 'cancel'">
@@ -1187,6 +1882,11 @@ onBeforeUnmount(() => {
           <template v-else-if="pendingLessonActionConfirmation?.action === 'restore'">
             {{ formatShortDate(pendingLessonActionConfirmation.lessonDate) }} · пара {{ pendingLessonActionConfirmation.lessonNumber ?? '—' }}.
             Удалённые отметки посещаемости не вернутся.
+          </template>
+          <template v-else-if="pendingLessonActionConfirmation?.action === 'transfer' && pendingLessonActionConfirmation.transferRequest">
+            {{ formatShortDate(pendingLessonActionConfirmation.lessonDate) }} · пара {{ pendingLessonActionConfirmation.lessonNumber ?? '—' }} →
+            {{ formatShortDate(pendingLessonActionConfirmation.transferRequest.targetDate) }} · пара {{ pendingLessonActionConfirmation.transferRequest.targetLessonNumber }}.
+            После подтверждения отметки, вложения и связанные домашние задания перейдут на новую дату.
           </template>
         </p>
         <button
@@ -1200,7 +1900,7 @@ onBeforeUnmount(() => {
           :disabled="lessonActionBusy || !lessonActionConfirmationCurrent"
           @click="void confirmLessonAction()"
         >
-          {{ pendingLessonActionConfirmation?.action === 'cancel' ? 'Отменить пару' : 'Восстановить пару' }}
+          {{ pendingLessonActionConfirmation?.action === 'cancel' ? 'Отменить пару' : pendingLessonActionConfirmation?.action === 'restore' ? 'Восстановить пару' : 'Подтвердить перенос' }}
         </button>
       </dialog>
 

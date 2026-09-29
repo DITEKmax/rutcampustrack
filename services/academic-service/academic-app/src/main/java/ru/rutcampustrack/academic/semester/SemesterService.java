@@ -383,7 +383,12 @@ public class SemesterService {
      */
     @Transactional
     public void deleteSemester(Long id, DeleteSemesterRequest request) {
-        Semester semester = findSemesterById(id);
+        lockSemesterStateTransition();
+        Semester semester = findSemesterForUpdate(id);
+        if (isWriteBlocked(semester)) {
+            throw new ConflictException("status", id,
+                    "Нельзя удалить архивируемый или архивный семестр до восстановления");
+        }
         if (!semester.getName().equals(request.confirmation())) {
             throw new BadRequestException("Подтверждение не совпадает с названием семестра");
         }

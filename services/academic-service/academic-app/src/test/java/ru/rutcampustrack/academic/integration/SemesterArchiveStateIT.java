@@ -9,7 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
+import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -108,6 +111,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(archivingState.getWriteBlocked()).isTrue();
         assertThat(archivingState.getStateVersion()).isEqualTo(archiving.getStateVersion());
         assertThat(archivedEventIdsAfter(outboxBaseline)).containsExactly(semesterId);
+        assertDeleteBlocked(semesterId, archiving.getName());
 
         Semester repeatedArchiving = semesterService.beginArchiveTransition(semesterId);
         assertThat(repeatedArchiving.getStateVersion()).isEqualTo(archiving.getStateVersion());
@@ -137,6 +141,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 .isInstanceOf(ConflictException.class);
 
         Semester archivedRow = semesterRepository.findById(semesterId).orElseThrow();
+        assertDeleteBlocked(semesterId, archivedRow.getName());
         assertThatThrownBy(() -> semesterService.updateSemester(semesterId,
                 new UpdateSemesterRequest(archivedRow.getName(), archivedRow.getDateFrom(), archivedRow.getDateTo())))
                 .isInstanceOf(ConflictException.class)
@@ -178,6 +183,11 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(semesterService.activateSemester(semesterId).isActive()).isTrue();
         assertThat(state(semesterId).getActive()).isTrue();
 
+        long normallyDeletableId = insertInactiveFixture("normal-delete-" + UUID.randomUUID());
+        String normallyDeletableName = semesterRepository.findById(normallyDeletableId).orElseThrow().getName();
+        semesterService.deleteSemester(normallyDeletableId, new DeleteSemesterRequest(normallyDeletableName));
+        assertThat(semesterRepository.existsById(normallyDeletableId)).isFalse();
+
         StatusRuntimeException missing = org.junit.jupiter.api.Assertions.assertThrows(
                 StatusRuntimeException.class, () -> state(Long.MAX_VALUE));
         assertThat(missing.getStatus().getCode()).isEqualTo(Status.Code.NOT_FOUND);
@@ -211,6 +221,50 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
             assertThat(state(semesterId).getWriteBlocked()).isTrue();
             assertThat(state(activationTargetId).getActive()).isTrue();
             assertThat(archivedEventIdsAfter(outboxBaseline)).containsExactly(semesterId);
+
+            long deleteRaceOutboxBaseline = latestOutboxId();
+            String deleteRaceName = activeTarget.getName();
+            CountDownLatch deleteRaceReady = new CountDownLatch(2);
+            CountDownLatch deleteRaceStart = new CountDownLatch(1);
+            Future<Semester> archiveBeforeDelete = pool.submit(() -> awaitStartThenRun(
+                    deleteRaceReady, deleteRaceStart,
+                    () -> semesterService.beginArchiveTransition(activationTargetId)));
+            Future<Void> deleteDuringArchive = pool.submit(() -> awaitStartThenRun(
+                    deleteRaceReady, deleteRaceStart, () -> {
+                        semesterService.deleteSemester(
+                                activationTargetId, new DeleteSemesterRequest(deleteRaceName));
+                        return null;
+                    }));
+
+            assertThat(deleteRaceReady.await(10, TimeUnit.SECONDS)).isTrue();
+            deleteRaceStart.countDown();
+
+            Semester archiveResult = null;
+            Throwable archiveFailure = null;
+            try {
+                archiveResult = archiveBeforeDelete.get(20, TimeUnit.SECONDS);
+            } catch (ExecutionException exception) {
+                archiveFailure = exception.getCause();
+            }
+            Throwable deleteFailure = null;
+            try {
+                deleteDuringArchive.get(20, TimeUnit.SECONDS);
+            } catch (ExecutionException exception) {
+                deleteFailure = exception.getCause();
+            }
+
+            if (semesterRepository.existsById(activationTargetId)) {
+                assertThat(archiveFailure).isNull();
+                assertThat(archiveResult.getArchiveTransition().name()).isEqualTo("ARCHIVING");
+                assertThat(deleteFailure).isInstanceOf(ConflictException.class);
+                assertThat(state(activationTargetId).getWriteBlocked()).isTrue();
+                assertThat(archivedEventIdsAfter(deleteRaceOutboxBaseline)).containsExactly(activationTargetId);
+            } else {
+                assertThat(archiveFailure).isInstanceOf(ResourceNotFoundException.class);
+                assertThat(deleteFailure).isNull();
+                assertThat(archivedEventIdsAfter(deleteRaceOutboxBaseline)).isEmpty();
+            }
+            assertThat(activeSemesterIds()).isEmpty();
         } finally {
             start.countDown();
             pool.shutdownNow();
@@ -250,9 +304,16 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 """, Long.class, outboxId);
     }
 
-    private static Semester awaitStartThenRun(CountDownLatch ready,
-                                              CountDownLatch start,
-                                              java.util.concurrent.Callable<Semester> operation)
+    private void assertDeleteBlocked(long id, String name) {
+        assertThatThrownBy(() -> semesterService.deleteSemester(id, new DeleteSemesterRequest(name)))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("архив");
+        assertThat(semesterRepository.existsById(id)).isTrue();
+    }
+
+    private static <T> T awaitStartThenRun(CountDownLatch ready,
+                                           CountDownLatch start,
+                                           java.util.concurrent.Callable<T> operation)
             throws Exception {
         ready.countDown();
         if (!start.await(10, TimeUnit.SECONDS)) {

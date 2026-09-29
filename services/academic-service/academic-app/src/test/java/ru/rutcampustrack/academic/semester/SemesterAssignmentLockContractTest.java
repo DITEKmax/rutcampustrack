@@ -3,6 +3,7 @@ package ru.rutcampustrack.academic.semester;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.exception.ConflictException;
@@ -45,7 +46,7 @@ class SemesterAssignmentLockContractTest {
 
     private static SemesterService service(SemesterRepository semesters, AssignmentRepository assignments) {
         return new SemesterService(semesters, mock(SemesterAssembler.class), mock(EntityManager.class),
-                mock(ApplicationEventPublisher.class), assignments);
+                mock(ApplicationEventPublisher.class), assignments, mock(JdbcTemplate.class));
     }
 
     private static Semester semester(Long id, LocalDate from, LocalDate to) {

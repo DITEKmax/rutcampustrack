@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
@@ -48,6 +49,7 @@ class SemesterServiceTest {
     @Mock private EntityManager entityManager;
     @Mock private ApplicationEventPublisher eventPublisher;
     @Mock private AssignmentRepository assignmentRepository;
+    @Mock private JdbcTemplate jdbcTemplate;
 
     @InjectMocks private SemesterService semesterService;
 

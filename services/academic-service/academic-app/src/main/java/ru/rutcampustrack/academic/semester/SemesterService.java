@@ -5,8 +5,11 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
@@ -23,6 +26,7 @@ import ru.rutcampustrack.academic.exception.ConflictException;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.sql.PreparedStatement;
 import java.util.Optional;
 
 /**
@@ -33,23 +37,28 @@ public class SemesterService {
 
     private static final int MIN_ACADEMIC_YEAR = 1;
     private static final int MAX_ACADEMIC_YEAR = 9998;
+    private static final int SEMESTER_ACTIVATION_LOCK_NAMESPACE = 0x53454D;
+    private static final int SEMESTER_ACTIVATION_LOCK_ID = 1;
 
     private final SemesterRepository semesterRepository;
     private final SemesterAssembler semesterAssembler;
     private final EntityManager entityManager;
     private final ApplicationEventPublisher eventPublisher;
     private final AssignmentRepository assignmentRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     public SemesterService(SemesterRepository semesterRepository,
                            SemesterAssembler semesterAssembler,
                            EntityManager entityManager,
                            ApplicationEventPublisher eventPublisher,
-                           AssignmentRepository assignmentRepository) {
+                           AssignmentRepository assignmentRepository,
+                           JdbcTemplate jdbcTemplate) {
         this.semesterRepository = semesterRepository;
         this.semesterAssembler = semesterAssembler;
         this.entityManager = entityManager;
         this.eventPublisher = eventPublisher;
         this.assignmentRepository = assignmentRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Transactional
@@ -169,32 +178,55 @@ public class SemesterService {
     }
 
     /**
-     * Atomic semester activation (D-11, GSEM-03, Pitfall 5).
-     * Deactivates all active semesters first, flushes to avoid constraint conflicts,
-     * then activates the target semester.
+     * Atomic and replay-safe semester activation (D-11, GSEM-03, Pitfall 5).
+     * The transaction-scoped advisory lock serializes activation requests for
+     * different semester rows; the target is validated before changing any state.
      */
     @CacheEvict(value = "active_semester", allEntries = true)
     @Transactional
     public Semester activateSemester(Long id) {
-        // Step 1: capture currently active semester before deactivation
-        Optional<Semester> previouslyActive = semesterRepository.findByIsActiveTrue();
+        lockSemesterActivation();
 
-        // Step 2: deactivate all currently active semesters
+        // Lock and validate the target before touching the current active semester.
+        Semester target = semesterRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Semester", "id", id));
+
+        // Replaying activation for the current semester is a successful no-op.
+        Optional<Semester> previouslyActive = semesterRepository.findByIsActiveTrue();
+        if (previouslyActive.map(active -> active.getId().equals(id)).orElse(false)) {
+            return target;
+        }
+
+        // Deactivate before activation to satisfy the database's one-active constraint.
         semesterRepository.deactivateAllActive();
 
-        // Step 3: flush bulk UPDATE then clear persistence context so subsequent
-        // findById re-reads from DB (bulk UPDATE bypasses entity cache — stale isActive)
+        // Bulk UPDATE bypasses the persistence context, so re-read after clearing it.
         entityManager.flush();
         entityManager.clear();
 
-        // Step 4: publish semester.archived event for the deactivated semester
+        // The outbox listener stores this only if the same transaction commits.
         previouslyActive.ifPresent(deactivated ->
                 eventPublisher.publishEvent(new SemesterArchivedEvent(this, deactivated.getId())));
 
-        // Step 5: find and activate the target semester (re-read from DB after clear)
+        // Re-read the locked target because clear() detached it.
         Semester semester = findSemesterById(id);
         semester.setActive(true);
         return semesterRepository.saveAndFlush(semester);
+    }
+
+    private void lockSemesterActivation() {
+        if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+            throw new IllegalStateException("semester activation lock requires an active transaction");
+        }
+        jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "SELECT pg_advisory_xact_lock(?, ?)")) {
+                statement.setInt(1, SEMESTER_ACTIVATION_LOCK_NAMESPACE);
+                statement.setInt(2, SEMESTER_ACTIVATION_LOCK_ID);
+                statement.execute();
+            }
+            return null;
+        });
     }
 
     /**

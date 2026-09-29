@@ -24,6 +24,7 @@ import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.Semester;
@@ -47,9 +48,15 @@ import ru.rutcampustrack.academic.user.UserService;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -138,6 +145,9 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
     private Subject testSubject;
     private Semester testSemester;
     private User testUser;
+    private Long semesterActivationBaselineId;
+    private String semesterActivationQueue;
+    private final List<Long> semesterActivationFixtureIds = new ArrayList<>();
 
     @BeforeEach
     void setUpTestEntities() {
@@ -220,6 +230,8 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
 
     @AfterEach
     void cleanUpTestEntities() {
+        restoreSemesterActivationFixture();
+
         // Clean up homework data first (FK dependencies)
         if (testSemester != null && testSemester.getId() != null
                 && groupA != null && groupA.getId() != null) {
@@ -261,6 +273,82 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         if (testSemester != null && testSemester.getId() != null) {
             semesterRepository.findById(testSemester.getId()).ifPresent(s -> semesterRepository.delete(s));
         }
+    }
+
+    private Semester createSemester(String name, LocalDate from, LocalDate to) {
+        Semester semester = new Semester();
+        semester.setName(name + " " + System.nanoTime());
+        semester.setDateFrom(from);
+        semester.setDateTo(to);
+        semester.setActive(false);
+        semester.setCreatedAt(OffsetDateTime.now());
+        Semester saved = semesterRepository.save(semester);
+        trackSemesterActivationFixture(saved);
+        return saved;
+    }
+
+    private void beginSemesterActivationFixture() {
+        semesterActivationBaselineId = semesterRepository.findByIsActiveTrue()
+                .orElseThrow(() -> new AssertionError("expected one active semester before activation test"))
+                .getId();
+    }
+
+    private void trackSemesterActivationFixture(Semester semester) {
+        semesterActivationFixtureIds.add(semester.getId());
+    }
+
+    private void restoreSemesterActivationFixture() {
+        if (semesterActivationBaselineId == null && semesterActivationFixtureIds.isEmpty()) {
+            return;
+        }
+        try {
+            if (semesterActivationBaselineId != null
+                    && semesterRepository.findById(semesterActivationBaselineId).isPresent()) {
+                semesterService.activateSemester(semesterActivationBaselineId);
+                flushOutbox();
+                if (semesterActivationQueue != null) {
+                    while (rabbitTemplate.receive(semesterActivationQueue, 250) != null) { /* drain restore event */ }
+                }
+            }
+        } finally {
+            semesterActivationFixtureIds.forEach(id -> semesterRepository.findById(id)
+                    .filter(semester -> !semester.isActive())
+                    .ifPresent(semesterRepository::delete));
+            semesterActivationFixtureIds.clear();
+            semesterActivationBaselineId = null;
+            semesterActivationQueue = null;
+        }
+    }
+
+    private Semester activateAfterBarrier(Long semesterId, CountDownLatch ready, CountDownLatch start)
+            throws InterruptedException {
+        ready.countDown();
+        if (!start.await(10, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("activation race barrier timed out");
+        }
+        return semesterService.activateSemester(semesterId);
+    }
+
+    private long latestOutboxId() {
+        return jdbcTemplate.queryForObject(
+                "SELECT COALESCE(MAX(id), 0) FROM academic_outbox", Long.class);
+    }
+
+    private List<Long> archivedSemesterIdsAfter(long outboxId) {
+        return jdbcTemplate.queryForList("""
+                SELECT (payload -> 'payload' ->> 'semester_id')::bigint
+                FROM academic_outbox
+                WHERE id > ? AND event_type = 'semester.archived'
+                ORDER BY id
+                """, Long.class, outboxId);
+    }
+
+    private void assertOnlyActiveSemester(Long expectedId) {
+        List<Long> activeIds = semesterRepository.findAllByIsActiveTrueOrderByIdAsc()
+                .stream()
+                .map(Semester::getId)
+                .toList();
+        assertThat(activeIds).containsExactly(expectedId);
     }
 
     // --- Helper: declare a named non-exclusive non-auto-delete queue bound to rut-uit.events exchange ---
@@ -351,6 +439,8 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
 
     @Test
     void activateSemester_publishesSemesterArchivedEvent() throws Exception {
+        beginSemesterActivationFixture();
+
         // Create two new inactive semesters
         Semester semesterA = new Semester();
         semesterA.setName("Archived Semester " + System.nanoTime());
@@ -359,6 +449,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         semesterA.setActive(false);
         semesterA.setCreatedAt(OffsetDateTime.now());
         semesterA = semesterRepository.save(semesterA);
+        trackSemesterActivationFixture(semesterA);
 
         Semester semesterB = new Semester();
         semesterB.setName("New Semester " + System.nanoTime());
@@ -367,8 +458,10 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         semesterB.setActive(false);
         semesterB.setCreatedAt(OffsetDateTime.now());
         semesterB = semesterRepository.save(semesterB);
+        trackSemesterActivationFixture(semesterB);
 
         String queueName = bindTempQueue();
+        semesterActivationQueue = queueName;
 
         // Activate semesterA -- this deactivates whatever is currently active (V2 seed semester)
         semesterService.activateSemester(semesterA.getId());
@@ -379,7 +472,9 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
 
         // Activate semesterB -- this archives semesterA and should publish semester.archived for semesterA
         Long archivedSemesterId = semesterA.getId();
+        long outboxBeforeSwitch = latestOutboxId();
         semesterService.activateSemester(semesterB.getId());
+        assertThat(archivedSemesterIdsAfter(outboxBeforeSwitch)).containsExactly(archivedSemesterId);
         flushOutbox();
 
         Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
@@ -393,10 +488,86 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         JsonNode payload = root.get("payload");
         assertThat(payload).isNotNull();
         assertThat(payload.get("semester_id").asLong()).isEqualTo(archivedSemesterId);
+        assertThat(rabbitTemplate.receive(queueName, 250))
+                .as("A → B must publish exactly one archive event")
+                .isNull();
 
-        // Cleanup semesters created in this test
-        semesterRepository.deleteById(semesterB.getId());
-        semesterRepository.deleteById(semesterA.getId());
+        assertOnlyActiveSemester(semesterB.getId());
+
+        long outboxBeforeReplay = latestOutboxId();
+        semesterService.activateSemester(semesterB.getId());
+        flushOutbox();
+        assertThat(latestOutboxId()).isEqualTo(outboxBeforeReplay);
+        assertThat(rabbitTemplate.receive(queueName, 250))
+                .as("A → A replay must not publish an archive event")
+                .isNull();
+        assertOnlyActiveSemester(semesterB.getId());
+
+        long outboxBeforeMissingTarget = latestOutboxId();
+        assertThatThrownBy(() -> semesterService.activateSemester(Long.MAX_VALUE))
+                .isInstanceOf(ResourceNotFoundException.class);
+        flushOutbox();
+        assertThat(latestOutboxId()).isEqualTo(outboxBeforeMissingTarget);
+        assertThat(rabbitTemplate.receive(queueName, 250))
+                .as("missing target must leave the outbox unchanged")
+                .isNull();
+        assertOnlyActiveSemester(semesterB.getId());
+
+    }
+
+    @Test
+    void concurrentSemesterActivations_areSerializedAndPublishOnlyRealTransitions() throws Exception {
+        beginSemesterActivationFixture();
+        Semester semesterA = createSemester("Concurrent A", LocalDate.of(2038, 1, 1), LocalDate.of(2038, 6, 30));
+        Semester semesterB = createSemester("Concurrent B", LocalDate.of(2038, 7, 1), LocalDate.of(2038, 12, 31));
+        Semester semesterC = createSemester("Concurrent C", LocalDate.of(2039, 1, 1), LocalDate.of(2039, 6, 30));
+        String queueName = bindTempQueue();
+        semesterActivationQueue = queueName;
+
+        semesterService.activateSemester(semesterA.getId());
+        flushOutbox();
+        while (rabbitTemplate.receive(queueName, 500) != null) { /* discard setup transition */ }
+        long outboxBeforeRace = latestOutboxId();
+
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        Future<Semester> activateB = executor.submit(() -> activateAfterBarrier(semesterB.getId(), ready, start));
+        Future<Semester> activateC = executor.submit(() -> activateAfterBarrier(semesterC.getId(), ready, start));
+        try {
+            assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
+            start.countDown();
+            assertThat(activateB.get(30, TimeUnit.SECONDS).getId()).isEqualTo(semesterB.getId());
+            assertThat(activateC.get(30, TimeUnit.SECONDS).getId()).isEqualTo(semesterC.getId());
+        } finally {
+            start.countDown();
+            executor.shutdownNow();
+            assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+        }
+
+        List<Semester> activeSemesters = semesterRepository.findAllByIsActiveTrueOrderByIdAsc();
+        assertThat(activeSemesters).hasSize(1);
+        Long finalActiveId = activeSemesters.get(0).getId();
+        Long firstActivatedId = finalActiveId.equals(semesterB.getId())
+                ? semesterC.getId()
+                : semesterB.getId();
+        List<Long> archivedIds = archivedSemesterIdsAfter(outboxBeforeRace);
+        assertThat(archivedIds).containsExactlyInAnyOrder(semesterA.getId(), firstActivatedId);
+
+        flushOutbox();
+        List<Long> publishedIds = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
+            assertThat(message).isNotNull();
+            JsonNode root = objectMapper.readTree(message.getBody());
+            assertThat(root.get("event_type").asText()).isEqualTo("semester.archived");
+            publishedIds.add(root.get("payload").get("semester_id").asLong());
+        }
+        assertThat(publishedIds).containsExactlyInAnyOrderElementsOf(archivedIds);
+        assertThat(rabbitTemplate.receive(queueName, 250))
+                .as("serialized B/C transitions must publish two archive events total")
+                .isNull();
+
     }
 
     // --- EVENT-03: homework.published and homework.updated events ---

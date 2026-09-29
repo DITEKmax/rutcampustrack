@@ -49,6 +49,7 @@ const archiveCommand = ref<{
   phase: 'SUBMITTING' | 'UNCERTAIN' | 'PENDING' | 'SETTLING'
 } | null>(null)
 const archiveOperations = ref<Record<number, AdminSemesterArchiveOperation>>({})
+const archiveSettlingOperationIds = ref<Record<number, string>>({})
 const archiveStatusErrors = ref<Record<number, string>>({})
 const archiveStatusLoadingIds = ref(new Set<number>())
 let disposed = false
@@ -65,12 +66,12 @@ const activeSemesters = computed(() => semesters.value.filter((semester) => seme
 const inactiveSemesters = computed(() => semesters.value.filter((semester) => !semester.active && !semester.archived))
 const archivedSemesters = computed(() => semesters.value.filter((semester) => semester.archived))
 const hasActiveSemester = computed(() => activeSemesters.value.length > 0)
+// Durable barriers belong to one semester; only a request without a resolved
+// operation ID occupies the single in-flight command slot for the whole screen.
 const mutationBusy = computed(() => saving.value
   || archiveConfirmationChecking.value
-  || archiveCommand.value !== null
-  || semesters.value.some((semester) => semester.transition !== 'NONE'
-    || semester.releasePending
-    || archiveOperations.value[semester.id]?.operationState === 'PENDING'))
+  || archiveCommand.value?.phase === 'SUBMITTING'
+  || archiveCommand.value?.phase === 'UNCERTAIN')
 const archiveConfirmationSemester = computed(() => archiveConfirmation.value === null
   ? null
   : semesters.value.find((semester) => semester.id === archiveConfirmation.value?.semesterId) ?? null)
@@ -353,6 +354,7 @@ function canRestore(semester: AdminSemester): boolean {
 
 function hasPendingArchiveOperation(semesterId: number): boolean {
   return archiveCommand.value?.semesterId === semesterId
+    || archiveSettlingOperationIds.value[semesterId] !== undefined
     || archiveOperations.value[semesterId]?.operationState === 'PENDING'
 }
 
@@ -491,9 +493,19 @@ async function processArchiveOperation(
       await refreshCurrentArchiveState(operation.semesterId, scope, controller)
     } catch (cause) {
       if (!isCurrentArchiveScope(scope, controller)) return
+      if (cause instanceof StaleSessionGenerationError) {
+        resetArchiveScope()
+        return
+      }
       archiveStatusErrors.value = {
         ...archiveStatusErrors.value,
         [operation.semesterId]: errorMessage(cause, 'Текущее состояние семестра не удалось загрузить.'),
+      }
+      if (notifyOwnerOfAuthorizationError(cause)) {
+        error.value = errorMessage(cause, 'Текущее состояние семестра не удалось загрузить.')
+        notice.value = null
+        archiveMonitorController = null
+        return
       }
     }
     if (!isCurrentArchiveScope(scope, controller)) return
@@ -536,6 +548,7 @@ async function pollArchiveOperation(
       error.value = 'Не удалось проверить ход операции. Продолжи проверку тем же operation ID.'
       notice.value = null
       archiveMonitorController = null
+      notifyOwnerOfAuthorizationError(cause)
       return
     }
     if (!isCurrentArchiveScope(scope, controller)) return
@@ -558,6 +571,10 @@ async function settleCompletedOperation(
   scope: number,
   controller: AbortController,
 ): Promise<void> {
+  archiveSettlingOperationIds.value = {
+    ...archiveSettlingOperationIds.value,
+    [command.semesterId]: operation.operationId,
+  }
   archiveCommand.value = { ...command, operationId: operation.operationId, phase: 'SETTLING' }
   for (let attempt = 0; attempt < 10; attempt += 1) {
     if (attempt > 0 && !await waitForArchivePoll(controller.signal, 1_200)) return
@@ -570,6 +587,7 @@ async function settleCompletedOperation(
         if (!isCurrentArchiveScope(scope, controller)) return
         const listed = semesters.value.find((item) => item.id === command.semesterId)
         if (listed && operationHasExpectedCurrentState(listed, command.action)) {
+          clearArchiveSettlement(command.semesterId, operation.operationId)
           archiveCommand.value = null
           archiveMonitorController = null
           error.value = null
@@ -588,6 +606,12 @@ async function settleCompletedOperation(
       archiveStatusErrors.value = {
         ...archiveStatusErrors.value,
         [command.semesterId]: 'Операция завершена, но текущее состояние ещё не подтверждено. Продолжи проверку.',
+      }
+      if (notifyOwnerOfAuthorizationError(cause)) {
+        error.value = errorMessage(cause, 'Операция завершена, но текущее состояние ещё не подтверждено.')
+        notice.value = null
+        archiveMonitorController = null
+        return
       }
     }
   }
@@ -685,10 +709,11 @@ async function readArchiveStatus(semesterId: number, scope: number): Promise<Adm
 }
 
 async function resumeArchiveStatus(semester: AdminSemester): Promise<void> {
-  if (archiveCommand.value !== null || archiveStatusLoadingIds.value.has(semester.id)) return
+  if (mutationBusy.value || archiveStatusLoadingIds.value.has(semester.id)) return
+  const commandAtStart = archiveCommand.value
   const scope = archiveScopeRevision
   const status = await readArchiveStatus(semester.id, scope)
-  if (!status || !isCurrentArchiveScope(scope) || status.operation === null) return
+  if (!status || !isCurrentArchiveScope(scope) || archiveCommand.value !== commandAtStart || status.operation === null) return
   const operation = status.operation
   if (operation.operationState === 'PENDING') {
     const command = {
@@ -751,6 +776,7 @@ async function continueArchiveCheck(semester: AdminSemester): Promise<void> {
       error.value = errorMessage(cause, 'Состояние операции не удалось проверить.')
       notice.value = null
       archiveMonitorController = null
+      notifyOwnerOfAuthorizationError(cause)
     }
     return
   }
@@ -775,10 +801,18 @@ function resetArchiveScope(): void {
   archiveConfirmation.value = null
   archiveConfirmationChecking.value = false
   archiveOperations.value = {}
+  archiveSettlingOperationIds.value = {}
   archiveStatusErrors.value = {}
   archiveStatusLoadingIds.value = new Set()
   error.value = null
   notice.value = null
+}
+
+function clearArchiveSettlement(semesterId: number, operationId: string): void {
+  if (archiveSettlingOperationIds.value[semesterId] !== operationId) return
+  const next = { ...archiveSettlingOperationIds.value }
+  delete next[semesterId]
+  archiveSettlingOperationIds.value = next
 }
 
 function isCurrentArchiveScope(scope: number, controller?: AbortController): boolean {
@@ -862,6 +896,7 @@ function needsArchiveStatus(semester: AdminSemester): boolean {
   return semester.transition !== 'NONE'
     || semester.releasePending
     || archiveCommandFor(semester.id) !== null
+    || archiveSettlingOperationIds.value[semester.id] !== undefined
     || archiveOperationFor(semester.id)?.operationState === 'PENDING'
 }
 
@@ -876,6 +911,13 @@ function errorMessage(cause: unknown, fallback: string): string {
     : cause instanceof Error ? cause.message : fallback
 }
 
+function notifyOwnerOfAuthorizationError(cause: unknown): boolean {
+  if (!(cause instanceof AdminSemesterApiError)
+    || (cause.response.status !== 401 && cause.response.status !== 403)) return false
+  emit('ownerError', cause)
+  return true
+}
+
 function mergeSemesterList(current: readonly AdminSemester[], next: readonly AdminSemester[]): readonly AdminSemester[] {
   const currentById = new Map(current.map((semester) => [semester.id, semester]))
   return next.map((semester) => {
@@ -888,9 +930,7 @@ function showError(cause: unknown, fallback: string): void {
   error.value = cause instanceof AdminSemesterApiError
     ? cause.problem?.detail ?? cause.message
     : cause instanceof Error ? cause.message : fallback
-  if (cause instanceof AdminSemesterApiError && (cause.response.status === 401 || cause.response.status === 403)) {
-    emit('ownerError', cause)
-  }
+  notifyOwnerOfAuthorizationError(cause)
 }
 
 function formatDate(value: string): string {
@@ -1149,7 +1189,9 @@ onBeforeUnmount(() => {
           v-for="semester in archiveSemestersVisible"
           :key="semester.id"
           class="admin-semester-card"
-          :aria-busy="archiveStatusLoadingIds.has(semester.id) || archiveCommandFor(semester.id)?.phase === 'SUBMITTING'"
+          :aria-busy="archiveStatusLoadingIds.has(semester.id)
+            || archiveCommandFor(semester.id)?.phase === 'SUBMITTING'
+            || archiveSettlingOperationIds[semester.id] !== undefined"
         >
           <div class="admin-semester-card__heading">
             <h3>{{ semester.name }}</h3>
@@ -1185,6 +1227,13 @@ onBeforeUnmount(() => {
             role="status"
           >
             {{ archiveOperationFor(semester.id) ? operationLabel(archiveOperationFor(semester.id)!) : 'Сервер выполняет операцию…' }}
+          </p>
+          <p
+            v-else-if="archiveSettlingOperationIds[semester.id] !== undefined"
+            class="admin-semester-archive-progress"
+            role="status"
+          >
+            Операция завершилась. Проверяем актуальное состояние семестра…
           </p>
           <p
             v-else-if="semester.releasePending"

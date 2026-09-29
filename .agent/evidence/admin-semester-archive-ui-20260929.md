@@ -60,3 +60,13 @@
 - Не автоматически активировать восстановленный семестр.
 - Не хранить idempotency key в session storage без actor-scope контракта.
 - Не изменять чужие `.agent` fixtures/notes или файлы за пределами feature-scope.
+
+## Bounded correction — 2026-09-30
+
+Root передал два независимых Sol medium finding на базе `b56bc85ee9151f24d4ef45b8549ae1e7d40f7c75`, ветка `codex/semester-archive-ui-20260929`; SHA канонических RULES — `F4986A1834A9175ADBB7DCB3C49483168111A0B60C7EB13ACDA9FBF9D74927F8`. Композиция и стили не менялись; сохранён принятый экран Admin semesters (реестр `AdminSemestersPage`, wireframe 134).
+
+- Общая блокировка мутаций теперь относится только к короткому сохранению/предварительной проверке статуса или команде `SUBMITTING`/`UNCERTAIN`. Барьеры `PENDING`, `SETTLING`, `transition`, `releasePending` остаются на конкретном семестре через `canEdit`/`canArchive`/`canRestore`/`hasPendingArchiveOperation`; отдельный `archiveSettlingOperationIds` удерживает A до подтверждения текущего состояния, даже если мониторный слот уже перешёл к B. Ожидающая операция A больше не выключает стабильный B; конфликтующая команда для A по-прежнему заблокирована.
+- Проверка статуса может переключаться между durable monitor-операциями. После асинхронного чтения она сравнивает сохранённую идентичность текущей команды и не затирает конкурентно начатую команду.
+- Catch-пути poll, settle завершённой операции, начального refresh pending и ручной проверки статуса передают текущему owner терминальные 401/403 через существующее событие `ownerError`. До этого проверяются scope/controller guards; `StaleSessionGenerationError` не передаётся как отказ текущего owner. При terminal auth во время settle дальнейший polling останавливается. `showError` использует тот же helper.
+
+Diff correction: только `frontends/mobile-core/src/features/admin-semester/AdminSemesterScreen.vue` и эта существующая evidence-запись. Проверки в worktree: `git diff --check` — exit 0; `npm exec -- eslint --max-warnings=0 -- src/features/admin-semester/AdminSemesterScreen.vue` из `frontends/mobile-core` — exit 0. Новые wiring-тесты, broad lint, полный typecheck/build и browser/runtime не запускались; grouped build/runtime принадлежат root. Существующие client tests не покрывают изменения Vue-состояния и forwarding ошибок. Независимый Sol recheck этой correction ещё не выполнен.

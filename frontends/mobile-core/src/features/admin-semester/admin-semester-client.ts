@@ -1,6 +1,44 @@
 import type { MobileProblemDetails } from '../../api/types'
 
 export type AdminSemesterType = 'AUTUMN' | 'SPRING'
+export type AdminSemesterTransition = 'NONE' | 'ARCHIVING' | 'RESTORING'
+export type AdminSemesterArchiveAction = 'ARCHIVE' | 'RESTORE'
+export type AdminSemesterArchiveOperationState = 'PENDING' | 'COMPLETED' | 'ERROR'
+export type AdminSemesterArchiveParticipantState =
+  | 'NOT_STARTED'
+  | 'PENDING'
+  | 'READY'
+  | 'PREPARED_RESTORE'
+  | 'RELEASE_PENDING'
+  | 'RELEASED'
+
+export interface AdminSemesterArchiveOperation {
+  readonly operationId: string
+  readonly semesterId: number
+  readonly action: AdminSemesterArchiveAction
+  readonly operationState: AdminSemesterArchiveOperationState
+  readonly retryable: boolean
+  readonly stateVersion: number
+  readonly transition: AdminSemesterTransition
+  readonly active: boolean
+  readonly archived: boolean
+  readonly releasePending: boolean
+  readonly academic: AdminSemesterArchiveParticipantState
+  readonly schedule: AdminSemesterArchiveParticipantState
+  readonly attendance: AdminSemesterArchiveParticipantState
+  readonly blockingReason: string | null
+}
+
+/** Current authority; its nested operation is an immutable historical snapshot. */
+export interface AdminSemesterArchiveStatus {
+  readonly semesterId: number
+  readonly active: boolean
+  readonly archived: boolean
+  readonly transition: AdminSemesterTransition
+  readonly stateVersion: number
+  readonly releasePending: boolean
+  readonly operation: AdminSemesterArchiveOperation | null
+}
 
 export interface AdminSemester {
   readonly id: number
@@ -9,6 +47,11 @@ export interface AdminSemester {
   readonly dateTo: string
   readonly active: boolean
   readonly createdAt: string | null
+  readonly archived: boolean
+  readonly transition: AdminSemesterTransition
+  readonly stateVersion: number
+  readonly releasePending: boolean
+  readonly isWriteBlocked: boolean
   /** Null for legacy rows whose type was never explicitly assigned. */
   readonly semesterType: AdminSemesterType | null
   /** First year of the academic year; null on unclassified legacy rows. */
@@ -39,6 +82,7 @@ export class AdminSemesterApiError extends Error {
   constructor(
     readonly response: Response,
     readonly problem: MobileProblemDetails | null,
+    readonly archiveOperation: AdminSemesterArchiveOperation | null = null,
   ) {
     super(problem?.detail || problem?.title || `HTTP ${response.status}`)
     this.name = 'AdminSemesterApiError'
@@ -121,6 +165,56 @@ export class AdminSemesterClient {
     }).then(normalizeSemester)
   }
 
+  archiveSemester(id: number, idempotencyKey: string, signal?: AbortSignal): Promise<AdminSemesterArchiveOperation> {
+    return this.changeArchiveState(id, 'ARCHIVE', idempotencyKey, signal)
+  }
+
+  restoreSemester(id: number, idempotencyKey: string, signal?: AbortSignal): Promise<AdminSemesterArchiveOperation> {
+    return this.changeArchiveState(id, 'RESTORE', idempotencyKey, signal)
+  }
+
+  getArchiveOperation(operationId: string, signal?: AbortSignal): Promise<AdminSemesterArchiveOperation> {
+    const id = requiredText(operationId, 'operationId')
+    return this.request<unknown>(
+      `/api/academic/semester-archive-operations/${encodeURIComponent(id)}`,
+      signal ? { signal } : undefined,
+    ).then((value) => {
+      const operation = normalizeArchiveOperation(value)
+      if (operation.operationId !== id) throw new Error('Сервер вернул другую операцию архивации семестра.')
+      return operation
+    })
+  }
+
+  getArchiveStatus(id: number, signal?: AbortSignal): Promise<AdminSemesterArchiveStatus> {
+    assertPositiveInteger(id, 'semesterId')
+    return this.request<unknown>(
+      `${AdminSemesterClient.basePath}/${id}/archive/status`,
+      signal ? { signal } : undefined,
+    ).then(normalizeArchiveStatus)
+  }
+
+  private changeArchiveState(
+    id: number,
+    action: AdminSemesterArchiveAction,
+    idempotencyKey: string,
+    signal?: AbortSignal,
+  ): Promise<AdminSemesterArchiveOperation> {
+    assertPositiveInteger(id, 'semesterId')
+    assertUuid(idempotencyKey, 'idempotencyKey')
+    return this.request<unknown>(`${AdminSemesterClient.basePath}/${id}/${action.toLowerCase()}`, {
+      method: 'POST',
+      body: null,
+      headers: { 'Idempotency-Key': idempotencyKey },
+      ...(signal ? { signal } : {}),
+    }).then((value) => {
+      const operation = normalizeArchiveOperation(value)
+      if (operation.semesterId !== id || operation.action !== action) {
+        throw new Error('Сервер вернул операцию для другого семестра или действия.')
+      }
+      return operation
+    })
+  }
+
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
     const response = await this.requestResponse(path, init, retried)
     const value = await response.json() as T
@@ -144,14 +238,16 @@ export class AdminSemesterClient {
       await this.options.onUnauthorized()
       return this.requestResponse(path, init, true)
     }
-    let problem: MobileProblemDetails | null = null
+    let body: unknown = null
     try {
-      problem = await response.json() as MobileProblemDetails
+      body = await response.json() as unknown
     } catch {
       // Preserve the HTTP status when a gateway cannot return Problem Details.
     }
     this.options.assertCurrent?.()
-    throw new AdminSemesterApiError(response, problem)
+    const problem = isRecord(body) ? body as MobileProblemDetails : null
+    const archiveOperation = response.status === 503 ? findArchiveOperation(body) : null
+    throw new AdminSemesterApiError(response, problem, archiveOperation)
   }
 }
 
@@ -205,9 +301,87 @@ function normalizeSemester(value: unknown): AdminSemester {
     dateTo: requiredDate(record.dateTo, 'semester.dateTo'),
     active: requiredBoolean(record.active, 'semester.active'),
     createdAt: nullableText(record.createdAt),
+    archived: requiredBoolean(record.archived, 'semester.archived'),
+    transition: requiredTransition(record.transition, 'semester.transition'),
+    stateVersion: nonNegativeInteger(record.stateVersion, 'semester.stateVersion'),
+    releasePending: requiredBoolean(record.releasePending, 'semester.releasePending'),
+    isWriteBlocked: requiredBoolean(record.isWriteBlocked, 'semester.isWriteBlocked'),
     semesterType,
     academicYear,
   }
+}
+
+function normalizeArchiveOperation(value: unknown): AdminSemesterArchiveOperation {
+  const record = requiredRecord(value, 'semester archive operation')
+  const action = record.action
+  if (action !== 'ARCHIVE' && action !== 'RESTORE') {
+    throw new Error('Сервер вернул некорректное действие архивации семестра.')
+  }
+  const operationState = record.operationState
+  if (operationState !== 'PENDING' && operationState !== 'COMPLETED' && operationState !== 'ERROR') {
+    throw new Error('Сервер вернул некорректное состояние архивации семестра.')
+  }
+  return {
+    operationId: requiredText(record.operationId, 'semester archive operation.operationId'),
+    semesterId: positiveInteger(record.semesterId, 'semester archive operation.semesterId'),
+    action,
+    operationState,
+    retryable: requiredBoolean(record.retryable, 'semester archive operation.retryable'),
+    stateVersion: nonNegativeInteger(record.stateVersion, 'semester archive operation.stateVersion'),
+    transition: requiredTransition(record.transition, 'semester archive operation.transition'),
+    active: requiredBoolean(record.active, 'semester archive operation.active'),
+    archived: requiredBoolean(record.archived, 'semester archive operation.archived'),
+    releasePending: requiredBoolean(record.releasePending, 'semester archive operation.releasePending'),
+    academic: requiredParticipantState(record.academic, 'semester archive operation.academic'),
+    schedule: requiredParticipantState(record.schedule, 'semester archive operation.schedule'),
+    attendance: requiredParticipantState(record.attendance, 'semester archive operation.attendance'),
+    blockingReason: optionalText(record.blockingReason, 'semester archive operation.blockingReason'),
+  }
+}
+
+function normalizeArchiveStatus(value: unknown): AdminSemesterArchiveStatus {
+  const record = requiredRecord(value, 'semester archive status')
+  const operation = record.operation
+  const status: AdminSemesterArchiveStatus = {
+    semesterId: positiveInteger(record.semesterId, 'semester archive status.semesterId'),
+    active: requiredBoolean(record.active, 'semester archive status.active'),
+    archived: requiredBoolean(record.archived, 'semester archive status.archived'),
+    transition: requiredTransition(record.transition, 'semester archive status.transition'),
+    stateVersion: nonNegativeInteger(record.stateVersion, 'semester archive status.stateVersion'),
+    releasePending: requiredBoolean(record.releasePending, 'semester archive status.releasePending'),
+    operation: operation === undefined || operation === null ? null : normalizeArchiveOperation(operation),
+  }
+  if (status.operation && status.operation.semesterId !== status.semesterId) {
+    throw new Error('Сервер вернул операцию для другого семестра.')
+  }
+  return status
+}
+
+function findArchiveOperation(value: unknown): AdminSemesterArchiveOperation | null {
+  const record = isRecord(value) ? value : null
+  const candidate = record?.operation ?? value
+  if (!isRecord(candidate) || typeof candidate.operationId !== 'string') return null
+  try {
+    return normalizeArchiveOperation(candidate)
+  } catch {
+    return null
+  }
+}
+
+function requiredTransition(value: unknown, field: string): AdminSemesterTransition {
+  if (value === 'NONE' || value === 'ARCHIVING' || value === 'RESTORING') return value
+  throw new Error(`Сервер вернул некорректное поле ${field}.`)
+}
+
+function requiredParticipantState(value: unknown, field: string): AdminSemesterArchiveParticipantState {
+  if (value === 'NOT_STARTED' || value === 'PENDING' || value === 'READY'
+    || value === 'PREPARED_RESTORE' || value === 'RELEASE_PENDING' || value === 'RELEASED') return value
+  throw new Error(`Сервер вернул некорректное поле ${field}.`)
+}
+
+function optionalText(value: unknown, field: string): string | null {
+  if (value === undefined || value === null || value === '') return null
+  return requiredText(value, field)
 }
 
 function normalizeSemesterInput(input: CreateAdminSemesterInput): CreateAdminSemesterInput {
@@ -254,6 +428,10 @@ function requiredRecord(value: unknown, field: string): Record<string, unknown> 
   return value as Record<string, unknown>
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 function requiredText(value: unknown, field: string): string {
   if (typeof value !== 'string' || value.trim() === '') throw new Error(`Сервер вернул пустое поле ${field}.`)
   return value
@@ -290,4 +468,10 @@ function nonNegativeInteger(value: unknown, field: string): number {
 
 function assertPositiveInteger(value: number, field: string): void {
   if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${field} must be a positive integer`)
+}
+
+function assertUuid(value: string, field: string): void {
+  if (!/^[\da-f]{8}-[\da-f]{4}-[1-8][\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i.test(value)) {
+    throw new RangeError(`${field} must be a UUID`)
+  }
 }

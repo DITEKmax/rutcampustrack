@@ -40,5 +40,13 @@ Eligible headman can choose/confirm and observe server operation; past/canceled/
 - `git diff --check`: exit 0. Correction product diff: 4 files, 70 insertions / 30 deletions; no CSS changes. Foreign changes under `.agent/evidence/headman-trend-export-20260926/{contract.md,result.md}` remain untouched and excluded.
 - No frontend build/typecheck/browser/runtime was run in this worktree. Backend runtime `lesson-transfer-runtime-0f331540.json` remains accepted backend evidence only; root's combined Vue build and real PWA reload/target-date runtime are still required before integrated PASS.
 
+## Bounded Sol recheck correction — target lineage (2026-09-30)
+- Finding: both transferred source A and target B can carry the same server `transferOperationId`. The operation response's `sourceLessonId` remains A. Inferring a GET source from B's lineage ID caused a false `Сервер вернул состояние другого переноса` error.
+- Scope: only `HeadmanJournalScreen.vue` source selection/resume guards and this evidence file. The accepted original findings (visible/read-only transferred source, headman-only transfer controls, target-date recovery) are retained unchanged.
+- Behavior: automatic resume requires either a `TRANSFERRED` source row with an operation ID or an in-memory operation whose `sourceLessonId` matches the selected lesson. Manual status checks apply the same rule; uncertain in-memory source requests still retry their frozen request. A target row with an inherited operation ID and a non-`TRANSFERRED` lesson status is lineage only and never drives a status GET. Existing response source-ID, operation-ID, context-generation, and target-date guards remain active.
+- Acceptance: reloading/selecting source A can recover PENDING/COMPLETED through A's operation ID and immutable target date, with existing COMPLETED navigation to B. Selecting B with the same inherited ID does not GET A's operation or emit a false source mismatch.
+- `git diff --check`: exit 0. No tests, full typecheck, build, or browser/runtime were run for this screen-only guard correction; root owns the combined build and runtime acceptance before integration. No new mock/wiring test was added.
+- Correction product diff: one Vue screen only, no style or API changes. Foreign changes under `.agent/evidence/headman-trend-export-20260926/{contract.md,result.md}` remain untouched and excluded.
+
 ## Do not
 Do not interpret 202 as success; derive expectedRevision from physical revision; retry with new key; derive resumed target date from later current occurrence; bypass transfer via cancel/create; or claim frontend integration/runtime acceptance before root verification.

@@ -546,12 +546,33 @@ function serverTransferStateMessage(state: HeadmanJournalLesson['transferState']
   }
 }
 
+function canResumeSelectedTransferSource(): boolean {
+  const lesson = selectedLesson.value
+  if (!lesson) return false
+  const operation = transferOperationForLesson(lesson.id)
+  return operation?.sourceLessonId === lesson.id
+    || (lesson.status === 'TRANSFERRED' && lesson.transferOperationId !== null)
+}
+
+function canCheckSelectedTransferStatus(): boolean {
+  const lesson = selectedLesson.value
+  if (!lesson) return false
+  const operation = transferOperationForLesson(lesson.id)
+  if (operation?.sourceLessonId === lesson.id) return operation.operationId !== null
+  return lesson.status === 'TRANSFERRED' && lesson.transferOperationId !== null
+}
+
 function resumeTransferStatusForSelectedLesson(): void {
   const lesson = selectedLesson.value
-  if (!lesson?.transferOperationId || !isHeadmanContext() || props.offline || props.readOnly) return
+  if (!lesson || !isHeadmanContext() || props.offline || props.readOnly) return
   const operation = transferOperationForLesson(lesson.id)
-  if (operation?.operationId === lesson.transferOperationId
-    && (operation.phase === 'checking' || operation.phase === 'submitting' || operation.phase === 'completed')) return
+  if (operation?.sourceLessonId === lesson.id) {
+    if (operation.phase === 'checking' || operation.phase === 'submitting'
+      || operation.phase === 'completed' || operation.operationId === null) return
+    resumeTransferForSelectedLesson(false)
+    return
+  }
+  if (lesson.status !== 'TRANSFERRED' || !lesson.transferOperationId) return
   resumeTransferForSelectedLesson(false)
 }
 
@@ -989,39 +1010,39 @@ function resumeTransferForSelectedLesson(retryUncertain: boolean): void {
   const lesson = selectedLesson.value
   const api = props.api
   const groupId = props.groupId
-  if (!lesson || !api || groupId === null || !isHeadmanContext() || props.offline || props.readOnly) return
+  if (!lesson || !api || groupId === null || !isHeadmanContext() || props.offline || props.readOnly
+    || !canResumeSelectedTransferSource()) return
   let operation = transferOperationForLesson(lesson.id)
-  if (lesson.transferOperationId) {
-    if (!operation) {
-      const key = `operation:${lesson.transferOperationId}`
-      operation = {
-        key,
-        api,
-        groupId,
-        sourceLessonId: lesson.id,
-        sourceDate: lesson.date,
-        targetDate: null,
-        targetLessonNumber: null,
-        request: null,
-        operationId: lesson.transferOperationId,
-        response: null,
-        phase: 'pending',
-        message: null,
-      }
-      transferOperations.value = [...transferOperations.value, operation]
-    } else if (operation.operationId !== lesson.transferOperationId) {
-      transferRunRevisions.set(operation.key, (transferRunRevisions.get(operation.key) ?? 0) + 1)
-      operation = {
-        ...operation,
-        operationId: lesson.transferOperationId,
-        targetDate: null,
-        targetLessonNumber: null,
-        response: null,
-        phase: 'pending',
-        message: null,
-      }
-      replaceTransferOperation(operation.key, operation)
+  if (!operation && lesson.status === 'TRANSFERRED' && lesson.transferOperationId) {
+    const key = `operation:${lesson.transferOperationId}`
+    operation = {
+      key,
+      api,
+      groupId,
+      sourceLessonId: lesson.id,
+      sourceDate: lesson.date,
+      targetDate: null,
+      targetLessonNumber: null,
+      request: null,
+      operationId: lesson.transferOperationId,
+      response: null,
+      phase: 'pending',
+      message: null,
     }
+    transferOperations.value = [...transferOperations.value, operation]
+  } else if (operation?.sourceLessonId === lesson.id && lesson.status === 'TRANSFERRED'
+    && lesson.transferOperationId && operation.operationId !== lesson.transferOperationId) {
+    transferRunRevisions.set(operation.key, (transferRunRevisions.get(operation.key) ?? 0) + 1)
+    operation = {
+      ...operation,
+      operationId: lesson.transferOperationId,
+      targetDate: null,
+      targetLessonNumber: null,
+      response: null,
+      phase: 'pending',
+      message: null,
+    }
+    replaceTransferOperation(operation.key, operation)
   }
   if (!operation || !canRunTransferOperation(operation)) return
   if (retryUncertain && operation.operationId === null && operation.request !== null) {
@@ -1868,7 +1889,7 @@ onBeforeUnmount(() => {
         </section>
 
         <section
-          v-if="isHeadmanContext() && (selectedTransferOperation || selectedServerTransferState !== null)"
+          v-if="isHeadmanContext() && (selectedTransferOperation || (selectedLesson.status === 'TRANSFERRED' && selectedServerTransferState !== null))"
           class="headman-journal__transfer-status"
           aria-labelledby="headman-journal-transfer-status-title"
         >
@@ -1882,7 +1903,7 @@ onBeforeUnmount(() => {
             Новая дата: {{ formatShortDate(selectedTransferOperation?.targetDate ?? selectedTransferOperation?.response?.targetDate ?? '') }}
           </p>
           <button
-            v-if="selectedTransferOperation?.operationId || selectedLesson.transferOperationId"
+            v-if="canCheckSelectedTransferStatus()"
             type="button"
             :disabled="offline || readOnly || lessonActionBusy || selectedTransferOperation?.phase === 'submitting' || selectedTransferOperation?.phase === 'checking'"
             @click="resumeTransferForSelectedLesson(false)"

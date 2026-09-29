@@ -13,6 +13,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
+import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
 import ru.rutcampustrack.academic.contract.enums.SemesterType;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Semester;
@@ -30,15 +31,15 @@ import java.sql.PreparedStatement;
 import java.util.Optional;
 
 /**
- * Business logic for Semester domain: CRUD, atomic activation, confirmation-guarded deletion.
+ * Business logic for Semester domain: CRUD, atomic activation, and archive lifecycle state.
  */
 @Service
 public class SemesterService {
 
     private static final int MIN_ACADEMIC_YEAR = 1;
     private static final int MAX_ACADEMIC_YEAR = 9998;
-    private static final int SEMESTER_ACTIVATION_LOCK_NAMESPACE = 0x53454D;
-    private static final int SEMESTER_ACTIVATION_LOCK_ID = 1;
+    private static final int SEMESTER_STATE_LOCK_NAMESPACE = 0x53454D;
+    private static final int SEMESTER_STATE_LOCK_ID = 1;
 
     private final SemesterRepository semesterRepository;
     private final SemesterAssembler semesterAssembler;
@@ -92,6 +93,11 @@ public class SemesterService {
     @Transactional
     public Semester updateSemester(Long id, UpdateSemesterRequest request) {
         Semester semester = findSemesterForUpdate(id);
+
+        if (isWriteBlocked(semester)) {
+            throw new ConflictException("status", id,
+                    "Нельзя редактировать архивируемый или архивный семестр до восстановления");
+        }
 
         // BUG-006-7: запрещаем редактировать завершённый семестр.
         if (semester.getDateTo().isBefore(LocalDate.now())) {
@@ -185,11 +191,16 @@ public class SemesterService {
     @CacheEvict(value = "active_semester", allEntries = true)
     @Transactional
     public Semester activateSemester(Long id) {
-        lockSemesterActivation();
+        lockSemesterStateTransition();
 
         // Lock and validate the target before touching the current active semester.
         Semester target = semesterRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Semester", "id", id));
+
+        if (isWriteBlocked(target)) {
+            throw new ConflictException("status", id,
+                    "Нельзя активировать архивируемый или архивный семестр до восстановления");
+        }
 
         // Replaying activation for the current semester is a successful no-op.
         Optional<Semester> previouslyActive = semesterRepository.findByIsActiveTrue();
@@ -211,18 +222,155 @@ public class SemesterService {
         // Re-read the locked target because clear() detached it.
         Semester semester = findSemesterById(id);
         semester.setActive(true);
+        incrementStateVersion(semester);
         return semesterRepository.saveAndFlush(semester);
     }
 
-    private void lockSemesterActivation() {
+    /**
+     * Starts an archive transition after all semester state changes have been serialized.
+     * The transition itself blocks writes; callers must obtain participant fence receipts
+     * before invoking {@link #completeArchiveTransition(Long, long)}.
+     */
+    @CacheEvict(value = "active_semester", allEntries = true)
+    @Transactional
+    public Semester beginArchiveTransition(Long id) {
+        lockSemesterStateTransition();
+        Semester semester = findSemesterForUpdate(id);
+
+        if (semester.isArchived() && semester.getArchiveTransition() == SemesterTransition.NONE) {
+            return semester;
+        }
+        if (semester.getArchiveTransition() == SemesterTransition.ARCHIVING) {
+            return semester;
+        }
+        if (semester.getArchiveTransition() != SemesterTransition.NONE) {
+            throw new ConflictException("status", id,
+                    "Нельзя архивировать семестр во время восстановления");
+        }
+
+        boolean wasActive = semester.isActive();
+        semester.setActive(false);
+        semester.setArchiveTransition(SemesterTransition.ARCHIVING);
+        incrementStateVersion(semester);
+        Semester transitioning = semesterRepository.saveAndFlush(semester);
+
+        // This legacy event refreshes downstream active-semester caches on deactivation.
+        // It is emitted once at the real active -> inactive transition, not on retries.
+        if (wasActive) {
+            eventPublisher.publishEvent(new SemesterArchivedEvent(this, semester.getId()));
+        }
+        return transitioning;
+    }
+
+    /** Completes archive state only after every write-domain fence has acknowledged this version. */
+    @CacheEvict(value = "active_semester", allEntries = true)
+    @Transactional
+    public Semester completeArchiveTransition(Long id, long expectedStateVersion) {
+        lockSemesterStateTransition();
+        Semester semester = findSemesterForUpdate(id);
+
+        if (semester.isArchived() && semester.getArchiveTransition() == SemesterTransition.NONE) {
+            requireReplayVersion(semester, id, expectedStateVersion);
+            return semester;
+        }
+        requireTransitionVersion(semester, id, expectedStateVersion, SemesterTransition.ARCHIVING);
+        semester.setArchived(true);
+        semester.setArchiveTransition(SemesterTransition.NONE);
+        return semesterRepository.saveAndFlush(semester);
+    }
+
+    /** Starts restore while keeping the authoritative write block in place. */
+    @Transactional
+    public Semester beginRestoreTransition(Long id) {
+        lockSemesterStateTransition();
+        Semester semester = findSemesterForUpdate(id);
+
+        if (!semester.isArchived() && semester.getArchiveTransition() == SemesterTransition.NONE) {
+            return semester;
+        }
+        if (semester.getArchiveTransition() == SemesterTransition.RESTORING) {
+            return semester;
+        }
+        if (semester.getArchiveTransition() != SemesterTransition.NONE || !semester.isArchived()) {
+            throw new ConflictException("status", id,
+                    "Нельзя восстановить семестр во время архивации");
+        }
+        if (semester.isActive()) {
+            throw new ConflictException("status", id,
+                    "Архивный семестр должен оставаться неактивным при восстановлении");
+        }
+
+        semester.setArchiveTransition(SemesterTransition.RESTORING);
+        incrementStateVersion(semester);
+        return semesterRepository.saveAndFlush(semester);
+    }
+
+    /** Completes restore after participant write fences have been released; it never activates the semester. */
+    @Transactional
+    public Semester completeRestoreTransition(Long id, long expectedStateVersion) {
+        lockSemesterStateTransition();
+        Semester semester = findSemesterForUpdate(id);
+
+        if (!semester.isArchived() && semester.getArchiveTransition() == SemesterTransition.NONE) {
+            requireReplayVersion(semester, id, expectedStateVersion);
+            return semester;
+        }
+        requireTransitionVersion(semester, id, expectedStateVersion, SemesterTransition.RESTORING);
+        if (semester.isActive()) {
+            throw new ConflictException("status", id,
+                    "Восстановление не может активировать семестр");
+        }
+
+        semester.setArchived(false);
+        semester.setArchiveTransition(SemesterTransition.NONE);
+        return semesterRepository.saveAndFlush(semester);
+    }
+
+    private void requireTransitionVersion(Semester semester,
+                                          Long id,
+                                          long expectedStateVersion,
+                                          SemesterTransition expectedTransition) {
+        if (semester.getArchiveTransition() != expectedTransition) {
+            throw new ConflictException("status", id,
+                    "Переход состояния семестра уже изменился");
+        }
+        if (semester.getStateVersion() != expectedStateVersion) {
+            throw staleTransitionVersion(id);
+        }
+    }
+
+    private static boolean isCompletionReplayVersion(long currentVersion, long expectedVersion) {
+        return expectedVersion >= 0 && currentVersion == expectedVersion;
+    }
+
+    private static void requireReplayVersion(Semester semester, Long id, long expectedStateVersion) {
+        if (!isCompletionReplayVersion(semester.getStateVersion(), expectedStateVersion)) {
+            throw staleTransitionVersion(id);
+        }
+    }
+
+    private static ConflictException staleTransitionVersion(Long id) {
+        return new ConflictException("stateVersion", id,
+                "Версия состояния семестра изменилась; требуется повторно проверить блокировки");
+    }
+
+    private static boolean isWriteBlocked(Semester semester) {
+        return semester.isArchived() || semester.getArchiveTransition() != SemesterTransition.NONE;
+    }
+
+    private static void incrementStateVersion(Semester semester) {
+        semester.setStateVersion(Math.addExact(semester.getStateVersion(), 1L));
+    }
+
+    private void lockSemesterStateTransition() {
         if (!TransactionSynchronizationManager.isActualTransactionActive()) {
-            throw new IllegalStateException("semester activation lock requires an active transaction");
+            throw new IllegalStateException("semester state lock requires an active transaction");
         }
         jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
             try (PreparedStatement statement = connection.prepareStatement(
                     "SELECT pg_advisory_xact_lock(?, ?)")) {
-                statement.setInt(1, SEMESTER_ACTIVATION_LOCK_NAMESPACE);
-                statement.setInt(2, SEMESTER_ACTIVATION_LOCK_ID);
+                statement.setInt(1, SEMESTER_STATE_LOCK_NAMESPACE);
+                statement.setInt(2, SEMESTER_STATE_LOCK_ID);
                 statement.execute();
             }
             return null;

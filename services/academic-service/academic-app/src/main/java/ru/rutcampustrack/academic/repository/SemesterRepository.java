@@ -4,10 +4,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.contract.enums.SemesterType;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -15,6 +17,10 @@ import java.util.List;
 
 public interface SemesterRepository extends JpaRepository<Semester, Long> {
     Optional<Semester> findByIsActiveTrue();
+
+    @Query("select s from Semester s where s.id = :id")
+    @QueryHints(@QueryHint(name = "jakarta.persistence.cache.retrieveMode", value = "BYPASS"))
+    Optional<Semester> findByIdUncached(@Param("id") Long id);
 
     List<Semester> findAllByIsActiveTrueOrderByIdAsc();
 
@@ -26,7 +32,8 @@ public interface SemesterRepository extends JpaRepository<Semester, Long> {
     Optional<Semester> findByIdForUpdate(@Param("id") Long id);
 
     @Modifying
-    @Query("UPDATE Semester s SET s.isActive = false WHERE s.isActive = true")
+    @Query("UPDATE Semester s SET s.isActive = false, s.stateVersion = s.stateVersion + 1 "
+            + "WHERE s.isActive = true")
     int deactivateAllActive();
 
     /**

@@ -648,6 +648,43 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         responseObserver.onCompleted();
     }
 
+    /** Uncached authoritative semester state used by server-side write guards. */
+    @Override
+    public void getSemesterState(SemesterStateRequest request,
+                                 StreamObserver<SemesterStateResponse> responseObserver) {
+        long semesterId = request.getSemesterId();
+        if (semesterId <= 0) {
+            responseObserver.onError(Status.INVALID_ARGUMENT
+                    .withDescription("semester_id must be positive")
+                    .asRuntimeException());
+            return;
+        }
+
+        ru.rutcampustrack.academic.entity.Semester semester = semesterRepository.findByIdUncached(semesterId)
+                .orElse(null);
+        if (semester == null) {
+            responseObserver.onError(Status.NOT_FOUND
+                    .withDescription("Semester not found")
+                    .asRuntimeException());
+            return;
+        }
+
+        SemesterStateResponse response = SemesterStateResponse.newBuilder()
+                .setId(semester.getId())
+                .setActive(semester.isActive())
+                .setArchived(semester.isArchived())
+                .setStateVersion(semester.getStateVersion())
+                .setTransition(ru.rutcampustrack.academic.grpc.SemesterTransition.valueOf(
+                        semester.getArchiveTransition().name()))
+                .setWriteBlocked(semester.isArchived()
+                        || semester.getArchiveTransition()
+                        != ru.rutcampustrack.academic.contract.enums.SemesterTransition.NONE)
+                .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
     /**
      * GRPC-06: Get campus geofence configuration (always uses ID=1).
      */

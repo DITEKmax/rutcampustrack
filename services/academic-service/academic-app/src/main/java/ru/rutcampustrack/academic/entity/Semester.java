@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
 import ru.rutcampustrack.academic.contract.enums.SemesterType;
 
 @Entity
@@ -33,6 +34,19 @@ public class Semester {
     @Setter
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
+
+    @Setter
+    @Column(name = "is_archived", nullable = false)
+    private boolean archived;
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "archive_transition", nullable = false, length = 10)
+    private SemesterTransition archiveTransition = SemesterTransition.NONE;
+
+    @Setter
+    @Column(name = "state_version", nullable = false)
+    private long stateVersion;
 
     @Setter
     @Column(name = "created_at", nullable = false, updatable = false)

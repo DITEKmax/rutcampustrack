@@ -31,7 +31,10 @@ public class SemesterAssembler implements RepresentationModelAssembler<Semester,
                 entity.isActive(),
                 entity.getCreatedAt(),
                 entity.getSemesterType(),
-                entity.getAcademicYear()
+                entity.getAcademicYear(),
+                entity.isArchived(),
+                entity.getArchiveTransition(),
+                entity.getStateVersion()
         );
     }
 }

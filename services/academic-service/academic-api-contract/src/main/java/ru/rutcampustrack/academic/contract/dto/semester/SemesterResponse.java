@@ -2,6 +2,7 @@ package ru.rutcampustrack.academic.contract.dto.semester;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
+import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
 import ru.rutcampustrack.academic.contract.enums.SemesterType;
 
 import java.time.LocalDate;
@@ -21,12 +22,23 @@ public class SemesterResponse extends RepresentationModel<SemesterResponse> {
     private OffsetDateTime createdAt;
     private SemesterType semesterType;
     private Integer academicYear;
+    private boolean archived;
+    private SemesterTransition transition = SemesterTransition.NONE;
+    private long stateVersion;
 
     public SemesterResponse() {}
 
     public SemesterResponse(Long id, String name, LocalDate dateFrom, LocalDate dateTo,
                             boolean active, OffsetDateTime createdAt, SemesterType semesterType,
                             Integer academicYear) {
+        this(id, name, dateFrom, dateTo, active, createdAt, semesterType, academicYear,
+                false, SemesterTransition.NONE, 0L);
+    }
+
+    public SemesterResponse(Long id, String name, LocalDate dateFrom, LocalDate dateTo,
+                            boolean active, OffsetDateTime createdAt, SemesterType semesterType,
+                            Integer academicYear, boolean archived, SemesterTransition transition,
+                            long stateVersion) {
         this.id = id;
         this.name = name;
         this.dateFrom = dateFrom;
@@ -35,6 +47,9 @@ public class SemesterResponse extends RepresentationModel<SemesterResponse> {
         this.createdAt = createdAt;
         this.semesterType = semesterType;
         this.academicYear = academicYear;
+        this.archived = archived;
+        this.transition = transition == null ? SemesterTransition.NONE : transition;
+        this.stateVersion = stateVersion;
     }
 
     public SemesterResponse(Long id, String name, LocalDate dateFrom, LocalDate dateTo,
@@ -70,4 +85,20 @@ public class SemesterResponse extends RepresentationModel<SemesterResponse> {
 
     public Integer getAcademicYear() { return academicYear; }
     public void setAcademicYear(Integer academicYear) { this.academicYear = academicYear; }
+
+    public boolean isArchived() { return archived; }
+    public void setArchived(boolean archived) { this.archived = archived; }
+
+    public SemesterTransition getTransition() { return transition; }
+    public void setTransition(SemesterTransition transition) {
+        this.transition = transition == null ? SemesterTransition.NONE : transition;
+    }
+
+    public long getStateVersion() { return stateVersion; }
+    public void setStateVersion(long stateVersion) { this.stateVersion = stateVersion; }
+
+    @Schema(description = "Запись блокирует изменения, пока семестр архивирован или переход не завершён")
+    public boolean isWriteBlocked() {
+        return archived || transition != SemesterTransition.NONE;
+    }
 }

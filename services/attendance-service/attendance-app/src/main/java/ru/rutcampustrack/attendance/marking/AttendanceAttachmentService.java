@@ -4,6 +4,7 @@ import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
@@ -47,6 +48,7 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
         this.clock = clock;
     }
 
+    @Transactional(transactionManager = "mongoTransactionManager")
     public StoredAttachment replace(long lessonId, long userId, long groupId, MultipartFile file) {
         ValidatedFile validated = validate(file);
         String pairKey = PairWriteCoordinator.pairId(userId, lessonId);
@@ -73,9 +75,34 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
     }
 
     @Override
+    @Transactional(transactionManager = "mongoTransactionManager")
     public void delete(long lessonId, long userId) {
         String pairKey = PairWriteCoordinator.pairId(userId, lessonId);
         repository.deleteAll(repository.findByRequestIdAndOwnerStudentIdOrderByPositionAsc(pairKey, userId));
+    }
+
+    /**
+     * Rebinds only the operational user:lesson access key. The attachment id,
+     * descriptor, bytes, ownership and retention timestamps remain unchanged.
+     * Caller holds the source and target lesson fences in the same Mongo tx.
+     */
+    @Transactional(transactionManager = "mongoTransactionManager")
+    public void remapLessonAccessKeys(long groupId,
+                                      long sourceLessonId,
+                                      long targetLessonId,
+                                      List<RequestAttachmentDocument> attachments) {
+        if (attachments == null || attachments.isEmpty()) return;
+        for (RequestAttachmentDocument attachment : attachments) {
+            Long owner = attachment.getOwnerStudentId();
+            String sourceKey = owner == null ? null : PairWriteCoordinator.pairId(owner, sourceLessonId);
+            if (!Objects.equals(attachment.getGroupId(), groupId)
+                    || owner == null || owner <= 0
+                    || !Objects.equals(attachment.getRequestId(), sourceKey)) {
+                throw new IllegalStateException("Attendance attachment access reference changed during transfer");
+            }
+            attachment.setRequestId(PairWriteCoordinator.pairId(owner, targetLessonId));
+            repository.save(attachment);
+        }
     }
 
     @Override

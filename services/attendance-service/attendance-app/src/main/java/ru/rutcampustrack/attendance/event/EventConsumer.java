@@ -32,6 +32,7 @@ public class EventConsumer extends AbstractEventConsumer {
     public static final String CONSUMER_ID = "attendance";
 
     private final LessonEventService lessonEventService;
+    private final LessonTransferParticipantService lessonTransferParticipantService;
     private final SemesterCacheService semesterCacheService;
     private final StudentRequestService studentRequestService;
     private final IdempotencyGuard idempotencyGuard;
@@ -60,6 +61,7 @@ public class EventConsumer extends AbstractEventConsumer {
                 case "lesson.cancelled"        -> handleLessonCancelled(envelope);
                 case "lesson.deleted"          -> handleLessonDeleted(envelope);
                 case "lesson.one_off.cancelled" -> handleOneOffLessonCancelled(envelope);
+                case "lesson.transfer.requested" -> lessonTransferParticipantService.apply(envelope);
                 case "semester.archived"       -> handleSemesterArchived(envelope);
                 case "late_checkin.decision"   -> handleLateCheckinDecision(envelope);
                 case "excuse.decision"         -> handleExcuseDecision(envelope);

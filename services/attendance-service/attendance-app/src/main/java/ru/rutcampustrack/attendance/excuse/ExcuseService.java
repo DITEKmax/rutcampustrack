@@ -3,6 +3,7 @@ package ru.rutcampustrack.attendance.excuse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.rutcampustrack.attendance.contract.dto.excuse.CreateExcuseRequest;
@@ -23,6 +24,7 @@ import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
@@ -78,7 +80,9 @@ public class ExcuseService {
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final BusinessMetrics businessMetrics;
     private final Clock clock;
+    private final PairWriteCoordinator pairWriteCoordinator;
 
+    @Autowired
     public ExcuseService(ExcuseRepository excuseRepository,
                          RequestContext requestContext,
                          AcademicGrpcClient academicGrpcClient,
@@ -87,7 +91,8 @@ public class ExcuseService {
                          ExcuseEventPublisher excuseEventPublisher,
                          ScheduleGrpcClient scheduleGrpcClient,
                          BusinessMetrics businessMetrics,
-                         Clock clock) {
+                         Clock clock,
+                         PairWriteCoordinator pairWriteCoordinator) {
         this.excuseRepository = excuseRepository;
         this.requestContext = requestContext;
         this.academicGrpcClient = academicGrpcClient;
@@ -97,6 +102,22 @@ public class ExcuseService {
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.businessMetrics = businessMetrics;
         this.clock = clock;
+        this.pairWriteCoordinator = pairWriteCoordinator;
+    }
+
+    /** Source-compatible constructor for focused tests without lesson fencing. */
+    public ExcuseService(ExcuseRepository excuseRepository,
+                         RequestContext requestContext,
+                         AcademicGrpcClient academicGrpcClient,
+                         AttendanceReadPort attendanceReadPort,
+                         AttendanceWritePort attendanceWritePort,
+                         ExcuseEventPublisher excuseEventPublisher,
+                         ScheduleGrpcClient scheduleGrpcClient,
+                         BusinessMetrics businessMetrics,
+                         Clock clock) {
+        this(excuseRepository, requestContext, academicGrpcClient, attendanceReadPort,
+                attendanceWritePort, excuseEventPublisher, scheduleGrpcClient,
+                businessMetrics, clock, null);
     }
 
     /**
@@ -149,6 +170,7 @@ public class ExcuseService {
 
         // D-25: validate that every lessonId exists and belongs to the student's group
         validateLessonIds(request.lessonIds());
+        lockAndValidateLessons(requestContext.getUserId(), requestContext.getGroupId(), request.lessonIds());
 
         // Excuse tickets only make sense for lessons where the student is marked absent.
         Long studentId = requestContext.getUserId();
@@ -259,6 +281,13 @@ public class ExcuseService {
             throw new ConflictException("Решение по тикету уже принято");
         }
 
+        lockAndValidateLessons(ticket.getStudentId(), ticket.getGroupId(), ticket.getLessonIds());
+        ticket = excuseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
+        if (ticket.getStatus() != ExcuseTicketStatus.SUBMITTED) {
+            throw new ConflictException("Решение по тикету уже принято");
+        }
+
         Instant now = clock.instant();
         ticket.setStatus(newStatus);
         ticket.setDecisionBy(requestContext.getUserId());
@@ -313,6 +342,13 @@ public class ExcuseService {
                 .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
 
         // D-18: решение уже принято — тихо выходим (дубликат доставки RabbitMQ).
+        if (ticket.getStatus() != ExcuseTicketStatus.SUBMITTED) {
+            return;
+        }
+
+        lockAndValidateLessons(ticket.getStudentId(), ticket.getGroupId(), ticket.getLessonIds());
+        ticket = excuseRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
         if (ticket.getStatus() != ExcuseTicketStatus.SUBMITTED) {
             return;
         }
@@ -417,6 +453,17 @@ public class ExcuseService {
                 throw new BadRequestException(
                         "Урок с id=" + lesson.getLessonId() + " не принадлежит вашей группе");
             }
+        }
+    }
+
+    private void lockAndValidateLessons(long studentId, long groupId, List<Long> lessonIds) {
+        List<Long> orderedIds = lessonIds == null ? List.of()
+                : lessonIds.stream().filter(Objects::nonNull).distinct().sorted().toList();
+        for (Long lessonId : orderedIds) {
+            if (pairWriteCoordinator != null) {
+                pairWriteCoordinator.lock(studentId, lessonId, groupId, clock.instant());
+            }
+            scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
         }
     }
 

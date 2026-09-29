@@ -2,8 +2,10 @@ package ru.rutcampustrack.attendance.checkin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
@@ -34,16 +36,27 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
     private final PairWriteCoordinator pairWriteCoordinator;
     private final Clock clock;
     private final JournalAttachmentPort journalAttachmentPort;
+    private final ScheduleGrpcClient scheduleGrpcClient;
 
     @Autowired
     public AttendanceWritePortImpl(AttendanceRepository attendanceRepository,
                                    PairWriteCoordinator pairWriteCoordinator,
                                    Clock clock,
-                                   JournalAttachmentPort journalAttachmentPort) {
+                                   JournalAttachmentPort journalAttachmentPort,
+                                   ScheduleGrpcClient scheduleGrpcClient) {
         this.attendanceRepository = attendanceRepository;
         this.pairWriteCoordinator = pairWriteCoordinator;
         this.clock = clock;
         this.journalAttachmentPort = journalAttachmentPort;
+        this.scheduleGrpcClient = scheduleGrpcClient;
+    }
+
+    /** Source-compatible constructor for focused tests without Schedule reads. */
+    public AttendanceWritePortImpl(AttendanceRepository attendanceRepository,
+                                   PairWriteCoordinator pairWriteCoordinator,
+                                   Clock clock,
+                                   JournalAttachmentPort journalAttachmentPort) {
+        this(attendanceRepository, pairWriteCoordinator, clock, journalAttachmentPort, null);
     }
 
     /** Source-compatible constructor for focused tests without attachment storage. */
@@ -54,20 +67,24 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
     }
 
     @Override
+    @Transactional(transactionManager = "mongoTransactionManager")
     public void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status) {
         mark(studentId, lessonId, groupId, status, AttendanceSource.HEADMAN_EXCUSE, null);
     }
 
     @Override
+    @Transactional(transactionManager = "mongoTransactionManager")
     public void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status, AttendanceSource source) {
         mark(studentId, lessonId, groupId, status, source, null);
     }
 
     @Override
+    @Transactional(transactionManager = "mongoTransactionManager")
     public void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status,
                      AttendanceSource source, String excuseReason) {
         Instant now = clock.instant();
         pairWriteCoordinator.lock(studentId, lessonId, groupId, now);
+        requireTransferStable(lessonId, groupId);
         Optional<AttendanceDocument> existing =
                 attendanceRepository.findByLessonIdAndUserId(lessonId, studentId);
 
@@ -104,11 +121,13 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
     }
 
     @Override
+    @Transactional(transactionManager = "mongoTransactionManager")
     public void markWithLesson(Long studentId, Long lessonId, Long groupId, Long subjectId,
                                Long semesterId, Integer lessonNumber, LocalDate lessonDate,
                                AttendanceStatus status, AttendanceSource source, Long markedBy) {
         Instant now = clock.instant();
         pairWriteCoordinator.lock(studentId, lessonId, groupId, now);
+        requireTransferStable(lessonId, groupId);
         AttendanceDocument doc = attendanceRepository.findByLessonIdAndUserId(lessonId, studentId)
                 .orElseGet(AttendanceDocument::new);
         if (preserveExistingPresent(doc, status, source)) {
@@ -162,6 +181,12 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
             document.setAttachmentName(null);
             document.setAttachmentContentType(null);
             document.setAttachmentSize(null);
+        }
+    }
+
+    private void requireTransferStable(Long lessonId, Long groupId) {
+        if (scheduleGrpcClient != null) {
+            scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
         }
     }
 }

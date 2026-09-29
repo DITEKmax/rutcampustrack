@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -22,6 +23,7 @@ import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableExceptio
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Instant;
@@ -38,8 +40,8 @@ import java.util.Set;
  * <p>
  * processLessonCancelled: sets all existing attendance docs for the lesson to CANCELLED.
  * <p>
- * No @Transactional — MongoDB and RabbitMQ do not share a transaction manager.
- * No try/catch — exceptions propagate so Spring AMQP nacks the message to DLQ.
+ * Lifecycle mutations share the Mongo transaction with their lesson-level
+ * fence. Exceptions propagate so Spring AMQP nacks the message to DLQ.
  */
 @Service
 @Slf4j
@@ -50,27 +52,53 @@ public class LessonEventService {
     private final AcademicGrpcClient academicGrpcClient;
     private final SemesterCacheService semesterCacheService;
     private final TaskExecutor grpcTaskExecutor;
+    private final PairWriteCoordinator pairWriteCoordinator;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public LessonEventService(MongoTemplate mongoTemplate,
                               ScheduleGrpcClient scheduleGrpcClient,
                               AcademicGrpcClient academicGrpcClient,
                               SemesterCacheService semesterCacheService,
-                              @Qualifier("grpcTaskExecutor") TaskExecutor grpcTaskExecutor) {
+                              @Qualifier("grpcTaskExecutor") TaskExecutor grpcTaskExecutor,
+                              PairWriteCoordinator pairWriteCoordinator) {
         this.mongoTemplate = mongoTemplate;
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.academicGrpcClient = academicGrpcClient;
         this.semesterCacheService = semesterCacheService;
         this.grpcTaskExecutor = grpcTaskExecutor;
+        this.pairWriteCoordinator = pairWriteCoordinator;
     }
 
+    /** Source-compatible constructor for focused service tests. */
+    public LessonEventService(MongoTemplate mongoTemplate,
+                              ScheduleGrpcClient scheduleGrpcClient,
+                              AcademicGrpcClient academicGrpcClient,
+                              SemesterCacheService semesterCacheService,
+                              @Qualifier("grpcTaskExecutor") TaskExecutor grpcTaskExecutor) {
+        this(mongoTemplate, scheduleGrpcClient, academicGrpcClient, semesterCacheService,
+                grpcTaskExecutor, new PairWriteCoordinator(mongoTemplate));
+    }
+
+    @Transactional(transactionManager = "mongoTransactionManager")
     public void processLessonClosed(Long lessonId, Long groupId) {
+        if (lessonId == null || lessonId <= 0) {
+            throw new IllegalArgumentException("lessonId must be positive");
+        }
+        pairWriteCoordinator.lockLessons(java.util.List.of(lessonId), groupId, Instant.now());
+        if (pairWriteCoordinator.isTransferredSource(lessonId)) {
+            log.info("lesson.closed: transferred source {}, leaving attendance unchanged", lessonId);
+            return;
+        }
         // The Schedule snapshot is the canonical source for date, semester,
         // identity and lifecycle.  Only after this validation may Academic be
         // asked for a dated historical roster.
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
         LocalDate lessonDate = validateLessonSnapshot(lesson, lessonId, groupId);
-        if ("cancelled".equalsIgnoreCase(lesson.getStatus())
-                || "transferred".equalsIgnoreCase(lesson.getStatus())) {
+        if ("transferred".equalsIgnoreCase(lesson.getStatus())) {
+            log.info("lesson.closed: transferred source {}, leaving attendance unchanged", lessonId);
+            return;
+        }
+        if ("cancelled".equalsIgnoreCase(lesson.getStatus())) {
             ensureCancellationMarker(lessonId);
             applyCancellation(lessonId);
             return;
@@ -151,7 +179,16 @@ public class LessonEventService {
                 groupId, date, lessonNumber, result.getDeletedCount());
     }
 
+    @Transactional(transactionManager = "mongoTransactionManager")
     public void processLessonCancelled(Long lessonId) {
+        if (lessonId == null || lessonId <= 0) {
+            throw new IllegalArgumentException("lessonId must be positive");
+        }
+        pairWriteCoordinator.lockLessons(java.util.List.of(lessonId), null, Instant.now());
+        if (pairWriteCoordinator.isTransferredSource(lessonId)) {
+            log.info("lesson.cancelled: transferred source {}, leaving moved attendance unchanged", lessonId);
+            return;
+        }
         // The marker must be durable before any attendance update.  Retries
         // are idempotent because both operations are keyed by lesson_id.
         ensureCancellationMarker(lessonId);
@@ -248,8 +285,10 @@ public class LessonEventService {
      * This is critical: without it, the docs would orphan, surface as duplicates
      * alongside the regenerated lessons, and inflate stats.
      */
+    @Transactional(transactionManager = "mongoTransactionManager")
     public void processLessonsDeleted(java.util.List<Long> lessonIds) {
         if (lessonIds == null || lessonIds.isEmpty()) return;
+        pairWriteCoordinator.lockLessons(lessonIds, null, Instant.now());
         Query filter = Query.query(Criteria.where("lesson_id").in(lessonIds));
         DeleteResult result = mongoTemplate.remove(filter, AttendanceDocument.class);
         log.info("lesson.deleted: lessonIds={}, deletedCount={}",

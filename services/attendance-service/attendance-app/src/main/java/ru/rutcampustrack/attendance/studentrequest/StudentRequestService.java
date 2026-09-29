@@ -1552,6 +1552,7 @@ public class StudentRequestService {
     private void lockPairs(long studentId, long groupId, List<Long> lessonIds) {
         for (Long lessonId : sortedLessonIds(lessonIds)) {
             pairWriteCoordinator.lock(studentId, lessonId, groupId, clock.instant());
+            scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
         }
     }
 

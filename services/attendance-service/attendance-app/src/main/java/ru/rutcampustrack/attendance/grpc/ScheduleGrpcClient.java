@@ -4,6 +4,7 @@ import io.grpc.StatusRuntimeException;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.schedule.grpc.ActiveLessonRequest;
 import ru.rutcampustrack.schedule.grpc.LessonByIdRequest;
@@ -31,11 +32,13 @@ public class ScheduleGrpcClient {
 
     public LessonResponse getActiveLesson(Long groupId, String timestamp) {
         try {
-            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+            LessonResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
                     .getActiveLesson(ActiveLessonRequest.newBuilder()
                             .setGroupId(groupId)
                             .setTimestamp(timestamp)
                             .build());
+            requireTransferReadable(response);
+            return response;
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
                 throw new ResourceNotFoundException("Lesson", "groupId/timestamp", groupId + "/" + timestamp);
@@ -46,10 +49,12 @@ public class ScheduleGrpcClient {
 
     public LessonResponse getLessonById(Long lessonId) {
         try {
-            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+            LessonResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
                     .getLessonById(LessonByIdRequest.newBuilder()
                             .setLessonId(lessonId)
                             .build());
+            requireTransferReadable(response);
+            return response;
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
                 throw new ResourceNotFoundException("Lesson", "id", lessonId);
@@ -60,13 +65,15 @@ public class ScheduleGrpcClient {
 
     public LessonsResponse getLessonsByGroup(Long groupId, Long semesterId, String dateFrom, String dateTo) {
         try {
-            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+            LessonsResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
                     .getLessonsByGroup(LessonsByGroupRequest.newBuilder()
                             .setGroupId(groupId)
                             .setSemesterId(semesterId)
                             .setDateFrom(dateFrom)
                             .setDateTo(dateTo)
                             .build());
+            response.getLessonsList().forEach(this::requireTransferReadable);
+            return response;
         } catch (StatusRuntimeException e) {
             throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
         }
@@ -82,13 +89,44 @@ public class ScheduleGrpcClient {
             return List.of();
         }
         try {
-            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+            List<LessonInfo> lessons = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
                     .getLessonsByIds(LessonsByIdsRequest.newBuilder()
                             .addAllLessonIds(lessonIds)
                             .build())
                     .getLessonsList();
+            // LessonInfo predates the transfer-state fields. Resolve each compact
+            // entry through LessonResponse so reads and write validations cannot
+            // expose a partially applied transfer as final data.
+            lessons.forEach(lesson -> getLessonById(lesson.getLessonId()));
+            return lessons;
         } catch (StatusRuntimeException e) {
             throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
         }
+    }
+
+    /** Revalidates mutable Attendance writes after their Mongo lesson fence is held. */
+    public LessonResponse requireAttendanceMutationReady(long lessonId, long groupId) {
+        LessonResponse lesson = getLessonById(lessonId);
+        if (lesson.getId() != lessonId || lesson.getGroupId() != groupId) {
+            throw new ConflictException("Урок изменился; обнови данные и повтори действие");
+        }
+        if ("transferred".equalsIgnoreCase(lesson.getStatus())) {
+            throw new ConflictException("Урок перенесён; обнови данные и повтори действие");
+        }
+        return lesson;
+    }
+
+    private void requireTransferReadable(LessonResponse response) {
+        if (response == null) {
+            throw new ScheduleServiceUnavailableException("Schedule returned no lesson snapshot");
+        }
+        String state = response.getTransferState();
+        if (state == null || state.isBlank() || "COMPLETED".equals(state)) {
+            return;
+        }
+        String operationId = response.getTransferOperationId();
+        throw new ScheduleServiceUnavailableException(
+                "Lesson transfer is " + state + (operationId == null || operationId.isBlank()
+                        ? "" : " (operation " + operationId + ")") + "; retry this request");
     }
 }

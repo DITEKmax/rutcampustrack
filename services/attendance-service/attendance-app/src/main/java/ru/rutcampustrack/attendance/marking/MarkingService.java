@@ -144,6 +144,7 @@ public class MarkingService {
 
         Instant now = clock.instant();
         pairWriteCoordinator.lock(userId, lessonId, lesson.getGroupId(), now);
+        scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
         Query filter = pairFilter(lessonId, userId);
         AttendanceDocument existing = mongoTemplate.findOne(filter, AttendanceDocument.class);
         requireAttendancePermission(lesson.getGroupId(), request.status() == AttendanceStatus.EXCUSED
@@ -222,6 +223,7 @@ public class MarkingService {
         LessonResponse lesson = requireWritableLesson(lessonId);
         requireStudentInRoster(membersForLesson(lesson), userId);
         pairWriteCoordinator.lock(userId, lessonId, lesson.getGroupId(), clock.instant());
+        scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
         AttendanceDocument existing = mongoTemplate.findOne(pairFilter(lessonId, userId), AttendanceDocument.class);
         requireAttendancePermission(lesson.getGroupId(), existing != null
                 && existing.getStatus() == AttendanceStatus.EXCUSED ? "MANAGE_EXCUSES" : "MARK_ATTENDANCE");
@@ -440,12 +442,15 @@ public class MarkingService {
         List<AttendanceDocument> result = new ArrayList<>(items.size());
         FindAndModifyOptions opts = FindAndModifyOptions.options().returnNew(true).upsert(true);
 
+        pairWriteCoordinator.lockLessons(uniqueLessonIds, headmanGroupId, now);
         items.stream()
                 .sorted(java.util.Comparator
                         .comparing(MarkBatchItem::userId)
                         .thenComparing(MarkBatchItem::lessonId))
                 .forEach(item -> pairWriteCoordinator.lock(
                         item.userId(), item.lessonId(), lessonsById.get(item.lessonId()).getGroupId(), now));
+        uniqueLessonIds.stream().sorted().forEach(lessonId ->
+                scheduleGrpcClient.requireAttendanceMutationReady(lessonId, headmanGroupId));
 
         boolean requiresExcusePermission = items.stream().anyMatch(item -> item.status() == AttendanceStatus.EXCUSED);
         if (!requiresExcusePermission) {

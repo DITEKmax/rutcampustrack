@@ -109,6 +109,10 @@ public class LateCheckinService {
             throw new BadRequestException("Запрос можно создать только для идущей или уже прошедшей пары");
         }
 
+        Instant now = clock.instant();
+        pairWriteCoordinator.lock(requestContext.getUserId(), lessonId, lesson.getGroupId(), now);
+        lesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
+
         // Already marked present — don't waste headman's time
         attendanceRepository.findByLessonIdAndUserId(lessonId, requestContext.getUserId())
                 .filter(doc -> doc.getStatus() == AttendanceStatus.PRESENT)
@@ -125,7 +129,6 @@ public class LateCheckinService {
 
         String studentName = academicGrpcClient.getUserDisplayName(requestContext.getUserId());
 
-        Instant now = clock.instant();
         LateCheckinRequest request = LateCheckinRequest.builder()
                 .studentId(requestContext.getUserId())
                 .groupId(requestContext.getGroupId())
@@ -291,6 +294,7 @@ public class LateCheckinService {
 
         Instant now = clock.instant();
         pairWriteCoordinator.lock(initial.getStudentId(), initial.getLessonId(), initial.getGroupId(), now);
+        scheduleGrpcClient.requireAttendanceMutationReady(initial.getLessonId(), initial.getGroupId());
         LateCheckinRequest request = repository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
 

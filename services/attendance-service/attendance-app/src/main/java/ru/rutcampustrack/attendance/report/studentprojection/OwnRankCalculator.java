@@ -1,6 +1,7 @@
 package ru.rutcampustrack.attendance.report.studentprojection;
 
 import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,6 +50,10 @@ public final class OwnRankCalculator {
         }
     }
 
+    /** One row in the authorized cohort ordering; unavailable metrics remain unranked. */
+    public record RankedParticipant(long participantId, Integer position, BigDecimal percentage) {
+    }
+
     /**
      * Calculates competition rank: one plus the number of peers with a
      * strictly greater exact present/held fraction. The roster is never
@@ -58,13 +63,21 @@ public final class OwnRankCalculator {
             Long ownParticipantId,
             Collection<Participant> authoritativeActiveRoster) {
         validateOwnId(ownParticipantId);
+        return summarize(ownParticipantId, rankAll(authoritativeActiveRoster));
+    }
+
+    /**
+     * Orders the same cohort used by {@link #calculate(Long, Collection)}.
+     * Ratios use exact cross multiplication; rounded percentages are only for
+     * display. Ties keep the same competition position and stable id ordering.
+     */
+    public static List<RankedParticipant> rankAll(Collection<Participant> authoritativeActiveRoster) {
         if (authoritativeActiveRoster == null) {
             throw StudentProjectionException.invalidRoster("roster is null");
         }
 
         List<Participant> participants = new ArrayList<>(authoritativeActiveRoster.size());
         java.util.Set<Long> participantIds = new java.util.HashSet<>();
-        Participant own = null;
         for (Participant participant : authoritativeActiveRoster) {
             if (participant == null) {
                 throw StudentProjectionException.invalidRoster("roster contains null participant");
@@ -76,40 +89,71 @@ public final class OwnRankCalculator {
             }
             validateMetrics(id, participant.metrics());
             participants.add(participant);
-            if (id.equals(ownParticipantId)) {
-                own = participant;
+        }
+
+        participants.sort((left, right) -> {
+            boolean leftAvailable = hasRatio(left.metrics());
+            boolean rightAvailable = hasRatio(right.metrics());
+            if (leftAvailable != rightAvailable) {
+                return leftAvailable ? -1 : 1;
             }
-        }
+            if (leftAvailable) {
+                int byRatio = compareRatio(right.metrics(), left.metrics());
+                if (byRatio != 0) return byRatio;
+            }
+            return Long.compare(left.participantId(), right.participantId());
+        });
 
-        int participantCount = participants.size();
-        if (own == null || own.metrics() == null || own.metrics().heldCount() == 0) {
-            return Rank.unavailable(participantCount);
-        }
-
-        int ownPresent = own.metrics().presentCount();
-        int ownHeld = own.metrics().heldCount();
-        BigInteger ownPresentBig = BigInteger.valueOf(ownPresent);
-        BigInteger ownHeldBig = BigInteger.valueOf(ownHeld);
-        int strictlyBetter = 0;
-
+        List<RankedParticipant> result = new ArrayList<>(participants.size());
+        int rankPosition = 0;
+        int availableCount = 0;
+        Participant previousRanked = null;
         for (Participant participant : participants) {
-            if (participant.participantId().equals(ownParticipantId)) {
-                continue;
-            }
             AttendanceMetricCalculator.Metrics metrics = participant.metrics();
-            if (metrics == null || metrics.heldCount() == 0) {
+            if (!hasRatio(metrics)) {
+                result.add(new RankedParticipant(participant.participantId(), null, null));
                 continue;
             }
-            BigInteger peerPresentTimesOwnHeld = BigInteger.valueOf(metrics.presentCount())
-                    .multiply(ownHeldBig);
-            BigInteger ownPresentTimesPeerHeld = ownPresentBig
-                    .multiply(BigInteger.valueOf(metrics.heldCount()));
-            if (peerPresentTimesOwnHeld.compareTo(ownPresentTimesPeerHeld) > 0) {
-                strictlyBetter++;
+            availableCount++;
+            if (previousRanked == null || compareRatio(previousRanked.metrics(), metrics) != 0) {
+                rankPosition = availableCount;
             }
+            result.add(new RankedParticipant(
+                    participant.participantId(), rankPosition, metrics.presentPercent()));
+            previousRanked = participant;
         }
+        return List.copyOf(result);
+    }
 
-        return new Rank(Math.addExact(strictlyBetter, 1), participantCount, true);
+    /** Converts the complete ordered cohort back to the existing own-only summary. */
+    public static Rank summarize(Long ownParticipantId, List<RankedParticipant> rankedRoster) {
+        validateOwnId(ownParticipantId);
+        if (rankedRoster == null) {
+            throw StudentProjectionException.invalidRoster("ranked roster is null");
+        }
+        RankedParticipant own = rankedRoster.stream()
+                .filter(participant -> participant.participantId() == ownParticipantId)
+                .findFirst()
+                .orElse(null);
+        if (own == null || own.position() == null) {
+            return Rank.unavailable(rankedRoster.size());
+        }
+        return new Rank(own.position(), rankedRoster.size(), true);
+    }
+
+    private static boolean hasRatio(AttendanceMetricCalculator.Metrics metrics) {
+        return metrics != null && metrics.heldCount() > 0;
+    }
+
+    /** Positive means left has the higher exact present/held fraction. */
+    private static int compareRatio(
+            AttendanceMetricCalculator.Metrics left,
+            AttendanceMetricCalculator.Metrics right) {
+        BigInteger leftCross = BigInteger.valueOf(left.presentCount())
+                .multiply(BigInteger.valueOf(right.heldCount()));
+        BigInteger rightCross = BigInteger.valueOf(right.presentCount())
+                .multiply(BigInteger.valueOf(left.heldCount()));
+        return leftCross.compareTo(rightCross);
     }
 
     private static void validateOwnId(Long ownParticipantId) {

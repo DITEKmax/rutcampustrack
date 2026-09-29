@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ScheduleResponse;
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentStatisticsRankingResponse;
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentStatisticsRankingRow;
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Bucket;
 
 import java.util.List;
@@ -58,6 +60,25 @@ class StudentApiControllerCacheControlTest {
                 controller.listRequests(Bucket.OPEN, 0, 20);
 
         assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
+    }
+
+    @Test
+    void statisticsRankingRetainsNoStoreAndPassesTheCurrentPageArguments() {
+        StudentStatisticsRankingResponse expected = new StudentStatisticsRankingResponse(
+                true,
+                1,
+                20,
+                21,
+                18,
+                List.of(new StudentStatisticsRankingRow("42", "Студент", 18, 87.5, true)));
+        when(queries.statisticsRanking(30L, null, 20)).thenReturn(expected);
+
+        ResponseEntity<StudentStatisticsRankingResponse> response =
+                controller.getStatisticsRanking("30", null, 20);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(response.getBody()).isEqualTo(expected);
     }
 
     private static ScheduleResponse schedule() {

@@ -42,6 +42,25 @@ class OwnRankCalculatorTest {
     }
 
     @Test
+    void fullRankingUsesExactFractionsAndStableIdsForTies() {
+        List<OwnRankCalculator.Participant> roster = List.of(
+                OwnRankCalculator.Participant.withCounts(1L, 1_000_000, 333_333),
+                OwnRankCalculator.Participant.withCounts(5L, 6, 3),
+                OwnRankCalculator.Participant.withCounts(4L, 2, 1),
+                OwnRankCalculator.Participant.withCounts(2L, 3, 1));
+
+        assertThat(OwnRankCalculator.rankAll(roster))
+                .extracting(OwnRankCalculator.RankedParticipant::participantId,
+                        OwnRankCalculator.RankedParticipant::position,
+                        OwnRankCalculator.RankedParticipant::percentage)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple(4L, 1, new java.math.BigDecimal("50.00")),
+                        org.assertj.core.groups.Tuple.tuple(5L, 1, new java.math.BigDecimal("50.00")),
+                        org.assertj.core.groups.Tuple.tuple(2L, 3, new java.math.BigDecimal("33.33")),
+                        org.assertj.core.groups.Tuple.tuple(1L, 4, new java.math.BigDecimal("33.33")));
+    }
+
+    @Test
     void crossMultiplicationUsesBigIntegerBeyondLongRange() {
         List<OwnRankCalculator.Participant> roster = List.of(
                 OwnRankCalculator.Participant.withCounts(1L, 2_000_000_000, 1_000_000_000),

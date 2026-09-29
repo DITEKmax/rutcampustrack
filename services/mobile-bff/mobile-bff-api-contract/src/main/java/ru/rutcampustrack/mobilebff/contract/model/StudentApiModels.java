@@ -385,6 +385,31 @@ public final class StudentApiModels {
     ) {
     }
 
+    @Schema(name = "StudentStatisticsRankingRow", requiredProperties = {
+            "id", "name", "position", "percentage", "isSelf"
+    })
+    public record StudentStatisticsRankingRow(
+            String id,
+            String name,
+            Integer position,
+            Double percentage,
+            boolean isSelf
+    ) {
+    }
+
+    @Schema(name = "StudentStatisticsRanking", requiredProperties = {
+            "available", "page", "size", "total", "ownPosition", "rows"
+    })
+    public record StudentStatisticsRankingResponse(
+            boolean available,
+            int page,
+            int size,
+            int total,
+            @Schema(nullable = true) Integer ownPosition,
+            List<StudentStatisticsRankingRow> rows
+    ) {
+    }
+
     @Schema(name = "StudentStatisticsSubjectDetail", requiredProperties = {
             "subjectId", "name", "availableTypes", "selectedTypes", "selectedAggregate", "series", "typeCards"
     })

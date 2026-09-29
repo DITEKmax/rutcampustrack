@@ -9,9 +9,12 @@ import ru.rutcampustrack.academic.grpc.HomeworkInfo;
 import ru.rutcampustrack.academic.grpc.HomeworksForWeekResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.academic.grpc.SetHomeworkCompletionResponse;
+import ru.rutcampustrack.attendance.grpc.StudentAttendanceRankingResponse;
+import ru.rutcampustrack.attendance.grpc.StudentAttendanceRankingRow;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.HomeworkCompletionRequest;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.HomeworkItem;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentStatisticsRankingRow;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
 import ru.rutcampustrack.mobilebff.grpc.MobileAcademicClient;
 import ru.rutcampustrack.mobilebff.grpc.MobileAttendanceClient;
@@ -84,6 +87,38 @@ class StudentQueryHomeworkTest {
         assertThat(result.items().get(2).completedAt()).isNotNull();
         verify(academic).homeworks(10L, 5L, 100L, "2026-09-07", "2026-09-30",
                 true, "2026-09-06T21:00:00Z", "2026-09-07T21:00:00Z");
+    }
+
+    @Test
+    void statisticsRankingMapsOnlyThePagedAttendanceRankingFields() {
+        when(academic.activeSemester()).thenReturn(SemesterResponse.newBuilder()
+                .setId(5L).setName("Осень 2026")
+                .setDateFrom("2026-09-01").setDateTo("2026-09-30").build());
+        when(attendance.ranking(5L, null, 20)).thenReturn(StudentAttendanceRankingResponse.newBuilder()
+                .setAvailable(true)
+                .setPage(2)
+                .setSize(20)
+                .setTotal(45)
+                .setOwnPosition(37)
+                .addRows(StudentAttendanceRankingRow.newBuilder()
+                        .setStudentId(100L)
+                        .setDisplayName("Я")
+                        .setPosition(37)
+                        .setPercentage(83.33)
+                        .setIsSelf(true))
+                .build());
+
+        var result = service.statisticsRanking(5L, null, 20);
+
+        assertThat(result.available()).isTrue();
+        assertThat(result.page()).isEqualTo(2);
+        assertThat(result.size()).isEqualTo(20);
+        assertThat(result.total()).isEqualTo(45);
+        assertThat(result.ownPosition()).isEqualTo(37);
+        assertThat(result.rows()).containsExactly(
+                new StudentStatisticsRankingRow("100", "Я", 37, 83.33, true));
+        verify(attendance).ranking(5L, null, 20);
+        verifyNoInteractions(schedule);
     }
 
     @Test

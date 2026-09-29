@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rutcampustrack.academic.grpc.AcademicSubjectInfo;
+import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.academic.grpc.StudentProjectionMembershipSegment;
 import ru.rutcampustrack.academic.grpc.StudentProjectionRankVisibility;
 import ru.rutcampustrack.academic.grpc.StudentProjectionScopeResponse;
@@ -29,6 +31,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -198,6 +201,119 @@ class StudentAttendanceProjectionServiceTest {
                 RANK_GROUP_ID, SEMESTER_ID, "2026-09-01", "2026-09-30");
     }
 
+    @Test
+    void rankingDefaultsToPageContainingOwnRowAndOnlyReturnsAuthorizedCohortNames() {
+        InternalJwtClaims claims = new InternalJwtClaims(
+                OWN_ID,
+                UUID.fromString("66666666-6666-4666-8666-666666666666"),
+                1L,
+                1L,
+                "STUDENT",
+                "ACTIVE",
+                RANK_GROUP_ID,
+                false,
+                false);
+        StudentProjectionScopeResponse rankingScope = scope().toBuilder()
+                .addActiveRosterUserIds(400L)
+                .build();
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(rankingScope);
+        when(academicGrpcClient.getGroupMembers(RANK_GROUP_ID)).thenReturn(GroupMembersResponse.newBuilder()
+                .addStudents(student(OWN_ID, "Текущий студент"))
+                .addStudents(student(200L, "Студент группы"))
+                .addStudents(student(300L, "Ещё один студент"))
+                .addStudents(student(400L, "Первый студент"))
+                .addStudents(student(999L, "Вне roster scope"))
+                .build());
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenAnswer(invocation -> {
+                    String from = invocation.getArgument(2, String.class);
+                    if ("2026-09-10".equals(from)) {
+                        return LessonsResponse.newBuilder()
+                                .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
+                                .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
+                                .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
+                                .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
+                                .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
+                                .build();
+                    }
+                    return LessonsResponse.newBuilder()
+                            .addLessons(lesson(10L, 100L, "2026-09-05", "closed"))
+                            .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
+                            .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
+                            .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
+                            .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
+                            .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
+                            .build();
+                });
+        when(attendanceReadPort.findByUserIds(List.of(OWN_ID, 200L, 300L, 400L), SEMESTER_ID))
+                .thenReturn(Map.of(
+                        OWN_ID, List.of(
+                                mark(11L, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15"),
+                                mark(12L, OWN_ID, AttendanceStatus.ABSENT, "2026-09-16")),
+                        200L, List.of(
+                                mark(10L, 200L, AttendanceStatus.PRESENT, "2026-09-05"),
+                                mark(11L, 200L, AttendanceStatus.PRESENT, "2026-09-15"),
+                                mark(12L, 200L, AttendanceStatus.ABSENT, "2026-09-16"),
+                                mark(15L, 200L, AttendanceStatus.ABSENT, "2026-09-18")),
+                        300L, List.of(
+                                mark(10L, 300L, AttendanceStatus.ABSENT, "2026-09-05"),
+                                mark(11L, 300L, AttendanceStatus.ABSENT, "2026-09-15"),
+                                mark(12L, 300L, AttendanceStatus.ABSENT, "2026-09-16"),
+                                mark(15L, 300L, AttendanceStatus.ABSENT, "2026-09-18")),
+                        400L, List.of(
+                                mark(10L, 400L, AttendanceStatus.PRESENT, "2026-09-05"),
+                                mark(11L, 400L, AttendanceStatus.PRESENT, "2026-09-15"),
+                                mark(12L, 400L, AttendanceStatus.ABSENT, "2026-09-16"),
+                                mark(15L, 400L, AttendanceStatus.PRESENT, "2026-09-18"))));
+
+        StudentAttendanceProjectionService.RankingPage page = service.ranking(
+                claims, SEMESTER_ID, null, 2);
+
+        assertThat(page.available()).isTrue();
+        assertThat(page.page()).isEqualTo(1);
+        assertThat(page.size()).isEqualTo(2);
+        assertThat(page.total()).isEqualTo(4);
+        assertThat(page.ownPosition()).isEqualTo(3);
+        assertThat(page.rows())
+                .extracting(StudentAttendanceProjectionService.RankingRow::studentId,
+                        StudentAttendanceProjectionService.RankingRow::name,
+                        StudentAttendanceProjectionService.RankingRow::position,
+                        StudentAttendanceProjectionService.RankingRow::percentage,
+                        StudentAttendanceProjectionService.RankingRow::isSelf)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple(OWN_ID, "Текущий студент", 3,
+                                new java.math.BigDecimal("25.00"), true),
+                        org.assertj.core.groups.Tuple.tuple(300L, "Ещё один студент", 4,
+                                new java.math.BigDecimal("0.00"), false));
+        verify(academicGrpcClient).getGroupMembers(RANK_GROUP_ID);
+    }
+
+    @Test
+    void hiddenRankingReturnsEmptyUnavailablePageWithoutReadingPeers() {
+        InternalJwtClaims claims = new InternalJwtClaims(
+                OWN_ID,
+                UUID.fromString("66666666-6666-4666-8666-666666666666"),
+                1L,
+                1L,
+                "STUDENT",
+                "ACTIVE",
+                RANK_GROUP_ID,
+                false,
+                false);
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(scope().toBuilder()
+                        .setRankVisibility(StudentProjectionRankVisibility
+                                .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
+                        .build());
+
+        StudentAttendanceProjectionService.RankingPage page = service.ranking(
+                claims, SEMESTER_ID, null, 20);
+
+        assertThat(page).isEqualTo(new StudentAttendanceProjectionService.RankingPage(
+                false, 0, 20, 0, null, List.of()));
+        verifyNoInteractions(attendanceReadPort, scheduleGrpcClient);
+    }
+
     private static StudentProjectionScopeResponse scope() {
         return StudentProjectionScopeResponse.newBuilder()
                 .setStudentId(OWN_ID)
@@ -246,6 +362,10 @@ class StudentAttendanceProjectionServiceTest {
                 .setStatus(status)
                 .setLessonType("LECTURE")
                 .build();
+    }
+
+    private static StudentInfo student(long id, String name) {
+        return StudentInfo.newBuilder().setUserId(id).setDisplayName(name).build();
     }
 
     private static AttendanceRecord mark(

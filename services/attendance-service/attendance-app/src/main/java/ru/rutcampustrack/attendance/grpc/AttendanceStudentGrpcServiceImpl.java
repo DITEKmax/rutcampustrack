@@ -108,6 +108,27 @@ public class AttendanceStudentGrpcServiceImpl
     }
 
     @Override
+    public void getStudentAttendanceRanking(
+            StudentAttendanceRankingRequest request,
+            StreamObserver<StudentAttendanceRankingResponse> observer) {
+        try {
+            if (projectionService == null) {
+                throw new AcademicServiceUnavailableException("Student attendance projection is not configured");
+            }
+            InternalJwtClaims claims = requireClaims();
+            StudentAttendanceProjectionService.RankingPage ranking = projectionService.ranking(
+                    claims,
+                    request.getSemesterId(),
+                    request.hasPage() ? request.getPage() : null,
+                    request.getSize());
+            observer.onNext(toProto(ranking));
+            observer.onCompleted();
+        } catch (RuntimeException error) {
+            observer.onError(mapError(error));
+        }
+    }
+
+    @Override
     public void getStudentAttendanceSnapshot(
             StudentAttendanceSnapshotRequest request,
             StreamObserver<StudentAttendanceSnapshotResponse> observer
@@ -554,6 +575,26 @@ public class AttendanceStudentGrpcServiceImpl
                 .setParticipantCount(rank.participantCount())
                 .setAvailable(rank.available());
         if (rank.position() != null) result.setPosition(rank.position());
+        return result.build();
+    }
+
+    private static StudentAttendanceRankingResponse toProto(
+            StudentAttendanceProjectionService.RankingPage ranking) {
+        StudentAttendanceRankingResponse.Builder result = StudentAttendanceRankingResponse.newBuilder()
+                .setAvailable(ranking.available())
+                .setPage(ranking.page())
+                .setSize(ranking.size())
+                .setTotal(ranking.total());
+        if (ranking.ownPosition() != null) result.setOwnPosition(ranking.ownPosition());
+        ranking.rows().forEach(row -> {
+            StudentAttendanceRankingRow.Builder item = StudentAttendanceRankingRow.newBuilder()
+                    .setStudentId(row.studentId())
+                    .setDisplayName(row.name())
+                    .setIsSelf(row.isSelf());
+            if (row.position() != null) item.setPosition(row.position());
+            if (row.percentage() != null) item.setPercentage(row.percentage().doubleValue());
+            result.addRows(item);
+        });
         return result.build();
     }
 

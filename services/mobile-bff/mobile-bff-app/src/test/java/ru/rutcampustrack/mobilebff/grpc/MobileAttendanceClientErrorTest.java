@@ -6,6 +6,7 @@ import com.google.rpc.Status;
 import io.grpc.Metadata;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
+import org.mockito.ArgumentCaptor;
 import io.grpc.protobuf.StatusProto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,6 +19,8 @@ import ru.rutcampustrack.attendance.grpc.StudentCheckinErrorDetail;
 import ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceGrpc;
 import ru.rutcampustrack.attendance.grpc.StudentRequestErrorCode;
 import ru.rutcampustrack.attendance.grpc.StudentRequestErrorDetail;
+import ru.rutcampustrack.attendance.grpc.StudentAttendanceRankingRequest;
+import ru.rutcampustrack.attendance.grpc.StudentAttendanceRankingResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportRequest;
@@ -86,6 +89,29 @@ class MobileAttendanceClientErrorTest {
                     assertThat(problem.code()).isEqualTo(ProblemCode.PAYLOAD_TOO_LARGE);
                     assertThat(problem.getMessage()).contains("20 МиБ", "4 МиБ", "DOCX", "XLSX");
                 });
+    }
+
+    @Test
+    void rankingCallForwardsSignedContextAndLeavesOmittedPageForServerAnchoring() {
+        MobileGrpcAuth auth = mock(MobileGrpcAuth.class);
+        AttendanceStudentGrpcServiceGrpc.AttendanceStudentGrpcServiceBlockingStub studentStub =
+                mock(AttendanceStudentGrpcServiceGrpc.AttendanceStudentGrpcServiceBlockingStub.class);
+        when(auth.attach(studentStub)).thenReturn(studentStub);
+        when(studentStub.withDeadlineAfter(10, TimeUnit.SECONDS)).thenReturn(studentStub);
+        when(studentStub.getStudentAttendanceRanking(any(StudentAttendanceRankingRequest.class)))
+                .thenReturn(StudentAttendanceRankingResponse.getDefaultInstance());
+        MobileAttendanceClient client = new MobileAttendanceClient(auth);
+        ReflectionTestUtils.setField(client, "stub", studentStub);
+
+        client.ranking(9L, null, 20);
+
+        ArgumentCaptor<StudentAttendanceRankingRequest> request =
+                ArgumentCaptor.forClass(StudentAttendanceRankingRequest.class);
+        org.mockito.Mockito.verify(auth).attach(studentStub);
+        org.mockito.Mockito.verify(studentStub).getStudentAttendanceRanking(request.capture());
+        assertThat(request.getValue().getSemesterId()).isEqualTo(9L);
+        assertThat(request.getValue().getSize()).isEqualTo(20);
+        assertThat(request.getValue().hasPage()).isFalse();
     }
 
     @ParameterizedTest

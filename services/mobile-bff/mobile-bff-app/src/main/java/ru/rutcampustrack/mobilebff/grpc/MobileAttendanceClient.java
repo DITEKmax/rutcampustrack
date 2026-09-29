@@ -70,6 +70,15 @@ public class MobileAttendanceClient {
                 .getStudentAttendanceProjection(request.build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
+    public StudentAttendanceRankingResponse ranking(long semesterId, Integer page, int size) {
+        StudentAttendanceRankingRequest.Builder request = StudentAttendanceRankingRequest.newBuilder()
+                .setSemesterId(semesterId)
+                .setSize(size);
+        if (page != null) request.setPage(page);
+        return call(() -> auth.attach(stub).withDeadlineAfter(10, TimeUnit.SECONDS)
+                .getStudentAttendanceRanking(request.build()), ProblemCode.DEPENDENCY_UNAVAILABLE);
+    }
+
     public TeacherLessonResponse teacherLesson(long lessonId) {
         return call(() -> auth.attach(teacherStub).withDeadlineAfter(5, TimeUnit.SECONDS)
                 .getTeacherLesson(TeacherLessonRequest.newBuilder().setLessonId(lessonId).build()),

@@ -73,6 +73,13 @@ public class StudentApiController implements StudentApi {
     }
 
     @Override
+    public ResponseEntity<StudentStatisticsRankingResponse> getStatisticsRanking(
+            String semesterId, Integer page, Integer size) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(queries.statisticsRanking(Long.parseLong(semesterId), page, size));
+    }
+
+    @Override
     public ResponseEntity<StudentStatisticsSubjectDetailResponse> getStatisticsSubject(
             String subjectId, String semesterId, String range, List<String> types) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())

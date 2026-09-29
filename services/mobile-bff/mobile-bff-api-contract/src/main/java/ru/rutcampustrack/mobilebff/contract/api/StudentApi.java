@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +37,7 @@ import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ScheduleRespo
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.SessionResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentAttendanceResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentStatisticsResponse;
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentStatisticsRankingResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.StudentStatisticsSubjectDetailResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.TodayResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels;
@@ -158,6 +161,32 @@ public interface StudentApi {
     @GetMapping("/statistics")
     ResponseEntity<StudentStatisticsResponse> getStatistics(
             @RequestParam @Pattern(regexp = "^[1-9][0-9]*$") String semesterId
+    );
+
+    @Operation(summary = "Student attendance ranking for the current group")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Authorized cohort ranking page",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = StudentStatisticsRankingResponse.class)),
+                    headers = @Header(name = "Cache-Control", description = "Always no-store")),
+            @ApiResponse(responseCode = "400", description = "Invalid semester or page bounds",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class))),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired session",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class))),
+            @ApiResponse(responseCode = "403", description = "Semester or student scope is unavailable",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class))),
+            @ApiResponse(responseCode = "503", description = "Mandatory dependency unavailable",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = MobileProblemDetails.class)))
+    })
+    @GetMapping("/statistics/ranking")
+    ResponseEntity<StudentStatisticsRankingResponse> getStatisticsRanking(
+            @RequestParam @Pattern(regexp = "^[1-9][0-9]*$") String semesterId,
+            @RequestParam(required = false) @Min(0) Integer page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) Integer size
     );
 
     @Operation(summary = "Student statistics for one subject")

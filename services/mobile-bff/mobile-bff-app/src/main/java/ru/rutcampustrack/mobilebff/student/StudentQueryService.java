@@ -13,6 +13,7 @@ import ru.rutcampustrack.attendance.grpc.AutomaticCheckinRequest;
 import ru.rutcampustrack.attendance.grpc.StudentAttendanceEntry;
 import ru.rutcampustrack.attendance.grpc.StudentAttendanceSnapshotResponse;
 import ru.rutcampustrack.attendance.grpc.StudentAttendanceProjectionResponse;
+import ru.rutcampustrack.attendance.grpc.StudentAttendanceRankingResponse;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.*;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
 import ru.rutcampustrack.mobilebff.grpc.MobileAcademicClient;
@@ -127,6 +128,28 @@ public class StudentQueryService {
         StudentAttendanceProjectionResponse response = attendance.projection(
                 requestedSemesterId, null, "weeks", List.of());
         return statisticsResponse(response, active);
+    }
+
+    public StudentStatisticsRankingResponse statisticsRanking(
+            long requestedSemesterId,
+            Integer page,
+            int size) {
+        requireActiveSemester(requestedSemesterId);
+        StudentAttendanceRankingResponse response = attendance.ranking(requestedSemesterId, page, size);
+        return new StudentStatisticsRankingResponse(
+                response.getAvailable(),
+                response.getPage(),
+                response.getSize(),
+                response.getTotal(),
+                response.hasOwnPosition() ? response.getOwnPosition() : null,
+                response.getRowsList().stream()
+                        .map(row -> new StudentStatisticsRankingRow(
+                                Long.toString(row.getStudentId()),
+                                row.getDisplayName(),
+                                row.hasPosition() ? row.getPosition() : null,
+                                row.hasPercentage() ? row.getPercentage() : null,
+                                row.getIsSelf()))
+                        .toList());
     }
 
     public StudentStatisticsSubjectDetailResponse statisticsSubject(

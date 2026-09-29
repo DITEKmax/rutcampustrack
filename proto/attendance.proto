@@ -21,6 +21,8 @@ service AttendanceStudentGrpcService {
       returns (StudentRequestAttachmentDownload);
   rpc GetStudentAttendanceProjection (StudentAttendanceProjectionRequest)
       returns (StudentAttendanceProjectionResponse);
+  rpc GetStudentAttendanceRanking (StudentAttendanceRankingRequest)
+      returns (StudentAttendanceRankingResponse);
 }
 
 // Separate service for notification-bot attachment reads. It has its own
@@ -67,6 +69,31 @@ message StudentAttendanceProjectionResponse {
   StudentAttendanceGraph graph = 10;
   StudentAttendanceOwnRank own_rank = 11;
   optional string semester_name = 12;
+}
+
+// Complete current-group attendance ranking for the authenticated student.
+// Identity, group and cohort always come from the signed Academic scope.
+message StudentAttendanceRankingRequest {
+  int64 semester_id = 1;
+  optional int32 page = 2; // omitted means the page containing the current student
+  int32 size = 3;
+}
+
+message StudentAttendanceRankingResponse {
+  bool available = 1;
+  int32 page = 2;
+  int32 size = 3;
+  int32 total = 4;
+  optional int32 own_position = 5;
+  repeated StudentAttendanceRankingRow rows = 6;
+}
+
+message StudentAttendanceRankingRow {
+  int64 student_id = 1;
+  string display_name = 2;
+  optional int32 position = 3;
+  optional double percentage = 4;
+  bool is_self = 5;
 }
 
 message StudentAttendanceMetricSet {

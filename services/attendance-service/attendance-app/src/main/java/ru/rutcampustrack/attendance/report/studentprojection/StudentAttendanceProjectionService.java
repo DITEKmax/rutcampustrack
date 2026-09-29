@@ -2,6 +2,8 @@ package ru.rutcampustrack.attendance.report.studentprojection;
 
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.academic.grpc.AcademicSubjectInfo;
+import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.academic.grpc.StudentProjectionMembershipSegment;
 import ru.rutcampustrack.academic.grpc.StudentProjectionRankVisibility;
 import ru.rutcampustrack.academic.grpc.StudentProjectionScopeResponse;
@@ -21,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -127,6 +130,95 @@ public class StudentAttendanceProjectionService {
                 subjectViews,
                 graph,
                 rank);
+    }
+
+    /** Returns the bounded ranking page for the cohort resolved from the signed student scope. */
+    public RankingPage ranking(
+            InternalJwtClaims claims,
+            long semesterId,
+            Integer requestedPage,
+            int pageSize) {
+        requireStudent(claims);
+        if (semesterId <= 0) {
+            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
+                    "semester_id должен быть положительным");
+        }
+        if (requestedPage != null && requestedPage < 0) {
+            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
+                    "page должен быть неотрицательным");
+        }
+        if (pageSize < 1 || pageSize > 100) {
+            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
+                    "size должен быть от 1 до 100");
+        }
+
+        StudentProjectionScopeResponse scope = academicGrpcClient
+                .resolveStudentProjectionScope(semesterId);
+        validateScope(scope, claims, semesterId, null);
+        if (!rankingVisible(scope)) {
+            return RankingPage.unavailable(requestedPage == null ? 0 : requestedPage, pageSize);
+        }
+
+        Map<Long, AcademicSubjectInfo> subjects = subjectMap(scope);
+        List<Lesson> ownLessons = loadLessons(scope, semesterId, subjects, null, Set.of());
+        RankedCohort cohort = rankedCohort(
+                scope, claims.userId(), ownLessons, subjects, semesterId);
+        if (!cohort.ownRank().available()) {
+            return RankingPage.unavailable(requestedPage == null ? 0 : requestedPage, pageSize);
+        }
+
+        List<Long> roster = scope.getActiveRosterUserIdsList();
+        Map<Long, String> names = rosterNames(scope.getRankGroupId(), roster);
+        List<RankingRow> rows = cohort.participants().stream()
+                .map(participant -> {
+                    String name = names.get(participant.participantId());
+                    if (name == null || participant.position() == null || participant.percentage() == null) {
+                        throw StudentProjectionException.invalidRoster(
+                                "available ranking contains an incomplete participant");
+                    }
+                    return new RankingRow(participant.participantId(), name, participant.position(),
+                            participant.percentage(), participant.participantId() == claims.userId());
+                })
+                .toList();
+        int ownIndex = -1;
+        for (int index = 0; index < rows.size(); index++) {
+            if (rows.get(index).studentId() == claims.userId()) {
+                ownIndex = index;
+                break;
+            }
+        }
+        if (ownIndex < 0) {
+            throw StudentProjectionException.invalidRoster("the current student is missing from the ranking");
+        }
+        int page = requestedPage == null ? ownIndex / pageSize : requestedPage;
+        long offset = (long) page * pageSize;
+        List<RankingRow> pageRows = offset >= rows.size()
+                ? List.of()
+                : rows.subList((int) offset, (int) Math.min(rows.size(), offset + pageSize));
+        return new RankingPage(true, page, pageSize, rows.size(), cohort.ownRank().position(), pageRows);
+    }
+
+    private Map<Long, String> rosterNames(long groupId, List<Long> authorizedRoster) {
+        GroupMembersResponse response = academicGrpcClient.getGroupMembers(groupId);
+        if (response == null) {
+            throw StudentProjectionException.invalidRoster("Academic returned no group roster");
+        }
+        Set<Long> authorizedIds = new HashSet<>(authorizedRoster);
+        Map<Long, String> names = new LinkedHashMap<>();
+        for (StudentInfo student : response.getStudentsList()) {
+            if (student == null || !authorizedIds.contains(student.getUserId())) {
+                continue;
+            }
+            String name = student.getDisplayName() == null ? "" : student.getDisplayName().trim();
+            if (student.getUserId() <= 0 || name.isBlank()
+                    || names.putIfAbsent(student.getUserId(), name) != null) {
+                throw StudentProjectionException.invalidRoster("Academic returned an invalid cohort identity");
+            }
+        }
+        if (!names.keySet().containsAll(authorizedIds)) {
+            throw StudentProjectionException.invalidRoster("Academic omitted a current cohort identity");
+        }
+        return Map.copyOf(names);
     }
 
     private List<Lesson> loadLessons(
@@ -392,11 +484,18 @@ public class StudentAttendanceProjectionService {
             List<Lesson> ownLessons,
             Map<Long, AcademicSubjectInfo> subjects,
             long semesterId) {
+        return rankedCohort(scope, ownId, ownLessons, subjects, semesterId).ownRank();
+    }
+
+    private RankedCohort rankedCohort(
+            StudentProjectionScopeResponse scope,
+            long ownId,
+            List<Lesson> ownLessons,
+            Map<Long, AcademicSubjectInfo> subjects,
+            long semesterId) {
         List<Long> roster = scope.getActiveRosterUserIdsList();
-        if (scope.getRankVisibility() != StudentProjectionRankVisibility
-                .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE
-                || !scope.getRankEligible() || !scope.hasRankGroupId()) {
-            return new Rank(null, roster.size(), false);
+        if (!rankingVisible(scope)) {
+            return new RankedCohort(new Rank(null, roster.size(), false), List.of());
         }
         long rankGroup = scope.getRankGroupId();
         List<Lesson> rankLessons = canonicalRankLessons(scope, subjects, semesterId, rankGroup);
@@ -431,8 +530,16 @@ public class StudentAttendanceProjectionService {
                             userId, metrics.heldCount(), metrics.presentCount());
                 })
                 .toList();
-        OwnRankCalculator.Rank result = OwnRankCalculator.calculate(ownId, participants);
-        return new Rank(result.position(), result.participantCount(), result.available());
+        List<OwnRankCalculator.RankedParticipant> ranked = OwnRankCalculator.rankAll(participants);
+        OwnRankCalculator.Rank result = OwnRankCalculator.summarize(ownId, ranked);
+        return new RankedCohort(
+                new Rank(result.position(), result.participantCount(), result.available()), ranked);
+    }
+
+    private static boolean rankingVisible(StudentProjectionScopeResponse scope) {
+        return scope.getRankVisibility() == StudentProjectionRankVisibility
+                .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE
+                && scope.getRankEligible() && scope.hasRankGroupId();
     }
 
     private List<Lesson> canonicalRankLessons(
@@ -739,5 +846,35 @@ public class StudentAttendanceProjectionService {
     }
 
     public record Rank(Integer position, int participantCount, boolean available) {
+    }
+
+    public record RankingPage(
+            boolean available,
+            int page,
+            int size,
+            int total,
+            Integer ownPosition,
+            List<RankingRow> rows) {
+        public RankingPage {
+            rows = List.copyOf(rows);
+        }
+
+        private static RankingPage unavailable(int page, int size) {
+            return new RankingPage(false, page, size, 0, null, List.of());
+        }
+    }
+
+    public record RankingRow(
+            long studentId,
+            String name,
+            Integer position,
+            BigDecimal percentage,
+            boolean isSelf) {
+    }
+
+    private record RankedCohort(Rank ownRank, List<OwnRankCalculator.RankedParticipant> participants) {
+        private RankedCohort {
+            participants = List.copyOf(participants);
+        }
     }
 }

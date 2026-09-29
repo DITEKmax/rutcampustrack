@@ -49,7 +49,7 @@ public class LessonController implements LessonApi {
         if ("ERROR".equals(result.state())) {
             return ResponseEntity.status(409)
                     .location(java.net.URI.create("/schedule/lesson-transfers/" + result.operationId()))
-                    .build();
+                    .body(result);
         }
         if ("COMPLETED".equals(result.state())) {
             return ResponseEntity.ok()
@@ -113,8 +113,13 @@ public class LessonController implements LessonApi {
         Page<LessonWithItem> page = lessonService.getLessonsForGroup(groupId, dateFrom, dateTo, status, pageable);
         Map<Long, LessonTransferWriter.TransferState> transferStates = lessonTransferService.statesForLessons(
                 page.getContent().stream().map(row -> row.lesson().getId()).toList());
-        Page<LessonResponse> responsePage = page.map(row -> lessonAssembler.toResponse(
-                row, transferStates.get(row.lesson().getId())));
+        Map<Long, Long> occurrenceRevisions = lessonTransferService.occurrenceRevisionsForLessons(
+                page.getContent().stream().map(row -> row.lesson().getId()).toList());
+        Page<LessonResponse> responsePage = page.map(row -> {
+            LessonResponse response = lessonAssembler.toResponse(row, transferStates.get(row.lesson().getId()));
+            response.setOccurrenceRevision(occurrenceRevisions.get(row.lesson().getId()));
+            return response;
+        });
         PagedModel<EntityModel<LessonResponse>> pagedModel = assembler.toModel(
                 responsePage, resp -> EntityModel.of(resp));
         return ResponseEntity.ok(pagedModel);

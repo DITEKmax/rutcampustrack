@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * M08 Группа 3 (P2-8/3) — Flyway migration integration tests для academic_db.
  *
- * <p>Покрывает 17 миграций V1..V17. Три template'а (D5 exception —
+ * <p>Покрывает миграции V1..V38. Три template'а (D5 exception —
  * fresh container без reuse):
  * <ol>
  *   <li><b>freshInstallAppliesAllMigrations</b> — clean → migrate → applied>0, pending=0.</li>
@@ -79,6 +79,14 @@ class FlywayMigrationIT {
         MigrationInfo current = flyway.info().current();
         assertThat(current).isNotNull();
         assertThat(current.getState().isApplied()).isTrue();
+        assertThat(current.getVersion().getVersion()).isEqualTo("38");
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM information_schema.tables
+                 WHERE table_schema = current_schema()
+                   AND table_name IN ('lesson_transfer_receipts',
+                                      'homework_binding_transfer_markers',
+                                      'homework_binding_transfer_history')
+                """, Integer.class)).isEqualTo(3);
     }
 
     @Test

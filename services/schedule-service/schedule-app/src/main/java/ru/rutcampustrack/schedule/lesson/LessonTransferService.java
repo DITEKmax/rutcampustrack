@@ -52,6 +52,10 @@ public class LessonTransferService {
         return writer.pendingStatesForLessons(lessonIds);
     }
 
+    public Map<Long, Long> occurrenceRevisionsForLessons(List<Long> lessonIds) {
+        return writer.occurrenceRevisionsForLessons(lessonIds);
+    }
+
     private void requireHeadman(long groupId) {
         if (requestContext.getRole() == UserRole.ADMIN) {
             return;

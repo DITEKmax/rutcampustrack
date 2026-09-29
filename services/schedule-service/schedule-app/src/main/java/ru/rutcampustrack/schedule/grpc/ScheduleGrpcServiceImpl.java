@@ -144,10 +144,12 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                         .distinct().toList()).stream()
                 .collect(Collectors.toMap(ScheduleItem::getId, i -> i));
 
-        Map<Long, LessonTransferWriter.TransferState> transferStates = transferStates(
-                lessons.stream().map(Lesson::getId).toList());
+        List<Long> lessonIds = lessons.stream().map(Lesson::getId).toList();
+        Map<Long, LessonTransferWriter.TransferState> transferStates = transferStates(lessonIds);
+        Map<Long, Long> occurrenceRevisions = occurrenceRevisions(lessonIds);
         List<LessonResponse> responses = lessons.stream()
-                .map(l -> buildResponse(l, itemById.get(l.getScheduleItemId()), transferStates.get(l.getId())))
+                .map(l -> buildResponse(l, itemById.get(l.getScheduleItemId()),
+                        transferStates.get(l.getId()), occurrenceRevisions.get(l.getId())))
                 .toList();
 
         OffsetDateTime updatedAt = itemById.values().stream()
@@ -340,6 +342,13 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
 
     private LessonResponse buildResponse(Lesson lesson, ScheduleItem item,
                                          LessonTransferWriter.TransferState transferState) {
+        Long occurrenceRevision = occurrenceRevisions(List.of(lesson.getId())).get(lesson.getId());
+        return buildResponse(lesson, item, transferState, occurrenceRevision);
+    }
+
+    private LessonResponse buildResponse(Lesson lesson, ScheduleItem item,
+                                         LessonTransferWriter.TransferState transferState,
+                                         Long occurrenceRevision) {
         Long groupId = lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId();
         Long subjectId = lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId();
         Short lessonNumber = lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber();
@@ -368,6 +377,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .setLessonType(lesson.getLessonType() == null ? "" : lesson.getLessonType())
                 .setGeneration(lesson.getGeneration() == null ? 0 : lesson.getGeneration())
                 .setRevision(lesson.getRevision() == null ? 0 : lesson.getRevision())
+                .setOccurrenceRevision(occurrenceRevision == null ? 0 : occurrenceRevision)
                 .setCurrent(lesson.isCurrent());
         if (transferState != null) {
             response.setTransferOperationId(transferState.operationId())
@@ -379,6 +389,11 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
     private Map<Long, LessonTransferWriter.TransferState> transferStates(List<Long> lessonIds) {
         return lessonTransferWriter == null ? Map.of()
                 : lessonTransferWriter.pendingStatesForLessons(lessonIds);
+    }
+
+    private Map<Long, Long> occurrenceRevisions(List<Long> lessonIds) {
+        return lessonTransferWriter == null ? Map.of()
+                : lessonTransferWriter.occurrenceRevisionsForLessons(lessonIds);
     }
 
     private LessonInfo lessonInfo(Lesson lesson, ScheduleItem item) {

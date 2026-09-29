@@ -131,6 +131,7 @@ message LessonResponse {
   // transfer_state is PENDING.
   string transfer_operation_id = 26;
   string transfer_state = 27; // PENDING, COMPLETED, ERROR, or empty
+  int64 occurrence_revision = 28; // concurrency token for recurring lesson lifecycle commands
 }
 
 message LessonsResponse {

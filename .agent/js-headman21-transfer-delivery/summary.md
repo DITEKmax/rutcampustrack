@@ -1,28 +1,28 @@
-# JS-HEADMAN21 lesson transfer - scoped source checkpoint
+# JS-HEADMAN21 lesson transfer — scoped package
 
-## Scope
+## Goal and state
 
-Implements the Schedule operation and Academic bound-homework participant from the frozen S3 contract. Schedule validates and records the future source/assigned free target, exact replay key and payload, fixed binding batches, lifecycle/history and local outbox in its SQL transaction. Academic applies only those binding snapshots with local durable batch receipts and acknowledgements. The operation exposes pending/completed/error status and does not use cancel-and-create.
+Implement the Schedule durable transfer operation and Academic bound-homework participant from the frozen S3 contract. This scoped package is implemented and its targeted PostgreSQL integration checks pass. Combined Schedule/Attendance/Academic API acceptance and independent Sol recheck remain with root, so this is not a claim that the whole cross-service feature is complete.
 
-The Attendance participant, archive-semester guard, and combined API/runtime acceptance are separately owned or sequenced by root and are not claimed complete here.
+## User-visible behavior
 
-## Product diff inventory
+Schedule keeps `revision` as the physical lesson revision and now exposes `occurrenceRevision` in lesson reads (`proto/schedule.proto` field 28). After A→B, reloading B reports `revision=1`, `occurrenceRevision=2`; a transfer using the reloaded occurrence revision succeeds for B→C. Schedule persists immutable participant batches and outbox events before moving bound rows, within the same SQL transaction, so the V21 guard verifies each update against its snapshot. Physical lesson weekdays use the persisted 1–7 convention. Academic retains the original publication source across A→B→C, while the latest target date/slot advances; active/pending homework state, content, identity and publication hash remain intact.
 
-- Schedule REST contract/controller/service/writer/recovery, event producer/consumer, lifecycle and binding/read gates, TRANSFERRED status, Schedule gRPC response gates, and V21__durable_lesson_transfer.sql.
-- Academic transfer batch/event consumer/coordinator, publication materialization marker, homework slot-preserving update, dedicated Rabbit queue/DLQ, and V38__durable_lesson_transfer_participant.sql.
-- Proto was isolated in commit a6124b389a134a53f8d2bcd2dc573060c04f3d01: LessonResponse.transfer_operation_id=26, transfer_state=27.
-- Foreign .agent/evidence/headman-trend-export-20260926/{contract,result}.md edits are preserved and excluded.
+## Product inventory
 
-## Acceptance/evidence state
+- `proto/schedule.proto`: additive `LessonResponse.occurrence_revision = 28`; fields 26 and 27 remain in preceding proto commit `a6124b389a134a53f8d2bcd2dc573060c04f3d01`.
+- Schedule API/runtime: `services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/LessonResponse.java`; `services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/EventConsumer.java`, `grpc/ScheduleGrpcServiceImpl.java`, `lesson/LessonController.java`, `lesson/LessonTransferService.java`, `lesson/LessonTransferWriter.java`.
+- Schedule verification: `services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonControllerTransferTest.java`, `lesson/LessonTransferWriterIT.java`, `migration/FlywayMigrationIT.java`.
+- Academic correction and verification: `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/LessonTransferEventConsumer.java`, `event/LessonTransferParticipantAppliedEvent.java`, `homework/HomeworkBindingTransferCoordinator.java`, `homework/LessonTransferBatch.java`; `services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingTransferIT.java`, `migration/FlywayMigrationIT.java`.
+- V21/V38 migration guards were retained; no migration source was changed in this correction package.
+- The two foreign dirty files under `.agent/evidence/headman-trend-export-20260926/` remain unstaged and untouched by this package.
 
-Implemented source supports exact replay, source revision and target fences, batches of at most 64 plus an explicit empty Academic batch, durable acknowledgements, ERROR status for terminal participant conflicts, and Academic updates that retain homework identity/content/publication state. A transferred source is distinct from cancellation. The frozen cross-service contract and atomicity implementation record are in contract.md and atomicity-options.md.
+## Acceptance coverage
 
-## Checks
+`LessonTransferWriterIT` exercises the real PostgreSQL request/replay path, two immutable binding batches (64/1), actual Schedule outbox payload, duplicate/reordered ACK receipt behavior, completion, HTTP schedule reload and a second B→C transfer using the returned occurrence revision. `HomeworkBindingTransferIT` exercises active and pending publication across chained transfers, materialization from the original A source at C, preserved publication state/content/hash and durable receipts/ACKs. Each service's `FlywayMigrationIT` validates fresh migration and checksum/data preservation at V21/V38.
 
-- git status --short; git branch --show-current; git rev-parse HEAD - exit 0 before scoped commit; assigned branch and proto commit verified. Git emitted a global-ignore permission warning, recorded in checks.json.
-- git diff --cached --check - pending immediately before source-ready commit; record the exact exit code in checks.json.
-- Planned targeted command: ./gradlew :schedule-service:schedule-app:test :academic-service:academic-app:test. Not run; root sequences it after archive2PG.
+Attendance mark and attachment preservation, the actual combined multi-service API flow, archived-semester coordinator gate, and independent Sol review are not covered by these two service-local checks and remain root-owned integration work.
 
-## Runtime and limits
+## Commit
 
-No build, tests, migrations, endpoint calls, or service scenario have run from this checkpoint. See runtime-evidence.md. Root must run targeted checks and combined API/Attendance acceptance; do not label the cross-service feature verified until those results and independent review are available.
+Corrected source commit SHA is included in the delivery message. Base at start of this correction: `d61ba641a52432b41b98de598f1aca5b8edbb732`.

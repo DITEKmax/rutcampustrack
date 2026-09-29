@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/** Flyway V1-V17 migration and source-preservation checks for schedule_db. */
+/** Flyway V1-V21 migration and source-preservation checks for schedule_db. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
 class FlywayMigrationIT {
@@ -60,7 +60,10 @@ class FlywayMigrationIT {
         assertThat(flyway.info().pending()).isEmpty();
         MigrationInfo current = flyway.info().current();
         assertThat(current).isNotNull();
-        assertThat(current.getVersion().getVersion()).isEqualTo("17");
+        assertThat(current.getVersion().getVersion()).isEqualTo("21");
+        assertThat(tableCount(schema, "lesson_transfer_operations")).isEqualTo(1);
+        assertThat(tableCount(schema, "lesson_transfer_binding_batches")).isEqualTo(1);
+        assertThat(tableCount(schema, "lesson_transfer_participant_receipts")).isEqualTo(1);
     }
 
     @Test
@@ -144,6 +147,12 @@ class FlywayMigrationIT {
         return jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.columns"
                         + " WHERE table_schema = ? AND table_name = ? AND column_name = ?",
                 Integer.class, schema, table, column);
+    }
+
+    private int tableCount(String schema, String table) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.tables"
+                        + " WHERE table_schema = ? AND table_name = ?",
+                Integer.class, schema, table);
     }
 
     private static String table(String schema, String table) {

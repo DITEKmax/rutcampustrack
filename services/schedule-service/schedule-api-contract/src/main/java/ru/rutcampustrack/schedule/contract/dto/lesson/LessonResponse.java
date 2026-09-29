@@ -55,6 +55,8 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
     private String lessonType;
     private Long generation;
     private Long revision;
+    @Schema(description = "Текущая revision пары в расписании; передавай её как expectedRevision при следующем переносе")
+    private Long occurrenceRevision;
     private boolean current;
     private String transferOperationId;
     private String transferState;
@@ -244,6 +246,14 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
 
     public Long getRevision() {
         return revision;
+    }
+
+    public Long getOccurrenceRevision() {
+        return occurrenceRevision;
+    }
+
+    public void setOccurrenceRevision(Long occurrenceRevision) {
+        this.occurrenceRevision = occurrenceRevision;
     }
 
     public boolean isCurrent() {

@@ -63,12 +63,11 @@ public class LessonTransferEventConsumer extends AbstractEventConsumer {
         UUID operationId = uuid(payload.get("operation_id"), "operation_id");
         UUID requestKey = uuid(payload.get("request_key"), "request_key");
         long actorId = positiveLong(payload.get("actor_id"), "actor_id");
-        String operationHash = hash(payload.get("payload_hash"), "payload_hash");
+        String operationHash = hash(payload.get("transfer_payload_hash"), "transfer_payload_hash");
         long occurrenceId = positiveLong(payload.get("occurrence_id"), "occurrence_id");
         long groupId = positiveLong(payload.get("group_id"), "group_id");
         long semesterId = positiveLong(payload.get("semester_id"), "semester_id");
-        long expectedRevision = positiveLong(
-                payload.get("expected_occurrence_revision"), "expected_occurrence_revision");
+        long transferRevision = positiveLong(payload.get("transfer_revision"), "transfer_revision");
         long sourceLessonId = positiveLong(payload.get("source_lesson_id"), "source_lesson_id");
         long targetLessonId = positiveLong(payload.get("target_lesson_id"), "target_lesson_id");
         Map<?, ?> source = object(payload.get("source"), "source");
@@ -84,6 +83,10 @@ public class LessonTransferEventConsumer extends AbstractEventConsumer {
                 || positiveLong(target.get("group_id"), "target.group_id") != groupId
                 || positiveLong(source.get("semester_id"), "source.semester_id") != semesterId
                 || positiveLong(target.get("semester_id"), "target.semester_id") != semesterId
+                || positiveLong(source.get("schedule_item_id"), "source.schedule_item_id")
+                    != positiveLong(target.get("schedule_item_id"), "target.schedule_item_id")
+                || positiveLong(source.get("assignment_id"), "source.assignment_id")
+                    != positiveLong(target.get("assignment_id"), "target.assignment_id")
                 || positiveLong(source.get("subject_id"), "source.subject_id")
                     != positiveLong(target.get("subject_id"), "target.subject_id")
                 || !"planned".equals(source.get("status"))
@@ -92,7 +95,12 @@ public class LessonTransferEventConsumer extends AbstractEventConsumer {
         }
         long sourceGeneration = positiveLong(source.get("generation"), "source.generation");
         long targetGeneration = positiveLong(target.get("generation"), "target.generation");
-        if (targetGeneration != sourceGeneration + 1 || positiveLong(target.get("revision"), "target.revision") != 1) {
+        long expectedRevision = positiveLong(source.get("occurrence_revision"), "source.occurrence_revision");
+        if (transferRevision != expectedRevision + 1
+                || positiveLong(target.get("occurrence_revision"), "target.occurrence_revision") != transferRevision
+                || targetGeneration != sourceGeneration + 1
+                || positiveLong(target.get("lesson_revision"), "target.lesson_revision") != 1
+                || positiveLong(source.get("lesson_revision"), "source.lesson_revision") <= 0) {
             throw new IllegalArgumentException("lesson.transfer.requested has an invalid target generation");
         }
         LocalDate sourceDate = date(source.get("date"), "source.date");

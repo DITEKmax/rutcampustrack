@@ -14,7 +14,7 @@ public final class LessonTransferParticipantAppliedEvent extends DomainEvent {
             String result,
             @JsonProperty("error_code") String errorCode,
             boolean retryable,
-            @JsonProperty("payload_hash") String payloadHash,
+            @JsonProperty("transfer_payload_hash") String payloadHash,
             @JsonProperty("source_lesson_id") Long sourceLessonId,
             @JsonProperty("target_lesson_id") Long targetLessonId
     ) { }

@@ -1,50 +1,95 @@
 {
-  "base_revision": "3ac971201578565be204168afcdc35edba8dc56f",
+  "goal": "JS-HEADMAN21 atomic future lesson transfer with attendance marks retained and bound homework moved",
+  "base_revision": "d61ba641a52432b41b98de598f1aca5b8edbb732",
   "branch": "codex/js-headman21-transfer-20260929",
-  "source_checkpoint": "a6124b389a134a53f8d2bcd2dc573060c04f3d01",
-  "status": "SOURCE_READY_CHECKS_PENDING",
-  "scope": [
-    "Schedule transfer API, local operation/replay/outbox, lifecycle and binding gates, V21",
-    "Academic bound-homework transfer participant/publication handling, V38",
-    "proto/schedule.proto LessonResponse fields 26 and 27 (already committed separately)"
-  ],
-  "preserved_foreign_changes": [
+  "status": "SCOPED_SCHEDULE_AND_ACADEMIC_PG_PASS_SHARED_RUNTIME_PENDING",
+  "frozen_contract": ".agent/orchestration-v2/evidence/2026-09-27-delivery/lesson-transfer-contract.md",
+  "source_commit": "exact SHA is provided in the delivery message",
+  "foreign_changes_preserved_and_excluded": [
     ".agent/evidence/headman-trend-export-20260926/contract.md",
     ".agent/evidence/headman-trend-export-20260926/result.md"
   ],
-  "checks": [
+  "compile": [
     {
-      "name": "assigned branch and worktree status before scoped commit",
-      "command": "git status --short; git branch --show-current; git rev-parse HEAD",
+      "name": "Schedule proto generation and compile",
+      "command": ".\\gradlew.bat :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT --tests ru.rutcampustrack.schedule.migration.FlywayMigrationIT",
       "exit_code": 0,
-      "environment": "PowerShell, assigned worktree C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/map-usage-delivery-20260922",
-      "result": "PASS: branch codex/js-headman21-transfer-20260929 at proto commit a6124b389a134a53f8d2bcd2dc573060c04f3d01; the two pre-existing foreign evidence files remain modified and are excluded from this task commit.",
-      "stderr_note": "Git warned that the user's global ignore file under C:/Users/maksd/.config could not be read; command exit code remained 0."
+      "result": "PASS: generateProto, schedule-api-contract compileJava, schedule-app compileJava, and compileTestJava completed before the selected integration tests."
     },
     {
-      "name": "staged scoped whitespace/conflict-marker check",
-      "command": "git diff --cached --check",
+      "name": "Academic compile",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.homework.HomeworkBindingTransferIT --tests ru.rutcampustrack.academic.migration.FlywayMigrationIT",
       "exit_code": 0,
-      "environment": "PowerShell, assigned worktree; explicit Schedule, Academic, and task-evidence inventory staged",
-      "result": "PASS: no whitespace errors or conflict-marker errors reported."
-    },
-    {
-      "name": "staged inventory",
-      "command": "git diff --cached --name-status",
-      "exit_code": 0,
-      "environment": "Assigned worktree",
-      "result": "PASS: 30 staged files, limited to Schedule, Academic, and .agent/js-headman21-transfer-delivery; the two preserved foreign evidence files are not staged."
+      "result": "PASS: Academic proto generation, compileJava, and compileTestJava completed; two pre-existing test-source deprecation warnings were emitted."
     }
   ],
-  "planned_targeted_command": "./gradlew :schedule-service:schedule-app:test :academic-service:academic-app:test",
-  "implementation_checks": {
-    "status": "NOT_RUN",
-    "exit_code": null,
-    "reason": "Root controls a single heavy-check queue and sequenced this package after archive2PG. No tests/build/migration/runtime command is run at the source-ready checkpoint."
+  "checks": [
+    {
+      "name": "Schedule transfer/history/reload PostgreSQL acceptance",
+      "command": ".\\gradlew.bat :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT --tests ru.rutcampustrack.schedule.migration.FlywayMigrationIT",
+      "exit_code": 0,
+      "environment": "PowerShell, JDK 21.0.10, Docker Desktop, Testcontainers PostgreSQL 16",
+      "result": "PASS: 1 LessonTransferWriterIT case and 3 FlywayMigrationIT cases; fixed batches 64/1, exact request replay, actual outbox payloads, duplicate/reordered ACK receipts, completion, GET reload revision=1/occurrenceRevision=2, and next B-to-C transfer."
+    },
+    {
+      "name": "Academic bound-homework/publication PostgreSQL acceptance",
+      "command": ".\\gradlew.bat :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.homework.HomeworkBindingTransferIT --tests ru.rutcampustrack.academic.migration.FlywayMigrationIT",
+      "exit_code": 0,
+      "environment": "PowerShell, JDK 21.0.10, Docker Desktop, Testcontainers PostgreSQL",
+      "result": "PASS: 1 HomeworkBindingTransferIT case and 3 FlywayMigrationIT cases; active/pending publication follows A-to-B-to-C, content/hash/state retained, marker lineage retains original A, materialization uses target C, receipts and ACKs are durable."
+    },
+    {
+      "name": "Whitespace and conflict-marker check",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "environment": "Assigned worktree",
+      "result": "PASS after the final source and evidence edits; staged inventory receives a separate cached check before commit."
+    },
+    {
+      "name": "Staged inventory and cached whitespace check",
+      "command": "git diff --cached --check",
+      "exit_code": 0,
+      "environment": "Assigned worktree before scoped commit",
+      "result": "PASS: staged inventory contains 19 Schedule, Academic, proto, and task-evidence files. The two foreign dirty evidence files are excluded."
+    }
+  ],
+  "product_failures_reproduced_and_fixed": [
+    {
+      "evidence": "Earlier Schedule PG attempt; V21 trigger protect_lesson_homework_binding_transfer",
+      "cause": "Binding update ran before immutable lesson_transfer_binding_batches insert, so the V21 guard could not find the authoritative batch (PostgreSQL P0001).",
+      "correction": "Insert immutable batch and publish its local outbox event before moveBindings in the same transaction; V21 guard unchanged."
+    },
+    {
+      "evidence": "Schedule PG B-to-C attempt; schedule-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT.xml",
+      "cause": "Monday target encoded as 0 violated lessons_day_of_week_chk (PostgreSQL SQLSTATE 23514; constraint name from driver).",
+      "correction": "Use physical lesson weekday 1–7 and allow only Monday–Saturday for transfer. Successful follow-up target used Monday."
+    },
+    {
+      "evidence": "Earlier compile runs in this worktree",
+      "cause": "New code had unreachable SQLException catch in LessonTransferWriter and package-private canonical constructor on public LessonTransferBatch.",
+      "correction": "Both compile defects fixed before final targeted PG runs."
+    }
+  ],
+  "process_observation": {
+    "name": "Default test task did not execute *IT",
+    "classification": "HARNESS_ROUTING_COST",
+    "result": "An earlier test task exited 0 while excluding integration classes. It is not counted as product acceptance; the final explicit integrationTest commands above provide PG evidence."
   },
-  "runtime_evidence": {
-    "status": "NOT_RUN",
-    "exit_code": null,
-    "reason": "Schedule+Academic source is staged for integration. Attendance participant is separately owned and the combined acceptance scenario is still pending."
-  }
+  "unrun_or_root_owned": [
+    {
+      "name": "Combined live Schedule-to-Attendance-to-Academic API transfer and preservation scenario",
+      "status": "PENDING_ROOT_INTEGRATION",
+      "reason": "Root prepared the combined script and owns final integration after corrected source commit and Sol recheck."
+    },
+    {
+      "name": "Attendance Mongo transaction/marks/attachments acceptance",
+      "status": "PENDING_SEPARATE_OWNER_AND_ROOT_INTEGRATION",
+      "reason": "Attendance participant is authored in its separate worktree; this package did not edit Attendance files."
+    },
+    {
+      "name": "Independent Sol recheck",
+      "status": "PENDING",
+      "reason": "Run after this corrected package receives a stable source commit."
+    }
+  ]
 }

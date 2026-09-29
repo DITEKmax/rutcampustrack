@@ -26,7 +26,7 @@ public record LessonTransferBatch(
         List<Binding> bindings,
         String batchHash) {
 
-    LessonTransferBatch {
+    public LessonTransferBatch {
         bindings = List.copyOf(bindings);
     }
 

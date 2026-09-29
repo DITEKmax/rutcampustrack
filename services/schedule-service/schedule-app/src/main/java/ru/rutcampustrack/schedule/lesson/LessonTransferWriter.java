@@ -92,8 +92,8 @@ public class LessonTransferWriter {
             if (!targetDate.isAfter(today)) {
                 throw new ConflictException("Новая дата должна быть в будущем");
             }
-            short targetDay = (short) (targetDate.getDayOfWeek().getValue() - 1);
-            if (targetDay < 0 || targetDay > 5) {
+            short targetDay = (short) targetDate.getDayOfWeek().getValue();
+            if (targetDay < 1 || targetDay > 6) {
                 throw new ConflictException("Для переноса выбери учебный день с понедельника по субботу");
             }
             requireTargetFence(number(source.get("assignment_id")), targetDate,
@@ -175,6 +175,22 @@ public class LessonTransferWriter {
             }
             insertTargetLesson(source, targetLessonId, targetDate, targetDay, targetNumber,
                     targetStart, targetEnd, targetRoom, generation + 1, now);
+            // Persist the exact immutable participant batches before changing
+            // bindings. V21's binding guard validates each mutation against
+            // this durable snapshot inside the same transaction.
+            for (int index = 0; index < batchCount; index++) {
+                Map<String, Object> eventPayload = eventPayload(operationId, actorId,
+                        request.requestKey(), operationHash, expectedRevision, sourceSnapshot,
+                        targetSnapshot, index, batchCount, bindingBatches.get(index));
+                byte[] batchHash = sha256(bytes(bindingBatches.get(index)));
+                jdbc.update("""
+                        INSERT INTO lesson_transfer_binding_batches
+                            (operation_id, batch_index, batch_hash, payload, binding_count, created_at)
+                        VALUES (?, ?, ?, ?::jsonb, ?, ?)
+                        """, operationId, index, batchHash, json(eventPayload),
+                        bindingBatches.get(index).size(), now);
+                eventPublisher.publishEvent(new LessonTransferRequestedEvent(this, eventPayload));
+            }
             moveBindings(occurrenceId, sourceLessonId, targetLessonId, bindings);
             jdbc.update("""
                     INSERT INTO lesson_lifecycle_entries
@@ -191,19 +207,6 @@ public class LessonTransferWriter {
                     """, actorId, request.requestKey(), occurrenceId, requestHash,
                     sourceLessonId, targetLessonId, expectedRevision + 1, now);
 
-            for (int index = 0; index < batchCount; index++) {
-                Map<String, Object> eventPayload = eventPayload(operationId, actorId,
-                        request.requestKey(), operationHash, expectedRevision, sourceSnapshot,
-                        targetSnapshot, index, batchCount, bindingBatches.get(index));
-                byte[] batchHash = sha256(bytes(bindingBatches.get(index)));
-                jdbc.update("""
-                        INSERT INTO lesson_transfer_binding_batches
-                            (operation_id, batch_index, batch_hash, payload, binding_count, created_at)
-                        VALUES (?, ?, ?, ?::jsonb, ?, ?)
-                        """, operationId, index, batchHash, json(eventPayload),
-                        bindingBatches.get(index).size(), now);
-                eventPublisher.publishEvent(new LessonTransferRequestedEvent(this, eventPayload));
-            }
             return status(operationId);
         } catch (DataIntegrityViolationException ex) {
             throw new ConflictException("Перенос конфликтует с занятым слотом или актуальным состоянием пары");
@@ -296,8 +299,30 @@ public class LessonTransferWriter {
                         String.valueOf(row.get("operation_id")), String.valueOf(row.get("state"))));
             }
             return Map.copyOf(result);
-        } catch (SQLException ex) {
-            throw new IllegalStateException("Unable to read lesson transfer state", ex);
+        } finally {
+            if (array != null) {
+                try { array.free(); } catch (SQLException ignored) { }
+            }
+        }
+    }
+
+    public Map<Long, Long> occurrenceRevisionsForLessons(List<Long> lessonIds) {
+        if (lessonIds == null || lessonIds.isEmpty()) return Map.of();
+        Array array = null;
+        try {
+            array = jdbc.execute((Connection connection) -> connection.createArrayOf(
+                    "bigint", lessonIds.toArray(Long[]::new)));
+            List<Map<String, Object>> rows = jdbc.queryForList("""
+                    SELECT lesson.id AS lesson_id, occurrence.revision AS occurrence_revision
+                      FROM lessons lesson
+                      JOIN lesson_occurrences occurrence ON occurrence.id = lesson.occurrence_id
+                     WHERE lesson.id = ANY(?::bigint[])
+                    """, array);
+            Map<Long, Long> result = new LinkedHashMap<>();
+            for (Map<String, Object> row : rows) {
+                result.put(number(row.get("lesson_id")), number(row.get("occurrence_revision")));
+            }
+            return Map.copyOf(result);
         } finally {
             if (array != null) {
                 try { array.free(); } catch (SQLException ignored) { }
@@ -626,10 +651,13 @@ public class LessonTransferWriter {
         putSnapshot(snapshot, source, "lesson_id", "lesson_id");
         for (String key : List.of("schedule_item_id", "occurrence_id", "assignment_id", "group_id",
                 "subject_id", "semester_id", "assigned_teacher_id", "lesson_type", "generation",
-                "revision", "date", "lesson_number", "day_of_week", "start_time", "end_time",
-                "room_snapshot", "week_type_snapshot", "status")) {
+                "date", "lesson_number", "day_of_week", "start_time", "end_time",
+                "week_type_snapshot", "status")) {
             putSnapshot(snapshot, source, key, key);
         }
+        putSnapshot(snapshot, source, "lesson_revision", "revision");
+        putSnapshot(snapshot, source, "occurrence_revision", "occurrence_revision");
+        putSnapshot(snapshot, source, "room", "room_snapshot");
         return snapshot;
     }
 
@@ -649,13 +677,14 @@ public class LessonTransferWriter {
         Map<String, Object> target = new LinkedHashMap<>(sourceSnapshot(source));
         target.put("lesson_id", targetId);
         target.put("generation", generation);
-        target.put("revision", 1L);
+        target.put("lesson_revision", 1L);
+        target.put("occurrence_revision", number(source.get("occurrence_revision")) + 1);
         target.put("date", date.toString());
         target.put("lesson_number", number);
         target.put("day_of_week", dayOfWeek);
         target.put("start_time", start.toString());
         target.put("end_time", end.toString());
-        target.put("room_snapshot", room);
+        target.put("room", room);
         target.put("status", "planned");
         return target;
     }
@@ -692,11 +721,11 @@ public class LessonTransferWriter {
         payload.put("operation_id", operationId.toString());
         payload.put("request_key", requestKey.toString());
         payload.put("actor_id", actorId);
-        payload.put("payload_hash", operationHash);
+        payload.put("transfer_payload_hash", operationHash);
         payload.put("occurrence_id", source.get("occurrence_id"));
         payload.put("group_id", source.get("group_id"));
         payload.put("semester_id", source.get("semester_id"));
-        payload.put("expected_occurrence_revision", expectedRevision);
+        payload.put("transfer_revision", expectedRevision + 1);
         payload.put("source_lesson_id", source.get("lesson_id"));
         payload.put("target_lesson_id", target.get("lesson_id"));
         payload.put("source", source);

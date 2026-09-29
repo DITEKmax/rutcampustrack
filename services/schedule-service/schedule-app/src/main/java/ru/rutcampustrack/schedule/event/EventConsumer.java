@@ -120,7 +120,7 @@ public class EventConsumer extends AbstractEventConsumer {
                 Math.toIntExact(exactLong(payload.get("batch_index"), "batch_index")),
                 result,
                 errorCode,
-                requiredString(payload.get("payload_hash"), "payload_hash"),
+                requiredString(payload.get("transfer_payload_hash"), "transfer_payload_hash"),
                 exactLong(payload.get("source_lesson_id"), "source_lesson_id"),
                 exactLong(payload.get("target_lesson_id"), "target_lesson_id"),
                 retryable);

@@ -76,6 +76,8 @@ import type { ProfilePort, ProfileRole, ProfileSnapshot } from '@rct/mobile-core
 import { AuthRequestError } from './auth-client'
 import { PwaAuthError, usePwaAuth, type PwaAuthInvalidationReason } from './auth'
 import LoginScreen from './LoginScreen.vue'
+import PasswordRecoveryScreen from './features/password-recovery/PasswordRecoveryScreen.vue'
+import { isPasswordResetEntryPath } from './features/password-recovery/password-recovery-link'
 import { PwaHostAdapter } from './pwa-host'
 import { isOfflineBootstrapRecoveryError } from './bootstrap-policy'
 import { createPwaRoleSelection } from './role-flow'
@@ -144,10 +146,12 @@ const semesterSchedule = shallowRef<StudentSemesterSchedule | null>(null)
 const onlineSemesterSchedule = shallowRef<StudentSemesterSchedule | null>(null)
 const offline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false)
 const readOnly = ref(false)
+const directPasswordRecoveryEntry = isPasswordResetEntryPath(window.location.pathname, import.meta.env.BASE_URL)
+const passwordRecoveryNotice = ref<string | null>(null)
 const sessionReady = ref(false)
 const bootstrapping = ref(false)
 const bootstrapError = ref<string | null>(null)
-const authView = ref<'login' | 'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-home' | 'admin-map' | 'admin-semesters' | 'admin-users' | 'admin-groups' | 'admin-profile' | 'admin-role-switch'>('login')
+const authView = ref<'login' | 'password-recovery' | 'role' | 'student' | 'teacher' | 'headman' | 'map' | 'admin-home' | 'admin-map' | 'admin-semesters' | 'admin-users' | 'admin-groups' | 'admin-profile' | 'admin-role-switch'>(directPasswordRecoveryEntry ? 'password-recovery' : 'login')
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null)
 const authError = shallowRef<ProfileRequestError | null>(null)
 const persistedLogoutState = auth.explicitLogoutState()
@@ -922,7 +926,24 @@ function assertCandidateCurrent(generation: number): void {
   if (!auth.isCurrent(generation)) throw new StaleSessionGenerationError()
 }
 
+function openPasswordRecovery(): void {
+  authError.value = null
+  passwordRecoveryNotice.value = null
+  authView.value = 'password-recovery'
+}
+
+function closePasswordRecovery(): void {
+  authView.value = 'login'
+}
+
+function completePasswordRecovery(): void {
+  authError.value = null
+  passwordRecoveryNotice.value = 'Пароль обновлён. Войди с новым паролем.'
+  authView.value = 'login'
+}
+
 async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
+  if (authView.value === 'password-recovery') return
   if (!auth.canAutoBootstrap()) {
     authView.value = 'login'
     sessionReady.value = true
@@ -1364,7 +1385,7 @@ onMounted(() => {
   window.addEventListener('online', goOnline)
   document.addEventListener('visibilitychange', onAssistantForeground)
   if (fixtureDiagnosticsMode && 'serviceWorker' in navigator) navigator.serviceWorker.addEventListener('controllerchange', onServiceWorkerControllerChange)
-  void bootstrap()
+  if (!directPasswordRecoveryEntry) void bootstrap()
   void refreshFixtureDiagnostics()
 })
 
@@ -1444,9 +1465,17 @@ onBeforeUnmount(() => {
     <LoginScreen
       :loading="authLoading || bootstrapping"
       :error="authError"
+      :notice="passwordRecoveryNotice"
       @submit="submitLogin"
+      @open-recovery="openPasswordRecovery"
     />
   </template>
+  <PasswordRecoveryScreen
+    v-else-if="authView === 'password-recovery'"
+    :parse-bot-link="directPasswordRecoveryEntry"
+    @cancel="closePasswordRecovery"
+    @completed="completePasswordRecovery"
+  />
   <RoleSwitchScreen
     v-else-if="authView === 'role'"
     :snapshot="authSnapshot"

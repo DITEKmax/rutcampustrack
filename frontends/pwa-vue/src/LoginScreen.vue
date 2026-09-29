@@ -5,13 +5,16 @@ import './login-screen.pcss'
 withDefaults(defineProps<{
   loading?: boolean
   error?: ProfileRequestError | null
+  notice?: string | null
 }>(), {
   loading: false,
   error: null,
+  notice: null,
 })
 
 const emit = defineEmits<{
   submit: [input: { login: string; password: string }]
+  openRecovery: []
 }>()
 
 function submit(event: SubmitEvent): void {
@@ -72,6 +75,14 @@ function submit(event: SubmitEvent): void {
       >
         {{ error.message }}
       </p>
+      <p
+        v-if="notice"
+        class="login-card__notice"
+        role="status"
+        aria-live="polite"
+      >
+        {{ notice }}
+      </p>
       <button
         class="login-card__submit"
         type="submit"
@@ -79,6 +90,14 @@ function submit(event: SubmitEvent): void {
         :aria-busy="loading"
       >
         {{ loading ? 'Проверяем…' : 'Войти' }}
+      </button>
+      <button
+        class="login-card__secondary"
+        type="button"
+        :disabled="loading"
+        @click="emit('openRecovery')"
+      >
+        Забыл пароль
       </button>
     </form>
   </main>

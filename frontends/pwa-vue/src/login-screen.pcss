@@ -1,4 +1,6 @@
 .login-screen {
+  box-sizing: border-box;
+  font-family: var(--rct-font-family-sans, sans-serif);
   display: grid;
   min-block-size: 100dvh;
   place-items: center;
@@ -8,6 +10,7 @@
 }
 
 .login-card {
+  box-sizing: border-box;
   display: grid;
   inline-size: min(100%, 28rem);
   gap: 1rem;
@@ -71,4 +74,38 @@
 .login-card__submit:disabled {
   cursor: wait;
   opacity: 0.65;
+}
+
+.password-recovery-screen {
+  align-content: safe center;
+  overflow-y: auto;
+}
+
+.login-card__secondary {
+  min-block-size: var(--rct-control-min-touch, 2.75rem);
+  border: 0;
+  border-radius: 0.7rem;
+  background: transparent;
+  color: var(--rct-color-text-secondary, inherit);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15rem;
+}
+
+.login-card__secondary:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.login-card__notice {
+  color: var(--rct-color-success-text, #0c6a53);
+  line-height: 1.5;
+}
+
+.login-card__submit:focus-visible,
+.login-card__secondary:focus-visible,
+.login-field input:focus-visible {
+  outline: var(--rct-focus-width, 0.125rem) solid var(--rct-color-accent-now, #6d28d9);
+  outline-offset: var(--rct-focus-offset, 0.125rem);
 }

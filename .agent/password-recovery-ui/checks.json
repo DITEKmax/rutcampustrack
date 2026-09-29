@@ -1,0 +1,56 @@
+{
+  "scope": "PWA password recovery UI (S3)",
+  "contract": ".agent/orchestration-v2/evidence/2026-09-27-delivery/password-recovery-ui-contract.md",
+  "worktree": "C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack",
+  "baselineHead": "a227d7a6c40c41471cf1ec59263518c37ebb4282",
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "node": "v24.14.0",
+    "npm": "11.9.0",
+    "vitest": "4.1.4"
+  },
+  "checks": [
+    {
+      "name": "password recovery contract tests",
+      "command": "..\\node_modules\\.bin\\vitest.cmd run --config vite.config.ts src/features/password-recovery/password-recovery-contract.test.ts",
+      "exitCode": 0,
+      "result": "1 test file passed; 5 tests passed",
+      "invariants": [
+        "Exact reset path match for root and configured PWA base path; reject nested non-entry path.",
+        "Clear bot proof fragment before returning proof; reject duplicate or unrelated params after clearing.",
+        "Invalidating recovery aborts pending signal and marks operation stale.",
+        "OTP_INVALID retains server attemptsRemaining.",
+        "All three endpoint/body pairs use credentials=omit, cache=no-store and no Authorization; success values preserve server TTL/ticket/attempt values and expected statuses."
+      ]
+    },
+    {
+      "name": "Vue/TypeScript typecheck",
+      "command": "..\\node_modules\\.bin\\vue-tsc.cmd -p tsconfig.json --noEmit",
+      "exitCode": 0,
+      "result": "passed"
+    },
+    {
+      "name": "whitespace/conflict check",
+      "command": "git -c safe.directory=C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack -C C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack diff --check",
+      "exitCode": 0,
+      "result": "passed; Git also emitted line-ending normalization advisories for the three modified tracked UI files"
+    },
+    {
+      "name": "local Vite browser smoke",
+      "exitCode": null,
+      "result": "blocked before Vue mount: browser console reported ReferenceError: global is not defined from the existing sockjs-client bundle; no recovery API request was issued; root directed not to change this baseline or repeat the dev smoke"
+    }
+  ],
+  "temporaryDependencies": {
+    "method": "exact temporary junction from worktree frontends/node_modules to shared checkout frontends/node_modules for the two focused checks",
+    "cleanup": "junction removed and Test-Path confirmed false",
+    "sharedDependenciesModified": false
+  },
+  "notRun": [
+    "combined frontend production build: root will run after API/UI integration",
+    "real backend and Telegram bot acceptance: backend delivery and real bot are owner-deferred"
+  ],
+  "knownLimitation": "The contract has no anonymous password policy endpoint or published client rule set; server validation and bounded sanitized error details are used. Add an agreed public policy hint/source if requirements must be shown before submission.",
+  "sourceFreeze": "This evidence is committed together with the scoped UI source; final commit SHA is reported to root."
+}

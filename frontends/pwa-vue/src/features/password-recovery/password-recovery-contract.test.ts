@@ -1,0 +1,93 @@
+import { describe, expect, it, vi } from 'vitest'
+import { createPasswordRecoveryClient } from './password-recovery-client'
+import { consumePasswordResetFragment, isPasswordResetEntryPath } from './password-recovery-link'
+import { createPasswordRecoveryOperationGate } from './password-recovery-operation'
+
+describe('PWA password recovery contract', () => {
+  it('clears bot proof from the fragment before exposing it to the caller', () => {
+    const events: string[] = []
+    const proof = consumePasswordResetFragment('#challengeId=challenge-1&code=731904', () => events.push('cleared'))
+
+    expect(events).toEqual(['cleared'])
+    expect(proof).toEqual({ challengeId: 'challenge-1', code: '731904' })
+    expect(isPasswordResetEntryPath('/password-reset', '/')).toBe(true)
+    expect(isPasswordResetEntryPath('/pwa/password-reset', '/pwa/')).toBe(true)
+    expect(isPasswordResetEntryPath('/password-reset/other', '/')).toBe(false)
+  })
+
+  it('rejects duplicate or unrelated fragment parameters after clearing them', () => {
+    const replaceUrl = vi.fn()
+
+    expect(consumePasswordResetFragment('#challengeId=a&challengeId=b&code=1', replaceUrl)).toBeNull()
+    expect(consumePasswordResetFragment('#challengeId=a&code=1&next=/login', replaceUrl)).toBeNull()
+    expect(replaceUrl).toHaveBeenCalledTimes(2)
+  })
+
+  it('invalidates late async work when the recovery screen closes', () => {
+    const operations = createPasswordRecoveryOperationGate()
+    const operation = operations.begin()
+
+    operations.invalidate()
+
+    expect(operation.signal.aborted).toBe(true)
+    expect(operation.isCurrent()).toBe(false)
+  })
+
+  it('uses server counters for an invalid code', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({
+      extras: { code: 'OTP_INVALID', attemptsRemaining: 2 },
+    }), { status: 400, headers: { 'Content-Type': 'application/json' } }))
+    const client = createPasswordRecoveryClient(fetcher)
+
+    await expect(client.verify({ challengeId: 'challenge-1', code: '731904' })).rejects.toMatchObject({
+      status: 400,
+      code: 'OTP_INVALID',
+      problem: { attemptsRemaining: 2 },
+    })
+  })
+
+  it('keeps all recovery credentials in no-store request bodies without the current session', async () => {
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        challengeId: 'challenge-1',
+        ttlSeconds: 300,
+      }), { status: 202, headers: { 'Content-Type': 'application/json' } }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        resetTicket: 'opaque-ticket',
+        expiresInSeconds: 180,
+        attemptsRemaining: 3,
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+    const client = createPasswordRecoveryClient(fetcher)
+
+    await expect(client.request('student-login')).resolves.toEqual({
+      challengeId: 'challenge-1',
+      ttlSeconds: 300,
+    })
+    await expect(client.verify({ challengeId: 'challenge-1', code: '731904' })).resolves.toEqual({
+      resetTicket: 'opaque-ticket',
+      expiresInSeconds: 180,
+      attemptsRemaining: 3,
+    })
+    await expect(client.complete({ resetTicket: 'opaque-ticket', newPassword: 'long-new-password' })).resolves.toBeUndefined()
+
+    const expectedBodies = [
+      { login: 'student-login' },
+      { challengeId: 'challenge-1', code: '731904' },
+      { resetTicket: 'opaque-ticket', newPassword: 'long-new-password' },
+    ]
+    const expectedPaths = [
+      '/api/auth/password-reset/request',
+      '/api/auth/password-reset/verify',
+      '/api/auth/password-reset/complete',
+    ]
+    expect(fetcher).toHaveBeenCalledTimes(3)
+    for (const [index, [path, init]] of fetcher.mock.calls.entries()) {
+      expect(path).toBe(expectedPaths[index])
+      expect(init?.credentials).toBe('omit')
+      expect(init?.cache).toBe('no-store')
+      expect(new Headers(init?.headers).has('Authorization')).toBe(false)
+      expect(JSON.parse(String(init?.body))).toEqual(expectedBodies[index])
+    }
+  })
+})

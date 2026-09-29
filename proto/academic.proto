@@ -34,6 +34,9 @@ service AcademicGrpcService {
   // Получить активный семестр
   rpc GetActiveSemester (Empty) returns (SemesterResponse);
 
+  // Получить авторитетное состояние семестра по ID для серверных write guards.
+  rpc GetSemesterState (SemesterStateRequest) returns (SemesterStateResponse);
+
   // Получить геофенс кампуса
   rpc GetCampusGeofence (Empty) returns (GeofenceResponse);
 
@@ -181,6 +184,25 @@ message SemesterResponse {
   string first_week_type = 5;
 }
 
+enum SemesterTransition {
+  NONE = 0;
+  ARCHIVING = 1;
+  RESTORING = 2;
+}
+
+message SemesterStateRequest {
+  int64 semester_id = 1;
+}
+
+message SemesterStateResponse {
+  int64 id = 1;
+  bool active = 2;
+  bool archived = 3;
+  int64 state_version = 4;
+  SemesterTransition transition = 5;
+  bool write_blocked = 6;
+}
+
 message GeofenceResponse {
   double lat = 1;
   double lng = 2;
@@ -225,6 +247,7 @@ message StudentProjectionScopeResponse {
   optional int64 rank_group_id = 11;
   bool rank_eligible = 12;
   string server_date = 13;
+  repeated AcademicSubjectInfo rank_subjects = 14;
 }
 
 message StudentProjectionMembershipSegment {

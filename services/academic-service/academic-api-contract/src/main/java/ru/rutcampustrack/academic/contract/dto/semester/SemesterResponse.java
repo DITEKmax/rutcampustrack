@@ -25,6 +25,7 @@ public class SemesterResponse extends RepresentationModel<SemesterResponse> {
     private boolean archived;
     private SemesterTransition transition = SemesterTransition.NONE;
     private long stateVersion;
+    private boolean releasePending;
 
     public SemesterResponse() {}
 
@@ -32,13 +33,21 @@ public class SemesterResponse extends RepresentationModel<SemesterResponse> {
                             boolean active, OffsetDateTime createdAt, SemesterType semesterType,
                             Integer academicYear) {
         this(id, name, dateFrom, dateTo, active, createdAt, semesterType, academicYear,
-                false, SemesterTransition.NONE, 0L);
+                false, SemesterTransition.NONE, 0L, false);
     }
 
     public SemesterResponse(Long id, String name, LocalDate dateFrom, LocalDate dateTo,
                             boolean active, OffsetDateTime createdAt, SemesterType semesterType,
                             Integer academicYear, boolean archived, SemesterTransition transition,
                             long stateVersion) {
+        this(id, name, dateFrom, dateTo, active, createdAt, semesterType, academicYear,
+                archived, transition, stateVersion, false);
+    }
+
+    public SemesterResponse(Long id, String name, LocalDate dateFrom, LocalDate dateTo,
+                            boolean active, OffsetDateTime createdAt, SemesterType semesterType,
+                            Integer academicYear, boolean archived, SemesterTransition transition,
+                            long stateVersion, boolean releasePending) {
         this.id = id;
         this.name = name;
         this.dateFrom = dateFrom;
@@ -50,6 +59,7 @@ public class SemesterResponse extends RepresentationModel<SemesterResponse> {
         this.archived = archived;
         this.transition = transition == null ? SemesterTransition.NONE : transition;
         this.stateVersion = stateVersion;
+        this.releasePending = releasePending;
     }
 
     public SemesterResponse(Long id, String name, LocalDate dateFrom, LocalDate dateTo,
@@ -97,8 +107,11 @@ public class SemesterResponse extends RepresentationModel<SemesterResponse> {
     public long getStateVersion() { return stateVersion; }
     public void setStateVersion(long stateVersion) { this.stateVersion = stateVersion; }
 
+    public boolean isReleasePending() { return releasePending; }
+    public void setReleasePending(boolean releasePending) { this.releasePending = releasePending; }
+
     @Schema(description = "Запись блокирует изменения, пока семестр архивирован или переход не завершён")
     public boolean isWriteBlocked() {
-        return archived || transition != SemesterTransition.NONE;
+        return archived || releasePending || transition != SemesterTransition.NONE;
     }
 }

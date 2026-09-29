@@ -50,6 +50,7 @@ function lessonStatus(status: HeadmanJournalLesson['status']): string {
     case 'ACTIVE': return 'Идёт'
     case 'CLOSED': return 'Завершена'
     case 'CANCELLED': return 'Отменена'
+    case 'TRANSFERRED': return 'Перенесена'
     case 'UNSUPPORTED': return 'Статус недоступен'
   }
 }

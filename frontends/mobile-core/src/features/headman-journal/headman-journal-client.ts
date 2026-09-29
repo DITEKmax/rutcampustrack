@@ -4,7 +4,7 @@ import {
   type ReportDownloadTicketRequest,
 } from '../../shared/report-download-client'
 
-export type HeadmanJournalLessonStatus = 'PLANNED' | 'ACTIVE' | 'CLOSED' | 'CANCELLED' | 'UNSUPPORTED'
+export type HeadmanJournalLessonStatus = 'PLANNED' | 'ACTIVE' | 'CLOSED' | 'CANCELLED' | 'TRANSFERRED' | 'UNSUPPORTED'
 export type HeadmanLessonTransferState = 'PENDING' | 'COMPLETED' | 'ERROR'
 export type HeadmanLessonTransferErrorCode =
   | 'TARGET_DATA_CONFLICT'
@@ -234,7 +234,7 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
         page: String(page),
         size: '100',
       })
-      for (const status of ['PLANNED', 'ACTIVE', 'CLOSED', 'CANCELLED'] as const) {
+      for (const status of ['PLANNED', 'ACTIVE', 'CLOSED', 'CANCELLED', 'TRANSFERRED'] as const) {
         query.append('status', status)
       }
       return `/api/schedule/groups/${groupId}/lessons?${query.toString()}`
@@ -696,7 +696,8 @@ function normalizeEntry(value: unknown, reportEditable: boolean): HeadmanJournal
 
 function normalizeLessonStatus(value: unknown): HeadmanJournalLessonStatus {
   const status = typeof value === 'string' ? value.trim().toUpperCase() : ''
-  return status === 'PLANNED' || status === 'ACTIVE' || status === 'CLOSED' || status === 'CANCELLED' ? status : 'UNSUPPORTED'
+  return status === 'PLANNED' || status === 'ACTIVE' || status === 'CLOSED'
+    || status === 'CANCELLED' || status === 'TRANSFERRED' ? status : 'UNSUPPORTED'
 }
 
 function unwrapContent(value: unknown): Record<string, unknown> | null {

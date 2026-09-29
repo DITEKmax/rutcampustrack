@@ -200,6 +200,7 @@ function lessonStatusLabel(status: HeadmanJournalLesson['status']): string {
     case 'ACTIVE': return 'идёт'
     case 'CLOSED': return 'закрыта'
     case 'CANCELLED': return 'отменена'
+    case 'TRANSFERRED': return 'перенесена'
     case 'PLANNED': return 'запланирована'
     case 'UNSUPPORTED': return 'неподдерживаемый статус'
   }
@@ -223,6 +224,7 @@ function setToday(): void {
 function selectLesson(lessonId: number): void {
   if (selectedLessonId.value === lessonId && report.value?.lessonId === lessonId) return
   selectedLessonId.value = lessonId
+  resumeTransferStatusForSelectedLesson()
   if (canViewReport()) void loadReport(lessonId)
   else report.value = null
 }
@@ -410,6 +412,10 @@ function canCancelLessons(): boolean {
   return Boolean(props.api && !props.offline && !props.readOnly && hasAssistantPermission('CANCEL_LESSONS'))
 }
 
+function isHeadmanContext(): boolean {
+  return props.assistantPermissions === null
+}
+
 function isTransferOperationActive(operation: TransferOperation): boolean {
   return operation.phase === 'submitting' || operation.phase === 'pending'
     || operation.phase === 'checking' || operation.phase === 'uncertain'
@@ -427,7 +433,7 @@ function transferOperationForLesson(lessonId: number): TransferOperation | null 
 
 function isLessonTransferLocked(lesson: HeadmanJournalLesson | null): boolean {
   if (!lesson) return false
-  if (lesson.transferState === 'PENDING') return true
+  if (lesson.status === 'TRANSFERRED' || lesson.transferState === 'PENDING') return true
   return transferOperations.value.some((operation) => operation.api === props.api
     && operation.groupId === props.groupId && isTransferOperationActive(operation)
     && (operation.sourceLessonId === lesson.id
@@ -441,7 +447,7 @@ function isTransferSourceEligible(lesson: HeadmanJournalLesson): boolean {
 }
 
 function canStartTransfer(lesson: HeadmanJournalLesson): boolean {
-  return Boolean(canCancelLessons() && props.groupId !== null && isTransferSourceEligible(lesson)
+  return Boolean(isHeadmanContext() && canCancelLessons() && props.groupId !== null && isTransferSourceEligible(lesson)
     && !isLessonTransferLocked(lesson))
 }
 
@@ -453,7 +459,7 @@ function isTransferTargetSlotUnavailable(slot: number): boolean {
     || transferTargetError.value !== null) return true
   if (source.date === targetDate && source.lessonNumber === slot) return true
   if (transferTargetLessons.value.some((lesson) => lesson.current && lesson.id !== source.id
-    && lesson.lessonNumber === slot && lesson.status !== 'CANCELLED')) return true
+    && lesson.lessonNumber === slot && lesson.status !== 'CANCELLED' && lesson.status !== 'TRANSFERRED')) return true
   return transferOperations.value.some((operation) => operation.api === props.api
     && operation.groupId === props.groupId && isTransferOperationActive(operation)
     && operation.targetDate === targetDate && operation.targetLessonNumber === slot)
@@ -464,7 +470,7 @@ function transferTargetSlotLabel(slot: number): string {
     return `${slot}-я пара · исходное место`
   }
   if (transferTargetLessons.value.some((lesson) => lesson.current && lesson.id !== selectedLesson.value?.id
-    && lesson.lessonNumber === slot && lesson.status !== 'CANCELLED')) return `${slot}-я пара · занято`
+    && lesson.lessonNumber === slot && lesson.status !== 'CANCELLED' && lesson.status !== 'TRANSFERRED')) return `${slot}-я пара · занято`
   if (transferOperations.value.some((operation) => operation.api === props.api
     && operation.groupId === props.groupId && isTransferOperationActive(operation)
     && operation.targetDate === transferTargetDate.value && operation.targetLessonNumber === slot)) {
@@ -540,11 +546,20 @@ function serverTransferStateMessage(state: HeadmanJournalLesson['transferState']
   }
 }
 
+function resumeTransferStatusForSelectedLesson(): void {
+  const lesson = selectedLesson.value
+  if (!lesson?.transferOperationId || !isHeadmanContext() || props.offline || props.readOnly) return
+  const operation = transferOperationForLesson(lesson.id)
+  if (operation?.operationId === lesson.transferOperationId
+    && (operation.phase === 'checking' || operation.phase === 'submitting' || operation.phase === 'completed')) return
+  resumeTransferForSelectedLesson(false)
+}
+
 function canRunTransferOperation(operation: TransferOperation): boolean {
   return !disposed && operation.api === props.api && operation.groupId === props.groupId
     && selectedDate.value === operation.sourceDate && selectedLessonId.value === operation.sourceLessonId
     && selectedLesson.value?.id === operation.sourceLessonId && !props.offline && !props.readOnly
-    && canCancelLessons()
+    && isHeadmanContext()
 }
 
 function replaceTransferOperation(key: string, patch: Partial<TransferOperation>): void {
@@ -707,7 +722,9 @@ function canManageExcuses(): boolean {
 function canWrite(entry: HeadmanJournalRosterEntry): boolean {
   const required = entry.status === 'EXCUSED' ? 'MANAGE_EXCUSES' : 'MARK_ATTENDANCE'
   return Boolean(props.api?.writable && entry.editable && !props.offline && !props.readOnly
-    && selectedLessonId.value !== null && hasAssistantPermission(required))
+    && selectedLessonId.value !== null && selectedLesson.value !== null
+    && selectedLesson.value.status !== 'TRANSFERRED'
+    && hasAssistantPermission(required))
 }
 
 function canWriteExcuse(entry: HeadmanJournalRosterEntry): boolean {
@@ -972,25 +989,39 @@ function resumeTransferForSelectedLesson(retryUncertain: boolean): void {
   const lesson = selectedLesson.value
   const api = props.api
   const groupId = props.groupId
-  if (!lesson || !api || groupId === null || !canCancelLessons() || props.offline || props.readOnly) return
+  if (!lesson || !api || groupId === null || !isHeadmanContext() || props.offline || props.readOnly) return
   let operation = transferOperationForLesson(lesson.id)
-  if (!operation && lesson.transferOperationId) {
-    const key = `operation:${lesson.transferOperationId}`
-    operation = {
-      key,
-      api,
-      groupId,
-      sourceLessonId: lesson.id,
-      sourceDate: lesson.date,
-      targetDate: null,
-      targetLessonNumber: null,
-      request: null,
-      operationId: lesson.transferOperationId,
-      response: null,
-      phase: 'pending',
-      message: null,
+  if (lesson.transferOperationId) {
+    if (!operation) {
+      const key = `operation:${lesson.transferOperationId}`
+      operation = {
+        key,
+        api,
+        groupId,
+        sourceLessonId: lesson.id,
+        sourceDate: lesson.date,
+        targetDate: null,
+        targetLessonNumber: null,
+        request: null,
+        operationId: lesson.transferOperationId,
+        response: null,
+        phase: 'pending',
+        message: null,
+      }
+      transferOperations.value = [...transferOperations.value, operation]
+    } else if (operation.operationId !== lesson.transferOperationId) {
+      transferRunRevisions.set(operation.key, (transferRunRevisions.get(operation.key) ?? 0) + 1)
+      operation = {
+        ...operation,
+        operationId: lesson.transferOperationId,
+        targetDate: null,
+        targetLessonNumber: null,
+        response: null,
+        phase: 'pending',
+        message: null,
+      }
+      replaceTransferOperation(operation.key, operation)
     }
-    transferOperations.value = [...transferOperations.value, operation]
   }
   if (!operation || !canRunTransferOperation(operation)) return
   if (retryUncertain && operation.operationId === null && operation.request !== null) {
@@ -1327,9 +1358,11 @@ async function loadLessons(preferredLessonId: number | null = null): Promise<voi
     const first = requestedLesson ?? preferredLesson ?? next[0]
     if (first && canViewReport()) {
       selectedLessonId.value = first.id
+      resumeTransferStatusForSelectedLesson()
       await loadReport(first.id)
     } else if (first) {
       selectedLessonId.value = first.id
+      resumeTransferStatusForSelectedLesson()
       report.value = null
     }
   } catch (cause) {
@@ -1699,7 +1732,7 @@ onBeforeUnmount(() => {
           </p>
         </div>
         <span
-          v-if="report?.editable"
+          v-if="report?.editable && selectedLesson.status !== 'TRANSFERRED'"
           class="headman-journal__server-flag"
         >
           Изменения разрешены сервером
@@ -1723,6 +1756,9 @@ onBeforeUnmount(() => {
           >
             {{ lessonActionBusy ? 'Восстанавливаем…' : 'Восстановить пару' }}
           </button>
+        </template>
+        <template v-else-if="selectedLesson.status === 'TRANSFERRED'">
+          <p>Исходная пара перенесена. История переноса доступна ниже.</p>
         </template>
         <template v-else>
           <label>
@@ -1832,7 +1868,7 @@ onBeforeUnmount(() => {
         </section>
 
         <section
-          v-if="selectedTransferOperation || selectedServerTransferState !== null"
+          v-if="isHeadmanContext() && (selectedTransferOperation || selectedServerTransferState !== null)"
           class="headman-journal__transfer-status"
           aria-labelledby="headman-journal-transfer-status-title"
         >

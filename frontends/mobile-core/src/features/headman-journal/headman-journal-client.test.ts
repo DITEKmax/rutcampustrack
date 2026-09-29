@@ -72,7 +72,7 @@ describe('HeadmanJournalApi', () => {
     }])
     expect(paths).toEqual([
       '/api/schedule/groups/7/lessons?dateFrom=2026-09-21&dateTo=2026-09-21&page=0&size=100'
-        + '&status=PLANNED&status=ACTIVE&status=CLOSED&status=CANCELLED',
+        + '&status=PLANNED&status=ACTIVE&status=CLOSED&status=CANCELLED&status=TRANSFERRED',
     ])
   })
 
@@ -137,6 +137,7 @@ describe('HeadmanJournalApi', () => {
     await expect(acceptedApi.getLessonTransfer(accepted.operationId)).resolves.toMatchObject({
       operationId: pending.operationId,
       state: 'COMPLETED',
+      targetDate: '2026-10-02',
       retryable: false,
     })
     expect(requests[2]?.path).toBe(`/api/schedule/lesson-transfers/${pending.operationId}`)
@@ -152,7 +153,7 @@ describe('HeadmanJournalApi', () => {
             id: 42,
             groupId: 7,
             date: '2026-09-30',
-            status: 'PLANNED',
+            status: 'TRANSFERRED',
             lessonNumber: 2,
             occurrenceRevision: 17,
             current: true,
@@ -166,6 +167,7 @@ describe('HeadmanJournalApi', () => {
 
     await expect(api.listLessons(7, '2026-09-30', '2026-09-30')).resolves.toMatchObject([{
       id: 42,
+      status: 'TRANSFERRED',
       occurrenceRevision: '17',
       transferOperationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
       transferState: 'PENDING',

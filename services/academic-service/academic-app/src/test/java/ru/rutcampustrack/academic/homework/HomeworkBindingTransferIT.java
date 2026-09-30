@@ -10,10 +10,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
+import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
 import ru.rutcampustrack.academic.entity.Homework;
+import ru.rutcampustrack.academic.event.HomeworkBindingArchivedEventConsumer;
 import ru.rutcampustrack.academic.event.LessonTransferEventConsumer;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
+import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
+import ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -38,10 +42,14 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
     @Autowired private HomeworkPublicationPersistence publicationPersistence;
     @Autowired private HomeworkRepository homeworkRepository;
     @Autowired private LessonTransferEventConsumer transferConsumer;
+    @Autowired private HomeworkBindingArchivedEventConsumer archiveConsumer;
+    @Autowired private AcademicSemesterArchiveBarrierTransaction archiveBarrier;
+    @Autowired private SemesterArchiveCommandTransaction archiveCommands;
     @Autowired private ObjectMapper objectMapper;
 
     private final List<UUID> eventIds = new ArrayList<>();
     private final List<UUID> operationIds = new ArrayList<>();
+    private final List<UUID> archiveOperationIds = new ArrayList<>();
     private final List<Long> bindingIds = new ArrayList<>();
     private final List<Long> activeSemesterIds = new ArrayList<>();
     private long actorId;
@@ -53,6 +61,7 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
     void setUpFixture() {
         eventIds.clear();
         operationIds.clear();
+        archiveOperationIds.clear();
         bindingIds.clear();
         activeSemesterIds.clear();
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
@@ -82,10 +91,27 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
             for (UUID eventId : eventIds) {
                 jdbcTemplate.update("DELETE FROM event_consumer_processed WHERE consumer_id = ? AND event_id = ?",
                         CONSUMER_ID, eventId);
+                jdbcTemplate.update("DELETE FROM event_consumer_processed WHERE consumer_id = ? AND event_id = ?",
+                        HomeworkBindingArchivedEventConsumer.CONSUMER_ID, eventId);
             }
             for (UUID operationId : operationIds) {
                 jdbcTemplate.update("DELETE FROM academic_outbox WHERE payload #>> '{payload,operation_id}' = ?",
                         operationId.toString());
+            }
+            for (UUID operationId : archiveOperationIds) {
+                jdbcTemplate.update("DELETE FROM academic_semester_archive_publication_admissions WHERE operation_id = ?",
+                        operationId);
+                jdbcTemplate.update("DELETE FROM academic_outbox WHERE payload #>> '{payload,operation_id}' = ?",
+                        operationId.toString());
+                jdbcTemplate.update("DELETE FROM semester_archive_operations WHERE operation_id = ?", operationId);
+            }
+            jdbcTemplate.update("DELETE FROM academic_semester_archive_barriers WHERE semester_id = ?", semesterId);
+            jdbcTemplate.update("UPDATE semesters SET is_active = false, is_archived = false, "
+                    + "archive_transition = 'NONE', state_version = 0, archive_release_pending = false WHERE id = ?",
+                    semesterId);
+            for (UUID eventId : eventIds) {
+                jdbcTemplate.update("DELETE FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?",
+                        eventId);
             }
             for (Long bindingId : bindingIds) {
                 jdbcTemplate.update("""
@@ -93,6 +119,7 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
                          WHERE payload #>> '{payload,homework_id}' IN
                                (SELECT id::text FROM homeworks WHERE binding_id = ?)
                         """, bindingId);
+                jdbcTemplate.update("DELETE FROM homework_binding_archives WHERE binding_id = ?", bindingId);
                 jdbcTemplate.update("DELETE FROM homework_binding_transfer_markers WHERE binding_id = ?", bindingId);
                 jdbcTemplate.update("DELETE FROM homeworks WHERE binding_id = ?", bindingId);
             }
@@ -224,6 +251,69 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
                 """, Integer.class, pendingFirstOperation, pendingSecondOperation)).isEqualTo(2);
     }
 
+    @Test
+    void completedEmptyTransferCancellationPreservesTransferAndTerminalEventIdentities() {
+        long bindingId = nextBindingId();
+        bindingIds.add(bindingId);
+        UUID bindingRequestKey = UUID.randomUUID();
+        byte[] bindingHash = hashByte(23);
+        long occurrenceId = 701L;
+        Map<String, Object> transferEvent = event(bindingId, null, actorId,
+                bindingRequestKey, bindingHash, "PENDING", 1, 1, "e", 20001, 20002,
+                occurrenceId, SOURCE_DATE, 1, MIDDLE_DATE, 2);
+        UUID transferSourceEventId = UUID.fromString((String) transferEvent.get("event_id"));
+        transferConsumer.onEvent(transferEvent);
+
+        long adminId = jdbcTemplate.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        var archive = archiveCommands.startOrReplay(
+                semesterId, adminId, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
+        archiveOperationIds.add(archive.getOperationId());
+        AcademicSemesterArchiveBarrierTransaction.BindingResolution resolution =
+                archiveBarrier.preparePendingBindingResolution(archive.getOperationId(), semesterId,
+                        archive.getStateVersion(), bindingId, occurrenceId, actorId,
+                        bindingRequestKey, bindingHash, 1L);
+        assertThat(resolution.kind()).isEqualTo(
+                AcademicSemesterArchiveBarrierTransaction.BindingResolutionKind.CANCEL_UNPUBLISHED);
+
+        UUID cancellationEventId = UUID.randomUUID();
+        archiveBarrier.recordCancellationEvent(archive.getOperationId(), semesterId,
+                archive.getStateVersion(), bindingId, bindingRequestKey, occurrenceId,
+                1L, cancellationEventId);
+        Map<String, Object> cancellationEvent = archivedBindingEvent(
+                bindingId, occurrenceId, actorId, bindingRequestKey, cancellationEventId, semesterId);
+        archiveConsumer.onEvent(cancellationEvent);
+        archiveConsumer.onEvent(cancellationEvent);
+
+        Map<String, Object> marker = jdbcTemplate.queryForMap("""
+                SELECT state, source_event_id, batch_index, operation_id
+                  FROM homework_binding_transfer_markers WHERE binding_id = ?
+                """, bindingId);
+        assertThat(marker.get("state")).isEqualTo("CANCELLED_UNPUBLISHED");
+        assertThat(marker.get("source_event_id")).isEqualTo(transferSourceEventId);
+        assertThat(marker.get("source_event_id")).isNotEqualTo(cancellationEventId);
+        assertThat(marker.get("batch_index")).isEqualTo(0);
+
+        Map<String, Object> admission = jdbcTemplate.queryForMap("""
+                SELECT source_event_id, terminal_event_id, resolution_state, consumed_at
+                  FROM academic_semester_archive_publication_admissions
+                 WHERE operation_id = ? AND binding_id = ?
+                """, archive.getOperationId(), bindingId);
+        assertThat(admission.get("source_event_id")).isEqualTo(transferSourceEventId);
+        assertThat(admission.get("terminal_event_id")).isEqualTo(cancellationEventId);
+        assertThat(admission.get("source_event_id")).isNotEqualTo(admission.get("terminal_event_id"));
+        assertThat(admission.get("resolution_state")).isEqualTo("CANCELLED_UNPUBLISHED");
+        assertThat(admission.get("consumed_at")).isNotNull();
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT count(*) FROM lesson_transfer_receipts
+                 WHERE source_event_id = ? AND result = 'APPLIED'
+                """, Long.class, transferSourceEventId)).isEqualTo(1L);
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT count(*) FROM academic_semester_archive_effect_receipts
+                 WHERE source_event_id = ? AND event_type = 'homework.binding.archived'
+                   AND state = 'APPLIED'
+                """, Long.class, cancellationEventId)).isEqualTo(1L);
+    }
+
     private long nextBindingId() {
         return ThreadLocalRandom.current().nextLong(10_000_000_000L, 9_000_000_000_000L);
     }
@@ -276,6 +366,30 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         envelope.put("event_id", eventId.toString());
         envelope.put("event_version", 1);
         envelope.put("occurred_at", "2026-09-29T12:00:00Z");
+        envelope.put("source", "schedule-service");
+        envelope.put("trace_id", UUID.randomUUID().toString());
+        envelope.put("payload", payload);
+        return envelope;
+    }
+
+    private Map<String, Object> archivedBindingEvent(long bindingId, long occurrenceId,
+                                                     long bindingActor, UUID requestKey,
+                                                     UUID eventId, long eventSemesterId) {
+        eventIds.add(eventId);
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("binding_id", bindingId);
+        payload.put("actor_id", bindingActor);
+        payload.put("request_key", requestKey.toString());
+        payload.put("occurrence_id", occurrenceId);
+        payload.put("lesson_id", 20001L);
+        payload.put("semester_id", eventSemesterId);
+        payload.put("homework_id", null);
+        payload.put("binding_revision", 2L);
+        Map<String, Object> envelope = new LinkedHashMap<>();
+        envelope.put("event_type", "homework.binding.archived");
+        envelope.put("event_id", eventId.toString());
+        envelope.put("event_version", 1);
+        envelope.put("occurred_at", "2026-09-30T12:00:00Z");
         envelope.put("source", "schedule-service");
         envelope.put("trace_id", UUID.randomUUID().toString());
         envelope.put("payload", payload);

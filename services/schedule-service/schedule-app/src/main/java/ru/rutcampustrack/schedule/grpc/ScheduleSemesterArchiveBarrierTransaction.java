@@ -1,7 +1,8 @@
 package ru.rutcampustrack.schedule.grpc;
 
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.event.HomeworkBindingArchivedEvent;
@@ -259,7 +260,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
     }
 
     private void setCancellationContext(UUID operationId, long stateVersion, BindingSnapshot binding) {
-        jdbc.queryForObject("""
+        jdbc.query("""
                 SELECT set_config('rutcampustrack.archive_cancel_operation_id', ?, TRUE),
                        set_config('rutcampustrack.archive_cancel_state_version', ?, TRUE),
                        set_config('rutcampustrack.archive_cancel_binding_id', ?, TRUE),
@@ -268,7 +269,12 @@ public class ScheduleSemesterArchiveBarrierTransaction {
                        set_config('rutcampustrack.archive_cancel_request_key', ?, TRUE),
                        set_config('rutcampustrack.archive_cancel_payload_hash', ?, TRUE),
                        set_config('rutcampustrack.archive_cancel_revision', ?, TRUE)
-                """, String.class, operationId.toString(), Long.toString(stateVersion),
+                """, (ResultSetExtractor<Void>) resultSet -> {
+                    if (!resultSet.next()) {
+                        throw new IllegalStateException("Schedule cancellation context was not installed");
+                    }
+                    return null;
+                }, operationId.toString(), Long.toString(stateVersion),
                 Long.toString(binding.bindingId()), Long.toString(binding.occurrenceId()),
                 Long.toString(binding.actorId()), binding.requestKey().toString(),
                 java.util.HexFormat.of().formatHex(binding.payloadHash()), Long.toString(binding.revision()));

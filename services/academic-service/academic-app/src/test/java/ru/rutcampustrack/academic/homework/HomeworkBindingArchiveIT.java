@@ -8,14 +8,22 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
+import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand;
+import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantStatus;
 import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.event.HomeworkBindingArchivedEventConsumer;
 import ru.rutcampustrack.academic.exception.ConflictException;
+import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
+import ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction;
+import ru.rutcampustrack.academic.semester.SemesterArchiveCoordinator;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
@@ -37,6 +45,11 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
 
@@ -52,8 +65,13 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
     @Autowired private HomeworkNotificationJob notificationJob;
     @Autowired private HomeworkService homeworkService;
     @Autowired private RequestContext requestContext;
+    @Autowired private SemesterArchiveCommandTransaction archiveCommands;
+    @Autowired private SemesterArchiveCoordinator semesterArchiveCoordinator;
+    @Autowired private AcademicSemesterArchiveBarrierTransaction archiveBarrier;
+    @MockitoBean private ScheduleGrpcClient scheduleGrpcClient;
 
     private final List<UUID> eventIds = new ArrayList<>();
+    private final List<UUID> archiveOperationIds = new ArrayList<>();
 
     private long bindingId;
     private long actorId;
@@ -69,6 +87,7 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
     @BeforeEach
     void setUpFixture() {
         eventIds.clear();
+        archiveOperationIds.clear();
         previousActiveSemesterIds.clear();
         bindingId = ThreadLocalRandom.current().nextLong(1_000_000_000_000L, 1_000_000_000_000_000L);
         requestKey = UUID.randomUUID();
@@ -109,7 +128,20 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
                 jdbcTemplate.update(
                         "DELETE FROM event_consumer_processed WHERE consumer_id = ? AND event_id = ?",
                         CONSUMER_ID, eventId);
+                jdbcTemplate.update("DELETE FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?",
+                        eventId);
             }
+            for (UUID operationId : archiveOperationIds) {
+                jdbcTemplate.update("DELETE FROM academic_semester_archive_publication_admissions WHERE operation_id = ?",
+                        operationId);
+                jdbcTemplate.update("DELETE FROM academic_outbox WHERE payload #>> '{payload,operation_id}' = ?",
+                        operationId.toString());
+                jdbcTemplate.update("DELETE FROM semester_archive_operations WHERE operation_id = ?", operationId);
+            }
+            jdbcTemplate.update("DELETE FROM academic_semester_archive_barriers WHERE semester_id = ?", semesterId);
+            jdbcTemplate.update("UPDATE semesters SET is_active = false, is_archived = false, "
+                    + "archive_transition = 'NONE', state_version = 0, archive_release_pending = false WHERE id = ?",
+                    semesterId);
             jdbcTemplate.update(
                     "DELETE FROM academic_outbox WHERE "
                             + "payload -> 'payload' ->> 'homework_id' "
@@ -121,7 +153,6 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
             jdbcTemplate.update("DELETE FROM homeworks WHERE binding_id = ?", bindingId);
             jdbcTemplate.update("DELETE FROM subject_lesson_types WHERE subject_id = ?", subjectId);
             jdbcTemplate.update("DELETE FROM subjects WHERE id = ?", subjectId);
-            jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE id = ?", semesterId);
             jdbcTemplate.update("DELETE FROM semesters WHERE id = ?", semesterId);
             for (Long previousActiveSemesterId : previousActiveSemesterIds) {
                 jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?",
@@ -149,6 +180,155 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         archiveConsumer.onEvent(event);
         assertThat(storedPublicationState()).isEqualTo("ARCHIVED");
         assertThat(processedCount(eventIds.getFirst())).isEqualTo(1);
+    }
+
+    @Test
+    void scheduledRetryRedrivesMaterializedPendingPublicationAfterScheduleAlreadyReady() {
+        Homework pending = persistPending();
+        UUID commandKey = UUID.randomUUID();
+        var operation = archiveCommands.startOrReplay(
+                semesterId, adminId, commandKey, SemesterArchiveAction.ARCHIVE);
+        archiveOperationIds.add(operation.getOperationId());
+
+        var ready = ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierResponse.newBuilder()
+                .setOperationId(operation.getOperationId().toString())
+                .setSemesterId(semesterId)
+                .setStateVersion(operation.getStateVersion())
+                .setState(ru.rutcampustrack.schedule.grpc.SemesterArchiveParticipantState
+                        .SEMESTER_ARCHIVE_PARTICIPANT_READY)
+                .build();
+        when(scheduleGrpcClient.setSemesterArchiveBarrier(operation.getOperationId(), semesterId,
+                operation.getStateVersion(), SemesterArchiveParticipantCommand.PREPARE_ARCHIVE))
+                .thenReturn(ready);
+        when(scheduleGrpcClient.reconcileArchiveHomeworkBinding(
+                eq(operation.getOperationId()), eq(semesterId), eq(operation.getStateVersion()),
+                eq(bindingId), eq(0L), eq(actorId), eq(requestKey), any(byte[].class), eq(0L),
+                eq(pending.getId())))
+                .thenReturn(ready);
+
+        semesterArchiveCoordinator.advance(operation.getOperationId());
+
+        assertThat(storedPublicationState()).isEqualTo("ACTIVE");
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT participant_state FROM academic_semester_archive_barriers WHERE semester_id = ?
+                """, String.class, semesterId)).isEqualTo("READY");
+        assertThat(archiveCommands.find(operation.getOperationId()).getAcademic())
+                .isEqualTo(SemesterArchiveParticipantStatus.READY);
+        verify(scheduleGrpcClient, times(1)).reconcileArchiveHomeworkBinding(
+                eq(operation.getOperationId()), eq(semesterId), eq(operation.getStateVersion()),
+                eq(bindingId), eq(0L), eq(actorId), eq(requestKey), any(byte[].class), eq(0L),
+                eq(pending.getId()));
+    }
+
+    @Test
+    void noContentCancellationTombstoneSurvivesRestoreAndIsNotRecapturedByNextArchive() {
+        var firstArchive = archiveCommands.startOrReplay(
+                semesterId, adminId, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
+        archiveOperationIds.add(firstArchive.getOperationId());
+        long occurrenceId = bindingId + 1;
+        long scheduleRevision = 1L;
+
+        AcademicSemesterArchiveBarrierTransaction.BindingResolution cancellation =
+                archiveBarrier.preparePendingBindingResolution(firstArchive.getOperationId(), semesterId,
+                        firstArchive.getStateVersion(), bindingId, occurrenceId, actorId,
+                        requestKey, payloadHash, scheduleRevision);
+        assertThat(cancellation.kind()).isEqualTo(
+                AcademicSemesterArchiveBarrierTransaction.BindingResolutionKind.CANCEL_UNPUBLISHED);
+        assertThat(jdbcTemplate.queryForMap("""
+                SELECT actor_id, request_key, resolution_state FROM academic_semester_archive_publication_admissions
+                 WHERE operation_id = ? AND binding_id = ?
+                """, firstArchive.getOperationId(), bindingId))
+                .containsEntry("actor_id", actorId)
+                .containsEntry("request_key", requestKey)
+                .containsEntry("resolution_state", "CANCEL_REQUESTED");
+        assertThat(archiveBarrier.preparePendingBindingResolution(firstArchive.getOperationId(), semesterId,
+                firstArchive.getStateVersion(), bindingId, occurrenceId, actorId,
+                requestKey, payloadHash, scheduleRevision).kind()).isEqualTo(
+                AcademicSemesterArchiveBarrierTransaction.BindingResolutionKind.CANCEL_UNPUBLISHED);
+        assertThatThrownBy(this::persistPending).isInstanceOf(ConflictException.class);
+
+        UUID terminalEventId = UUID.randomUUID();
+        archiveBarrier.recordCancellationEvent(firstArchive.getOperationId(), semesterId,
+                firstArchive.getStateVersion(), bindingId, requestKey, occurrenceId,
+                scheduleRevision, terminalEventId);
+        archiveBarrier.recordCancellationEvent(firstArchive.getOperationId(), semesterId,
+                firstArchive.getStateVersion(), bindingId, requestKey, occurrenceId,
+                scheduleRevision, terminalEventId);
+        Map<String, Object> event = archiveEvent(null, actorId, requestKey, terminalEventId);
+        archiveConsumer.onEvent(event);
+        archiveConsumer.onEvent(event);
+
+        Map<String, Object> terminal = jdbcTemplate.queryForMap("""
+                SELECT resolution_state, terminal_event_id, schedule_occurrence_id, schedule_revision, consumed_at
+                  FROM academic_semester_archive_publication_admissions
+                 WHERE operation_id = ? AND binding_id = ?
+                """, firstArchive.getOperationId(), bindingId);
+        assertThat(terminal.get("resolution_state")).isEqualTo("CANCELLED_UNPUBLISHED");
+        assertThat(terminal.get("terminal_event_id")).isEqualTo(terminalEventId);
+        assertThat(terminal.get("schedule_occurrence_id")).isEqualTo(occurrenceId);
+        assertThat(terminal.get("schedule_revision")).isEqualTo(scheduleRevision);
+        assertThat(terminal.get("consumed_at")).isNotNull();
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT count(*) FROM homework_binding_archives
+                 WHERE binding_id = ? AND semester_id = ? AND source_event_id = ?
+                """, Long.class, bindingId, semesterId, terminalEventId)).isEqualTo(1L);
+
+        assertThat(archiveBarrier.sealArchive(firstArchive.getOperationId(), semesterId,
+                firstArchive.getStateVersion())).isNull();
+        archiveCommands.recordParticipant(firstArchive.getOperationId(),
+                SemesterArchiveCommandTransaction.Participant.ACADEMIC,
+                SemesterArchiveParticipantStatus.READY, null);
+        archiveCommands.recordParticipant(firstArchive.getOperationId(),
+                SemesterArchiveCommandTransaction.Participant.SCHEDULE,
+                SemesterArchiveParticipantStatus.READY, null);
+        archiveCommands.recordParticipant(firstArchive.getOperationId(),
+                SemesterArchiveCommandTransaction.Participant.ATTENDANCE,
+                SemesterArchiveParticipantStatus.READY, null);
+        archiveCommands.completeArchive(firstArchive.getOperationId());
+
+        var restore = archiveCommands.startOrReplay(
+                semesterId, adminId, UUID.randomUUID(), SemesterArchiveAction.RESTORE);
+        archiveOperationIds.add(restore.getOperationId());
+        archiveCommands.recordParticipant(restore.getOperationId(),
+                SemesterArchiveCommandTransaction.Participant.SCHEDULE,
+                SemesterArchiveParticipantStatus.PREPARED_RESTORE, null);
+        archiveCommands.recordParticipant(restore.getOperationId(),
+                SemesterArchiveCommandTransaction.Participant.ATTENDANCE,
+                SemesterArchiveParticipantStatus.PREPARED_RESTORE, null);
+        archiveCommands.beginRestoreRelease(restore.getOperationId());
+        archiveBarrier.releaseRestore(restore.getOperationId(), semesterId, restore.getStateVersion());
+        archiveCommands.recordParticipant(restore.getOperationId(),
+                SemesterArchiveCommandTransaction.Participant.SCHEDULE,
+                SemesterArchiveParticipantStatus.RELEASED, null);
+        archiveCommands.recordParticipant(restore.getOperationId(),
+                SemesterArchiveCommandTransaction.Participant.ACADEMIC,
+                SemesterArchiveParticipantStatus.RELEASED, null);
+        archiveCommands.recordParticipant(restore.getOperationId(),
+                SemesterArchiveCommandTransaction.Participant.ATTENDANCE,
+                SemesterArchiveParticipantStatus.RELEASED, null);
+        archiveCommands.completeRestoreRelease(restore.getOperationId());
+
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT is_active FROM semesters WHERE id = ?", Boolean.class, semesterId)).isFalse();
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT is_archived FROM semesters WHERE id = ?", Boolean.class, semesterId)).isFalse();
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT archive_release_pending FROM semesters WHERE id = ?", Boolean.class, semesterId)).isFalse();
+        Homework lateRetry = persistPending();
+        assertThat(lateRetry.getPublicationState().name()).isEqualTo("ARCHIVED");
+
+        var nextArchive = archiveCommands.startOrReplay(
+                semesterId, adminId, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
+        archiveOperationIds.add(nextArchive.getOperationId());
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT count(*) FROM academic_semester_archive_publication_admissions
+                 WHERE operation_id = ? AND binding_id = ?
+                """, Long.class, nextArchive.getOperationId(), bindingId)).isZero();
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT count(*) FROM academic_semester_archive_publication_admissions
+                 WHERE operation_id = ? AND binding_id = ? AND resolution_state = 'CANCELLED_UNPUBLISHED'
+                   AND terminal_event_id = ? AND consumed_at IS NOT NULL
+                """, Long.class, firstArchive.getOperationId(), bindingId, terminalEventId)).isEqualTo(1L);
     }
 
     @Test
@@ -392,6 +572,7 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         payload.put("binding_id", bindingId);
         payload.put("actor_id", eventActorId);
         payload.put("request_key", eventRequestKey.toString());
+        payload.put("semester_id", semesterId);
         payload.put("occurrence_id", bindingId + 1);
         payload.put("lesson_id", bindingId + 2);
         payload.put("homework_id", homeworkId);

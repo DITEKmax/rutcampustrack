@@ -194,7 +194,7 @@ public class AcademicSemesterArchiveBarrierTransaction {
         }
 
         List<Map<String, Object>> admissionRows = jdbc.queryForList("""
-                SELECT payload_hash, source_event_id, admitted_homework_id, consumed_at,
+                SELECT actor_id, request_key, payload_hash, source_event_id, admitted_homework_id, consumed_at,
                        resolution_state, terminal_event_id, schedule_occurrence_id, schedule_revision
                   FROM academic_semester_archive_publication_admissions
                  WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
@@ -212,7 +212,7 @@ public class AcademicSemesterArchiveBarrierTransaction {
                     """, operationId, stateVersion, semesterId, bindingId, actorId,
                     requestKey, payloadHash, homeworkId);
             admission = jdbc.queryForMap("""
-                    SELECT payload_hash, source_event_id, admitted_homework_id, consumed_at,
+                    SELECT actor_id, request_key, payload_hash, source_event_id, admitted_homework_id, consumed_at,
                            resolution_state, terminal_event_id, schedule_occurrence_id, schedule_revision
                       FROM academic_semester_archive_publication_admissions
                      WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?

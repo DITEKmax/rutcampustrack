@@ -1,5 +1,6 @@
-import { createRenderer, h, nextTick, ref, type App, type PropType, type SetupContext } from 'vue'
+import { createRenderer, h, nextTick, reactive, ref, type App, type PropType, type Ref, type SetupContext } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import type { StudentApi } from '../../api/student-client'
 import { CheckinCommandRecovery } from '../../domain/checkin'
 import type { StudentCheckinAck, StudentCheckinCommand, StudentRequestDetail, StudentRequestOptions, StudentRequestPage, StudentRequestSummary, StudentToday, StudentHomework } from '../../api/types'
@@ -10,13 +11,31 @@ import { studentFeatureScopeIdentity, studentOfflineScopeKey, type StudentFeatur
 vi.mock('../../features/today/TodayScreen.vue', () => ({
   default: {
     name: 'OwnerTestTodayScreen',
+    props: ['today', 'offline', 'readOnly'],
     emits: ['navigate'],
-    setup(_props: unknown, { emit }: SetupContext) {
-      return () => h('button', {
-        class: 'test-enter-more',
-        type: 'button',
-        onClick: () => emit('navigate', 'more'),
-      }, 'Ещё')
+    setup(props: { today: StudentToday | null; offline: boolean; readOnly: boolean }, { emit }: SetupContext) {
+      return () => h('section', [
+        h('output', { class: 'test-today-data' }, JSON.stringify(props.today ?? null)),
+        h('output', { class: 'test-today-readonly' }, String(props.readOnly)),
+        h('button', {
+          class: 'test-enter-more',
+          type: 'button',
+          onClick: () => emit('navigate', 'more'),
+        }, 'Ещё'),
+        h('button', { class: 'test-enter-homework', onClick: () => emit('navigate', 'homework') }, 'ДЗ'),
+      ])
+    },
+  },
+}))
+
+vi.mock('../../features/homework/HomeworkScreen.vue', () => ({
+  default: {
+    props: ['homework', 'offline', 'readOnly'],
+    setup(props: { homework: StudentHomework | null; offline: boolean; readOnly: boolean }) {
+      return () => h('section', [
+        h('output', { class: 'test-homework-data' }, JSON.stringify(props.homework ?? null)),
+        h('output', { class: 'test-homework-offline' }, String(props.offline)),
+      ])
     },
   },
 }))
@@ -115,10 +134,14 @@ vi.mock('./MobileShell.vue', () => ({
 }))
 
 const refreshToday = vi.hoisted(() => vi.fn())
+const ownerQueryData = vi.hoisted(() => ({
+  today: null as Ref<StudentToday | null> | null,
+  homework: null as Ref<StudentHomework | null> | null,
+}))
 
 vi.mock('../../features/today/use-today', () => ({
   useToday: () => ({
-    query: { data: ref(null), error: ref(null), isPending: ref(false) },
+    query: { data: ownerQueryData.today = ref<StudentToday | null>(null), error: ref(null), isPending: ref(false) },
     mutation: { isPending: ref(false), variables: ref(undefined), mutateAsync: vi.fn() },
     refresh: refreshToday,
   }),
@@ -126,7 +149,8 @@ vi.mock('../../features/today/use-today', () => ({
 
 vi.mock('../../features/homework/use-homework', () => ({
   useHomework: () => ({
-    query: { data: ref(null), error: ref(null), isPending: ref(false), refetch: vi.fn() },
+    query: { data: ownerQueryData.homework = ref<StudentHomework | null>(null), error: ref(null), isPending: ref(false), refetch: vi.fn() },
+    range: ref(null),
     submitCompletion: vi.fn(),
     retryCompletion: vi.fn(() => null),
     isHistorical: ref(false),
@@ -243,10 +267,13 @@ async function settleOwnerTestRender(): Promise<void> {
 }
 
 let mountedOwnerTestApps: App[] = []
+let ownerTestQueryClients: QueryClient[] = []
 
 afterEach(() => {
   for (const app of mountedOwnerTestApps) app.unmount()
   mountedOwnerTestApps = []
+  for (const client of ownerTestQueryClients) client.clear()
+  ownerTestQueryClients = []
   refreshToday.mockReset()
 })
 
@@ -349,9 +376,9 @@ function requestPage(content: StudentRequestSummary[]): StudentRequestPage {
   return { content, page: 0, size: 10, totalElements: content.length, totalPages: 1 }
 }
 
-function mountOwnerTest(api: StudentApi): OwnerTestHostNode {
+function mountOwnerTest(api: StudentApi, overrides: Record<string, unknown> = {}): OwnerTestHostNode {
   const root = ownerTestElement('root')
-  const app = ownerTestRenderer.createApp(StudentFeatureOwner, {
+  const app = ownerTestRenderer.createApp({ render: () => h(StudentFeatureOwner, {
     api,
     scope,
     offline: false,
@@ -360,11 +387,47 @@ function mountOwnerTest(api: StudentApi): OwnerTestHostNode {
       geo: { kind: 'COORDINATES', latitude: 55.75, longitude: 37.62 },
     }),
     openMaterial: () => undefined,
-  })
+    ...overrides,
+  }) })
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  app.use(VueQueryPlugin, { queryClient })
+  ownerTestQueryClients.push(queryClient)
   app.mount(root)
   mountedOwnerTestApps.push(app)
   return root
 }
+
+describe('StudentFeatureOwner offline read models', () => {
+  it('keeps saved Today/HW read-only offline and waits for fresh feeds after reconnect', async () => {
+    const savedToday = { serverNow: 'saved-today', lessons: [] } as unknown as StudentToday
+    const savedHomework = { serverNow: 'saved-homework', items: [] } as unknown as StudentHomework
+    const props = reactive({ offline: true, readOnly: true, todayFallback: savedToday, homeworkFallback: savedHomework })
+    const root = mountOwnerTest({} as StudentApi, props)
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-today-data')).toContain('saved-today')
+    expect(ownerTestOutput(root, 'test-today-readonly')).toBe('true')
+
+    props.offline = false
+    props.readOnly = false
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-today-data')).toBe('null')
+    ownerQueryData.today!.value = { serverNow: 'fresh-today', lessons: [] } as unknown as StudentToday
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-today-data')).toContain('fresh-today')
+
+    clickOwnerTestButton(root, 'test-enter-homework')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-homework-data')).toBe('null')
+    ownerQueryData.homework!.value = { serverNow: 'fresh-homework', items: [] } as unknown as StudentHomework
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-homework-data')).toContain('fresh-homework')
+    props.offline = true
+    props.readOnly = true
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-homework-data')).toContain('saved-homework')
+    expect(ownerTestOutput(root, 'test-homework-offline')).toBe('true')
+  })
+})
 
 describe('StudentFeatureOwner requests route', () => {
   it('refreshes Today after a successful local request cancellation', async () => {

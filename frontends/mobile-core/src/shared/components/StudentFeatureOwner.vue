@@ -258,10 +258,10 @@ watch(() => route.value, (value, previous) => {
 
 const displayToday = computed(() => offline.value
   ? props.todayFallback
-  : today.query.data.value ?? props.todayFallback)
+  : today.query.data.value ?? null)
 const displayHomework = computed(() => offline.value
   ? props.homeworkFallback
-  : homework.query.data.value ?? props.homeworkFallback)
+  : homework.query.data.value ?? null)
 const todayError = computed(() => {
   if (displayToday.value) return null
   const value = today.query.error.value

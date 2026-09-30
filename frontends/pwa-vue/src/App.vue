@@ -441,8 +441,13 @@ function isPersistedSnapshot(value: SemesterSnapshot | null): value is SemesterS
     && persisted.userId === value.ownerId
     && persisted.activeRole === 'STUDENT'
     && typeof persisted.semesterId === 'string'
-    && persisted.semesterId === value.schedule.semester.id
+    && persisted.semesterId === value.schedule.semester?.id
     && (persisted.groupId === null || typeof persisted.groupId === 'string')
+    && value.scopeKey === studentOfflineScopeKey({
+      ...persisted,
+      sessionId: null, sessionVersion: null, rolesVersion: null,
+      readOnly: true, resetGeneration: 0,
+    })
 }
 
 async function loadOfflineSnapshot(): Promise<boolean> {
@@ -793,6 +798,9 @@ async function activateCandidate(candidate: StudentCandidate): Promise<void> {
   const needsFreshOwner = !sameOwner || api.value === null
   let existing: SemesterSnapshot | null = null
   try {
+    const cleanup = await snapshotStore.clearMismatchedCurrent(studentOfflineScopeKey(nextScope))
+    assertCandidateCurrent(candidate.generation)
+    if (cleanup) observeCleanupResult(cleanup)
     existing = await snapshotStore.read(candidate.session.user.id, studentOfflineScopeKey(nextScope))
   } catch {
     // Storage is an offline enhancement. An unavailable IDB/localStorage must

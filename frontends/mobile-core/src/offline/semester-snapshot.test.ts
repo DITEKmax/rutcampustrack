@@ -117,6 +117,14 @@ function installEnvironment(autoResolveOpen: boolean): FakeEnvironment {
         onerror: null as Handler,
         onabort: null as Handler,
         objectStore: () => ({
+          get: (ownerId: string) => {
+            const request = new FakeRequest()
+            queueMicrotask(() => {
+              request.resolve(records.get(ownerId))
+              transaction.oncomplete?.(new Event('complete'))
+            })
+            return request
+          },
           put: (value: unknown) => {
             database.putCalls += 1
             const request = new FakeRequest()
@@ -189,6 +197,42 @@ function setup(autoResolveOpen: boolean): FakeEnvironment {
 }
 
 describe('SemesterSnapshotStore write fence', () => {
+  it('does not recover the previous group when a confirmed new context schedule request fails', async () => {
+    setup(true)
+    const store = new SemesterSnapshotStore()
+    const nextScopeKey = JSON.stringify(['student-read-model-v1', '42', 'STUDENT', '18', '9'])
+    // Confirming the new context must retire the old pointer before any
+    // schedule request. A new runtime then cannot recover the old group.
+    await store.clearMismatchedCurrent(nextScopeKey)
+    await expect(store.read('42', nextScopeKey)).resolves.toBeNull()
+    await expect(Promise.reject(new TypeError('schedule network unavailable'))).rejects.toThrow()
+    await expect(new SemesterSnapshotStore().readCurrent()).resolves.toBeNull()
+  })
+
+  it.each([
+    ['account', '43', 'STUDENT', '17', '9'],
+    ['role', '42', 'HEADMAN', '17', '9'],
+    ['semester', '42', 'STUDENT', '17', '10'],
+  ])('retires an incompatible %s partition before loading replacement data', async (_name, userId, role, groupId, semesterId) => {
+    setup(true)
+    const store = new SemesterSnapshotStore()
+    const result = await store.clearMismatchedCurrent(JSON.stringify(['student-read-model-v1', userId, role, groupId, semesterId]))
+    expect(result?.safeOffline).toBe(true)
+    await expect(new SemesterSnapshotStore().readCurrent()).resolves.toBeNull()
+  })
+
+  it('retains an exact partition and retires its pointer even if record deletion fails', async () => {
+    const environment = setup(true)
+    const store = new SemesterSnapshotStore()
+    const saved = makeSnapshot('42', '2026-09-08T08:30:00Z')
+    await expect(store.clearMismatchedCurrent(saved.scopeKey!)).resolves.toBeNull()
+    await expect(store.readCurrent()).resolves.toEqual(saved)
+    environment.database.controls.deleteFailures = 1
+    const result = await store.clearMismatchedCurrent('another-context')
+    expect(result?.retryRequired).toBe(true)
+    expect(environment.database.records.has('42')).toBe(true)
+    await expect(new SemesterSnapshotStore().readCurrent()).resolves.toBeNull()
+  })
   it('skips a write that was invalidated while IDB open was pending', async () => {
     const environment = setup(false)
     const before = environment.database.records.get('42')

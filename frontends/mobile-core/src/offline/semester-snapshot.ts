@@ -92,6 +92,27 @@ export class SemesterSnapshotStore {
     })
   }
 
+  /** Retire the previous partition as soon as a new student context is confirmed,
+   * before its first schedule request can fail. Keep a matching offline record. */
+  clearMismatchedCurrent(expectedScopeKey: string): Promise<SnapshotCleanupResult | null> {
+    this.invalidatePendingWrites()
+    const capturedGeneration = ++this.lifecycleGeneration
+    return this.enqueue(async () => {
+      const ownerId = this.readCurrentOwner()
+      if (!ownerId) return null
+      let snapshot: SemesterSnapshot | null = null
+      try {
+        snapshot = await this.readByOwner(ownerId)
+      } catch {
+        // An unreadable record cannot establish an offline context. Still
+        // attempt pointer retirement independently of IndexedDB cleanup.
+      }
+      if (capturedGeneration !== this.lifecycleGeneration) return null
+      if (snapshot?.scopeKey === expectedScopeKey) return null
+      return this.performClear(ownerId, capturedGeneration)
+    })
+  }
+
   write(snapshot: SemesterSnapshot): Promise<void> {
     const capturedGeneration = this.lifecycleGeneration
     const capturedWriteGeneration = this.writeGeneration

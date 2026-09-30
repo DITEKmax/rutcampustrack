@@ -86,6 +86,10 @@ public class SemesterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Semester", "id", id));
     }
 
+    public Optional<Semester> findSemesterByIdUncached(Long id) {
+        return semesterRepository.findByIdUncached(id);
+    }
+
     public Page<Semester> listSemesters(Pageable pageable) {
         return semesterRepository.findAll(pageable);
     }

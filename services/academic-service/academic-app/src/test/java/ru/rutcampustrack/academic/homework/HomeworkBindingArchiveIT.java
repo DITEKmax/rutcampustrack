@@ -53,8 +53,6 @@ import static org.mockito.Mockito.times;
 
 class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
 
-    private static final String CONSUMER_ID = "academic-homework-archive";
-
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private PlatformTransactionManager transactionManager;
     @Autowired private Clock clock;
@@ -125,9 +123,9 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         }
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
             for (UUID eventId : eventIds) {
-                jdbcTemplate.update(
-                        "DELETE FROM event_consumer_processed WHERE consumer_id = ? AND event_id = ?",
-                        CONSUMER_ID, eventId);
+                jdbcTemplate.update("DELETE FROM academic_outbox WHERE event_type = 'semester.archive.effect.ack' "
+                                + "AND payload #>> '{payload,source_event_id}' = ?",
+                        eventId.toString());
                 jdbcTemplate.update("DELETE FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?",
                         eventId);
             }
@@ -179,7 +177,7 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
 
         archiveConsumer.onEvent(event);
         assertThat(storedPublicationState()).isEqualTo("ARCHIVED");
-        assertThat(processedCount(eventIds.getFirst())).isEqualTo(1);
+        assertAppliedArchiveEffectReceiptAndAcknowledgement(eventIds.getFirst(), 2);
     }
 
     @Test
@@ -348,7 +346,7 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
                 .isInstanceOf(ConflictException.class);
 
         assertThat(storedPublicationState()).isEqualTo("ARCHIVED");
-        assertThat(processedCount(conflictingEventId)).isZero();
+        assertThat(archiveEffectReceiptCount(conflictingEventId)).isZero();
         assertThat(markerCount()).isEqualTo(1);
     }
 
@@ -380,8 +378,8 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         assertThatThrownBy(() -> archiveConsumer.onEvent(unsupportedVersion))
                 .isInstanceOf(IllegalArgumentException.class);
 
-        assertThat(processedCount(unknownId)).isZero();
-        assertThat(processedCount(unsupportedId)).isZero();
+        assertThat(archiveEffectReceiptCount(unknownId)).isZero();
+        assertThat(archiveEffectReceiptCount(unsupportedId)).isZero();
         assertThat(markerCount()).isZero();
     }
 
@@ -411,7 +409,7 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
 
         assertThat(storedPublicationState()).isEqualTo("ARCHIVED");
         assertThat(markerCount()).isEqualTo(1);
-        assertThat(processedCount(eventIds.getFirst())).isEqualTo(1);
+        assertAppliedArchiveEffectReceiptAndAcknowledgement(eventIds.getFirst(), 1);
     }
 
     @Test
@@ -481,6 +479,7 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         try {
             cancellation = executor.submit(() -> new TransactionTemplate(transactionManager)
                     .executeWithoutResult(status -> {
+                        archiveCoordinator.lockSemesterWrite(semesterId);
                         archiveCoordinator.lock(bindingId);
                         cancellationLockHeld.countDown();
                         await(finishCancellation);
@@ -636,9 +635,49 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
                 Integer.class, Long.toString(homeworkId));
     }
 
-    private int processedCount(UUID eventId) {
+    private int archiveEffectReceiptCount(UUID eventId) {
         return jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM event_consumer_processed WHERE consumer_id = ? AND event_id = ?",
-                Integer.class, CONSUMER_ID, eventId);
+                "SELECT COUNT(*) FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?",
+                Integer.class, eventId);
+    }
+
+    private void assertAppliedArchiveEffectReceiptAndAcknowledgement(UUID sourceEventId,
+                                                                     int expectedAcknowledgementCount) {
+        Map<String, Object> receipt = jdbcTemplate.queryForMap("""
+                SELECT event_type, semester_id, binding_id, encode(payload_hash, 'hex') AS payload_hash,
+                       state, acknowledgement_event_id
+                  FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?
+                """, sourceEventId);
+        assertThat(receipt)
+                .containsEntry("event_type", "homework.binding.archived")
+                .containsEntry("semester_id", semesterId)
+                .containsEntry("binding_id", bindingId)
+                .containsEntry("state", "APPLIED");
+        UUID acknowledgementEventId = (UUID) receipt.get("acknowledgement_event_id");
+        assertThat(acknowledgementEventId).isNotNull();
+        List<Map<String, Object>> acknowledgementEnvelopes = jdbcTemplate.queryForList("""
+                SELECT payload ->> 'event_id' AS event_id,
+                       payload #>> '{payload,source_event_id}' AS source_event_id,
+                       payload #>> '{payload,target}' AS target,
+                       payload #>> '{payload,source_event_type}' AS source_event_type,
+                       payload #>> '{payload,semester_id}' AS semester_id,
+                       payload #>> '{payload,payload_hash}' AS payload_hash,
+                       payload #>> '{payload,result}' AS result
+                  FROM academic_outbox
+                 WHERE event_type = 'semester.archive.effect.ack'
+                   AND payload #>> '{payload,source_event_id}' = ?
+                """, sourceEventId.toString());
+        assertThat(acknowledgementEnvelopes).hasSize(expectedAcknowledgementCount);
+        List<String> acknowledgementEventIds = acknowledgementEnvelopes.stream()
+                .map(envelope -> (String) envelope.get("event_id")).toList();
+        assertThat(acknowledgementEventIds).doesNotHaveDuplicates()
+                .contains(acknowledgementEventId.toString());
+        assertThat(acknowledgementEnvelopes).allSatisfy(envelope -> assertThat(envelope)
+                .containsEntry("source_event_id", sourceEventId.toString())
+                .containsEntry("target", "ACADEMIC")
+                .containsEntry("source_event_type", "homework.binding.archived")
+                .containsEntry("semester_id", Long.toString(semesterId))
+                .containsEntry("payload_hash", receipt.get("payload_hash"))
+                .containsEntry("result", "APPLIED"));
     }
 }

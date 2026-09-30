@@ -59,6 +59,10 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
         this.eventPublisher = eventPublisher;
     }
 
+    /**
+     * The exact effect receipt is this consumer's transactional idempotency claim;
+     * APPLIED replays must re-emit the stored acknowledgement event id.
+     */
     @RabbitListener(queues = RabbitConfig.HOMEWORK_ARCHIVE_EVENTS_QUEUE)
     @EventIdempotent(consumer = CONSUMER_ID)
     @Transactional
@@ -77,7 +81,7 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
         byte[] payloadHash = semanticPayloadHash(envelope.get("payload"));
         EffectReceipt receipt = claimReceipt(command, payloadHash);
         if (receipt.applied()) {
-            publishAcknowledgement(command, payloadHash, receipt.acknowledgementEventId());
+            publishAcknowledgement(command, payloadHash, UUID.randomUUID());
             return;
         }
 

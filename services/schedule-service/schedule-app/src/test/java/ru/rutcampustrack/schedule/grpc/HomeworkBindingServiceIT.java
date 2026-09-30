@@ -261,10 +261,10 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
         jdbcTemplate.update("""
                 INSERT INTO schedule_assignment_fences
                     (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
-                     lesson_type, valid_from, cap_until_exclusive)
-                VALUES (?, ?, ?, ?, 884001, 'lecture', ?, ?)
+                     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive)
+                VALUES (?, ?, ?, ?, 884001, 'lecture', ?, ?, ?)
                 """, assignmentId, groupId, SUBJECT_ID, semesterId,
-                date, date.plusDays(1));
+                date, date.plusDays(1), date.plusDays(1));
         Long scheduleItemId = jdbcTemplate.queryForObject("""
                 INSERT INTO schedule_items
                     (assignment_id, group_id, subject_id, semester_id, day_of_week,

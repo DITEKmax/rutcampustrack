@@ -15,6 +15,7 @@ import ru.rutcampustrack.shared.events.IdempotencyGuard;
 import java.util.Map;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Generic RabbitMQ event consumer for Schedule Service.

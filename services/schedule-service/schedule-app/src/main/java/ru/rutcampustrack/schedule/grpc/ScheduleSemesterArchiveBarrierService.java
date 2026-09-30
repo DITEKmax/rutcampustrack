@@ -2,6 +2,7 @@ package ru.rutcampustrack.schedule.grpc;
 
 import io.grpc.Status;
 import org.springframework.stereotype.Service;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 
 /** Admits barrier mutations only while Academic's uncached authority is at the exact epoch. */
 @Service

@@ -91,8 +91,9 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
             for (UUID eventId : eventIds) {
                 jdbcTemplate.update("DELETE FROM event_consumer_processed WHERE consumer_id = ? AND event_id = ?",
                         CONSUMER_ID, eventId);
-                jdbcTemplate.update("DELETE FROM event_consumer_processed WHERE consumer_id = ? AND event_id = ?",
-                        HomeworkBindingArchivedEventConsumer.CONSUMER_ID, eventId);
+                jdbcTemplate.update("DELETE FROM academic_outbox WHERE event_type = 'semester.archive.effect.ack' "
+                                + "AND payload #>> '{payload,source_event_id}' = ?",
+                        eventId.toString());
             }
             for (UUID operationId : operationIds) {
                 jdbcTemplate.update("DELETE FROM academic_outbox WHERE payload #>> '{payload,operation_id}' = ?",
@@ -312,6 +313,36 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
                  WHERE source_event_id = ? AND event_type = 'homework.binding.archived'
                    AND state = 'APPLIED'
                 """, Long.class, cancellationEventId)).isEqualTo(1L);
+        Map<String, Object> effectReceipt = jdbcTemplate.queryForMap("""
+                SELECT payload_hash, acknowledgement_event_id
+                  FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?
+                """, cancellationEventId);
+        UUID firstAcknowledgementEventId = (UUID) effectReceipt.get("acknowledgement_event_id");
+        List<Map<String, Object>> acknowledgements = jdbcTemplate.queryForList("""
+                SELECT payload ->> 'event_id' AS event_id,
+                       payload #>> '{payload,source_event_id}' AS source_event_id,
+                       payload #>> '{payload,target}' AS target,
+                       payload #>> '{payload,source_event_type}' AS source_event_type,
+                       payload #>> '{payload,semester_id}' AS semester_id,
+                       payload #>> '{payload,payload_hash}' AS payload_hash,
+                       payload #>> '{payload,result}' AS result
+                  FROM academic_outbox
+                 WHERE event_type = 'semester.archive.effect.ack'
+                   AND payload #>> '{payload,source_event_id}' = ?
+                """, cancellationEventId.toString());
+        assertThat(acknowledgements).hasSize(2);
+        List<String> acknowledgementEventIds = acknowledgements.stream()
+                .map(acknowledgement -> (String) acknowledgement.get("event_id")).toList();
+        assertThat(acknowledgementEventIds).doesNotHaveDuplicates()
+                .contains(firstAcknowledgementEventId.toString());
+        String effectHash = java.util.HexFormat.of().formatHex((byte[]) effectReceipt.get("payload_hash"));
+        assertThat(acknowledgements).allSatisfy(acknowledgement -> assertThat(acknowledgement)
+                .containsEntry("source_event_id", cancellationEventId.toString())
+                .containsEntry("target", "ACADEMIC")
+                .containsEntry("source_event_type", "homework.binding.archived")
+                .containsEntry("semester_id", Long.toString(semesterId))
+                .containsEntry("payload_hash", effectHash)
+                .containsEntry("result", "APPLIED"));
     }
 
     private long nextBindingId() {

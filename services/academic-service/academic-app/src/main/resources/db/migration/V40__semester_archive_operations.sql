@@ -160,6 +160,7 @@ CREATE UNIQUE INDEX lesson_transfer_receipts_source_event_uq
     WHERE source_event_id IS NOT NULL;
 
 ALTER TABLE homework_binding_transfer_markers
+    ALTER COLUMN state TYPE VARCHAR(32),
     ADD COLUMN source_event_id UUID,
     ADD COLUMN batch_index INTEGER,
     DROP CONSTRAINT homework_transfer_marker_state_chk,
@@ -332,7 +333,8 @@ BEGIN
                 OR authority_transition <> 'NONE';
 
         IF barrier_state IN ('PENDING', 'READY', 'PREPARED_RESTORE') OR authority_blocked THEN
-            IF TG_TABLE_NAME = 'homeworks' AND barrier_state = 'PENDING'
+            IF TG_TABLE_NAME = 'homeworks' THEN
+                IF barrier_state = 'PENDING'
                     AND authority_transition = 'ARCHIVING'
                     AND authority_version = (SELECT state_version FROM academic_semester_archive_barriers
                                               WHERE semester_id = target_semester_id)
@@ -397,9 +399,11 @@ BEGIN
                     admitted := admitted_count = 1;
                 END IF;
                 IF admitted THEN CONTINUE; END IF;
+                END IF;
             END IF;
 
-            IF TG_TABLE_NAME = 'homeworks' AND barrier_state = 'PENDING'
+            IF TG_TABLE_NAME = 'homeworks' THEN
+                IF barrier_state = 'PENDING'
                     AND authority_transition = 'ARCHIVING'
                     AND TG_OP = 'UPDATE'
                     AND NEW.publication_state = 'ARCHIVED'
@@ -423,6 +427,7 @@ BEGIN
                        AND binding_id = OLD.binding_id AND admitted_homework_id = OLD.id
                        AND consumed_at IS NULL;
                     CONTINUE;
+                END IF;
                 END IF;
             END IF;
 
@@ -456,8 +461,8 @@ BEGIN
                 IF event_admitted THEN CONTINUE; END IF;
             END IF;
 
-            IF TG_TABLE_NAME = 'homework_binding_transfer_markers'
-                    AND TG_OP = 'UPDATE'
+            IF TG_TABLE_NAME = 'homework_binding_transfer_markers' THEN
+                IF TG_OP = 'UPDATE'
                     AND OLD.state = 'PENDING'
                     AND NEW.state = 'CANCELLED_UNPUBLISHED'
                     AND OLD.homework_id IS NULL AND NEW.homework_id IS NULL
@@ -493,7 +498,8 @@ BEGIN
                            AND admission.source_event_id = OLD.source_event_id
                            AND admission.terminal_event_id = archive_event_id
                            AND admission.resolution_state = 'CANCEL_REQUESTED') THEN
-                RETURN NEW;
+                    RETURN NEW;
+                END IF;
             END IF;
 
             IF barrier_state = 'PENDING' AND authority_transition = 'ARCHIVING'
@@ -505,7 +511,8 @@ BEGIN
                     AND transfer_operation_hash ~ '^[0-9a-f]{64}$'
                     AND transfer_batch_hash ~ '^[0-9a-f]{64}$'
                     AND transfer_binding_hash ~ '^[0-9a-f]{64}$' THEN
-                IF TG_TABLE_NAME = 'homeworks' AND TG_OP = 'UPDATE'
+                IF TG_TABLE_NAME = 'homeworks' THEN
+                    IF TG_OP = 'UPDATE'
                         AND old_semester_id = target_semester_id
                         AND new_semester_id = target_semester_id
                         AND NEW.id = OLD.id AND NEW.binding_id = OLD.binding_id
@@ -513,10 +520,11 @@ BEGIN
                         AND NEW.payload_hash = OLD.payload_hash
                         AND NEW.publication_state = OLD.publication_state
                         AND OLD.binding_id = transfer_binding_id THEN
-                    RETURN NEW;
+                        RETURN NEW;
+                    END IF;
                 END IF;
-                IF TG_TABLE_NAME = 'homework_binding_transfer_markers'
-                        AND new_semester_id = target_semester_id
+                IF TG_TABLE_NAME = 'homework_binding_transfer_markers' THEN
+                    IF new_semester_id = target_semester_id
                         AND NEW.operation_id = transfer_operation_id
                         AND NEW.source_event_id = transfer_event_id
                         AND NEW.batch_index = transfer_batch_index
@@ -525,7 +533,8 @@ BEGIN
                         AND encode(NEW.binding_payload_hash, 'hex') = transfer_binding_hash
                         AND (TG_OP = 'INSERT' OR (OLD.semester_id = NEW.semester_id
                              AND OLD.binding_id = NEW.binding_id)) THEN
-                    RETURN NEW;
+                        RETURN NEW;
+                    END IF;
                 END IF;
             END IF;
 

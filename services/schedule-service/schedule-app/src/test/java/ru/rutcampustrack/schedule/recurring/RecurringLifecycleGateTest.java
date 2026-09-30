@@ -88,7 +88,6 @@ class RecurringLifecycleGateTest {
         ScheduleSemesterArchiveWriteFence archiveWriteFence = mock(ScheduleSemesterArchiveWriteFence.class);
         RecurringLessonLifecycleWriter lifecycleWriter = mock(RecurringLessonLifecycleWriter.class);
         EntityManager entityManager = mock(EntityManager.class);
-        ScheduleSemesterArchiveWriteFence archiveWriteFence = mock(ScheduleSemesterArchiveWriteFence.class);
 
         Lesson lesson = new Lesson();
         lesson.setScheduleItemId(7L);
@@ -117,6 +116,7 @@ class RecurringLifecycleGateTest {
         OneOffLessonRepository oneOffs = mock(OneOffLessonRepository.class);
         LessonRepository lessons = mock(LessonRepository.class);
         ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
+        ScheduleSemesterArchiveWriteFence archiveWriteFence = mock(ScheduleSemesterArchiveWriteFence.class);
         when(items.findBySubjectId(20L)).thenReturn(List.of(scheduleItem(7L)));
         when(oneOffs.findBySubjectId(20L)).thenReturn(List.of());
         when(lessons.findIdsBySubjectId(20L)).thenReturn(List.of(100L));

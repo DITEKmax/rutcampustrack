@@ -1,0 +1,93 @@
+{
+  "base_revision": "6835fe8243ccd3969d42009b31bd676723d586d3",
+  "branch": "codex/semester-archive-complete-20260929",
+  "rules_sha256": "397C1B0984648CA2EE7066DEFCB5DEE797DCC546B3C760443012F817ECFAD976",
+  "criteria": [
+    "Archive/restore finishes across Academic, Schedule, and protocol state; restore does not reactivate.",
+    "Academic PENDING redrive, fenced no-content cancellation, tombstone restore/rearchive behavior, and empty-transfer terminal cancellation preserve exact identities and receipts.",
+    "Schedule cancellation atomically records binding, effect ledger, and outbox; replay returns original Schedule terminal event ID.",
+    "ACK envelopes are fresh per delivery while source/hash/result remain stable."
+  ],
+  "checks": [
+    {
+      "name": "initial Gradle invocation",
+      "command": "Gradle invocation with PowerShell-parsed -Dorg.gradle.java.compile-classpath-packaging=true",
+      "exit_code": 1,
+      "status": "INVOCATION_ERROR",
+      "evidence": "Gradle parsed the property fragment as a task; no test ran. Subsequent commands used --system-prop=org.gradle.java.compile-classpath-packaging=true."
+    },
+    {
+      "name": "first PostgreSQL archive scenario batch",
+      "command": "Targeted Academic archive/transfer and Schedule cancellation integration scenarios",
+      "exit_code": 1,
+      "status": "FAIL_THEN_CORRECTED",
+      "evidence": "Five product/test failures were traced to two V40 trigger branches reading a table-absent NEW field, assertions against generic event_consumer_processed instead of the actual transactional effect receipt, and a test-only inverse lock order. The trigger was made table-specific; receipt/ACK checks replaced generic-claim assertions; test lock order now follows semester then binding. The transfer marker width was corrected for CANCELLED_UNPUBLISHED."
+    },
+    {
+      "name": "Academic focused PostgreSQL scenarios in combined --continue batch",
+      "command": "Targeted Academic archive/transfer and Schedule cancellation integration selections, Gradle --continue",
+      "exit_code": 1,
+      "status": "SCENARIOS_PASS_SCHEDULE_COMPILE_FAILURE",
+      "evidence": "The two Academic test reports each show tests=1, failures=0, errors=0. The combined Gradle invocation exited 1 later because Schedule compileTestJava exposed a neighboring duplicate/missing archiveWriteFence local, corrected before the final Schedule run."
+    },
+    {
+      "name": "Schedule first targeted PostgreSQL run",
+      "command": ".\\gradlew.bat --no-daemon --no-parallel --max-workers=1 --no-problems-report --system-prop=org.gradle.java.compile-classpath-packaging=true :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "exit_code": 1,
+      "status": "FAIL_THEN_CORRECTED",
+      "evidence": "compileJava and compileTestJava passed. Both tests hit the same fixture defect: schedule_assignment_fences INSERT omitted V19's NOT NULL creation_cap_until_exclusive column. The existing migration backfills it from cap_until_exclusive; the fixture now supplies the same upper bound."
+    },
+    {
+      "name": "Schedule final targeted PostgreSQL run",
+      "command": ".\\gradlew.bat --no-daemon --no-parallel --max-workers=1 --no-problems-report --system-prop=org.gradle.java.compile-classpath-packaging=true :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+      "session_id": 36929,
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Schedule compileJava, compileTestJava, and integrationTest passed; two tests completed, including archiveCancellationCommitsBindingLedgerAndOutbox_andReplayReturnsOriginalEvent. JDK 21.0.10. Test process and owned Testcontainers container were terminal/absent after the run."
+    },
+    {
+      "name": "git diff whitespace",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "No whitespace errors. Git emitted only working-copy LF-to-CRLF notices."
+    },
+    {
+      "name": "fresh Sol review",
+      "command": null,
+      "exit_code": null,
+      "status": "PENDING_ROOT",
+      "evidence": "Root will send only the correction diff from 6835fe8 to the final scoped commit."
+    }
+  ],
+  "runtime_evidence": {
+    "status": "TARGETED_POSTGRESQL_PASS",
+    "scenarios": [
+      "Academic event-before-content acknowledgement replay",
+      "completed empty transfer cancellation with distinct transfer and cancellation identities",
+      "Schedule cancellation binding/effect-ledger/outbox atomicity and exact replay"
+    ],
+    "limitations": [
+      "Only selected PostgreSQL integration tests were run; the full suite was not run.",
+      "Legacy unscoped Schedule outbox records without proof remain a production migration limit.",
+      "No production migration, push, or main integration was performed."
+    ]
+  },
+  "diff_inventory": [
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/HomeworkBindingArchivedEventConsumer.java",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterArchiveService.java",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+    "services/academic-service/academic-app/src/main/resources/db/migration/V40__semester_archive_operations.sql",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveIT.java",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingTransferIT.java",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/EventConsumer.java",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveBarrierService.java",
+    "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+    "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringLifecycleGateTest.java",
+    ".agent/evidence/semester-archive-correction-20260930/summary.md",
+    ".agent/evidence/semester-archive-correction-20260930/checks.json"
+  ],
+  "preserved_foreign_untracked": [
+    ".agent/evidence/semester-activation-ac39/"
+  ]
+}

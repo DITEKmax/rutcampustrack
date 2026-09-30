@@ -49,8 +49,17 @@ Make tracked Schedule effect scope rejections persist an immutable `ERROR` recei
 ## Verification
 
 - `git diff --check -- services/attendance-service`: exit 0; line-ending conversion warnings only.
-- Runtime check: **not run**. Waiting for root to release the HEAVY lease; no result is claimed for unit or real-Mongo execution.
-- Planned bounded runtime, subject to root lease: existing `EventConsumerTest` and only `LessonTransferParticipantIT.mismatchedTrackedEffectScopeCommitsErrorAckWithoutPartialDomainWrites` with JDK 21 and one Gradle worker. No broad suite or unrelated passing method will be repeated.
+- Independent bounded Sol source review: **PASS** on `5e584b7f43a715097a724223a0947b0b853bac9c`.
+- First runtime attempt: session `29680`, exit 1 before tests. Sandboxed `compileJava` hit `AccessDeniedException` reading `services/shared/shared-web/build/libs/shared-web-0.1.0.jar`; missing-package diagnostics were cascades. This is recorded as an environment permission failure, not a product failure.
+- Authorized exact retry with scoped Gradle/Testcontainers escalation: session `85657`, exit 0. JDK `C:\Users\maksd\.jdks\ms-21.0.10` (OpenJDK 21.0.10), one worker. Command:
+
+  ```text
+  .\gradlew.bat --no-daemon --no-parallel --max-workers=1 --no-problems-report "-Dorg.gradle.java.compile-classpath-packaging=true" :services:attendance-service:attendance-app:integrationTest --tests ru.rutcampustrack.attendance.event.LessonTransferParticipantIT.mismatchedTrackedEffectScopeCommitsErrorAckWithoutPartialDomainWrites
+  ```
+
+  XML `services/attendance-service/attendance-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.attendance.event.LessonTransferParticipantIT.xml`: 1 test, 0 failures, 0 errors, 0 skipped. The real-Mongo method verified durable ERROR receipts/ACKs and unchanged attendance/marker state for the mismatched row, conflicting marker with a legacy row, and second-ID batch mismatch.
+- Owned runtime cleanup: Testcontainers started only MongoDB 7.0, ID `e956b9e18c268860214e6e7d539e23ab814bc86d175b1dd2df5b7354625879bb`. Read-only `docker inspect` for this exact ID exited 1 with `No such object`, confirming JUnit/Testcontainers removed it at teardown. No manual cleanup, Rabbit container, or unrelated runtime check was used.
+- No broad suite or unrelated passing method was repeated. Source remains at reviewed commit `5e584b7f43a715097a724223a0947b0b853bac9c`; this checkpoint adds runtime evidence only.
 
 ## Do not
 

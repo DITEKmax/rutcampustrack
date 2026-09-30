@@ -305,7 +305,7 @@ function normalizeSemester(value: unknown): AdminSemester {
     transition: requiredTransition(record.transition, 'semester.transition'),
     stateVersion: nonNegativeInteger(record.stateVersion, 'semester.stateVersion'),
     releasePending: requiredBoolean(record.releasePending, 'semester.releasePending'),
-    isWriteBlocked: requiredBoolean(record.isWriteBlocked, 'semester.isWriteBlocked'),
+    isWriteBlocked: requiredBoolean(record.writeBlocked, 'semester.writeBlocked'),
     semesterType,
     academicYear,
   }

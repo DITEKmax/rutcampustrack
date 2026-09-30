@@ -5,7 +5,7 @@ import {
 } from '../../shared/session-owner'
 import { AdminSemesterClient } from './admin-semester-client'
 
-const semester = {
+const semesterResponse = {
   id: 7,
   name: 'Осень 2026',
   dateFrom: '2026-09-01',
@@ -16,9 +16,19 @@ const semester = {
   transition: 'NONE',
   stateVersion: 0,
   releasePending: false,
-  isWriteBlocked: false,
+  writeBlocked: false,
   semesterType: null,
   academicYear: null,
+}
+const { writeBlocked, ...semesterFields } = semesterResponse
+const semester = { ...semesterFields, isWriteBlocked: writeBlocked }
+const secondSemesterResponse = {
+  ...semesterResponse,
+  id: 8,
+  name: 'Весна 2027',
+  dateFrom: '2027-02-01',
+  dateTo: '2027-06-30',
+  active: true,
 }
 const secondSemester = {
   ...semester,
@@ -61,7 +71,7 @@ describe('AdminSemesterClient', () => {
       fetcher: async (input, init) => {
         path = String(input)
         expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer token')
-        return jsonResponse({ _embedded: { semesterResponseList: [semester] } })
+        return jsonResponse({ _embedded: { semesterResponseList: [semesterResponse] } })
       },
     })
 
@@ -80,11 +90,11 @@ describe('AdminSemesterClient', () => {
         const page = new URL(String(input), 'https://example.test').searchParams.get('page') ?? '0'
         return page === '0'
           ? jsonResponse({
-            _embedded: { semesterResponseList: [semester] },
+            _embedded: { semesterResponseList: [semesterResponse] },
             page: { number: 0, totalPages: 2 },
           })
           : jsonResponse({
-            _embedded: { semesterResponseList: [secondSemester] },
+            _embedded: { semesterResponseList: [secondSemesterResponse] },
             page: { number: 1, totalPages: 2 },
           })
       },
@@ -108,7 +118,7 @@ describe('AdminSemesterClient', () => {
         capturedInput = input
         capturedInit = init
         return jsonResponse({
-          ...semester,
+          ...semesterResponse,
           name: 'Осенний 2026/2027',
           semesterType: 'AUTUMN',
           academicYear: 2026,
@@ -141,7 +151,7 @@ describe('AdminSemesterClient', () => {
       accessToken: () => 'token',
       fetcher: async (input, init) => {
         calls.push({ path: String(input), method: init?.method, body: init?.body })
-        return jsonResponse({ ...semester, active: true })
+        return jsonResponse({ ...semesterResponse, active: true })
       },
     })
 
@@ -255,7 +265,7 @@ describe('AdminSemesterClient', () => {
 
     const pending = client.listSemesters()
     generation = 5
-    resolveResponse(jsonResponse({ _embedded: { semesterResponseList: [semester] } }))
+    resolveResponse(jsonResponse({ _embedded: { semesterResponseList: [semesterResponse] } }))
 
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
   })

@@ -25,6 +25,7 @@ const pngInput = ref<HTMLInputElement | null>(null)
 const svgInput = ref<HTMLInputElement | null>(null)
 const draftKey = ref<string | null>(null)
 const loading = ref(true)
+const initialLoadComplete = ref(false)
 const saving = ref(false)
 const error = ref<string | null>(null)
 const notice = ref<string | null>(null)
@@ -93,6 +94,7 @@ async function refresh(): Promise<void> {
   } finally {
     if (isCurrentRefresh(requestId)) {
       loading.value = false
+      initialLoadComplete.value = true
       if (refreshController === controller) refreshController = undefined
     }
   }
@@ -265,7 +267,7 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
     </header>
 
     <p
-      v-if="loading"
+      v-if="loading && !initialLoadComplete"
       class="admin-map-state"
       role="status"
     >
@@ -275,6 +277,13 @@ function planAvailabilityMessage(svgState: string, pngState: string): string {
       v-else
       class="admin-map-screen__content"
     >
+      <p
+        v-if="loading"
+        class="admin-map-state"
+        role="status"
+      >
+        Обновляем реестр…
+      </p>
       <p
         v-if="error"
         class="admin-map-state admin-map-state--error"

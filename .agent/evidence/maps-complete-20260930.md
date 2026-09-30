@@ -30,5 +30,13 @@ Scope: JS-ADMIN-23/24/25, только admin-map UI и адресат загру
   `{ status: number }` не удовлетворяет типу `Response`. PWA/TMA SFC typechecks
   прошли; соседний тест не изменялся.
 
+## Review correction
+
+Sol bounded review found P2: subsequent refresh unmounted file inputs while the
+selected File draft remained in memory. `initialLoadComplete` now keeps the
+form mounted after the first load and shows a refresh status in place. Targeted
+ESLint and `git diff --check` passed for this correction; bounded Sol recheck
+is pending root.
+
 Общий PWA/TMA runtime и реальный API путь ожидают объединённого запуска root.
 Gradle/Docker и backend-файлы этой веткой не затрагивались.

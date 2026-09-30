@@ -117,21 +117,28 @@ class RateLimitProblemDetailsFilterTest {
     }
 
     @Test
-    @DisplayName("Status 429 с предыдущим непустым body → оригинальное body игнорируется")
-    void status429_swallowsPreviousBody() {
+    @DisplayName("Backend 429 → body и account retry/no-store headers сохраняются")
+    void status429_preservesBackendProblemDetailsAndHeaders() {
         MockServerHttpRequest req = MockServerHttpRequest.get("/api/x").build();
         ServerWebExchange exchange = MockServerWebExchange.from(req);
+        String backendBody = """
+                {"status":429,"extras":{"code":"OTP_RATE_LIMITED","retryAfterSeconds":37}}""";
 
         GatewayFilterChain chain = decoratedExchange -> {
             decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-            DataBuffer buf = bufferFactory.wrap("old-body".getBytes(StandardCharsets.UTF_8));
+            decoratedExchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_PROBLEM_JSON);
+            decoratedExchange.getResponse().getHeaders().set(HttpHeaders.RETRY_AFTER, "37");
+            decoratedExchange.getResponse().getHeaders().set(HttpHeaders.CACHE_CONTROL, "no-store");
+            DataBuffer buf = bufferFactory.wrap(backendBody.getBytes(StandardCharsets.UTF_8));
             return decoratedExchange.getResponse().writeWith(Mono.just(buf));
         };
 
         filter.filter(exchange, chain).block();
 
-        String body = ((MockServerHttpResponse) exchange.getResponse()).getBodyAsString().block();
-        assertThat(body).doesNotContain("old-body");
-        assertThat(body).contains("\"status\":429");
+        MockServerHttpResponse response = (MockServerHttpResponse) exchange.getResponse();
+        assertThat(response.getBodyAsString().block()).isEqualTo(backendBody);
+        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("37");
+        assertThat(response.getHeaders().getFirst(HttpHeaders.CACHE_CONTROL)).isEqualTo("no-store");
     }
 }

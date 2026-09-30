@@ -23,6 +23,10 @@ async def cmd_password_reset(
     otp_tracker: OtpMessageTracker,
 ) -> None:
     """Request a reset code while keeping unknown accounts indistinguishable."""
+    if message.chat.type != "private":
+        await message.answer("Для сброса пароля открой личный чат с ботом и отправь команду /reset.")
+        return
+
     telegram_id = message.from_user.id
     await otp_tracker.store_pending_user_msg(
         telegram_id=telegram_id,

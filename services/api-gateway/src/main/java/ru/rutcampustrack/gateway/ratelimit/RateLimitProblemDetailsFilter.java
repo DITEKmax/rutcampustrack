@@ -46,7 +46,8 @@ public class RateLimitProblemDetailsFilter implements GlobalFilter, Ordered {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                 if (HttpStatus.TOO_MANY_REQUESTS.equals(getStatusCode())) {
-                    return writeProblemDetailsBody();
+                    return super.writeWith(Flux.<DataBuffer>from(body).switchIfEmpty(
+                            Mono.defer(this::createProblemDetailsBuffer)));
                 }
                 return super.writeWith(body);
             }
@@ -66,7 +67,7 @@ public class RateLimitProblemDetailsFilter implements GlobalFilter, Ordered {
                 return super.setComplete();
             }
 
-            private Mono<Void> writeProblemDetailsBody() {
+            private Mono<DataBuffer> createProblemDetailsBuffer() {
                 HttpHeaders headers = getHeaders();
                 headers.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
                 if (!headers.containsKey(HttpHeaders.RETRY_AFTER)) {
@@ -75,7 +76,11 @@ public class RateLimitProblemDetailsFilter implements GlobalFilter, Ordered {
                 byte[] payload = BODY_TEMPLATE.getBytes(StandardCharsets.UTF_8);
                 headers.setContentLength(payload.length);
                 DataBuffer buffer = bufferFactory().wrap(payload);
-                return super.writeWith(Mono.just(buffer));
+                return Mono.just(buffer);
+            }
+
+            private Mono<Void> writeProblemDetailsBody() {
+                return super.writeWith(Mono.defer(this::createProblemDetailsBuffer));
             }
         };
 

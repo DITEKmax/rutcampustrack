@@ -5,6 +5,10 @@ import {
   type AdminSemesterArchiveAction,
   type AdminSemesterArchiveOperation,
   type AdminSemesterArchiveStatus,
+  type AdminSemesterDeletionCounts,
+  type AdminSemesterDeletionOperation,
+  type AdminSemesterDeletionPhase,
+  type AdminSemesterDeletionPreview,
   AdminSemesterApiError,
   type AdminSemesterType,
   type AdminSemester,
@@ -53,6 +57,19 @@ const archiveOperations = ref<Record<number, AdminSemesterArchiveOperation>>({})
 const archiveSettlingOperationIds = ref<Record<number, string>>({})
 const archiveStatusErrors = ref<Record<number, string>>({})
 const archiveStatusLoadingIds = ref(new Set<number>())
+const deletionPreview = shallowRef<AdminSemesterDeletionPreview | null>(null)
+const deletionPreviewLoading = ref(false)
+const deletionPassword = ref('')
+const deletionError = ref<string | null>(null)
+const deletionCommand = shallowRef<{
+  semesterId: number
+  preview: AdminSemesterDeletionPreview
+  idempotencyKey: string
+  operationId: string | null
+  phase: 'SUBMITTING' | 'UNCERTAIN' | 'PASSWORD_REQUIRED' | 'PENDING' | 'TERMINAL'
+  operation: AdminSemesterDeletionOperation | null
+} | null>(null)
+const deletionOperation = shallowRef<AdminSemesterDeletionOperation | null>(null)
 let disposed = false
 let listRequestRevision = 0
 let listAbortController: AbortController | null = null
@@ -62,6 +79,11 @@ let archiveScopeRevision = 0
 let archiveConfirmationRevision = 0
 let archiveMonitorController: AbortController | null = null
 const archiveStatusControllers = new Set<AbortController>()
+let deletionScopeRevision = 0
+let deletionPreviewRevision = 0
+let deletionPreviewController: AbortController | null = null
+let deletionMonitorController: AbortController | null = null
+let deletionStorageKey: string | null = null
 
 const activeSemesters = computed(() => semesters.value.filter((semester) => semester.active && !semester.archived))
 const inactiveSemesters = computed(() => semesters.value.filter((semester) => !semester.active && !semester.archived))
@@ -71,11 +93,18 @@ const hasActiveSemester = computed(() => activeSemesters.value.length > 0)
 // operation ID occupies the single in-flight command slot for the whole screen.
 const mutationBusy = computed(() => saving.value
   || archiveConfirmationChecking.value
+  || deletionPreviewLoading.value
   || archiveCommand.value?.phase === 'SUBMITTING'
-  || archiveCommand.value?.phase === 'UNCERTAIN')
+  || archiveCommand.value?.phase === 'UNCERTAIN'
+  || (deletionCommand.value !== null && deletionCommand.value.phase !== 'TERMINAL')
+  || (deletionCommand.value?.phase === 'TERMINAL'
+    && deletionCommand.value.operation?.phase === 'CANCELLED'
+    && deletionPreview.value !== null))
 const archiveConfirmationSemester = computed(() => archiveConfirmation.value === null
   ? null
   : semesters.value.find((semester) => semester.id === archiveConfirmation.value?.semesterId) ?? null)
+const visibleDeletionOperation = computed(() => deletionCommand.value?.operation ?? deletionOperation.value)
+const deletionStorageAvailable = computed(() => currentDeletionStorageKey() !== null)
 const archiveSemestersVisible = computed(() => semesters.value.filter((semester) =>
   needsArchiveStatus(semester)
     || archiveOperationFor(semester.id)?.operationState === 'ERROR'
@@ -98,6 +127,8 @@ watch([semesterType, dateFrom], ([type, from]) => {
 
 watch(() => props.client, () => {
   resetArchiveScope()
+  resetDeletionScope(true)
+  reconcileDeletionStorageScope()
   listRequestRevision += 1
   listAbortController?.abort()
   cancelEditLoad()
@@ -106,7 +137,10 @@ watch(() => props.client, () => {
   void refresh()
 }, { flush: 'sync' })
 
-onMounted(() => void refresh())
+onMounted(() => {
+  restoreDeletionProgress()
+  void refresh()
+})
 
 async function refresh(loadArchiveStatuses = true): Promise<void> {
   const revision = ++listRequestRevision
@@ -362,6 +396,350 @@ function hasPendingArchiveOperation(semesterId: number): boolean {
 function isNonRetryableFailure(semesterId: number, action: AdminSemesterArchiveAction): boolean {
   const operation = archiveOperations.value[semesterId]
   return operation?.action === action && operation.operationState === 'ERROR' && !operation.retryable
+}
+
+function canRequestSemesterDeletion(semester: AdminSemester): boolean {
+  return semester.transition === 'NONE'
+    && !semester.releasePending
+    && !hasPendingArchiveOperation(semester.id)
+}
+
+function deletionBlockReason(semester: AdminSemester): string {
+  if (semester.transition !== 'NONE') return 'Дождись завершения текущей операции.'
+  if (semester.releasePending) return 'Сервер завершает восстановление.'
+  if (hasPendingArchiveOperation(semester.id)) return 'Дождись завершения операции с архивом.'
+  return 'Семестр пока нельзя удалить.'
+}
+
+async function openDeletionPreview(semester: AdminSemester): Promise<void> {
+  if (mutationBusy.value || !canRequestSemesterDeletion(semester)) return
+  deletionPreviewController?.abort()
+  const revision = ++deletionPreviewRevision
+  const scope = deletionScopeRevision
+  const controller = new AbortController()
+  deletionPreviewController = controller
+  deletionPreviewLoading.value = true
+  deletionPreview.value = null
+  deletionPassword.value = ''
+  deletionError.value = null
+  try {
+    const preview = await props.client.getSemesterDeletionPreview(semester.id, controller.signal)
+    if (!isCurrentDeletionScope(scope, controller) || revision !== deletionPreviewRevision) return
+    deletionPreview.value = preview
+  } catch (cause) {
+    if (!isCurrentDeletionScope(scope, controller) || revision !== deletionPreviewRevision
+      || cause instanceof StaleSessionGenerationError || isAbortError(cause)) return
+    deletionError.value = 'Числа для предпросмотра не удалось загрузить. Попробуй обновить их ещё раз.'
+    if (cause instanceof AdminSemesterApiError && (cause.response.status === 401 || cause.response.status === 403)) {
+      emit('ownerError', cause)
+    }
+  } finally {
+    if (revision === deletionPreviewRevision && deletionPreviewController === controller) {
+      deletionPreviewLoading.value = false
+      deletionPreviewController = null
+    }
+  }
+}
+
+function closeDeletionPreview(): void {
+  if (deletionCommand.value?.phase === 'SUBMITTING') return
+  deletionPreviewRevision += 1
+  deletionPreviewController?.abort()
+  deletionPreviewController = null
+  deletionPreviewLoading.value = false
+  deletionPreview.value = null
+  deletionPassword.value = ''
+  deletionError.value = null
+}
+
+async function confirmSemesterDeletion(): Promise<void> {
+  const preview = deletionPreview.value
+  const password = deletionPassword.value
+  if (!preview || password.length === 0 || deletionPreviewLoading.value) return
+  if (saving.value || archiveConfirmationChecking.value
+    || archiveCommand.value?.phase === 'SUBMITTING' || archiveCommand.value?.phase === 'UNCERTAIN') return
+  const current = semesters.value.find((semester) => semester.id === preview.semesterId)
+  if (current && !canRequestSemesterDeletion(current)) {
+    deletionPassword.value = ''
+    deletionError.value = 'Состояние семестра изменилось. Сначала дождись завершения текущей операции.'
+    return
+  }
+  const scopeKey = currentDeletionStorageKey()
+  if (scopeKey === null) {
+    deletionPassword.value = ''
+    deletionError.value = 'Не удалось подтвердить текущую сессию администратора для сохранения хода операции. Обнови профиль и повтори попытку.'
+    return
+  }
+  let idempotencyKey: string
+  const previous = deletionCommand.value
+  if (previous
+    && previous.semesterId === preview.semesterId
+    && previous.preview.previewDigest === preview.previewDigest
+    && (previous.phase === 'UNCERTAIN' || previous.phase === 'PASSWORD_REQUIRED')) {
+    idempotencyKey = previous.idempotencyKey
+  } else {
+    try {
+      idempotencyKey = createIdempotencyKey()
+    } catch (cause) {
+      deletionPassword.value = ''
+      deletionError.value = cause instanceof Error ? cause.message : 'Не удалось создать ключ операции.'
+      return
+    }
+  }
+  const command = {
+    semesterId: preview.semesterId,
+    preview,
+    idempotencyKey,
+    operationId: null,
+    phase: 'SUBMITTING' as const,
+    operation: null,
+  }
+  deletionPassword.value = ''
+  deletionError.value = null
+  deletionOperation.value = null
+  deletionCommand.value = command
+  deletionStorageKey = scopeKey
+  if (!persistDeletionCommand(command)) {
+    deletionCommand.value = previous
+    deletionError.value = 'Браузер не сохранил состояние операции. Удали не отправлено; проверь настройки хранения страницы.'
+    return
+  }
+  deletionPreview.value = null
+  await sendDeletionCommand(command, password, deletionScopeRevision)
+}
+
+async function sendDeletionCommand(
+  command: NonNullable<typeof deletionCommand.value>,
+  password: string,
+  scope: number,
+): Promise<void> {
+  if (!isCurrentDeletionScope(scope) || deletionCommand.value?.idempotencyKey !== command.idempotencyKey) return
+  const controller = beginDeletionMonitor()
+  try {
+    const operation = await props.client.deleteSemester(command.semesterId, {
+      previewDigest: command.preview.previewDigest,
+      password,
+    }, command.idempotencyKey, controller.signal)
+    if (!isCurrentDeletionScope(scope, controller) || deletionCommand.value?.idempotencyKey !== command.idempotencyKey) return
+    await applyDeletionOperation(command, operation, scope, controller)
+    if (operation.phase === 'PREPARING' || operation.phase === 'RELEASING' || operation.phase === 'DELETING') {
+      await pollDeletionOperation(command, operation, scope, controller)
+    }
+  } catch (cause) {
+    if (!isCurrentDeletionScope(scope, controller) || deletionCommand.value?.idempotencyKey !== command.idempotencyKey) return
+    if (cause instanceof StaleSessionGenerationError) {
+      resetDeletionScope(true)
+      return
+    }
+    if (cause instanceof AdminSemesterApiError && cause.deletionOperation
+      && cause.deletionOperation.semesterId === command.semesterId) {
+      await applyDeletionOperation(command, cause.deletionOperation, scope, controller)
+      if (cause.deletionOperation.phase === 'PREPARING'
+        || cause.deletionOperation.phase === 'RELEASING'
+        || cause.deletionOperation.phase === 'DELETING') {
+        await pollDeletionOperation(command, cause.deletionOperation, scope, controller)
+      }
+      return
+    }
+    handleDeletionSubmitError(command, cause)
+  } finally {
+    if (deletionMonitorController === controller) deletionMonitorController = null
+  }
+}
+
+function handleDeletionSubmitError(command: NonNullable<typeof deletionCommand.value>, cause: unknown): void {
+  if (cause instanceof AdminSemesterApiError && cause.response.status === 401) {
+    deletionCommand.value = null
+    deletionOperation.value = null
+    removePersistedDeletionCommand()
+    deletionError.value = 'Сессия истекла. Войди снова и проверь состояние операции.'
+    emit('ownerError', cause)
+    return
+  }
+  const status = cause instanceof AdminSemesterApiError ? cause.response.status : null
+  const retryNeedsPassword = status === 400 || status === 403 || status === 429
+  const next = { ...command, operationId: null, phase: retryNeedsPassword ? 'PASSWORD_REQUIRED' as const : 'UNCERTAIN' as const, operation: null }
+  deletionCommand.value = next
+  deletionPreview.value = command.preview
+  deletionOperation.value = null
+  deletionError.value = status === 403
+    ? 'Пароль не подтверждён. Проверь его и введи снова; повтор использует тот же предпросмотр и ключ.'
+    : status === 429
+      ? 'Слишком много попыток. После паузы введи пароль и продолжи тем же ключом операции.'
+      : status === 400
+        ? 'Запрос не принят. Проверь свежесть предпросмотра; повтор не создаст новую операцию.'
+        : 'Ответ сервера не подтверждён. Повтори тот же запрос с тем же предпросмотром и ключом; пароль нужно ввести снова.'
+  persistDeletionCommand(next)
+}
+
+function beginDeletionMonitor(): AbortController {
+  deletionMonitorController?.abort()
+  const controller = new AbortController()
+  deletionMonitorController = controller
+  return controller
+}
+
+async function pollDeletionOperation(
+  command: NonNullable<typeof deletionCommand.value>,
+  initial: AdminSemesterDeletionOperation,
+  scope: number,
+  controller: AbortController,
+): Promise<void> {
+  let operation = initial
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    if (!await waitForArchivePoll(controller.signal, 1_200)) return
+    if (!isCurrentDeletionScope(scope, controller)
+      || deletionCommand.value?.operationId !== operation.operationId) return
+    try {
+      operation = await props.client.getSemesterDeletionOperation(operation.operationId, controller.signal)
+    } catch (cause) {
+      if (!isCurrentDeletionScope(scope, controller)) return
+      if (cause instanceof StaleSessionGenerationError) {
+        resetDeletionScope(true)
+        return
+      }
+      if (cause instanceof AdminSemesterApiError && (cause.response.status === 401 || cause.response.status === 403)) {
+        emit('ownerError', cause)
+      }
+      const current = deletionCommand.value
+      if (current?.operationId === command.operationId) {
+        const next = { ...current, phase: 'PENDING' as const }
+        deletionCommand.value = next
+        persistDeletionCommand(next)
+      }
+      deletionError.value = 'Не удалось проверить ход удаления. Операция остаётся доступна по её ID; продолжи проверку позже.'
+      deletionMonitorController = null
+      return
+    }
+    if (!isCurrentDeletionScope(scope, controller)) return
+    if (operation.semesterId !== command.semesterId || operation.operationId !== command.operationId) {
+      deletionError.value = 'Сервер вернул состояние другой операции. Обнови страницу и проверь сохранённый результат.'
+      deletionMonitorController = null
+      return
+    }
+    await applyDeletionOperation(command, operation, scope, controller)
+    if (operation.phase === 'COMPLETED' || operation.phase === 'CANCELLED') return
+  }
+  if (isCurrentDeletionScope(scope, controller)) {
+    deletionError.value = 'Удаление ещё выполняется. Продолжи проверку, чтобы увидеть окончательный результат.'
+    deletionMonitorController = null
+  }
+}
+
+async function applyDeletionOperation(
+  command: NonNullable<typeof deletionCommand.value>,
+  operation: AdminSemesterDeletionOperation,
+  scope: number,
+  controller?: AbortController,
+): Promise<void> {
+  if (!isCurrentDeletionScope(scope, controller)
+    || operation.semesterId !== command.semesterId
+    || (command.operationId !== null && command.operationId !== operation.operationId)) return
+  const terminal = operation.phase === 'COMPLETED' || operation.phase === 'CANCELLED'
+  const next = {
+    ...command,
+    preview: operation.refreshedPreview ?? command.preview,
+    operationId: operation.operationId,
+    phase: terminal ? 'TERMINAL' as const : 'PENDING' as const,
+    operation,
+  }
+  deletionCommand.value = next
+  deletionOperation.value = operation
+  persistDeletionCommand(next)
+  if (!terminal) {
+    deletionPreview.value = null
+    deletionPassword.value = ''
+    deletionError.value = null
+    return
+  }
+
+  deletionPassword.value = ''
+  if (operation.phase === 'COMPLETED') {
+    deletionPreview.value = null
+    deletionError.value = null
+    semesters.value = semesters.value.filter((semester) => semester.id !== operation.semesterId)
+    notice.value = `Семестр «${command.preview.semesterName}» удалён. Учетные записи и группы сохранены.`
+    await refresh(false)
+    if (isCurrentDeletionScope(scope, controller)) {
+      semesters.value = semesters.value.filter((semester) => semester.id !== operation.semesterId)
+    }
+    return
+  }
+
+  deletionPreview.value = operation.refreshedPreview
+  deletionError.value = deletionCancellationMessage(operation)
+  notice.value = null
+}
+
+function deletionCancellationMessage(operation: AdminSemesterDeletionOperation): string {
+  if (operation.reason === 'STALE_PREVIEW') {
+    return 'Состав данных изменился. Удаление отменено; проверь обновлённые числа и подтверди действие ещё раз.'
+  }
+  if (operation.reason === 'PREPARE_EXPIRED') {
+    return 'Подготовка истекла, связанные данные освобождены. Удаление отменено; проверь предпросмотр ещё раз.'
+  }
+  return operation.blockingReason ?? 'Удаление отменено. Данные семестра сохранены.'
+}
+
+async function continueDeletionCheck(): Promise<void> {
+  const command = deletionCommand.value
+  if (!command || command.phase === 'SUBMITTING') return
+  if (!command.operationId) {
+    deletionPreview.value = command.preview
+    deletionPassword.value = ''
+    deletionError.value = 'Введи пароль, чтобы повторить тот же запрос с прежним ключом операции.'
+    return
+  }
+  const scope = deletionScopeRevision
+  const controller = beginDeletionMonitor()
+  deletionError.value = null
+  try {
+    const operation = await props.client.getSemesterDeletionOperation(command.operationId, controller.signal)
+    if (!isCurrentDeletionScope(scope, controller) || deletionCommand.value?.operationId !== command.operationId) return
+    await applyDeletionOperation(command, operation, scope, controller)
+    if (operation.phase === 'PREPARING' || operation.phase === 'RELEASING' || operation.phase === 'DELETING') {
+      await pollDeletionOperation(command, operation, scope, controller)
+    }
+  } catch (cause) {
+    if (!isCurrentDeletionScope(scope, controller)) return
+    if (cause instanceof StaleSessionGenerationError) {
+      resetDeletionScope(true)
+      return
+    }
+    if (cause instanceof AdminSemesterApiError && (cause.response.status === 401 || cause.response.status === 403)) {
+      emit('ownerError', cause)
+    }
+    deletionError.value = 'Состояние операции пока недоступно. Продолжи проверку тем же operation ID.'
+    deletionMonitorController = null
+  }
+}
+
+function reopenDeletionConfirmation(): void {
+  const command = deletionCommand.value
+  if (!command || command.operationId !== null || command.phase === 'SUBMITTING') return
+  deletionPreview.value = command.preview
+  deletionPassword.value = ''
+  deletionError.value = 'Введи пароль, чтобы повторить тот же запрос с прежним ключом операции.'
+}
+
+function loadFreshDeletionPreview(): void {
+  const command = deletionCommand.value
+  if (!command) return
+  const semester = semesters.value.find((item) => item.id === command.semesterId)
+  if (!semester) {
+    deletionError.value = 'Семестр уже отсутствует в списке. Проверь сохранённый результат операции.'
+    return
+  }
+  void openDeletionPreview(semester)
+}
+
+function dismissDeletionResult(): void {
+  if (deletionCommand.value?.phase !== 'TERMINAL' || deletionPreview.value !== null) return
+  removePersistedDeletionCommand()
+  deletionCommand.value = null
+  deletionOperation.value = null
+  deletionError.value = null
+  notice.value = null
 }
 
 function openArchiveConfirmation(semester: AdminSemester, action: AdminSemesterArchiveAction): void {
@@ -809,6 +1187,185 @@ function resetArchiveScope(): void {
   notice.value = null
 }
 
+function resetDeletionScope(preserveStoredOperation = false): void {
+  deletionScopeRevision += 1
+  deletionPreviewRevision += 1
+  deletionPreviewController?.abort()
+  deletionPreviewController = null
+  deletionMonitorController?.abort()
+  deletionMonitorController = null
+  if (!preserveStoredOperation) deletionStorageKey = null
+  deletionPreviewLoading.value = false
+  deletionPreview.value = null
+  deletionPassword.value = ''
+  deletionError.value = null
+  deletionCommand.value = null
+  deletionOperation.value = null
+}
+
+function reconcileDeletionStorageScope(): void {
+  const scope = currentDeletionStorageScope()
+  if (scope === null) return
+  const key = storageKeyForDeletionScope(scope)
+  deletionStorageKey = key
+  restoreDeletionProgress()
+}
+
+function currentDeletionStorageScope(): string | null {
+  try {
+    return props.client.getDeletionStorageScope()
+  } catch {
+    return null
+  }
+}
+
+function storageKeyForDeletionScope(scope: string): string {
+  return `rct:admin:semester-delete:v1:${encodeURIComponent(scope)}`
+}
+
+function currentDeletionStorageKey(): string | null {
+  const scope = currentDeletionStorageScope()
+  if (scope === null || typeof window === 'undefined') return null
+  return storageKeyForDeletionScope(scope)
+}
+
+function persistDeletionCommand(command: NonNullable<typeof deletionCommand.value>): boolean {
+  const scope = currentDeletionStorageScope()
+  if (scope === null || typeof window === 'undefined') return false
+  const key = storageKeyForDeletionScope(scope)
+  const state = {
+    version: 1,
+    scope,
+    semesterId: command.semesterId,
+    preview: command.preview,
+    idempotencyKey: command.idempotencyKey,
+    operationId: command.operationId,
+  }
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(state))
+    deletionStorageKey = key
+    return true
+  } catch {
+    return false
+  }
+}
+
+function removePersistedDeletionCommand(): void {
+  const key = deletionStorageKey
+  if (!key || typeof window === 'undefined') return
+  try {
+    window.sessionStorage.removeItem(key)
+  } catch {
+    // The in-memory command is still cleared when browser storage is unavailable.
+  }
+  deletionStorageKey = null
+}
+
+function restoreDeletionProgress(): void {
+  const scope = currentDeletionStorageScope()
+  if (scope === null || typeof window === 'undefined') return
+  const key = storageKeyForDeletionScope(scope)
+  deletionStorageKey = key
+  let stored: unknown
+  try {
+    const raw = window.sessionStorage.getItem(key)
+    if (raw === null) return
+    stored = JSON.parse(raw) as unknown
+  } catch {
+    deletionError.value = 'Сохранённый ход удаления не удалось прочитать. Проверь статус операции вручную.'
+    return
+  }
+  const record = isRecord(stored) ? stored : null
+  const preview = readStoredDeletionPreview(record?.preview)
+  const semesterId = record?.semesterId
+  const idempotencyKey = record?.idempotencyKey
+  const operationId = record?.operationId
+  if (record?.version !== 1 || record.scope !== scope || !preview
+    || typeof semesterId !== 'number' || semesterId !== preview.semesterId
+    || typeof idempotencyKey !== 'string' || !isUuid(idempotencyKey)
+    || (operationId !== null && (typeof operationId !== 'string' || !isUuid(operationId)))) {
+    removePersistedDeletionCommand()
+    return
+  }
+  const command = {
+    semesterId,
+    preview,
+    idempotencyKey,
+    operationId: operationId as string | null,
+    phase: operationId === null ? 'UNCERTAIN' as const : 'PENDING' as const,
+    operation: null,
+  }
+  deletionCommand.value = command
+  deletionOperation.value = null
+  if (operationId === null) {
+    deletionPreview.value = preview
+    deletionError.value = 'Ранее отправленный запрос не получил подтверждения. Введи пароль, чтобы безопасно повторить тот же запрос.'
+    return
+  }
+  void resumeDeletionProgress(command)
+}
+
+async function resumeDeletionProgress(command: NonNullable<typeof deletionCommand.value>): Promise<void> {
+  const scope = deletionScopeRevision
+  const controller = beginDeletionMonitor()
+  try {
+    const operation = await props.client.getSemesterDeletionOperation(command.operationId!, controller.signal)
+    if (!isCurrentDeletionScope(scope, controller)
+      || deletionCommand.value?.operationId !== command.operationId) return
+    await applyDeletionOperation(command, operation, scope, controller)
+    if (operation.phase === 'PREPARING' || operation.phase === 'RELEASING' || operation.phase === 'DELETING') {
+      await pollDeletionOperation(command, operation, scope, controller)
+    }
+  } catch (cause) {
+    if (!isCurrentDeletionScope(scope, controller)) return
+    if (cause instanceof StaleSessionGenerationError) {
+      resetDeletionScope(true)
+      return
+    }
+    deletionError.value = 'Сохранённая операция ещё не загрузилась. Продолжи проверку тем же operation ID.'
+    deletionMonitorController = null
+  }
+}
+
+function readStoredDeletionPreview(value: unknown): AdminSemesterDeletionPreview | null {
+  if (!isRecord(value)) return null
+  const counts = value.counts
+  if (!isRecord(counts)) return null
+  const countFields: Array<keyof AdminSemesterDeletionCounts> = [
+    'scheduleTemplates', 'oneOffLessons', 'lessons', 'assignments', 'homeworks', 'attendanceMarks', 'studentRequests',
+  ]
+  if (countFields.some((field) => !Number.isSafeInteger(counts[field]) || (counts[field] as number) < 0)) return null
+  if (!Number.isSafeInteger(value.semesterId) || (value.semesterId as number) <= 0
+    || typeof value.semesterName !== 'string' || value.semesterName.trim() === ''
+    || (value.priorState !== 'ACTIVE' && value.priorState !== 'INACTIVE' && value.priorState !== 'ARCHIVED')
+    || !Number.isSafeInteger(value.stateVersion) || (value.stateVersion as number) < 0
+    || typeof value.previewDigest !== 'string' || value.previewDigest.trim() === '') return null
+  return {
+    semesterId: value.semesterId as number,
+    semesterName: value.semesterName,
+    priorState: value.priorState,
+    stateVersion: value.stateVersion as number,
+    previewDigest: value.previewDigest,
+    counts: {
+      scheduleTemplates: counts.scheduleTemplates as number,
+      oneOffLessons: counts.oneOffLessons as number,
+      lessons: counts.lessons as number,
+      assignments: counts.assignments as number,
+      homeworks: counts.homeworks as number,
+      attendanceMarks: counts.attendanceMarks as number,
+      studentRequests: counts.studentRequests as number,
+    },
+  }
+}
+
+function isUuid(value: string): boolean {
+  return /^[\da-f]{8}-[\da-f]{4}-[1-8][\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i.test(value)
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 function clearArchiveSettlement(semesterId: number, operationId: string): void {
   if (archiveSettlingOperationIds.value[semesterId] !== operationId) return
   const next = { ...archiveSettlingOperationIds.value }
@@ -818,6 +1375,10 @@ function clearArchiveSettlement(semesterId: number, operationId: string): void {
 
 function isCurrentArchiveScope(scope: number, controller?: AbortController): boolean {
   return !disposed && scope === archiveScopeRevision && !controller?.signal.aborted
+}
+
+function isCurrentDeletionScope(scope: number, controller?: AbortController): boolean {
+  return !disposed && scope === deletionScopeRevision && !controller?.signal.aborted
 }
 
 function createIdempotencyKey(): string {
@@ -851,6 +1412,35 @@ function operationHasExpectedCurrentState(semester: AdminSemester, action: Admin
 
 function operationLabel(operation: AdminSemesterArchiveOperation): string {
   return operation.action === 'ARCHIVE' ? 'Архивация выполняется на сервере…' : 'Восстановление выполняется на сервере…'
+}
+
+function deletionPhaseLabel(phase: AdminSemesterDeletionPhase): string {
+  const labels: Record<AdminSemesterDeletionPhase, string> = {
+    PREPARING: 'Подготавливаем удаление и проверяем связанные данные…',
+    RELEASING: 'Освобождаем связанные данные…',
+    DELETING: 'Удаляем данные семестра…',
+    COMPLETED: 'Удаление завершено.',
+    CANCELLED: 'Удаление отменено; данные сохранены.',
+  }
+  return labels[phase]
+}
+
+function deletionPriorStateLabel(state: AdminSemesterDeletionPreview['priorState']): string {
+  if (state === 'ACTIVE') return 'Текущий семестр'
+  if (state === 'ARCHIVED') return 'В архиве'
+  return 'Неактивный'
+}
+
+function deletionCountItems(counts: AdminSemesterDeletionCounts): readonly { label: string; value: number }[] {
+  return [
+    { label: 'Шаблоны расписания', value: counts.scheduleTemplates },
+    { label: 'Разовые занятия', value: counts.oneOffLessons },
+    { label: 'Занятия', value: counts.lessons },
+    { label: 'Задания', value: counts.assignments },
+    { label: 'Домашние работы', value: counts.homeworks },
+    { label: 'Отметки посещаемости', value: counts.attendanceMarks },
+    { label: 'Заявки студентов', value: counts.studentRequests },
+  ]
 }
 
 function operationStateLabel(value: string): string {
@@ -976,6 +1566,7 @@ onBeforeUnmount(() => {
   listAbortController = null
   cancelEditLoad()
   resetArchiveScope()
+  resetDeletionScope(false)
 })
 </script>
 
@@ -1103,6 +1694,207 @@ onBeforeUnmount(() => {
         {{ saving ? 'Сохраняем…' : formMode === 'edit' ? 'Сохранить изменения' : 'Создать семестр' }}
       </button>
     </form>
+
+    <section
+      v-if="deletionCommand"
+      class="admin-semester-card admin-semester-deletion-progress"
+      role="region"
+      aria-labelledby="admin-semester-deletion-progress-title"
+      :aria-busy="deletionCommand.phase === 'SUBMITTING' || deletionCommand.phase === 'PENDING'"
+    >
+      <h2 id="admin-semester-deletion-progress-title">
+        Удаление семестра
+      </h2>
+      <h3>{{ deletionCommand.preview.semesterName }}</h3>
+      <p
+        v-if="visibleDeletionOperation"
+        role="status"
+      >
+        {{ deletionPhaseLabel(visibleDeletionOperation.phase) }}
+      </p>
+      <p
+        v-else-if="deletionCommand.phase === 'SUBMITTING'"
+        role="status"
+      >
+        Отправляем подтверждение и ждём operation ID…
+      </p>
+      <p
+        v-else-if="deletionCommand.phase === 'UNCERTAIN'"
+        role="status"
+      >
+        Ответ не подтверждён. Продолжи с тем же предпросмотром и ключом операции.
+      </p>
+      <p
+        v-else-if="deletionCommand.phase === 'PASSWORD_REQUIRED'"
+        role="status"
+      >
+        Для повтора нужен пароль. Ключ операции и предпросмотр сохранены.
+      </p>
+      <p
+        v-else
+        role="status"
+      >
+        Загружаем сохранённое состояние операции…
+      </p>
+      <p
+        v-if="deletionError && !deletionPreview"
+        class="admin-semester-state admin-semester-state--error"
+        role="alert"
+      >
+        {{ deletionError }}
+      </p>
+      <p
+        v-if="visibleDeletionOperation?.blockingReason"
+        class="admin-semester-deletion-progress__reason"
+      >
+        {{ visibleDeletionOperation.blockingReason }}
+      </p>
+      <dl class="admin-semester-deletion-counts">
+        <div
+          v-for="item in deletionCountItems(visibleDeletionOperation?.counts ?? deletionCommand.preview.counts)"
+          :key="item.label"
+        >
+          <dt>{{ item.label }}</dt>
+          <dd>{{ item.value }}</dd>
+        </div>
+      </dl>
+      <div class="admin-semester-card__actions">
+        <button
+          v-if="deletionCommand.operationId === null && deletionCommand.phase !== 'SUBMITTING'"
+          class="admin-semester-action admin-semester-action--secondary"
+          type="button"
+          @click="reopenDeletionConfirmation"
+        >
+          Ввести пароль и продолжить
+        </button>
+        <button
+          v-else-if="deletionCommand.phase === 'PENDING'"
+          class="admin-semester-action admin-semester-action--secondary"
+          type="button"
+          @click="continueDeletionCheck"
+        >
+          Продолжить проверку
+        </button>
+        <button
+          v-if="visibleDeletionOperation?.phase === 'CANCELLED' && !visibleDeletionOperation.refreshedPreview"
+          class="admin-semester-action admin-semester-action--secondary"
+          type="button"
+          :disabled="!semesters.some((semester) => semester.id === deletionCommand?.semesterId)"
+          @click="loadFreshDeletionPreview"
+        >
+          Загрузить новый предпросмотр
+        </button>
+        <button
+          v-if="deletionCommand.phase === 'TERMINAL' && deletionPreview === null"
+          class="admin-semester-action admin-semester-action--secondary"
+          type="button"
+          @click="dismissDeletionResult"
+        >
+          Закрыть результат
+        </button>
+      </div>
+    </section>
+
+    <form
+      v-if="deletionPreview"
+      class="admin-semester-card admin-semester-deletion-confirmation"
+      role="group"
+      aria-labelledby="admin-semester-deletion-confirmation-title"
+      @submit.prevent="confirmSemesterDeletion"
+    >
+      <h2 id="admin-semester-deletion-confirmation-title">
+        Проверь последствия удаления
+      </h2>
+      <h3>{{ deletionPreview.semesterName }}</h3>
+      <p>
+        Состояние: {{ deletionPriorStateLabel(deletionPreview.priorState) }}. После подтверждения семестр и перечисленные данные будут удалены без возможности восстановления.
+      </p>
+      <p class="admin-semester-deletion-confirmation__warning">
+        Пользователи и группы сохранятся. Архивирование обратимо, а удаление окончательно.
+      </p>
+      <dl class="admin-semester-deletion-counts">
+        <div
+          v-for="item in deletionCountItems(deletionPreview.counts)"
+          :key="item.label"
+        >
+          <dt>{{ item.label }}</dt>
+          <dd>{{ item.value }}</dd>
+        </div>
+      </dl>
+      <label
+        class="admin-semester-deletion-confirmation__password"
+        for="admin-semester-delete-password"
+      >
+        Пароль администратора
+        <input
+          id="admin-semester-delete-password"
+          v-model="deletionPassword"
+          autocomplete="current-password"
+          aria-describedby="admin-semester-delete-password-help"
+          required
+          type="password"
+          :disabled="deletionCommand?.phase === 'SUBMITTING'"
+        >
+      </label>
+      <p
+        id="admin-semester-delete-password-help"
+        class="admin-semester-form__hint"
+      >
+        Пароль используется только для этой проверки и сразу очищается после отправки.
+      </p>
+      <p
+        v-if="!deletionStorageAvailable"
+        class="admin-semester-state admin-semester-state--error"
+        role="alert"
+      >
+        Не удалось подтвердить сессию администратора для сохранения хода операции. Подтверждение удаления недоступно.
+      </p>
+      <p
+        v-if="deletionError"
+        class="admin-semester-state admin-semester-state--error"
+        role="alert"
+      >
+        {{ deletionError }}
+      </p>
+      <div class="admin-semester-card__actions">
+        <button
+          class="admin-semester-action admin-semester-action--secondary"
+          type="button"
+          @click="closeDeletionPreview"
+        >
+          Закрыть предпросмотр
+        </button>
+        <button
+          class="admin-semester-action admin-semester-action--danger"
+          type="submit"
+          :disabled="deletionPassword.length === 0 || !deletionStorageAvailable || deletionPreviewLoading || deletionCommand?.phase === 'SUBMITTING'"
+          :aria-busy="deletionCommand?.phase === 'SUBMITTING'"
+        >
+          {{ deletionCommand?.phase === 'UNCERTAIN' || deletionCommand?.phase === 'PASSWORD_REQUIRED'
+            ? 'Повторить тот же запрос'
+            : deletionCommand?.phase === 'TERMINAL'
+              && deletionCommand.operation?.phase === 'CANCELLED'
+              && deletionCommand.operation.refreshedPreview?.previewDigest === deletionPreview.previewDigest
+              ? 'Подтвердить по обновлённым числам'
+              : 'Удалить семестр безвозвратно' }}
+        </button>
+      </div>
+    </form>
+
+    <p
+      v-if="deletionPreviewLoading && !deletionPreview"
+      class="admin-semester-state"
+      role="status"
+    >
+      Загружаем числовой предпросмотр удаления…
+    </p>
+    <p
+      v-else-if="deletionError && !deletionPreview && !deletionCommand"
+      class="admin-semester-state admin-semester-state--error"
+      role="alert"
+    >
+      {{ deletionError }}
+    </p>
 
     <p
       v-if="loading"
@@ -1365,6 +2157,15 @@ onBeforeUnmount(() => {
             >
               {{ canStartNewArchiveAttempt(semester, 'ARCHIVE') ? 'Повторить архивацию' : 'Архивировать' }}
             </button>
+            <button
+              class="admin-semester-action admin-semester-action--danger"
+              type="button"
+              :disabled="mutationBusy || !canRequestSemesterDeletion(semester)"
+              :title="canRequestSemesterDeletion(semester) ? undefined : deletionBlockReason(semester)"
+              @click="openDeletionPreview(semester)"
+            >
+              Удалить
+            </button>
           </div>
         </article>
       </section>
@@ -1423,6 +2224,15 @@ onBeforeUnmount(() => {
             >
               {{ canStartNewArchiveAttempt(semester, 'ARCHIVE') ? 'Повторить архивацию' : 'Архивировать' }}
             </button>
+            <button
+              class="admin-semester-action admin-semester-action--danger"
+              type="button"
+              :disabled="mutationBusy || !canRequestSemesterDeletion(semester)"
+              :title="canRequestSemesterDeletion(semester) ? undefined : deletionBlockReason(semester)"
+              @click="openDeletionPreview(semester)"
+            >
+              Удалить
+            </button>
           </div>
         </article>
       </section>
@@ -1455,15 +2265,26 @@ onBeforeUnmount(() => {
           <p class="admin-semester-form__hint">
             Данные сохранены. Редактирование и активация недоступны до восстановления.
           </p>
-          <button
-            class="admin-semester-action admin-semester-action--secondary"
-            type="button"
-            :disabled="mutationBusy || !canRestore(semester)"
-            :title="canRestore(semester) ? undefined : archiveBlockReason(semester, 'RESTORE')"
-            @click="openArchiveConfirmation(semester, 'RESTORE')"
-          >
-            {{ canStartNewArchiveAttempt(semester, 'RESTORE') ? 'Повторить восстановление' : 'Восстановить' }}
-          </button>
+          <div class="admin-semester-card__actions">
+            <button
+              class="admin-semester-action admin-semester-action--secondary"
+              type="button"
+              :disabled="mutationBusy || !canRestore(semester)"
+              :title="canRestore(semester) ? undefined : archiveBlockReason(semester, 'RESTORE')"
+              @click="openArchiveConfirmation(semester, 'RESTORE')"
+            >
+              {{ canStartNewArchiveAttempt(semester, 'RESTORE') ? 'Повторить восстановление' : 'Восстановить' }}
+            </button>
+            <button
+              class="admin-semester-action admin-semester-action--danger"
+              type="button"
+              :disabled="mutationBusy || !canRequestSemesterDeletion(semester)"
+              :title="canRequestSemesterDeletion(semester) ? undefined : deletionBlockReason(semester)"
+              @click="openDeletionPreview(semester)"
+            >
+              Удалить
+            </button>
+          </div>
         </article>
       </section>
     </div>

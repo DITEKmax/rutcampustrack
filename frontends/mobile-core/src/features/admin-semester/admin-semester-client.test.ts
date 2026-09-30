@@ -62,6 +62,34 @@ const archiveOperation = {
   attendance: 'NOT_STARTED',
   blockingReason: null,
 }
+const deletionCounts = {
+  scheduleTemplates: 2,
+  oneOffLessons: 1,
+  lessons: 14,
+  assignments: 3,
+  homeworks: 4,
+  attendanceMarks: 28,
+  studentRequests: 1,
+}
+const deletionPreview = {
+  semesterId: 7,
+  semesterName: 'Осень 2026',
+  priorState: 'ACTIVE',
+  stateVersion: 9,
+  previewDigest: 'opaque-preview-digest',
+  counts: deletionCounts,
+}
+const deletionOperation = {
+  operationId: '6d4988c6-cabe-45cf-bca0-6aaf95e7138f',
+  semesterId: 7,
+  phase: 'PREPARING',
+  retryable: false,
+  stateVersion: 10,
+  counts: deletionCounts,
+  reason: null,
+  blockingReason: null,
+  refreshedPreview: null,
+}
 
 describe('AdminSemesterClient', () => {
   it('reads the HATEOAS semester page from the academic gateway', async () => {
@@ -254,6 +282,91 @@ describe('AdminSemesterClient', () => {
       .rejects.toMatchObject({ response: { status: 503 }, archiveOperation: { operationId: archiveOperation.operationId } })
   })
 
+  it('loads deletion consequences and confirms with the frozen preview and idempotency key', async () => {
+    const calls: Array<{ path: string; method: string | undefined; body: BodyInit | null | undefined; key: string | null }> = []
+    const client = new AdminSemesterClient({
+      accessToken: () => 'token',
+      sessionScopeFor: () => '["admin-7","session-1","ADMIN"]',
+      fetcher: async (input, init) => {
+        calls.push({
+          path: String(input),
+          method: init?.method,
+          body: init?.body,
+          key: new Headers(init?.headers).get('Idempotency-Key'),
+        })
+        return String(input).endsWith('/delete-preview')
+          ? jsonResponse(deletionPreview)
+          : jsonResponse(deletionOperation, 202)
+      },
+    })
+
+    await expect(client.getSemesterDeletionPreview(7)).resolves.toEqual(deletionPreview)
+    await expect(client.deleteSemester(7, {
+      previewDigest: deletionPreview.previewDigest,
+      password: 'current-password',
+    }, 'b6160ec9-7450-4d41-b19c-0cb166b9115d')).resolves.toMatchObject({
+      operationId: deletionOperation.operationId,
+      phase: 'PREPARING',
+    })
+    expect(client.getDeletionStorageScope()).toBe('["admin-7","session-1","ADMIN"]')
+    expect(calls).toEqual([
+      {
+        path: '/api/academic/semesters/7/delete-preview',
+        method: undefined,
+        body: undefined,
+        key: null,
+      },
+      {
+        path: '/api/academic/semesters/7',
+        method: 'DELETE',
+        body: JSON.stringify({ previewDigest: deletionPreview.previewDigest, password: 'current-password' }),
+        key: 'b6160ec9-7450-4d41-b19c-0cb166b9115d',
+      },
+    ])
+  })
+
+  it('reads durable deletion status after the semester row is gone', async () => {
+    let path = ''
+    const client = new AdminSemesterClient({
+      accessToken: () => 'token',
+      fetcher: async (input) => {
+        path = String(input)
+        return jsonResponse({ ...deletionOperation, phase: 'COMPLETED' })
+      },
+    })
+
+    await expect(client.getSemesterDeletionOperation(deletionOperation.operationId)).resolves.toMatchObject({
+      operationId: deletionOperation.operationId,
+      phase: 'COMPLETED',
+      counts: deletionCounts,
+    })
+    expect(path).toBe(`/api/academic/semester-deletions/${deletionOperation.operationId}`)
+  })
+
+  it('keeps the refreshed preview returned by a stale deletion conflict', async () => {
+    const client = new AdminSemesterClient({
+      accessToken: () => 'token',
+      fetcher: async () => jsonResponse({
+        ...deletionOperation,
+        phase: 'CANCELLED',
+        reason: 'STALE_PREVIEW',
+        refreshedPreview: { ...deletionPreview, stateVersion: 10, counts: { ...deletionCounts, lessons: 15 } },
+      }, 409),
+    })
+
+    await expect(client.deleteSemester(7, {
+      previewDigest: deletionPreview.previewDigest,
+      password: 'current-password',
+    }, 'b6160ec9-7450-4d41-b19c-0cb166b9115d')).rejects.toMatchObject({
+      response: { status: 409 },
+      deletionOperation: {
+        phase: 'CANCELLED',
+        reason: 'STALE_PREVIEW',
+        refreshedPreview: { stateVersion: 10, counts: { lessons: 15 } },
+      },
+    })
+  })
+
   it('rejects a response that crosses the captured session generation', async () => {
     let generation = 4
     let resolveResponse!: (response: Response) => void
@@ -268,5 +381,19 @@ describe('AdminSemesterClient', () => {
     resolveResponse(jsonResponse({ _embedded: { semesterResponseList: [semesterResponse] } }))
 
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+  })
+
+  it('exposes only the captured verified session scope for reload resume', () => {
+    let generation = 4
+    const client = createGenerationBoundAdminSemesterClient({
+      currentGeneration: () => generation,
+      accessTokenFor: () => 'token',
+      refreshFor: async () => undefined,
+      sessionScopeFor: (captured) => captured === generation ? '["admin-7","session-1","ADMIN"]' : null,
+    })
+
+    expect(client.getDeletionStorageScope()).toBe('["admin-7","session-1","ADMIN"]')
+    generation = 5
+    expect(() => client.getDeletionStorageScope()).toThrow(StaleSessionGenerationError)
   })
 })

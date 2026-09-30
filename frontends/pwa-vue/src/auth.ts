@@ -163,6 +163,14 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     return accessToken.value
   }
 
+  function sessionScopeFor(generation: number): string | null {
+    assertCurrent(generation)
+    const profile = knownProfileGeneration === generation ? knownProfile : null
+    if (!profile || profile.activeRole !== 'ADMIN'
+      || profile.userId.trim() === '' || profile.sessionId.trim() === '') return null
+    return JSON.stringify([profile.userId, profile.sessionId, profile.activeRole])
+  }
+
   async function refreshFor(generation: number): Promise<void> {
     assertCurrent(generation)
     if (refreshInFlight?.generation === generation) return refreshInFlight.promise
@@ -317,6 +325,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
       currentGeneration,
       accessTokenFor,
       refreshFor,
+      sessionScopeFor,
     }, fetcher)
   }
 

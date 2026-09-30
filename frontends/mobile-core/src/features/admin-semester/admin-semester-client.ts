@@ -12,6 +12,40 @@ export type AdminSemesterArchiveParticipantState =
   | 'RELEASE_PENDING'
   | 'RELEASED'
 
+export type AdminSemesterDeletionPriorState = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED'
+export type AdminSemesterDeletionPhase = 'PREPARING' | 'RELEASING' | 'DELETING' | 'COMPLETED' | 'CANCELLED'
+
+export interface AdminSemesterDeletionCounts {
+  readonly scheduleTemplates: number
+  readonly oneOffLessons: number
+  readonly lessons: number
+  readonly assignments: number
+  readonly homeworks: number
+  readonly attendanceMarks: number
+  readonly studentRequests: number
+}
+
+export interface AdminSemesterDeletionPreview {
+  readonly semesterId: number
+  readonly semesterName: string
+  readonly priorState: AdminSemesterDeletionPriorState
+  readonly stateVersion: number
+  readonly previewDigest: string
+  readonly counts: AdminSemesterDeletionCounts
+}
+
+export interface AdminSemesterDeletionOperation {
+  readonly operationId: string
+  readonly semesterId: number
+  readonly phase: AdminSemesterDeletionPhase
+  readonly retryable: boolean
+  readonly stateVersion: number
+  readonly counts: AdminSemesterDeletionCounts
+  readonly reason: string | null
+  readonly blockingReason: string | null
+  readonly refreshedPreview: AdminSemesterDeletionPreview | null
+}
+
 export interface AdminSemesterArchiveOperation {
   readonly operationId: string
   readonly semesterId: number
@@ -73,6 +107,7 @@ export interface AdminSemesterOverlap {
 
 export interface AdminSemesterApiOptions {
   readonly accessToken: () => string | null
+  readonly sessionScopeFor?: () => string | null
   readonly onUnauthorized?: () => Promise<void>
   readonly assertCurrent?: () => void
   readonly fetcher?: typeof fetch
@@ -83,6 +118,7 @@ export class AdminSemesterApiError extends Error {
     readonly response: Response,
     readonly problem: MobileProblemDetails | null,
     readonly archiveOperation: AdminSemesterArchiveOperation | null = null,
+    readonly deletionOperation: AdminSemesterDeletionOperation | null = null,
   ) {
     super(problem?.detail || problem?.title || `HTTP ${response.status}`)
     this.name = 'AdminSemesterApiError'
@@ -193,6 +229,61 @@ export class AdminSemesterClient {
     ).then(normalizeArchiveStatus)
   }
 
+  getDeletionStorageScope(): string | null {
+    const scope = this.options.sessionScopeFor?.()
+    return typeof scope === 'string' && scope.trim() !== '' ? scope : null
+  }
+
+  getSemesterDeletionPreview(id: number, signal?: AbortSignal): Promise<AdminSemesterDeletionPreview> {
+    assertPositiveInteger(id, 'semesterId')
+    return this.request<unknown>(
+      `${AdminSemesterClient.basePath}/${id}/delete-preview`,
+      { cache: 'no-store', ...(signal ? { signal } : {}) },
+    ).then((value) => {
+      const preview = normalizeDeletionPreview(value)
+      if (preview.semesterId !== id) throw new Error('Сервер вернул предпросмотр для другого семестра.')
+      return preview
+    })
+  }
+
+  deleteSemester(
+    id: number,
+    request: { readonly previewDigest: string; readonly password: string },
+    idempotencyKey: string,
+    signal?: AbortSignal,
+  ): Promise<AdminSemesterDeletionOperation> {
+    assertPositiveInteger(id, 'semesterId')
+    assertUuid(idempotencyKey, 'idempotencyKey')
+    const previewDigest = requiredText(request.previewDigest, 'previewDigest')
+    if (typeof request.password !== 'string' || request.password.length === 0) {
+      throw new RangeError('password must not be empty')
+    }
+    return this.request<unknown>(`${AdminSemesterClient.basePath}/${id}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ previewDigest, password: request.password }),
+      headers: { 'Idempotency-Key': idempotencyKey },
+      cache: 'no-store',
+      ...(signal ? { signal } : {}),
+    }).then((value) => {
+      const operation = normalizeDeletionOperation(value)
+      if (operation.semesterId !== id) throw new Error('Сервер вернул операцию удаления для другого семестра.')
+      return operation
+    })
+  }
+
+  getSemesterDeletionOperation(operationId: string, signal?: AbortSignal): Promise<AdminSemesterDeletionOperation> {
+    const id = requiredText(operationId, 'operationId')
+    assertUuid(id, 'operationId')
+    return this.request<unknown>(
+      `/api/academic/semester-deletions/${encodeURIComponent(id)}`,
+      { cache: 'no-store', ...(signal ? { signal } : {}) },
+    ).then((value) => {
+      const operation = normalizeDeletionOperation(value)
+      if (operation.operationId !== id) throw new Error('Сервер вернул другую операцию удаления семестра.')
+      return operation
+    })
+  }
+
   private changeArchiveState(
     id: number,
     action: AdminSemesterArchiveAction,
@@ -247,7 +338,10 @@ export class AdminSemesterClient {
     this.options.assertCurrent?.()
     const problem = isRecord(body) ? body as MobileProblemDetails : null
     const archiveOperation = response.status === 503 ? findArchiveOperation(body) : null
-    throw new AdminSemesterApiError(response, problem, archiveOperation)
+    const deletionOperation = response.status === 409 || response.status === 503
+      ? findDeletionOperation(body)
+      : null
+    throw new AdminSemesterApiError(response, problem, archiveOperation, deletionOperation)
   }
 }
 
@@ -255,6 +349,7 @@ export interface AdminSemesterApiGenerationOwner {
   currentGeneration(): number
   accessTokenFor(generation: number): string | null
   refreshFor(generation: number): Promise<void>
+  sessionScopeFor?(generation: number): string | null
 }
 
 interface NormalizedSemesterPage {
@@ -365,6 +460,71 @@ function findArchiveOperation(value: unknown): AdminSemesterArchiveOperation | n
     return normalizeArchiveOperation(candidate)
   } catch {
     return null
+  }
+}
+
+function findDeletionOperation(value: unknown): AdminSemesterDeletionOperation | null {
+  const record = isRecord(value) ? value : null
+  const candidate = record?.deletionOperation ?? record?.operation ?? value
+  if (!isRecord(candidate) || typeof candidate.operationId !== 'string') return null
+  try {
+    return normalizeDeletionOperation(candidate)
+  } catch {
+    return null
+  }
+}
+
+function normalizeDeletionPreview(value: unknown): AdminSemesterDeletionPreview {
+  const record = requiredRecord(value, 'semester deletion preview')
+  const priorState = record.priorState
+  if (priorState !== 'ACTIVE' && priorState !== 'INACTIVE' && priorState !== 'ARCHIVED') {
+    throw new Error('Сервер вернул некорректное предыдущее состояние семестра.')
+  }
+  return {
+    semesterId: positiveInteger(record.semesterId, 'semester deletion preview.semesterId'),
+    semesterName: requiredText(record.semesterName, 'semester deletion preview.semesterName'),
+    priorState,
+    stateVersion: nonNegativeInteger(record.stateVersion, 'semester deletion preview.stateVersion'),
+    previewDigest: requiredText(record.previewDigest, 'semester deletion preview.previewDigest'),
+    counts: normalizeDeletionCounts(record.counts, 'semester deletion preview.counts'),
+  }
+}
+
+function normalizeDeletionOperation(value: unknown): AdminSemesterDeletionOperation {
+  const record = requiredRecord(value, 'semester deletion operation')
+  const operationId = requiredText(record.operationId, 'semester deletion operation.operationId')
+  assertUuid(operationId, 'semester deletion operation.operationId')
+  const phase = record.phase
+  if (phase !== 'PREPARING' && phase !== 'RELEASING' && phase !== 'DELETING'
+    && phase !== 'COMPLETED' && phase !== 'CANCELLED') {
+    throw new Error('Сервер вернул некорректную фазу удаления семестра.')
+  }
+  const refreshedPreview = record.refreshedPreview
+  return {
+    operationId,
+    semesterId: positiveInteger(record.semesterId, 'semester deletion operation.semesterId'),
+    phase,
+    retryable: requiredBoolean(record.retryable, 'semester deletion operation.retryable'),
+    stateVersion: nonNegativeInteger(record.stateVersion, 'semester deletion operation.stateVersion'),
+    counts: normalizeDeletionCounts(record.counts, 'semester deletion operation.counts'),
+    reason: optionalText(record.reason, 'semester deletion operation.reason'),
+    blockingReason: optionalText(record.blockingReason, 'semester deletion operation.blockingReason'),
+    refreshedPreview: refreshedPreview === undefined || refreshedPreview === null
+      ? null
+      : normalizeDeletionPreview(refreshedPreview),
+  }
+}
+
+function normalizeDeletionCounts(value: unknown, field: string): AdminSemesterDeletionCounts {
+  const counts = requiredRecord(value, field)
+  return {
+    scheduleTemplates: nonNegativeInteger(counts.scheduleTemplates, `${field}.scheduleTemplates`),
+    oneOffLessons: nonNegativeInteger(counts.oneOffLessons, `${field}.oneOffLessons`),
+    lessons: nonNegativeInteger(counts.lessons, `${field}.lessons`),
+    assignments: nonNegativeInteger(counts.assignments, `${field}.assignments`),
+    homeworks: nonNegativeInteger(counts.homeworks, `${field}.homeworks`),
+    attendanceMarks: nonNegativeInteger(counts.attendanceMarks, `${field}.attendanceMarks`),
+    studentRequests: nonNegativeInteger(counts.studentRequests, `${field}.studentRequests`),
   }
 }
 

@@ -65,6 +65,12 @@ export function createGenerationBoundAdminSemesterClient(
   }
   return new AdminSemesterClient({
     assertCurrent,
+    ...(owner.sessionScopeFor ? {
+      sessionScopeFor: () => {
+        assertCurrent()
+        return owner.sessionScopeFor?.(generation) ?? null
+      },
+    } : {}),
     accessToken: () => {
       assertCurrent()
       return owner.accessTokenFor(generation)

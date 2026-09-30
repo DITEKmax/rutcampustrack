@@ -66,6 +66,8 @@ export interface TmaProfilePortOptions {
 export function useTmaSession(options: TmaSessionOptions) {
   const accessToken = ref<string | null>(null)
   const resetGeneration = ref(0)
+  let knownProfile: ProfileSnapshot | null = null
+  let knownProfileGeneration: number | null = null
   let authenticateInFlight: { generation: number; promise: Promise<void> } | null = null
 
   function currentGeneration(): number {
@@ -79,6 +81,14 @@ export function useTmaSession(options: TmaSessionOptions) {
   function accessTokenFor(generation: number): string | null {
     assertCurrent(generation)
     return accessToken.value
+  }
+
+  function sessionScopeFor(generation: number): string | null {
+    assertCurrent(generation)
+    const profile = knownProfileGeneration === generation ? knownProfile : null
+    if (!profile || profile.activeRole !== 'ADMIN'
+      || profile.userId.trim() === '' || profile.sessionId.trim() === '') return null
+    return JSON.stringify([profile.userId, profile.sessionId, profile.activeRole])
   }
 
   async function authenticateFor(generation: number): Promise<void> {
@@ -188,6 +198,7 @@ export function useTmaSession(options: TmaSessionOptions) {
       currentGeneration,
       accessTokenFor,
       refreshFor: authenticateFor,
+      sessionScopeFor,
     }, fetcher)
   }
 
@@ -221,7 +232,10 @@ export function useTmaSession(options: TmaSessionOptions) {
     if (!response.ok) throw new TmaAuthError(response.status, 'Не удалось получить профиль Telegram-сессии')
     const value = await response.json() as TmaCurrentSession
     assertCurrent(generation)
-    return adaptProfile(value)
+    const profile = adaptProfile(value)
+    knownProfile = profile
+    knownProfileGeneration = generation
+    return profile
   }
 
   async function selectRoleFor(
@@ -241,6 +255,8 @@ export function useTmaSession(options: TmaSessionOptions) {
     assertCurrent(generation)
     const nextGeneration = clear()
     accessToken.value = value.accessToken
+    knownProfile = session
+    knownProfileGeneration = nextGeneration
     return { accessToken: value.accessToken, expiresIn: value.expiresIn ?? 0, session, generation: nextGeneration }
   }
 
@@ -348,6 +364,8 @@ export function useTmaSession(options: TmaSessionOptions) {
   function clear(): number {
     resetGeneration.value += 1
     accessToken.value = null
+    knownProfile = null
+    knownProfileGeneration = null
     return currentGeneration()
   }
 

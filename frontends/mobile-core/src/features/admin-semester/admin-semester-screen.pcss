@@ -202,6 +202,61 @@
   background: var(--rct-color-surface-base);
 }
 
+.admin-semester-action--danger {
+  border: var(--rct-border-hairline) solid var(--rct-color-danger-text);
+  color: var(--rct-color-danger-text);
+  background: var(--rct-color-surface-base);
+}
+
+.admin-semester-deletion-counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rct-space-2) var(--rct-space-3);
+  margin: 0;
+}
+
+.admin-semester-deletion-counts > div {
+  display: grid;
+  gap: var(--rct-space-1);
+  min-inline-size: 0;
+}
+
+.admin-semester-deletion-counts dt {
+  color: var(--rct-color-text-muted);
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-semester-deletion-counts dd {
+  margin: 0;
+  color: var(--rct-color-text-primary);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+.admin-semester-deletion-confirmation__warning,
+.admin-semester-deletion-progress__reason {
+  border-inline-start: var(--rct-border-hairline) solid var(--rct-color-danger-text);
+  padding-inline-start: var(--rct-space-3);
+  color: var(--rct-color-danger-text);
+}
+
+.admin-semester-deletion-confirmation__password {
+  display: grid;
+  gap: var(--rct-space-1);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.admin-semester-deletion-confirmation__password input {
+  min-block-size: var(--rct-control-min-touch);
+  inline-size: 100%;
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding: 0 var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+  font: inherit;
+}
+
 .admin-semester-confirmation > p,
 .admin-semester-archive-details > p {
   margin: 0;
@@ -258,6 +313,7 @@
 .admin-semester-screen__new:focus-visible,
 .admin-semester-action:focus-visible,
 .admin-semester-form input:focus-visible,
+.admin-semester-deletion-confirmation__password input:focus-visible,
 .admin-semester-form__type-option:focus-within {
   outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
   outline-offset: var(--rct-focus-offset);

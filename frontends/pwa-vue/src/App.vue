@@ -1267,6 +1267,7 @@ function handleExternalInvalidation(reason: PwaAuthInvalidationReason = 'externa
   authSnapshot.value = null
   authError.value = null
   bootstrapError.value = 'Сессия завершена в другой вкладке'
+  replacePasswordResetRouteWithLogin()
   authView.value = 'login'
   sessionReady.value = true
   offline.value = false

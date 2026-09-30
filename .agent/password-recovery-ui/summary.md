@@ -12,6 +12,12 @@ Changed files in this correction are `frontends/pwa-vue/src/App.vue`, `frontends
 
 The focused contract suite passes 7/7; Vue/TypeScript typecheck and `git diff --check` pass. Runtime was not repeated: the frozen delivery packet prohibits another Vite dev smoke after the prior smoke stopped before Vue mount with the existing `sockjs-client` `global is not defined` error. The combined production build and real API acceptance remain for root integration. The real Telegram bot is still owner-deferred, and no delivery claim is made.
 
+## External-invalidation follow-up — 2026-09-30
+
+Bounded recheck found that logout invalidation from another tab cleared the auth view but left `/password-reset` in browser history. The branch in `App.vue` confirmed the reproduction path: external invalidation on the direct reset URL changed `authView` to `login` without replacing the pathname, so a reload selected recovery again. It now invokes the same direct-route cleanup before switching views; on ordinary paths that helper is a no-op. Clearing the parent proof lets the screen unmount, whose existing cleanup aborts pending work and retains stale-result guards.
+
+Acceptance for this follow-up is limited to this transition: direct-route external invalidation replaces the path and clears proof before showing login; ordinary invalidation behavior remains unchanged; pending recovery work is still aborted on unmount. The focused 7-case suite, typecheck, and diff check were repeated after this source change. No two-tab runtime was run here; root will cover that branch in shared acceptance. Exact commands and exit codes are in `checks.json` under `externalInvalidationFollowup`.
+
 ## Goal
 Deliver the frozen password recovery contract in the PWA: a user can start recovery from login, request a Telegram code with a login, verify it and set a new password; a direct Telegram reset link opens the same flow. Verification issues only a short-lived reset ticket, never a login session.
 

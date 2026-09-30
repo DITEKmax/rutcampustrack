@@ -137,5 +137,51 @@
       "Combined production build and real API acceptance remain with root integration.",
       "No real Telegram delivery claim."
     ]
+  },
+  "externalInvalidationFollowup": {
+    "status": "PASS — branch correction implemented; bounded recheck requested",
+    "parentCommit": "3d7c3ae416e4a022c285c313c59dc127a8a51955",
+    "sourceRevision": "3d7c3ae416e4a022c285c313c59dc127a8a51955",
+    "scope": "External logout invalidation while on the direct /password-reset route; ordinary invalidation paths remain unchanged.",
+    "reproductionEvidence": "Before the correction, handleExternalInvalidation cleared auth state and switched authView to login without replacing the direct reset pathname. Reload therefore matched the same direct-entry predicate and reopened recovery. The root bounded recheck linked this branch to the frozen recovery contract.",
+    "requiredBehavior": "Call existing replacePasswordResetRouteWithLogin before changing authView. On a direct reset path it replaces history and clears the one-time proof/error references; on ordinary paths it is a no-op. Recovery-screen unmount retains existing abort and stale-result behavior.",
+    "checks": [
+      {
+        "name": "focused recovery contract tests",
+        "cwd": "C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack/frontends/pwa-vue",
+        "command": "..\\node_modules\\.bin\\vitest.cmd run --config vite.config.ts src/features/password-recovery/password-recovery-contract.test.ts",
+        "exitCode": 0,
+        "result": "1 test file passed; existing 7 focused invariants passed."
+      },
+      {
+        "name": "Vue/TypeScript typecheck",
+        "cwd": "C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack/frontends/pwa-vue",
+        "command": "..\\node_modules\\.bin\\vue-tsc.cmd -p tsconfig.json --noEmit",
+        "exitCode": 0,
+        "result": "passed"
+      },
+      {
+        "name": "whitespace/conflict check",
+        "cwd": "C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack",
+        "command": "git -c safe.directory=C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack -C C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack diff --check",
+        "exitCode": 0,
+        "result": "passed; only Git line-ending normalization advisories were emitted."
+      }
+    ],
+    "runtimeEvidence": {
+      "status": "NOT RUN",
+      "reason": "Two-tab invalidation runtime is reserved for root shared acceptance; no separate stand was started."
+    },
+    "temporaryDependencies": {
+      "method": "temporary junction from worktree frontends/node_modules to shared main checkout frontends/node_modules",
+      "createExitCode": 0,
+      "cleanupExitCode": 0,
+      "cleanup": "junction removed and target confirmed present",
+      "sharedDependenciesModified": false
+    },
+    "limitations": [
+      "The changed external-invalidation branch is not covered by a standalone UI runtime here.",
+      "Root shared acceptance must confirm direct-route logout from another tab and reload behavior."
+    ]
   }
 }

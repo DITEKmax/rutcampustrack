@@ -52,5 +52,90 @@
     "real backend and Telegram bot acceptance: backend delivery and real bot are owner-deferred"
   ],
   "knownLimitation": "The contract has no anonymous password policy endpoint or published client rule set; server validation and bounded sanitized error details are used. Add an agreed public policy hint/source if requirements must be shown before submission.",
-  "sourceFreeze": "This evidence is committed together with the scoped UI source; final commit SHA is reported to root."
+  "sourceFreeze": "This evidence is committed together with the scoped UI source; final commit SHA is reported to root.",
+  "correction": {
+    "status": "PASS — bounded correction implemented; independent recheck and root integration pending",
+    "contract": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/2026-09-27-delivery/password-recovery-ui-contract.md",
+    "rulesSha256": "397C1B0984648CA2EE7066DEFCB5DEE797DCC546B3C760443012F817ECFAD976",
+    "sourceRevision": "2cf14f57d9adb6552747858b6100493614da00db",
+    "findings": [
+      "Direct /password-reset exit and completion replace browser history with the configured PWA base/login path.",
+      "Direct-entry fragment is consumed during App setup before mount hooks; the one-time proof reference is cleared after handoff.",
+      "Recovery client receives App requestFetcher so X-PWA-Version and 426 update gate apply while credentials remain omitted, cache is no-store, and Authorization remains absent.",
+      "Return controls stay available while busy; cancel invalidates and aborts work and stale-result guards remain active."
+    ],
+    "changedFiles": [
+      "frontends/pwa-vue/src/App.vue",
+      "frontends/pwa-vue/src/features/password-recovery/PasswordRecoveryScreen.vue",
+      "frontends/pwa-vue/src/features/password-recovery/password-recovery-link.ts",
+      "frontends/pwa-vue/src/features/password-recovery/password-recovery-contract.test.ts",
+      ".agent/password-recovery-ui/summary.md",
+      ".agent/password-recovery-ui/checks.json"
+    ],
+    "environment": {
+      "os": "Windows",
+      "shell": "PowerShell",
+      "node": "v24.14.0",
+      "npm": "11.9.0",
+      "vitest": "4.1.4"
+    },
+    "checks": [
+      {
+        "name": "focused recovery contract tests",
+        "cwd": "C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack/frontends/pwa-vue",
+        "command": "..\\node_modules\\.bin\\vitest.cmd run --config vite.config.ts src/features/password-recovery/password-recovery-contract.test.ts",
+        "exitCode": 0,
+        "result": "1 test file passed; 7 tests passed, including configured PWA version header, 426 event gate, proof consumption, base path, stale invalidation, server counters, and credential/cache constraints."
+      },
+      {
+        "name": "Vue/TypeScript typecheck",
+        "cwd": "C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack/frontends/pwa-vue",
+        "command": "..\\node_modules\\.bin\\vue-tsc.cmd -p tsconfig.json --noEmit",
+        "exitCode": 0,
+        "result": "passed"
+      },
+      {
+        "name": "whitespace/conflict check",
+        "cwd": "C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack",
+        "command": "git -c safe.directory=C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack -C C:/Users/maksd/.codex/worktrees/password-recovery-ui/rutcampustrack diff --check",
+        "exitCode": 0,
+        "result": "passed; Git emitted line-ending normalization advisories for touched files."
+      }
+    ],
+    "setupAttempts": [
+      {
+        "name": "Vitest in default sandbox before dependency junction",
+        "exitCode": 1,
+        "result": "Vite/esbuild could not read worktree ancestor directories while resolving vite.config.ts."
+      },
+      {
+        "name": "vue-tsc before dependency junction",
+        "exitCode": 1,
+        "result": "type definition vite/client unavailable because this managed worktree has no local node_modules."
+      },
+      {
+        "name": "Vitest in default sandbox after dependency junction",
+        "exitCode": 1,
+        "result": "Ancestor directory access remained blocked; scoped run then passed with narrowly scoped require_escalated."
+      }
+    ],
+    "temporaryDependencies": {
+      "method": "temporary junction from worktree frontends/node_modules to shared main checkout frontends/node_modules",
+      "createExitCode": 0,
+      "cleanupExitCode": 0,
+      "cleanup": "junction target verified, link removed, and shared dependency target confirmed present",
+      "sharedDependenciesModified": false
+    },
+    "runtimeEvidence": {
+      "status": "NOT RUN for this correction",
+      "reason": "Frozen packet directs no Vite dev smoke; root will run the combined production build after integration.",
+      "priorEvidence": "Previous local Vite smoke stopped before Vue mount with ReferenceError: global is not defined from existing sockjs-client; no recovery API request was issued.",
+      "backendAndTelegram": "Real backend and Telegram bot acceptance not verified; bot remains owner-deferred."
+    },
+    "limitations": [
+      "No standalone browser/runtime check was run for this correction.",
+      "Combined production build and real API acceptance remain with root integration.",
+      "No real Telegram delivery claim."
+    ]
+  }
 }

@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createPasswordRecoveryClient } from './password-recovery-client'
-import { consumePasswordResetFragment, isPasswordResetEntryPath } from './password-recovery-link'
+import { consumePasswordResetFragment, isPasswordResetEntryPath, passwordRecoveryLoginPath } from './password-recovery-link'
 import { createPasswordRecoveryOperationGate } from './password-recovery-operation'
+import { APP_UPDATE_REQUIRED_EVENT, APP_VERSION, createPwaFetcher } from '../../pwa-version'
 
 describe('PWA password recovery contract', () => {
   it('clears bot proof from the fragment before exposing it to the caller', () => {
@@ -13,6 +14,9 @@ describe('PWA password recovery contract', () => {
     expect(isPasswordResetEntryPath('/password-reset', '/')).toBe(true)
     expect(isPasswordResetEntryPath('/pwa/password-reset', '/pwa/')).toBe(true)
     expect(isPasswordResetEntryPath('/password-reset/other', '/')).toBe(false)
+    expect(passwordRecoveryLoginPath('/')).toBe('/')
+    expect(passwordRecoveryLoginPath('/pwa')).toBe('/pwa/')
+    expect(passwordRecoveryLoginPath('/pwa/')).toBe('/pwa/')
   })
 
   it('rejects duplicate or unrelated fragment parameters after clearing them', () => {
@@ -88,6 +92,42 @@ describe('PWA password recovery contract', () => {
       expect(init?.cache).toBe('no-store')
       expect(new Headers(init?.headers).has('Authorization')).toBe(false)
       expect(JSON.parse(String(init?.body))).toEqual(expectedBodies[index])
+    }
+  })
+
+  it('routes recovery requests through the configured PWA version fetcher', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }))
+    const client = createPasswordRecoveryClient(createPwaFetcher(fetcher))
+
+    await expect(client.complete({ resetTicket: 'ticket', newPassword: 'new-password' })).resolves.toBeUndefined()
+
+    const [, init] = fetcher.mock.calls[0] ?? []
+    const headers = new Headers(init?.headers)
+    expect(headers.get('X-PWA-Version')).toBe(APP_VERSION)
+    expect(init?.credentials).toBe('omit')
+    expect(init?.cache).toBe('no-store')
+    expect(headers.has('Authorization')).toBe(false)
+  })
+
+  it('surfaces the PWA update gate when a recovery endpoint returns 426', async () => {
+    const response = new Response(JSON.stringify({ detail: 'Обнови приложение.' }), {
+      status: 426,
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(response)
+    const dispatchEvent = vi.fn()
+    vi.stubGlobal('window', { dispatchEvent })
+
+    try {
+      const client = createPasswordRecoveryClient(createPwaFetcher(fetcher))
+      await expect(client.request('student-login')).rejects.toMatchObject({ status: 426 })
+      await vi.waitFor(() => expect(dispatchEvent).toHaveBeenCalledOnce())
+
+      const event = dispatchEvent.mock.calls[0]?.[0] as CustomEvent<{ reason: string; message: string }>
+      expect(event.type).toBe(APP_UPDATE_REQUIRED_EVENT)
+      expect(event.detail).toMatchObject({ reason: 'api', message: 'Обнови приложение.' })
+    } finally {
+      vi.unstubAllGlobals()
     }
   })
 })

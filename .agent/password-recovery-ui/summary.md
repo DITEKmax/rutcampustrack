@@ -1,5 +1,17 @@
 # PWA password recovery UI delivery (S3)
 
+## Fresh correction report — 2026-09-30
+
+This report supersedes the earlier implementation status below for the three bounded Sol findings. The recovery UI correction is implemented in the assigned managed worktree, based on HEAD `2cf14f57d9adb6552747858b6100493614da00db`. It is ready for the independent bounded recheck and root integration; it does not claim completed backend or Telegram acceptance.
+
+The user can now leave or complete a direct `/password-reset` flow and land at the configured PWA login path. App setup consumes and removes a bot proof fragment synchronously before mount hooks can issue app requests. The recovery screen receives that proof once, then clears the parent reference. Its API client receives App's configured `requestFetcher`, preserving version headers and the 426 update gate while keeping `credentials: omit`, `cache: no-store`, and no Authorization header. Return buttons stay enabled during requests; cancel invalidates the operation, aborts its signal, clears local values, and existing current-operation guards discard late results. Ordinary login behavior is unchanged.
+
+Acceptance criteria for this correction: (1) direct-entry fragment is removed before bootstrap/version requests and proof stays in memory; (2) direct-route cancel and completion replace history with the configured base/login path; (3) all recovery calls use the configured PWA fetcher and preserve anonymous no-store transport; (4) exit remains possible while busy and stale results do not update the closed flow. The frozen contract remains at `C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/evidence/2026-09-27-delivery/password-recovery-ui-contract.md`.
+
+Changed files in this correction are `frontends/pwa-vue/src/App.vue`, `frontends/pwa-vue/src/features/password-recovery/PasswordRecoveryScreen.vue`, `frontends/pwa-vue/src/features/password-recovery/password-recovery-link.ts`, and the existing focused contract test. Check commands, exit codes, environment, dependency junction cleanup, and prior author evidence are preserved in `checks.json`.
+
+The focused contract suite passes 7/7; Vue/TypeScript typecheck and `git diff --check` pass. Runtime was not repeated: the frozen delivery packet prohibits another Vite dev smoke after the prior smoke stopped before Vue mount with the existing `sockjs-client` `global is not defined` error. The combined production build and real API acceptance remain for root integration. The real Telegram bot is still owner-deferred, and no delivery claim is made.
+
 ## Goal
 Deliver the frozen password recovery contract in the PWA: a user can start recovery from login, request a Telegram code with a login, verify it and set a new password; a direct Telegram reset link opens the same flow. Verification issues only a short-lived reset ticket, never a login session.
 

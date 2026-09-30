@@ -77,7 +77,8 @@ import { AuthRequestError } from './auth-client'
 import { PwaAuthError, usePwaAuth, type PwaAuthInvalidationReason } from './auth'
 import LoginScreen from './LoginScreen.vue'
 import PasswordRecoveryScreen from './features/password-recovery/PasswordRecoveryScreen.vue'
-import { isPasswordResetEntryPath } from './features/password-recovery/password-recovery-link'
+import { consumePasswordResetFragment, isPasswordResetEntryPath, passwordRecoveryLoginPath } from './features/password-recovery/password-recovery-link'
+import type { PasswordResetProof } from './features/password-recovery/password-recovery-link'
 import { PwaHostAdapter } from './pwa-host'
 import { isOfflineBootstrapRecoveryError } from './bootstrap-policy'
 import { createPwaRoleSelection } from './role-flow'
@@ -147,6 +148,23 @@ const onlineSemesterSchedule = shallowRef<StudentSemesterSchedule | null>(null)
 const offline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false)
 const readOnly = ref(false)
 const directPasswordRecoveryEntry = isPasswordResetEntryPath(window.location.pathname, import.meta.env.BASE_URL)
+const directPasswordResetProof = shallowRef<PasswordResetProof | null>(null)
+const directPasswordResetLinkError = ref<string | null>(null)
+if (directPasswordRecoveryEntry) {
+  const linkFragment = window.location.hash
+  try {
+    directPasswordResetProof.value = consumePasswordResetFragment(linkFragment, () => {
+      window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}`)
+    })
+    if (!directPasswordResetProof.value) {
+      directPasswordResetLinkError.value = linkFragment
+        ? 'Ссылка восстановления повреждена. Запроси новый код.'
+        : 'В ссылке нет кода восстановления. Запроси новый код.'
+    }
+  } catch {
+    directPasswordResetLinkError.value = 'Не удалось безопасно открыть ссылку. Запроси новый код.'
+  }
+}
 const passwordRecoveryNotice = ref<string | null>(null)
 const sessionReady = ref(false)
 const bootstrapping = ref(false)
@@ -932,14 +950,27 @@ function openPasswordRecovery(): void {
   authView.value = 'password-recovery'
 }
 
+function clearDirectPasswordResetProof(): void {
+  directPasswordResetProof.value = null
+  directPasswordResetLinkError.value = null
+}
+
+function replacePasswordResetRouteWithLogin(): void {
+  if (!directPasswordRecoveryEntry) return
+  window.history.replaceState(window.history.state, '', passwordRecoveryLoginPath(import.meta.env.BASE_URL))
+  clearDirectPasswordResetProof()
+}
+
 function closePasswordRecovery(): void {
   authView.value = 'login'
+  replacePasswordResetRouteWithLogin()
 }
 
 function completePasswordRecovery(): void {
   authError.value = null
   passwordRecoveryNotice.value = 'Пароль обновлён. Войди с новым паролем.'
   authView.value = 'login'
+  replacePasswordResetRouteWithLogin()
 }
 
 async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
@@ -1472,9 +1503,12 @@ onBeforeUnmount(() => {
   </template>
   <PasswordRecoveryScreen
     v-else-if="authView === 'password-recovery'"
-    :parse-bot-link="directPasswordRecoveryEntry"
+    :initial-proof="directPasswordResetProof"
+    :initial-proof-error="directPasswordResetLinkError"
+    :fetcher="requestFetcher"
     @cancel="closePasswordRecovery"
     @completed="completePasswordRecovery"
+    @proof-consumed="clearDirectPasswordResetProof"
   />
   <RoleSwitchScreen
     v-else-if="authView === 'role'"

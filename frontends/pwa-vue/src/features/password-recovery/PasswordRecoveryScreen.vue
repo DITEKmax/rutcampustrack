@@ -1,25 +1,28 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { createPasswordRecoveryClient, PasswordRecoveryApiError } from './password-recovery-client'
-import { consumePasswordResetFragment } from './password-recovery-link'
 import type { PasswordResetProof } from './password-recovery-link'
 import { createPasswordRecoveryOperationGate } from './password-recovery-operation'
 import '../../login-screen.pcss'
 
 const props = withDefaults(defineProps<{
-  parseBotLink?: boolean
+  initialProof?: PasswordResetProof | null
+  initialProofError?: string | null
+  fetcher?: typeof fetch
 }>(), {
-  parseBotLink: false,
+  initialProof: null,
+  initialProofError: null,
 })
 
 const emit = defineEmits<{
   cancel: []
   completed: []
+  proofConsumed: []
 }>()
 
 type RecoveryStep = 'request' | 'code' | 'password'
 
-const client = createPasswordRecoveryClient()
+const client = createPasswordRecoveryClient(props.fetcher)
 const operations = createPasswordRecoveryOperationGate()
 const step = ref<RecoveryStep>('request')
 const login = ref('')
@@ -230,31 +233,20 @@ function formatDuration(seconds: number): string {
 }
 
 onMounted(() => {
-  if (!props.parseBotLink) return
-  const linkFragment = window.location.hash
-  let proof: PasswordResetProof | null
-  try {
-    proof = consumePasswordResetFragment(window.location.hash, () => {
-      window.history.replaceState(
-        window.history.state,
-        '',
-        window.location.pathname + window.location.search,
-      )
-    })
-  } catch {
-    feedback.value = 'Не удалось безопасно открыть ссылку. Запроси новый код.'
+  if (props.initialProofError) {
+    feedback.value = props.initialProofError
     return
   }
+  const proof = props.initialProof
   if (!proof) {
-    feedback.value = linkFragment
-      ? 'Ссылка восстановления повреждена. Запроси новый код.'
-      : 'В ссылке нет кода восстановления. Запроси новый код.'
     return
   }
 
   challengeId.value = proof.challengeId
   step.value = 'code'
-  void verifyProof(proof.challengeId, proof.code, true)
+  const pendingVerification = verifyProof(proof.challengeId, proof.code, true)
+  emit('proofConsumed')
+  void pendingVerification
 })
 
 onBeforeUnmount(() => {
@@ -315,7 +307,6 @@ onBeforeUnmount(() => {
       <button
         class="login-card__secondary"
         type="button"
-        :disabled="busy"
         @click="cancel"
       >
         Вернуться ко входу
@@ -391,7 +382,6 @@ onBeforeUnmount(() => {
       <button
         class="login-card__secondary"
         type="button"
-        :disabled="busy"
         @click="cancel"
       >
         Вернуться ко входу
@@ -453,7 +443,6 @@ onBeforeUnmount(() => {
       <button
         class="login-card__secondary"
         type="button"
-        :disabled="busy"
         @click="cancel"
       >
         Вернуться ко входу

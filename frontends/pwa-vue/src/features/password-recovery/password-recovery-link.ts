@@ -4,9 +4,14 @@ export type PasswordResetProof = {
 }
 
 export function isPasswordResetEntryPath(pathname: string, baseUrl = '/'): boolean {
-  const basePath = new URL(baseUrl, 'https://rutcampustrack.invalid').pathname.replace(/\/+$/, '')
+  const basePath = passwordRecoveryLoginPath(baseUrl).replace(/\/+$/, '')
   const resetPath = basePath + '/password-reset'
   return pathname === resetPath || pathname === resetPath + '/'
+}
+
+export function passwordRecoveryLoginPath(baseUrl = '/'): string {
+  const path = new URL(baseUrl, 'https://rutcampustrack.invalid').pathname
+  return path.endsWith('/') ? path : `${path}/`
 }
 
 /**

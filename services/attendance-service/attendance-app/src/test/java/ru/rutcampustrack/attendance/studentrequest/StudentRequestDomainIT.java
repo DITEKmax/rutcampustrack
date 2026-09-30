@@ -35,6 +35,7 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.StudentRequestKind;
 import ru.rutcampustrack.attendance.contract.enums.StudentRequestOrigin;
@@ -100,6 +101,7 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -149,7 +151,7 @@ class StudentRequestDomainIT {
 
     @TestConfiguration(proxyBeanMethods = false)
     static class TestConfig {
-        @Bean
+        @Bean({"transactionManager", "mongoTransactionManager"})
         MongoTransactionManager transactionManager(MongoDatabaseFactory factory) {
             return new MongoTransactionManager(factory);
         }
@@ -401,6 +403,8 @@ class StudentRequestDomainIT {
                         .addAllLessons(currentLessonIds.stream().sorted().map(this::fullLesson).toList())
                         .build());
         when(scheduleGrpcClient.getLessonById(anyLong()))
+                .thenAnswer(invocation -> fullLesson(invocation.getArgument(0)));
+        when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), eq(GROUP_ID)))
                 .thenAnswer(invocation -> fullLesson(invocation.getArgument(0)));
     }
 
@@ -669,8 +673,26 @@ class StudentRequestDomainIT {
             seedAbsent(51L);
             RequestDetail excuse = service.submitExcuse(STUDENT,
                     excuse(List.of(50L), "mixed-excuse-key-01", List.of()));
-            RequestDetail late = service.submitLateCheckin(STUDENT,
-                    new LateCheckinSubmission(51L, "mixed-late-key-0001"));
+            LateCheckinRequest autoLate = lateCheckinRepository.save(LateCheckinRequest.builder()
+                    .id("62a000000000000000000051")
+                    .studentId(STUDENT_ID)
+                    .groupId(GROUP_ID)
+                    .lessonId(51L)
+                    .subjectId(1051L)
+                    .subjectName("Алгебра")
+                    .subjectType("SEMINAR")
+                    .semesterId(SEMESTER_ID)
+                    .lessonNumber(51)
+                    .lessonDate(LocalDate.of(2026, 9, 7))
+                    .startsAt(LocalTime.of(10, 0))
+                    .endsAt(LocalTime.of(11, 0))
+                    .studentName("Иванов Иван")
+                    .status(LateCheckinRequestStatus.PENDING)
+                    .origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
+                    .createdAt(START)
+                    .updatedAt(START)
+                    .build());
+            RequestDetail mappedLate = service.get(STUDENT, autoLate.getId());
 
             Document storedExcuse = mongoTemplate.getCollection("excuse_tickets")
                     .find(Filters.eq("_id", new ObjectId(excuse.summary().id()))).first();
@@ -693,16 +715,23 @@ class StudentRequestDomainIT {
                 assertThat(lesson.endsAt()).isEqualTo(LocalTime.of(11, 0));
             });
             var listedLate = ownerPage.content().stream()
-                    .filter(summary -> summary.id().equals(late.summary().id()))
+                    .filter(summary -> summary.id().equals(autoLate.getId()))
                     .findFirst().orElseThrow();
-            assertThat(listedLate.lessons()).containsExactlyElementsOf(late.summary().lessons());
+            assertThat(listedLate.origin()).isEqualTo(StudentRequestOrigin.AUTO_GEO_FAILURE);
+            assertThat(listedLate.lessons()).containsExactlyElementsOf(mappedLate.summary().lessons());
+            assertThat(listedLate.lessons()).singleElement().satisfies(lesson -> {
+                assertThat(lesson.subjectName()).isEqualTo("Алгебра");
+                assertThat(lesson.subjectType()).isEqualTo("SEMINAR");
+                assertThat(lesson.startsAt()).isEqualTo(LocalTime.of(10, 0));
+                assertThat(lesson.endsAt()).isEqualTo(LocalTime.of(11, 0));
+            });
 
             RequestPage firstPage = service.list(STUDENT, RequestBucket.OPEN, 0, 1);
             RequestPage secondPage = service.list(STUDENT, RequestBucket.OPEN, 1, 1);
             assertThat(firstPage.totalElements()).isEqualTo(2);
             assertThat(firstPage.totalPages()).isEqualTo(2);
             assertThat(List.of(firstPage.content().getFirst().id(), secondPage.content().getFirst().id()))
-                    .containsExactlyInAnyOrder(excuse.summary().id(), late.summary().id());
+                    .containsExactlyInAnyOrder(excuse.summary().id(), autoLate.getId());
 
             assertThatThrownBy(() -> service.get(student(200L), excuse.summary().id()))
                     .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
@@ -1231,6 +1260,7 @@ class StudentRequestDomainIT {
     private LessonResponse fullLesson(long lessonId) {
         return LessonResponse.newBuilder().setId(lessonId).setGroupId(GROUP_ID)
                 .setSubjectId(1000L + lessonId).setLessonNumber((int) lessonId)
+                .setSemesterId(SEMESTER_ID)
                 .setDate("2026-09-07").setStartTime("10:00").setEndTime("11:00")
                 .setStatus(lessonStatuses.getOrDefault(lessonId, "closed"))
                 .setIsBlockedByHeadman(blockedLessonIds.contains(lessonId)).build();

@@ -33,6 +33,7 @@ import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
@@ -325,6 +326,14 @@ class StudentCheckinTransactionIT {
                 student, lesson(), "key-000000000003", new Coordinates(55.75, 37.61)))
                 .isEqualTo(afterCooldownExpiry);
         assertThat(lateCheckinRepository.findAll()).hasSize(1);
+        assertThat(lateCheckinRepository.findById(first.request().id()).orElseThrow())
+                .satisfies(request -> {
+                    assertThat(request.getOrigin()).isEqualTo(LateCheckinRequestOrigin.AUTO_GEO_FAILURE);
+                    assertThat(request.getSubjectName()).isEqualTo("Алгебра");
+                    assertThat(request.getSubjectType()).isEqualTo("SEMINAR");
+                    assertThat(request.getStartsAt()).isEqualTo(LocalTime.of(10, 0));
+                    assertThat(request.getEndsAt()).isEqualTo(LocalTime.of(11, 0));
+                });
         assertThat(receiptRepository.findAll()).hasSize(3);
         assertThat(attendanceRepository.findAll()).isEmpty();
         assertThat(pairRepository.findById(PairWriteCoordinator.pairId(100L, 1L)).orElseThrow().getRetryAt())
@@ -853,7 +862,7 @@ class StudentCheckinTransactionIT {
     }
 
     private Lesson lesson() {
-        return new Lesson(1, 10, 20, 30, 2, LocalDate.of(2026, 9, 6),
+        return new Lesson(1, 10, 20, "Алгебра", "SEMINAR", 30, 2, LocalDate.of(2026, 9, 6),
                 LocalTime.of(10, 0), LocalTime.of(11, 0), "active", false);
     }
 

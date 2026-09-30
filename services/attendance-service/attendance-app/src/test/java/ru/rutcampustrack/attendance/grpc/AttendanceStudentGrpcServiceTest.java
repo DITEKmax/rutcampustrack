@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
@@ -26,7 +27,10 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -37,7 +41,9 @@ import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -77,17 +83,21 @@ class AttendanceStudentGrpcServiceTest {
                         .setId(LESSON_ID)
                         .setGroupId(10L)
                         .setSubjectId(5L)
+                        .setSemesterId(30L)
                         .setLessonNumber(1)
                         .setDate("2026-09-06")
                         .setStartTime("00:00")
                         .setEndTime("23:59")
+                        .setLessonType("SEMINAR")
                         .setStatus("active")
                         .setIsGeoBlocked(isGeoBlocked)
                         .setIsBlockedByHeadman(isBlockedByHeadman)
                         .build());
         when(academicGrpcClient.getUserDisplayName(STUDENT_ID)).thenReturn("Иван Иванов");
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L))).thenReturn(Map.of(5L,
+                new AcademicGrpcClient.SubjectDetails("Алгебра", "SUBJECT_TYPE")));
 
-        StudentCheckinService checkinService = new StudentCheckinService(
+        StudentCheckinService checkinService = spy(new StudentCheckinService(
                 attendanceRepository,
                 pairRepository,
                 receiptRepository,
@@ -98,7 +108,7 @@ class AttendanceStudentGrpcServiceTest {
                 lateCheckinEvents,
                 metrics,
                 transactionTemplate,
-                Clock.fixed(Instant.parse("2026-09-06T07:00:00Z"), ZoneOffset.UTC));
+                Clock.fixed(Instant.parse("2026-09-06T07:00:00Z"), ZoneOffset.UTC)));
         AttendanceStudentGrpcServiceImpl service = new AttendanceStudentGrpcServiceImpl(
                 checkinService,
                 mock(StudentAttendanceSnapshotService.class),
@@ -115,6 +125,16 @@ class AttendanceStudentGrpcServiceTest {
         assertThat(status.getDetails(0).unpack(StudentCheckinErrorDetail.class).getCode())
                 .isEqualTo(StudentCheckinErrorCode.STUDENT_CHECKIN_ERROR_CODE_CHECKIN_NOT_ELIGIBLE);
         assertThat(observer.value).as("blocked %s must not return a result", geoKind).isNull();
+
+        ArgumentCaptor<StudentCheckinModels.Lesson> lessonCaptor =
+                ArgumentCaptor.forClass(StudentCheckinModels.Lesson.class);
+        verify(checkinService).checkin(any(), lessonCaptor.capture(), eq(KEY), any());
+        assertThat(lessonCaptor.getValue())
+                .extracting(StudentCheckinModels.Lesson::subjectName,
+                        StudentCheckinModels.Lesson::subjectType,
+                        StudentCheckinModels.Lesson::startsAt,
+                        StudentCheckinModels.Lesson::endsAt)
+                .containsExactly("Алгебра", "SEMINAR", LocalTime.MIDNIGHT, LocalTime.of(23, 59));
 
         verify(attendanceRepository, never()).save(any());
         verify(pairRepository, never()).save(any());

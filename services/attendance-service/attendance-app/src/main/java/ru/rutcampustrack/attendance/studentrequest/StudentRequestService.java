@@ -1215,6 +1215,8 @@ public class StudentRequestService {
                 .append("late_semester_id", "$semester_id")
                 .append("late_lesson_number", "$lesson_number")
                 .append("late_lesson_date", "$lesson_date")
+                .append("late_starts_at", "$starts_at")
+                .append("late_ends_at", "$ends_at")
                 .append("created_at", 1)
                 .append("updated_at", 1)));
         if (bucketStatus != null) {
@@ -1257,6 +1259,8 @@ public class StudentRequestService {
                     .append("semester_id", document.get("late_semester_id"))
                     .append("lesson_number", document.get("late_lesson_number"))
                     .append("date", document.get("late_lesson_date"))
+                    .append("starts_at", document.get("late_starts_at"))
+                    .append("ends_at", document.get("late_ends_at"))
                     .append("status", "closed")
                     .append("blocked", false)));
         }
@@ -1322,7 +1326,7 @@ public class StudentRequestService {
                 request.getSubjectName(), request.getSubjectType(),
                 request.getSemesterId() == null ? 0 : request.getSemesterId(),
                 request.getLessonNumber() == null ? 0 : request.getLessonNumber(),
-                request.getLessonDate(), null, null, "closed", false);
+                request.getLessonDate(), request.getStartsAt(), request.getEndsAt(), "closed", false);
         RequestSummary summary = new RequestSummary(
                 request.getId(), StudentRequestKind.LATE_CHECKIN,
                 mapStatus(request.getStatus()), request.getOrigin() == null

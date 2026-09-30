@@ -13,6 +13,7 @@ import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  * MongoDB document for late-checkin requests.
@@ -59,6 +60,12 @@ public class LateCheckinRequest {
 
     @Field("lesson_date")
     private LocalDate lessonDate;
+
+    @Field("starts_at")
+    private LocalTime startsAt;
+
+    @Field("ends_at")
+    private LocalTime endsAt;
 
     @Field("student_name")
     private String studentName;

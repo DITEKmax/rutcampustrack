@@ -169,8 +169,13 @@ public class AttendanceStudentGrpcServiceImpl
                         "Пара не найдена");
             }
             String displayName = academicGrpcClient.getUserDisplayName(claims.userId());
+            AcademicGrpcClient.SubjectDetails subject = lesson.getSubjectId() > 0
+                    ? academicGrpcClient.getSubjectDetailsByIds(List.of(lesson.getSubjectId()))
+                            .get(lesson.getSubjectId())
+                    : null;
             StudentCheckinModels.Lesson domainLesson = new StudentCheckinModels.Lesson(
                     lesson.getId(), lesson.getGroupId(), lesson.getSubjectId(),
+                    subject == null ? null : subject.name(), lesson.getLessonType(),
                     lesson.getSemesterId(), lesson.getLessonNumber(),
                     LocalDate.parse(lesson.getDate()), LocalTime.parse(lesson.getStartTime()),
                     LocalTime.parse(lesson.getEndTime()), lesson.getStatus(),

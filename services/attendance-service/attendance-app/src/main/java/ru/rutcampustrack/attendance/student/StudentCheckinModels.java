@@ -21,6 +21,8 @@ public final class StudentCheckinModels {
             long id,
             long groupId,
             long subjectId,
+            String subjectName,
+            String subjectType,
             long semesterId,
             int lessonNumber,
             LocalDate date,

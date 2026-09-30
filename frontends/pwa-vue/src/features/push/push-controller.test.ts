@@ -89,6 +89,17 @@ describe('PWA device enrollment isolation', () => {
     expect(h.controller.snapshot().status).toBe('error')
   })
 
+  it('retires the endpoint even if the worker cannot acknowledge a closed display gate', async () => {
+    const h = harness()
+    await h.ready()
+    await h.controller.enable()
+    h.browser.bind = async () => { throw new Error('Worker unavailable') }
+    await h.controller.disable()
+    expect(h.sub()).toBeNull()
+    expect(h.retired).toEqual(['endpoint-1'])
+    expect(h.controller.snapshot().status).toBe('error')
+  })
+
   it.each(['denied', 'default'] as const)('does not enroll when permission is %s', async (permission) => {
     const h = harness()
     await h.ready()

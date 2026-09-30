@@ -51,9 +51,11 @@ export function createPushController(browser: BrowserPushPort, fetcher: typeof f
   }
   async function remove(captured: PushOwner | null): Promise<void> {
     // Disable display first, including notifications already in the system tray.
-    await browser.bind(null)
+    // An old/unresponsive worker or unavailable IDB must not skip browser retirement.
+    let gateFailure: unknown
+    const closed = browser.bind(null).catch((error: unknown) => { gateFailure = error })
     const sub = await browser.subscription()
-    if (!sub) return
+    if (!sub) { await closed; if (gateFailure) throw gateFailure; return }
     let failure: unknown
     try {
       if (captured) {
@@ -62,7 +64,13 @@ export function createPushController(browser: BrowserPushPort, fetcher: typeof f
       }
     } catch { failure = new Error('Сервер недоступен. На этом устройстве уведомления отключены.') }
     // Even after auth/network failure retire the endpoint so it cannot be reused by a new account.
-    if (!await sub.unsubscribe()) throw new Error('Не удалось удалить подписку браузера. Повтори отключение.')
+    let retirementFailure: unknown
+    try {
+      if (!await sub.unsubscribe()) retirementFailure = new Error('Не удалось удалить подписку браузера. Повтори отключение.')
+    } catch (error) { retirementFailure = error }
+    await closed
+    if (retirementFailure) throw retirementFailure
+    if (gateFailure) throw gateFailure
     if (failure) throw failure
   }
   function invalidate(): Promise<void> {

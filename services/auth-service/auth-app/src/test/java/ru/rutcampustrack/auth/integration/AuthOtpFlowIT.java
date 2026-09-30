@@ -184,12 +184,12 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 "/auth/password-reset/request",
                 Map.of("login", "student", "telegramId", TELEGRAM_ID), String.class);
         assertThat(invalidRequest.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(invalidRequest.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(invalidRequest.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
 
         ResponseEntity<JsonNode> request = restTemplate.postForEntity(
                 "/auth/password-reset/request", Map.of("login", "student"), JsonNode.class);
         assertThat(request.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-        assertThat(request.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(request.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
         assertThat(request.getBody()).isNotNull();
         String challengeId = request.getBody().path("challengeId").asText();
         assertThat(challengeId).hasSize(32);
@@ -200,7 +200,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         ResponseEntity<JsonNode> unknown = restTemplate.postForEntity(
                 "/auth/password-reset/request", Map.of("login", "unknown-reset-user"), JsonNode.class);
         assertThat(unknown.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-        assertThat(unknown.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(unknown.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
         assertThat(unknown.getBody()).isNotNull();
         assertThat(unknown.getBody().path("ttlSeconds").asInt()).isEqualTo(120);
         assertThat(unknown.getBody().size()).isEqualTo(request.getBody().size());
@@ -234,7 +234,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 "/auth/password-reset/verify",
                 Map.of("challengeId", challengeId, "code", code), JsonNode.class);
         assertThat(verified.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(verified.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(verified.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
         assertThat(verified.getBody()).isNotNull();
         String resetTicket = verified.getBody().path("resetTicket").asText();
         assertThat(resetTicket).isNotBlank();
@@ -381,7 +381,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     @Test
     @Timeout(value = 30, unit = TimeUnit.SECONDS)
     void adminRecoveryWithoutTelegramRestoresStudentAndTeacher() throws Exception {
-        TokenResponse admin = loginUser("admin", "password");
+        TokenResponse admin = loginAdmin();
         for (String login : List.of("student", "teacher")) {
             long id = jdbc.queryForObject("SELECT id FROM users WHERE login = ?", Long.class, login);
             List<Map<String, Object>> identityBefore = jdbc.queryForList(
@@ -400,7 +400,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
 
                 ResponseEntity<JsonNode> issued = issueAdminRecovery(admin.accessToken(), id);
                 assertThat(issued.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-                assertThat(issued.getHeaders().getCacheControl()).isEqualTo("no-store");
+                assertThat(issued.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
                 String link = issued.getBody().path("url").asText();
                 assertThat(link).startsWith("https://recovery.example.test/password-reset#resetTicket=");
                 assertThat(issued.getBody().path("expiresInSeconds").asInt()).isEqualTo(120);
@@ -439,7 +439,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         TokenResponse student = loginStudent("password");
         assertThat(issueAdminRecovery(student.accessToken(), targetId).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ?", Integer.class, targetId)).isZero();
-        TokenResponse admin = loginUser("admin", "password");
+        TokenResponse admin = loginAdmin();
         ResponseEntity<JsonNode> issued = issueAdminRecovery(admin.accessToken(), targetId);
         assertThat(issued.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         String ticket = recoveryTicket(issued.getBody().path("url").asText());
@@ -452,7 +452,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 + "WHERE user_id = (SELECT id FROM users WHERE login = 'admin') AND revoked_at IS NULL");
         ResponseEntity<JsonNode> denied = issueAdminRecovery(admin.accessToken(), targetId);
         assertThat(denied.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(denied.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(denied.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
     }
 
     private ResponseEntity<JsonNode> issueAdminRecovery(String token, long id) {
@@ -470,6 +470,17 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
 
     private TokenResponse loginStudent(String password) {
         return loginUser("student", password);
+    }
+
+    private TokenResponse loginAdmin() {
+        TokenResponse bootstrap = loginUser("admin", "password");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(bootstrap.accessToken());
+        ResponseEntity<JsonNode> selected = restTemplate.exchange("/auth/session/active-role", HttpMethod.PUT,
+                new HttpEntity<>(Map.of("role", "ADMIN", "expectedSessionVersion", "1"), headers), JsonNode.class);
+        assertThat(selected.getStatusCode()).isEqualTo(HttpStatus.OK);
+        return new TokenResponse(selected.getBody().path("accessToken").asText(), bootstrap.refreshToken(),
+                selected.getBody().path("expiresIn").asLong());
     }
 
     private TokenResponse loginUser(String login, String password) {

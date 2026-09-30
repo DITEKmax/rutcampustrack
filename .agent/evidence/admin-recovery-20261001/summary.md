@@ -1,4 +1,4 @@
-# ADMIN recovery link — source-ready, 2026-10-01
+# ADMIN recovery link — source + focused verification PASS, 2026-10-01
 
 Writer: `/root/admin_recovery_sol61`, assigned GPT-6.1 Sol/high; no child agents.
 Worktree: `C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/admin-group-promotion-20260927`.
@@ -21,7 +21,7 @@ RULES main path: `C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestratio
 
 The user's ADMIN card has an inline recovery panel, issue button, expiry, copy and hide actions. Panel clears credentials on expiry, target switch and unmount; late API results cannot reappear. Recipient consumes strict admin fragment, clears browser history through existing App handling and enters the existing new-password form.
 
-Source-ready only. Targeted Java integration, independent review, common-stand flow and owner browser password handoff remain pending. Configuration must be supplied to the stand. No integration/push/deploy performed by this author.
+Reviewed source `f34ed35208cc975740c8f44b6b41c648e88f658d` PASS (root confirmed independent review, digest `51996804D8C468C418680A26221F86F36826436BC52849B361B7EAF4BE1E831E`). Targeted Java integration PASS after fixture corrections; product bytes unchanged. Root reviewed the two-file fixture correction diff. Common-stand flow, owner browser password handoff and integration remain pending. Configuration must be supplied to the stand; root configured `https://127.0.0.1:18514/password-reset` for controlled acceptance. No integration/push/deploy performed by this author.
 
 ## Exact inventory
 
@@ -36,13 +36,14 @@ Created:
 Modified:
 - `services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/PasswordResetNoStoreFilter.java` — admin recovery route no-store including errors.
 - `services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java` — two focused security/atomic integration scenarios and explicit test URL.
+- `services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/arch/AuthApiContractTest.java` — existing contract whitelist extended with four actual contract interfaces: PasswordResetApi, InternalWsSessionAdmissionApi, InternalSemesterDeletionConfirmationApi and AdminPasswordResetApi. Rule remains active.
 - `frontends/mobile-core/src/features/admin-users/admin-users-client.ts` — typed authenticated no-store issuance and URL/expiry validation.
 - `frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue` — keyed inline panel.
 - `frontends/pwa-vue/src/features/password-recovery/password-recovery-link.ts` — strict ticket/expiry fragment union, clear-before-return.
 - `frontends/pwa-vue/src/features/password-recovery/PasswordRecoveryScreen.vue` — direct ticket password entry, admin expiry feedback; existing screen lint corrections without behavior changes.
 - `frontends/pwa-vue/src/features/password-recovery/password-recovery-contract.test.ts` — admin fragment/duplicate/malformed/calendar/history-failure coverage.
 
-Created evidence: `.agent/evidence/admin-recovery-20261001/summary.md`. Deleted: none.
+Created evidence: `.agent/evidence/admin-recovery-20261001/summary.md`, unique R1/R2 logs, R1/R2 compact XML summaries and exact R1 failure XML copies. Logs/XML remain local evidence, not part of the integration inventory. Deleted: none. Total final inventory: 6 created + 8 modified product/test files, plus own summary.
 Foreign dirty `.agent/transfer-attendance-evidence.md` and existing untracked evidence preserved. Three absent existing dependency package directories copied from main node_modules into ignored worktree node_modules; no manifests/lockfiles edited.
 
 ## Checks at source freeze
@@ -51,4 +52,8 @@ Foreign dirty `.agent/transfer-attendance-evidence.md` and existing untracked ev
 - PASS: `node node_modules/eslint/bin/eslint.js mobile-core/src/features/admin-users/AdminUsersScreen.vue mobile-core/src/features/admin-users/RecoveryLinkPanel.vue mobile-core/src/features/admin-users/admin-users-client.ts pwa-vue/src/features/password-recovery/password-recovery-link.ts pwa-vue/src/features/password-recovery/PasswordRecoveryScreen.vue --max-warnings=0`, exit0.
 - PASS: `node node_modules/vitest/vitest.mjs run --configLoader runner --config pwa-vue/vite.config.ts pwa-vue/src/features/password-recovery/password-recovery-contract.test.ts mobile-core/src/features/admin-users/admin-users-client.test.ts`, exit0, 2 files / 10 tests. Correct configured rerun followed initial missing PWA compile defines and bundled-loader sandbox path failure; runner uses existing config without edits.
 - PASS: `git diff --check -- services frontends`, exit0.
-- PENDING: targeted AuthOtpFlowIT (heavy lease requested), independent review, stand and browser. No full suite requested.
+- PASS: independent product review, root accepted stable source digest above.
+- R1 FAIL: handle66518, exit1, selected Auth IT 3 failures; forced Arch 1 failure, no skipped cases. Causes: new ADMIN fixture used bootstrap token without existing explicit role selection; existing cache assertions rejected repeated safe no-store directive; hardcoded Arch whitelist lacked three existing APIs plus the new API. No product defect. Evidence `auth-recovery-it-20261001-0228.log`, `auth-recovery-it-r1-results.json`, `r1-TEST-ru.rutcampustrack.auth.integration.AuthOtpFlowIT.xml`, `r1-TEST-ru.rutcampustrack.auth.arch.AuthApiContractTest.xml`.
+- Minimal correction: test helper selects ADMIN through existing `PUT /auth/session/active-role`; cache assertions split comma-separated directives and require only no-store (duplicates accepted, caching directives rejected); Arch whitelist adds the exact four interfaces without disabling rules. Root reviewed this test-only diff; product source unchanged.
+- R2 PASS: handle37008, exit0, 64s. Command JDK `C:/Users/maksd/.jdks/ms-21.0.10`, `gradlew.bat :services:auth-service:auth-app:integrationTest --tests '*.AuthOtpFlowIT.adminRecovery*' --tests '*.AuthOtpFlowIT.passwordResetIsPurposeBoundAtomicAndRevokesEverySession' --no-daemon --no-parallel --max-workers=1 --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true`. Fresh XML: AuthOtpFlowIT 3/0fail/0error/0skip timestamp2026-09-30T23:20:33UTC; automatically included Arch3/0fail/0skip and naming1/0fail/0skip. Evidence `auth-recovery-it-20261001-r2.log`, `auth-recovery-it-r2-results.json`. Three actual IT cases: adminRecoveryWithoutTelegramRestoresStudentAndTeacher, adminRecoveryRejectsWrongRoleRevokedSessionAndExpiredTicket, passwordResetIsPurposeBoundAtomicAndRevokesEverySession.
+- Heavy lease returned to root immediately after R2 terminal. No additional full suite or repeated frontend PASS. PENDING: common stand, owner browser handoff and integration.

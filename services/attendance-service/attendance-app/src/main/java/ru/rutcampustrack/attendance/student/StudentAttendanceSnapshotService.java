@@ -101,6 +101,8 @@ public class StudentAttendanceSnapshotService {
                     .findFirstByStudentIdAndLessonIdAndOriginOrderByUpdatedAtDesc(
                             identity.userId(), lesson.getId(), LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
                     .orElse(null);
+            boolean hasPendingRequest = lateCheckinRepository.existsByStudentIdAndLessonIdAndStatus(
+                    identity.userId(), lesson.getId(), LateCheckinRequestStatus.PENDING);
             CheckinPairStateDocument pair = pairRepository.findById(
                     PairWriteCoordinator.pairId(identity.userId(), lesson.getId())).orElse(null);
             Instant retryAt = pair == null ? null : pair.getRetryAt();
@@ -111,7 +113,7 @@ public class StudentAttendanceSnapshotService {
                     attendance == null ? null : attendance.getUpdatedAt(),
                     request,
                     retryAt,
-                    eligibility(identity, lesson, attendance, request, retryAt, now)
+                    eligibility(identity, lesson, attendance, hasPendingRequest, retryAt, now)
             ));
         }
         return new Snapshot(List.copyOf(entries), now);
@@ -121,11 +123,12 @@ public class StudentAttendanceSnapshotService {
             Identity identity,
             LessonResponse lesson,
             AttendanceDocument attendance,
-            LateCheckinRequest request,
+            boolean hasPendingRequest,
             Instant retryAt,
             Instant now
     ) {
         if (identity.headman()) return disabled(EligibilityReason.HEADMAN_USES_JOURNAL, null);
+        if (hasPendingRequest) return disabled(EligibilityReason.PENDING_CONFIRMATION, null);
         if ("cancelled".equalsIgnoreCase(lesson.getStatus())) {
             return disabled(EligibilityReason.LESSON_CANCELLED, null);
         }
@@ -146,10 +149,6 @@ public class StudentAttendanceSnapshotService {
         Instant closesAt = date.atTime(endsAt).atZone(clock.getZone()).toInstant().plus(BUFFER);
         if (now.isBefore(opensAt)) return disabled(EligibilityReason.TOO_EARLY, null);
         if (now.isAfter(closesAt)) return disabled(EligibilityReason.WINDOW_CLOSED, null);
-        if (request != null && request.getStatus() == LateCheckinRequestStatus.PENDING
-                && retryAt != null && now.isBefore(retryAt)) {
-            return disabled(EligibilityReason.PENDING_CONFIRMATION, retryAt);
-        }
         if (retryAt != null && now.isBefore(retryAt)) {
             return disabled(EligibilityReason.COOLDOWN, retryAt);
         }

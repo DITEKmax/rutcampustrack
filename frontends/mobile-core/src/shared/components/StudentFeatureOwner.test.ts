@@ -2,7 +2,7 @@ import { createRenderer, h, nextTick, ref, type App, type PropType, type SetupCo
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { StudentApi } from '../../api/student-client'
 import { CheckinCommandRecovery } from '../../domain/checkin'
-import type { StudentCheckinAck, StudentCheckinCommand, StudentRequestOptions, StudentRequestPage, StudentToday, StudentHomework } from '../../api/types'
+import type { StudentCheckinAck, StudentCheckinCommand, StudentRequestDetail, StudentRequestOptions, StudentRequestPage, StudentRequestSummary, StudentToday, StudentHomework } from '../../api/types'
 import type { RequestFileRef } from '../../features/requests/types'
 import StudentFeatureOwner from './StudentFeatureOwner.vue'
 import { studentFeatureScopeIdentity, studentOfflineScopeKey, type StudentFeatureScope } from '../session-owner'
@@ -44,13 +44,20 @@ vi.mock('../../features/profile/MoreScreen.vue', () => ({
 vi.mock('../../features/requests/RequestsScreen.vue', () => ({
   default: {
     name: 'OwnerTestRequestsScreen',
-    emits: ['newRequest'],
+    emits: ['newRequest', 'cancel'],
     setup(_props: unknown, { emit }: SetupContext) {
-      return () => h('button', {
-        class: 'requests-primary-action',
-        type: 'button',
-        onClick: () => emit('newRequest'),
-      }, 'Подать')
+      return () => h('div', [
+        h('button', {
+          class: 'requests-primary-action',
+          type: 'button',
+          onClick: () => emit('newRequest'),
+        }, 'Подать'),
+        h('button', {
+          class: 'test-cancel-request',
+          type: 'button',
+          onClick: () => emit('cancel', 'request-1'),
+        }, 'Отменить'),
+      ])
     },
   },
 }))
@@ -107,10 +114,13 @@ vi.mock('./MobileShell.vue', () => ({
   },
 }))
 
+const refreshToday = vi.hoisted(() => vi.fn())
+
 vi.mock('../../features/today/use-today', () => ({
   useToday: () => ({
     query: { data: ref(null), error: ref(null), isPending: ref(false) },
     mutation: { isPending: ref(false), variables: ref(undefined), mutateAsync: vi.fn() },
+    refresh: refreshToday,
   }),
 }))
 
@@ -237,6 +247,7 @@ let mountedOwnerTestApps: App[] = []
 afterEach(() => {
   for (const app of mountedOwnerTestApps) app.unmount()
   mountedOwnerTestApps = []
+  refreshToday.mockReset()
 })
 
 const command: StudentCheckinCommand = {
@@ -318,6 +329,26 @@ function emptyRequestPage(): StudentRequestPage {
   return { content: [], page: 0, size: 10, totalElements: 0, totalPages: 1 }
 }
 
+function requestSummary(status: StudentRequestSummary['status']): StudentRequestSummary {
+  return {
+    id: 'request-1',
+    kind: 'LATE_CHECKIN',
+    origin: 'AUTO_GEO_FAILURE',
+    status,
+    lessons: [{ id: 'lesson-1', lessonNumber: 1, status: 'OPEN', blocked: false }],
+    createdAt: '2026-09-30T08:00:00Z',
+    updatedAt: '2026-09-30T08:00:00Z',
+  }
+}
+
+function requestDetail(summary: StudentRequestSummary): StudentRequestDetail {
+  return { summary, attachments: [], comment: null, decision: null, reason: null }
+}
+
+function requestPage(content: StudentRequestSummary[]): StudentRequestPage {
+  return { content, page: 0, size: 10, totalElements: content.length, totalPages: 1 }
+}
+
 function mountOwnerTest(api: StudentApi): OwnerTestHostNode {
   const root = ownerTestElement('root')
   const app = ownerTestRenderer.createApp(StudentFeatureOwner, {
@@ -336,6 +367,42 @@ function mountOwnerTest(api: StudentApi): OwnerTestHostNode {
 }
 
 describe('StudentFeatureOwner requests route', () => {
+  it('refreshes Today after a successful local request cancellation', async () => {
+    let cancelled = false
+    const pending = requestSummary('PENDING')
+    const cancelledDetail = requestDetail(requestSummary('CANCELLED'))
+    const api = {
+      getToday: vi.fn(() => Promise.resolve({} as StudentToday)),
+      getHomework: vi.fn(() => Promise.resolve({} as StudentHomework)),
+      listRequests: vi.fn((bucket: 'OPEN' | 'ARCHIVE') => Promise.resolve(bucket === 'OPEN' && !cancelled
+        ? requestPage([pending])
+        : bucket === 'ARCHIVE' && cancelled
+          ? requestPage([cancelledDetail.summary])
+          : emptyRequestPage())),
+      getRequest: vi.fn(() => Promise.resolve(cancelled ? cancelledDetail : requestDetail(pending))),
+      cancelRequest: vi.fn(async () => {
+        cancelled = true
+        return cancelledDetail
+      }),
+      getRequestOptions: vi.fn(() => Promise.resolve(requestOptions())),
+      submitExcuse: vi.fn(),
+      submitLateCheckin: vi.fn(),
+      downloadRequestAttachment: vi.fn(),
+    } as unknown as StudentApi
+    const root = mountOwnerTest(api)
+
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-more')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-requests')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-cancel-request')
+    await vi.waitFor(() => expect(refreshToday).toHaveBeenCalledTimes(1))
+
+    expect(api.cancelRequest).toHaveBeenCalledWith('request-1')
+    expect(refreshToday).toHaveBeenCalledWith(scope)
+  })
+
   it('loads request options once when the real owner opens a request form', async () => {
     let resolveOptions!: (value: StudentRequestOptions) => void
     const pendingOptions = new Promise<StudentRequestOptions>((resolve) => { resolveOptions = resolve })

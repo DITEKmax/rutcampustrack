@@ -304,18 +304,32 @@ class StudentCheckinTransactionIT {
     }
 
     @Test
-    void cooldownRejectsAt299999AndAllowsAt300000ReusingPendingWithoutSecondEvent() {
+    void activePendingRequestBlocksGeoRetriesBeforeAndAfterCooldownWithoutExtendingIt() {
         Ack first = service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
         clock.set(Instant.parse("2026-09-06T07:04:59.999Z"));
-        assertThatThrownBy(() -> service.checkin(
-                student, lesson(), "key-000000000002", new Unavailable("TIMEOUT")))
-                .isInstanceOfSatisfying(StudentCheckinException.class,
-                        error -> assertThat(error.code()).isEqualTo(Code.CHECKIN_COOLDOWN));
+        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
 
-        clock.set(Instant.parse("2026-09-06T07:05:00Z"));
-        Ack second = service.checkin(student, lesson(), "key-000000000003", new Unavailable("TIMEOUT"));
-        assertThat(second.request().id()).isEqualTo(first.request().id());
+        Ack beforeCooldownExpiry = service.checkin(
+                student, lesson(), "key-000000000002", new Coordinates(55.75, 37.61));
+        assertThat(beforeCooldownExpiry.outcome()).isEqualTo(Outcome.PENDING_CONFIRMATION);
+        assertThat(beforeCooldownExpiry.request().id()).isEqualTo(first.request().id());
+        assertThat(beforeCooldownExpiry.retryAt()).isNull();
+
+        clock.set(Instant.parse("2026-09-06T07:10:00Z"));
+        Ack afterCooldownExpiry = service.checkin(
+                student, lesson(), "key-000000000003", new Coordinates(55.75, 37.61));
+        assertThat(afterCooldownExpiry.outcome()).isEqualTo(Outcome.PENDING_CONFIRMATION);
+        assertThat(afterCooldownExpiry.request().id()).isEqualTo(first.request().id());
+        assertThat(afterCooldownExpiry.retryAt()).isNull();
+        assertThat(service.checkin(
+                student, lesson(), "key-000000000003", new Coordinates(55.75, 37.61)))
+                .isEqualTo(afterCooldownExpiry);
         assertThat(lateCheckinRepository.findAll()).hasSize(1);
+        assertThat(receiptRepository.findAll()).hasSize(3);
+        assertThat(attendanceRepository.findAll()).isEmpty();
+        assertThat(pairRepository.findById(PairWriteCoordinator.pairId(100L, 1L)).orElseThrow().getRetryAt())
+                .isEqualTo(first.retryAt());
+        verifyNoInteractions(geofence, attendanceEvents);
         verify(lateCheckinEvents, times(1)).publishRequested(any(), any(), anyInt(), any(), any());
     }
 
@@ -334,26 +348,25 @@ class StudentCheckinTransactionIT {
     }
 
     @Test
-    void successfulRetryCancelsPendingAndPreservesGeoProvenance() {
+    void successfulGeoRetryRemainsPendingUntilHeadmanDecision() {
         Ack first = service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));
         clock.set(Instant.parse("2026-09-06T07:05:00Z"));
         when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
 
         Ack second = service.checkin(student, lesson(), "key-000000000002", new Coordinates(55.75, 37.61));
 
-        assertThat(second.outcome()).isEqualTo(Outcome.PRESENT);
-        assertThat(attendanceRepository.findAll()).singleElement().satisfies(attendance -> {
-            assertThat(attendance.getSource()).isEqualTo(AttendanceSource.STUDENT_GEO);
-            assertThat(attendance.getMarkedBy()).isNull();
-            assertThat(attendance.getSubjectId()).isEqualTo(20L);
-            assertThat(attendance.getSemesterId()).isEqualTo(30L);
-        });
+        assertThat(second.outcome()).isEqualTo(Outcome.PENDING_CONFIRMATION);
+        assertThat(second.request().id()).isEqualTo(first.request().id());
+        assertThat(second.retryAt()).isNull();
+        assertThat(attendanceRepository.findAll()).isEmpty();
+        assertThat(receiptRepository.findAll()).hasSize(2);
         assertThat(lateCheckinRepository.findById(first.request().id()).orElseThrow().getStatus())
-                .isEqualTo(LateCheckinRequestStatus.CANCELLED);
-        assertThat(lateCheckinRepository.findById(first.request().id()).orElseThrow().getResolutionReason())
-                .isEqualTo(ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason.GEO_CONFIRMED);
-        verify(attendanceEvents).publishMarked(any());
-        verify(lateCheckinEvents).publishDecided(any(), any(), anyInt(), any(), any());
+                .isEqualTo(LateCheckinRequestStatus.PENDING);
+        assertThat(pairRepository.findById(PairWriteCoordinator.pairId(100L, 1L)).orElseThrow().getRetryAt())
+                .isEqualTo(first.retryAt());
+        verifyNoInteractions(geofence, attendanceEvents);
+        verify(lateCheckinEvents, times(1)).publishRequested(any(), any(), anyInt(), any(), any());
+        verify(lateCheckinEvents, never()).publishDecided(any(), any(), anyInt(), any(), any());
     }
 
     @Test

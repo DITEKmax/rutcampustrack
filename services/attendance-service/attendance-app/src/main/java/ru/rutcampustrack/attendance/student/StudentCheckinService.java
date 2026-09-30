@@ -195,6 +195,20 @@ public class StudentCheckinService {
             return presentAck(current, lesson.id(), acceptedAt);
         }
 
+        LateCheckinRequest pendingRequest = lateCheckinRepository
+                .findFirstByStudentIdAndLessonIdAndStatus(
+                        identity.userId(), lesson.id(), LateCheckinRequestStatus.PENDING)
+                .orElse(null);
+        if (pendingRequest != null) {
+            if (pendingRequest.getOrigin() != LateCheckinRequestOrigin.AUTO_GEO_FAILURE) {
+                throw new StudentCheckinException(Code.CHECKIN_NOT_ELIGIBLE,
+                        "Заявка на эту пару уже ожидает решения старосты");
+            }
+            Ack ack = pendingRequestAck(lesson.id(), pendingRequest, acceptedAt);
+            receiptRepository.save(toReceipt(identity, lesson, idempotencyKey, payloadHash, ack));
+            return ack;
+        }
+
         CheckinPairStateDocument pair = pairRepository.findById(
                 PairWriteCoordinator.pairId(identity.userId(), lesson.id())).orElseThrow();
         if (pair.getRetryAt() != null && acceptedAt.isBefore(pair.getRetryAt())) {
@@ -306,6 +320,11 @@ public class StudentCheckinService {
         }
         Request projection = new Request(request.getId(), request.getStatus(), null);
         return new Ack(Outcome.PENDING_CONFIRMATION, lesson.id(), null, projection, retryAt, now);
+    }
+
+    private static Ack pendingRequestAck(long lessonId, LateCheckinRequest request, Instant now) {
+        Request projection = new Request(request.getId(), request.getStatus(), null);
+        return new Ack(Outcome.PENDING_CONFIRMATION, lessonId, null, projection, null, now);
     }
 
     private static boolean isManualHeadmanAbsence(AttendanceDocument current) {

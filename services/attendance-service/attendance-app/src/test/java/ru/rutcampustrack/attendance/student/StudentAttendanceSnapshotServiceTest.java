@@ -55,7 +55,7 @@ class StudentAttendanceSnapshotServiceTest {
         assertThat(entry.eligibility().allowed()).isFalse();
         assertThat(entry.eligibility().reason())
                 .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.PENDING_CONFIRMATION);
-        assertThat(entry.eligibility().retryAt()).isEqualTo(retryAt);
+        assertThat(entry.eligibility().retryAt()).isNull();
     }
 
     @Test
@@ -71,12 +71,13 @@ class StudentAttendanceSnapshotServiceTest {
     }
 
     @Test
-    void retryAtBoundaryRemainsEligible() {
+    void pendingRequestAtRetryBoundaryRemainsPending() {
         StudentAttendanceSnapshotService.Entry entry = snapshot(LateCheckinRequestStatus.PENDING, NOW);
 
-        assertThat(entry.eligibility().allowed()).isTrue();
+        assertThat(entry.eligibility().allowed()).isFalse();
         assertThat(entry.eligibility().reason())
-                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.ELIGIBLE);
+                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.PENDING_CONFIRMATION);
+        assertThat(entry.eligibility().retryAt()).isNull();
     }
 
     @Test
@@ -99,6 +100,9 @@ class StudentAttendanceSnapshotServiceTest {
                 STUDENT_ID, LESSON_ID, LateCheckinRequestOrigin.AUTO_GEO_FAILURE))
                 .thenReturn(Optional.of(LateCheckinRequest.builder().studentId(STUDENT_ID).lessonId(LESSON_ID)
                         .groupId(GROUP_ID).status(status).origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE).build()));
+        when(lateCheckinRepository.existsByStudentIdAndLessonIdAndStatus(
+                STUDENT_ID, LESSON_ID, LateCheckinRequestStatus.PENDING))
+                .thenReturn(status == LateCheckinRequestStatus.PENDING);
         when(pairRepository.findById(any())).thenReturn(Optional.of(CheckinPairStateDocument.builder()
                 .studentId(STUDENT_ID).lessonId(LESSON_ID).groupId(GROUP_ID).retryAt(retryAt).build()));
         return service.getSnapshot(new Identity(STUDENT_ID, "STUDENT", GROUP_ID, false, "Student", readOnly), List.of(LESSON_ID))

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { countdownLabel, eligibilityLabel, remainingSeconds } from '../../domain/checkin'
+import { eligibilityLabel, isPendingCheckin, remainingSeconds } from '../../domain/checkin'
 import type { StudentSemesterSchedule, StudentToday, TodayLesson } from '../../api/types'
 import chevronDown from '../../assets/chevron-down.svg'
 import lessonTypeDark from '../../assets/lesson-type-dark.svg'
@@ -87,12 +87,13 @@ function lessonKind(lesson: TodayLesson): string {
 }
 
 function canCheckin(lesson: TodayLesson): boolean {
-  const retryAllowed = countdown(lesson) === 0 && (lesson.checkinEligibility.reason === 'PENDING_CONFIRMATION' || lesson.checkinEligibility.reason === 'COOLDOWN')
+  if (isPending(lesson)) return false
+  const retryAllowed = countdown(lesson) === 0 && lesson.checkinEligibility.reason === 'COOLDOWN'
   return !props.offline && !props.readOnly && (lesson.checkinEligibility.allowed || retryAllowed) && props.submittingLessonId === null
 }
 
 function isPending(lesson: TodayLesson): boolean {
-  return lesson.request?.status === 'PENDING' && countdown(lesson) > 0
+  return isPendingCheckin(lesson)
 }
 
 function isConfirmed(lesson: TodayLesson): boolean {
@@ -252,7 +253,7 @@ function semesterDate(date: string): string {
             class="today-hero__retry"
             role="status"
           >
-            Отметиться повторно через: {{ countdownLabel(countdown(hero)) }}
+            Заявка ожидает решения старосты. Повторная геопроверка пока недоступна.
           </p>
         </section>
 

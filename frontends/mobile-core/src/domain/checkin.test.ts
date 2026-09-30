@@ -1,4 +1,4 @@
-import { applyCheckinAck, countdownLabel, remainingSeconds, unavailableCommand, unavailableReason } from './checkin'
+import { applyCheckinAck, countdownLabel, eligibilityLabel, isPendingCheckin, remainingSeconds, unavailableCommand, unavailableReason } from './checkin'
 import type { StudentCheckinAck, StudentToday } from '../api/types'
 import { describe, expect, it } from 'vitest'
 
@@ -28,5 +28,26 @@ describe('geo check-in domain', () => {
     const replay: StudentCheckinAck = { outcome: 'PENDING_CONFIRMATION', lessonId: '77', attendance: null, request: { id: 'r1', status: 'PENDING', origin: 'AUTO_GEO_FAILURE', resolutionReason: null }, retryAt: '2026-09-06T08:35:00Z', serverNow: '2026-09-06T08:30:00Z', _links: {} }
     const fresh = { ...today, serverNow: '2026-09-06T08:34:00Z' }
     expect(applyCheckinAck(fresh, replay).serverNow).toBe('2026-09-06T08:34:00Z')
+  })
+
+  it('keeps an active request pending after its retry time expires', () => {
+    const lesson = {
+      ...today.lessons[0]!,
+      request: { id: 'r1', status: 'PENDING' as const, origin: 'AUTO_GEO_FAILURE' as const, resolutionReason: null },
+      checkinEligibility: { allowed: false, reason: 'PENDING_CONFIRMATION' as const, retryAt: '2026-09-06T08:35:00Z' },
+    }
+
+    expect(isPendingCheckin(lesson)).toBe(true)
+    expect(eligibilityLabel(lesson, 0)).toBe('На подтверждении у старосты')
+  })
+
+  it('keeps the pending state when the server omits the request projection', () => {
+    const lesson = {
+      ...today.lessons[0]!,
+      checkinEligibility: { allowed: false, reason: 'PENDING_CONFIRMATION' as const, retryAt: null },
+    }
+
+    expect(isPendingCheckin(lesson)).toBe(true)
+    expect(eligibilityLabel(lesson, 0)).toBe('На подтверждении у старосты')
   })
 })

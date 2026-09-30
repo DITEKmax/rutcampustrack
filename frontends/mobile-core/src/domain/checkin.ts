@@ -119,9 +119,14 @@ function lessonFromAck(lesson: TodayLesson, ack: StudentCheckinAck): TodayLesson
   }
 }
 
+export function isPendingCheckin(lesson: TodayLesson): boolean {
+  return lesson.request?.status === 'PENDING'
+    || lesson.checkinEligibility.reason === 'PENDING_CONFIRMATION'
+}
+
 export function eligibilityLabel(lesson: TodayLesson, countdown: number): string {
   if (lesson.attendance?.status === 'PRESENT') return 'Отметка подтверждена'
-  if (lesson.request?.status === 'PENDING') return countdown > 0 ? `На подтверждении · ${countdownLabel(countdown)}` : 'Можно повторить отметку'
+  if (isPendingCheckin(lesson)) return 'На подтверждении у старосты'
   const labels: Record<TodayLesson['checkinEligibility']['reason'], string> = {
     ELIGIBLE: 'Можно отметиться',
     ALREADY_PRESENT: 'Отметка подтверждена',
@@ -129,7 +134,7 @@ export function eligibilityLabel(lesson: TodayLesson, countdown: number): string
     TOO_EARLY: 'Отметка ещё недоступна',
     WINDOW_CLOSED: 'Время отметки закончилось',
     GEO_BLOCKED: 'Отметка по геолокации недоступна',
-    PENDING_CONFIRMATION: countdown > 0 ? `На подтверждении · ${countdownLabel(countdown)}` : 'Можно повторить отметку',
+    PENDING_CONFIRMATION: 'На подтверждении у старосты',
     COOLDOWN: countdown > 0 ? `Повтори через ${countdownLabel(countdown)}` : 'Можно повторить отметку',
     HEADMAN_ABSENT_REQUIRES_APPEAL: 'Нужна заявка на «н»',
     HEADMAN_USES_JOURNAL: 'Отметку ставит староста в журнале',

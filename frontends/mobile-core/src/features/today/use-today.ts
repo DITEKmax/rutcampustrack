@@ -1,6 +1,6 @@
-import { computed, toValue, type MaybeRefOrGetter, type Ref } from 'vue'
+import { computed, ref, toValue, watch, type MaybeRefOrGetter, type Ref } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import { applyCheckinAck } from '../../domain/checkin'
+import { applyCheckinAck, isPendingCheckin } from '../../domain/checkin'
 import type { StudentApi } from '../../api/student-client'
 import type { StudentCheckinAck, StudentCheckinCommand, StudentToday } from '../../api/types'
 import { studentFeatureScopeIdentity, type StudentFeatureScope } from '../../shared/session-owner'
@@ -85,10 +85,12 @@ export function useToday(
   enabled: Ref<boolean>,
   offline: Ref<boolean>,
   scopeInput?: StudentTodayScopeInput,
+  activeToday: Ref<boolean> = ref(true),
 ) {
   const queryClient = useQueryClient()
   const scope = computed(() => normalizeTodayScope(toValue(scopeInput)))
   const queryKey = computed(() => todayQueryKey(scope.value))
+  const hasPendingCheckin = ref(false)
 
   const query = useQuery<StudentToday>({
     queryKey,
@@ -103,8 +105,31 @@ export function useToday(
     // Readonly authority may still read Today. Mutations have their own
     // guards in the owner and mutation boundary.
     enabled: computed(() => enabled.value && !offline.value),
+    refetchInterval: computed(() => enabled.value
+      && !offline.value
+      && activeToday.value
+      && hasPendingCheckin.value
+      ? 15_000
+      : false),
+    refetchIntervalInBackground: false,
     retry: 1,
   })
+
+  watch(() => query.data.value, (data) => {
+    hasPendingCheckin.value = data?.lessons.some(isPendingCheckin) ?? false
+  }, { immediate: true })
+
+  watch(activeToday, (active, wasActive) => {
+    if (active && !wasActive && enabled.value && !offline.value) void query.refetch()
+  })
+
+  async function refresh(expectedScope: StudentTodayQueryScope | null | undefined = scope.value): Promise<void> {
+    const requestScope = normalizeTodayScope(expectedScope)
+    if (!enabled.value
+      || offline.value
+      || studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)) return
+    await query.refetch()
+  }
 
   const mutation = useMutation<StudentCheckinAck, unknown, TodayCheckinInput>({
     mutationFn: async (input) => {
@@ -127,5 +152,5 @@ export function useToday(
     },
   })
 
-  return { query, mutation, scope, queryKey }
+  return { query, mutation, scope, queryKey, refresh }
 }

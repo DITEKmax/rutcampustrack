@@ -203,6 +203,7 @@ const today = useToday(
   computed(() => props.api !== null),
   offline,
   scope,
+  computed(() => route.value.id === 'today'),
 )
 const homework = useHomework(
   api.value,
@@ -274,6 +275,14 @@ const homeworkError = computed(() => {
 const todayLoading = computed(() => !displayToday.value && props.api !== null && !offline.value && today.query.isPending.value)
 const homeworkLoading = computed(() => !displayHomework.value && props.api !== null && !offline.value && homework.query.isPending.value)
 const ownerIdentity = computed(() => scope.value ? studentFeatureScopeIdentity(scope.value) : null)
+function refreshTodayAfterRequestDecision(ownerScopeAtStart: StudentFeatureScope | null): void {
+  if (!ownerScopeAtStart
+    || disposed
+    || offline.value
+    || ownerIdentity.value !== studentFeatureScopeIdentity(ownerScopeAtStart)) return
+  void today.refresh(ownerScopeAtStart)
+}
+
 const activeHomeworkNotification = computed(() => route.value.id === homeworkNotificationRoute.id
   && notificationTargetState.value?.kind === 'homework'
   ? notificationTargetState.value
@@ -1090,6 +1099,7 @@ function loadMoreRequests(): void {
 
 function cancelRequest(id: string): void {
   if (requestCancellingId.value) return
+  const ownerScopeAtStart = scope.value
   const targetIntent = props.notificationTargetIntent
   const targetState = notificationTargetState.value
   if (targetIntent?.target.kind === 'request'
@@ -1102,6 +1112,7 @@ function cancelRequest(id: string): void {
     requestCancellingId.value = id
     void requests.cancelTargetRequest(id, targetState.target.requestKind)
       .then((detail) => {
+        refreshTodayAfterRequestDecision(ownerScopeAtStart)
         if (!isActiveNotificationTargetRequest(targetIntent)) return
         const current = notificationTargetState.value
         if (current?.kind !== 'request'
@@ -1141,6 +1152,7 @@ function cancelRequest(id: string): void {
   }
   requestCancellingId.value = id
   void requests.cancelRequest(id)
+    .then(() => refreshTodayAfterRequestDecision(ownerScopeAtStart))
     .catch(handleRequestsError)
     .finally(() => {
       if (!disposed) requestCancellingId.value = null

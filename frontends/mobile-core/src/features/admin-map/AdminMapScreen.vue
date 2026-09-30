@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { AdminMapBuildingResponse, AdminMapFloorResponse } from '../../api/types'
 import { AdminMapClient } from '../../api/map-client'
+import { adminMapSelectionKey, captureAdminMapUploadTarget } from './admin-map-state'
 import './admin-map-screen.pcss'
 
 const props = withDefaults(defineProps<{
@@ -20,6 +21,9 @@ const floorCode = ref<number | string>('')
 const floorLabel = ref('')
 const png = ref<File | undefined>()
 const svg = ref<File | undefined>()
+const pngInput = ref<HTMLInputElement | null>(null)
+const svgInput = ref<HTMLInputElement | null>(null)
+const draftKey = ref<string | null>(null)
 const loading = ref(true)
 const saving = ref(false)
 const error = ref<string | null>(null)
@@ -33,13 +37,48 @@ const floorDemandRows = computed(() => buildings.value.flatMap((building) => bui
   floor,
 }))))
 
-onMounted(() => void refresh())
+let componentMounted = false
+let saveSequence = 0
+let refreshSequence = 0
+let selectionRevision = 0
+let refreshController: AbortController | undefined
+
+onMounted(() => {
+  componentMounted = true
+  void refresh()
+})
+
+onUnmounted(() => {
+  componentMounted = false
+  saveSequence += 1
+  refreshSequence += 1
+  refreshController?.abort()
+})
+
+watch(selectedBuildingId, () => {
+  selectionRevision += 1
+  if (!floors.value.some((floor) => floor.id === selectedFloorId.value)) {
+    selectedFloorId.value = floors.value[0]?.id ?? null
+  }
+  clearFileDraft(true)
+}, { flush: 'sync' })
+
+watch(selectedFloorId, () => {
+  selectionRevision += 1
+  clearFileDraft(true)
+}, { flush: 'sync' })
 
 async function refresh(): Promise<void> {
+  const requestId = ++refreshSequence
+  refreshController?.abort()
+  const controller = new AbortController()
+  refreshController = controller
   loading.value = true
   error.value = null
   try {
-    buildings.value = await props.client.listBuildings()
+    const nextBuildings = await props.client.listBuildings(controller.signal)
+    if (!isCurrentRefresh(requestId)) return
+    buildings.value = nextBuildings
     if (!selectedBuildingId.value || !buildings.value.some((item) => item.id === selectedBuildingId.value)) {
       selectedBuildingId.value = buildings.value[0]?.id ?? null
     }
@@ -48,10 +87,19 @@ async function refresh(): Promise<void> {
       selectedFloorId.value = firstFloor?.id ?? null
     }
   } catch {
-    error.value = 'Реестр карт не удалось загрузить.'
+    if (isCurrentRefresh(requestId) && !controller.signal.aborted) {
+      error.value = 'Реестр карт не удалось загрузить.'
+    }
   } finally {
-    loading.value = false
+    if (isCurrentRefresh(requestId)) {
+      loading.value = false
+      if (refreshController === controller) refreshController = undefined
+    }
   }
+}
+
+function isCurrentRefresh(requestId: number): boolean {
+  return componentMounted && requestId === refreshSequence
 }
 
 async function addBuilding(): Promise<void> {
@@ -60,8 +108,9 @@ async function addBuilding(): Promise<void> {
     error.value = 'Номер корпуса должен быть положительным числом.'
     return
   }
-  await runSave(async () => {
+  await runSave(async (isCurrent) => {
     await props.client.createBuilding(code, buildingLabel.value.trim() || undefined)
+    if (!isCurrent()) return
     buildingCode.value = ''
     buildingLabel.value = ''
     notice.value = 'Корпус добавлен.'
@@ -71,17 +120,24 @@ async function addBuilding(): Promise<void> {
 
 async function addFloor(): Promise<void> {
   const code = normalizePositiveInteger(floorCode.value)
-  if (!selectedBuildingId.value || !code) {
+  const building = selectedBuilding.value
+  if (!building || !code) {
     error.value = 'Выбери корпус и укажи положительный номер этажа.'
     return
   }
-  await runSave(async () => {
-    await props.client.createFloor(selectedBuildingId.value!, code, floorLabel.value.trim() || undefined)
+  const buildingId = building.id
+  const startingSelectionRevision = selectionRevision
+  await runSave(async (isCurrent) => {
+    const createdFloor = await props.client.createFloor(buildingId, code, floorLabel.value.trim() || undefined)
+    if (!isCurrent()) return
     floorCode.value = ''
     floorLabel.value = ''
-    notice.value = 'Этаж добавлен.'
+    if (selectedBuildingId.value === buildingId && selectionRevision === startingSelectionRevision) {
+      selectedFloorId.value = createdFloor.id
+    }
+    notice.value = `Этаж ${createdFloor.label} добавлен в корпус ${building.label}.`
     await refresh()
-  })
+  }, `Не удалось добавить этаж в корпус ${building.label}. Проверь номер этажа.`)
 }
 
 function normalizePositiveInteger(value: number | string): string | null {
@@ -99,40 +155,76 @@ function normalizePositiveInteger(value: number | string): string | null {
 }
 
 function choosePng(event: Event): void {
-  png.value = (event.target as HTMLInputElement).files?.[0]
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  const key = adminMapSelectionKey(selectedBuildingId.value, selectedFloor.value?.id ?? null)
+  if (!file || !key) return
+  draftKey.value = key
+  png.value = file
 }
 
 function chooseSvg(event: Event): void {
-  svg.value = (event.target as HTMLInputElement).files?.[0]
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  const key = adminMapSelectionKey(selectedBuildingId.value, selectedFloor.value?.id ?? null)
+  if (!file || !key) return
+  draftKey.value = key
+  svg.value = file
+}
+
+function clearFileDraft(showNotice: boolean): void {
+  const hadFiles = Boolean(png.value || svg.value)
+  png.value = undefined
+  svg.value = undefined
+  draftKey.value = null
+  if (pngInput.value) pngInput.value.value = ''
+  if (svgInput.value) svgInput.value.value = ''
+  if (showNotice && hadFiles && componentMounted) {
+    error.value = null
+    notice.value = 'Выбранный этаж изменился. Файлы сняты; выбери их заново для нужного этажа.'
+  }
 }
 
 async function upload(): Promise<void> {
-  if (!selectedFloorId.value || (!png.value && !svg.value)) {
+  const target = captureAdminMapUploadTarget(
+    buildings.value,
+    selectedBuildingId.value,
+    selectedFloorId.value,
+    draftKey.value,
+    { ...(png.value ? { png: png.value } : {}), ...(svg.value ? { svg: svg.value } : {}) },
+  )
+  if (!target) {
     error.value = 'Выбери этаж и приложи PNG или SVG.'
     return
   }
-  await runSave(async () => {
-    await props.client.uploadVersion(selectedFloorId.value!, {
-      ...(png.value ? { png: png.value } : {}),
-      ...(svg.value ? { svg: svg.value } : {}),
+  await runSave(async (isCurrent) => {
+    await props.client.uploadVersion(target.floorId, {
+      ...(target.png ? { png: target.png } : {}),
+      ...(target.svg ? { svg: target.svg } : {}),
     })
-    png.value = undefined
-    svg.value = undefined
-    notice.value = 'Новая версия опубликована. Отсутствующий формат сохранён как отдельное состояние.'
+    if (!isCurrent()) return
+    if (draftKey.value === target.key) clearFileDraft(false)
+    notice.value = `Новая версия корпуса ${target.buildingLabel}, этаж ${target.floorLabel} опубликована.`
     await refresh()
-  })
+  }, `Не удалось опубликовать версию корпуса ${target.buildingLabel}, этаж ${target.floorLabel}. Проверь файлы.`)
 }
 
-async function runSave(action: () => Promise<void>): Promise<void> {
+async function runSave(
+  action: (isCurrent: () => boolean) => Promise<void>,
+  failureMessage = 'Изменение не сохранено. Проверь данные и формат файлов.',
+): Promise<void> {
+  if (saving.value) return
+  const requestId = ++saveSequence
+  const isCurrent = () => componentMounted && requestId === saveSequence
   saving.value = true
   error.value = null
   notice.value = null
   try {
-    await action()
+    await action(isCurrent)
   } catch {
-    error.value = 'Изменение не сохранено. Проверь данные и формат файлов.'
+    if (isCurrent()) error.value = failureMessage
   } finally {
-    saving.value = false
+    if (isCurrent()) saving.value = false
   }
 }
 
@@ -147,6 +239,15 @@ function stateLabel(state: string): string {
     ready: 'готов',
     failed: 'ошибка проверки',
   }[state] ?? state
+}
+
+function planAvailabilityMessage(svgState: string, pngState: string): string {
+  const consequences: string[] = []
+  if (svgState !== 'ready') consequences.push('этаж нельзя открыть в карте')
+  if (pngState !== 'ready') consequences.push('PNG нельзя скачать')
+  return consequences.length
+    ? `Сейчас недоступно: ${consequences.join('; ')}.`
+    : 'Этаж можно открыть в карте, PNG доступен для скачивания.'
 }
 </script>
 
@@ -266,7 +367,7 @@ function stateLabel(state: string): string {
         <h2 id="admin-map-upload-form">
           Новая версия схемы
         </h2>
-        <label class="admin-map-field"><span>Этаж</span>
+        <label class="admin-map-field"><span>Этаж · {{ selectedBuilding?.label ?? 'корпус не выбран' }}</span>
           <select
             v-model="selectedFloorId"
             :disabled="!floors.length"
@@ -282,12 +383,16 @@ function stateLabel(state: string): string {
           Можно загрузить один формат. Второй сохранит предыдущую готовую версию, а при первом выпуске останется «не загружен».
         </p>
         <label class="admin-map-file"><span>SVG для просмотра</span><input
+          ref="svgInput"
           accept="image/svg+xml,.svg"
+          :disabled="!selectedFloor || saving"
           type="file"
           @change="chooseSvg"
         ></label>
         <label class="admin-map-file"><span>PNG для скачивания</span><input
+          ref="pngInput"
           accept="image/png,.png"
+          :disabled="!selectedFloor || saving"
           type="file"
           @change="choosePng"
         ></label>
@@ -305,6 +410,13 @@ function stateLabel(state: string): string {
           <div><dt>SVG</dt><dd>{{ stateLabel(selectedFloor.currentPlan.svg.state) }}</dd></div>
           <div><dt>PNG</dt><dd>{{ stateLabel(selectedFloor.currentPlan.png.state) }}</dd></div>
         </dl>
+        <p
+          v-if="selectedFloor?.currentPlan"
+          class="admin-map-help"
+          role="status"
+        >
+          {{ planAvailabilityMessage(selectedFloor.currentPlan.svg.state, selectedFloor.currentPlan.png.state) }}
+        </p>
       </section>
 
       <section
@@ -317,7 +429,10 @@ function stateLabel(state: string): string {
         <p class="admin-map-help">
           Сколько раз пользователи открывали схему, за всё время.
         </p>
-        <ul class="admin-map-demand" aria-label="Количество открытий схем по этажам">
+        <ul
+          class="admin-map-demand"
+          aria-label="Количество открытий схем по этажам"
+        >
           <li
             v-for="row in floorDemandRows"
             :key="row.floor.id"

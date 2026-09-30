@@ -112,11 +112,14 @@ public class EventConsumer extends AbstractEventConsumer {
             switch (eventType) {
                 case "lesson.started"          -> handleLessonStarted(envelope);
                 case "lesson.cancelled"        -> semesterArchiveEffectService.apply(
-                        envelope, () -> handleLessonCancelled(envelope));
+                        envelope, () -> preflightLessonCancelled(envelope),
+                        () -> handleLessonCancelled(envelope));
                 case "lesson.deleted"          -> semesterArchiveEffectService.apply(
-                        envelope, () -> handleLessonDeleted(envelope));
+                        envelope, () -> preflightLessonDeleted(envelope),
+                        () -> handleLessonDeleted(envelope));
                 case "lesson.one_off.cancelled" -> semesterArchiveEffectService.apply(
-                        envelope, () -> handleOneOffLessonCancelled(envelope));
+                        envelope, () -> preflightOneOffLessonCancelled(envelope),
+                        () -> handleOneOffLessonCancelled(envelope));
                 case "lesson.transfer.requested" -> lessonTransferParticipantService.apply(envelope);
                 case "semester.archive.participant.command" -> semesterArchiveParticipantService.apply(envelope);
                 case "semester.archived"       -> handleSemesterArchived(envelope);
@@ -156,8 +159,16 @@ public class EventConsumer extends AbstractEventConsumer {
                 return;
             }
             semesterArchiveEffectService.apply(
-                    envelope, () -> lessonEventService.applyLessonClosed(effectSnapshot));
+                    envelope, () -> lessonEventService.preflightLessonClosed(effectSnapshot),
+                    () -> lessonEventService.applyLessonClosed(effectSnapshot));
         });
+    }
+
+    private void preflightLessonCancelled(Map<String, Object> envelope) {
+        Map<String, Object> payload = extractRequiredPayload(envelope);
+        Long lessonId = extractPositiveInteger(payload, "lesson_id");
+        Long semesterId = extractPositiveInteger(payload, "semester_id");
+        lessonEventService.preflightLessonCancelled(lessonId, semesterId);
     }
 
     private void handleLessonCancelled(Map<String, Object> envelope) {
@@ -165,6 +176,23 @@ public class EventConsumer extends AbstractEventConsumer {
         Long lessonId = extractPositiveInteger(payload, "lesson_id");
         Long semesterId = extractPositiveInteger(payload, "semester_id");
         lessonEventService.processLessonCancelled(lessonId, semesterId);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void preflightLessonDeleted(Map<String, Object> envelope) {
+        Map<String, Object> payload = extractRequiredPayload(envelope);
+        Object raw = payload.get("lesson_ids");
+        if (!(raw instanceof java.util.List<?> list) || list.isEmpty()) {
+            throw new IllegalArgumentException("lesson.deleted requires non-empty lesson_ids");
+        }
+        java.util.List<Long> lessonIds = new java.util.ArrayList<>(list.size());
+        for (Object id : list) {
+            Long parsed = positiveInteger(id);
+            if (parsed == null) throw new IllegalArgumentException("lesson.deleted contains invalid lesson_ids");
+            lessonIds.add(parsed);
+        }
+        Long semesterId = extractPositiveInteger(payload, "semester_id");
+        lessonEventService.preflightLessonsDeleted(lessonIds, semesterId);
     }
 
     /**
@@ -213,6 +241,24 @@ public class EventConsumer extends AbstractEventConsumer {
         }
         Integer lessonNumber = lessonNumberValue.intValue();
         lessonEventService.processOneOffLessonCancelled(semesterId, groupId, date, lessonNumber);
+    }
+
+    private void preflightOneOffLessonCancelled(Map<String, Object> envelope) {
+        Map<String, Object> payload = extractRequiredPayload(envelope);
+        Long groupId = extractPositiveInteger(payload, "group_id");
+        String dateStr = (String) payload.get("date");
+        Object lessonNumberRaw = payload.get("lesson_number");
+        Long semesterId = extractPositiveInteger(payload, "semester_id");
+        if (groupId == null || dateStr == null || lessonNumberRaw == null || semesterId == null) {
+            throw new IllegalArgumentException("lesson.one_off.cancelled has invalid scope");
+        }
+        LocalDate date = LocalDate.parse(dateStr);
+        Long lessonNumberValue = positiveInteger(lessonNumberRaw);
+        if (lessonNumberValue == null || lessonNumberValue > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("lesson.one_off.cancelled has invalid lesson_number");
+        }
+        lessonEventService.preflightOneOffLessonCancelled(
+                semesterId, groupId, date, lessonNumberValue.intValue());
     }
 
     private void handleSemesterArchived(Map<String, Object> envelope) {

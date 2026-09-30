@@ -67,6 +67,21 @@ public class SemesterArchiveEffectService {
 
     @Transactional(transactionManager = "mongoTransactionManager")
     public void apply(Map<String, Object> envelope, Runnable effect) {
+        applyInCurrentTransaction(envelope, () -> { }, effect);
+    }
+
+    /**
+     * Runs read/lock-only scope validation before entering a nested transactional
+     * domain service. Typed scope rejections can then commit their ERROR receipt
+     * and ACK without a REQUIRED proxy having marked this transaction rollback-only.
+     */
+    @Transactional(transactionManager = "mongoTransactionManager")
+    public void apply(Map<String, Object> envelope, Runnable preflight, Runnable effect) {
+        applyInCurrentTransaction(envelope, preflight, effect);
+    }
+
+    private void applyInCurrentTransaction(Map<String, Object> envelope,
+                                           Runnable preflight, Runnable effect) {
         Effect identity = parse(envelope);
         String receiptId = identity.eventId() + ":" + TARGET;
         SemesterArchiveEffectReceiptDocument receipt = mongoTemplate.findById(
@@ -87,6 +102,7 @@ public class SemesterArchiveEffectService {
             // throws would leave this transaction rollback-only and prevent
             // the durable ERROR receipt and ACK from committing.
             fence.lockAcceptedScheduleEffect(identity.semesterId(), Instant.now());
+            preflight.run();
             effect.run();
         } catch (SemesterArchiveEffectRejectedException rejected) {
             result = "ERROR";

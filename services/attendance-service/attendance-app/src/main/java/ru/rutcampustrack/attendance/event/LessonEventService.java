@@ -115,6 +115,8 @@ public class LessonEventService {
 
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                 eventSemesterId, java.util.List.of(lessonId), groupId, Instant.now());
+        validateLessonAttendanceSemesterScope(lessonId, eventSemesterId);
+        validateCancellationMarkerSemesterScope(lessonId, eventSemesterId);
         resolveLegacyLessonAttendanceScope(lessonId, eventSemesterId);
 
         if ("cancelled".equalsIgnoreCase(lesson.getStatus())) {
@@ -190,6 +192,26 @@ public class LessonEventService {
                                        LessonResponse lesson, LocalDate lessonDate,
                                        GroupMembersResponse members) { }
 
+    /** Validate the local scope for a tracked close before entering its nested transaction. */
+    public void preflightLessonClosed(LessonClosedSnapshot snapshot) {
+        if (snapshot == null || snapshot.lesson() == null) {
+            throw new IllegalArgumentException("lesson.closed snapshot is required");
+        }
+        Long lessonId = snapshot.lessonId();
+        Long groupId = snapshot.groupId();
+        Long semesterId = snapshot.semesterId();
+        requirePositive(lessonId, "lessonId");
+        requirePositive(groupId, "groupId");
+        requirePositive(semesterId, "semesterId");
+        pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
+                semesterId, java.util.List.of(lessonId), groupId, Instant.now());
+        if ("transferred".equalsIgnoreCase(snapshot.lesson().getStatus())) {
+            return;
+        }
+        validateLessonAttendanceSemesterScope(lessonId, semesterId);
+        validateCancellationMarkerSemesterScope(lessonId, semesterId);
+    }
+
     /**
      * D-22 / AC-08: cascade-delete attendance docs when a one-off lesson is cancelled.
      * <p>
@@ -209,16 +231,7 @@ public class LessonEventService {
         }
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                 semesterId, java.util.List.of(), groupId, Instant.now());
-        Query naturalKey = Query.query(
-                Criteria.where("group_id").is(groupId)
-                        .and("lesson_date").is(date)
-                        .and("lesson_number").is(lessonNumber)
-        );
-        java.util.List<AttendanceDocument> matches = mongoTemplate.find(naturalKey, AttendanceDocument.class);
-        if (matches.stream().anyMatch(row -> !java.util.Objects.equals(row.getSemesterId(), semesterId))) {
-            throw new SemesterArchiveEffectRejectedException("ATTENDANCE_SCOPE_MISMATCH",
-                    "One-off cancellation matched an attendance row without the exact semester scope");
-        }
+        validateOneOffAttendanceSemesterScope(semesterId, groupId, date, lessonNumber);
         Query filter = Query.query(new Criteria().andOperator(
                 Criteria.where("group_id").is(groupId),
                 Criteria.where("lesson_date").is(date),
@@ -227,6 +240,19 @@ public class LessonEventService {
         DeleteResult result = mongoTemplate.remove(filter, AttendanceDocument.class);
         log.info("lesson.one_off.cancelled: groupId={}, date={}, lessonNumber={}, deletedCount={}",
                 groupId, date, lessonNumber, result.getDeletedCount());
+    }
+
+    /** Acquires the event fence and validates every natural-key match before the nested delete transaction. */
+    public void preflightOneOffLessonCancelled(Long semesterId, Long groupId,
+                                               LocalDate date, Integer lessonNumber) {
+        requirePositive(semesterId, "semesterId");
+        requirePositive(groupId, "groupId");
+        if (date == null || lessonNumber == null || lessonNumber <= 0) {
+            throw new IllegalArgumentException("one-off lesson scope is incomplete");
+        }
+        pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
+                semesterId, java.util.List.of(), groupId, Instant.now());
+        validateOneOffAttendanceSemesterScope(semesterId, groupId, date, lessonNumber);
     }
 
     /** Compatibility overload infers the exact scope only from matching persisted attendance rows. */
@@ -253,12 +279,27 @@ public class LessonEventService {
             log.info("lesson.cancelled: transferred source {}, leaving moved attendance unchanged", lessonId);
             return;
         }
+        validateLessonAttendanceSemesterScope(lessonId, semesterId);
+        validateCancellationMarkerSemesterScope(lessonId, semesterId);
         resolveLegacyLessonAttendanceScope(lessonId, semesterId);
         // The marker must be durable before any attendance update.  Retries
         // are idempotent because both operations are keyed by lesson_id.
         ensureCancellationMarker(lessonId, semesterId);
         applyCancellation(lessonId, semesterId);
         log.info("lesson.cancelled: lessonId={}, cancellation marker durable", lessonId);
+    }
+
+    /** Acquires the event fences and validates attendance plus marker scope before a nested transaction runs. */
+    public void preflightLessonCancelled(Long lessonId, Long semesterId) {
+        requirePositive(lessonId, "lessonId");
+        requirePositive(semesterId, "semesterId");
+        pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
+                semesterId, java.util.List.of(lessonId), null, Instant.now());
+        if (pairWriteCoordinator.isTransferredSource(lessonId)) {
+            return;
+        }
+        validateLessonAttendanceSemesterScope(lessonId, semesterId);
+        validateCancellationMarkerSemesterScope(lessonId, semesterId);
     }
 
     @Transactional(transactionManager = "mongoTransactionManager")
@@ -315,6 +356,9 @@ public class LessonEventService {
             throw new IllegalArgumentException("lessonId must be positive");
         }
         Query markerQuery = Query.query(Criteria.where("lesson_id").is(lessonId));
+        // Reject a marker from another semester before the upsert can create or
+        // modify any domain state in a transaction that must persist an ERROR receipt.
+        validateCancellationMarkerSemesterScope(lessonId, semesterId);
         Update markerUpdate = new Update()
                 .setOnInsert("lesson_id", lessonId)
                 .setOnInsert("semester_id", semesterId)
@@ -334,8 +378,7 @@ public class LessonEventService {
             throw new IllegalStateException("Cancellation marker disappeared during event processing");
         }
         if (marker.getSemesterId() != null && !semesterId.equals(marker.getSemesterId())) {
-            throw new SemesterArchiveEffectRejectedException("ATTENDANCE_SCOPE_MISMATCH",
-                    "Cancellation marker belongs to another semester");
+            throw new IllegalStateException("Cancellation marker scope changed while the lesson fence was held");
         }
         if (marker.getSemesterId() == null) {
             mongoTemplate.updateFirst(markerQuery,
@@ -383,17 +426,22 @@ public class LessonEventService {
             throw new IllegalArgumentException("lesson.deleted contains invalid lesson ids");
         }
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(semesterId, lessonIds, null, Instant.now());
-        for (AttendanceDocument document : mongoTemplate.find(
-                Query.query(Criteria.where("lesson_id").in(lessonIds)), AttendanceDocument.class)) {
-            if (document.getSemesterId() != null && !semesterId.equals(document.getSemesterId())) {
-                throw new SemesterArchiveEffectRejectedException("ATTENDANCE_SCOPE_MISMATCH",
-                        "Deleted lesson event conflicts with an attendance row semester");
-            }
-        }
+        validateDeletedAttendanceSemesterScopes(lessonIds, semesterId);
         Query filter = Query.query(Criteria.where("lesson_id").in(lessonIds));
         DeleteResult result = mongoTemplate.remove(filter, AttendanceDocument.class);
         log.info("lesson.deleted: lessonIds={}, deletedCount={}",
                 lessonIds.size(), result.getDeletedCount());
+    }
+
+    /** Acquires all event fences and validates the complete batch before the nested cascade delete. */
+    public void preflightLessonsDeleted(java.util.List<Long> lessonIds, Long semesterId) {
+        if (lessonIds == null || lessonIds.isEmpty()) return;
+        requirePositive(semesterId, "semesterId");
+        if (lessonIds.stream().anyMatch(id -> id == null || id <= 0)) {
+            throw new IllegalArgumentException("lesson.deleted contains invalid lesson ids");
+        }
+        pairWriteCoordinator.lockAcceptedScheduleEffectLessons(semesterId, lessonIds, null, Instant.now());
+        validateDeletedAttendanceSemesterScopes(lessonIds, semesterId);
     }
 
     @Transactional(transactionManager = "mongoTransactionManager")
@@ -410,6 +458,13 @@ public class LessonEventService {
     }
 
     private void resolveLegacyLessonAttendanceScope(Long lessonId, Long semesterId) {
+        validateLessonAttendanceSemesterScope(lessonId, semesterId);
+        Query legacy = Query.query(Criteria.where("lesson_id").is(lessonId)
+                .and("semester_id").is(null));
+        mongoTemplate.updateMulti(legacy, new Update().set("semester_id", semesterId), AttendanceDocument.class);
+    }
+
+    private void validateLessonAttendanceSemesterScope(Long lessonId, Long semesterId) {
         Query conflicting = Query.query(new Criteria().andOperator(
                 Criteria.where("lesson_id").is(lessonId),
                 Criteria.where("semester_id").ne(semesterId),
@@ -418,9 +473,40 @@ public class LessonEventService {
             throw new SemesterArchiveEffectRejectedException("ATTENDANCE_SCOPE_MISMATCH",
                     "Schedule lesson event conflicts with an attendance row semester");
         }
-        Query legacy = Query.query(Criteria.where("lesson_id").is(lessonId)
-                .and("semester_id").is(null));
-        mongoTemplate.updateMulti(legacy, new Update().set("semester_id", semesterId), AttendanceDocument.class);
+    }
+
+    private void validateCancellationMarkerSemesterScope(Long lessonId, Long semesterId) {
+        LessonCancellationMarker marker = mongoTemplate.findOne(
+                Query.query(Criteria.where("lesson_id").is(lessonId)), LessonCancellationMarker.class);
+        if (marker != null && marker.getSemesterId() != null
+                && !semesterId.equals(marker.getSemesterId())) {
+            throw new SemesterArchiveEffectRejectedException("ATTENDANCE_SCOPE_MISMATCH",
+                    "Cancellation marker belongs to another semester");
+        }
+    }
+
+    private void validateDeletedAttendanceSemesterScopes(java.util.List<Long> lessonIds, Long semesterId) {
+        for (AttendanceDocument document : mongoTemplate.find(
+                Query.query(Criteria.where("lesson_id").in(lessonIds)), AttendanceDocument.class)) {
+            if (document.getSemesterId() != null && !semesterId.equals(document.getSemesterId())) {
+                throw new SemesterArchiveEffectRejectedException("ATTENDANCE_SCOPE_MISMATCH",
+                        "Deleted lesson event conflicts with an attendance row semester");
+            }
+        }
+    }
+
+    private void validateOneOffAttendanceSemesterScope(Long semesterId, Long groupId,
+                                                        LocalDate date, Integer lessonNumber) {
+        Query naturalKey = Query.query(
+                Criteria.where("group_id").is(groupId)
+                        .and("lesson_date").is(date)
+                        .and("lesson_number").is(lessonNumber)
+        );
+        java.util.List<AttendanceDocument> matches = mongoTemplate.find(naturalKey, AttendanceDocument.class);
+        if (matches.stream().anyMatch(row -> !java.util.Objects.equals(row.getSemesterId(), semesterId))) {
+            throw new SemesterArchiveEffectRejectedException("ATTENDANCE_SCOPE_MISMATCH",
+                    "One-off cancellation matched an attendance row without the exact semester scope");
+        }
     }
 
     private static void requirePositive(Long value, String field) {

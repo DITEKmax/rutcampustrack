@@ -88,6 +88,11 @@ class EventConsumerTest {
             return null;
         }).when(semesterArchiveEffectService).apply(any(), any());
         org.mockito.Mockito.lenient().doAnswer(invocation -> {
+            ((Runnable) invocation.getArgument(1)).run();
+            ((Runnable) invocation.getArgument(2)).run();
+            return null;
+        }).when(semesterArchiveEffectService).apply(any(), any(), any());
+        org.mockito.Mockito.lenient().doAnswer(invocation -> {
             @SuppressWarnings("unchecked")
             Consumer<TransactionStatus> transaction = invocation.getArgument(0);
             transaction.accept(null);

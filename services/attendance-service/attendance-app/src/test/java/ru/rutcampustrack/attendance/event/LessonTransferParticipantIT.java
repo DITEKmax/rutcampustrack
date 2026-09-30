@@ -267,6 +267,121 @@ class LessonTransferParticipantIT {
     }
 
     @Test
+    void mismatchedTrackedEffectScopeCommitsErrorAckWithoutPartialDomainWrites() throws Exception {
+        long mismatchedLessonId = 510L;
+        AttendanceDocument mismatchedAttendance = AttendanceDocument.builder()
+                .id("scope-mismatch-mark")
+                .lessonId(mismatchedLessonId)
+                .userId(100L)
+                .groupId(GROUP_ID)
+                .subjectId(20L)
+                .semesterId(SEMESTER_ID + 1)
+                .lessonNumber(2)
+                .lessonDate(LocalDate.parse("2026-09-01"))
+                .status(AttendanceStatus.PRESENT)
+                .source(AttendanceSource.STUDENT_GEO)
+                .createdAt(CREATED_AT)
+                .updatedAt(UPDATED_AT)
+                .build();
+        mongoTemplate.insert(mismatchedAttendance);
+
+        String mismatchEventId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+        archiveEffectService.apply(
+                scheduleEffect(mismatchEventId, SEMESTER_ID, mismatchedLessonId, false),
+                () -> lessonEventService.preflightLessonCancelled(mismatchedLessonId, SEMESTER_ID),
+                () -> lessonEventService.processLessonCancelled(mismatchedLessonId, SEMESTER_ID));
+
+        assertScopeMismatchErrorAck(mismatchEventId);
+        assertThat(mongoTemplate.findById("scope-mismatch-mark", AttendanceDocument.class))
+                .usingRecursiveComparison().isEqualTo(mismatchedAttendance);
+        assertThat(mongoTemplate.count(Query.query(Criteria.where("lesson_id").is(mismatchedLessonId)),
+                LessonCancellationMarker.class)).isZero();
+
+        long markerMismatchLessonId = 511L;
+        AttendanceDocument legacyAttendance = AttendanceDocument.builder()
+                .id("legacy-marker-mismatch-mark")
+                .lessonId(markerMismatchLessonId)
+                .userId(101L)
+                .groupId(GROUP_ID)
+                .subjectId(20L)
+                .lessonNumber(2)
+                .lessonDate(LocalDate.parse("2026-09-02"))
+                .status(AttendanceStatus.PRESENT)
+                .source(AttendanceSource.STUDENT_GEO)
+                .createdAt(CREATED_AT)
+                .updatedAt(UPDATED_AT)
+                .build();
+        mongoTemplate.insert(legacyAttendance);
+        mongoTemplate.updateFirst(Query.query(Criteria.where("_id").is(legacyAttendance.getId())),
+                new org.springframework.data.mongodb.core.query.Update().unset("semester_id"),
+                AttendanceDocument.class);
+        LessonCancellationMarker conflictingMarker = new LessonCancellationMarker(
+                "marker-mismatch", markerMismatchLessonId, SEMESTER_ID + 1, CREATED_AT);
+        mongoTemplate.insert(conflictingMarker);
+
+        String markerEventId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+        archiveEffectService.apply(
+                scheduleEffect(markerEventId, SEMESTER_ID, markerMismatchLessonId, false),
+                () -> lessonEventService.preflightLessonCancelled(markerMismatchLessonId, SEMESTER_ID),
+                () -> lessonEventService.processLessonCancelled(markerMismatchLessonId, SEMESTER_ID));
+
+        assertScopeMismatchErrorAck(markerEventId);
+        assertThat(mongoTemplate.findById(legacyAttendance.getId(), AttendanceDocument.class))
+                .usingRecursiveComparison().isEqualTo(legacyAttendance);
+        assertThat(mongoTemplate.findById(conflictingMarker.getId(), LessonCancellationMarker.class))
+                .usingRecursiveComparison().isEqualTo(conflictingMarker);
+
+        long firstBatchLessonId = 512L;
+        long secondBatchLessonId = 513L;
+        AttendanceDocument firstBatchMark = AttendanceDocument.builder()
+                .id("delete-batch-first")
+                .lessonId(firstBatchLessonId)
+                .userId(102L)
+                .groupId(GROUP_ID)
+                .subjectId(20L)
+                .semesterId(SEMESTER_ID)
+                .lessonNumber(3)
+                .lessonDate(LocalDate.parse("2026-09-03"))
+                .status(AttendanceStatus.PRESENT)
+                .source(AttendanceSource.STUDENT_GEO)
+                .createdAt(CREATED_AT)
+                .updatedAt(UPDATED_AT)
+                .build();
+        AttendanceDocument secondBatchMark = AttendanceDocument.builder()
+                .id("delete-batch-second")
+                .lessonId(secondBatchLessonId)
+                .userId(103L)
+                .groupId(GROUP_ID)
+                .subjectId(20L)
+                .semesterId(SEMESTER_ID + 1)
+                .lessonNumber(4)
+                .lessonDate(LocalDate.parse("2026-09-04"))
+                .status(AttendanceStatus.EXCUSED)
+                .source(AttendanceSource.HEADMAN)
+                .createdAt(CREATED_AT)
+                .updatedAt(UPDATED_AT)
+                .build();
+        mongoTemplate.insert(firstBatchMark);
+        mongoTemplate.insert(secondBatchMark);
+
+        String batchEventId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+        List<Long> lessonIds = List.of(firstBatchLessonId, secondBatchLessonId);
+        archiveEffectService.apply(
+                scheduleDeletedEffect(batchEventId, SEMESTER_ID, lessonIds),
+                () -> lessonEventService.preflightLessonsDeleted(lessonIds, SEMESTER_ID),
+                () -> lessonEventService.processLessonsDeleted(lessonIds, SEMESTER_ID));
+
+        assertScopeMismatchErrorAck(batchEventId);
+        assertThat(mongoTemplate.findById(firstBatchMark.getId(), AttendanceDocument.class))
+                .usingRecursiveComparison().isEqualTo(firstBatchMark);
+        assertThat(mongoTemplate.findById(secondBatchMark.getId(), AttendanceDocument.class))
+                .usingRecursiveComparison().isEqualTo(secondBatchMark);
+        assertThat(mongoTemplate.count(new Query(), SemesterArchiveEffectReceiptDocument.class)).isEqualTo(3);
+        assertThat(mongoTemplate.count(Query.query(Criteria.where("event_type")
+                .is("semester.archive.effect.ack")), "attendance_outbox")).isEqualTo(3);
+    }
+
+    @Test
     void prepareArchiveWaitsBehindAlreadyFencedAttendanceWrite() throws Exception {
         assertThat(mongoTemplate.collectionExists("semester_archive_fences")).isFalse();
         assertPrepareArchiveWaitsBehindFencedAttendanceWrite(false);
@@ -715,6 +830,48 @@ class LessonTransferParticipantIT {
         envelope.put("occurred_at", Instant.now().toString());
         envelope.put("payload", payload);
         return envelope;
+    }
+
+    private static Map<String, Object> scheduleDeletedEffect(String eventId, long semesterId,
+                                                              List<Long> lessonIds) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("semester_id", semesterId);
+        payload.put("lesson_ids", lessonIds);
+        Map<String, Object> envelope = new LinkedHashMap<>();
+        envelope.put("event_type", "lesson.deleted");
+        envelope.put("event_id", eventId);
+        envelope.put("event_version", 1);
+        envelope.put("source", "schedule-service");
+        envelope.put("trace_id", "archive-effect-correlation");
+        envelope.put("occurred_at", Instant.now().toString());
+        envelope.put("payload", payload);
+        return envelope;
+    }
+
+    private void assertScopeMismatchErrorAck(String eventId) throws Exception {
+        SemesterArchiveEffectReceiptDocument receipt = mongoTemplate.findById(
+                eventId + ":ATTENDANCE", SemesterArchiveEffectReceiptDocument.class);
+        assertThat(receipt).isNotNull();
+        assertThat(receipt.getResult()).isEqualTo("ERROR");
+        assertThat(receipt.getBlockingReason()).isEqualTo("ATTENDANCE_SCOPE_MISMATCH");
+
+        List<Document> acknowledgements = mongoTemplate.find(
+                Query.query(Criteria.where("event_type").is("semester.archive.effect.ack")),
+                Document.class, "attendance_outbox");
+        Document ackDocument = acknowledgements.stream()
+                .filter(document -> {
+                    try {
+                        return eventId.equals(objectMapper.readTree(document.getString("payload"))
+                                .path("payload").path("source_event_id").asText());
+                    } catch (Exception error) {
+                        throw new AssertionError("Could not parse stored effect acknowledgement", error);
+                    }
+                })
+                .findFirst().orElseThrow();
+        var ack = objectMapper.readTree(ackDocument.getString("payload")).path("payload");
+        assertThat(ack.path("result").asText()).isEqualTo("ERROR");
+        assertThat(ack.path("blocking_reason").asText()).isEqualTo("ATTENDANCE_SCOPE_MISMATCH");
+        assertThat(ack.path("payload_hash").asText()).isEqualTo(receipt.getPayloadHash());
     }
 
     private static Map<String, Object> event(int batchIndex, int batchCount,

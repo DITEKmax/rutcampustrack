@@ -16,6 +16,7 @@ import ru.rutcampustrack.auth.service.ReportDownloadTicketRateLimitException;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -80,6 +81,35 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
         return problem(HttpStatus.TOO_MANY_REQUESTS, "rate-limit-exceeded",
                 "Превышен лимит запросов OTP", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(PasswordResetException.class)
+    public ResponseEntity<ErrorResponse> handlePasswordReset(
+            PasswordResetException ex,
+            HttpServletRequest request) {
+        HttpStatus status = switch (ex.code()) {
+            case OTP_INVALID -> HttpStatus.BAD_REQUEST;
+            case OTP_EXPIRED, RESET_TICKET_INVALID -> HttpStatus.GONE;
+            case OTP_RATE_LIMITED -> HttpStatus.TOO_MANY_REQUESTS;
+        };
+        String suffix = ex.code().name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');
+        Map<String, Object> extensions = new LinkedHashMap<>();
+        extensions.put("code", ex.code().name());
+        if (ex.attemptsRemaining() != null) {
+            extensions.put("attemptsRemaining", ex.attemptsRemaining());
+        }
+        if (ex.retryAfterSeconds() != null) {
+            extensions.put("retryAfterSeconds", ex.retryAfterSeconds());
+        }
+        ErrorResponse body = new ErrorResponse(
+                status.value(), ErrorResponse.PROBLEM_BASE + "password-reset-" + suffix,
+                "Password recovery request failed",
+                "The password recovery proof was denied",
+                request.getRequestURI(), Instant.now(), MDC.get(MDC_TRACE_ID), null, null, extensions);
+        return ResponseEntity.status(status)
+                .cacheControl(CacheControl.noStore())
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(body);
     }
 
     @ExceptionHandler(TmaValidationException.class)

@@ -14,6 +14,7 @@ import ru.rutcampustrack.auth.dto.RefreshRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.exception.InvalidCredentialsException;
+import ru.rutcampustrack.auth.exception.PasswordResetException;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
 import ru.rutcampustrack.auth.session.PasswordPolicy;
@@ -531,6 +532,46 @@ public class AuthService {
             throw mapCredentialFailure(result.failureCode());
         }
         return result;
+    }
+
+    public long completePasswordReset(
+            CredentialSessionTransactionPort.CredentialHash ticketHash,
+            String newPassword
+    ) {
+        Objects.requireNonNull(ticketHash, "ticketHash");
+        PasswordPolicy.Validation validation = passwordPolicy.validate(newPassword);
+        if (!validation.valid()) {
+            throw new AuthSessionException(AuthSessionException.Code.PASSWORD_POLICY_VIOLATION);
+        }
+        String replacementHash = bcryptGuard.execute(() -> passwordEncoder.encode(newPassword));
+        CredentialSessionTransactionPort.PasswordResetResult result;
+        try {
+            result = sessionLifecycle.completePasswordReset(
+                    new SessionLifecycleService.PasswordResetRequest(
+                            ticketHash,
+                            new CredentialSessionTransactionPort.CredentialHash(replacementHash),
+                            newPassword,
+                            clock.instant()));
+        } catch (RuntimeException exception) {
+            throw exception instanceof AuthSessionException typed
+                    ? typed
+                    : new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
+        if (result == null) {
+            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
+        }
+        if (result.succeeded()) {
+            return result.userId();
+        }
+        switch (result.failureCode()) {
+            case RESET_TICKET_INVALID -> throw new PasswordResetException(
+                    PasswordResetException.Code.RESET_TICKET_INVALID, null, null);
+            case PASSWORD_POLICY_VIOLATION -> throw new AuthSessionException(
+                    AuthSessionException.Code.PASSWORD_POLICY_VIOLATION);
+            case AUTHORITY_UNAVAILABLE -> throw new AuthSessionException(
+                    AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
+        }
+        throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
     }
 
     private TokenResponse issueTokenPair(SessionSnapshot snapshot, UUID refreshJti, Instant now) {

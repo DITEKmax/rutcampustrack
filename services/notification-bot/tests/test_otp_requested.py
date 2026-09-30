@@ -5,7 +5,11 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from bot.notifications.otp_requested import WEB_LOGIN_URL, handle_otp_requested
+from bot.notifications.otp_requested import (
+    WEB_LOGIN_URL,
+    WEB_PASSWORD_RESET_URL,
+    handle_otp_requested,
+)
 
 
 def _bot(sent_message_id: int = 555) -> MagicMock:
@@ -52,7 +56,38 @@ async def test_handle_otp_requested_sends_code_and_finalizes_tracker():
     assert WEB_LOGIN_URL in text
     assert "5 мин" in text
 
-    tracker.finalize_with_bot_msg.assert_awaited_once_with(42, 1001)
+    tracker.finalize_with_bot_msg.assert_awaited_once_with(42, 1001, purpose="login")
+    await _drain_tasks()
+
+
+@pytest.mark.asyncio
+async def test_handle_password_reset_otp_includes_fragment_link_and_server_metadata():
+    bot = _bot(sent_message_id=1002)
+    tracker = _tracker()
+    challenge_id = "A" * 32
+    event = {
+        "event_type": "otp.requested",
+        "payload": {
+            "telegram_id": 42,
+            "code": "123456",
+            "ttl_seconds": 120,
+            "purpose": "password_reset",
+            "challenge_id": challenge_id,
+            "attempts_remaining": 2,
+        },
+    }
+
+    await handle_otp_requested(event, bot=bot, tracker=tracker)
+
+    text = bot.send_message.await_args.kwargs["text"]
+    assert "Код для сброса пароля" in text
+    assert "123456" in text
+    assert "Осталось попыток: 2" in text
+    assert f"{WEB_PASSWORD_RESET_URL}#challengeId={challenge_id}" in text
+    assert "&amp;code=123456" in text
+    assert "?" not in text
+    tracker.finalize_with_bot_msg.assert_awaited_once_with(
+        42, 1002, purpose="password_reset")
     await _drain_tasks()
 
 

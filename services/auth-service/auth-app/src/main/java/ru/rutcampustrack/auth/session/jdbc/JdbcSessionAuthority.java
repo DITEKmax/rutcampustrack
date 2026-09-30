@@ -149,6 +149,31 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
             WHERE user_id = ? AND revoked_at IS NULL
             """;
 
+    private static final String INSERT_PASSWORD_RESET_TICKET_SQL = """
+            INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
+            VALUES (?, ?, ?)
+            """;
+
+    private static final String PASSWORD_RESET_TICKET_USER_SQL = """
+            SELECT user_id
+            FROM password_reset_tokens
+            WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?
+            """;
+
+    private static final String LOCK_PASSWORD_RESET_TICKET_SQL = PASSWORD_RESET_TICKET_USER_SQL + " FOR UPDATE";
+
+    private static final String MARK_PASSWORD_RESET_TICKET_USED_SQL = """
+            UPDATE password_reset_tokens
+            SET used_at = ?
+            WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?
+            """;
+
+    private static final String RESET_PASSWORD_SQL = """
+            UPDATE users
+            SET password_hash = ?, password_changed = TRUE, initial_password = NULL
+            WHERE id = ?
+            """;
+
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
     private final FailureInjector failureInjector;
@@ -242,6 +267,33 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
                         CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE
                 )
         );
+    }
+
+    @Override
+    public boolean issuePasswordResetTicket(long userId, CredentialHash ticketHash, Instant expiresAt) {
+        Objects.requireNonNull(ticketHash, "ticketHash");
+        Objects.requireNonNull(expiresAt, "expiresAt");
+        if (userId <= 0) {
+            throw new IllegalArgumentException("userId must be positive");
+        }
+        return inTransaction(() -> {
+            if (findUser(userId, true) == null) {
+                return false;
+            }
+            return jdbcTemplate.update(
+                    INSERT_PASSWORD_RESET_TICKET_SQL,
+                    userId,
+                    ticketHash.value(),
+                    timestamp(expiresAt)) == 1;
+        }, () -> false);
+    }
+
+    @Override
+    public PasswordResetResult completePasswordReset(PasswordResetCommand command) {
+        Objects.requireNonNull(command, "command");
+        return inTransaction(
+                () -> completePasswordResetInTransaction(command),
+                () -> PasswordResetResult.failure(PasswordResetFailureCode.AUTHORITY_UNAVAILABLE));
     }
 
     private CreateSessionResult createSessionInTransaction(CreateSessionCommand command) {
@@ -551,6 +603,61 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         insertEvent(command.passwordChangedEvent());
         failureInjector.after("password.event");
         return ChangePasswordResult.success(revoked);
+    }
+
+    private PasswordResetResult completePasswordResetInTransaction(PasswordResetCommand command) {
+        List<Long> userIds = jdbcTemplate.query(
+                PASSWORD_RESET_TICKET_USER_SQL,
+                (resultSet, rowNum) -> resultSet.getLong(1),
+                command.ticketHash().value(),
+                timestamp(command.now()));
+        if (userIds.isEmpty()) {
+            return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
+        }
+
+        long userId = userIds.getFirst();
+        if (findUser(userId, true) == null) {
+            return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
+        }
+        List<Long> lockedTickets = jdbcTemplate.query(
+                LOCK_PASSWORD_RESET_TICKET_SQL,
+                (resultSet, rowNum) -> resultSet.getLong(1),
+                command.ticketHash().value(),
+                timestamp(command.now()));
+        if (lockedTickets.isEmpty()) {
+            return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
+        }
+
+        int passwordUpdated = jdbcTemplate.update(
+                RESET_PASSWORD_SQL,
+                command.replacementHash().value(),
+                userId);
+        if (passwordUpdated != 1) {
+            throw new IllegalStateException("password reset did not update one user");
+        }
+        failureInjector.after("password-reset.credential");
+
+        int ticketConsumed = jdbcTemplate.update(
+                MARK_PASSWORD_RESET_TICKET_USED_SQL,
+                timestamp(command.now()),
+                command.ticketHash().value(),
+                timestamp(command.now()));
+        if (ticketConsumed != 1) {
+            throw new IllegalStateException("password reset ticket consumption did not update one row");
+        }
+        failureInjector.after("password-reset.ticket");
+
+        int revoked = jdbcTemplate.update(
+                REVOKE_PASSWORD_SESSIONS_SQL,
+                timestamp(command.now()),
+                SessionRevokeReason.PASSWORD_CHANGED.name(),
+                userId);
+        failureInjector.after("password-reset.sessions");
+
+        insertEvent(new SecurityEvent(
+                userId, null, SecurityEvent.Type.PASSWORD_CHANGED, command.now(), null, null, null));
+        failureInjector.after("password-reset.event");
+        return PasswordResetResult.success(userId, revoked);
     }
 
     private SessionRow clearUnselectableActive(SessionRow session, List<RoleGrant> grants) {

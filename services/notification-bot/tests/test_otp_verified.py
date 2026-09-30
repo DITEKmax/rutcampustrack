@@ -27,7 +27,7 @@ async def test_cleanup_deletes_both_messages_when_tracked():
 
     await cleanup_otp_messages(777, bot=bot, tracker=tracker)
 
-    tracker.pop.assert_awaited_once_with(777)
+    tracker.pop.assert_awaited_once_with(777, purpose="login")
     assert bot.delete_message.await_count == 2
     called_pairs = {(call.kwargs["chat_id"], call.kwargs["message_id"]) for call in bot.delete_message.await_args_list}
     assert called_pairs == {(10, 1), (10, 2)}
@@ -65,7 +65,7 @@ async def test_handle_otp_verified_routes_payload_telegram_id():
 
     await handle_otp_verified(event, bot=bot, tracker=tracker)
 
-    tracker.pop.assert_awaited_once_with(42)
+    tracker.pop.assert_awaited_once_with(42, purpose="login")
     assert bot.delete_message.await_count == 2
 
 

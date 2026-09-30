@@ -47,3 +47,11 @@ class AuthHttpClient:
             json={"telegramId": telegram_id},
         ) as resp:
             resp.raise_for_status()
+
+    async def request_password_reset(self, telegram_id: int) -> None:
+        """Request a recovery OTP without disclosing whether the account exists."""
+        async with self._session.post(
+            "/auth/password-reset/request",
+            json={"telegramId": telegram_id},
+        ) as resp:
+            resp.raise_for_status()

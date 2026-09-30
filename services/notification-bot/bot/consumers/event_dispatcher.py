@@ -59,6 +59,7 @@ class EventDispatcher:
         from bot.notifications.lesson_started import handle_lesson_started
         from bot.notifications.otp_requested import handle_otp_requested
         from bot.notifications.otp_verified import handle_otp_verified
+        from bot.notifications.password_changed import handle_password_changed
 
         # M04 Группа 9 — admin list parsed once при старте dispatcher'а.
         self._admin_ids = _parse_admin_ids(getattr(config, "admin_telegram_ids", None))
@@ -185,6 +186,10 @@ class EventDispatcher:
                 event,
                 bot=self._bot,
                 tracker=self._otp_tracker,
+            ),
+            "password.changed": lambda event: handle_password_changed(
+                event,
+                bot=self._bot,
             ),
             # M04 Группа 9: Alertmanager → notification-web → RabbitMQ →
             # этот handler. Форвардит alert админу в Telegram.

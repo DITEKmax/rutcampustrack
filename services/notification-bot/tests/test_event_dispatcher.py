@@ -159,6 +159,7 @@ async def test_dispatcher_has_all_event_types():
         "group.archived",
         "otp.requested",
         "otp.verified",
+        "password.changed",
         "lesson.one_off.created",
         "lesson.one_off.cancelled",
         "alert.fired",

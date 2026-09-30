@@ -44,6 +44,42 @@ class OtpRequestedContractTest {
 
         Set<ValidationMessage> errors = EventSchemaValidator.validate("otp.requested.json", json);
         assertThat(errors).as("otp.requested envelope должен валидироваться schema'ой").isEmpty();
+        assertThat(mapper.readTree(json).path("payload").path("purpose").asText())
+                .isEqualTo("login");
+    }
+
+    @Test
+    void passwordResetEvent_carriesPurposeChallengeAndServerAttempts() throws Exception {
+        OtpRequestedEvent event = new OtpRequestedEvent(
+                this, 123456789L, "123456", 120, "password_reset", "A".repeat(32), 3);
+        event.setEventId(UUID.randomUUID());
+        event.setEventVersion(1);
+        event.setTraceId(UUID.randomUUID().toString());
+        event.setOccurredAt(OffsetDateTime.now());
+        event.setSourceService("auth-service");
+
+        String json = mapper.writeValueAsString(event);
+
+        Set<ValidationMessage> errors = EventSchemaValidator.validate("otp.requested.json", json);
+        assertThat(errors).as("reset OTP must carry its explicit purpose metadata").isEmpty();
+        assertThat(mapper.readTree(json).path("payload").path("challenge_id").asText())
+                .isEqualTo("A".repeat(32));
+    }
+
+    @Test
+    void passwordResetEvent_rejectsMissingChallenge() throws Exception {
+        OtpRequestedEvent event = new OtpRequestedEvent(
+                this, 123456789L, "123456", 120, "password_reset", null, 3);
+        event.setEventId(UUID.randomUUID());
+        event.setEventVersion(1);
+        event.setTraceId(UUID.randomUUID().toString());
+        event.setOccurredAt(OffsetDateTime.now());
+        event.setSourceService("auth-service");
+
+        String json = mapper.writeValueAsString(event);
+
+        Set<ValidationMessage> errors = EventSchemaValidator.validate("otp.requested.json", json);
+        assertThat(errors).as("password_reset must include challenge_id").isNotEmpty();
     }
 
     @Test

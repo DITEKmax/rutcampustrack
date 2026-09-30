@@ -17,6 +17,12 @@ public interface CredentialSessionTransactionPort {
      */
     ChangePasswordResult changePassword(ChangePasswordCommand command);
 
+    /** Store only a one-way hash of an opaque, short-lived reset ticket. */
+    boolean issuePasswordResetTicket(long userId, CredentialHash ticketHash, Instant expiresAt);
+
+    /** Consume the ticket, replace the credential, revoke every prior session, and append the event atomically. */
+    PasswordResetResult completePasswordReset(PasswordResetCommand command);
+
     enum FailureCode {
         CURRENT_PASSWORD_INVALID,
         PASSWORD_POLICY_VIOLATION,
@@ -90,6 +96,59 @@ public interface CredentialSessionTransactionPort {
 
         public static ChangePasswordResult failure(FailureCode code) {
             return new ChangePasswordResult(0, Objects.requireNonNull(code, "code"));
+        }
+
+        public boolean succeeded() {
+            return failureCode == null;
+        }
+    }
+
+    record PasswordResetCommand(
+            CredentialHash ticketHash,
+            CredentialHash replacementHash,
+            Instant now
+    ) {
+        public PasswordResetCommand {
+            ticketHash = Objects.requireNonNull(ticketHash, "ticketHash");
+            replacementHash = Objects.requireNonNull(replacementHash, "replacementHash");
+            now = Objects.requireNonNull(now, "now");
+        }
+
+        @Override
+        public String toString() {
+            return "PasswordResetCommand[ticketHash=<redacted>, replacementHash=<redacted>, now=" + now + ']';
+        }
+    }
+
+    enum PasswordResetFailureCode {
+        RESET_TICKET_INVALID,
+        PASSWORD_POLICY_VIOLATION,
+        AUTHORITY_UNAVAILABLE
+    }
+
+    /** A valid reset may revoke zero sessions when the user had none. */
+    record PasswordResetResult(long userId, int revokedSessionCount, PasswordResetFailureCode failureCode) {
+        public PasswordResetResult {
+            if (userId < 0 || revokedSessionCount < 0) {
+                throw new IllegalArgumentException("result counts must not be negative");
+            }
+            if ((failureCode == null) != (userId > 0)) {
+                throw new IllegalArgumentException("success must identify the updated user; failure must be typed");
+            }
+            if (failureCode != null && revokedSessionCount != 0) {
+                throw new IllegalArgumentException("failed reset cannot report revoked sessions");
+            }
+        }
+
+        public static PasswordResetResult success(long userId, int revokedSessionCount) {
+            if (userId <= 0) {
+                throw new IllegalArgumentException("userId must be positive");
+            }
+            return new PasswordResetResult(userId, revokedSessionCount, null);
+        }
+
+        public static PasswordResetResult failure(PasswordResetFailureCode code) {
+            return new PasswordResetResult(0, 0, Objects.requireNonNull(code, "code"));
         }
 
         public boolean succeeded() {

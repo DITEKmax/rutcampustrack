@@ -22,6 +22,8 @@ logger = logging.getLogger(__name__)
 class OtpMessageTracker:
     KEY_PREFIX = "otp_msgs:"
     PENDING_PREFIX = "otp_pending_user_msg:"
+    RESET_KEY_PREFIX = "password_reset_otp_msgs:"
+    RESET_PENDING_PREFIX = "password_reset_otp_pending_user_msg:"
 
     def __init__(
         self,
@@ -39,17 +41,28 @@ class OtpMessageTracker:
             self._redis = aioredis.from_url(url, max_connections=5, decode_responses=True)
         self._ttl = ttl_seconds
 
-    def _key(self, telegram_id: int) -> str:
-        return f"{self.KEY_PREFIX}{telegram_id}"
+    def _key(self, telegram_id: int, purpose: str = "login") -> str:
+        prefix = self._prefixes(purpose)[0]
+        return f"{prefix}{telegram_id}"
 
-    def _pending_key(self, telegram_id: int) -> str:
-        return f"{self.PENDING_PREFIX}{telegram_id}"
+    def _pending_key(self, telegram_id: int, purpose: str = "login") -> str:
+        prefix = self._prefixes(purpose)[1]
+        return f"{prefix}{telegram_id}"
+
+    @classmethod
+    def _prefixes(cls, purpose: str) -> tuple[str, str]:
+        if purpose == "login":
+            return cls.KEY_PREFIX, cls.PENDING_PREFIX
+        if purpose == "password_reset":
+            return cls.RESET_KEY_PREFIX, cls.RESET_PENDING_PREFIX
+        raise ValueError("unsupported OTP purpose")
 
     async def store_pending_user_msg(
         self,
         telegram_id: int,
         chat_id: int,
         user_message_id: int,
+        purpose: str = "login",
     ) -> None:
         """M09 G2: сохранить pending /login message user'а ДО прихода otp.requested.
 
@@ -58,7 +71,7 @@ class OtpMessageTracker:
         """
         payload = json.dumps({"chat_id": chat_id, "user_message_id": user_message_id})
         try:
-            await self._redis.set(self._pending_key(telegram_id), payload, ex=self._ttl)
+            await self._redis.set(self._pending_key(telegram_id, purpose), payload, ex=self._ttl)
         except Exception:
             logger.exception("Redis error storing pending user msg for telegram_id=%d", telegram_id)
 
@@ -66,6 +79,7 @@ class OtpMessageTracker:
         self,
         telegram_id: int,
         bot_message_id: int,
+        purpose: str = "login",
     ) -> None:
         """M09 G2: дополняет pending-запись id'ом бот-сообщения и перемещает в
         финальный ключ. Если pending нет (пользователь не делал /login, а auth
@@ -73,9 +87,9 @@ class OtpMessageTracker:
         """
         pending_raw = None
         try:
-            pending_raw = await self._redis.get(self._pending_key(telegram_id))
+            pending_raw = await self._redis.get(self._pending_key(telegram_id, purpose))
             if pending_raw is not None:
-                await self._redis.delete(self._pending_key(telegram_id))
+                await self._redis.delete(self._pending_key(telegram_id, purpose))
         except Exception:
             logger.exception("Redis error reading pending user msg for telegram_id=%d", telegram_id)
 
@@ -86,6 +100,7 @@ class OtpMessageTracker:
                 chat_id=pending["chat_id"],
                 user_message_id=pending["user_message_id"],
                 bot_message_id=bot_message_id,
+                purpose=purpose,
             )
         else:
             await self.store(
@@ -93,6 +108,7 @@ class OtpMessageTracker:
                 chat_id=telegram_id,
                 user_message_id=None,
                 bot_message_id=bot_message_id,
+                purpose=purpose,
             )
 
     async def store(
@@ -101,6 +117,7 @@ class OtpMessageTracker:
         chat_id: int,
         user_message_id: Optional[int],
         bot_message_id: int,
+        purpose: str = "login",
     ) -> None:
         """Persist the pair of message ids for this OTP session.
 
@@ -119,17 +136,17 @@ class OtpMessageTracker:
             }
         )
         try:
-            await self._redis.set(self._key(telegram_id), payload, ex=self._ttl)
+            await self._redis.set(self._key(telegram_id, purpose), payload, ex=self._ttl)
         except Exception:
             logger.exception("Redis error storing OTP messages for telegram_id=%d", telegram_id)
 
-    async def pop(self, telegram_id: int) -> Optional[dict]:
+    async def pop(self, telegram_id: int, purpose: str = "login") -> Optional[dict]:
         """Atomically read and delete the stored tuple.
 
         Returns a dict with chat_id/user_message_id/bot_message_id or None
         if nothing is stored (already consumed or never existed).
         """
-        key = self._key(telegram_id)
+        key = self._key(telegram_id, purpose)
         try:
             async with self._redis.pipeline(transaction=True) as pipe:
                 pipe.get(key)

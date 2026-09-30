@@ -27,6 +27,7 @@ async def cleanup_otp_messages(
     bot: Bot,
     tracker: OtpMessageTracker,
     reason: str = "verified",
+    purpose: str = "login",
 ) -> None:
     """Delete the OTP-related Telegram messages for the given user.
 
@@ -34,7 +35,7 @@ async def cleanup_otp_messages(
     ran first), this is a no-op. TelegramBadRequest (message already deleted,
     too old to delete) is swallowed — nothing to do at that point.
     """
-    stored = await tracker.pop(telegram_id)
+    stored = await tracker.pop(telegram_id, purpose=purpose)
     if stored is None:
         logger.debug("No OTP messages to clean for telegram_id=%d (%s)", telegram_id, reason)
         return

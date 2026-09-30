@@ -157,6 +157,32 @@ public final class SessionLifecycleService {
         ));
     }
 
+    public boolean issuePasswordResetTicket(
+            long userId,
+            CredentialSessionTransactionPort.CredentialHash ticketHash,
+            Instant expiresAt
+    ) {
+        if (userId <= 0) {
+            throw new IllegalArgumentException("userId must be positive");
+        }
+        return credentialPort.issuePasswordResetTicket(
+                userId, Objects.requireNonNull(ticketHash, "ticketHash"),
+                Objects.requireNonNull(expiresAt, "expiresAt"));
+    }
+
+    public CredentialSessionTransactionPort.PasswordResetResult completePasswordReset(
+            PasswordResetRequest request
+    ) {
+        Objects.requireNonNull(request, "request");
+        PasswordPolicy.Validation validation = passwordPolicy.validate(request.newPassword());
+        if (!validation.valid()) {
+            return CredentialSessionTransactionPort.PasswordResetResult.failure(
+                    CredentialSessionTransactionPort.PasswordResetFailureCode.PASSWORD_POLICY_VIOLATION);
+        }
+        return credentialPort.completePasswordReset(new CredentialSessionTransactionPort.PasswordResetCommand(
+                request.ticketHash(), request.replacementHash(), request.now()));
+    }
+
     private static SessionStatePort.FailureCode map(ActiveRolePolicy.Code code) {
         return switch (code) {
             case FOREIGN_GRANT -> SessionStatePort.FailureCode.INVALID_GRANT;
@@ -339,6 +365,26 @@ public final class SessionLifecycleService {
             return "ChangePasswordRequest[userId=" + userId + ", currentSessionId=" + currentSessionId
                     + ", expectedCurrentHash=<redacted>, replacementHash=<redacted>"
                     + ", newPassword=<redacted>, now=" + now + ']';
+        }
+    }
+
+    public record PasswordResetRequest(
+            CredentialSessionTransactionPort.CredentialHash ticketHash,
+            CredentialSessionTransactionPort.CredentialHash replacementHash,
+            CharSequence newPassword,
+            Instant now
+    ) {
+        public PasswordResetRequest {
+            ticketHash = Objects.requireNonNull(ticketHash, "ticketHash");
+            replacementHash = Objects.requireNonNull(replacementHash, "replacementHash");
+            newPassword = Objects.requireNonNull(newPassword, "newPassword");
+            now = Objects.requireNonNull(now, "now");
+        }
+
+        @Override
+        public String toString() {
+            return "PasswordResetRequest[ticketHash=<redacted>, replacementHash=<redacted>, "
+                    + "newPassword=<redacted>, now=" + now + ']';
         }
     }
 

@@ -116,6 +116,52 @@ spring:
                     redis-rate-limiter.requestedTokens: 12
                     key-resolver: "#{@ipKeyResolver}"
 
+            # Reset OTPs also have per-account send and verification windows in auth-service.
+            - id: auth-password-reset-request
+              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+              predicates:
+                - Path=/api/auth/password-reset/request
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - SetResponseHeader=Cache-Control, no-store
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 60
+                    key-resolver: "#{@ipKeyResolver}"
+
+            - id: auth-password-reset-verify
+              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+              predicates:
+                - Path=/api/auth/password-reset/verify
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - SetResponseHeader=Cache-Control, no-store
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 12
+                    key-resolver: "#{@ipKeyResolver}"
+
+            - id: auth-password-reset-complete
+              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+              predicates:
+                - Path=/api/auth/password-reset/complete
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - SetResponseHeader=Cache-Control, no-store
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 12
+                    key-resolver: "#{@ipKeyResolver}"
+
             # /api/auth/login — 5 req/min per IP (single rate limiter).
             #
             # M13 G25.21 — убран второй RequestRateLimiter (ip+login composite key).

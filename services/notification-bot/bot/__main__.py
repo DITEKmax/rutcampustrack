@@ -16,6 +16,7 @@ from bot.handlers import (
     homework_router,
     late_checkin_router,
     login_router,
+    password_reset_router,
     prefs_router,
     start_router,
     status_router,
@@ -210,6 +211,7 @@ async def main() -> None:
     # Register routers
     dp.include_router(start_router)
     dp.include_router(login_router)
+    dp.include_router(password_reset_router)
     dp.include_router(homework_router)
     dp.include_router(status_router)
     dp.include_router(prefs_router)

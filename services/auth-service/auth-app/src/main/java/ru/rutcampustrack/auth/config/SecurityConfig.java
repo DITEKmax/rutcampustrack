@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 "/auth/tma",
                                 "/auth/public-key",
                                 "/auth/otp/**",
+                                "/auth/password-reset/**",
                                 "/internal/**",
                                 "/api-docs/**",
                                 "/swagger-ui/**",

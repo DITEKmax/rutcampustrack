@@ -93,6 +93,7 @@ class EventSchemaCoverageTest {
             "lesson.started",
             "otp.requested",
             "otp.verified",
+            "password.changed",
             "semester.archived"
     ));
 

@@ -239,6 +239,38 @@ describe('PWA memory session', () => {
     auth.dispose()
   })
 
+  it('closes local authority immediately and lets old bearer device cleanup finish before remote logout', async () => {
+    let finish!: () => void
+    const cleanup = new Promise<void>((resolve) => { finish = resolve })
+    let captured: string | null = null
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }))
+    const auth = usePwaAuth({ fetcher, beforeClear: () => { captured = auth.accessToken.value; return cleanup } })
+    auth.setToken('old-token')
+    const logout = auth.logout(async () => undefined)
+    expect(captured).toBe('old-token')
+    expect(auth.accessToken.value).toBeNull()
+    expect(fetcher).not.toHaveBeenCalled()
+    finish()
+    await logout
+    expect(fetcher).toHaveBeenCalledOnce()
+    auth.dispose()
+  })
+
+  it('does not remotely revoke a new manual login that replaced an owner during device cleanup', async () => {
+    let finish!: () => void
+    const cleanup = new Promise<void>((resolve) => { finish = resolve })
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(response({ accessToken: 'new-token' }))
+    const auth = usePwaAuth({ fetcher, beforeClear: () => cleanup })
+    auth.setToken('old-token')
+    const logout = auth.logout(async () => undefined)
+    await auth.login({ login: 'anna', password: 'secret' })
+    finish()
+    await logout
+    expect(auth.accessToken.value).toBe('new-token')
+    expect(fetcher.mock.calls.some(([url]) => url === '/api/auth/logout')).toBe(false)
+    auth.dispose()
+  })
+
   it.each([
     ['HTTP 503', 503],
     ['network failure', 0],

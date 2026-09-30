@@ -105,6 +105,28 @@ class WebPushDeliveryServiceTest {
 
     // Test 3: 410 response causes subscription deletion
     @Test
+    void sendToGroup_bindsEachEnvelopeToItsRecipientAndEndpointWithoutCredentials() throws Exception {
+        var first = sub(1L, "https://push.example.com/first");
+        var second = sub(2L, "https://push.example.com/second");
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(first, second));
+        ArgumentCaptor<byte[]> payloads = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service).createNotification(any(), payloads.capture());
+
+        service.sendToGroup(10L, "lesson.started", Map.of("group_id", 10));
+
+        var mapper = new ObjectMapper();
+        var one = mapper.readTree(payloads.getAllValues().get(0));
+        var two = mapper.readTree(payloads.getAllValues().get(1));
+        assertThat(one.get("recipientUserId").asText()).isEqualTo("1");
+        assertThat(two.get("recipientUserId").asText()).isEqualTo("2");
+        assertThat(one.get("subscriptionFingerprint").asText())
+                .isEqualTo(java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                        .digest(first.getEndpoint().getBytes(java.nio.charset.StandardCharsets.UTF_8))));
+        assertThat(one.get("subscriptionFingerprint").asText()).isNotEqualTo(two.get("subscriptionFingerprint").asText());
+        assertThat(one.toString()).doesNotContain(first.getEndpoint(), first.getAuth(), first.getP256dh());
+    }
+
+    @Test
     void sendToGroup_on410_deletesSubscription() throws Exception {
         PushSubscriptionDocument sub = sub(1L, "https://push.example.com/gone");
         when(repository.findAllByGroupId(5L)).thenReturn(List.of(sub));

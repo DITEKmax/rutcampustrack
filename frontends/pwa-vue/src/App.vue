@@ -87,6 +87,8 @@ import PwaUpdateGate from './PwaUpdateGate.vue'
 import { createPwaFetcher } from './pwa-version'
 import InstallOffer from './features/install/InstallOffer.vue'
 import type { InstallPromptController } from './features/install/install-prompt'
+import { createPushController } from './features/push/push-controller'
+import { createBrowserPushPort } from './features/push/browser-push'
 
 const props = defineProps<{ installPrompt: InstallPromptController }>()
 const installPrompt = props.installPrompt
@@ -97,7 +99,8 @@ const fixtureServiceWorkerBuildEnabled = import.meta.env.PROD
 const fixtureTransport = fixtureMode ? createFixtureTransport() : undefined
 const pwaFetcher = createPwaFetcher()
 const requestFetcher: typeof fetch = fixtureTransport ?? pwaFetcher
-const auth = usePwaAuth({ fetcher: requestFetcher })
+const push = createPushController(createBrowserPushPort(!fixtureMode && import.meta.env.MODE === 'production', import.meta.env.BASE_URL), requestFetcher)
+const auth = usePwaAuth({ fetcher: requestFetcher, beforeClear: () => push.invalidate() })
 const mapClient = new CampusMapClient({
   accessToken: () => auth.accessToken.value,
   currentGeneration: () => auth.currentGeneration(),
@@ -109,7 +112,7 @@ const adminMapClient = new AdminMapClient({
   onUnauthorized: () => auth.refreshFor(auth.currentGeneration()),
   fetcher: requestFetcher,
 })
-const host = new PwaHostAdapter()
+const host = new PwaHostAdapter(push)
 const theme = typeof document === 'undefined' ? null : createMobileTheme()
 const snapshotStore = new SemesterSnapshotStore()
 
@@ -207,6 +210,27 @@ const notificationsEntryVisible = computed(() => featureVisible.value
   && authSnapshot.value.activeRole !== null
   && authView.value !== 'login'
   && authView.value !== 'role')
+watch(() => [auth.resetGeneration.value, authSnapshot.value?.userId, authSnapshot.value?.activeRole, auth.accessToken.value] as const,
+  ([generation, userId, role, token]) => {
+    push.setOwner(userId && (role === 'STUDENT' || role === 'HEADMAN') && token ? { userId, generation, token } : null)
+  }, { flush: 'sync' })
+
+function consumePushEntry(): void {
+  const url = new URL(window.location.href)
+  if (url.searchParams.get('pushNotifications') !== '1') return
+  if (!notificationsEntryVisible.value) return
+  const matches = url.searchParams.get('pushOwner') === authSnapshot.value?.userId
+  url.searchParams.delete('pushNotifications')
+  url.searchParams.delete('pushOwner')
+  window.history.replaceState(window.history.state, '', url)
+  if (matches) openNotifications()
+}
+watch(notificationsEntryVisible, consumePushEntry)
+function onPushMessage(event: MessageEvent<unknown>): void {
+  const data = event.data as { type?: string; userId?: string } | null
+  if (data?.type === 'RCT_PUSH_OPEN' && data.userId === authSnapshot.value?.userId) openNotifications()
+}
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', onPushMessage)
 const studentViewVisible = computed(() => authView.value === 'student' && featureVisible.value)
 const canOpenNotificationTarget = computed(() => studentViewVisible.value
   && authSnapshot.value?.activeRole === 'STUDENT'
@@ -976,6 +1000,7 @@ function completePasswordRecovery(): void {
 async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
   if (authView.value === 'password-recovery') return
   if (!auth.canAutoBootstrap()) {
+    void push.invalidate()
     authView.value = 'login'
     sessionReady.value = true
     offline.value = false
@@ -1422,6 +1447,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.removeEventListener('message', onPushMessage)
   moscowDayClock.stop()
   disposeNotificationsRealtime()
   disposeNotificationsRealtime = (): void => undefined

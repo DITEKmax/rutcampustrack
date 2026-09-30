@@ -17,6 +17,9 @@ import ru.rutcampustrack.notification.preferences.NotificationPreferencesService
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 
 import java.time.Clock;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -168,14 +171,13 @@ public class WebPushDeliveryService {
 
         String title = buildTitle(eventType, payload);
         String body = buildBody(eventType, payload);
-        byte[] payloadBytes = buildPayloadJson(title, body, eventType, payload);
 
         List<String> deliveredEndpoints = new ArrayList<>(targets.size());
         int failed = 0;
         int expired = 0;
         for (PushSubscriptionDocument sub : targets) {
             try {
-                Notification notification = createNotification(sub, payloadBytes);
+                Notification notification = createNotification(sub, buildPayloadJson(title, body, eventType, payload, sub));
                 webPushService.send(notification);
                 deliveredEndpoints.add(sub.getEndpoint());
                 log.debug("Push sent to {} for event {}", sub.getEndpoint(), eventType);
@@ -547,9 +549,16 @@ public class WebPushDeliveryService {
         return a == null || a.isEmpty() ? (b == null ? "" : b) : a;
     }
 
-    private byte[] buildPayloadJson(String title, String body, String eventType, Map<String, Object> payload) {
+    private byte[] buildPayloadJson(String title, String body, String eventType, Map<String, Object> payload,
+                                   PushSubscriptionDocument subscription) {
         try {
+            // A retired account/endpoint must not display an already queued message
+            // after the browser enrolls a new account. Never expose endpoint/key material.
+            String fingerprint = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(subscription.getEndpoint().getBytes(StandardCharsets.UTF_8)));
             Map<String, Object> json = Map.of(
+                    "recipientUserId", subscription.getUserId().toString(),
+                    "subscriptionFingerprint", fingerprint,
                     "title", title,
                     "body", body,
                     "event_type", eventType,

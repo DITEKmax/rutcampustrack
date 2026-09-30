@@ -1,7 +1,9 @@
-import type { MobileHostAdapter } from '@rct/mobile-core'
+import type { MobileHostAdapter, MobilePushPort } from '@rct/mobile-core'
 
 /** Browser viewport adapter. It owns only its listeners; the product owns navigation. */
 export class PwaHostAdapter implements MobileHostAdapter {
+  readonly push?: MobilePushPort
+  constructor(push?: MobilePushPort) { if (push) this.push = push }
   readonly backOwner = 'browser' as const
   readonly primaryActionOwner = 'none' as const
 

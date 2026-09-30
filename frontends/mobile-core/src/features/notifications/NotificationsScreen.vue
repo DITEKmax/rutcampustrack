@@ -51,6 +51,8 @@ const permissionDenied = ref(false)
 const permissionDeniedMessage = ref<string | null>(null)
 const dialogElement = ref<HTMLElement | null>(null)
 const backButtonElement = ref<HTMLButtonElement | null>(null)
+const pushState = ref(props.host?.push?.snapshot() ?? null)
+const stopPush = props.host?.push?.subscribe((state) => { pushState.value = state })
 let screenEpoch = 0
 let historyRequest = 0
 let countRequest = 0
@@ -407,6 +409,7 @@ watch(() => props.offline, (offline) => {
 })
 
 onBeforeUnmount(() => {
+  stopPush?.()
   screenEpoch += 1
   historyRequest += 1
   countRequest += 1
@@ -644,7 +647,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
         <p class="notifications-screen__hint">
-          Настройки сохраняются на сервере. Они не запрашивают разрешение web-push и не подтверждают доставку в Telegram.
+          Настройки событий сохраняются на сервере. Доставка в Telegram зависит от привязки аккаунта.
         </p>
         <div
           v-if="preferencesError"
@@ -702,6 +705,37 @@ onBeforeUnmount(() => {
             </button>
           </fieldset>
         </form>
+      </section>
+      <section
+        v-if="host?.push && pushState"
+        class="notifications-screen__section"
+        aria-labelledby="notifications-push-title"
+        :aria-busy="pushState.status === 'busy'"
+      >
+        <h2 id="notifications-push-title">
+          Уведомления на устройстве
+        </h2>
+        <p
+          class="notifications-screen__hint"
+          role="status"
+        >
+          {{ pushState.message }}
+        </p>
+        <button
+          v-if="pushState.status !== 'unsupported' && pushState.status !== 'signed-out' && pushState.status !== 'enabled'"
+          type="button"
+          :disabled="offline || pushState.status === 'busy' || pushState.status === 'denied'"
+          @click="host.push.enable()"
+        >
+          Включить Web Push
+        </button>
+        <button
+          v-if="pushState.status === 'enabled' || pushState.status === 'error'"
+          type="button"
+          @click="host.push.disable()"
+        >
+          Отключить Web Push
+        </button>
       </section>
     </template>
   </main>

@@ -54,6 +54,8 @@ export interface PwaAuthInvalidationChannel {
 }
 
 export interface PwaAuthOptions {
+  /** Starts device notification cleanup with the old bearer before local auth disappears. */
+  beforeClear?: () => void | Promise<void>
   fetcher?: typeof fetch
   /** Injected in tests; production uses a browser BroadcastChannel when available. */
   channel?: PwaAuthInvalidationChannel
@@ -104,6 +106,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     accessToken: () => accessToken.value,
   })
   let refreshInFlight: { generation: number; promise: Promise<void> } | null = null
+  let deviceCleanup: Promise<void> | null = null
   const invalidationListeners = new Set<(reason: PwaAuthInvalidationReason) => void>()
   const channel = options.channel ?? createBrowserChannel()
   const logoutMarkerStorage = options.logoutMarkerStorage === undefined
@@ -394,12 +397,16 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
   }
 
   /** Invalidates every API client captured before this call. */
-  function clear(options: { broadcast?: boolean } = {}): number {
+  function clear(clearOptions: { broadcast?: boolean } = {}): number {
+    try {
+      const cleanup = options.beforeClear?.()
+      deviceCleanup = cleanup ? Promise.resolve(cleanup).catch(() => undefined) : null
+    } catch { deviceCleanup = null }
     resetGeneration.value += 1
     accessToken.value = null
     knownProfile = null
     knownProfileGeneration = null
-    if (options.broadcast !== false) {
+    if (clearOptions.broadcast !== false) {
       try {
         channel?.postMessage({ type: INVALIDATION_MESSAGE })
       } catch {
@@ -429,6 +436,17 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     void snapshotCleared.catch(() => undefined)
     let logoutError: PwaAuthError | null = null
     try {
+      // The generation is already closed; let the captured old bearer delete
+      // its push binding before the cookie session is remotely revoked.
+      if (deviceCleanup) {
+        let timer: ReturnType<typeof setTimeout> | undefined
+        try {
+          // A dismissed browser permission dialog must not hold logout forever.
+          await Promise.race([deviceCleanup, new Promise<void>((resolve) => { timer = setTimeout(resolve, LOGOUT_TIMEOUT_MS) })])
+        } finally { if (timer !== undefined) clearTimeout(timer) }
+      }
+      // A manual login during device cleanup owns a new cookie; do not revoke it.
+      if (currentGeneration() !== logoutGeneration) { await snapshotCleared; return }
       // Keep this request shape stable for the cookie-only logout endpoint.
       const response = await request('/api/auth/logout', {
         method: 'POST',

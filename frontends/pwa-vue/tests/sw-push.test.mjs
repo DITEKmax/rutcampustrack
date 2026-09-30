@@ -52,6 +52,7 @@ function worker() {
     notifications, opened, sent,
     setWindows: () => { windows = [windowClient] },
     bind: (binding) => dispatch('message', { source: { id: 'tab' }, data: { type: 'RCT_PUSH_BIND', binding }, ports: [{ postMessage() {} }] }),
+    clear: (binding) => dispatch('message', { source: { id: 'tab' }, data: { type: 'RCT_PUSH_CLEAR', binding }, ports: [{ postMessage() {} }] }),
     push: (payload) => dispatch('push', { data: { json: () => payload } }),
     click: (notification) => dispatch('notificationclick', { notification }),
   }
@@ -98,4 +99,16 @@ test('click opens the existing same-origin history entry and ignores arbitrary p
   assert.equal(w.opened.length, 1)
   assert.equal(w.sent[0].type, 'RCT_PUSH_OPEN')
   assert.equal(w.sent[0].userId, '1')
+})
+
+test('late compare-and-clear cannot disable a different account or endpoint binding', async () => {
+  const w = worker()
+  await w.bind({ userId: '2', fingerprint: 'b'.repeat(64) })
+  await w.clear({ userId: '1', fingerprint })
+  await w.push({ ...payload, recipientUserId: '2', subscriptionFingerprint: 'b'.repeat(64) })
+  assert.equal(w.notifications.length, 1)
+  await w.clear({ userId: '2', fingerprint: 'b'.repeat(64) })
+  assert.equal(w.notifications[0].closed, true)
+  await w.push({ ...payload, recipientUserId: '2', subscriptionFingerprint: 'b'.repeat(64) })
+  assert.equal(w.notifications.length, 1)
 })

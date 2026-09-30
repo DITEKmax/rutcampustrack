@@ -15,13 +15,29 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
-  if (event.data?.type === 'RCT_PUSH_READ' || event.data?.type === 'RCT_PUSH_BIND') {
+  if (event.data?.type === 'RCT_PUSH_READ' || event.data?.type === 'RCT_PUSH_BIND' || event.data?.type === 'RCT_PUSH_CLEAR') {
     // Stop an in-flight push as soon as disable reaches this worker, before IDB I/O.
     if (event.data.type === 'RCT_PUSH_BIND' && event.data.binding === null) pushGateClosed = true
     event.waitUntil(pushSerial(async () => {
       try {
         const source = event.source && await self.clients.get(event.source.id)
         if (!source || !source.url.startsWith(self.registration.scope)) throw new Error('Invalid source')
+        let cleared = false
+        if (event.data.type === 'RCT_PUSH_CLEAR') {
+          const previous = await pushBinding()
+          const expected = event.data.binding
+          const matches = previous === null ? expected === null
+            : expected?.userId === previous.userId && expected?.fingerprint === previous.fingerprint
+          if (matches) {
+            pushGateClosed = true
+            await pushBinding(null, true)
+            const notifications = await self.registration.getNotifications()
+            for (const notification of notifications) {
+              if (matchesPush(previous, notification.data)) notification.close()
+            }
+            cleared = true
+          }
+        }
         if (event.data.type === 'RCT_PUSH_BIND') {
           const next = event.data.binding
           if (next !== null && (!next || typeof next.userId !== 'string' || !/^\d+$/.test(next.userId)
@@ -31,7 +47,7 @@ self.addEventListener('message', (event) => {
           const notifications = await self.registration.getNotifications()
           for (const notification of notifications) notification.close()
         }
-        event.ports[0]?.postMessage({ ok: true, binding: await pushBinding() })
+        event.ports[0]?.postMessage({ ok: true, binding: await pushBinding(), cleared })
       } catch { event.ports[0]?.postMessage({ ok: false }) }
     }))
   }

@@ -7,6 +7,7 @@ function harness() {
   let binding: PushBinding | null = null
   let sequence = 0
   const retired: string[] = []
+  let lock = Promise.resolve()
   const browser: BrowserPushPort = {
     supported: () => true, permission: () => 'granted', requestPermission: vi.fn(async (): Promise<NotificationPermission> => 'granted'),
     installationRequired: () => false, subscription: async () => sub,
@@ -18,6 +19,12 @@ function harness() {
     },
     fingerprint: async (endpoint) => endpoint,
     readBinding: async () => binding, bind: async (next) => { binding = next },
+    clearBinding: async (expected) => {
+      if (binding?.userId !== expected?.userId || binding?.fingerprint !== expected?.fingerprint) return false
+      binding = null
+      return true
+    },
+    exclusive: (operation) => { const result = lock.then(operation); lock = result.catch(() => undefined); return result },
   }
   const fetcher = vi.fn<typeof fetch>(async (_input, init) => init?.method === 'GET'
     ? new Response(JSON.stringify({ publicKey: key })) : new Response(null, { status: 204 }))
@@ -93,11 +100,55 @@ describe('PWA device enrollment isolation', () => {
     const h = harness()
     await h.ready()
     await h.controller.enable()
-    h.browser.bind = async () => { throw new Error('Worker unavailable') }
+    h.browser.clearBinding = async () => { throw new Error('Worker unavailable') }
     await h.controller.disable()
     expect(h.sub()).toBeNull()
     expect(h.retired).toEqual(['endpoint-1'])
     expect(h.controller.snapshot().status).toBe('error')
+  })
+
+  it('keeps a newer account subscription when an old tab invalidates its captured endpoint late', async () => {
+    const h = harness()
+    await h.ready()
+    await h.controller.enable()
+    const second = createPushController(h.browser, h.fetcher)
+    second.setOwner({ userId: '2', generation: 2, token: 'token-2' })
+    await vi.waitFor(() => expect(second.snapshot().status).toBe('off'))
+    await second.enable()
+    expect(h.binding()).toEqual({ userId: '2', fingerprint: 'endpoint-2' })
+    await h.controller.invalidate()
+    expect(h.binding()).toEqual({ userId: '2', fingerprint: 'endpoint-2' })
+    expect(h.sub()?.endpoint).toBe('endpoint-2')
+    expect(second.snapshot().status).toBe('enabled')
+  })
+
+  it('does not hold the origin lock while an old tab waits for browser permission', async () => {
+    const h = harness()
+    await h.ready()
+    let grant!: (permission: NotificationPermission) => void
+    h.browser.requestPermission = () => new Promise((resolve) => { grant = resolve })
+    const oldEnrollment = h.controller.enable()
+    const second = createPushController(h.browser, h.fetcher)
+    second.setOwner({ userId: '2', generation: 2, token: 'token-2' })
+    await vi.waitFor(() => expect(second.snapshot().status).toBe('off'))
+    h.browser.requestPermission = async () => 'granted'
+    await second.enable()
+    await h.controller.invalidate()
+    grant('granted')
+    await oldEnrollment
+    expect(h.binding()).toEqual({ userId: '2', fingerprint: 'endpoint-1' })
+    expect(h.sub()?.endpoint).toBe('endpoint-1')
+    expect(second.snapshot().status).toBe('enabled')
+  })
+
+  it('reports a failed origin lock without enrolling or leaving the UI busy', async () => {
+    const h = harness()
+    await h.ready()
+    h.browser.exclusive = async () => { throw new Error('Lock timeout') }
+    await h.controller.enable()
+    expect(h.controller.snapshot().status).toBe('error')
+    expect(h.sub()).toBeNull()
+    expect(h.fetcher).not.toHaveBeenCalled()
   })
 
   it.each(['denied', 'default'] as const)('does not enroll when permission is %s', async (permission) => {

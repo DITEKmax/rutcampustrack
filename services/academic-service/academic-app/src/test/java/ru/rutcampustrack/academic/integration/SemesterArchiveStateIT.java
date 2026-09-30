@@ -289,13 +289,20 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 semesterId)).isInstanceOf(DataAccessException.class);
         assertThatThrownBy(() -> deletionCommands.startDelete(semesterId, adminId(), UUID.randomUUID(),
                 UUID.randomUUID(), activePreview)).isInstanceOf(ConflictException.class);
+        long prepareCommandsBefore = deletionCommandCount(timeoutId, SemesterArchiveParticipantCommand.PREPARE_DELETE);
         participantAckConsumer.onEvent(deletionAttendanceEnvelope(timeoutId, started.getStateVersion(),
                 SemesterArchiveParticipantCommand.PREPARE_DELETE, SemesterArchiveParticipantStatus.PENDING));
-        var preparedThroughAfterCommit = deletionCommands.find(timeoutId);
-        assertThat(preparedThroughAfterCommit.getOperationState()).isEqualTo(SemesterArchiveOperationState.PENDING);
-        assertThat(preparedThroughAfterCommit.getAcademic()).isEqualTo(SemesterArchiveParticipantStatus.READY);
-        assertThat(preparedThroughAfterCommit.getSchedule()).isEqualTo(SemesterArchiveParticipantStatus.READY);
-        assertThat(preparedThroughAfterCommit.getAttendance()).isEqualTo(SemesterArchiveParticipantStatus.PENDING);
+        assertThat(deletionCommandCount(timeoutId, SemesterArchiveParticipantCommand.PREPARE_DELETE))
+                .isEqualTo(prepareCommandsBefore);
+        assertThat(deletionCommands.find(timeoutId).getAcademic()).isEqualTo(SemesterArchiveParticipantStatus.PENDING);
+        deletionCoordinator.advance(timeoutId); // Existing periodic retry drives pending receipts.
+        var preparedForSeal = deletionCommands.find(timeoutId);
+        assertThat(preparedForSeal.getOperationState()).isEqualTo(SemesterArchiveOperationState.PENDING);
+        assertThat(preparedForSeal.isAcademicSealed()).isTrue();
+        assertThat(preparedForSeal.isScheduleSealed()).isTrue();
+        assertThat(preparedForSeal.getAttendance()).isEqualTo(SemesterArchiveParticipantStatus.PENDING);
+        assertThat(preparedForSeal.isAttendanceSealed()).isFalse();
+        assertThat(deletionCommandCount(timeoutId, SemesterArchiveParticipantCommand.SEAL_DELETE)).isEqualTo(1L);
         jdbcTemplate.update("UPDATE semester_archive_operations SET prepare_expires_at = now() - interval '1 second' "
                 + "WHERE operation_id = ?", timeoutId);
         deletionCoordinator.advance(timeoutId);
@@ -328,13 +335,31 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         var archivedPreview = deletionSnapshot(semesterId);
         var archivedStart = deletionCommands.startDelete(semesterId, adminId(), staleId, staleId, archivedPreview);
         assertThat(state(semesterId).getArchived()).isTrue();
-        readyReceipt(archivedStart, SemesterArchiveCommandTransaction.Participant.ATTENDANCE, SemesterArchiveParticipantCommand.PREPARE_DELETE);
-        readyReceipt(archivedStart, SemesterArchiveCommandTransaction.Participant.ATTENDANCE, SemesterArchiveParticipantCommand.SEAL_DELETE);
+        participantAckConsumer.onEvent(deletionAttendanceEnvelope(staleId, archivedStart.getStateVersion(),
+                SemesterArchiveParticipantCommand.PREPARE_DELETE, SemesterArchiveParticipantStatus.PENDING));
+        deletionCoordinator.advance(staleId);
+        var awaitingAttendanceSeal = deletionCommands.find(staleId);
+        assertThat(awaitingAttendanceSeal.isAcademicSealed()).isTrue();
+        assertThat(awaitingAttendanceSeal.isScheduleSealed()).isTrue();
+        assertThat(awaitingAttendanceSeal.isAttendanceSealed()).isFalse();
+        assertThat(awaitingAttendanceSeal.isIrreversibleIntent()).isFalse();
+        assertThat(deletionCommandCount(staleId, SemesterArchiveParticipantCommand.SEAL_DELETE)).isEqualTo(1L);
+        for (int retry = 0; retry < 2; retry++) {
+            participantAckConsumer.onEvent(deletionAttendanceEnvelope(staleId, archivedStart.getStateVersion(),
+                    SemesterArchiveParticipantCommand.SEAL_DELETE, SemesterArchiveParticipantStatus.PENDING));
+        }
+        assertThat(deletionCommandCount(staleId, SemesterArchiveParticipantCommand.SEAL_DELETE)).isEqualTo(1L);
+        assertThat(deletionCommands.find(staleId).isAttendanceSealed()).isFalse();
+        assertThat(deletionCommands.find(staleId).isIrreversibleIntent()).isFalse();
+        deletionCoordinator.advance(staleId); // A pending seal still retries at the scheduled boundary.
+        assertThat(deletionCommandCount(staleId, SemesterArchiveParticipantCommand.SEAL_DELETE)).isEqualTo(2L);
+        assertThat(deletionCommandCount(staleId, SemesterArchiveParticipantCommand.PREPARE_DELETE)).isEqualTo(1L);
         when(deletionPreviews.underFence(semesterId, archivedPreview.semesterName(), archivedPreview.stateVersion(),
                 archivedPreview.priorState())).thenReturn(new SemesterDeletionPreviewService.Snapshot(
                     semesterId, archivedPreview.semesterName(), archivedPreview.priorState(), archivedPreview.stateVersion(),
                     "c".repeat(64), ZERO_COUNTS, archivedPreview.academicDigest(), REMOTE_DIGEST, REMOTE_DIGEST, 0, 0));
-        deletionCoordinator.advance(staleId);
+        participantAckConsumer.onEvent(deletionAttendanceEnvelope(staleId, archivedStart.getStateVersion(),
+                SemesterArchiveParticipantCommand.SEAL_DELETE, SemesterArchiveParticipantStatus.READY));
         assertThat(deletionCommands.find(staleId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.RELEASING);
         releasedAttendance(staleId);
         deletionCoordinator.advance(staleId);
@@ -488,6 +513,15 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 participant == SemesterArchiveCommandTransaction.Participant.ACADEMIC
                         ? new SemesterDeletionCounts(0, 0, 0, operation.getAssignmentsCount(), operation.getHomeworksCount(), 0, 0)
                         : ZERO_COUNTS);
+    }
+
+    private long deletionCommandCount(UUID operationId, SemesterArchiveParticipantCommand command) {
+        return jdbcTemplate.queryForObject("""
+                SELECT count(*) FROM academic_outbox
+                 WHERE event_type = 'semester.archive.participant.command'
+                   AND payload #>> '{payload,operation_id}' = ?
+                   AND payload #>> '{payload,command}' = ?
+                """, Long.class, operationId.toString(), command.name());
     }
 
     private Map<String, Object> deletionAttendanceEnvelope(UUID operationId, long stateVersion,

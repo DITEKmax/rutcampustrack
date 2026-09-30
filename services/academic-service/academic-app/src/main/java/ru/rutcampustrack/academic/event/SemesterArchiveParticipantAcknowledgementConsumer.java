@@ -81,6 +81,10 @@ public class SemesterArchiveParticipantAcknowledgementConsumer extends AbstractE
             withTraceContext(envelope, () -> commands.recordAttendanceAcknowledgement(
                     operationId, semesterId, stateVersion, command, status, reason));
         }
+        if (deletionCommand && status == SemesterArchiveParticipantStatus.PENDING) {
+            // A pending drain retries through the existing scheduler, not an ACK/command feedback loop.
+            return;
+        }
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {

@@ -112,12 +112,13 @@ public class SemesterArchiveCoordinator {
                             reason, operation.getAcademicParticipantDigest(), academicCounts(operation));
                 }
                 operation = commands.find(operationId);
-                if (operation.getAttendance() != SemesterArchiveParticipantStatus.READY) {
+                if (operation.getAttendance() != SemesterArchiveParticipantStatus.READY
+                        && !academicAndScheduleReady(operation)) {
                     commands.enqueueParticipantCommand(operationId,
                             ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand.PREPARE_DELETE);
                 }
                 operation = commands.find(operationId);
-                if (allDeleteParticipantsReady(operation)) {
+                if (academicAndScheduleReady(operation)) {
                     if (!operation.isScheduleSealed()) {
                         var response = scheduleClient.setSemesterDeletionBarrier(operationId,
                                 operation.getSemesterId(), operation.getStateVersion(),
@@ -142,7 +143,8 @@ public class SemesterArchiveCoordinator {
                                 reason, operation.getAcademicParticipantDigest(), academicCounts(operation));
                     }
                     operation = commands.find(operationId);
-                    if (!operation.isAttendanceSealed()) {
+                    if (operation.isAcademicSealed() && operation.isScheduleSealed()
+                            && !operation.isAttendanceSealed()) {
                         commands.enqueueParticipantCommand(operationId,
                                 ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand.SEAL_DELETE);
                     }
@@ -225,10 +227,9 @@ public class SemesterArchiveCoordinator {
         }
     }
 
-    private static boolean allDeleteParticipantsReady(SemesterArchiveOperation operation) {
+    private static boolean academicAndScheduleReady(SemesterArchiveOperation operation) {
         return operation.getAcademic() == SemesterArchiveParticipantStatus.READY
-                && operation.getSchedule() == SemesterArchiveParticipantStatus.READY
-                && operation.getAttendance() == SemesterArchiveParticipantStatus.READY;
+                && operation.getSchedule() == SemesterArchiveParticipantStatus.READY;
     }
 
     private static SemesterDeletionCounts academicCounts(SemesterArchiveOperation operation) {

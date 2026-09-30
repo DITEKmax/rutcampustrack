@@ -22,6 +22,7 @@ import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableExceptio
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
@@ -29,6 +30,7 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -53,6 +55,7 @@ public class LessonEventService {
     private final SemesterCacheService semesterCacheService;
     private final TaskExecutor grpcTaskExecutor;
     private final PairWriteCoordinator pairWriteCoordinator;
+    private final AttendanceAttachmentService attendanceAttachmentService;
 
     @org.springframework.beans.factory.annotation.Autowired
     public LessonEventService(MongoTemplate mongoTemplate,
@@ -60,23 +63,26 @@ public class LessonEventService {
                               AcademicGrpcClient academicGrpcClient,
                               SemesterCacheService semesterCacheService,
                               @Qualifier("grpcTaskExecutor") TaskExecutor grpcTaskExecutor,
-                              PairWriteCoordinator pairWriteCoordinator) {
+                              PairWriteCoordinator pairWriteCoordinator,
+                              AttendanceAttachmentService attendanceAttachmentService) {
         this.mongoTemplate = mongoTemplate;
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.academicGrpcClient = academicGrpcClient;
         this.semesterCacheService = semesterCacheService;
         this.grpcTaskExecutor = grpcTaskExecutor;
         this.pairWriteCoordinator = pairWriteCoordinator;
+        this.attendanceAttachmentService = attendanceAttachmentService;
     }
 
-    /** Source-compatible constructor for focused service tests. */
+    /** Convenience constructor for focused service tests. */
     public LessonEventService(MongoTemplate mongoTemplate,
                               ScheduleGrpcClient scheduleGrpcClient,
                               AcademicGrpcClient academicGrpcClient,
                               SemesterCacheService semesterCacheService,
-                              @Qualifier("grpcTaskExecutor") TaskExecutor grpcTaskExecutor) {
+                              @Qualifier("grpcTaskExecutor") TaskExecutor grpcTaskExecutor,
+                              AttendanceAttachmentService attendanceAttachmentService) {
         this(mongoTemplate, scheduleGrpcClient, academicGrpcClient, semesterCacheService,
-                grpcTaskExecutor, new PairWriteCoordinator(mongoTemplate));
+                grpcTaskExecutor, new PairWriteCoordinator(mongoTemplate), attendanceAttachmentService);
     }
 
     /** Performs external reads before the event transaction and any local fence acquisition. */
@@ -237,6 +243,7 @@ public class LessonEventService {
                 Criteria.where("lesson_date").is(date),
                 Criteria.where("lesson_number").is(lessonNumber),
                 Criteria.where("semester_id").is(semesterId)));
+        deleteMarkAttachments(mongoTemplate.find(filter, AttendanceDocument.class), semesterId);
         DeleteResult result = mongoTemplate.remove(filter, AttendanceDocument.class);
         log.info("lesson.one_off.cancelled: groupId={}, date={}, lessonNumber={}, deletedCount={}",
                 groupId, date, lessonNumber, result.getDeletedCount());
@@ -427,6 +434,9 @@ public class LessonEventService {
         }
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(semesterId, lessonIds, null, Instant.now());
         validateDeletedAttendanceSemesterScopes(lessonIds, semesterId);
+        java.util.List<AttendanceDocument> rows = mongoTemplate.find(
+                Query.query(Criteria.where("lesson_id").in(lessonIds)), AttendanceDocument.class);
+        deleteMarkAttachments(rows, semesterId);
         Query filter = Query.query(Criteria.where("lesson_id").in(lessonIds));
         DeleteResult result = mongoTemplate.remove(filter, AttendanceDocument.class);
         log.info("lesson.deleted: lessonIds={}, deletedCount={}",
@@ -506,6 +516,27 @@ public class LessonEventService {
         if (matches.stream().anyMatch(row -> !java.util.Objects.equals(row.getSemesterId(), semesterId))) {
             throw new SemesterArchiveEffectRejectedException("ATTENDANCE_SCOPE_MISMATCH",
                     "One-off cancellation matched an attendance row without the exact semester scope");
+        }
+    }
+
+    /**
+     * Removes only legacy journal files whose exact user:lesson owner key is
+     * still proven by a mark in this authoritative semester. The mark delete
+     * would otherwise erase the only semester provenance for those bytes.
+     */
+    private void deleteMarkAttachments(List<AttendanceDocument> marks, Long semesterId) {
+        for (AttendanceDocument mark : marks) {
+            Long ownerId = mark.getUserId();
+            Long lessonId = mark.getLessonId();
+            Long groupId = mark.getGroupId();
+            if (ownerId == null || ownerId <= 0 || lessonId == null || lessonId <= 0
+                    || groupId == null || groupId <= 0) {
+                throw new SemesterArchiveEffectRejectedException("ATTENDANCE_SCOPE_MISMATCH",
+                        "Cannot prove an attendance attachment owner before deleting its mark");
+            }
+            // Reuse the attachment service's exact user:lesson owner key and
+            // its group/semester checks; it deletes the Binary in this Mongo tx.
+            attendanceAttachmentService.delete(semesterId, lessonId, ownerId, groupId);
         }
     }
 

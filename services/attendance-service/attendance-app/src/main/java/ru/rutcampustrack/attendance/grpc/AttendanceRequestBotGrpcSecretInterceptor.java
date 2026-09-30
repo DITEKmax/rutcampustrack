@@ -9,10 +9,12 @@ import io.grpc.Status;
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 
-/** Fail-closed shared-secret boundary for the exact bot attachment service. */
+/** Fail-closed shared-secret boundary for the exact bot and deletion-read services. */
 @GrpcGlobalServerInterceptor
 public class AttendanceRequestBotGrpcSecretInterceptor implements ServerInterceptor {
     static final String BOT_SERVICE = "rutcampustrack.attendance.AttendanceRequestBotGrpcService";
+    static final String SEMESTER_DELETION_SERVICE =
+            "rutcampustrack.attendance.AttendanceSemesterDeletionGrpcService";
     static final Metadata.Key<String> SECRET_KEY =
             Metadata.Key.of("x-grpc-secret", Metadata.ASCII_STRING_MARSHALLER);
 
@@ -22,7 +24,8 @@ public class AttendanceRequestBotGrpcSecretInterceptor implements ServerIntercep
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
-        if (!BOT_SERVICE.equals(call.getMethodDescriptor().getServiceName())) {
+        String serviceName = call.getMethodDescriptor().getServiceName();
+        if (!BOT_SERVICE.equals(serviceName) && !SEMESTER_DELETION_SERVICE.equals(serviceName)) {
             return next.startCall(call, headers);
         }
         String provided = headers.get(SECRET_KEY);

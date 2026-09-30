@@ -63,6 +63,9 @@ class EventConsumerTest {
     private SemesterArchiveParticipantService semesterArchiveParticipantService;
 
     @Mock
+    private SemesterDeletionParticipantService semesterDeletionParticipantService;
+
+    @Mock
     private SemesterArchiveEffectService semesterArchiveEffectService;
 
     @Mock
@@ -206,6 +209,23 @@ class EventConsumerTest {
 
         verify(semesterArchiveParticipantService).apply(envelope);
         verify(idempotencyGuard, never()).tryClaim(eq(EventConsumer.CONSUMER_ID), eq(envelope));
+    }
+
+    @Test
+    void deletionParticipantCommandRoutesToDeleteHandlerOnFirstDeliveryAndReplay() {
+        Map<String, Object> envelope = new java.util.HashMap<>(scheduleEnvelope(
+                "semester.archive.participant.command", Map.of("command", "COMMIT_DELETE")));
+        envelope.put("source", "academic-service");
+        when(semesterDeletionParticipantService.hasReceipt(envelope)).thenReturn(false, true);
+
+        eventConsumer.onEvent(envelope);
+        eventConsumer.onEvent(envelope);
+
+        verify(semesterDeletionParticipantService, org.mockito.Mockito.times(2)).hasReceipt(envelope);
+        verify(semesterDeletionParticipantService, org.mockito.Mockito.times(2)).apply(envelope);
+        verify(semesterArchiveParticipantService, never()).hasReceipt(envelope);
+        verify(semesterArchiveParticipantService, never()).apply(envelope);
+        verify(idempotencyGuard).tryClaim(eq(EventConsumer.CONSUMER_ID), eq(envelope));
     }
 
     @Test

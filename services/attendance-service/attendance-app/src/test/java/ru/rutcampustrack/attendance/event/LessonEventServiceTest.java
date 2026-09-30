@@ -16,6 +16,7 @@ import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
@@ -64,7 +65,7 @@ class LessonEventServiceTest {
         // canonical Schedule snapshot followed by a dated Academic read.
         lessonEventService = new LessonEventService(
                 mongoTemplate, scheduleGrpcClient, academicGrpcClient,
-                semesterCacheService, new SyncTaskExecutor());
+                semesterCacheService, new SyncTaskExecutor(), mock(AttendanceAttachmentService.class));
         // Lenient: not all tests use bulkOps (e.g. empty group, cancellation tests)
         lenient().when(mongoTemplate.bulkOps(any(BulkOperations.BulkMode.class), eq(AttendanceDocument.class)))
                 .thenReturn(bulkOps);

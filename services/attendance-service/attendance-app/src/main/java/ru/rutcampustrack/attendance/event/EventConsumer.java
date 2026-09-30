@@ -34,6 +34,7 @@ public class EventConsumer extends AbstractEventConsumer {
     private final LessonEventService lessonEventService;
     private final LessonTransferParticipantService lessonTransferParticipantService;
     private final SemesterArchiveParticipantService semesterArchiveParticipantService;
+    private final SemesterDeletionParticipantService semesterDeletionParticipantService;
     private final SemesterArchiveEffectService semesterArchiveEffectService;
     private final SemesterCacheService semesterCacheService;
     private final StudentRequestService studentRequestService;
@@ -89,7 +90,13 @@ public class EventConsumer extends AbstractEventConsumer {
                 }
             }
             case "semester.archive.participant.command" -> {
-                if (semesterArchiveParticipantService.hasReceipt(envelope)) {
+                if (SemesterDeletionParticipantService.isDeletionCommand(envelope)
+                        && semesterDeletionParticipantService.hasReceipt(envelope)) {
+                    semesterDeletionParticipantService.apply(envelope);
+                    return true;
+                }
+                if (!SemesterDeletionParticipantService.isDeletionCommand(envelope)
+                        && semesterArchiveParticipantService.hasReceipt(envelope)) {
                     semesterArchiveParticipantService.apply(envelope);
                     return true;
                 }
@@ -121,7 +128,13 @@ public class EventConsumer extends AbstractEventConsumer {
                         envelope, () -> preflightOneOffLessonCancelled(envelope),
                         () -> handleOneOffLessonCancelled(envelope));
                 case "lesson.transfer.requested" -> lessonTransferParticipantService.apply(envelope);
-                case "semester.archive.participant.command" -> semesterArchiveParticipantService.apply(envelope);
+                case "semester.archive.participant.command" -> {
+                    if (SemesterDeletionParticipantService.isDeletionCommand(envelope)) {
+                        semesterDeletionParticipantService.apply(envelope);
+                    } else {
+                        semesterArchiveParticipantService.apply(envelope);
+                    }
+                }
                 case "semester.archived"       -> handleSemesterArchived(envelope);
                 case "late_checkin.decision"   -> handleLateCheckinDecision(envelope);
                 case "excuse.decision"         -> handleExcuseDecision(envelope);

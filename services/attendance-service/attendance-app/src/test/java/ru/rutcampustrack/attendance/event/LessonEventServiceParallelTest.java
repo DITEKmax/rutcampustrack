@@ -13,6 +13,7 @@ import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -68,7 +70,7 @@ class LessonEventServiceParallelTest {
 
         LessonEventService svc = new LessonEventService(
                 mongoTemplate, scheduleGrpcClient, academicGrpcClient,
-                semesterCacheService, new SyncTaskExecutor());
+                semesterCacheService, new SyncTaskExecutor(), mock(AttendanceAttachmentService.class));
 
         svc.processLessonClosed(1L, 10L);
 

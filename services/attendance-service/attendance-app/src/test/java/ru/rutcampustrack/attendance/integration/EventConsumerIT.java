@@ -18,6 +18,7 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.event.LessonCancellationMarker;
 import ru.rutcampustrack.attendance.event.LessonEventService;
 import ru.rutcampustrack.attendance.event.SemesterArchiveEffectReceiptDocument;
+import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Instant;
@@ -54,6 +55,9 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
 
     @Autowired
     private AmqpAdmin amqpAdmin;
+
+    @Autowired
+    private AttendanceAttachmentService attendanceAttachmentService;
 
     @org.springframework.test.context.DynamicPropertySource
     static void overrideRabbitVhost(org.springframework.test.context.DynamicPropertyRegistry registry) {
@@ -419,7 +423,7 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
 
         LessonEventService persistedService = new LessonEventService(
                 mongoTemplate, scheduleGrpcClient, academicGrpcClient,
-                semesterCacheService, new SyncTaskExecutor());
+                semesterCacheService, new SyncTaskExecutor(), attendanceAttachmentService);
         persistedService.processLessonClosed(duplicateLessonId, 10L);
         persistedService.processLessonClosed(duplicateLessonId, 10L);
 
@@ -455,7 +459,7 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
 
         LessonEventService raceService = new LessonEventService(
                 barrierTemplate, scheduleGrpcClient, academicGrpcClient,
-                semesterCacheService, new SyncTaskExecutor());
+                semesterCacheService, new SyncTaskExecutor(), attendanceAttachmentService);
         ExecutorService executor = Executors.newFixedThreadPool(2);
         try {
             Future<?> closeFuture = executor.submit(() ->

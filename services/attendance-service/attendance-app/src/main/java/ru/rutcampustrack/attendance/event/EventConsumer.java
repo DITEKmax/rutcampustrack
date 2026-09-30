@@ -58,34 +58,51 @@ public class EventConsumer extends AbstractEventConsumer {
             return;
         }
 
+        // The durable domain receipt is the source of truth for tracked event
+        // replays. Check it before inserting the global idempotency claim: a
+        // duplicate-key insert aborts a Mongo transaction, so receipt reads
+        // and the saved acknowledgement must run in their own transaction.
+        if (replayTrackedReceiptInTrace(eventType, envelope)) {
+            return;
+        }
+
         transactionTemplate.executeWithoutResult(status -> {
             if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
-                withTraceContext(envelope, () -> replayReceiptIfPresent(eventType, envelope));
                 return;
             }
             dispatchClaimed(eventType, envelope);
         });
     }
 
-    private void replayReceiptIfPresent(String eventType, Map<String, Object> envelope) {
+    private boolean replayReceiptIfPresent(String eventType, Map<String, Object> envelope) {
         switch (eventType) {
             case "lesson.cancelled", "lesson.deleted", "lesson.one_off.cancelled" -> {
                 if (semesterArchiveEffectService.hasReceipt(envelope)) {
                     semesterArchiveEffectService.apply(envelope, () -> { });
+                    return true;
                 }
             }
             case "lesson.transfer.requested" -> {
                 if (lessonTransferParticipantService.hasReceipt(envelope)) {
                     lessonTransferParticipantService.apply(envelope);
+                    return true;
                 }
             }
             case "semester.archive.participant.command" -> {
                 if (semesterArchiveParticipantService.hasReceipt(envelope)) {
                     semesterArchiveParticipantService.apply(envelope);
+                    return true;
                 }
             }
-            default -> { }
+            default -> { return false; }
         }
+        return false;
+    }
+
+    private boolean replayTrackedReceiptInTrace(String eventType, Map<String, Object> envelope) {
+        boolean[] replayed = {false};
+        withTraceContext(envelope, () -> replayed[0] = replayReceiptIfPresent(eventType, envelope));
+        return replayed[0];
     }
 
     private void dispatchClaimed(String eventType, Map<String, Object> envelope) {
@@ -118,37 +135,28 @@ public class EventConsumer extends AbstractEventConsumer {
     }
 
     private void handleLessonClosed(Map<String, Object> envelope) {
-        LessonEventService.LessonClosedSnapshot prepared = null;
-        if (!semesterArchiveEffectService.hasReceipt(envelope)) {
-            Map<String, Object> payload = extractRequiredPayload(envelope);
-            Long lessonId = extractPositiveInteger(payload, "lesson_id");
-            Long groupId = extractPositiveInteger(payload, "group_id");
-            Long semesterId = extractPositiveInteger(payload, "semester_id");
-            prepared = lessonEventService.prepareLessonClosed(lessonId, groupId, semesterId);
+        if (semesterArchiveEffectService.hasReceipt(envelope)) {
+            // Do not call Schedule or attempt a duplicate claim after an exact
+            // receipt has already committed. apply() re-acks that receipt.
+            semesterArchiveEffectService.apply(envelope, () -> { });
+            return;
         }
 
-        LessonEventService.LessonClosedSnapshot effectSnapshot = prepared;
+        Map<String, Object> payload = extractRequiredPayload(envelope);
+        Long lessonId = extractPositiveInteger(payload, "lesson_id");
+        Long groupId = extractPositiveInteger(payload, "group_id");
+        Long semesterId = extractPositiveInteger(payload, "semester_id");
+        LessonEventService.LessonClosedSnapshot effectSnapshot =
+                lessonEventService.prepareLessonClosed(lessonId, groupId, semesterId);
         transactionTemplate.executeWithoutResult(status -> {
-            boolean claimed = idempotencyGuard.tryClaim(CONSUMER_ID, envelope);
-            if (!claimed) {
-                // A prior delivery may have committed the idempotency claim and
-                // receipt together. Re-ack its exact receipt without RPC calls.
-                if (!semesterArchiveEffectService.hasReceipt(envelope)) {
-                    throw new IllegalStateException(
-                            "lesson.closed was claimed without a durable Schedule effect receipt");
-                }
-                semesterArchiveEffectService.apply(envelope, () -> { });
+            if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
+                // A concurrent delivery may have committed after the preflight
+                // receipt read. Leave this delivery unacknowledged; Rabbit
+                // redelivery will observe and replay the committed receipt.
                 return;
             }
-
-            if (effectSnapshot == null) {
-                // Receipt was observed before the transaction; validate it again
-                // in the transaction before re-enqueuing its acknowledgement.
-                semesterArchiveEffectService.apply(envelope, () -> { });
-            } else {
-                semesterArchiveEffectService.apply(
-                        envelope, () -> lessonEventService.applyLessonClosed(effectSnapshot));
-            }
+            semesterArchiveEffectService.apply(
+                    envelope, () -> lessonEventService.applyLessonClosed(effectSnapshot));
         });
     }
 

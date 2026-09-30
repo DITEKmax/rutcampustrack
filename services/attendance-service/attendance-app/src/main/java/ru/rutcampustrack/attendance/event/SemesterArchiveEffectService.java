@@ -33,13 +33,16 @@ public class SemesterArchiveEffectService {
             "lesson.closed", "lesson.cancelled", "lesson.deleted", "lesson.one_off.cancelled");
 
     private final MongoTemplate mongoTemplate;
+    private final SemesterArchiveFence fence;
     private final OutboxStorage outboxStorage;
     private final ObjectMapper objectMapper;
 
     public SemesterArchiveEffectService(MongoTemplate mongoTemplate,
+                                        SemesterArchiveFence fence,
                                         OutboxStorage outboxStorage,
                                         ObjectMapper objectMapper) {
         this.mongoTemplate = mongoTemplate;
+        this.fence = fence;
         this.outboxStorage = outboxStorage;
         this.objectMapper = objectMapper;
     }
@@ -79,6 +82,11 @@ public class SemesterArchiveEffectService {
         String result = "APPLIED";
         String blockingReason = null;
         try {
+            // Reject a post-SEAL effect before entering a nested transactional
+            // domain service. Catching its exception after a REQUIRED method
+            // throws would leave this transaction rollback-only and prevent
+            // the durable ERROR receipt and ACK from committing.
+            fence.lockAcceptedScheduleEffect(identity.semesterId(), Instant.now());
             effect.run();
         } catch (SemesterArchiveEffectRejectedException rejected) {
             result = "ERROR";

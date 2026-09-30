@@ -185,7 +185,7 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
                 && journalAttachmentPort.isAvailable(lessonId, studentId, document.getAttachmentId());
         if (!retain) {
             if (journalAttachmentPort != null) {
-                journalAttachmentPort.delete(semesterId, studentId, lessonId, groupId);
+                journalAttachmentPort.delete(semesterId, lessonId, studentId, groupId);
             }
             document.setAttachmentId(null);
             document.setAttachmentName(null);

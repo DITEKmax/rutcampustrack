@@ -144,24 +144,24 @@ class EventConsumerTest {
                 "lesson_id", 1, "group_id", 10, "semester_id", 3
         ));
         when(semesterArchiveEffectService.hasReceipt(envelope)).thenReturn(true);
-        when(idempotencyGuard.tryClaim(EventConsumer.CONSUMER_ID, envelope)).thenReturn(false);
 
         eventConsumer.onEvent(envelope);
 
         verify(semesterArchiveEffectService).apply(eq(envelope), any());
+        verify(idempotencyGuard, never()).tryClaim(eq(EventConsumer.CONSUMER_ID), eq(envelope));
         verifyNoInteractions(lessonEventService);
     }
 
     @Test
-    void duplicateTrackedScheduleEffect_replaysOnlyAnExactStoredReceipt() {
+    void duplicateTrackedScheduleEffect_replaysStoredReceiptBeforeClaim() {
         Map<String, Object> envelope = scheduleEnvelope("lesson.cancelled", Map.of(
                 "lesson_id", 1, "semester_id", 3));
-        when(idempotencyGuard.tryClaim(EventConsumer.CONSUMER_ID, envelope)).thenReturn(false);
         when(semesterArchiveEffectService.hasReceipt(envelope)).thenReturn(true);
 
         eventConsumer.onEvent(envelope);
 
         verify(semesterArchiveEffectService).apply(eq(envelope), any());
+        verify(idempotencyGuard, never()).tryClaim(eq(EventConsumer.CONSUMER_ID), eq(envelope));
         verifyNoInteractions(lessonEventService);
     }
 
@@ -182,12 +182,12 @@ class EventConsumerTest {
     @Test
     void duplicateTransferWithStoredReceiptIsSentThroughReceiptReplay() {
         Map<String, Object> envelope = scheduleEnvelope("lesson.transfer.requested", Map.of());
-        when(idempotencyGuard.tryClaim(EventConsumer.CONSUMER_ID, envelope)).thenReturn(false);
         when(lessonTransferParticipantService.hasReceipt(envelope)).thenReturn(true);
 
         eventConsumer.onEvent(envelope);
 
         verify(lessonTransferParticipantService).apply(envelope);
+        verify(idempotencyGuard, never()).tryClaim(eq(EventConsumer.CONSUMER_ID), eq(envelope));
     }
 
     @Test
@@ -195,12 +195,12 @@ class EventConsumerTest {
         Map<String, Object> envelope = new java.util.HashMap<>(scheduleEnvelope(
                 "semester.archive.participant.command", Map.of()));
         envelope.put("source", "academic-service");
-        when(idempotencyGuard.tryClaim(EventConsumer.CONSUMER_ID, envelope)).thenReturn(false);
         when(semesterArchiveParticipantService.hasReceipt(envelope)).thenReturn(true);
 
         eventConsumer.onEvent(envelope);
 
         verify(semesterArchiveParticipantService).apply(envelope);
+        verify(idempotencyGuard, never()).tryClaim(eq(EventConsumer.CONSUMER_ID), eq(envelope));
     }
 
     @Test

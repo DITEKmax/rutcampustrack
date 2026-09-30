@@ -238,7 +238,7 @@ public class StudentCheckinService {
         attendance.setSource(AttendanceSource.STUDENT_GEO);
         attendance.setMarkedBy(null);
         if (journalAttachmentPort != null) {
-            journalAttachmentPort.delete(lesson.semesterId(), identity.userId(), lesson.id(), identity.groupId());
+            journalAttachmentPort.delete(lesson.semesterId(), lesson.id(), identity.userId(), identity.groupId());
         }
         attendance.setExcuseReason(null);
         attendance.setExcuseType(null);

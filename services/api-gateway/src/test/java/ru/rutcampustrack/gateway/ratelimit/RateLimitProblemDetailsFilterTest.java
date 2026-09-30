@@ -71,6 +71,31 @@ class RateLimitProblemDetailsFilterTest {
     }
 
     @Test
+    @DisplayName("Local password-reset verify 429 → contract code, retry window and no-store")
+    void status429_passwordResetVerifyLocalDenialUsesContractBody() {
+        MockServerHttpRequest req = MockServerHttpRequest.post("/api/auth/password-reset/verify").build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(req);
+
+        GatewayFilterChain chain = decoratedExchange -> {
+            decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+            return decoratedExchange.getResponse().setComplete();
+        };
+
+        filter.filter(exchange, chain).block();
+
+        MockServerHttpResponse response = exchange.getResponse();
+        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("12");
+        assertThat(response.getHeaders().getFirst(HttpHeaders.CACHE_CONTROL)).isEqualTo("no-store");
+        String body = response.getBodyAsString().block();
+        assertThat(body)
+                .contains("\"status\":429")
+                .contains("\"code\":\"OTP_RATE_LIMITED\"")
+                .contains("\"retryAfterSeconds\":12")
+                .doesNotContain("rate-limit-exceeded");
+    }
+
+    @Test
     @DisplayName("Status 429 + уже установленный Retry-After → не перезаписывается")
     void status429_retryAfterAlreadySet_preserved() {
         MockServerHttpRequest req = MockServerHttpRequest.get("/api/auth/login").build();

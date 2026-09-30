@@ -3,6 +3,8 @@ package ru.rutcampustrack.attendance.report;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.w3c.dom.Document;
@@ -81,8 +83,8 @@ class HeadmanWeeklyReportServiceTest {
                 documentRendererGrpcClient,
                 requestContext,
                 CLOCK);
-        lenient().when(requestContext.isHeadman()).thenReturn(true);
         lenient().when(requestContext.getGroupId()).thenReturn(10L);
+        lenient().when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true);
     }
 
     @Test
@@ -100,14 +102,23 @@ class HeadmanWeeklyReportServiceTest {
         assertThat(response.getFormats().get(2).extension()).isEqualTo("zip");
     }
 
-    @Test
-    void activeAssistantMustHaveLiveViewStatsForEveryExportRequest() {
-        when(requestContext.isHeadman()).thenReturn(false);
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void headmanAndAssistantMustHaveLiveViewStatsForEveryExportRequest(boolean headman) {
+        lenient().when(requestContext.isHeadman()).thenReturn(headman);
         when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true, false);
-        when(academicGrpcClient.getActiveSemester()).thenReturn(semester("2026-04-01", "2026-05-31"));
+        stubBase(semester("2026-04-01", "2026-05-31"));
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, "2026-04-27", "2026-05-03"))
+                .thenReturn(LessonsResponse.getDefaultInstance());
+        when(attendanceReadPort.findByGroupAndDateRange(10L, WEEK_START, WEEK_START.plusDays(6)))
+                .thenReturn(List.of());
 
-        assertThat(service.getActiveSemesterWeeks().getWeeks()).isNotEmpty();
-        assertThatThrownBy(() -> service.getActiveSemesterWeeks()).isInstanceOf(AccessDeniedException.class);
+        HeadmanWeeklyExportResult result = service.exportSingleWeek(WEEK_START, "html");
+
+        assertThat(result.contentType()).isEqualTo("text/html; charset=UTF-8");
+        assertThat(new String(result.content(), StandardCharsets.UTF_8)).contains("UVPV511");
+        assertThatThrownBy(() -> service.exportSingleWeek(WEEK_START, "html"))
+                .isInstanceOf(AccessDeniedException.class);
         verify(academicGrpcClient, org.mockito.Mockito.times(2)).hasAssistantPermission(10L, "VIEW_STATS");
     }
 

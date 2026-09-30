@@ -61,7 +61,8 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
 
     /**
      * The exact effect receipt is this consumer's transactional idempotency claim;
-     * APPLIED replays must re-emit the stored acknowledgement event id.
+     * APPLIED replays emit a fresh acknowledgement envelope; source event id,
+     * payload hash, and result remain stable.
      */
     @RabbitListener(queues = RabbitConfig.HOMEWORK_ARCHIVE_EVENTS_QUEUE)
     @EventIdempotent(consumer = CONSUMER_ID)

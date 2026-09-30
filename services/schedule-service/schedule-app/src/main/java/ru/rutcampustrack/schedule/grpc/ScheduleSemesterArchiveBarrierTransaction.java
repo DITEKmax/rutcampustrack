@@ -20,13 +20,16 @@ public class ScheduleSemesterArchiveBarrierTransaction {
     private final JdbcTemplate jdbc;
     private final SemesterArchiveEffectLedger effectLedger;
     private final ApplicationEventPublisher eventPublisher;
+    private final ScheduleSemesterDeletionSnapshotReader deletionSnapshots;
 
     public ScheduleSemesterArchiveBarrierTransaction(JdbcTemplate jdbc,
                                                      SemesterArchiveEffectLedger effectLedger,
-                                                     ApplicationEventPublisher eventPublisher) {
+                                                     ApplicationEventPublisher eventPublisher,
+                                                     ScheduleSemesterDeletionSnapshotReader deletionSnapshots) {
         this.jdbc = jdbc;
         this.effectLedger = effectLedger;
         this.eventPublisher = eventPublisher;
+        this.deletionSnapshots = deletionSnapshots;
     }
 
     @Transactional
@@ -61,7 +64,177 @@ public class ScheduleSemesterArchiveBarrierTransaction {
             releaseRestore(operationId, semesterId, stateVersion, current);
             return response(operationId, semesterId, stateVersion, "RELEASED", null);
         }
+        if (command == SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE) {
+            String expectedDigest = requiredDigest(request.getExpectedParticipantDigest());
+            ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot = deletionSnapshots.read(semesterId);
+            prepareDelete(operationId, semesterId, stateVersion, expectedDigest, snapshot, current);
+            BlockingStatus blocking = blockingStatus(semesterId);
+            SetSemesterArchiveBarrierResponse prepared = deletionResponse(operationId, semesterId, stateVersion,
+                    blocking.reason() == null ? "READY" : "PENDING", blocking.reason(), snapshot);
+            if (blocking.pendingBinding() != null) {
+                prepared = prepared.toBuilder().setPendingBinding(response(operationId, semesterId,
+                        stateVersion, "PENDING", blocking.reason(), blocking.pendingBinding(), null)
+                        .getPendingBinding()).build();
+            }
+            return prepared;
+        }
+        if (command == SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE) {
+            String expectedDigest = requiredDigest(request.getExpectedParticipantDigest());
+            ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot = deletionSnapshots.read(semesterId);
+            sealDelete(operationId, semesterId, stateVersion, expectedDigest, snapshot, current);
+            BlockingStatus blocking = blockingStatus(semesterId);
+            return deletionResponse(operationId, semesterId, stateVersion,
+                    blocking.reason() == null ? "READY" : "PENDING", blocking.reason(), snapshot);
+        }
+        if (command == SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RELEASE_DELETE) {
+            String expectedDigest = requiredDigest(request.getExpectedParticipantDigest());
+            releaseDelete(operationId, semesterId, stateVersion, expectedDigest, current);
+            DeletionReceipt receipt = readDeletionReceipt(semesterId);
+            return deletionResponse(operationId, semesterId, stateVersion, "RELEASED", null,
+                    receipt == null ? null : receipt.snapshot());
+        }
+        if (command == SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_COMMIT_DELETE) {
+            String expectedDigest = requiredDigest(request.getExpectedParticipantDigest());
+            return commitDelete(operationId, semesterId, stateVersion, expectedDigest, current);
+        }
         throw new IllegalArgumentException("semester archive barrier command is unspecified");
+    }
+
+    private void prepareDelete(UUID operationId, long semesterId, long version, String expectedDigest,
+                               ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot,
+                               Map<String, Object> current) {
+        if (current == null) {
+            insertDeleteBarrier(operationId, semesterId, version, "DELETE_PREPARING", null,
+                    expectedDigest, snapshot);
+            return;
+        }
+        if (sameIdentity(current, operationId, version)) {
+            if (expectedDigest.equals(current.get("expected_participant_digest"))
+                    && ("DELETE_PREPARING".equals(current.get("participant_state"))
+                    || "DELETE_SEALED".equals(current.get("participant_state")))) return;
+        } else if ("RELEASED".equals(current.get("participant_state"))
+                && version > number(current.get("state_version"))) {
+            replaceDeleteBarrier(operationId, semesterId, version, "DELETE_PREPARING", null,
+                    expectedDigest, snapshot);
+            return;
+        } else if ("READY".equals(current.get("participant_state"))
+                && version > number(current.get("state_version"))) {
+            replaceDeleteBarrier(operationId, semesterId, version, "DELETE_PREPARING", null,
+                    expectedDigest, snapshot);
+            return;
+        }
+        throw new ConflictException("Schedule delete barrier is fenced by another operation/version");
+    }
+
+    private void sealDelete(UUID operationId, long semesterId, long version, String expectedDigest,
+                            ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot,
+                            Map<String, Object> current) {
+        if (current == null || !sameIdentity(current, operationId, version)) {
+            throw new ConflictException("Schedule delete seal does not match its prepared barrier");
+        }
+        if (!expectedDigest.equals(current.get("expected_participant_digest"))) {
+            throw new ConflictException("Schedule delete seal has a different preview digest");
+        }
+        String state = String.valueOf(current.get("participant_state"));
+        if ("DELETE_SEALED".equals(state)) return;
+        if (!"DELETE_PREPARING".equals(state)) {
+            throw new ConflictException("Schedule delete barrier is not in preparation");
+        }
+        BlockingStatus blocking = blockingStatus(semesterId);
+        if (blocking.reason() != null) {
+            updateDeleteSnapshot(operationId, semesterId, version, "DELETE_PREPARING",
+                    blocking.reason(), expectedDigest, snapshot);
+            return;
+        }
+        updateDeleteSnapshot(operationId, semesterId, version, "DELETE_SEALED",
+                null, expectedDigest, snapshot);
+    }
+
+    private void releaseDelete(UUID operationId, long semesterId, long version, String expectedDigest,
+                               Map<String, Object> current) {
+        if (current != null && sameIdentity(current, operationId, version)
+                && "RELEASED".equals(current.get("participant_state"))) {
+            if (!expectedDigest.equals(current.get("expected_participant_digest"))) {
+                throw new ConflictException("Schedule delete release replay has a different preview digest");
+            }
+            return;
+        }
+        if (current == null) {
+            insertDeleteBarrier(operationId, semesterId, version, "RELEASED", null,
+                    expectedDigest, deletionSnapshots.read(semesterId));
+            return;
+        }
+        if (!sameIdentity(current, operationId, version)
+                && version > number(current.get("state_version"))
+                && ("READY".equals(current.get("participant_state"))
+                || "RELEASED".equals(current.get("participant_state")))) {
+            replaceDeleteBarrier(operationId, semesterId, version, "RELEASED", null,
+                    expectedDigest, deletionSnapshots.read(semesterId));
+            return;
+        }
+        if (!sameIdentity(current, operationId, version)
+                || !("DELETE_PREPARING".equals(current.get("participant_state"))
+                || "DELETE_SEALED".equals(current.get("participant_state")))) {
+            throw new ConflictException("Schedule delete release does not match its local fence");
+        }
+        if (!expectedDigest.equals(current.get("expected_participant_digest"))) {
+            throw new ConflictException("Schedule delete release has a different preview digest");
+        }
+        updateState(operationId, semesterId, version, "RELEASED", null);
+    }
+
+    private SetSemesterArchiveBarrierResponse commitDelete(UUID operationId, long semesterId, long version,
+                                                           String expectedDigest,
+                                                           Map<String, Object> current) {
+        if (current != null && sameIdentity(current, operationId, version)
+                && "DELETED".equals(current.get("participant_state"))) {
+            DeletionReceipt receipt = readDeletionReceipt(semesterId);
+            if (receipt == null || !expectedDigest.equals(receipt.expectedDigest())) {
+                throw new ConflictException("Schedule deletion replay has a different durable receipt");
+            }
+            return deletionResponse(operationId, semesterId, version, "DELETED", null, receipt.snapshot());
+        }
+        if (current == null || !sameIdentity(current, operationId, version)
+                || !"DELETE_SEALED".equals(current.get("participant_state"))) {
+            throw new ConflictException("Schedule commit requires the exact sealed delete barrier");
+        }
+        DeletionReceipt receipt = readDeletionReceipt(semesterId);
+        BlockingStatus blocking = blockingStatus(semesterId);
+        ScheduleSemesterDeletionSnapshotReader.Snapshot currentSnapshot = deletionSnapshots.read(semesterId);
+        if (blocking.reason() != null
+                || receipt == null || !expectedDigest.equals(receipt.expectedDigest())
+                || !expectedDigest.equals(receipt.participantDigest())
+                || !expectedDigest.equals(currentSnapshot.participantDigest())
+                || receipt.scheduleTemplates() != currentSnapshot.scheduleTemplates()
+                || receipt.oneOffLessons() != currentSnapshot.oneOffLessons()
+                || receipt.lessons() != currentSnapshot.lessons()) {
+            throw new ConflictException("Schedule domain changed after its deletion fence was sealed");
+        }
+
+        setDeletionContext(operationId, version, expectedDigest);
+        jdbc.update("""
+                UPDATE lesson_homework_bindings binding
+                   SET state = 'ARCHIVED', homework_id = NULL, revision = binding.revision + 1, updated_at = now()
+                  FROM lesson_occurrences occurrence
+                 WHERE occurrence.id = binding.occurrence_id AND occurrence.semester_id = ?
+                   AND (binding.state <> 'ARCHIVED' OR binding.homework_id IS NOT NULL)
+                """, semesterId);
+        jdbc.update("""
+                UPDATE schedule_one_off_lessons item
+                   SET physical_lesson_id = NULL
+                 WHERE item.semester_id = ? AND item.physical_lesson_id IS NOT NULL
+                """, semesterId);
+        jdbc.update("""
+                DELETE FROM lesson_lifecycle_entries entry
+                 USING lesson_occurrences occurrence
+                 WHERE occurrence.id = entry.occurrence_id AND occurrence.semester_id = ?
+                """, semesterId);
+        jdbc.update("DELETE FROM lessons WHERE semester_id = ?", semesterId);
+        jdbc.update("DELETE FROM lesson_occurrences WHERE semester_id = ?", semesterId);
+        jdbc.update("DELETE FROM schedule_items WHERE semester_id = ?", semesterId);
+        jdbc.update("DELETE FROM schedule_one_off_lessons WHERE semester_id = ?", semesterId);
+        updateState(operationId, semesterId, version, "DELETED", null);
+        return deletionResponse(operationId, semesterId, version, "DELETED", null, receipt.snapshot());
     }
 
     private void prepareArchive(UUID operationId, long semesterId, long version, Map<String, Object> current) {
@@ -85,7 +258,8 @@ public class ScheduleSemesterArchiveBarrierTransaction {
                 && "PREPARED_RESTORE".equals(current.get("participant_state"))) {
             return;
         }
-        if (current == null || !"READY".equals(current.get("participant_state"))
+        if (current == null || !("READY".equals(current.get("participant_state"))
+                || "RELEASED".equals(current.get("participant_state")))
                 || version <= number(current.get("state_version"))) {
             throw new IllegalStateException("Schedule archive barrier is not ready for this restore epoch");
         }
@@ -142,7 +316,8 @@ public class ScheduleSemesterArchiveBarrierTransaction {
             SetSemesterArchiveBarrierRequest request, UUID operationId, long semesterId, long stateVersion,
             Map<String, Object> barrier) {
         String barrierState = barrier == null ? null : String.valueOf(barrier.get("participant_state"));
-        boolean pending = "PENDING".equals(barrierState);
+        boolean deletePreparing = "DELETE_PREPARING".equals(barrierState);
+        boolean pending = "PENDING".equals(barrierState) || deletePreparing;
         boolean ready = "READY".equals(barrierState);
         SemesterArchiveHomeworkBindingResolution requestedResolution = request.getBindingResolution();
         if (request.getBindingResolution()
@@ -188,6 +363,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
                 } else if (pending && "PENDING".equals(binding.state()) && binding.homeworkId() == null
                         && identity.getOccurrenceId() == binding.occurrenceId()
                         && identity.getRevision() == binding.revision()) {
+                    if (deletePreparing) setDeleteBindingConfirmationContext(operationId, stateVersion, binding);
                     int updated = jdbc.update("""
                             UPDATE lesson_homework_bindings
                                SET homework_id = ?, state = 'ACTIVE', revision = revision + 1,
@@ -308,10 +484,103 @@ public class ScheduleSemesterArchiveBarrierTransaction {
         int updated = jdbc.update("""
                 UPDATE schedule_semester_archive_barriers
                    SET operation_id = ?, state_version = ?, participant_state = ?,
-                       blocking_reason = ?, updated_at = now()
+                       blocking_reason = ?, expected_participant_digest = NULL,
+                       participant_digest = NULL, schedule_templates_count = NULL,
+                       one_off_lessons_count = NULL, lessons_count = NULL, updated_at = now()
                  WHERE semester_id = ?
                 """, operationId, version, state, reason, semesterId);
         requireOne(updated, "could not install Schedule restore barrier");
+    }
+
+    private void insertDeleteBarrier(UUID operationId, long semesterId, long version, String state,
+                                     String reason, String expectedDigest,
+                                     ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot) {
+        jdbc.update("""
+                INSERT INTO schedule_semester_archive_barriers
+                    (semester_id, operation_id, state_version, participant_state, blocking_reason,
+                     expected_participant_digest, participant_digest,
+                     schedule_templates_count, one_off_lessons_count, lessons_count)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, semesterId, operationId, version, state, reason, expectedDigest,
+                snapshot == null ? null : snapshot.participantDigest(),
+                snapshot == null ? null : snapshot.scheduleTemplates(),
+                snapshot == null ? null : snapshot.oneOffLessons(),
+                snapshot == null ? null : snapshot.lessons());
+    }
+
+    private void replaceDeleteBarrier(UUID operationId, long semesterId, long version, String state,
+                                      String reason, String expectedDigest,
+                                      ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot) {
+        int updated = jdbc.update("""
+                UPDATE schedule_semester_archive_barriers
+                   SET operation_id = ?, state_version = ?, participant_state = ?, blocking_reason = ?,
+                       expected_participant_digest = ?, participant_digest = ?,
+                       schedule_templates_count = ?, one_off_lessons_count = ?, lessons_count = ?,
+                       updated_at = now()
+                 WHERE semester_id = ?
+                """, operationId, version, state, reason, expectedDigest,
+                snapshot == null ? null : snapshot.participantDigest(),
+                snapshot == null ? null : snapshot.scheduleTemplates(),
+                snapshot == null ? null : snapshot.oneOffLessons(),
+                snapshot == null ? null : snapshot.lessons(), semesterId);
+        requireOne(updated, "could not install Schedule deletion barrier");
+    }
+
+    private void updateDeleteSnapshot(UUID operationId, long semesterId, long version, String state,
+                                      String reason, String expectedDigest,
+                                      ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot) {
+        int updated = jdbc.update("""
+                UPDATE schedule_semester_archive_barriers
+                   SET participant_state = ?, blocking_reason = ?, expected_participant_digest = ?,
+                       participant_digest = ?, schedule_templates_count = ?,
+                       one_off_lessons_count = ?, lessons_count = ?, updated_at = now()
+                 WHERE semester_id = ? AND operation_id = ? AND state_version = ?
+                """, state, reason, expectedDigest, snapshot.participantDigest(),
+                snapshot.scheduleTemplates(), snapshot.oneOffLessons(), snapshot.lessons(),
+                semesterId, operationId, version);
+        requireOne(updated, "Schedule deletion barrier identity changed during snapshot update");
+    }
+
+    private DeletionReceipt readDeletionReceipt(long semesterId) {
+        return jdbc.query("""
+                SELECT expected_participant_digest, participant_digest, schedule_templates_count,
+                       one_off_lessons_count, lessons_count
+                  FROM schedule_semester_archive_barriers
+                 WHERE semester_id = ?
+                """, resultSet -> {
+            if (!resultSet.next() || resultSet.getString("participant_digest") == null) return null;
+            return new DeletionReceipt(resultSet.getString("expected_participant_digest"),
+                    resultSet.getString("participant_digest"), resultSet.getLong("schedule_templates_count"),
+                    resultSet.getLong("one_off_lessons_count"), resultSet.getLong("lessons_count"));
+        }, semesterId);
+    }
+
+    private void setDeletionContext(UUID operationId, long version, String expectedDigest) {
+        jdbc.query("""
+                SELECT set_config('rutcampustrack.schedule_delete_operation_id', ?, TRUE),
+                       set_config('rutcampustrack.schedule_delete_state_version', ?, TRUE),
+                       set_config('rutcampustrack.schedule_delete_participant_digest', ?, TRUE)
+                """, resultSet -> {
+            if (!resultSet.next()) {
+                throw new IllegalStateException("Schedule deletion context was not installed");
+            }
+            return null;
+        }, operationId.toString(), Long.toString(version), expectedDigest);
+    }
+
+    private void setDeleteBindingConfirmationContext(UUID operationId, long version, BindingSnapshot binding) {
+        jdbc.query("""
+                SELECT set_config('rutcampustrack.schedule_delete_binding_operation_id', ?, TRUE),
+                       set_config('rutcampustrack.schedule_delete_binding_state_version', ?, TRUE),
+                       set_config('rutcampustrack.schedule_delete_binding_id', ?, TRUE),
+                       set_config('rutcampustrack.schedule_delete_binding_revision', ?, TRUE)
+                """, resultSet -> {
+            if (!resultSet.next()) {
+                throw new IllegalStateException("Schedule delete binding context was not installed");
+            }
+            return null;
+        }, operationId.toString(), Long.toString(version), Long.toString(binding.bindingId()),
+                Long.toString(binding.revision()));
     }
 
     private void updateState(UUID operationId, long semesterId, long version, String state, String reason) {
@@ -325,13 +594,18 @@ public class ScheduleSemesterArchiveBarrierTransaction {
 
     private Map<String, Object> readBarrier(long semesterId) {
         return jdbc.query("""
-                SELECT operation_id, state_version, participant_state
+                SELECT operation_id, state_version, participant_state, expected_participant_digest
                   FROM schedule_semester_archive_barriers
                  WHERE semester_id = ? FOR UPDATE
-                """, resultSet -> resultSet.next() ? Map.of(
-                "operation_id", resultSet.getObject("operation_id", UUID.class),
-                "state_version", resultSet.getLong("state_version"),
-                "participant_state", resultSet.getString("participant_state")) : null,
+                """, resultSet -> {
+            if (!resultSet.next()) return null;
+            Map<String, Object> row = new java.util.HashMap<>();
+            row.put("operation_id", resultSet.getObject("operation_id", UUID.class));
+            row.put("state_version", resultSet.getLong("state_version"));
+            row.put("participant_state", resultSet.getString("participant_state"));
+            row.put("expected_participant_digest", resultSet.getString("expected_participant_digest"));
+            return row;
+        },
                 semesterId);
     }
 
@@ -375,11 +649,12 @@ public class ScheduleSemesterArchiveBarrierTransaction {
                                                               PendingBinding pendingBinding,
                                                               String terminalEventId) {
         SemesterArchiveParticipantState wireState = switch (state) {
-            case "PENDING" -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PENDING;
-            case "READY" -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY;
+            case "PENDING", "DELETE_PREPARING" -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PENDING;
+            case "READY", "DELETE_SEALED" -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY;
             case "PREPARED_RESTORE" ->
                     SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PREPARED_RESTORE;
             case "RELEASED" -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_RELEASED;
+            case "DELETED" -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_DELETED;
             default -> throw new IllegalArgumentException("unsupported persisted archive barrier state " + state);
         };
         SetSemesterArchiveBarrierResponse.Builder response = SetSemesterArchiveBarrierResponse.newBuilder()
@@ -402,6 +677,37 @@ public class ScheduleSemesterArchiveBarrierTransaction {
         return response.build();
     }
 
+    private static String requiredDigest(String digest) {
+        if (digest == null || !digest.matches("[0-9a-fA-F]{64}")) {
+            throw new IllegalArgumentException("expected participant digest must be a SHA-256 hex value");
+        }
+        return digest.toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private static SetSemesterArchiveBarrierResponse deletionResponse(
+            UUID operationId, long semesterId, long version, String state, String reason,
+            ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot) {
+        SetSemesterArchiveBarrierResponse.Builder response = SetSemesterArchiveBarrierResponse.newBuilder()
+                .setOperationId(operationId.toString())
+                .setSemesterId(semesterId)
+                .setStateVersion(version)
+                .setState(switch (state) {
+                    case "PENDING" -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PENDING;
+                    case "READY" -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY;
+                    case "RELEASED" -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_RELEASED;
+                    case "DELETED" -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_DELETED;
+                    default -> throw new IllegalArgumentException("unsupported Schedule delete state " + state);
+                });
+        if (reason != null) response.setBlockingReason(reason);
+        if (snapshot != null) {
+            response.setParticipantDigest(snapshot.participantDigest())
+                    .setScheduleTemplatesCount(snapshot.scheduleTemplates())
+                    .setOneOffLessonsCount(snapshot.oneOffLessons())
+                    .setLessonsCount(snapshot.lessons());
+        }
+        return response.build();
+    }
+
     private record BlockingStatus(String reason, PendingBinding pendingBinding) { }
 
     private record PendingBinding(long bindingId, long occurrenceId, long actorId,
@@ -416,6 +722,14 @@ public class ScheduleSemesterArchiveBarrierTransaction {
                                    UUID requestKey, byte[] payloadHash, String state, long revision) {
         private BindingSnapshot {
             payloadHash = payloadHash == null ? null : payloadHash.clone();
+        }
+    }
+
+    private record DeletionReceipt(String expectedDigest, String participantDigest,
+                                   long scheduleTemplates, long oneOffLessons, long lessons) {
+        private ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot() {
+            return new ScheduleSemesterDeletionSnapshotReader.Snapshot(scheduleTemplates, oneOffLessons,
+                    lessons, participantDigest, 0);
         }
     }
 }

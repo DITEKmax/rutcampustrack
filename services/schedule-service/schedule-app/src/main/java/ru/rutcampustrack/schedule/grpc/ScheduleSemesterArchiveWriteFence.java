@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 
 /** Acquires Schedule's archive lock before any domain-row lock or mutation. */
 @Service
@@ -36,7 +37,7 @@ public class ScheduleSemesterArchiveWriteFence {
     public void lockForBusinessWrite(long semesterId) {
         Map<String, Object> observed = localBarrier(semesterId);
         SemesterStateResponse authority = null;
-        if (observed != null && "RELEASED".equals(observed.get("participant_state"))) {
+        if (observed == null || "RELEASED".equals(observed.get("participant_state"))) {
             authority = readAuthority(semesterId);
             if (authorityBlocksWrites(authority)) throw blocked(semesterId);
         }
@@ -48,27 +49,37 @@ public class ScheduleSemesterArchiveWriteFence {
         }
     }
 
-    /** Allows only the already-reserved PENDING -> ACTIVE binding drain during ARCHIVING. */
+    /** Allows only the exact admitted binding drain during archive/delete preparation. */
     public void lockForPendingBindingConfirmation(long semesterId) {
         Map<String, Object> observed = localBarrier(semesterId);
         if (observed == null || "RELEASED".equals(observed.get("participant_state"))) {
             lockForBusinessWrite(semesterId);
             return;
         }
-        if (!"PENDING".equals(observed.get("participant_state"))) {
+        String barrierState = String.valueOf(observed.get("participant_state"));
+        boolean deletePreparing = "DELETE_PREPARING".equals(barrierState);
+        if (!"PENDING".equals(barrierState) && !deletePreparing) {
             lockSemester(jdbc, semesterId);
             throw blocked(semesterId);
         }
         SemesterStateResponse authority = readAuthority(semesterId);
+        long observedVersion = ((Number) observed.get("state_version")).longValue();
+        boolean archiveAuthority = !deletePreparing
+                && authority.getTransition() == SemesterTransition.ARCHIVING;
+        boolean deletionAuthority = deletePreparing
+                && authority.getTransition() == SemesterTransition.DELETING
+                && "PREPARING".equals(authority.getDeletionPhase())
+                && String.valueOf(observed.get("operation_id")).equals(authority.getTransitionOperationId());
         if (authority.getArchived() || authority.getReleasePending()
-                || authority.getTransition() != SemesterTransition.ARCHIVING
-                || authority.getStateVersion() != ((Number) observed.get("state_version")).longValue()) {
+                || (!archiveAuthority && !deletionAuthority)
+                || authority.getStateVersion() != observedVersion) {
             throw blocked(semesterId);
         }
         lockSemester(jdbc, semesterId);
         Map<String, Object> current = localBarrier(semesterId);
-        if (current == null || !"PENDING".equals(current.get("participant_state"))
-                || !current.get("state_version").equals(observed.get("state_version"))) {
+        if (current == null || !barrierState.equals(current.get("participant_state"))
+                || !current.get("state_version").equals(observed.get("state_version"))
+                || !current.get("operation_id").equals(observed.get("operation_id"))) {
             throw blocked(semesterId);
         }
     }
@@ -91,7 +102,7 @@ public class ScheduleSemesterArchiveWriteFence {
         for (Long semesterId : ordered) {
             Map<String, Object> barrier = localBarrier(semesterId);
             observed.put(semesterId, barrier);
-            if (barrier != null && "RELEASED".equals(barrier.get("participant_state"))) {
+            if (barrier == null || "RELEASED".equals(barrier.get("participant_state"))) {
                 authorities.put(semesterId, readAuthority(semesterId));
             }
         }
@@ -154,7 +165,9 @@ public class ScheduleSemesterArchiveWriteFence {
     private boolean localBarrierBlocks(Map<String, Object> barrier) {
         if (barrier == null) return false;
         String state = String.valueOf(barrier.get("participant_state"));
-        return "PENDING".equals(state) || "READY".equals(state) || "PREPARED_RESTORE".equals(state);
+        return "PENDING".equals(state) || "READY".equals(state) || "PREPARED_RESTORE".equals(state)
+                || "DELETE_PREPARING".equals(state) || "DELETE_SEALED".equals(state)
+                || "DELETED".equals(state);
     }
 
     private static boolean currentIsNewReleasedEpoch(Map<String, Object> current,
@@ -166,10 +179,11 @@ public class ScheduleSemesterArchiveWriteFence {
 
     private Map<String, Object> localBarrier(long semesterId) {
         return jdbc.query("""
-                SELECT state_version, participant_state
+                SELECT operation_id, state_version, participant_state
                   FROM schedule_semester_archive_barriers
                  WHERE semester_id = ?
                 """, resultSet -> resultSet.next() ? Map.of(
+                "operation_id", resultSet.getObject("operation_id", UUID.class),
                 "state_version", resultSet.getLong("state_version"),
                 "participant_state", resultSet.getString("participant_state")) : null,
                 semesterId);

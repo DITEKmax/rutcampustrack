@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
 import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
+import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
 import ru.rutcampustrack.academic.exception.ConflictException;
 
 import java.sql.PreparedStatement;
@@ -57,7 +58,14 @@ public class AcademicSemesterArchiveBarrierTransaction {
             return;
         }
 
-        if (current == null || !"READY".equals(current.get("participant_state"))
+        boolean releasedArchivedDeletion = current != null && "RELEASED".equals(current.get("participant_state"))
+                && Boolean.TRUE.equals(jdbc.queryForObject("""
+                    SELECT EXISTS (SELECT 1 FROM semester_archive_operations
+                     WHERE operation_id = ? AND semester_id = ? AND state_version = ?
+                       AND action = 'DELETE' AND delete_phase = 'CANCELLED' AND prior_state = 'ARCHIVED'
+                       AND NOT irreversible_intent)
+                    """, Boolean.class, current.get("operation_id"), semesterId, current.get("state_version")));
+        if (current == null || !("READY".equals(current.get("participant_state")) || releasedArchivedDeletion)
                 || stateVersion <= number(current.get("state_version"))) {
             if (current != null && operationId.equals(current.get("operation_id"))
                     && stateVersion == number(current.get("state_version"))
@@ -67,6 +75,30 @@ public class AcademicSemesterArchiveBarrierTransaction {
             throw new ConflictException("Academic archive barrier is not ready for this restore epoch");
         }
         replace(operationId, semesterId, stateVersion, "PREPARED_RESTORE", null);
+    }
+
+    public void installDeletion(UUID operationId, long semesterId, long stateVersion) {
+        requireTransaction();
+        lockSemester(semesterId);
+        Map<String, Object> current = barrier(semesterId);
+        if (current != null && sameIdentity(current, operationId, stateVersion)
+                && "DELETE_PREPARING".equals(current.get("participant_state"))) return;
+        if (current != null && ("DELETED".equals(current.get("participant_state"))
+                || !("READY".equals(current.get("participant_state"))
+                || "RELEASED".equals(current.get("participant_state")))
+                || stateVersion <= number(current.get("state_version")))) {
+            throw new ConflictException("Academic delete barrier is fenced by another operation/version");
+        }
+        if (current == null) {
+            jdbc.update("""
+                    INSERT INTO academic_semester_archive_barriers
+                        (semester_id, operation_id, state_version, participant_state)
+                    VALUES (?, ?, ?, 'DELETE_PREPARING')
+                    """, semesterId, operationId, stateVersion);
+        } else {
+            replace(operationId, semesterId, stateVersion, "DELETE_PREPARING", null);
+        }
+        capturePendingPublications(operationId, semesterId, stateVersion);
     }
 
     /** Seal is a distinct durable step, called only after Schedule has drained and returned READY. */
@@ -109,6 +141,105 @@ public class AcademicSemesterArchiveBarrierTransaction {
         updateState(operationId, semesterId, stateVersion, "RELEASED", null);
     }
 
+    @Transactional
+    public String prepareDelete(UUID operationId, long semesterId, long stateVersion) {
+        requireTransaction();
+        lockSemester(semesterId);
+        Map<String, Object> current = barrier(semesterId);
+        if (!sameIdentity(current, operationId, stateVersion)
+                || !"DELETE_PREPARING".equals(current.get("participant_state"))
+                || !deletionAuthority(operationId, semesterId, stateVersion, SemesterDeletionPhase.PREPARING)) {
+            throw new ConflictException("Academic delete preparation does not match the current barrier epoch");
+        }
+        return firstPendingDeleteReason(operationId, semesterId, stateVersion);
+    }
+
+    @Transactional
+    public String sealDelete(UUID operationId, long semesterId, long stateVersion) {
+        requireTransaction();
+        lockSemester(semesterId);
+        Map<String, Object> current = barrier(semesterId);
+        if (!sameIdentity(current, operationId, stateVersion)) {
+            throw new ConflictException("Academic delete seal does not match the current barrier epoch");
+        }
+        if ("DELETE_SEALED".equals(current.get("participant_state"))) return null;
+        if (!"DELETE_PREPARING".equals(current.get("participant_state"))
+                || !deletionAuthority(operationId, semesterId, stateVersion, SemesterDeletionPhase.PREPARING)) {
+            throw new ConflictException("Academic delete seal requires the exact preparation phase");
+        }
+        String reason = firstPendingDeleteReason(operationId, semesterId, stateVersion);
+        if (reason == null) {
+            updateState(operationId, semesterId, stateVersion, "DELETE_SEALED", null);
+        } else {
+            updateState(operationId, semesterId, stateVersion, "DELETE_PREPARING", reason);
+        }
+        return reason;
+    }
+
+    @Transactional
+    public void releaseDelete(UUID operationId, long semesterId, long stateVersion) {
+        requireTransaction();
+        lockSemester(semesterId);
+        Map<String, Object> current = barrier(semesterId);
+        if (sameIdentity(current, operationId, stateVersion)
+                && "RELEASED".equals(current.get("participant_state"))) return;
+        if (!sameIdentity(current, operationId, stateVersion)
+                || !("DELETE_PREPARING".equals(current.get("participant_state"))
+                || "DELETE_SEALED".equals(current.get("participant_state")))
+                || !deletionAuthority(operationId, semesterId, stateVersion, SemesterDeletionPhase.RELEASING)) {
+            throw new ConflictException("Academic delete release does not match the confirmed release phase");
+        }
+        updateState(operationId, semesterId, stateVersion, "RELEASED", null);
+    }
+
+    /** Deletes Academic domain rows and the semester last, after all remote DELETED receipts are durable. */
+    @Transactional
+    public void deleteOwnDomainAndSemester(UUID operationId, long semesterId, long stateVersion,
+                                           String expectedAcademicDigest) {
+        requireTransaction();
+        lockSemester(semesterId);
+        Map<String, Object> current = barrier(semesterId);
+        if (!sameIdentity(current, operationId, stateVersion)
+                || !("DELETE_SEALED".equals(current.get("participant_state"))
+                || "DELETED".equals(current.get("participant_state")))
+                || !deletionAuthority(operationId, semesterId, stateVersion, SemesterDeletionPhase.DELETING)
+                || !exactRemoteDeleteReceipts(operationId, semesterId, stateVersion, expectedAcademicDigest)) {
+            throw new ConflictException("Academic delete lacks the exact irreversible participant proof");
+        }
+        setLocal("rutcampustrack.semester_delete_operation_id", operationId.toString());
+        setLocal("rutcampustrack.semester_delete_state_version", Long.toString(stateVersion));
+        setLocal("rutcampustrack.semester_delete_academic_digest", expectedAcademicDigest);
+
+        // The row-level delete guards admit this unobservable in-transaction state change only
+        // for the exact operation above. Every other writer serializes on this same semester lock.
+        int neutralized = jdbc.update("""
+                UPDATE semesters
+                   SET is_archived = FALSE, archive_transition = 'NONE',
+                       deletion_phase = NULL, transition_operation_id = NULL
+                 WHERE id = ? AND state_version = ?
+                   AND archive_transition = 'DELETING'
+                   AND transition_operation_id = ? AND deletion_phase = 'DELETING'
+                """, semesterId, stateVersion, operationId);
+        requireOne(neutralized, "Academic deletion authority changed before final row removal");
+
+        jdbc.update("""
+                UPDATE homework_binding_archives archived
+                   SET homework_id = NULL
+                  FROM homeworks homework
+                 WHERE archived.homework_id = homework.id AND homework.semester_id = ?
+                """, semesterId);
+        jdbc.update("""
+                DELETE FROM homework_completions completion
+                 USING homeworks homework
+                 WHERE completion.homework_id = homework.id AND homework.semester_id = ?
+                """, semesterId);
+        jdbc.update("DELETE FROM homeworks WHERE semester_id = ?", semesterId);
+        jdbc.update("DELETE FROM assignments WHERE semester_id = ?", semesterId);
+        updateState(operationId, semesterId, stateVersion, "DELETED", null);
+        int deleted = jdbc.update("DELETE FROM semesters WHERE id = ?", semesterId);
+        requireOne(deleted, "Academic semester disappeared before final deletion");
+    }
+
     /** Ordinary write entrypoint: acquire this lock before binding/row locks, then fail closed. */
     public void lockOrdinaryWrite(long semesterId) {
         requireTransaction();
@@ -131,8 +262,7 @@ public class AcademicSemesterArchiveBarrierTransaction {
                 && !authorityBlocks(state)) {
             return;
         }
-        if (!"PENDING".equals(current.get("participant_state"))
-                || !authorityBlocksArchive(state, number(current.get("state_version")))) {
+        if (!isPreparing(current) || !preparationAuthority(semesterId, current)) {
             throw new ConflictException("Публикация домашнего задания не принята до seal архивации");
         }
         int updated = jdbc.update("""
@@ -167,10 +297,14 @@ public class AcademicSemesterArchiveBarrierTransaction {
         }
         lockSemester(semesterId);
         Map<String, Object> current = barrier(semesterId);
-        if (!sameIdentity(current, operationId, stateVersion)
-                || !"PENDING".equals(current.get("participant_state"))
-                || !authorityBlocksArchive(authorityState(semesterId), stateVersion)) {
-            throw new ConflictException("Schedule pending binding does not match the active Academic archive epoch");
+        boolean archivePreparation = sameIdentity(current, operationId, stateVersion)
+                && "PENDING".equals(current.get("participant_state"))
+                && authorityBlocksArchive(authorityState(semesterId), stateVersion);
+        boolean deletePreparation = sameIdentity(current, operationId, stateVersion)
+                && "DELETE_PREPARING".equals(current.get("participant_state"))
+                && deletionAuthority(operationId, semesterId, stateVersion, SemesterDeletionPhase.PREPARING);
+        if (!archivePreparation && !deletePreparation) {
+            throw new ConflictException("Schedule pending binding does not match an active Academic preparation epoch");
         }
         lockBinding(bindingId);
 
@@ -324,6 +458,61 @@ public class AcademicSemesterArchiveBarrierTransaction {
                 resultSet.getLong("homework_id")), operationId, stateVersion, semesterId, limit);
     }
 
+    /**
+     * Records that a delete-scoped pending publication reached its exact Schedule binding
+     * identity. The content remains pending and is removed only after irreversible intent.
+     */
+    @Transactional
+    public void markDeletionPublicationDrained(UUID operationId, long semesterId, long stateVersion,
+                                               long bindingId, long actorId, UUID requestKey,
+                                               byte[] payloadHash, long homeworkId) {
+        requireTransaction();
+        lockSemester(semesterId);
+        Map<String, Object> current = barrier(semesterId);
+        if (!sameIdentity(current, operationId, stateVersion)
+                || !"DELETE_PREPARING".equals(current.get("participant_state"))
+                || !deletionAuthority(operationId, semesterId, stateVersion, SemesterDeletionPhase.PREPARING)
+                || bindingId <= 0 || actorId <= 0 || requestKey == null
+                || payloadHash == null || payloadHash.length != 32 || homeworkId <= 0) {
+            throw new ConflictException("Materialized publication is outside the exact delete preparation");
+        }
+        int updated = jdbc.update("""
+                UPDATE academic_semester_archive_publication_admissions admission
+                   SET consumed_at = coalesce(consumed_at, now())
+                  FROM homeworks homework
+                 WHERE admission.operation_id = ? AND admission.state_version = ?
+                   AND admission.semester_id = ? AND admission.binding_id = ?
+                   AND admission.actor_id = ? AND admission.request_key = ?
+                   AND admission.payload_hash = ? AND admission.admitted_homework_id = homework.id
+                   AND homework.id = ? AND homework.semester_id = ?
+                   AND homework.binding_id = admission.binding_id
+                   AND homework.actor_id = admission.actor_id
+                   AND homework.request_key = admission.request_key
+                   AND homework.payload_hash = admission.payload_hash
+                   AND homework.publication_state = 'PENDING'
+                   AND admission.resolution_state = 'ADMITTED'
+                """, operationId, stateVersion, semesterId, bindingId, actorId, requestKey,
+                payloadHash, homeworkId, semesterId);
+        if (updated == 0) {
+            Boolean exactReplay = jdbc.queryForObject("""
+                    SELECT EXISTS (
+                        SELECT 1 FROM academic_semester_archive_publication_admissions admission
+                        JOIN homeworks homework ON homework.id = admission.admitted_homework_id
+                         WHERE admission.operation_id = ? AND admission.state_version = ?
+                           AND admission.semester_id = ? AND admission.binding_id = ?
+                           AND admission.actor_id = ? AND admission.request_key = ?
+                           AND admission.payload_hash = ? AND admission.admitted_homework_id = ?
+                           AND admission.resolution_state = 'ADMITTED' AND admission.consumed_at IS NOT NULL
+                           AND homework.semester_id = ? AND homework.publication_state = 'PENDING'
+                    )
+                    """, Boolean.class, operationId, stateVersion, semesterId, bindingId,
+                    actorId, requestKey, payloadHash, homeworkId, semesterId);
+            if (!Boolean.TRUE.equals(exactReplay)) {
+                throw new ConflictException("Schedule confirmation has no exact pending Academic publication");
+            }
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<BindingResolution> pendingCancellations(UUID operationId, long semesterId,
                                                         long stateVersion, int limit) {
@@ -375,11 +564,11 @@ public class AcademicSemesterArchiveBarrierTransaction {
         requireTransaction();
         lockSemester(semesterId);
         Map<String, Object> current = barrier(semesterId);
-        if (current == null || !"PENDING".equals(current.get("participant_state"))) {
+        if (current == null || !isPreparing(current)) {
             return false;
         }
         long stateVersion = number(current.get("state_version"));
-        if (!authorityBlocksArchive(authorityState(semesterId), stateVersion)) {
+        if (!preparationAuthority(semesterId, current)) {
             throw new ConflictException("Schedule cancellation arrived outside Academic's active archive epoch");
         }
         lockBinding(bindingId);
@@ -483,7 +672,7 @@ public class AcademicSemesterArchiveBarrierTransaction {
         requireTransaction();
         lockSemester(semesterId);
         Map<String, Object> current = barrier(semesterId);
-        if (current == null || !"PENDING".equals(current.get("participant_state"))) return;
+        if (current == null || !isPreparing(current)) return;
         int updated = jdbc.update("""
                 UPDATE academic_semester_archive_publication_admissions
                    SET resolution_state = 'CANCELLED_UNPUBLISHED', consumed_at = now()
@@ -517,8 +706,8 @@ public class AcademicSemesterArchiveBarrierTransaction {
             }
             return;
         }
-        if (!"PENDING".equals(current.get("participant_state"))
-                || !authorityBlocksArchive(state, number(current.get("state_version")))) {
+        if (!isPreparing(current)
+                || !preparationAuthority(semesterId, current)) {
             throw new ConflictException("Schedule transfer arrived after Academic archive seal");
         }
         setLocal("rutcampustrack.archive_transfer_event_id", eventId.toString());
@@ -551,8 +740,8 @@ public class AcademicSemesterArchiveBarrierTransaction {
             }
             return;
         }
-        if (current == null || !"PENDING".equals(current.get("participant_state"))
-                || !authorityBlocksArchive(state, number(current.get("state_version")))
+        if (current == null || !isPreparing(current)
+                || !preparationAuthority(semesterId, current)
                 || !sourceEventId.toString().equals(admittedEvent)) {
             throw new ConflictException("Transfer publication is not covered by the current accepted archive batch");
         }
@@ -585,8 +774,8 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Map<String, Object> state = authorityState(semesterId);
         Map<String, Object> current = barrier(semesterId);
         if (authorityBlocks(state) || current != null && isFenced(String.valueOf(current.get("participant_state")))) {
-            if (current == null || !"PENDING".equals(current.get("participant_state"))
-                    || !authorityBlocksArchive(state, number(current.get("state_version")))) {
+            if (current == null || !isPreparing(current)
+                    || !preparationAuthority(semesterId, current)) {
                 throw new ConflictException("Archive effect arrived after Academic archive seal");
             }
         }
@@ -665,6 +854,52 @@ public class AcademicSemesterArchiveBarrierTransaction {
         return null;
     }
 
+    private String firstPendingDeleteReason(UUID operationId, long semesterId, long stateVersion) {
+        Long unownedPendingPublication = jdbc.queryForObject("""
+                SELECT count(*) FROM homeworks homework
+                 WHERE homework.semester_id = ? AND homework.publication_state = 'PENDING'
+                   AND NOT EXISTS (
+                       SELECT 1 FROM academic_semester_archive_publication_admissions admission
+                        WHERE admission.operation_id = ? AND admission.state_version = ?
+                          AND admission.semester_id = homework.semester_id
+                          AND admission.binding_id = homework.binding_id
+                          AND admission.actor_id = homework.actor_id
+                          AND admission.request_key = homework.request_key
+                          AND admission.payload_hash = homework.payload_hash
+                          AND admission.admitted_homework_id = homework.id
+                          AND admission.resolution_state = 'ADMITTED'
+                          AND admission.consumed_at IS NOT NULL)
+                """, Long.class, semesterId, operationId, stateVersion);
+        if (unownedPendingPublication != null && unownedPendingPublication > 0) {
+            return "Ожидается сверка незавершённой публикации домашнего задания";
+        }
+        Long pendingAdmission = jdbc.queryForObject("""
+                SELECT count(*) FROM academic_semester_archive_publication_admissions
+                 WHERE operation_id = ? AND state_version = ? AND semester_id = ?
+                   AND consumed_at IS NULL AND resolution_state IN ('ADMITTED', 'CANCEL_REQUESTED')
+                """, Long.class, operationId, stateVersion, semesterId);
+        if (pendingAdmission != null && pendingAdmission > 0) {
+            return "Ожидается завершение ранее принятой публикации домашнего задания";
+        }
+        Long pendingTransfer = jdbc.queryForObject("""
+                SELECT count(*) FROM homework_binding_transfer_markers
+                 WHERE semester_id = ? AND state = 'PENDING'
+                   AND NOT EXISTS (SELECT 1 FROM homework_binding_archives archived
+                                    WHERE archived.binding_id = homework_binding_transfer_markers.binding_id)
+                """, Long.class, semesterId);
+        if (pendingTransfer != null && pendingTransfer > 0) {
+            return "Ожидается завершение ранее принятого переноса привязки домашнего задания";
+        }
+        Long pendingEffect = jdbc.queryForObject("""
+                SELECT count(*) FROM academic_semester_archive_effect_receipts
+                 WHERE semester_id = ? AND state <> 'APPLIED'
+                """, Long.class, semesterId);
+        if (pendingEffect != null && pendingEffect > 0) {
+            return "Ожидается точный ACK применения эффекта Schedule";
+        }
+        return null;
+    }
+
     private boolean hasExactCompletedEmptyTransfer(long bindingId, long actorId, UUID requestKey,
                                                    byte[] payloadHash, long semesterId,
                                                    UUID sourceEventId) {
@@ -727,6 +962,45 @@ public class AcademicSemesterArchiveBarrierTransaction {
                 && Boolean.valueOf(releasePending).equals(state.get("archive_release_pending"));
     }
 
+    private boolean deletionAuthority(UUID operationId, long semesterId, long version,
+                                      SemesterDeletionPhase phase) {
+        return jdbc.queryForObject("""
+                SELECT EXISTS (
+                    SELECT 1 FROM semesters
+                     WHERE id = ? AND state_version = ? AND archive_transition = 'DELETING'
+                       AND transition_operation_id = ? AND deletion_phase = ?
+                       AND NOT is_active AND NOT archive_release_pending
+                )
+                """, Boolean.class, semesterId, version, operationId, phase.name());
+    }
+
+    private boolean exactRemoteDeleteReceipts(UUID operationId, long semesterId, long version,
+                                              String academicDigest) {
+        Boolean exact = jdbc.queryForObject("""
+                SELECT EXISTS (
+                    SELECT 1 FROM semester_archive_operations
+                     WHERE operation_id = ? AND semester_id = ? AND action = 'DELETE'
+                       AND state_version = ? AND delete_phase = 'DELETING'
+                       AND irreversible_intent
+                       AND academic_participant_digest = ?
+                       AND schedule_status = 'DELETED' AND attendance_status = 'DELETED'
+                )
+                """, Boolean.class, operationId, semesterId, version, academicDigest);
+        return Boolean.TRUE.equals(exact);
+    }
+
+    private static boolean isPreparing(Map<String, Object> current) {
+        return current != null && ("PENDING".equals(current.get("participant_state"))
+                || "DELETE_PREPARING".equals(current.get("participant_state")));
+    }
+
+    private boolean preparationAuthority(long semesterId, Map<String, Object> current) {
+        return isPreparing(current) && ("PENDING".equals(current.get("participant_state"))
+                ? authorityBlocksArchive(authorityState(semesterId), number(current.get("state_version")))
+                : deletionAuthority((UUID) current.get("operation_id"), semesterId,
+                    number(current.get("state_version")), SemesterDeletionPhase.PREPARING));
+    }
+
     private boolean authorityBlocksArchive(Map<String, Object> state, long version) {
         return number(state.get("state_version")) == version
                 && "ARCHIVING".equals(state.get("archive_transition"))
@@ -742,13 +1016,15 @@ public class AcademicSemesterArchiveBarrierTransaction {
     }
 
     private static boolean isFenced(String state) {
-        return "PENDING".equals(state) || "READY".equals(state) || "PREPARED_RESTORE".equals(state);
+        return "PENDING".equals(state) || "READY".equals(state) || "PREPARED_RESTORE".equals(state)
+                || "DELETE_PREPARING".equals(state) || "DELETE_SEALED".equals(state)
+                || "DELETED".equals(state);
     }
 
     private Map<String, Object> authorityState(long semesterId) {
         return jdbc.queryForMap("""
                 SELECT state_version, archive_transition, is_active, is_archived,
-                       archive_release_pending
+                       archive_release_pending, deletion_phase, transition_operation_id
                   FROM semesters WHERE id = ?
                 """, semesterId);
     }

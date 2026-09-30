@@ -8,6 +8,9 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
 import ru.rutcampustrack.academic.contract.enums.SemesterType;
+import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "semesters")
@@ -51,6 +54,15 @@ public class Semester {
     @Setter
     @Column(name = "archive_release_pending", nullable = false)
     private boolean releasePending;
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "deletion_phase", length = 16)
+    private SemesterDeletionPhase deletionPhase;
+
+    @Setter
+    @Column(name = "transition_operation_id")
+    private UUID transitionOperationId;
 
     @Setter
     @Column(name = "created_at", nullable = false, updatable = false)

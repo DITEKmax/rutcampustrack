@@ -5,6 +5,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
+import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
+import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPriorState;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantStatus;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveOperationState;
@@ -19,6 +23,7 @@ import ru.rutcampustrack.academic.repository.SemesterArchiveOperationRepository;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.UUID;
+import java.time.OffsetDateTime;
 
 /** Commits the replay identity and authoritative transition together before any participant RPC. */
 @Service
@@ -110,6 +115,62 @@ public class SemesterArchiveCommandTransaction {
     }
 
     @Transactional
+    public SemesterArchiveOperation startDelete(long semesterId, long actorId, UUID idempotencyKey,
+                                                UUID operationId,
+                                                SemesterDeletionPreviewService.Snapshot preview) {
+        lockRequestKey(idempotencyKey);
+        SemesterArchiveOperation existing = operationRepository.findByIdempotencyKey(idempotencyKey)
+                .orElse(null);
+        if (existing != null) {
+            requireSameDeleteRequest(existing, semesterId, actorId, preview.digest());
+            return existing;
+        }
+        semesterService.lockDeletionCandidate(semesterId, preview.stateVersion(), preview.priorState());
+        operationRepository.findTopBySemesterIdOrderByCreatedAtDescOperationIdDesc(semesterId)
+                .filter(operation -> operation.getOperationState() != SemesterArchiveOperationState.COMPLETED)
+                .ifPresent(operation -> {
+                    throw new ConflictException("status", semesterId,
+                            "Предыдущая команда перехода семестра ещё не завершена");
+                });
+
+        SemesterArchiveOperation operation = new SemesterArchiveOperation(
+                operationId, idempotencyKey, actorId, semesterId, SemesterArchiveAction.DELETE);
+        operation.setStateVersion(Math.addExact(preview.stateVersion(), 1L));
+        operation.setTransition(SemesterTransition.DELETING);
+        operation.setActive(false);
+        operation.setArchived(preview.priorState() == SemesterDeletionPriorState.ARCHIVED);
+        operation.setReleasePending(false);
+        operation.setDeletePhase(SemesterDeletionPhase.PREPARING);
+        operation.setPriorState(preview.priorState());
+        operation.setSemesterName(preview.semesterName());
+        operation.setOriginalStateVersion(preview.stateVersion());
+        operation.setPreviewDigest(preview.digest());
+        operation.setAcademicParticipantDigest(preview.academicDigest());
+        operation.setScheduleParticipantDigest(preview.scheduleDigest());
+        operation.setAttendanceParticipantDigest(preview.attendanceDigest());
+        operation.setDeletionCounts(preview.counts());
+        operation.setPrepareExpiresAt(OffsetDateTime.now().plusMinutes(2));
+        operation.setAcademic(SemesterArchiveParticipantStatus.PENDING);
+        operation.setSchedule(SemesterArchiveParticipantStatus.PENDING);
+        operation.setAttendance(SemesterArchiveParticipantStatus.PENDING);
+        SemesterArchiveOperation saved = operationRepository.saveAndFlush(operation);
+        academicBarrier.installDeletion(operationId, semesterId, operation.getStateVersion());
+        semesterService.beginDeletionTransition(semesterId, preview.stateVersion(), operationId);
+        publishParticipantCommand(saved, SemesterArchiveParticipantCommand.PREPARE_DELETE);
+        return saved;
+    }
+
+    private static void requireSameDeleteRequest(SemesterArchiveOperation operation, long semesterId,
+                                                 long actorId, String previewDigest) {
+        if (operation.getAction() != SemesterArchiveAction.DELETE
+                || operation.getSemesterId() != semesterId || operation.getActorId() != actorId
+                || !previewDigest.equals(operation.getPreviewDigest())) {
+            throw new ConflictException("idempotencyKey", operation.getIdempotencyKey(),
+                    "Ключ идемпотентности уже закреплён за другой командой удаления");
+        }
+    }
+
+    @Transactional
     public void enqueueRestoreRelease(UUID operationId) {
         SemesterArchiveOperation operation = operationRepository.findByIdForUpdate(operationId)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown archive operation " + operationId));
@@ -172,6 +233,10 @@ public class SemesterArchiveCommandTransaction {
         }
         if (operation.getOperationState() == SemesterArchiveOperationState.COMPLETED) return operation;
 
+        if (operation.getAction() == SemesterArchiveAction.DELETE) {
+            throw new ConflictException("Удаление требует ACK с точным digest и participant counts");
+        }
+
         boolean allowed;
         if (operation.getAction() == SemesterArchiveAction.ARCHIVE) {
             allowed = command == SemesterArchiveParticipantCommand.PREPARE_ARCHIVE
@@ -217,6 +282,122 @@ public class SemesterArchiveCommandTransaction {
         operation.setOperationState(SemesterArchiveOperationState.PENDING);
         operation.setRetryable(true);
         return operationRepository.saveAndFlush(operation);
+    }
+
+    @Transactional
+    public SemesterArchiveOperation recordDeleteParticipant(UUID operationId, long semesterId, long stateVersion,
+                                                             Participant participant,
+                                                             SemesterArchiveParticipantCommand command,
+                                                             SemesterArchiveParticipantStatus status,
+                                                             String blockingReason, String participantDigest,
+                                                             SemesterDeletionCounts counts) {
+        SemesterArchiveOperation operation = operationRepository.findByIdForUpdate(operationId)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown archive operation " + operationId));
+        if (operation.getAction() != SemesterArchiveAction.DELETE
+                || operation.getSemesterId() != semesterId || operation.getStateVersion() != stateVersion) {
+            throw new ConflictException("stateVersion", operationId,
+                    "Participant deletion receipt does not match the operation identity");
+        }
+        if (operation.getOperationState() == SemesterArchiveOperationState.COMPLETED) return operation;
+        requireDeleteReceiptPhase(operation, command, status);
+        if (participantDigest == null || !participantDigest.matches("[0-9a-fA-F]{64}") || counts == null
+                || counts.scheduleTemplates() < 0 || counts.oneOffLessons() < 0 || counts.lessons() < 0
+                || counts.assignments() < 0 || counts.homeworks() < 0 || counts.attendanceMarks() < 0
+                || counts.studentRequests() < 0) {
+            throw new ConflictException("Participant deletion receipt has invalid digest or counts");
+        }
+        validateParticipantCounts(participant, counts);
+        if (command == SemesterArchiveParticipantCommand.COMMIT_DELETE) {
+            String expectedDigest = switch (participant) {
+                case ACADEMIC -> operation.getAcademicParticipantDigest();
+                case SCHEDULE -> operation.getScheduleParticipantDigest();
+                case ATTENDANCE -> operation.getAttendanceParticipantDigest();
+            };
+            SemesterDeletionCounts expectedCounts = switch (participant) {
+                case ACADEMIC -> new SemesterDeletionCounts(0, 0, 0,
+                        operation.getAssignmentsCount(), operation.getHomeworksCount(), 0, 0);
+                case SCHEDULE -> new SemesterDeletionCounts(operation.getScheduleTemplatesCount(),
+                        operation.getOneOffLessonsCount(), operation.getLessonsCount(), 0, 0, 0, 0);
+                case ATTENDANCE -> new SemesterDeletionCounts(0, 0, 0, 0, 0,
+                        operation.getAttendanceMarksCount(), operation.getStudentRequestsCount());
+            };
+            if (!expectedDigest.equals(participantDigest) || !expectedCounts.equals(counts)) {
+                throw new ConflictException("COMMIT receipt differs from the sealed deletion snapshot");
+            }
+        }
+        if (command == SemesterArchiveParticipantCommand.PREPARE_DELETE
+                || command == SemesterArchiveParticipantCommand.SEAL_DELETE) {
+            if (status == SemesterArchiveParticipantStatus.READY) {
+                participant.set(operation, SemesterArchiveParticipantStatus.READY);
+            }
+            if (command == SemesterArchiveParticipantCommand.SEAL_DELETE
+                    && status == SemesterArchiveParticipantStatus.READY) {
+                setSealed(operation, participant, true);
+            }
+        } else if (command == SemesterArchiveParticipantCommand.RELEASE_DELETE) {
+            if (status == SemesterArchiveParticipantStatus.RELEASED) {
+                participant.set(operation, SemesterArchiveParticipantStatus.RELEASED);
+            } else if (participant.get(operation) == SemesterArchiveParticipantStatus.NOT_STARTED) {
+                participant.set(operation, SemesterArchiveParticipantStatus.RELEASE_PENDING);
+            }
+        } else if (command == SemesterArchiveParticipantCommand.COMMIT_DELETE) {
+            if (status == SemesterArchiveParticipantStatus.DELETED) {
+                participant.set(operation, SemesterArchiveParticipantStatus.DELETED);
+            }
+        }
+        if (blockingReason != null && !blockingReason.isBlank()) {
+            operation.setBlockingReason(normalizeReason(blockingReason));
+        } else if (status != SemesterArchiveParticipantStatus.PENDING) {
+            operation.setBlockingReason(null);
+        }
+        operation.setOperationState(SemesterArchiveOperationState.PENDING);
+        operation.setRetryable(true);
+        return operationRepository.saveAndFlush(operation);
+    }
+
+    private static void requireDeleteReceiptPhase(SemesterArchiveOperation operation,
+                                                  SemesterArchiveParticipantCommand command,
+                                                  SemesterArchiveParticipantStatus status) {
+        boolean allowedStatus = switch (command) {
+            case PREPARE_DELETE, SEAL_DELETE -> status == SemesterArchiveParticipantStatus.PENDING
+                    || status == SemesterArchiveParticipantStatus.READY;
+            case RELEASE_DELETE -> status == SemesterArchiveParticipantStatus.PENDING
+                    || status == SemesterArchiveParticipantStatus.RELEASED;
+            case COMMIT_DELETE -> status == SemesterArchiveParticipantStatus.PENDING
+                    || status == SemesterArchiveParticipantStatus.DELETED;
+            default -> false;
+        };
+        boolean allowedPhase = switch (operation.getDeletePhase()) {
+            case PREPARING -> command == SemesterArchiveParticipantCommand.PREPARE_DELETE
+                    || command == SemesterArchiveParticipantCommand.SEAL_DELETE;
+            case RELEASING -> command == SemesterArchiveParticipantCommand.RELEASE_DELETE;
+            case DELETING -> operation.isIrreversibleIntent()
+                    && command == SemesterArchiveParticipantCommand.COMMIT_DELETE;
+            default -> false;
+        };
+        if (!allowedStatus || !allowedPhase) {
+            throw new ConflictException("Participant deletion receipt does not match the current operation phase");
+        }
+    }
+
+    private static void validateParticipantCounts(Participant participant, SemesterDeletionCounts counts) {
+        boolean invalid = switch (participant) {
+            case ACADEMIC -> counts.scheduleTemplates() != 0 || counts.oneOffLessons() != 0
+                    || counts.lessons() != 0 || counts.attendanceMarks() != 0 || counts.studentRequests() != 0;
+            case SCHEDULE -> counts.assignments() != 0 || counts.homeworks() != 0
+                    || counts.attendanceMarks() != 0 || counts.studentRequests() != 0;
+            case ATTENDANCE -> counts.scheduleTemplates() != 0 || counts.oneOffLessons() != 0
+                    || counts.lessons() != 0 || counts.assignments() != 0 || counts.homeworks() != 0;
+        };
+        if (invalid) throw new ConflictException("Participant deletion receipt contains counts for another domain");
+    }
+
+    private static void setSealed(SemesterArchiveOperation operation, Participant participant, boolean sealed) {
+        switch (participant) {
+            case ACADEMIC -> operation.setAcademicSealed(sealed);
+            case SCHEDULE -> operation.setScheduleSealed(sealed);
+            case ATTENDANCE -> operation.setAttendanceSealed(sealed);
+        }
     }
 
     @Transactional
@@ -326,6 +507,119 @@ public class SemesterArchiveCommandTransaction {
     }
 
     @Transactional
+    public SemesterArchiveOperation beginDeleteRelease(UUID operationId, String reason) {
+        SemesterArchiveOperation operation = operationRepository.findByIdForUpdate(operationId)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown semester deletion " + operationId));
+        if (operation.getAction() != SemesterArchiveAction.DELETE || operation.isIrreversibleIntent()) {
+            throw new ConflictException("Безопасная отмена допустима только до irreversible intent");
+        }
+        if (operation.getDeletePhase() == SemesterDeletionPhase.RELEASING) return operation;
+        if (operation.getDeletePhase() != SemesterDeletionPhase.PREPARING) {
+            throw new ConflictException("Операция больше не находится в подготовительной фазе");
+        }
+        operation.setDeletePhase(SemesterDeletionPhase.RELEASING);
+        operation.setCancelReason(reason);
+        operation.setAcademic(SemesterArchiveParticipantStatus.RELEASE_PENDING);
+        operation.setSchedule(SemesterArchiveParticipantStatus.RELEASE_PENDING);
+        operation.setAttendance(SemesterArchiveParticipantStatus.RELEASE_PENDING);
+        operation.setAcademicSealed(false);
+        operation.setScheduleSealed(false);
+        operation.setAttendanceSealed(false);
+        operation.setBlockingReason(null);
+        operation.setOperationState(SemesterArchiveOperationState.PENDING);
+        operation.setRetryable(true);
+        SemesterArchiveOperation saved = operationRepository.saveAndFlush(operation);
+        semesterService.setDeletionPhase(operation.getSemesterId(), operationId,
+                operation.getStateVersion(), SemesterDeletionPhase.RELEASING);
+        publishParticipantCommand(saved, SemesterArchiveParticipantCommand.RELEASE_DELETE);
+        return saved;
+    }
+
+    /** Irreversible intent and Attendance COMMIT command share one SQL/outbox transaction. */
+    @Transactional
+    public SemesterArchiveOperation beginIrreversibleDelete(UUID operationId) {
+        SemesterArchiveOperation operation = operationRepository.findByIdForUpdate(operationId)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown semester deletion " + operationId));
+        if (operation.getAction() != SemesterArchiveAction.DELETE) {
+            throw new ConflictException("Это не операция удаления семестра");
+        }
+        if (operation.isIrreversibleIntent()) return operation;
+        if (operation.getDeletePhase() != SemesterDeletionPhase.PREPARING
+                || operation.getAcademic() != SemesterArchiveParticipantStatus.READY
+                || operation.getSchedule() != SemesterArchiveParticipantStatus.READY
+                || operation.getAttendance() != SemesterArchiveParticipantStatus.READY
+                || !operation.isAcademicSealed() || !operation.isScheduleSealed()
+                || !operation.isAttendanceSealed()) {
+            throw new ConflictException("Необратимое удаление требует всех точных sealed receipts");
+        }
+        operation.setDeletePhase(SemesterDeletionPhase.DELETING);
+        operation.setIrreversibleIntent(true);
+        operation.setBlockingReason(null);
+        operation.setOperationState(SemesterArchiveOperationState.PENDING);
+        operation.setRetryable(true);
+        SemesterArchiveOperation saved = operationRepository.saveAndFlush(operation);
+        semesterService.setDeletionPhase(operation.getSemesterId(), operationId,
+                operation.getStateVersion(), SemesterDeletionPhase.DELETING);
+        publishParticipantCommand(saved, SemesterArchiveParticipantCommand.COMMIT_DELETE);
+        return saved;
+    }
+
+    @Transactional
+    @CacheEvict(value = "active_semester", allEntries = true)
+    public SemesterArchiveOperation completeDelete(UUID operationId) {
+        SemesterArchiveOperation operation = operationRepository.findByIdForUpdate(operationId)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown semester deletion " + operationId));
+        if (operation.getOperationState() == SemesterArchiveOperationState.COMPLETED) return operation;
+        if (operation.getAction() != SemesterArchiveAction.DELETE
+                || operation.getDeletePhase() != SemesterDeletionPhase.DELETING
+                || !operation.isIrreversibleIntent()
+                || operation.getSchedule() != SemesterArchiveParticipantStatus.DELETED
+                || operation.getAttendance() != SemesterArchiveParticipantStatus.DELETED) {
+            throw new ConflictException("Academic может удалить семестр только после точных удалённых receipts");
+        }
+        operation.setAcademic(SemesterArchiveParticipantStatus.DELETED);
+        operationRepository.saveAndFlush(operation);
+        academicBarrier.deleteOwnDomainAndSemester(operation.getOperationId(), operation.getSemesterId(),
+                operation.getStateVersion(), operation.getAcademicParticipantDigest());
+        operation.setDeletePhase(SemesterDeletionPhase.COMPLETED);
+        operation.setOperationState(SemesterArchiveOperationState.COMPLETED);
+        operation.setRetryable(false);
+        operation.setActive(false);
+        operation.setArchived(false);
+        operation.setTransition(SemesterTransition.NONE);
+        operation.setReleasePending(false);
+        operation.setBlockingReason(null);
+        return operationRepository.saveAndFlush(operation);
+    }
+
+    @Transactional
+    @CacheEvict(value = "active_semester", allEntries = true)
+    public SemesterArchiveOperation completeDeleteCancellation(UUID operationId) {
+        SemesterArchiveOperation operation = operationRepository.findByIdForUpdate(operationId)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown semester deletion " + operationId));
+        if (operation.getOperationState() == SemesterArchiveOperationState.COMPLETED) return operation;
+        if (operation.getAction() != SemesterArchiveAction.DELETE
+                || operation.getDeletePhase() != SemesterDeletionPhase.RELEASING
+                || operation.isIrreversibleIntent()
+                || operation.getAcademic() != SemesterArchiveParticipantStatus.RELEASED
+                || operation.getSchedule() != SemesterArchiveParticipantStatus.RELEASED
+                || operation.getAttendance() != SemesterArchiveParticipantStatus.RELEASED) {
+            throw new ConflictException("Отмена требует точных RELEASED receipts всех участников");
+        }
+        Semester semester = semesterService.completeDeletionCancellation(operation.getSemesterId(),
+                operation.getOperationId(), operation.getStateVersion(), operation.getPriorState());
+        operation.setDeletePhase(SemesterDeletionPhase.CANCELLED);
+        operation.setOperationState(SemesterArchiveOperationState.COMPLETED);
+        operation.setRetryable(false);
+        operation.setActive(semester.isActive());
+        operation.setArchived(semester.isArchived());
+        operation.setTransition(SemesterTransition.NONE);
+        operation.setReleasePending(false);
+        operation.setBlockingReason(null);
+        return operationRepository.saveAndFlush(operation);
+    }
+
+    @Transactional
     public SemesterArchiveOperation find(UUID operationId) {
         return operationRepository.findById(operationId)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown archive operation " + operationId));
@@ -363,7 +657,9 @@ public class SemesterArchiveCommandTransaction {
                                            SemesterArchiveParticipantCommand command) {
         eventPublisher.publishEvent(new SemesterArchiveParticipantCommandEvent(
                 operation.getOperationId(), operation.getSemesterId(),
-                operation.getStateVersion(), command));
+                operation.getStateVersion(), command,
+                operation.getAction() == SemesterArchiveAction.DELETE
+                        ? operation.getAttendanceParticipantDigest() : null));
     }
 
     private static SemesterArchiveParticipantCommand initialCommand(SemesterArchiveAction action) {
@@ -373,6 +669,16 @@ public class SemesterArchiveCommandTransaction {
     }
 
     private static SemesterArchiveParticipantCommand retryCommand(SemesterArchiveOperation operation) {
+        if (operation.getAction() == SemesterArchiveAction.DELETE) {
+            return switch (operation.getDeletePhase()) {
+                case RELEASING -> SemesterArchiveParticipantCommand.RELEASE_DELETE;
+                case DELETING -> SemesterArchiveParticipantCommand.COMMIT_DELETE;
+                case PREPARING -> operation.isAcademicSealed() && operation.isScheduleSealed()
+                        ? SemesterArchiveParticipantCommand.SEAL_DELETE
+                        : SemesterArchiveParticipantCommand.PREPARE_DELETE;
+                default -> SemesterArchiveParticipantCommand.PREPARE_DELETE;
+            };
+        }
         if (operation.getAction() == SemesterArchiveAction.RESTORE && operation.isReleasePending()) {
             return SemesterArchiveParticipantCommand.RELEASE_RESTORE;
         }
@@ -385,6 +691,13 @@ public class SemesterArchiveCommandTransaction {
         if (action == SemesterArchiveAction.ARCHIVE) {
             return next == SemesterArchiveParticipantStatus.PENDING
                     || next == SemesterArchiveParticipantStatus.READY;
+        }
+        if (action == SemesterArchiveAction.DELETE) {
+            return next == SemesterArchiveParticipantStatus.PENDING
+                    || next == SemesterArchiveParticipantStatus.READY
+                    || next == SemesterArchiveParticipantStatus.RELEASE_PENDING
+                    || next == SemesterArchiveParticipantStatus.RELEASED
+                    || next == SemesterArchiveParticipantStatus.DELETED;
         }
         return next == SemesterArchiveParticipantStatus.PENDING
                 || next == SemesterArchiveParticipantStatus.PREPARED_RESTORE
@@ -419,6 +732,17 @@ public class SemesterArchiveCommandTransaction {
                     case NOT_STARTED -> 0;
                     case PENDING -> 1;
                     case READY -> 2;
+                    default -> -1;
+                };
+            }
+            if (action == SemesterArchiveAction.DELETE) {
+                return switch (status) {
+                    case NOT_STARTED -> 0;
+                    case PENDING -> 1;
+                    case READY -> 2;
+                    case RELEASE_PENDING -> 3;
+                    case RELEASED -> 4;
+                    case DELETED -> 5;
                     default -> -1;
                 };
             }

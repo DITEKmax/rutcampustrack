@@ -5,6 +5,7 @@ import io.grpc.Context;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
@@ -52,6 +53,9 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
     @Autowired
     private ScheduleSemesterArchiveBarrierService archiveBarrierService;
 
+    @Autowired
+    private ScheduleSemesterDeletionSnapshotReader deletionSnapshots;
+
     @MockitoBean
     private AcademicGrpcClient academicGrpcClient;
 
@@ -83,6 +87,10 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
     void reserveConfirmReplay_isDurableAndRejectsForeignGroup() {
         Fixture authorized = insertFixture(AUTHORIZED_GROUP_ID);
         Fixture foreign = insertFixture(FOREIGN_GROUP_ID);
+        AtomicReference<SemesterStateResponse> authority = new AtomicReference<>(
+                SemesterStateResponse.newBuilder().setId(SEMESTER_ID).setActive(true).build());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID))
+                .thenAnswer(invocation -> authority.get());
         InternalJwtClaims signedHeadman = new InternalJwtClaims(
                 ACTOR_ID, UUID.randomUUID(), 1L, 1L, "HEADMAN", "ACTIVE",
                 AUTHORIZED_GROUP_ID, true, false);
@@ -112,6 +120,24 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                     String.class, pending.getBindingId());
             assertThat(persistedState).isEqualTo("PENDING");
 
+            UUID archiveOperation = UUID.randomUUID();
+            long archiveVersion = 90L;
+            jdbcTemplate.update("""
+                    INSERT INTO schedule_semester_archive_barriers
+                        (semester_id, operation_id, state_version, participant_state)
+                    VALUES (?, ?, ?, 'PENDING')
+                    """, SEMESTER_ID, archiveOperation, archiveVersion);
+            archiveBarrierSemesterIds.add(SEMESTER_ID);
+            authority.set(SemesterStateResponse.newBuilder().setId(SEMESTER_ID)
+                    .setStateVersion(archiveVersion).setTransition(SemesterTransition.ARCHIVING)
+                    .setWriteBlocked(true).build());
+            assertThat(authority.get().getTransitionOperationId()).isEmpty();
+            assertThat(homeworkBindingService.reserve(reserve).getBindingId()).isEqualTo(pending.getBindingId());
+            ReserveHomeworkBindingRequest newWrite = reserve.toBuilder()
+                    .setRequestKey(UUID.randomUUID().toString()).build();
+            assertThatThrownBy(() -> homeworkBindingService.reserve(newWrite))
+                    .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+
             ConfirmHomeworkBindingRequest confirm = ConfirmHomeworkBindingRequest.newBuilder()
                     .setBindingId(pending.getBindingId())
                     .setHomeworkId(990001L)
@@ -128,6 +154,8 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
             assertThat(confirmReplay.getBindingId()).isEqualTo(pending.getBindingId());
             assertThat(confirmReplay.getHomeworkId()).isEqualTo(990001L);
 
+            jdbcTemplate.update("DELETE FROM schedule_semester_archive_barriers WHERE semester_id = ?", SEMESTER_ID);
+            authority.set(SemesterStateResponse.newBuilder().setId(SEMESTER_ID).setActive(true).build());
             HomeworkBindingResponse reserveReplay = homeworkBindingService.reserve(reserve);
             assertThat(reserveReplay.getState())
                     .isEqualTo(HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE);
@@ -248,6 +276,152 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                  WHERE event_type = 'homework.binding.archived'
                    AND payload ->> 'event_id' = ?
                 """, Long.class, first.getTerminalEventId())).isEqualTo(1L);
+    }
+
+    @Test
+    void deleteCommitIsAtomicReplayableAndLeavesReplayTombstone() {
+        long semesterId = FIXTURE_SEQUENCE.incrementAndGet();
+        Fixture fixture = insertFixture(AUTHORIZED_GROUP_ID, semesterId);
+        long stateVersion = 92L;
+        UUID operationId = UUID.randomUUID();
+        UUID bindingRequestKey = UUID.randomUUID();
+        byte[] payloadHash = new byte[32];
+        payloadHash[0] = 23;
+        jdbcTemplate.update("""
+                INSERT INTO lesson_homework_bindings
+                    (occurrence_id, current_lesson_id, actor_id, request_key, payload_hash,
+                     state, revision)
+                VALUES (?, ?, ?, ?, ?, 'ARCHIVED', 2)
+                """, fixture.occurrenceId(), fixture.lessonId(), ACTOR_ID,
+                bindingRequestKey, payloadHash);
+
+        archiveBarrierSemesterIds.add(semesterId);
+        ScheduleSemesterDeletionSnapshotReader.Snapshot before = deletionSnapshots.read(semesterId);
+        AtomicReference<SemesterStateResponse> authority = new AtomicReference<>(
+                deletionAuthority(semesterId, stateVersion, operationId, "PREPARING").toBuilder().setArchived(true).build());
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(semesterId))
+                .thenAnswer(invocation -> authority.get());
+
+        SetSemesterArchiveBarrierResponse prepared = archiveBarrierService.set(deleteBarrierRequest(
+                operationId, semesterId, stateVersion,
+                SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE,
+                before.participantDigest()));
+        assertThat(prepared.getState())
+                .isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY);
+        assertThat(prepared.getParticipantDigest()).isEqualTo(before.participantDigest());
+        assertThat(prepared.getScheduleTemplatesCount()).isEqualTo(1L);
+        assertThat(prepared.getLessonsCount()).isEqualTo(1L);
+
+        SetSemesterArchiveBarrierResponse sealed = archiveBarrierService.set(deleteBarrierRequest(
+                operationId, semesterId, stateVersion,
+                SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE,
+                before.participantDigest()));
+        assertThat(sealed.getState())
+                .isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY);
+
+        authority.set(deletionAuthority(semesterId, stateVersion, operationId, "DELETING").toBuilder().setArchived(true).build());
+        SetSemesterArchiveBarrierRequest commit = deleteBarrierRequest(operationId, semesterId, stateVersion,
+                SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_COMMIT_DELETE,
+                before.participantDigest());
+        SetSemesterArchiveBarrierResponse deleted = archiveBarrierService.set(commit);
+        assertThat(deleted.getState())
+                .isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_DELETED);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM schedule_items WHERE semester_id = ?", Long.class, semesterId)).isZero();
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM lesson_occurrences WHERE semester_id = ?", Long.class, semesterId)).isZero();
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM lessons WHERE semester_id = ?", Long.class, semesterId)).isZero();
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT count(*) FROM lesson_homework_bindings
+                 WHERE request_key = ? AND state = 'ARCHIVED' AND homework_id IS NULL
+                """, Long.class, bindingRequestKey)).isEqualTo(1L);
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT participant_state FROM schedule_semester_archive_barriers
+                 WHERE semester_id = ?
+                """, String.class, semesterId)).isEqualTo("DELETED");
+
+        SetSemesterArchiveBarrierResponse replay = archiveBarrierService.set(commit);
+        assertThat(replay.getState()).isEqualTo(deleted.getState());
+        assertThat(replay.getParticipantDigest()).isEqualTo(deleted.getParticipantDigest());
+        assertThat(replay.getLessonsCount()).isEqualTo(deleted.getLessonsCount());
+
+        long lateAssignmentId = FIXTURE_SEQUENCE.incrementAndGet();
+        LocalDate from = LocalDate.of(2091, 1, 1);
+        jdbcTemplate.update("""
+                INSERT INTO schedule_assignment_fences
+                    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
+                     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive)
+                VALUES (?, ?, ?, ?, 884001, 'lecture', ?, ?, ?)
+                """, lateAssignmentId, AUTHORIZED_GROUP_ID, SUBJECT_ID, semesterId,
+                from, from.plusDays(30), from.plusDays(30));
+        assertThatThrownBy(() -> jdbcTemplate.update("""
+                INSERT INTO schedule_items
+                    (assignment_id, group_id, subject_id, semester_id, day_of_week,
+                     lesson_number, start_time, end_time, week_type)
+                VALUES (?, ?, ?, ?, 4, 8, '14:00'::time, '15:00'::time, 'all')
+                """, lateAssignmentId, AUTHORIZED_GROUP_ID, SUBJECT_ID, semesterId))
+                .isInstanceOf(DataAccessException.class)
+                .satisfies(error -> {
+                    Throwable cause = error;
+                    while (cause.getCause() != null) cause = cause.getCause();
+                    assertThat(cause).isInstanceOf(java.sql.SQLException.class);
+                    assertThat(((java.sql.SQLException) cause).getSQLState()).isEqualTo("55000");
+                    assertThat(cause.getMessage()).contains("Schedule semester " + semesterId
+                            + " is fenced by final deletion");
+                });
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM schedule_items WHERE semester_id = ?", Long.class, semesterId)).isZero();
+    }
+
+    @Test
+    void deleteReleaseBeforePreparePersistsExactReplayReceiptAndKeepsDomain() {
+        long semesterId = FIXTURE_SEQUENCE.incrementAndGet();
+        Fixture fixture = insertFixture(AUTHORIZED_GROUP_ID, semesterId);
+        long version = 93L;
+        UUID operationId = UUID.randomUUID();
+        archiveBarrierSemesterIds.add(semesterId);
+        var snapshot = deletionSnapshots.read(semesterId);
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(semesterId)).thenReturn(
+                deletionAuthority(semesterId, version, operationId, "RELEASING").toBuilder()
+                        .setArchived(true).build());
+        var release = deleteBarrierRequest(operationId, semesterId, version,
+                SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RELEASE_DELETE,
+                snapshot.participantDigest());
+        var receipt = archiveBarrierService.set(release);
+        assertThat(receipt.getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_RELEASED);
+        assertThat(receipt.getParticipantDigest()).isEqualTo(snapshot.participantDigest());
+        assertThat(receipt.getLessonsCount()).isEqualTo(1L);
+        assertThat(archiveBarrierService.set(release)).isEqualTo(receipt);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lessons WHERE id = ?",
+                Long.class, fixture.lessonId())).isEqualTo(1L);
+        assertThatThrownBy(() -> archiveBarrierService.set(release.toBuilder()
+                .setExpectedParticipantDigest("a".repeat(64)).build()))
+                .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+    }
+
+    private static SetSemesterArchiveBarrierRequest deleteBarrierRequest(
+            UUID operationId, long semesterId, long stateVersion,
+            SemesterArchiveBarrierCommand command, String expectedDigest) {
+        return SetSemesterArchiveBarrierRequest.newBuilder()
+                .setOperationId(operationId.toString())
+                .setSemesterId(semesterId)
+                .setStateVersion(stateVersion)
+                .setCommand(command)
+                .setExpectedParticipantDigest(expectedDigest)
+                .build();
+    }
+
+    private static SemesterStateResponse deletionAuthority(long semesterId, long stateVersion,
+                                                            UUID operationId, String phase) {
+        return SemesterStateResponse.newBuilder()
+                .setId(semesterId)
+                .setStateVersion(stateVersion)
+                .setTransition(SemesterTransition.DELETING)
+                .setWriteBlocked(true)
+                .setDeletionPhase(phase)
+                .setTransitionOperationId(operationId.toString())
+                .build();
     }
 
     private Fixture insertFixture(long groupId) {

@@ -4,5 +4,6 @@ package ru.rutcampustrack.academic.contract.enums;
 public enum SemesterTransition {
     NONE,
     ARCHIVING,
-    RESTORING
+    RESTORING,
+    DELETING
 }

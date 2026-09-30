@@ -681,6 +681,10 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                         || semester.getArchiveTransition()
                         != ru.rutcampustrack.academic.contract.enums.SemesterTransition.NONE)
                 .setReleasePending(semester.isReleasePending())
+                .setDeletionPhase(semester.getDeletionPhase() == null
+                        ? "" : semester.getDeletionPhase().name())
+                .setTransitionOperationId(semester.getTransitionOperationId() == null
+                        ? "" : semester.getTransitionOperationId().toString())
                 .build();
 
         responseObserver.onNext(response);

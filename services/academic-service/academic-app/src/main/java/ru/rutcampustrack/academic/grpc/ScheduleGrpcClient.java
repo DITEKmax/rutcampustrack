@@ -31,6 +31,8 @@ import ru.rutcampustrack.schedule.grpc.SemesterArchiveHomeworkBindingIdentity;
 import ru.rutcampustrack.schedule.grpc.SemesterArchiveHomeworkBindingResolution;
 import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierRequest;
 import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierResponse;
+import ru.rutcampustrack.schedule.grpc.SemesterDeletionParticipantPreview;
+import ru.rutcampustrack.schedule.grpc.SemesterDeletionPreviewRequest;
 import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
 
 import java.time.LocalDate;
@@ -204,6 +206,8 @@ public class ScheduleGrpcClient {
             case RELEASE_RESTORE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RELEASE_RESTORE;
             case SEAL_ARCHIVE -> throw new IllegalArgumentException(
                     "SEAL_ARCHIVE is a local Academic/Attendance command, not a Schedule RPC");
+            case PREPARE_DELETE, SEAL_DELETE, RELEASE_DELETE, COMMIT_DELETE -> throw new IllegalArgumentException(
+                    "Delete commands require the exact deletion participant digest");
         };
         try {
             return directedStub().setSemesterArchiveBarrier(SetSemesterArchiveBarrierRequest.newBuilder()
@@ -214,6 +218,44 @@ public class ScheduleGrpcClient {
                     .build());
         } catch (StatusRuntimeException error) {
             throw mapBindingError(error, "установить barrier архивации в schedule-service");
+        }
+    }
+
+    public SemesterDeletionParticipantPreview previewSemesterDeletion(long semesterId) {
+        if (semesterId <= 0) throw new IllegalArgumentException("semesterId must be positive");
+        try {
+            return directedStub().getSemesterDeletionPreview(SemesterDeletionPreviewRequest.newBuilder()
+                    .setSemesterId(semesterId)
+                    .build());
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "получить предварительный расчёт расписания для удаления семестра");
+        }
+    }
+
+    public SetSemesterArchiveBarrierResponse setSemesterDeletionBarrier(
+            UUID operationId, long semesterId, long stateVersion,
+            ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand command,
+            String expectedParticipantDigest) {
+        if (command == null || expectedParticipantDigest == null || expectedParticipantDigest.isBlank()) {
+            throw new IllegalArgumentException("semester deletion command requires the exact participant digest");
+        }
+        SemesterArchiveBarrierCommand wireCommand = switch (command) {
+            case PREPARE_DELETE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE;
+            case SEAL_DELETE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE;
+            case RELEASE_DELETE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RELEASE_DELETE;
+            case COMMIT_DELETE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_COMMIT_DELETE;
+            default -> throw new IllegalArgumentException("command is not part of semester deletion");
+        };
+        try {
+            return directedStub().setSemesterArchiveBarrier(SetSemesterArchiveBarrierRequest.newBuilder()
+                    .setOperationId(operationId.toString())
+                    .setSemesterId(semesterId)
+                    .setStateVersion(stateVersion)
+                    .setCommand(wireCommand)
+                    .setExpectedParticipantDigest(expectedParticipantDigest)
+                    .build());
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "применить participant barrier удаления семестра в Schedule");
         }
     }
 

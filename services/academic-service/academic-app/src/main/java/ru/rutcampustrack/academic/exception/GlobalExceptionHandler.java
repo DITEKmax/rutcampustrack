@@ -232,6 +232,17 @@ public class GlobalExceptionHandler {
                 request, null, null);
     }
 
+    @ExceptionHandler(SemesterDeletionDependencyUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleSemesterDeletionDependencyUnavailable(
+            SemesterDeletionDependencyUnavailableException ex,
+            HttpServletRequest request) {
+        log.warn("semester deletion dependency unavailable: {}", ex.getMessage());
+        return problem(HttpStatus.SERVICE_UNAVAILABLE, "semester-deletion-dependency-unavailable",
+                "Удаление семестра временно недоступно",
+                "Не удалось подтвердить состояние всех доменов. Попробуйте позже.",
+                request, null, null);
+    }
+
     private static ResponseEntity<ErrorResponse> problem(
             HttpStatus status,
             String problemType,

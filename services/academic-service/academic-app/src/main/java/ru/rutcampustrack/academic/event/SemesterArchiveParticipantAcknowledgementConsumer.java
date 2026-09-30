@@ -7,6 +7,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantStatus;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCoordinator;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
@@ -66,8 +67,20 @@ public class SemesterArchiveParticipantAcknowledgementConsumer extends AbstractE
         Object rawReason = payload.get("blocking_reason");
         String reason = rawReason == null ? null : requiredString(rawReason, "blocking_reason");
 
-        withTraceContext(envelope, () -> commands.recordAttendanceAcknowledgement(
-                operationId, semesterId, stateVersion, command, status, reason));
+        boolean deletionCommand = command == SemesterArchiveParticipantCommand.PREPARE_DELETE
+                || command == SemesterArchiveParticipantCommand.SEAL_DELETE
+                || command == SemesterArchiveParticipantCommand.RELEASE_DELETE
+                || command == SemesterArchiveParticipantCommand.COMMIT_DELETE;
+        if (deletionCommand) {
+            String digest = requiredString(payload.get("participant_digest"), "participant_digest");
+            SemesterDeletionCounts counts = deletionCounts(payload.get("counts"));
+            withTraceContext(envelope, () -> commands.recordDeleteParticipant(
+                    operationId, semesterId, stateVersion, SemesterArchiveCommandTransaction.Participant.ATTENDANCE,
+                    command, status, reason, digest, counts));
+        } else {
+            withTraceContext(envelope, () -> commands.recordAttendanceAcknowledgement(
+                    operationId, semesterId, stateVersion, command, status, reason));
+        }
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
@@ -109,6 +122,20 @@ public class SemesterArchiveParticipantAcknowledgementConsumer extends AbstractE
             throw new IllegalArgumentException("semester archive participant acknowledgement has invalid " + field);
         }
         return value;
+    }
+
+    private static SemesterDeletionCounts deletionCounts(Object raw) {
+        if (!(raw instanceof Map<?, ?> counts)) {
+            throw new IllegalArgumentException("semester deletion acknowledgement has invalid counts");
+        }
+        return new SemesterDeletionCounts(
+                nonnegativeLong(counts.get("scheduleTemplates"), "counts.scheduleTemplates"),
+                nonnegativeLong(counts.get("oneOffLessons"), "counts.oneOffLessons"),
+                nonnegativeLong(counts.get("lessons"), "counts.lessons"),
+                nonnegativeLong(counts.get("assignments"), "counts.assignments"),
+                nonnegativeLong(counts.get("homeworks"), "counts.homeworks"),
+                nonnegativeLong(counts.get("attendanceMarks"), "counts.attendanceMarks"),
+                nonnegativeLong(counts.get("studentRequests"), "counts.studentRequests"));
     }
 
     private static UUID uuid(Object raw, String field) {

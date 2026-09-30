@@ -11,6 +11,8 @@ import ru.rutcampustrack.academic.contract.api.SemesterApi;
 import ru.rutcampustrack.academic.contract.api.SemesterArchiveCommandApi;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionOperationResponse;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionPreviewResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterArchiveOperationResponse;
@@ -34,13 +36,23 @@ public class SemesterController implements SemesterApi, SemesterArchiveCommandAp
     private final SemesterService semesterService;
     private final SemesterAssembler semesterAssembler;
     private final SemesterArchiveService semesterArchiveService;
+    private final SemesterDeletionService semesterDeletionService;
 
     public SemesterController(SemesterService semesterService,
                               SemesterAssembler semesterAssembler,
                               SemesterArchiveService semesterArchiveService) {
+        this(semesterService, semesterAssembler, semesterArchiveService, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public SemesterController(SemesterService semesterService,
+                              SemesterAssembler semesterAssembler,
+                              SemesterArchiveService semesterArchiveService,
+                              SemesterDeletionService semesterDeletionService) {
         this.semesterService = semesterService;
         this.semesterAssembler = semesterAssembler;
         this.semesterArchiveService = semesterArchiveService;
+        this.semesterDeletionService = semesterDeletionService;
     }
 
     @Override
@@ -75,9 +87,31 @@ public class SemesterController implements SemesterApi, SemesterArchiveCommandAp
 
     @Override
     @RequireRole({ADMIN})
-    public ResponseEntity<Void> deleteSemester(Long id, DeleteSemesterRequest request) {
-        semesterService.deleteSemester(id, request);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<SemesterDeletionOperationResponse> deleteSemester(
+            Long id, DeleteSemesterRequest request, UUID idempotencyKey) {
+        final SemesterDeletionOperationResponse response;
+        try {
+            response = semesterDeletionService.confirm(id, request, idempotencyKey);
+        } catch (StaleSemesterDeletionPreviewException stale) {
+            SemesterDeletionPreviewResponse preview = stale.refreshedPreview();
+            return ResponseEntity.status(409).body(new SemesterDeletionOperationResponse(
+                    null, id, ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase.CANCELLED,
+                    false, preview.stateVersion(), preview.counts(), "STALE_PREVIEW", null, preview));
+        }
+        if (response.phase() == ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase.CANCELLED
+                && response.refreshedPreview() != null) {
+            return ResponseEntity.status(409).body(response);
+        }
+        if (response.phase() == ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase.COMPLETED) {
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.accepted().body(response);
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<SemesterDeletionPreviewResponse> previewSemesterDeletion(Long id) {
+        return ResponseEntity.ok(semesterDeletionService.preview(id));
     }
 
     @Override

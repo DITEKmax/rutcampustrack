@@ -40,6 +40,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
     private final AssignmentReplacementService assignmentReplacementService;
     private final LessonTransferWriter lessonTransferWriter;
     private final ScheduleSemesterArchiveBarrierService semesterArchiveBarrierService;
+    private final ScheduleSemesterDeletionSnapshotReader semesterDeletionSnapshotReader;
 
     /** Legacy constructor kept for focused tests of the pre-V17 read RPCs. */
     public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
@@ -54,7 +55,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                    OneOffLessonRepository oneOffLessonRepository,
                                    HomeworkBindingService homeworkBindingService) {
         this(lessonRepository, scheduleItemRepository, oneOffLessonRepository,
-                homeworkBindingService, null, null, null);
+                homeworkBindingService, null, null, null, null);
     }
 
     /** Compatibility constructor retained for focused pre-transfer tests. */
@@ -64,7 +65,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                    HomeworkBindingService homeworkBindingService,
                                    AssignmentReplacementService assignmentReplacementService) {
         this(lessonRepository, scheduleItemRepository, oneOffLessonRepository,
-                homeworkBindingService, assignmentReplacementService, null, null);
+                homeworkBindingService, assignmentReplacementService, null, null, null);
     }
 
     /** Compatibility constructor retained for focused pre-archive tests. */
@@ -75,7 +76,19 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                    AssignmentReplacementService assignmentReplacementService,
                                    LessonTransferWriter lessonTransferWriter) {
         this(lessonRepository, scheduleItemRepository, oneOffLessonRepository,
-                homeworkBindingService, assignmentReplacementService, lessonTransferWriter, null);
+                homeworkBindingService, assignmentReplacementService, lessonTransferWriter, null, null);
+    }
+
+    public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
+                                   ScheduleItemRepository scheduleItemRepository,
+                                   OneOffLessonRepository oneOffLessonRepository,
+                                   HomeworkBindingService homeworkBindingService,
+                                   AssignmentReplacementService assignmentReplacementService,
+                                   LessonTransferWriter lessonTransferWriter,
+                                   ScheduleSemesterArchiveBarrierService semesterArchiveBarrierService) {
+        this(lessonRepository, scheduleItemRepository, oneOffLessonRepository,
+                homeworkBindingService, assignmentReplacementService, lessonTransferWriter,
+                semesterArchiveBarrierService, null);
     }
 
     @Autowired
@@ -85,7 +98,8 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                    HomeworkBindingService homeworkBindingService,
                                    AssignmentReplacementService assignmentReplacementService,
                                    LessonTransferWriter lessonTransferWriter,
-                                   ScheduleSemesterArchiveBarrierService semesterArchiveBarrierService) {
+                                   ScheduleSemesterArchiveBarrierService semesterArchiveBarrierService,
+                                   ScheduleSemesterDeletionSnapshotReader semesterDeletionSnapshotReader) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.oneOffLessonRepository = oneOffLessonRepository;
@@ -93,6 +107,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         this.assignmentReplacementService = assignmentReplacementService;
         this.lessonTransferWriter = lessonTransferWriter;
         this.semesterArchiveBarrierService = semesterArchiveBarrierService;
+        this.semesterDeletionSnapshotReader = semesterDeletionSnapshotReader;
     }
 
     /**
@@ -315,6 +330,31 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                     .asRuntimeException();
         }
         responseObserver.onNext(semesterArchiveBarrierService.set(request));
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getSemesterDeletionPreview(SemesterDeletionPreviewRequest request,
+                                           StreamObserver<SemesterDeletionParticipantPreview> responseObserver) {
+        if (semesterDeletionSnapshotReader == null) {
+            throw io.grpc.Status.FAILED_PRECONDITION
+                    .withDescription("Schedule semester deletion preview is not configured")
+                    .asRuntimeException();
+        }
+        if (request.getSemesterId() <= 0) {
+            throw io.grpc.Status.INVALID_ARGUMENT.withDescription("semester_id must be positive")
+                    .asRuntimeException();
+        }
+        ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot =
+                semesterDeletionSnapshotReader.read(request.getSemesterId());
+        responseObserver.onNext(SemesterDeletionParticipantPreview.newBuilder()
+                .setSemesterId(request.getSemesterId())
+                .setParticipantDigest(snapshot.participantDigest())
+                .setScheduleTemplatesCount(snapshot.scheduleTemplates())
+                .setOneOffLessonsCount(snapshot.oneOffLessons())
+                .setLessonsCount(snapshot.lessons())
+                .setObservedFenceVersion(snapshot.observedFenceVersion())
+                .build());
         responseObserver.onCompleted();
     }
 

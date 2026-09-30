@@ -11,10 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
-import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
 import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
 import ru.rutcampustrack.academic.contract.enums.SemesterType;
+import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
+import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPriorState;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.event.SemesterArchivedEvent;
@@ -29,6 +30,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.sql.PreparedStatement;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Business logic for Semester domain: CRUD, atomic activation, and archive lifecycle state.
@@ -196,6 +198,18 @@ public class SemesterService {
     @Transactional
     public Semester activateSemester(Long id) {
         lockSemesterStateTransition();
+        Boolean activeDeletionPending = jdbcTemplate.queryForObject("""
+                SELECT EXISTS (
+                    SELECT 1 FROM semester_archive_operations
+                     WHERE action = 'DELETE' AND prior_state = 'ACTIVE'
+                       AND delete_phase IN ('PREPARING', 'RELEASING')
+                       AND operation_state IN ('PENDING', 'ERROR')
+                )
+                """, Boolean.class);
+        if (Boolean.TRUE.equals(activeDeletionPending)) {
+            throw new ConflictException("status", id,
+                    "Нельзя активировать другой семестр до завершения безопасной отмены удаления активного семестра");
+        }
 
         // Lock and validate the target before touching the current active semester.
         Semester target = semesterRepository.findByIdForUpdate(id)
@@ -316,6 +330,111 @@ public class SemesterService {
         return semesterRepository.saveAndFlush(semester);
     }
 
+    /** Locks the global activation boundary and local write fence before preparing durable intent. */
+    @Transactional
+    public Semester lockDeletionCandidate(Long id, long originalStateVersion,
+                                           SemesterDeletionPriorState priorState) {
+        lockSemesterStateTransition();
+        jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+            try (PreparedStatement statement = connection.prepareStatement("SELECT pg_advisory_xact_lock(?, ?)")) {
+                statement.setInt(1, 5_452_097);
+                statement.setInt(2, (int) (id % Integer.MAX_VALUE));
+                statement.execute();
+            }
+            return null;
+        });
+        Semester semester = findSemesterForUpdate(id);
+        if (semester.getStateVersion() != originalStateVersion
+                || semester.getArchiveTransition() != SemesterTransition.NONE
+                || semester.isReleasePending()
+                || SemesterDeletionPreviewService.priorState(semester) != priorState) {
+            throw new ConflictException("stateVersion", id,
+                    "Состояние семестра изменилось после preview; требуется новый расчёт");
+        }
+        return semester;
+    }
+
+    /** Installs the new delete epoch after the user's original preview version is rechecked. */
+    @CacheEvict(value = "active_semester", allEntries = true)
+    @Transactional
+    public Semester beginDeletionTransition(Long id, long originalStateVersion, UUID operationId) {
+        lockSemesterStateTransition();
+        Semester semester = findSemesterForUpdate(id);
+        if (semester.getStateVersion() != originalStateVersion
+                || semester.getArchiveTransition() != SemesterTransition.NONE
+                || semester.isReleasePending()) {
+            throw new ConflictException("stateVersion", id,
+                    "Состояние семестра изменилось после preview; требуется новый расчёт");
+        }
+        boolean wasActive = semester.isActive();
+        semester.setActive(false);
+        semester.setArchiveTransition(SemesterTransition.DELETING);
+        semester.setDeletionPhase(SemesterDeletionPhase.PREPARING);
+        semester.setTransitionOperationId(operationId);
+        incrementStateVersion(semester);
+        Semester transitioning = semesterRepository.saveAndFlush(semester);
+        if (wasActive) {
+            eventPublisher.publishEvent(new SemesterArchivedEvent(this, semester.getId()));
+        }
+        return transitioning;
+    }
+
+    @Transactional
+    public Semester setDeletionPhase(Long id, UUID operationId, long expectedStateVersion,
+                                     SemesterDeletionPhase phase) {
+        lockSemesterStateTransition();
+        Semester semester = findSemesterForUpdate(id);
+        requireDeletionIdentity(semester, id, operationId, expectedStateVersion);
+        if (semester.getDeletionPhase() == SemesterDeletionPhase.DELETING
+                && phase != SemesterDeletionPhase.DELETING) {
+            throw new ConflictException("Нельзя отменить удаление после irreversible intent");
+        }
+        if (phase == SemesterDeletionPhase.RELEASING && semester.getDeletionPhase() != SemesterDeletionPhase.PREPARING
+                && semester.getDeletionPhase() != SemesterDeletionPhase.RELEASING) {
+            throw new ConflictException("Отмена удаления требует подготовительную фазу");
+        }
+        if (phase == SemesterDeletionPhase.DELETING && semester.getDeletionPhase() != SemesterDeletionPhase.PREPARING
+                && semester.getDeletionPhase() != SemesterDeletionPhase.DELETING) {
+            throw new ConflictException("Необратимое удаление требует точные sealed receipts");
+        }
+        semester.setDeletionPhase(phase);
+        return semesterRepository.saveAndFlush(semester);
+    }
+
+    /** Restores the exact prior state only after every participant released the delete fence. */
+    @CacheEvict(value = "active_semester", allEntries = true)
+    @Transactional
+    public Semester completeDeletionCancellation(Long id, UUID operationId, long expectedStateVersion,
+                                                 SemesterDeletionPriorState priorState) {
+        lockSemesterStateTransition();
+        Semester semester = findSemesterForUpdate(id);
+        requireDeletionIdentity(semester, id, operationId, expectedStateVersion);
+        if (semester.getDeletionPhase() != SemesterDeletionPhase.RELEASING) {
+            throw new ConflictException("Семестр можно восстановить только после release участников");
+        }
+        if (priorState == SemesterDeletionPriorState.ACTIVE
+                && semesterRepository.findByIsActiveTrue().filter(active -> !active.getId().equals(id)).isPresent()) {
+            throw new ConflictException("Другой семестр уже активен; восстановление активного состояния отложено");
+        }
+        semester.setArchived(priorState == SemesterDeletionPriorState.ARCHIVED);
+        semester.setActive(priorState == SemesterDeletionPriorState.ACTIVE);
+        semester.setArchiveTransition(SemesterTransition.NONE);
+        semester.setDeletionPhase(null);
+        semester.setTransitionOperationId(null);
+        incrementStateVersion(semester);
+        return semesterRepository.saveAndFlush(semester);
+    }
+
+    private static void requireDeletionIdentity(Semester semester, Long id, UUID operationId,
+                                                long expectedStateVersion) {
+        if (semester.getArchiveTransition() != SemesterTransition.DELETING
+                || !operationId.equals(semester.getTransitionOperationId())
+                || semester.getStateVersion() != expectedStateVersion) {
+            throw new ConflictException("stateVersion", id,
+                    "Операция удаления больше не владеет точной версией семестра");
+        }
+    }
+
     /** Completes restore after participant write fences have been released; it never activates the semester. */
     @Transactional
     public Semester completeRestoreTransition(Long id, long expectedStateVersion) {
@@ -411,21 +530,4 @@ public class SemesterService {
         });
     }
 
-    /**
-     * Confirmation-guarded deletion (D-12, GSEM-04).
-     * Requires exact match of confirmation phrase with semester name.
-     */
-    @Transactional
-    public void deleteSemester(Long id, DeleteSemesterRequest request) {
-        lockSemesterStateTransition();
-        Semester semester = findSemesterForUpdate(id);
-        if (isWriteBlocked(semester)) {
-            throw new ConflictException("status", id,
-                    "Нельзя удалить архивируемый или архивный семестр до восстановления");
-        }
-        if (!semester.getName().equals(request.confirmation())) {
-            throw new BadRequestException("Подтверждение не совпадает с названием семестра");
-        }
-        semesterRepository.delete(semester);
-    }
 }

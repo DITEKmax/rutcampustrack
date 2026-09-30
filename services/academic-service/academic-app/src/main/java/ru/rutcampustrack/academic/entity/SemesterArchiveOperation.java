@@ -16,6 +16,9 @@ import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveOperationState;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantStatus;
 import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
+import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
+import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPriorState;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -82,6 +85,71 @@ public class SemesterArchiveOperation {
     @Column(name = "blocking_reason")
     private String blockingReason;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delete_phase", length = 16)
+    private SemesterDeletionPhase deletePhase;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "prior_state", length = 12)
+    private SemesterDeletionPriorState priorState;
+
+    @Column(name = "semester_name", length = 128)
+    private String semesterName;
+
+    @Column(name = "original_state_version")
+    private Long originalStateVersion;
+
+    @Column(name = "preview_digest", length = 64)
+    private String previewDigest;
+
+    @Column(name = "academic_participant_digest", length = 64)
+    private String academicParticipantDigest;
+
+    @Column(name = "schedule_participant_digest", length = 64)
+    private String scheduleParticipantDigest;
+
+    @Column(name = "attendance_participant_digest", length = 64)
+    private String attendanceParticipantDigest;
+
+    @Column(name = "schedule_templates_count")
+    private Long scheduleTemplatesCount;
+
+    @Column(name = "one_off_lessons_count")
+    private Long oneOffLessonsCount;
+
+    @Column(name = "lessons_count")
+    private Long lessonsCount;
+
+    @Column(name = "assignments_count")
+    private Long assignmentsCount;
+
+    @Column(name = "homeworks_count")
+    private Long homeworksCount;
+
+    @Column(name = "attendance_marks_count")
+    private Long attendanceMarksCount;
+
+    @Column(name = "student_requests_count")
+    private Long studentRequestsCount;
+
+    @Column(name = "prepare_expires_at")
+    private OffsetDateTime prepareExpiresAt;
+
+    @Column(name = "irreversible_intent", nullable = false)
+    private boolean irreversibleIntent;
+
+    @Column(name = "academic_sealed", nullable = false)
+    private boolean academicSealed;
+
+    @Column(name = "schedule_sealed", nullable = false)
+    private boolean scheduleSealed;
+
+    @Column(name = "attendance_sealed", nullable = false)
+    private boolean attendanceSealed;
+
+    @Column(name = "cancel_reason")
+    private String cancelReason;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -108,6 +176,26 @@ public class SemesterArchiveOperation {
         this.academic = SemesterArchiveParticipantStatus.NOT_STARTED;
         this.schedule = SemesterArchiveParticipantStatus.NOT_STARTED;
         this.attendance = SemesterArchiveParticipantStatus.NOT_STARTED;
+    }
+
+    public SemesterDeletionCounts deletionCounts() {
+        if (scheduleTemplatesCount == null || oneOffLessonsCount == null || lessonsCount == null
+                || assignmentsCount == null || homeworksCount == null
+                || attendanceMarksCount == null || studentRequestsCount == null) {
+            return null;
+        }
+        return new SemesterDeletionCounts(scheduleTemplatesCount, oneOffLessonsCount, lessonsCount,
+                assignmentsCount, homeworksCount, attendanceMarksCount, studentRequestsCount);
+    }
+
+    public void setDeletionCounts(SemesterDeletionCounts counts) {
+        this.scheduleTemplatesCount = counts.scheduleTemplates();
+        this.oneOffLessonsCount = counts.oneOffLessons();
+        this.lessonsCount = counts.lessons();
+        this.assignmentsCount = counts.assignments();
+        this.homeworksCount = counts.homeworks();
+        this.attendanceMarksCount = counts.attendanceMarks();
+        this.studentRequestsCount = counts.studentRequests();
     }
 
     @PrePersist

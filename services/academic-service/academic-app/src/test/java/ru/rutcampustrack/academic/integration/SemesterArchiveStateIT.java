@@ -2,19 +2,36 @@ package ru.rutcampustrack.academic.integration;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import net.devh.boot.grpc.client.inject.GrpcClient;
+import io.grpc.stub.StreamObserver;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import ru.rutcampustrack.academic.semester.*;
+import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
+import ru.rutcampustrack.academic.contract.enums.*;
+import ru.rutcampustrack.academic.entity.SemesterArchiveOperation;
+import ru.rutcampustrack.academic.event.HomeworkBindingArchivedEventConsumer;
+import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierResponse;
+import ru.rutcampustrack.schedule.grpc.SemesterArchiveParticipantState;
+import org.springframework.dao.DataAccessException;
+import ru.rutcampustrack.academic.homework.HomeworkBindingTransferCoordinator;
+import ru.rutcampustrack.academic.homework.LessonTransferBatch;
+import java.util.HashMap;
+import java.util.Map;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
-import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.exception.ConflictException;
-import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
+import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
 import ru.rutcampustrack.academic.grpc.SemesterStateRequest;
 import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
@@ -25,7 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -34,20 +50,28 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/** PostgreSQL/gRPC checks for authoritative semester archive lifecycle state. */
+/**
+ * PostgreSQL outcome checks and the real uncached gRPC handler's state/status mapping.
+ * Calls the handler directly: authenticated TLS/service transport admission is outside
+ * this fixture and stays covered by the dedicated service-identity transport tests.
+ */
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
                 "grpc.server.in-process-name=academic-grpc-test",
                 "grpc.server.port=-1",
+                "semester.archive.retry-delay-ms=3600000",
                 "grpc.client.inProcess.address=in-process:academic-grpc-test",
                 "grpc.client.inProcess.negotiationType=plaintext"
         }
 )
 class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
 
-    @GrpcClient("inProcess")
-    private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub grpc;
+    @Autowired
+    private AcademicGrpcServiceImpl grpcHandler;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -58,7 +82,20 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
     @Autowired
     private SemesterRepository semesterRepository;
 
+    @Autowired private SemesterArchiveCommandTransaction deletionCommands;
+    @Autowired private AcademicSemesterArchiveBarrierTransaction deletionBarrier;
+    @Autowired private AcademicSemesterDeletionSnapshotReader deletionSnapshots;
+    @Autowired private SemesterArchiveCoordinator deletionCoordinator;
+    @Autowired private HomeworkBindingArchivedEventConsumer archiveConsumer;
+    @Autowired private HomeworkBindingTransferCoordinator transferCoordinator;
+    @MockitoBean private ScheduleGrpcClient scheduleClient;
+    @MockitoBean private SemesterDeletionPreviewService deletionPreviews;
+
+    private static final String REMOTE_DIGEST = "b".repeat(64);
+    private static final SemesterDeletionCounts ZERO_COUNTS = new SemesterDeletionCounts(0, 0, 0, 0, 0, 0, 0);
+
     private final List<Long> fixtureIds = new ArrayList<>();
+    private final List<Long> fixtureSubjectIds = new ArrayList<>();
     private List<Long> priorActiveSemesterIds;
     private Long semesterId;
 
@@ -79,12 +116,19 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         }
         jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
         for (Long fixtureId : fixtureIds) {
-            jdbcTemplate.update("DELETE FROM semesters WHERE id = ?", fixtureId);
+            deleteEmptyFixtureThroughProtocol(fixtureId);
         }
         for (Long priorId : priorActiveSemesterIds) {
             jdbcTemplate.update("UPDATE semesters SET is_archived = false, archive_transition = 'NONE', "
                     + "is_active = true, state_version = state_version + 1 WHERE id = ?", priorId);
         }
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            for (Long subjectId : fixtureSubjectIds) {
+                jdbcTemplate.update("DELETE FROM subject_lesson_types WHERE subject_id = ?", subjectId);
+                jdbcTemplate.update("DELETE FROM subjects WHERE id = ?", subjectId);
+            }
+        });
+        fixtureSubjectIds.clear();
         fixtureIds.clear();
     }
 
@@ -111,8 +155,6 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(archivingState.getWriteBlocked()).isTrue();
         assertThat(archivingState.getStateVersion()).isEqualTo(archiving.getStateVersion());
         assertThat(archivedEventIdsAfter(outboxBaseline)).containsExactly(semesterId);
-        assertDeleteBlocked(semesterId, archiving.getName());
-
         Semester repeatedArchiving = semesterService.beginArchiveTransition(semesterId);
         assertThat(repeatedArchiving.getStateVersion()).isEqualTo(archiving.getStateVersion());
         assertThat(archivedEventIdsAfter(outboxBaseline)).containsExactly(semesterId);
@@ -141,7 +183,6 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 .isInstanceOf(ConflictException.class);
 
         Semester archivedRow = semesterRepository.findById(semesterId).orElseThrow();
-        assertDeleteBlocked(semesterId, archivedRow.getName());
         assertThatThrownBy(() -> semesterService.updateSemester(semesterId,
                 new UpdateSemesterRequest(archivedRow.getName(), archivedRow.getDateFrom(), archivedRow.getDateTo())))
                 .isInstanceOf(ConflictException.class)
@@ -160,9 +201,14 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThatThrownBy(() -> semesterService.completeRestoreTransition(
                 semesterId, restoring.getStateVersion() - 1))
                 .isInstanceOf(ConflictException.class);
-        Semester restored = semesterService.completeRestoreTransition(
-                semesterId, restoring.getStateVersion());
+        semesterService.completeRestoreTransition(semesterId, restoring.getStateVersion());
+        SemesterStateResponse releasePendingState = state(semesterId);
+        assertThat(releasePendingState.getReleasePending()).isTrue();
+        assertThat(releasePendingState.getWriteBlocked()).isTrue();
+        assertThatThrownBy(() -> semesterService.activateSemester(semesterId)).isInstanceOf(ConflictException.class);
+        Semester restored = semesterService.completeRestoreRelease(semesterId, restoring.getStateVersion());
         SemesterStateResponse restoredState = state(semesterId);
+        assertThat(restoredState.getReleasePending()).isFalse();
         assertThat(restored.isActive()).isFalse();
         assertThat(restored.isArchived()).isFalse();
         assertThat(restoredState.getActive()).isFalse();
@@ -182,11 +228,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 new UpdateSemesterRequest(restoredRow.getName(), restoredRow.getDateFrom(), restoredRow.getDateTo()));
         assertThat(semesterService.activateSemester(semesterId).isActive()).isTrue();
         assertThat(state(semesterId).getActive()).isTrue();
-
-        long normallyDeletableId = insertInactiveFixture("normal-delete-" + UUID.randomUUID());
-        String normallyDeletableName = semesterRepository.findById(normallyDeletableId).orElseThrow().getName();
-        semesterService.deleteSemester(normallyDeletableId, new DeleteSemesterRequest(normallyDeletableName));
-        assertThat(semesterRepository.existsById(normallyDeletableId)).isFalse();
+        assertThat(activeSemesterIds()).containsExactly(semesterId);
 
         StatusRuntimeException missing = org.junit.jupiter.api.Assertions.assertThrows(
                 StatusRuntimeException.class, () -> state(Long.MAX_VALUE));
@@ -222,49 +264,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
             assertThat(state(activationTargetId).getActive()).isTrue();
             assertThat(archivedEventIdsAfter(outboxBaseline)).containsExactly(semesterId);
 
-            long deleteRaceOutboxBaseline = latestOutboxId();
-            String deleteRaceName = activeTarget.getName();
-            CountDownLatch deleteRaceReady = new CountDownLatch(2);
-            CountDownLatch deleteRaceStart = new CountDownLatch(1);
-            Future<Semester> archiveBeforeDelete = pool.submit(() -> awaitStartThenRun(
-                    deleteRaceReady, deleteRaceStart,
-                    () -> semesterService.beginArchiveTransition(activationTargetId)));
-            Future<Void> deleteDuringArchive = pool.submit(() -> awaitStartThenRun(
-                    deleteRaceReady, deleteRaceStart, () -> {
-                        semesterService.deleteSemester(
-                                activationTargetId, new DeleteSemesterRequest(deleteRaceName));
-                        return null;
-                    }));
-
-            assertThat(deleteRaceReady.await(10, TimeUnit.SECONDS)).isTrue();
-            deleteRaceStart.countDown();
-
-            Semester archiveResult = null;
-            Throwable archiveFailure = null;
-            try {
-                archiveResult = archiveBeforeDelete.get(20, TimeUnit.SECONDS);
-            } catch (ExecutionException exception) {
-                archiveFailure = exception.getCause();
-            }
-            Throwable deleteFailure = null;
-            try {
-                deleteDuringArchive.get(20, TimeUnit.SECONDS);
-            } catch (ExecutionException exception) {
-                deleteFailure = exception.getCause();
-            }
-
-            if (semesterRepository.existsById(activationTargetId)) {
-                assertThat(archiveFailure).isNull();
-                assertThat(archiveResult.getArchiveTransition().name()).isEqualTo("ARCHIVING");
-                assertThat(deleteFailure).isInstanceOf(ConflictException.class);
-                assertThat(state(activationTargetId).getWriteBlocked()).isTrue();
-                assertThat(archivedEventIdsAfter(deleteRaceOutboxBaseline)).containsExactly(activationTargetId);
-            } else {
-                assertThat(archiveFailure).isInstanceOf(ResourceNotFoundException.class);
-                assertThat(deleteFailure).isNull();
-                assertThat(archivedEventIdsAfter(deleteRaceOutboxBaseline)).isEmpty();
-            }
-            assertThat(activeSemesterIds()).isEmpty();
+            assertThat(activeSemesterIds()).containsExactly(activationTargetId);
         } finally {
             start.countDown();
             pool.shutdownNow();
@@ -272,8 +272,260 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         }
     }
 
+    @Test
+    void deleteStartTimeoutAndStalePreviewRestoreExactPriorState() {
+        stubScheduleDeleteParticipant();
+        UUID timeoutId = UUID.randomUUID();
+        var activePreview = deletionSnapshot(semesterId);
+        var started = deletionCommands.startDelete(semesterId, adminId(), timeoutId, timeoutId, activePreview);
+        assertThat(started.getDeletePhase()).isEqualTo(SemesterDeletionPhase.PREPARING);
+        assertThat(state(semesterId).getTransitionOperationId()).isEqualTo(timeoutId.toString());
+        assertThat(state(semesterId).getWriteBlocked()).isTrue();
+        assertThat(deletionCommands.startDelete(semesterId, adminId(), timeoutId, timeoutId, activePreview)
+                .getStateVersion()).isEqualTo(started.getStateVersion());
+        assertThatThrownBy(() -> jdbcTemplate.update("UPDATE semesters SET deletion_phase = 'DELETING' WHERE id = ?",
+                semesterId)).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> deletionCommands.startDelete(semesterId, adminId(), UUID.randomUUID(),
+                UUID.randomUUID(), activePreview)).isInstanceOf(ConflictException.class);
+        jdbcTemplate.update("UPDATE semester_archive_operations SET prepare_expires_at = now() - interval '1 second' "
+                + "WHERE operation_id = ?", timeoutId);
+        deletionCoordinator.advance(timeoutId);
+        assertThat(deletionCommands.find(timeoutId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.RELEASING);
+        releasedAttendance(timeoutId);
+        deletionCoordinator.advance(timeoutId);
+        assertThat(deletionCommands.find(timeoutId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.CANCELLED);
+        assertThat(state(semesterId).getActive()).isTrue();
+        assertThat(state(semesterId).getWriteBlocked()).isFalse();
+        assertThat(state(semesterId).getStateVersion()).isEqualTo(activePreview.stateVersion() + 2);
+
+        var archiving = semesterService.beginArchiveTransition(semesterId);
+        semesterService.completeArchiveTransition(semesterId, archiving.getStateVersion());
+        UUID staleId = UUID.randomUUID();
+        var archivedPreview = deletionSnapshot(semesterId);
+        var archivedStart = deletionCommands.startDelete(semesterId, adminId(), staleId, staleId, archivedPreview);
+        assertThat(state(semesterId).getArchived()).isTrue();
+        readyReceipt(archivedStart, SemesterArchiveCommandTransaction.Participant.ATTENDANCE, SemesterArchiveParticipantCommand.PREPARE_DELETE);
+        readyReceipt(archivedStart, SemesterArchiveCommandTransaction.Participant.ATTENDANCE, SemesterArchiveParticipantCommand.SEAL_DELETE);
+        when(deletionPreviews.underFence(semesterId, archivedPreview.semesterName(), archivedPreview.stateVersion(),
+                archivedPreview.priorState())).thenReturn(new SemesterDeletionPreviewService.Snapshot(
+                    semesterId, archivedPreview.semesterName(), archivedPreview.priorState(), archivedPreview.stateVersion(),
+                    "c".repeat(64), ZERO_COUNTS, archivedPreview.academicDigest(), REMOTE_DIGEST, REMOTE_DIGEST, 0, 0));
+        deletionCoordinator.advance(staleId);
+        assertThat(deletionCommands.find(staleId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.RELEASING);
+        releasedAttendance(staleId);
+        deletionCoordinator.advance(staleId);
+        assertThat(deletionCommands.find(staleId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.CANCELLED);
+        assertThat(deletionCommands.find(staleId).getCancelReason()).isEqualTo("STALE_PREVIEW");
+        assertThat(state(semesterId).getArchived()).isTrue();
+        assertThat(state(semesterId).getActive()).isFalse();
+        assertThat(state(semesterId).getStateVersion()).isEqualTo(archivedPreview.stateVersion() + 2);
+    }
+
+    @Test
+    void deletePreparingDrainsExactHomeworkEffectsAndRejectsOrdinaryWrites() {
+        long actorId = jdbcTemplate.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
+        long groupId = jdbcTemplate.queryForObject("SELECT id FROM groups WHERE name = '\u0418\u0412\u0422-211'", Long.class);
+        long subjectId = new TransactionTemplate(transactionManager).execute(status -> {
+            long id = jdbcTemplate.queryForObject("INSERT INTO subjects (name, type, group_id) "
+                    + "VALUES (?, 'lecture', ?) RETURNING id", Long.class,
+                    "delete-drain-" + UUID.randomUUID(), groupId);
+            jdbcTemplate.update("INSERT INTO subject_lesson_types (subject_id, lesson_type) VALUES (?, 'lecture')", id);
+            return id;
+        });
+        fixtureSubjectIds.add(subjectId);
+        long bindingId = System.currentTimeMillis() * 100L;
+        UUID requestKey = UUID.randomUUID();
+        byte[] hash = new byte[32];
+        long homeworkId = jdbcTemplate.queryForObject("""
+                INSERT INTO homeworks (group_id, subject_id, semester_id, lesson_date, lesson_number,
+                    title, published_by, binding_id, actor_id, request_key, payload_hash, publication_state,
+                    created_at, updated_at)
+                VALUES (?, ?, ?, ?, 1, 'delete-drain', ?, ?, ?, ?, ?, 'PENDING', now(), now()) RETURNING id
+                """, Long.class, groupId, subjectId, semesterId, LocalDate.of(9990, 1, 2),
+                actorId, bindingId, actorId, requestKey, hash);
+        UUID operationId = UUID.randomUUID();
+        var started = deletionCommands.startDelete(semesterId, adminId(), operationId, operationId,
+                deletionSnapshot(semesterId));
+        assertThat(deletionBarrier.prepareDelete(operationId, semesterId, started.getStateVersion())).isNotNull();
+        assertThatThrownBy(() -> jdbcTemplate.update("UPDATE homeworks SET title = 'ordinary write' WHERE id = ?",
+                homeworkId)).isInstanceOf(DataAccessException.class);
+        UUID materializedEvent = UUID.randomUUID();
+        archiveConsumer.onEvent(archiveEnvelope(materializedEvent, bindingId, actorId, requestKey, homeworkId));
+        assertThat(jdbcTemplate.queryForObject("SELECT publication_state FROM homeworks WHERE id = ?",
+                String.class, homeworkId)).isEqualTo("ARCHIVED");
+        assertAppliedEffect(materializedEvent);
+
+        long emptyBinding = bindingId + 10;
+        UUID emptyRequest = UUID.randomUUID();
+        UUID transferEvent = UUID.randomUUID();
+        UUID transferOperation = UUID.randomUUID();
+        var acceptedTransfer = new LessonTransferBatch(transferEvent, transferOperation, UUID.randomUUID(), actorId,
+                "d".repeat(64), emptyBinding + 1, groupId, subjectId, semesterId, 1,
+                emptyBinding + 2, emptyBinding + 3, LocalDate.of(9990, 1, 2), 1,
+                LocalDate.of(9990, 1, 3), 2, 0, 1,
+                List.of(new LessonTransferBatch.Binding(emptyBinding, actorId, emptyRequest, null,
+                        java.util.HexFormat.of().formatHex(hash), "PENDING", 1)), "e".repeat(64));
+        transferCoordinator.applyBatch(acceptedTransfer);
+        transferCoordinator.applyBatch(acceptedTransfer);
+        assertThat(jdbcTemplate.queryForObject("SELECT result FROM lesson_transfer_receipts "
+                + "WHERE operation_id = ? AND batch_index = 0", String.class, transferOperation)).isEqualTo("APPLIED");
+        var resolution = deletionBarrier.preparePendingBindingResolution(operationId, semesterId,
+                started.getStateVersion(), emptyBinding, emptyBinding + 1, actorId, emptyRequest, hash, 1);
+        assertThat(resolution.kind()).isEqualTo(AcademicSemesterArchiveBarrierTransaction.BindingResolutionKind.CANCEL_UNPUBLISHED);
+        UUID emptyEvent = UUID.randomUUID();
+        deletionBarrier.recordCancellationEvent(operationId, semesterId, started.getStateVersion(),
+                emptyBinding, emptyRequest, emptyBinding + 1, 1, emptyEvent);
+        archiveConsumer.onEvent(archiveEnvelope(emptyEvent, emptyBinding, actorId, emptyRequest, null));
+        assertAppliedEffect(emptyEvent);
+        assertThat(jdbcTemplate.queryForObject("SELECT state FROM homework_binding_transfer_markers "
+                + "WHERE binding_id = ?", String.class, emptyBinding)).isEqualTo("CANCELLED_UNPUBLISHED");
+        assertThat(jdbcTemplate.queryForObject("SELECT resolution_state FROM academic_semester_archive_publication_admissions "
+                + "WHERE operation_id = ? AND binding_id = ?", String.class, operationId, emptyBinding))
+                .isEqualTo("CANCELLED_UNPUBLISHED");
+        assertThat(deletionBarrier.prepareDelete(operationId, semesterId, started.getStateVersion())).isNull();
+        assertThat(deletionBarrier.sealDelete(operationId, semesterId, started.getStateVersion())).isNull();
+        var lateTransfer = new LessonTransferBatch(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), actorId,
+                "f".repeat(64), emptyBinding + 11, groupId, subjectId, semesterId, 1,
+                emptyBinding + 12, emptyBinding + 13, LocalDate.of(9990, 1, 2), 1,
+                LocalDate.of(9990, 1, 3), 2, 0, 1,
+                List.of(new LessonTransferBatch.Binding(emptyBinding + 20, actorId, UUID.randomUUID(), null,
+                        java.util.HexFormat.of().formatHex(hash), "PENDING", 1)), "e".repeat(64));
+        assertThatThrownBy(() -> transferCoordinator.applyBatch(lateTransfer)).isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> archiveConsumer.onEvent(archiveEnvelope(UUID.randomUUID(), bindingId,
+                actorId, requestKey, homeworkId))).isInstanceOf(ConflictException.class);
+        deletionCommands.beginDeleteRelease(operationId, "STALE_PREVIEW");
+        deletionBarrier.releaseDelete(operationId, semesterId, started.getStateVersion());
+        for (var participant : SemesterArchiveCommandTransaction.Participant.values()) {
+            deletionCommands.recordDeleteParticipant(operationId, semesterId, started.getStateVersion(), participant,
+                    SemesterArchiveParticipantCommand.RELEASE_DELETE, SemesterArchiveParticipantStatus.RELEASED, null,
+                    participant == SemesterArchiveCommandTransaction.Participant.ACADEMIC
+                            ? started.getAcademicParticipantDigest() : REMOTE_DIGEST,
+                    participant == SemesterArchiveCommandTransaction.Participant.ACADEMIC
+                            ? new SemesterDeletionCounts(0, 0, 0, 0, 1, 0, 0) : ZERO_COUNTS);
+        }
+        deletionCommands.completeDeleteCancellation(operationId);
+    }
+
+    private Map<String, Object> archiveEnvelope(UUID eventId, long bindingId, long actorId,
+                                                UUID requestKey, Long homeworkId) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("binding_id", bindingId); payload.put("actor_id", actorId);
+        payload.put("request_key", requestKey.toString()); payload.put("semester_id", semesterId);
+        payload.put("occurrence_id", bindingId + 1); payload.put("lesson_id", bindingId + 2);
+        payload.put("homework_id", homeworkId); payload.put("binding_revision", 2L);
+        return Map.of("event_type", "homework.binding.archived", "event_id", eventId.toString(),
+                "occurred_at", "2026-10-01T09:00:00Z", "event_version", 1,
+                "trace_id", UUID.randomUUID().toString(), "source", "schedule-service", "payload", payload);
+    }
+
+    private void assertAppliedEffect(UUID sourceEventId) {
+        assertThat(jdbcTemplate.queryForObject("SELECT state FROM academic_semester_archive_effect_receipts "
+                + "WHERE source_event_id = ?", String.class, sourceEventId)).isEqualTo("APPLIED");
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM academic_outbox "
+                + "WHERE event_type = 'semester.archive.effect.ack' AND payload #>> '{payload,source_event_id}' = ?",
+                Long.class, sourceEventId.toString())).isEqualTo(1L);
+    }
+
+    private void stubScheduleDeleteParticipant() {
+        when(scheduleClient.setSemesterDeletionBarrier(any(UUID.class), anyLong(), anyLong(),
+                any(SemesterArchiveParticipantCommand.class), anyString())).thenAnswer(invocation -> {
+            SemesterArchiveParticipantCommand command = invocation.getArgument(3);
+            return SetSemesterArchiveBarrierResponse.newBuilder()
+                    .setOperationId(invocation.<UUID>getArgument(0).toString())
+                    .setSemesterId(invocation.<Long>getArgument(1)).setStateVersion(invocation.<Long>getArgument(2))
+                    .setParticipantDigest(invocation.getArgument(4))
+                    .setState(command == SemesterArchiveParticipantCommand.RELEASE_DELETE
+                            ? SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_RELEASED
+                            : command == SemesterArchiveParticipantCommand.COMMIT_DELETE
+                                ? SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_DELETED
+                                : SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY).build();
+        });
+    }
+
+    private long adminId() {
+        return jdbcTemplate.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+    }
+
+    private SemesterDeletionPreviewService.Snapshot deletionSnapshot(long id) {
+        Semester semester = semesterRepository.findById(id).orElseThrow();
+        var local = deletionSnapshots.read(id);
+        return new SemesterDeletionPreviewService.Snapshot(id, semester.getName(),
+                SemesterDeletionPreviewService.priorState(semester), semester.getStateVersion(), "a".repeat(64),
+                new SemesterDeletionCounts(0, 0, 0, local.assignments(), local.homeworks(), 0, 0),
+                local.participantDigest(), REMOTE_DIGEST, REMOTE_DIGEST, 0, 0);
+    }
+
+    private void readyReceipt(SemesterArchiveOperation operation, SemesterArchiveCommandTransaction.Participant participant,
+                               SemesterArchiveParticipantCommand command) {
+        deletionCommands.recordDeleteParticipant(operation.getOperationId(), operation.getSemesterId(), operation.getStateVersion(),
+                participant, command, SemesterArchiveParticipantStatus.READY, null,
+                participant == SemesterArchiveCommandTransaction.Participant.ACADEMIC
+                        ? operation.getAcademicParticipantDigest() : REMOTE_DIGEST,
+                participant == SemesterArchiveCommandTransaction.Participant.ACADEMIC
+                        ? new SemesterDeletionCounts(0, 0, 0, operation.getAssignmentsCount(), operation.getHomeworksCount(), 0, 0)
+                        : ZERO_COUNTS);
+    }
+
+    private void releasedAttendance(UUID operationId) {
+        var operation = deletionCommands.find(operationId);
+        deletionCommands.recordDeleteParticipant(operationId, operation.getSemesterId(), operation.getStateVersion(),
+                SemesterArchiveCommandTransaction.Participant.ATTENDANCE, SemesterArchiveParticipantCommand.RELEASE_DELETE,
+                SemesterArchiveParticipantStatus.RELEASED, null, REMOTE_DIGEST, ZERO_COUNTS);
+    }
+
+    /** Empty remote domains are simulated; central deletion and local guards always use the real protocol. */
+    private void deleteEmptyFixtureThroughProtocol(long id) {
+        var existing = semesterRepository.findById(id);
+        if (existing.isEmpty()) return;
+        Semester semester = existing.get();
+        if (semester.getArchiveTransition() == SemesterTransition.ARCHIVING) {
+            semester = semesterService.completeArchiveTransition(id, semester.getStateVersion());
+        }
+        if (semester.getArchiveTransition() == SemesterTransition.RESTORING) {
+            semester = semesterService.completeRestoreTransition(id, semester.getStateVersion());
+        }
+        if (semester.isReleasePending()) {
+            semester = semesterService.completeRestoreRelease(id, semester.getStateVersion());
+        }
+        long usersBefore = jdbcTemplate.queryForObject("SELECT count(*) FROM users", Long.class);
+        long groupsBefore = jdbcTemplate.queryForObject("SELECT count(*) FROM groups", Long.class);
+        UUID operationId = UUID.randomUUID();
+        var preview = deletionSnapshot(id);
+        var operation = deletionCommands.startDelete(id, adminId(), operationId, operationId, preview);
+        assertThat(deletionBarrier.prepareDelete(operationId, id, operation.getStateVersion())).isNull();
+        assertThat(deletionBarrier.sealDelete(operationId, id, operation.getStateVersion())).isNull();
+        for (var participant : SemesterArchiveCommandTransaction.Participant.values()) {
+            readyReceipt(operation, participant, SemesterArchiveParticipantCommand.SEAL_DELETE);
+        }
+        deletionCommands.beginIrreversibleDelete(operationId);
+        for (var participant : List.of(SemesterArchiveCommandTransaction.Participant.SCHEDULE,
+                SemesterArchiveCommandTransaction.Participant.ATTENDANCE)) {
+            deletionCommands.recordDeleteParticipant(operationId, id, operation.getStateVersion(), participant,
+                    SemesterArchiveParticipantCommand.COMMIT_DELETE, SemesterArchiveParticipantStatus.DELETED,
+                    null, REMOTE_DIGEST, ZERO_COUNTS);
+        }
+        deletionCommands.completeDelete(operationId);
+        assertThat(semesterRepository.findById(id)).isEmpty();
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM users", Long.class)).isEqualTo(usersBefore);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM groups", Long.class)).isEqualTo(groupsBefore);
+        assertThat(deletionCommands.completeDelete(operationId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.COMPLETED);
+        assertThatThrownBy(() -> jdbcTemplate.update("INSERT INTO teacher_subject_groups "
+                + "(teacher_id, subject_id, group_id, semester_id) VALUES (1, 1, 1, ?)", id))
+                .isInstanceOf(DataAccessException.class);
+    }
+
     private SemesterStateResponse state(long id) {
-        return grpc.getSemesterState(SemesterStateRequest.newBuilder().setSemesterId(id).build());
+        AtomicReference<SemesterStateResponse> response = new AtomicReference<>();
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        grpcHandler.getSemesterState(SemesterStateRequest.newBuilder().setSemesterId(id).build(),
+                new StreamObserver<>() {
+                    @Override public void onNext(SemesterStateResponse value) { response.set(value); }
+                    @Override public void onError(Throwable error) { failure.set(error); }
+                    @Override public void onCompleted() { }
+                });
+        if (failure.get() != null) throw Status.fromThrowable(failure.get()).asRuntimeException();
+        assertThat(response.get()).isNotNull();
+        return response.get();
     }
 
     private long insertInactiveFixture(String name) {
@@ -302,13 +554,6 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 WHERE id > ? AND event_type = 'semester.archived'
                 ORDER BY id
                 """, Long.class, outboxId);
-    }
-
-    private void assertDeleteBlocked(long id, String name) {
-        assertThatThrownBy(() -> semesterService.deleteSemester(id, new DeleteSemesterRequest(name)))
-                .isInstanceOf(ConflictException.class)
-                .hasMessageContaining("архив");
-        assertThat(semesterRepository.existsById(id)).isTrue();
     }
 
     private static <T> T awaitStartThenRun(CountDownLatch ready,

@@ -237,6 +237,11 @@ public class SemesterService {
         lockSemesterStateTransition();
         Semester semester = findSemesterForUpdate(id);
 
+        if (semester.isReleasePending()) {
+            throw new ConflictException("status", id,
+                    "Нельзя начать архивацию, пока все домены не завершили восстановление");
+        }
+
         if (semester.isArchived() && semester.getArchiveTransition() == SemesterTransition.NONE) {
             return semester;
         }
@@ -285,13 +290,15 @@ public class SemesterService {
         lockSemesterStateTransition();
         Semester semester = findSemesterForUpdate(id);
 
-        if (!semester.isArchived() && semester.getArchiveTransition() == SemesterTransition.NONE) {
+        if (!semester.isArchived() && !semester.isReleasePending()
+                && semester.getArchiveTransition() == SemesterTransition.NONE) {
             return semester;
         }
         if (semester.getArchiveTransition() == SemesterTransition.RESTORING) {
             return semester;
         }
-        if (semester.getArchiveTransition() != SemesterTransition.NONE || !semester.isArchived()) {
+        if (semester.getArchiveTransition() != SemesterTransition.NONE
+                || !semester.isArchived() || semester.isReleasePending()) {
             throw new ConflictException("status", id,
                     "Нельзя восстановить семестр во время архивации");
         }
@@ -323,7 +330,29 @@ public class SemesterService {
 
         semester.setArchived(false);
         semester.setArchiveTransition(SemesterTransition.NONE);
+        semester.setReleasePending(true);
         return semesterRepository.saveAndFlush(semester);
+    }
+
+    /** Clears the central restore epoch gate only after all participant release receipts are durable. */
+    @CacheEvict(value = "active_semester", allEntries = true)
+    @Transactional
+    public Semester completeRestoreRelease(Long id, long expectedStateVersion) {
+        lockSemesterStateTransition();
+        Semester semester = findSemesterForUpdate(id);
+        if (semester.isActive() || semester.isArchived()
+                || semester.getArchiveTransition() != SemesterTransition.NONE) {
+            throw new ConflictException("status", id,
+                    "Центральное состояние восстановления изменилось до подтверждения release");
+        }
+        if (semester.getStateVersion() != expectedStateVersion) {
+            throw staleTransitionVersion(id);
+        }
+        if (semester.isReleasePending()) {
+            semester.setReleasePending(false);
+            return semesterRepository.saveAndFlush(semester);
+        }
+        return semester;
     }
 
     private void requireTransitionVersion(Semester semester,
@@ -355,7 +384,8 @@ public class SemesterService {
     }
 
     private static boolean isWriteBlocked(Semester semester) {
-        return semester.isArchived() || semester.getArchiveTransition() != SemesterTransition.NONE;
+        return semester.isArchived() || semester.isReleasePending()
+                || semester.getArchiveTransition() != SemesterTransition.NONE;
     }
 
     private static void incrementStateVersion(Semester semester) {

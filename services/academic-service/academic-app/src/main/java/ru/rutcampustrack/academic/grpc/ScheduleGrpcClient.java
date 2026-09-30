@@ -26,6 +26,11 @@ import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
 import ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt;
 import ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest;
 import ru.rutcampustrack.schedule.grpc.CommitAssignmentCloseRequest;
+import ru.rutcampustrack.schedule.grpc.SemesterArchiveBarrierCommand;
+import ru.rutcampustrack.schedule.grpc.SemesterArchiveHomeworkBindingIdentity;
+import ru.rutcampustrack.schedule.grpc.SemesterArchiveHomeworkBindingResolution;
+import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierRequest;
+import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierResponse;
 import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
 
 import java.time.LocalDate;
@@ -186,6 +191,59 @@ public class ScheduleGrpcClient {
                     .build());
         } catch (StatusRuntimeException error) {
             throw mapBindingError(error, "зафиксировать замену преподавателя");
+        }
+    }
+
+    /** Calls Schedule's exact versioned barrier using only the directed Academic service identity. */
+    public SetSemesterArchiveBarrierResponse setSemesterArchiveBarrier(
+            UUID operationId, long semesterId, long stateVersion,
+            ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand command) {
+        SemesterArchiveBarrierCommand wireCommand = switch (command) {
+            case PREPARE_ARCHIVE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE;
+            case PREPARE_RESTORE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_RESTORE;
+            case RELEASE_RESTORE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RELEASE_RESTORE;
+            case SEAL_ARCHIVE -> throw new IllegalArgumentException(
+                    "SEAL_ARCHIVE is a local Academic/Attendance command, not a Schedule RPC");
+        };
+        try {
+            return directedStub().setSemesterArchiveBarrier(SetSemesterArchiveBarrierRequest.newBuilder()
+                    .setOperationId(operationId.toString())
+                    .setSemesterId(semesterId)
+                    .setStateVersion(stateVersion)
+                    .setCommand(wireCommand)
+                    .build());
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "установить barrier архивации в schedule-service");
+        }
+    }
+
+    /** Schedule-only exact admission confirmation or terminal cancellation. */
+    public SetSemesterArchiveBarrierResponse reconcileArchiveHomeworkBinding(
+            UUID operationId, long semesterId, long stateVersion,
+            long bindingId, long occurrenceId, long actorId, UUID requestKey,
+            byte[] payloadHash, long revision, Long homeworkId) {
+        SemesterArchiveHomeworkBindingResolution resolution = homeworkId == null
+                ? SemesterArchiveHomeworkBindingResolution.SEMESTER_ARCHIVE_HOMEWORK_BINDING_CANCEL_UNPUBLISHED
+                : SemesterArchiveHomeworkBindingResolution.SEMESTER_ARCHIVE_HOMEWORK_BINDING_CONFIRM_MATERIALIZED;
+        SetSemesterArchiveBarrierRequest.Builder request = SetSemesterArchiveBarrierRequest.newBuilder()
+                .setOperationId(operationId.toString())
+                .setSemesterId(semesterId)
+                .setStateVersion(stateVersion)
+                .setCommand(SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RECONCILE_HOMEWORK_BINDING)
+                .setBinding(SemesterArchiveHomeworkBindingIdentity.newBuilder()
+                        .setBindingId(bindingId)
+                        .setOccurrenceId(occurrenceId)
+                        .setActorId(actorId)
+                        .setRequestKey(requestKey.toString())
+                        .setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash))
+                        .setRevision(revision)
+                        .build())
+                .setBindingResolution(resolution);
+        if (homeworkId != null) request.setHomeworkId(homeworkId);
+        try {
+            return directedStub().setSemesterArchiveBarrier(request.build());
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "сверить принятую публикацию домашнего задания с архивом");
         }
     }
 

@@ -201,6 +201,7 @@ message SemesterStateResponse {
   int64 state_version = 4;
   SemesterTransition transition = 5;
   bool write_blocked = 6;
+  bool release_pending = 7;
 }
 
 message GeofenceResponse {

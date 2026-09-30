@@ -19,6 +19,8 @@ public final class AssignmentCloseServiceIdentityInterceptor implements ServerIn
 
     static final String PROTECTED_METHOD =
             ServiceIdentityServerInterceptor.ACADEMIC_GET_PREPARED_ASSIGNMENT_CLOSE_OPERATION;
+    static final String SEMESTER_STATE_METHOD =
+            ServiceIdentityServerInterceptor.ACADEMIC_GET_SEMESTER_STATE;
 
     private final ServiceIdentityServerInterceptor delegate;
 
@@ -30,7 +32,9 @@ public final class AssignmentCloseServiceIdentityInterceptor implements ServerIn
                 .orElseGet(List::of);
         this.delegate = new ServiceIdentityServerInterceptor(
                 ServicePrincipal.ACADEMIC_SERVICE,
-                Map.of(PROTECTED_METHOD, ServicePrincipal.SCHEDULE_SERVICE),
+                Map.of(
+                        PROTECTED_METHOD, ServicePrincipal.SCHEDULE_SERVICE,
+                        SEMESTER_STATE_METHOD, ServicePrincipal.SCHEDULE_SERVICE),
                 credentials);
     }
 

@@ -1,0 +1,57 @@
+{
+  "revision": {
+    "base_head": "3312f33e84668eb8d70b1c164a3e914ea9b7f51b",
+    "checked_before_commit": true,
+    "checked_tree": "working-tree diff at base_head immediately before the scoped commit",
+    "branch": "codex/semester-archive-complete-20260929"
+  },
+  "environment": {
+    "os": "Windows",
+    "shell": "PowerShell",
+    "worktree": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-l5b-retrospective-union",
+    "jdk": "21 available by contract; not invoked"
+  },
+  "checks": [
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "No whitespace errors. Git printed existing LF-to-CRLF notices for three archive WIP files."
+    },
+    {
+      "command": "rg -n 'reconcileArchiveHomeworkBinding\\(|enum BindingResolutionKind|case (CONFIRM_MATERIALIZED|CANCEL_UNPUBLISHED|WAIT_FOR_TRANSFER_RECEIPT|TERMINAL)' services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Found the Schedule client declaration, four coordinator call sites, and all four BindingResolutionKind cases in the coordinator switch. Static text check only; it does not replace compilation."
+    },
+    {
+      "command": "rg -n 'authority_version|result = .APPLIED.|source_event_id|batch_index|resolution_state' services/schedule-service/schedule-app/src/main/resources/db/migration/V22__semester_archive_barriers.sql services/academic-service/academic-app/src/main/resources/db/migration/V40__semester_archive_operations.sql",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Confirmed the Schedule trigger's authority_version declaration/read and textual presence of the Academic transfer proof and admission state fields. Static text check only; database migration execution remains unverified."
+    },
+    {
+      "command": "rg -n 'SEMESTER_ARCHIVE_BARRIER_METHOD|SCHEDULE_SET_SEMESTER_ARCHIVE_BARRIER|SetSemesterArchiveBarrier' services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptor.java services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java",
+      "exit_code": 0,
+      "status": "PASS",
+      "evidence": "Confirmed the exact SetSemesterArchiveBarrier service method is authenticated for ACADEMIC_SERVICE."
+    },
+    {
+      "command": "Gradle Java compile and focused academic/schedule integrationTest tasks",
+      "exit_code": null,
+      "status": "NOT_RUN",
+      "reason": "HEAVY is assigned to the Attendance/recovery short block; root will reassign it after that block. No Gradle process was started by this leaf."
+    },
+    {
+      "command": "PostgreSQL focused archive/restore runtime scenarios",
+      "exit_code": null,
+      "status": "NOT_RUN",
+      "reason": "Waiting for independent Sol source review and the HEAVY lease. No database or container was started by this leaf."
+    }
+  ],
+  "review": {
+    "independent_sol": "PENDING",
+    "runtime_evidence": "NONE",
+    "production_readiness": false
+  }
+}

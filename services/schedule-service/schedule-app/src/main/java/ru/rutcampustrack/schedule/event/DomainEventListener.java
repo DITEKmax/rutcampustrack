@@ -30,11 +30,15 @@ public class DomainEventListener extends AbstractEventPublisher {
 
     private final OutboxStorage outboxStorage;
     private final ObjectMapper objectMapper;
+    private final SemesterArchiveEffectLedger semesterArchiveEffectLedger;
 
-    public DomainEventListener(OutboxStorage outboxStorage, ObjectMapper objectMapper) {
+    public DomainEventListener(OutboxStorage outboxStorage,
+                               ObjectMapper objectMapper,
+                               SemesterArchiveEffectLedger semesterArchiveEffectLedger) {
         super("schedule-service");
         this.outboxStorage = outboxStorage;
         this.objectMapper = objectMapper;
+        this.semesterArchiveEffectLedger = semesterArchiveEffectLedger;
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
@@ -50,6 +54,7 @@ public class DomainEventListener extends AbstractEventPublisher {
                             + ", id=" + event.getEventId(), e);
         }
         outboxStorage.save(event.getEventType(), payload);
+        semesterArchiveEffectLedger.record(event, payload);
         log.debug("Outbox saved: type={}, id={}", event.getEventType(), event.getEventId());
     }
 }

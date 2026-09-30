@@ -11,6 +11,7 @@ import ru.rutcampustrack.academic.entity.HomeworkBindingArchiveMarker;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.HomeworkBindingArchiveMarkerRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
+import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 
 import java.sql.PreparedStatement;
 import java.util.Objects;
@@ -28,16 +29,19 @@ public class HomeworkBindingArchiveCoordinator {
     private final EntityManager entityManager;
     private final HomeworkBindingArchiveMarkerRepository markerRepository;
     private final HomeworkRepository homeworkRepository;
+    private final AcademicSemesterArchiveBarrierTransaction archiveBarrier;
 
     public HomeworkBindingArchiveCoordinator(
             JdbcTemplate jdbcTemplate,
             EntityManager entityManager,
             HomeworkBindingArchiveMarkerRepository markerRepository,
-            HomeworkRepository homeworkRepository) {
+            HomeworkRepository homeworkRepository,
+            AcademicSemesterArchiveBarrierTransaction archiveBarrier) {
         this.jdbcTemplate = jdbcTemplate;
         this.entityManager = entityManager;
         this.markerRepository = markerRepository;
         this.homeworkRepository = homeworkRepository;
+        this.archiveBarrier = archiveBarrier;
     }
 
     /** Must be called before reading publication state or marker state. */
@@ -58,6 +62,11 @@ public class HomeworkBindingArchiveCoordinator {
         });
     }
 
+    /** Acquires Academic's archive epoch lock before any homework or completion write. */
+    public void lockSemesterWrite(long semesterId) {
+        archiveBarrier.lockOrdinaryWrite(semesterId);
+    }
+
     /**
      * Acquires the binding lock before refreshing a previously selected entity.
      * Callers must not inspect mutable Homework fields between the selection and
@@ -69,6 +78,7 @@ public class HomeworkBindingArchiveCoordinator {
         if (bindingId == null || bindingId <= 0) {
             throw new ConflictException("homework has no durable binding identity");
         }
+        archiveBarrier.lockOrdinaryWrite(homework.getSemesterId());
         lock(bindingId);
         entityManager.refresh(homework);
     }
@@ -84,12 +94,25 @@ public class HomeworkBindingArchiveCoordinator {
     /** Caller must hold {@link #lock(long)} before creating/updating the marker. */
     public HomeworkBindingArchiveMarker ensureMarker(
             long bindingId, long actorId, UUID requestKey, Long homeworkId) {
+        return ensureMarker(bindingId, actorId, requestKey, homeworkId, null, null);
+    }
+
+    public HomeworkBindingArchiveMarker ensureMarker(
+            long bindingId, long actorId, UUID requestKey, Long homeworkId,
+            Long semesterId, UUID sourceEventId) {
         HomeworkBindingArchiveMarker marker = markerRepository.findById(bindingId)
                 .orElseGet(() -> new HomeworkBindingArchiveMarker(
-                        bindingId, actorId, requestKey, homeworkId));
+                        bindingId, actorId, requestKey, homeworkId, semesterId, sourceEventId));
         requireMarkerIdentity(marker, bindingId, actorId, requestKey);
         if (homeworkId != null) {
             associateHomework(marker, homeworkId);
+        }
+        if (semesterId != null) {
+            try {
+                marker.associateOrigin(semesterId, sourceEventId);
+            } catch (IllegalStateException mismatch) {
+                throw new ConflictException("homework archive marker points to different semester/event origin");
+            }
         }
         return markerRepository.save(marker);
     }
@@ -100,7 +123,8 @@ public class HomeworkBindingArchiveCoordinator {
      * is an identity assertion, never a fallback lookup key.
      */
     public void archiveCancelledBinding(long bindingId, long actorId, UUID requestKey,
-                                        Long eventHomeworkId) {
+                                        Long eventHomeworkId, long semesterId, UUID sourceEventId) {
+        archiveBarrier.beginArchiveEffect(sourceEventId, semesterId);
         lock(bindingId);
 
         Homework homework = homeworkRepository.findByBindingId(bindingId).orElse(null);
@@ -109,13 +133,16 @@ public class HomeworkBindingArchiveCoordinator {
             throw new ConflictException(
                     "homework.binding.archived points to missing or different Academic content");
         }
+        if (homework != null && homework.getSemesterId() != semesterId) {
+            throw new ConflictException("homework.binding.archived points to another semester");
+        }
         if (homework != null) {
             requireHomeworkIdentity(homework, bindingId, actorId, requestKey);
         }
 
         HomeworkBindingArchiveMarker marker = ensureMarker(
                 bindingId, actorId, requestKey,
-                homework == null ? null : homework.getId());
+                homework == null ? null : homework.getId(), semesterId, sourceEventId);
         if (homework != null && homework.getPublicationState() != HomeworkPublicationState.ARCHIVED) {
             homework.archivePublication();
             homeworkRepository.save(homework);
@@ -126,9 +153,12 @@ public class HomeworkBindingArchiveCoordinator {
 
     /** Caller must hold the binding lock before recording a direct archive. */
     public void archiveExistingHomework(Homework homework, long bindingId, UUID requestKey) {
+        archiveBarrier.lockOrdinaryWrite(homework.getSemesterId());
+        lock(bindingId);
         requireHomeworkIdentity(homework, bindingId, homework.getActorId(), requestKey);
         HomeworkBindingArchiveMarker marker = ensureMarker(
-                bindingId, homework.getActorId(), requestKey, homework.getId());
+                bindingId, homework.getActorId(), requestKey, homework.getId(),
+                homework.getSemesterId(), null);
         if (homework.getPublicationState() != HomeworkPublicationState.ARCHIVED) {
             homework.archivePublication();
             homeworkRepository.save(homework);

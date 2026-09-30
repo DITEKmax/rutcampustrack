@@ -16,6 +16,7 @@ import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.event.LessonTransferRequestedEvent;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -48,15 +49,18 @@ public class LessonTransferWriter {
     private final Clock clock;
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
     public LessonTransferWriter(JdbcTemplate jdbc,
                                 Clock clock,
                                 ObjectMapper objectMapper,
-                                ApplicationEventPublisher eventPublisher) {
+                                ApplicationEventPublisher eventPublisher,
+                                ScheduleSemesterArchiveWriteFence archiveWriteFence) {
         this.jdbc = jdbc;
         this.clock = clock;
         this.objectMapper = objectMapper;
         this.eventPublisher = eventPublisher;
+        this.archiveWriteFence = archiveWriteFence;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -65,7 +69,6 @@ public class LessonTransferWriter {
                                            TransferLessonRequest request) {
         if (actorId <= 0) throw new IllegalArgumentException("actorId must be positive");
         byte[] requestHash = requestHash(sourceLessonId, request);
-        lockRequestKey(actorId, request.requestKey());
         TransferLessonResponse replay = findReplay(actorId, request.requestKey(), requestHash);
         if (replay != null) return replay;
 
@@ -75,6 +78,13 @@ public class LessonTransferWriter {
             if (before.get("schedule_item_id") == null) {
                 throw new ConflictException("Перенос этой пары вне текущего цикла расписания не поддерживается");
             }
+            // Academic is checked before the local advisory lock. The exact
+            // same lock as PREPARE then serializes acceptance against the
+            // assignment/item/occurrence/binding lock chain.
+            archiveWriteFence.lockForBusinessWrite(number(before.get("semester_id")));
+            lockRequestKey(actorId, request.requestKey());
+            replay = findReplay(actorId, request.requestKey(), requestHash);
+            if (replay != null) return replay;
             lockFences(List.of(number(before.get("assignment_id"))));
             lockItems(List.of(number(before.get("schedule_item_id"))));
             Map<String, Object> current = lockOccurrence(occurrenceId);

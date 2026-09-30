@@ -11,6 +11,7 @@ import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt;
 import ru.rutcampustrack.schedule.grpc.CommitAssignmentCloseRequest;
 import ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 
 import java.security.MessageDigest;
 import java.time.LocalDate;
@@ -35,14 +36,17 @@ public class AssignmentReplacementService {
     private final JdbcTemplate jdbc;
     private final AcademicGrpcClient academicGrpcClient;
     private final TransactionTemplate transaction;
+    private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
     public AssignmentReplacementService(JdbcTemplate jdbc,
                                         AcademicGrpcClient academicGrpcClient,
-                                        PlatformTransactionManager transactionManager) {
+                                        PlatformTransactionManager transactionManager,
+                                        ScheduleSemesterArchiveWriteFence archiveWriteFence) {
         this.jdbc = jdbc;
         this.academicGrpcClient = academicGrpcClient;
         this.transaction = new TransactionTemplate(transactionManager);
         this.transaction.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        this.archiveWriteFence = archiveWriteFence;
     }
 
     public AssignmentCloseReceipt install(InstallAssignmentCloseCapRequest request) {
@@ -84,6 +88,7 @@ public class AssignmentReplacementService {
 
     private AssignmentCloseReceipt applyLocal(PreparedAssignmentCloseResponse authority,
                                                byte[] payloadHash) {
+        archiveWriteFence.lockForBusinessWrite(authority.getSemesterId());
         UUID operationId = parseUuid(authority.getOperationId());
         List<Map<String, Object>> existing = jdbc.queryForList("""
                 SELECT payload_hash, source_assignment_id, target_assignment_id,
@@ -307,6 +312,7 @@ public class AssignmentReplacementService {
     private AssignmentCloseReceipt commitLocal(UUID operationId,
                                                byte[] payloadHash,
                                                PreparedAssignmentCloseResponse authority) {
+        archiveWriteFence.lockForBusinessWrite(authority.getSemesterId());
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 SELECT payload_hash, source_assignment_id, target_assignment_id,
                        source_teacher_id, target_teacher_id, group_id, subject_id,

@@ -31,14 +31,15 @@ public class LessonCancelledEvent extends DomainEvent {
             @JsonProperty("lesson_number") Integer lessonNumber,
             @JsonProperty("cancel_reason") String cancelReason,
             @JsonProperty("cancelled_by") Long cancelledBy,
-            @JsonProperty("cancelled_at") String cancelledAt
+            @JsonProperty("cancelled_at") String cancelledAt,
+            @JsonProperty("semester_id") Long semesterId
     ) {}
 
     public LessonCancelledEvent(Object source,
                                 Long lessonId, Long groupId, Long subjectId,
                                 LocalDate date, LocalTime startTime, LocalTime endTime,
                                 Integer lessonNumber, String cancelReason,
-                                Long cancelledBy, OffsetDateTime cancelledAt) {
+                                Long cancelledBy, OffsetDateTime cancelledAt, Long semesterId) {
         super(source, "lesson.cancelled",
                 new Payload(
                         lessonId, groupId, subjectId,
@@ -48,6 +49,16 @@ public class LessonCancelledEvent extends DomainEvent {
                         lessonNumber,
                         cancelReason,
                         cancelledBy,
-                        cancelledAt != null ? cancelledAt.toString() : null));
+                        cancelledAt != null ? cancelledAt.toString() : null,
+                        semesterId));
+    }
+
+    public LessonCancelledEvent(Object source,
+                                Long lessonId, Long groupId, Long subjectId,
+                                LocalDate date, LocalTime startTime, LocalTime endTime,
+                                Integer lessonNumber, String cancelReason,
+                                Long cancelledBy, OffsetDateTime cancelledAt) {
+        this(source, lessonId, groupId, subjectId, date, startTime, endTime,
+                lessonNumber, cancelReason, cancelledBy, cancelledAt, null);
     }
 }

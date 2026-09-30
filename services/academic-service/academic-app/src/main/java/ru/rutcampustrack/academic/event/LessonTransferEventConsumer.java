@@ -60,6 +60,7 @@ public class LessonTransferEventConsumer extends AbstractEventConsumer {
             throw new IllegalArgumentException("lesson.transfer.requested has no payload object");
         }
 
+        UUID eventId = uuid(envelope.get("event_id"), "event_id");
         UUID operationId = uuid(payload.get("operation_id"), "operation_id");
         UUID requestKey = uuid(payload.get("request_key"), "request_key");
         long actorId = positiveLong(payload.get("actor_id"), "actor_id");
@@ -145,7 +146,7 @@ public class LessonTransferEventConsumer extends AbstractEventConsumer {
                     bindingRequestKey, homeworkId, bindingPayloadHash, state, revision));
         }
         String batchHash = hashBindings(bindings);
-        return new LessonTransferBatch(operationId, requestKey, actorId, operationHash,
+        return new LessonTransferBatch(eventId, operationId, requestKey, actorId, operationHash,
                 occurrenceId, groupId, positiveLong(source.get("subject_id"), "source.subject_id"),
                 semesterId, expectedRevision, sourceLessonId, targetLessonId,
                 sourceDate, sourceNumber, targetDate, targetNumber,

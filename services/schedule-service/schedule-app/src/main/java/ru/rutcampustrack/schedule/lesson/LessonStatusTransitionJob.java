@@ -13,11 +13,13 @@ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Cron job that transitions lesson statuses every minute.
@@ -40,15 +42,18 @@ public class LessonStatusTransitionJob {
     private final ScheduleItemRepository scheduleItemRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
+    private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
     public LessonStatusTransitionJob(LessonRepository lessonRepository,
                                      ScheduleItemRepository scheduleItemRepository,
                                      ApplicationEventPublisher eventPublisher,
-                                     Clock clock) {
+                                     Clock clock,
+                                     ScheduleSemesterArchiveWriteFence archiveWriteFence) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.eventPublisher = eventPublisher;
         this.clock = clock;
+        this.archiveWriteFence = archiveWriteFence;
     }
 
     @Scheduled(fixedDelay = 60_000)
@@ -60,7 +65,18 @@ public class LessonStatusTransitionJob {
         LocalDateTime nowMoscow = LocalDateTime.now(clock);
 
         // Phase 1: planned -> active
-        List<Lesson> toActivate = lessonRepository.findPlannedDueForActivation(nowMoscow);
+        List<Lesson> activationCandidates = lessonRepository.findPlannedDueForActivation(nowMoscow);
+        List<Lesson> closingCandidates = lessonRepository.findActiveDueForClosure(nowMoscow);
+        java.util.ArrayList<Lesson> candidates = new java.util.ArrayList<>(activationCandidates);
+        candidates.addAll(closingCandidates);
+        Set<Long> writableSemesters = archiveWriteFence.lockWritableSemesters(candidates.stream()
+                .map(Lesson::getSemesterId)
+                .filter(java.util.Objects::nonNull)
+                .toList());
+        List<Lesson> toActivate = activationCandidates.stream()
+                .filter(lesson -> lesson.getSemesterId() != null
+                        && writableSemesters.contains(lesson.getSemesterId()))
+                .toList();
         for (Lesson lesson : toActivate) {
             lesson.setStatus(LessonStatus.ACTIVE);
             ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
@@ -74,7 +90,10 @@ public class LessonStatusTransitionJob {
         lessonRepository.saveAll(toActivate);
 
         // Phase 2: active -> closed (including lessons just activated in phase 1 that are also past end_time+5min)
-        List<Lesson> toClose = lessonRepository.findActiveDueForClosure(nowMoscow);
+        List<Lesson> toClose = lessonRepository.findActiveDueForClosure(nowMoscow).stream()
+                .filter(lesson -> lesson.getSemesterId() != null
+                        && writableSemesters.contains(lesson.getSemesterId()))
+                .toList();
         for (Lesson lesson : toClose) {
             lesson.setStatus(LessonStatus.CLOSED);
             lesson.setClosedAt(OffsetDateTime.now(clock));
@@ -82,7 +101,8 @@ public class LessonStatusTransitionJob {
                     .orElseThrow(() -> new IllegalStateException(
                             "ScheduleItem not found for lesson " + lesson.getId()));
             eventPublisher.publishEvent(new LessonClosedEvent(this,
-                    lesson.getId(), snapshotGroup(lesson, item), snapshotSubject(lesson, item)));
+                    lesson.getId(), snapshotGroup(lesson, item), snapshotSubject(lesson, item),
+                    lesson.getSemesterId()));
         }
         lessonRepository.saveAll(toClose);
 

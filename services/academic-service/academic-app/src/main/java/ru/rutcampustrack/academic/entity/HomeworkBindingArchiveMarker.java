@@ -31,15 +31,29 @@ public class HomeworkBindingArchiveMarker {
     @Column(name = "homework_id")
     private Long homeworkId;
 
+    @Column(name = "semester_id")
+    private Long semesterId;
+
+    @Column(name = "source_event_id")
+    private UUID sourceEventId;
+
     @Column(name = "archived_at", nullable = false, updatable = false)
     private OffsetDateTime archivedAt;
 
     public HomeworkBindingArchiveMarker(long bindingId, long actorId,
                                         UUID requestKey, Long homeworkId) {
+        this(bindingId, actorId, requestKey, homeworkId, null, null);
+    }
+
+    public HomeworkBindingArchiveMarker(long bindingId, long actorId,
+                                        UUID requestKey, Long homeworkId,
+                                        Long semesterId, UUID sourceEventId) {
         this.bindingId = bindingId;
         this.actorId = actorId;
         this.requestKey = requestKey;
         this.homeworkId = homeworkId;
+        this.semesterId = semesterId;
+        this.sourceEventId = sourceEventId;
     }
 
     public boolean hasIdentity(long expectedActorId, UUID expectedRequestKey) {
@@ -54,6 +68,19 @@ public class HomeworkBindingArchiveMarker {
             throw new IllegalStateException("homework archive marker points to different content");
         }
         homeworkId = expectedHomeworkId;
+    }
+
+    public void associateOrigin(long expectedSemesterId, UUID expectedSourceEventId) {
+        if (expectedSemesterId <= 0) {
+            throw new IllegalArgumentException("semesterId must be positive");
+        }
+        if (semesterId != null && semesterId != expectedSemesterId) {
+            throw new IllegalStateException("homework archive marker belongs to another semester");
+        }
+        semesterId = expectedSemesterId;
+        if (sourceEventId == null && expectedSourceEventId != null) {
+            sourceEventId = expectedSourceEventId;
+        }
     }
 
     @PrePersist

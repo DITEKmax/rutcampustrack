@@ -20,12 +20,18 @@ public class OneOffLessonCancelledEvent extends DomainEvent {
             @JsonProperty("group_id") Long groupId,
             @JsonProperty("subject_id") Long subjectId,
             @JsonProperty("date") String date,
-            @JsonProperty("lesson_number") Integer lessonNumber
+            @JsonProperty("lesson_number") Integer lessonNumber,
+            @JsonProperty("semester_id") Long semesterId
     ) {}
 
     public OneOffLessonCancelledEvent(Object source, Long groupId, Long subjectId,
-                                      LocalDate date, Integer lessonNumber) {
+                                      LocalDate date, Integer lessonNumber, Long semesterId) {
         super(source, "lesson.one_off.cancelled",
-                new Payload(groupId, subjectId, date.toString(), lessonNumber));
+                new Payload(groupId, subjectId, date.toString(), lessonNumber, semesterId));
+    }
+
+    public OneOffLessonCancelledEvent(Object source, Long groupId, Long subjectId,
+                                      LocalDate date, Integer lessonNumber) {
+        this(source, groupId, subjectId, date, lessonNumber, null);
     }
 }

@@ -18,6 +18,7 @@ import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.event.HomeworkDueReminderEvent;
 import ru.rutcampustrack.academic.event.HomeworkNotificationItem;
 import ru.rutcampustrack.academic.event.HomeworkWeeklyDigestEvent;
+import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
@@ -94,6 +95,7 @@ public class HomeworkNotificationJob {
         }
 
         Semester semester = maybeSemester.get();
+        archiveCoordinator.lockSemesterWrite(semester.getId());
         LocalDate weekStart = today.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
         if (weekStart.isAfter(semester.getDateTo())) {
             return;
@@ -175,8 +177,16 @@ public class HomeworkNotificationJob {
             // ACTIVE before cancellation committed while this job waited for
             // the binding lock, so refresh the managed row before eligibility
             // checks or any reminder side effect.
-            if (homework.getBindingId() != null) {
-                archiveCoordinator.lockAndRefresh(homework);
+            try {
+                if (homework.getBindingId() != null) {
+                    archiveCoordinator.lockAndRefresh(homework);
+                } else {
+                    archiveCoordinator.lockSemesterWrite(homework.getSemesterId());
+                }
+            } catch (ConflictException blocked) {
+                // Archive transitions close reminders along with user writes;
+                // skip this candidate while keeping unrelated semesters moving.
+                continue;
             }
             if (homework.getPublicationState() != HomeworkPublicationState.ACTIVE
                     || homework.getDueReminderSentAt() != null

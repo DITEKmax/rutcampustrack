@@ -11,11 +11,13 @@ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Cron job that publishes {@code lesson.reminder} events for active lessons:
@@ -43,15 +45,18 @@ public class LessonReminderJob {
     private final ScheduleItemRepository scheduleItemRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
+    private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
     public LessonReminderJob(LessonRepository lessonRepository,
                              ScheduleItemRepository scheduleItemRepository,
                              ApplicationEventPublisher eventPublisher,
-                             Clock clock) {
+                             Clock clock,
+                             ScheduleSemesterArchiveWriteFence archiveWriteFence) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.eventPublisher = eventPublisher;
         this.clock = clock;
+        this.archiveWriteFence = archiveWriteFence;
     }
 
     @Scheduled(fixedDelay = 60_000)
@@ -61,11 +66,26 @@ public class LessonReminderJob {
     @Transactional
     public void runReminders() {
         LocalDateTime nowMoscow = LocalDateTime.now(clock);
-        List<Lesson> midpointDue = lessonRepository.findActiveDueForMidpointReminder(nowMoscow);
-        List<Lesson> nearEndDue = lessonRepository.findActiveDueForNearEndReminder(nowMoscow);
-        if (midpointDue.isEmpty() && nearEndDue.isEmpty()) {
+        List<Lesson> midpointCandidates = lessonRepository.findActiveDueForMidpointReminder(nowMoscow);
+        List<Lesson> nearEndCandidates = lessonRepository.findActiveDueForNearEndReminder(nowMoscow);
+        if (midpointCandidates.isEmpty() && nearEndCandidates.isEmpty()) {
             return;
         }
+        java.util.ArrayList<Lesson> candidates = new java.util.ArrayList<>(midpointCandidates);
+        candidates.addAll(nearEndCandidates);
+        Set<Long> writableSemesters = archiveWriteFence.lockWritableSemesters(candidates.stream()
+                .map(Lesson::getSemesterId)
+                .filter(java.util.Objects::nonNull)
+                .toList());
+        List<Lesson> midpointDue = midpointCandidates.stream()
+                .filter(lesson -> lesson.getSemesterId() != null
+                        && writableSemesters.contains(lesson.getSemesterId()))
+                .toList();
+        List<Lesson> nearEndDue = nearEndCandidates.stream()
+                .filter(lesson -> lesson.getSemesterId() != null
+                        && writableSemesters.contains(lesson.getSemesterId()))
+                .toList();
+        if (midpointDue.isEmpty() && nearEndDue.isEmpty()) return;
         OffsetDateTime nowOffset = OffsetDateTime.now(clock);
         for (Lesson lesson : midpointDue) {
             publishReminder(lesson, "midpoint");

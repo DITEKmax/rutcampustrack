@@ -9,6 +9,7 @@ import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 import ru.rutcampustrack.schedule.item.ScheduleItemService;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
@@ -84,8 +85,10 @@ class RecurringLifecycleGateTest {
         AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
         RequestContext context = mock(RequestContext.class);
         ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
+        ScheduleSemesterArchiveWriteFence archiveWriteFence = mock(ScheduleSemesterArchiveWriteFence.class);
         RecurringLessonLifecycleWriter lifecycleWriter = mock(RecurringLessonLifecycleWriter.class);
         EntityManager entityManager = mock(EntityManager.class);
+        ScheduleSemesterArchiveWriteFence archiveWriteFence = mock(ScheduleSemesterArchiveWriteFence.class);
 
         Lesson lesson = new Lesson();
         lesson.setScheduleItemId(7L);
@@ -99,7 +102,7 @@ class RecurringLifecycleGateTest {
         when(lifecycleWriter.restore(11L, 42L)).thenReturn(11L);
 
         LessonService service = new LessonService(
-                lessons, items, academic, context, events, lifecycleWriter, entityManager);
+                lessons, items, academic, context, events, lifecycleWriter, entityManager, archiveWriteFence);
 
         service.restoreLesson(11L);
         verify(lifecycleWriter).restore(11L, 42L);
@@ -120,7 +123,7 @@ class RecurringLifecycleGateTest {
         when(lessons.countCanonicalReferencesBySubjectId(20L)).thenReturn(1L);
 
         SubjectDeletedCascadeService service = new SubjectDeletedCascadeService(
-                items, oneOffs, lessons, events);
+                items, oneOffs, lessons, events, archiveWriteFence);
 
         assertThatThrownBy(() -> service.cascade(20L))
                 .isInstanceOf(RecurringLifecycleNotReadyException.class);

@@ -49,6 +49,10 @@ public class Semester {
     private long stateVersion;
 
     @Setter
+    @Column(name = "archive_release_pending", nullable = false)
+    private boolean releasePending;
+
+    @Setter
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 

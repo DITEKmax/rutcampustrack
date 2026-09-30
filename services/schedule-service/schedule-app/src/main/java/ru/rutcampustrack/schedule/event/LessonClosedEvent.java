@@ -13,10 +13,15 @@ public class LessonClosedEvent extends DomainEvent {
     public record Payload(
             @JsonProperty("lesson_id") Long lessonId,
             @JsonProperty("group_id") Long groupId,
-            @JsonProperty("subject_id") Long subjectId
+            @JsonProperty("subject_id") Long subjectId,
+            @JsonProperty("semester_id") Long semesterId
     ) {}
 
+    public LessonClosedEvent(Object source, Long lessonId, Long groupId, Long subjectId, Long semesterId) {
+        super(source, "lesson.closed", new Payload(lessonId, groupId, subjectId, semesterId));
+    }
+
     public LessonClosedEvent(Object source, Long lessonId, Long groupId, Long subjectId) {
-        super(source, "lesson.closed", new Payload(lessonId, groupId, subjectId));
+        this(source, lessonId, groupId, subjectId, null);
     }
 }

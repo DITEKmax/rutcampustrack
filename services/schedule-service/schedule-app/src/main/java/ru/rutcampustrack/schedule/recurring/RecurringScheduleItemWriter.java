@@ -5,6 +5,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
@@ -41,10 +42,14 @@ public class RecurringScheduleItemWriter {
 
     private final JdbcTemplate jdbc;
     private final Clock clock;
+    private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
-    public RecurringScheduleItemWriter(JdbcTemplate jdbc, Clock clock) {
+    public RecurringScheduleItemWriter(JdbcTemplate jdbc,
+                                       Clock clock,
+                                       ScheduleSemesterArchiveWriteFence archiveWriteFence) {
         this.jdbc = jdbc;
         this.clock = clock;
+        this.archiveWriteFence = archiveWriteFence;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -63,6 +68,7 @@ public class RecurringScheduleItemWriter {
         if (existingReplay != null) {
             return existingReplay;
         }
+        archiveWriteFence.lockForBusinessWrite(authority.semesterId());
         LocalDate fenceCap;
         try {
             fenceCap = lockOrInstallFence(authority);

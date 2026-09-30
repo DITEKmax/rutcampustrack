@@ -29,6 +29,8 @@ public final class AssignmentCloseServiceIdentityInterceptor implements ServerIn
             ScheduleGrpcServiceGrpc.SERVICE_NAME + "/ArchiveHomeworkBinding";
     static final String GET_HOMEWORK_METHOD =
             ScheduleGrpcServiceGrpc.SERVICE_NAME + "/GetHomeworkBindings";
+    static final String SEMESTER_ARCHIVE_BARRIER_METHOD =
+            ServiceIdentityServerInterceptor.SCHEDULE_SET_SEMESTER_ARCHIVE_BARRIER;
 
     private final ServiceIdentityServerInterceptor delegate;
 
@@ -46,7 +48,8 @@ public final class AssignmentCloseServiceIdentityInterceptor implements ServerIn
                         RESERVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
                         CONFIRM_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
                         ARCHIVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
-                        GET_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
+                        GET_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+                        SEMESTER_ARCHIVE_BARRIER_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
                 credentials);
     }
 

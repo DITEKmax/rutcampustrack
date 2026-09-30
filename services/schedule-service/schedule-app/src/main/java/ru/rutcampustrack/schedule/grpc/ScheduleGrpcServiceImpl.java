@@ -39,6 +39,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
     private final HomeworkBindingService homeworkBindingService;
     private final AssignmentReplacementService assignmentReplacementService;
     private final LessonTransferWriter lessonTransferWriter;
+    private final ScheduleSemesterArchiveBarrierService semesterArchiveBarrierService;
 
     /** Legacy constructor kept for focused tests of the pre-V17 read RPCs. */
     public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
@@ -53,7 +54,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                    OneOffLessonRepository oneOffLessonRepository,
                                    HomeworkBindingService homeworkBindingService) {
         this(lessonRepository, scheduleItemRepository, oneOffLessonRepository,
-                homeworkBindingService, null, null);
+                homeworkBindingService, null, null, null);
     }
 
     /** Compatibility constructor retained for focused pre-transfer tests. */
@@ -63,7 +64,18 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                    HomeworkBindingService homeworkBindingService,
                                    AssignmentReplacementService assignmentReplacementService) {
         this(lessonRepository, scheduleItemRepository, oneOffLessonRepository,
-                homeworkBindingService, assignmentReplacementService, null);
+                homeworkBindingService, assignmentReplacementService, null, null);
+    }
+
+    /** Compatibility constructor retained for focused pre-archive tests. */
+    public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
+                                   ScheduleItemRepository scheduleItemRepository,
+                                   OneOffLessonRepository oneOffLessonRepository,
+                                   HomeworkBindingService homeworkBindingService,
+                                   AssignmentReplacementService assignmentReplacementService,
+                                   LessonTransferWriter lessonTransferWriter) {
+        this(lessonRepository, scheduleItemRepository, oneOffLessonRepository,
+                homeworkBindingService, assignmentReplacementService, lessonTransferWriter, null);
     }
 
     @Autowired
@@ -72,13 +84,15 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                                    OneOffLessonRepository oneOffLessonRepository,
                                    HomeworkBindingService homeworkBindingService,
                                    AssignmentReplacementService assignmentReplacementService,
-                                   LessonTransferWriter lessonTransferWriter) {
+                                   LessonTransferWriter lessonTransferWriter,
+                                   ScheduleSemesterArchiveBarrierService semesterArchiveBarrierService) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.oneOffLessonRepository = oneOffLessonRepository;
         this.homeworkBindingService = homeworkBindingService;
         this.assignmentReplacementService = assignmentReplacementService;
         this.lessonTransferWriter = lessonTransferWriter;
+        this.semesterArchiveBarrierService = semesterArchiveBarrierService;
     }
 
     /**
@@ -290,6 +304,18 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
             throw new IllegalStateException("homework binding store is not configured");
         }
         return homeworkBindingService;
+    }
+
+    @Override
+    public void setSemesterArchiveBarrier(SetSemesterArchiveBarrierRequest request,
+                                          StreamObserver<SetSemesterArchiveBarrierResponse> responseObserver) {
+        if (semesterArchiveBarrierService == null) {
+            throw io.grpc.Status.FAILED_PRECONDITION
+                    .withDescription("Schedule semester archive barrier is not configured")
+                    .asRuntimeException();
+        }
+        responseObserver.onNext(semesterArchiveBarrierService.set(request));
+        responseObserver.onCompleted();
     }
 
     /**

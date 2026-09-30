@@ -31,6 +31,10 @@ public final class ServiceIdentityServerInterceptor implements ServerInterceptor
             "rutcampustrack.schedule.ScheduleGrpcService/CommitAssignmentClose";
     public static final String ACADEMIC_GET_PREPARED_ASSIGNMENT_CLOSE_OPERATION =
             "rutcampustrack.academic.AcademicGrpcService/GetPreparedAssignmentCloseOperation";
+    public static final String ACADEMIC_GET_SEMESTER_STATE =
+            "rutcampustrack.academic.AcademicGrpcService/GetSemesterState";
+    public static final String SCHEDULE_SET_SEMESTER_ARCHIVE_BARRIER =
+            "rutcampustrack.schedule.ScheduleGrpcService/SetSemesterArchiveBarrier";
 
     private static final String INVALID_IDENTITY = "Invalid service identity";
     private static final String TLS_REQUIRED = "Service identity requires authenticated TLS";

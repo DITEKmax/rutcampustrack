@@ -17,6 +17,7 @@ import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.OffsetDateTime;
@@ -40,6 +41,7 @@ class HomeworkStudentServiceTest {
     @Mock private HomeworkCompletionRepository completionRepository;
     @Mock private SemesterRepository semesterRepository;
     @Mock private UserRepository userRepository;
+    @Mock private AcademicSemesterArchiveBarrierTransaction archiveBarrier;
     @Mock private Homework homework;
     @Mock private HomeworkCompletion completion;
     @Mock private Semester semester;
@@ -51,7 +53,7 @@ class HomeworkStudentServiceTest {
     @BeforeEach
     void setUp() {
         service = new HomeworkStudentService(
-                homeworkRepository, completionRepository, semesterRepository, userRepository);
+                homeworkRepository, completionRepository, semesterRepository, userRepository, archiveBarrier);
         claims = new InternalJwtClaims(
                 STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", GROUP_ID, false, false);
         lenient().when(userRepository.findById(STUDENT_ID)).thenReturn(Optional.of(user));

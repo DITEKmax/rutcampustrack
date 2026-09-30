@@ -525,7 +525,11 @@ public class HomeworkService {
         Homework homework = getHomework(id);
         requireAuthor(homework); // D-05
         if (archiveCoordinator != null) {
-            archiveCoordinator.lockAndRefresh(homework);
+            if (homework.getBindingId() != null) {
+                archiveCoordinator.lockAndRefresh(homework);
+            } else {
+                archiveCoordinator.lockSemesterWrite(homework.getSemesterId());
+            }
             requireAuthor(homework); // immutable author check after the fresh read
             if (homework.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
                 throw new ConflictException("archived homework cannot be updated");
@@ -589,7 +593,10 @@ public class HomeworkService {
     @Transactional
     public void markComplete(Long homeworkId) {
         // M13 G9 — getHomework делает groupId-check; нельзя отмечать чужое ДЗ
-        getHomework(homeworkId);
+        Homework homework = getHomework(homeworkId);
+        if (archiveCoordinator != null) {
+            archiveCoordinator.lockSemesterWrite(homework.getSemesterId());
+        }
         Long studentId = requestContext.getUserId();
         if (completionRepository.existsByHomeworkIdAndStudentId(homeworkId, studentId)) {
             throw new ConflictException("Домашнее задание уже отмечено как выполненное");
@@ -601,7 +608,10 @@ public class HomeworkService {
     @Transactional
     public void unmarkComplete(Long homeworkId) {
         // M13 G9 — getHomework делает groupId-check
-        getHomework(homeworkId);
+        Homework homework = getHomework(homeworkId);
+        if (archiveCoordinator != null) {
+            archiveCoordinator.lockSemesterWrite(homework.getSemesterId());
+        }
         Long studentId = requestContext.getUserId();
         HomeworkCompletion completion = completionRepository
                 .findByHomeworkIdAndStudentId(homeworkId, studentId)

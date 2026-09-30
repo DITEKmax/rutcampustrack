@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
 import ru.rutcampustrack.schedule.event.HomeworkBindingArchivedEvent;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -37,13 +38,16 @@ public class RecurringLessonLifecycleWriter {
     private final JdbcTemplate jdbc;
     private final Clock clock;
     private final ApplicationEventPublisher eventPublisher;
+    private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
     public RecurringLessonLifecycleWriter(JdbcTemplate jdbc,
                                           Clock clock,
-                                          ApplicationEventPublisher eventPublisher) {
+                                          ApplicationEventPublisher eventPublisher,
+                                          ScheduleSemesterArchiveWriteFence archiveWriteFence) {
         this.jdbc = jdbc;
         this.clock = clock;
         this.eventPublisher = eventPublisher;
+        this.archiveWriteFence = archiveWriteFence;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -51,6 +55,7 @@ public class RecurringLessonLifecycleWriter {
         try {
             Snapshot before = readByLesson(lessonId);
             requireRecurring(before);
+            archiveWriteFence.lockForBusinessWrite(before.occurrence().semesterId());
             lockFences(List.of(before.occurrence().assignmentId()));
             lockItems(List.of(before.occurrence().scheduleItemId()));
             LockedCurrent current = lockCurrent(before.occurrenceId());
@@ -84,7 +89,7 @@ public class RecurringLessonLifecycleWriter {
             insertLifecycle(current.occurrence(), current.occurrence().revision() + 1,
                     "CANCELLED", lessonId, null, current.occurrence().generation(),
                     reason, actorId, now, null);
-            archiveOccurrenceBindings(current.occurrence().id(), lessonId);
+            archiveOccurrenceBindings(current.occurrence().id(), lessonId, current.occurrence().semesterId());
         } catch (DataIntegrityViolationException ex) {
             throw new ConflictException("Отмена конфликтует с текущим состоянием пары");
         }
@@ -101,6 +106,7 @@ public class RecurringLessonLifecycleWriter {
                         "Only cancelled lessons can be restored, current status: " + before.lesson().status());
             }
 
+            archiveWriteFence.lockForBusinessWrite(before.occurrence().semesterId());
             Target targetBeforeLocks = resolveTarget(before.occurrence());
             lockFences(targetBeforeLocks.assignmentIds());
             lockItems(targetBeforeLocks.scheduleItemIds());
@@ -334,7 +340,7 @@ public class RecurringLessonLifecycleWriter {
         }
     }
 
-    private void archiveOccurrenceBindings(long occurrenceId, long currentLessonId) {
+    private void archiveOccurrenceBindings(long occurrenceId, long currentLessonId, long semesterId) {
         List<BindingSnapshot> bindings = jdbc.query("""
                 SELECT binding_id, actor_id, request_key, homework_id, revision
                   FROM lesson_homework_bindings
@@ -358,7 +364,7 @@ public class RecurringLessonLifecycleWriter {
             }
             eventPublisher.publishEvent(new HomeworkBindingArchivedEvent(this,
                     binding.bindingId(), binding.actorId(), binding.requestKey(), occurrenceId,
-                    currentLessonId, binding.homeworkId(), binding.revision() + 1));
+                    currentLessonId, binding.homeworkId(), binding.revision() + 1, semesterId));
         }
     }
 

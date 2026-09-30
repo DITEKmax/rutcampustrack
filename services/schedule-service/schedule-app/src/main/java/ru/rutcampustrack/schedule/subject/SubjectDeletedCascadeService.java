@@ -10,11 +10,17 @@ import ru.rutcampustrack.schedule.event.OneOffLessonCancelledEvent;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
 import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
+import ru.rutcampustrack.schedule.exception.ConflictException;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.TreeSet;
 
 /**
  * Cascades a {@code subject.deleted} event from academic-service into
@@ -45,15 +51,18 @@ public class SubjectDeletedCascadeService {
     private final OneOffLessonRepository oneOffLessonRepository;
     private final LessonRepository lessonRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
     public SubjectDeletedCascadeService(ScheduleItemRepository scheduleItemRepository,
                                         OneOffLessonRepository oneOffLessonRepository,
                                         LessonRepository lessonRepository,
-                                        ApplicationEventPublisher eventPublisher) {
+                                         ApplicationEventPublisher eventPublisher,
+                                         ScheduleSemesterArchiveWriteFence archiveWriteFence) {
         this.scheduleItemRepository = scheduleItemRepository;
         this.oneOffLessonRepository = oneOffLessonRepository;
         this.lessonRepository = lessonRepository;
         this.eventPublisher = eventPublisher;
+        this.archiveWriteFence = archiveWriteFence;
     }
 
     @Transactional
@@ -71,8 +80,36 @@ public class SubjectDeletedCascadeService {
             throw new RecurringLifecycleNotReadyException("subject cascade with retained canonical history");
         }
 
+        List<Lesson> lessons = lessonIds.isEmpty() ? List.of() : lessonRepository.findAllById(lessonIds);
+        TreeSet<Long> semesterIds = new TreeSet<>();
+        for (ScheduleItem item : items) {
+            if (item.getSemesterId() == null || item.getSemesterId() <= 0) {
+                throw new ConflictException("Нельзя удалить расписание без подтверждённого semester scope");
+            }
+            semesterIds.add(item.getSemesterId());
+        }
+        for (OneOffLesson oneOff : oneOffs) {
+            if (oneOff.getSemesterId() == null || oneOff.getSemesterId() <= 0) {
+                throw new ConflictException("Нельзя удалить разовую пару без подтверждённого semester scope");
+            }
+            semesterIds.add(oneOff.getSemesterId());
+        }
+        for (Lesson lesson : lessons) {
+            if (lesson.getSemesterId() == null || lesson.getSemesterId() <= 0) {
+                throw new ConflictException("Нельзя удалить пару без подтверждённого semester scope");
+            }
+            semesterIds.add(lesson.getSemesterId());
+        }
+        archiveWriteFence.requireWritableSemesters(semesterIds);
+
         if (!lessonIds.isEmpty()) {
-            eventPublisher.publishEvent(new LessonDeletedEvent(this, lessonIds));
+            Map<Long, List<Long>> lessonIdsBySemester = new LinkedHashMap<>();
+            for (Lesson lesson : lessons) {
+                lessonIdsBySemester.computeIfAbsent(lesson.getSemesterId(), ignored -> new java.util.ArrayList<>())
+                        .add(lesson.getId());
+            }
+            lessonIdsBySemester.forEach((semesterId, scopedLessonIds) ->
+                    eventPublisher.publishEvent(new LessonDeletedEvent(this, scopedLessonIds, semesterId)));
         }
 
         for (OneOffLesson oneOff : oneOffs) {
@@ -81,7 +118,8 @@ public class SubjectDeletedCascadeService {
                     oneOff.getGroupId(),
                     oneOff.getSubjectId(),
                     oneOff.getDate(),
-                    oneOff.getLessonNumber().intValue()));
+                    oneOff.getLessonNumber().intValue(),
+                    oneOff.getSemesterId()));
         }
 
         oneOffLessonRepository.deleteAll(oneOffs);

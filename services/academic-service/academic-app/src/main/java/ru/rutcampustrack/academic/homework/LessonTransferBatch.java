@@ -6,6 +6,7 @@ import java.util.UUID;
 
 /** Strictly validated snapshot of one bounded immutable Schedule transfer batch. */
 public record LessonTransferBatch(
+        UUID eventId,
         UUID operationId,
         UUID requestKey,
         long actorId,

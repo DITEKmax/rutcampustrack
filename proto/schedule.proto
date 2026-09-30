@@ -50,6 +50,63 @@ service ScheduleGrpcService {
       returns (AssignmentCloseReceipt);
   rpc CommitAssignmentClose (CommitAssignmentCloseRequest)
       returns (AssignmentCloseReceipt);
+
+  // Versioned admission barrier controlled only by authenticated Academic authority.
+  rpc SetSemesterArchiveBarrier (SetSemesterArchiveBarrierRequest)
+      returns (SetSemesterArchiveBarrierResponse);
+}
+
+enum SemesterArchiveBarrierCommand {
+  SEMESTER_ARCHIVE_BARRIER_COMMAND_UNSPECIFIED = 0;
+  SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE = 1;
+  SEMESTER_ARCHIVE_BARRIER_PREPARE_RESTORE = 2;
+  SEMESTER_ARCHIVE_BARRIER_RELEASE_RESTORE = 3;
+  SEMESTER_ARCHIVE_BARRIER_RECONCILE_HOMEWORK_BINDING = 4;
+}
+
+enum SemesterArchiveHomeworkBindingResolution {
+  SEMESTER_ARCHIVE_HOMEWORK_BINDING_RESOLUTION_UNSPECIFIED = 0;
+  SEMESTER_ARCHIVE_HOMEWORK_BINDING_CONFIRM_MATERIALIZED = 1;
+  SEMESTER_ARCHIVE_HOMEWORK_BINDING_CANCEL_UNPUBLISHED = 2;
+}
+
+message SemesterArchiveHomeworkBindingIdentity {
+  int64 binding_id = 1;
+  int64 occurrence_id = 2;
+  int64 actor_id = 3;
+  string request_key = 4;
+  bytes payload_hash = 5;
+  int64 revision = 6;
+}
+
+enum SemesterArchiveParticipantState {
+  SEMESTER_ARCHIVE_PARTICIPANT_STATE_UNSPECIFIED = 0;
+  SEMESTER_ARCHIVE_PARTICIPANT_NOT_STARTED = 1;
+  SEMESTER_ARCHIVE_PARTICIPANT_PENDING = 2;
+  SEMESTER_ARCHIVE_PARTICIPANT_READY = 3;
+  SEMESTER_ARCHIVE_PARTICIPANT_PREPARED_RESTORE = 4;
+  SEMESTER_ARCHIVE_PARTICIPANT_RELEASE_PENDING = 5;
+  SEMESTER_ARCHIVE_PARTICIPANT_RELEASED = 6;
+}
+
+message SetSemesterArchiveBarrierRequest {
+  string operation_id = 1;
+  int64 semester_id = 2;
+  int64 state_version = 3;
+  SemesterArchiveBarrierCommand command = 4;
+  optional SemesterArchiveHomeworkBindingIdentity binding = 5;
+  SemesterArchiveHomeworkBindingResolution binding_resolution = 6;
+  int64 homework_id = 7;
+}
+
+message SetSemesterArchiveBarrierResponse {
+  string operation_id = 1;
+  int64 semester_id = 2;
+  int64 state_version = 3;
+  SemesterArchiveParticipantState state = 4;
+  string blocking_reason = 5;
+  optional SemesterArchiveHomeworkBindingIdentity pending_binding = 6;
+  string terminal_event_id = 7;
 }
 
 message ActiveLessonRequest {

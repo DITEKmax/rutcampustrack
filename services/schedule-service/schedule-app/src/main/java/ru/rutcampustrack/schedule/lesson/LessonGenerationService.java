@@ -63,9 +63,12 @@ public class LessonGenerationService {
      * The {@code @TransactionalEventListener(AFTER_COMMIT)} in DomainEventListener
      * ensures the message is dispatched only if the surrounding transaction commits.
      */
-    private void publishDeleted(List<Long> ids) {
+    private void publishDeleted(List<Long> ids, long semesterId) {
         if (ids == null || ids.isEmpty()) return;
-        eventPublisher.publishEvent(new LessonDeletedEvent(this, ids));
+        if (semesterId <= 0) {
+            throw new IllegalArgumentException("lesson.deleted requires an authoritative semester scope");
+        }
+        eventPublisher.publishEvent(new LessonDeletedEvent(this, ids, semesterId));
     }
 
     /**

@@ -18,6 +18,7 @@ import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
@@ -45,6 +46,7 @@ public class LessonService {
     private final ApplicationEventPublisher eventPublisher;
     private final RecurringLessonLifecycleWriter recurringLifecycleWriter;
     private final EntityManager entityManager;
+    private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
     @Autowired
     public LessonService(LessonRepository lessonRepository,
@@ -53,7 +55,8 @@ public class LessonService {
                          RequestContext requestContext,
                          ApplicationEventPublisher eventPublisher,
                          RecurringLessonLifecycleWriter recurringLifecycleWriter,
-                         EntityManager entityManager) {
+                         EntityManager entityManager,
+                         ScheduleSemesterArchiveWriteFence archiveWriteFence) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.academicGrpcClient = academicGrpcClient;
@@ -61,6 +64,7 @@ public class LessonService {
         this.eventPublisher = eventPublisher;
         this.recurringLifecycleWriter = recurringLifecycleWriter;
         this.entityManager = entityManager;
+        this.archiveWriteFence = archiveWriteFence;
     }
 
     /**
@@ -145,6 +149,7 @@ public class LessonService {
             saved = lesson;
         } else {
             // Legacy non-recurring lessons still use the existing entity path.
+            archiveWriteFence.lockForBusinessWrite(lesson.getSemesterId());
             OffsetDateTime cancelledAt = OffsetDateTime.now();
             lesson.setStatus(LessonStatus.CANCELLED);
             lesson.setCancelReason(request.reason());
@@ -162,7 +167,8 @@ public class LessonService {
                 saved.getDate(), startTime, endTime,
                 saved.getLessonNumber() != null ? saved.getLessonNumber().intValue()
                         : (item.getLessonNumber() != null ? item.getLessonNumber().intValue() : null),
-                saved.getCancelReason(), saved.getCancelledBy(), saved.getCancelledAt()));
+                saved.getCancelReason(), saved.getCancelledBy(), saved.getCancelledAt(),
+                saved.getSemesterId()));
         return new LessonWithItem(saved, item);
     }
 
@@ -194,6 +200,7 @@ public class LessonService {
                             "ScheduleItem", "id", restored.getScheduleItemId()));
             return new LessonWithItem(restored, restoredItem);
         }
+        archiveWriteFence.lockForBusinessWrite(lesson.getSemesterId());
         lesson.setStatus(LessonStatus.PLANNED);
         lesson.setCancelReason(null);
         // M09 G5 — restore очищает весь audit-tuple cancellation'а.
@@ -209,6 +216,7 @@ public class LessonService {
     public LessonWithItem toggleGeoBlock(Long lessonId, GeoBlockRequest request) {
         LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
         Lesson lesson = lwi.lesson();
+        archiveWriteFence.lockForBusinessWrite(lesson.getSemesterId());
         lesson.setGeoBlocked(request.blocked());
         return new LessonWithItem(lessonRepository.save(lesson), lwi.scheduleItem());
     }
@@ -221,6 +229,7 @@ public class LessonService {
     public LessonWithItem blockLessonByHeadman(Long lessonId) {
         LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
         Lesson lesson = lwi.lesson();
+        archiveWriteFence.lockForBusinessWrite(lesson.getSemesterId());
         if (lesson.getStatus() == LessonStatus.CANCELLED) {
             throw new InvalidLessonStateException("Cannot block a cancelled lesson");
         }
@@ -248,6 +257,7 @@ public class LessonService {
     public LessonWithItem unblockLessonByHeadman(Long lessonId) {
         LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
         Lesson lesson = lwi.lesson();
+        archiveWriteFence.lockForBusinessWrite(lesson.getSemesterId());
         lesson.setBlockedByHeadman(false);
         lesson.setBlockedByUserId(null);
         lesson.setBlockedAt(null);

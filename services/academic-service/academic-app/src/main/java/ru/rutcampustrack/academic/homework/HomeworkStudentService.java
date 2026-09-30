@@ -15,6 +15,7 @@ import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.OffsetDateTime;
@@ -33,15 +34,18 @@ public class HomeworkStudentService {
     private final HomeworkCompletionRepository completionRepository;
     private final SemesterRepository semesterRepository;
     private final UserRepository userRepository;
+    private final AcademicSemesterArchiveBarrierTransaction archiveBarrier;
 
     public HomeworkStudentService(HomeworkRepository homeworkRepository,
                                   HomeworkCompletionRepository completionRepository,
                                   SemesterRepository semesterRepository,
-                                  UserRepository userRepository) {
+                                  UserRepository userRepository,
+                                  AcademicSemesterArchiveBarrierTransaction archiveBarrier) {
         this.homeworkRepository = homeworkRepository;
         this.completionRepository = completionRepository;
         this.semesterRepository = semesterRepository;
         this.userRepository = userRepository;
+        this.archiveBarrier = archiveBarrier;
     }
 
     /**
@@ -83,6 +87,7 @@ public class HomeworkStudentService {
             throw new ResourceNotFoundException("Homework", "id", homeworkId);
         }
 
+        archiveBarrier.lockOrdinaryWrite(homework.getSemesterId());
         if (completed) {
             completionRepository.insertIfAbsent(homework.getId(), studentId);
             HomeworkCompletion completion = completionRepository

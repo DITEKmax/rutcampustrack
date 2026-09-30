@@ -13,6 +13,7 @@ import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
@@ -50,17 +51,20 @@ public class OneOffLessonService {
     private final AcademicGrpcClient academicGrpcClient;
     private final RequestContext requestContext;
     private final ApplicationEventPublisher eventPublisher;
+    private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
     public OneOffLessonService(OneOffLessonRepository oneOffLessonRepository,
                                ScheduleItemRepository scheduleItemRepository,
                                AcademicGrpcClient academicGrpcClient,
                                RequestContext requestContext,
-                               ApplicationEventPublisher eventPublisher) {
+                               ApplicationEventPublisher eventPublisher,
+                               ScheduleSemesterArchiveWriteFence archiveWriteFence) {
         this.oneOffLessonRepository = oneOffLessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.academicGrpcClient = academicGrpcClient;
         this.requestContext = requestContext;
         this.eventPublisher = eventPublisher;
+        this.archiveWriteFence = archiveWriteFence;
     }
 
     /**
@@ -110,6 +114,7 @@ public class OneOffLessonService {
                             + semesterFrom + " .. " + semesterTo + "]");
         }
         Long semesterId = activeSemester.getId();
+        archiveWriteFence.lockForBusinessWrite(semesterId);
 
         // D-09: conflict check against active template.
         short dayOfWeekOneBased = (short) date.getDayOfWeek().getValue(); // 1=Mon..7=Sun
@@ -166,10 +171,12 @@ public class OneOffLessonService {
         OneOffLesson oneOff = oneOffLessonRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("OneOffLesson", "id", id));
         requireHeadmanForGroup(oneOff.getGroupId());
+        archiveWriteFence.lockForBusinessWrite(oneOff.getSemesterId());
 
         // Snapshot fields before delete so the event carries accurate data.
         Long groupId = oneOff.getGroupId();
         Long subjectId = oneOff.getSubjectId();
+        Long semesterId = oneOff.getSemesterId();
         LocalDate date = oneOff.getDate();
         int lessonNumber = oneOff.getLessonNumber();
 
@@ -177,7 +184,7 @@ public class OneOffLessonService {
 
         // Phase 60-04: publish lesson.one_off.cancelled (forwarded on AFTER_COMMIT).
         eventPublisher.publishEvent(new OneOffLessonCancelledEvent(
-                this, groupId, subjectId, date, lessonNumber));
+                this, groupId, subjectId, date, lessonNumber, semesterId));
     }
 
     /**

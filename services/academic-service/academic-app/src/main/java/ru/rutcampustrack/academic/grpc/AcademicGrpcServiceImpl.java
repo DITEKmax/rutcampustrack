@@ -677,8 +677,10 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 .setTransition(ru.rutcampustrack.academic.grpc.SemesterTransition.valueOf(
                         semester.getArchiveTransition().name()))
                 .setWriteBlocked(semester.isArchived()
+                        || semester.isReleasePending()
                         || semester.getArchiveTransition()
                         != ru.rutcampustrack.academic.contract.enums.SemesterTransition.NONE)
+                .setReleasePending(semester.isReleasePending())
                 .build();
 
         responseObserver.onNext(response);

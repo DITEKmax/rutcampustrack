@@ -20,10 +20,15 @@ import java.util.List;
 public class LessonDeletedEvent extends DomainEvent {
 
     public record Payload(
-            @JsonProperty("lesson_ids") List<Long> lessonIds
+            @JsonProperty("lesson_ids") List<Long> lessonIds,
+            @JsonProperty("semester_id") Long semesterId
     ) {}
 
+    public LessonDeletedEvent(Object source, List<Long> lessonIds, Long semesterId) {
+        super(source, "lesson.deleted", new Payload(lessonIds, semesterId));
+    }
+
     public LessonDeletedEvent(Object source, List<Long> lessonIds) {
-        super(source, "lesson.deleted", new Payload(lessonIds));
+        this(source, lessonIds, null);
     }
 }

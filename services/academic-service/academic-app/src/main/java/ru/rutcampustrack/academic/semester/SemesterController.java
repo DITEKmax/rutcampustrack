@@ -8,15 +8,19 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.academic.contract.api.SemesterApi;
+import ru.rutcampustrack.academic.contract.api.SemesterArchiveCommandApi;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterResponse;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterArchiveOperationResponse;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterArchiveStatusResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.security.RequireRole;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
 
@@ -25,15 +29,18 @@ import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
  * Delegates all business logic to SemesterService.
  */
 @RestController
-public class SemesterController implements SemesterApi {
+public class SemesterController implements SemesterApi, SemesterArchiveCommandApi {
 
     private final SemesterService semesterService;
     private final SemesterAssembler semesterAssembler;
+    private final SemesterArchiveService semesterArchiveService;
 
     public SemesterController(SemesterService semesterService,
-                              SemesterAssembler semesterAssembler) {
+                              SemesterAssembler semesterAssembler,
+                              SemesterArchiveService semesterArchiveService) {
         this.semesterService = semesterService;
         this.semesterAssembler = semesterAssembler;
+        this.semesterArchiveService = semesterArchiveService;
     }
 
     @Override
@@ -78,6 +85,35 @@ public class SemesterController implements SemesterApi {
     public ResponseEntity<EntityModel<SemesterResponse>> activateSemester(Long id) {
         Semester semester = semesterService.activateSemester(id);
         return ResponseEntity.ok(semesterAssembler.toModel(semester));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<SemesterArchiveOperationResponse> archiveSemester(Long id, UUID idempotencyKey) {
+        SemesterArchiveOperationResponse response = semesterArchiveService.archive(id, idempotencyKey);
+        return operationResponse(response);
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<SemesterArchiveStatusResponse> getSemesterArchiveStatus(Long id) {
+        return ResponseEntity.ok(semesterArchiveService.status(id));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<SemesterArchiveOperationResponse> restoreSemester(Long id, UUID idempotencyKey) {
+        SemesterArchiveOperationResponse response = semesterArchiveService.restore(id, idempotencyKey);
+        return operationResponse(response);
+    }
+
+    private static ResponseEntity<SemesterArchiveOperationResponse> operationResponse(
+            SemesterArchiveOperationResponse response) {
+        return switch (response.operationState()) {
+            case COMPLETED -> ResponseEntity.ok(response);
+            case PENDING -> ResponseEntity.accepted().body(response);
+            case ERROR -> ResponseEntity.status(503).body(response);
+        };
     }
 
     @Override

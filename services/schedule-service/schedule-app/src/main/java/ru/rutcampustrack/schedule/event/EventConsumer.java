@@ -38,14 +38,17 @@ public class EventConsumer extends AbstractEventConsumer {
     private final SubjectDeletedCascadeService subjectDeletedCascadeService;
     private final IdempotencyGuard idempotencyGuard;
     private final LessonTransferWriter lessonTransferWriter;
+    private final SemesterArchiveEffectLedger semesterArchiveEffectLedger;
 
     @Autowired
     public EventConsumer(SubjectDeletedCascadeService subjectDeletedCascadeService,
                          IdempotencyGuard idempotencyGuard,
-                         LessonTransferWriter lessonTransferWriter) {
+                         LessonTransferWriter lessonTransferWriter,
+                         SemesterArchiveEffectLedger semesterArchiveEffectLedger) {
         this.subjectDeletedCascadeService = subjectDeletedCascadeService;
         this.idempotencyGuard = idempotencyGuard;
         this.lessonTransferWriter = lessonTransferWriter;
+        this.semesterArchiveEffectLedger = semesterArchiveEffectLedger;
     }
 
     @RabbitListener(queues = "schedule-service.events")
@@ -67,6 +70,7 @@ public class EventConsumer extends AbstractEventConsumer {
             switch (eventType) {
                 case "subject.deleted" -> handleSubjectDeleted(envelope);
                 case "lesson.transfer.participant.applied" -> handleLessonTransferAcknowledged(envelope);
+                case "semester.archive.effect.ack" -> handleSemesterArchiveEffectAcknowledgement(envelope);
                 default -> log.trace("Ignoring unknown event type: {}", eventType);
             }
         });
@@ -126,6 +130,48 @@ public class EventConsumer extends AbstractEventConsumer {
                 retryable);
     }
 
+    @SuppressWarnings("unchecked")
+    private void handleSemesterArchiveEffectAcknowledgement(Map<String, Object> envelope) {
+        Object rawPayload = envelope.get("payload");
+        if (!(rawPayload instanceof Map<?, ?> raw)) {
+            throw new IllegalArgumentException("semester archive effect acknowledgement has no payload");
+        }
+        Map<String, Object> payload = (Map<String, Object>) raw;
+        String target = requiredString(payload.get("target"), "target");
+        String source = requiredString(envelope.get("source"), "source");
+        String eventType = requiredString(payload.get("source_event_type"), "source_event_type");
+        String expectedSource = "ATTENDANCE".equals(target) ? "attendance-service"
+                : "ACADEMIC".equals(target) ? "academic-service" : null;
+        boolean expectedEffect = "ATTENDANCE".equals(target)
+                ? List.of("lesson.closed", "lesson.cancelled", "lesson.deleted", "lesson.one_off.cancelled")
+                    .contains(eventType)
+                : "ACADEMIC".equals(target) && "homework.binding.archived".equals(eventType);
+        if (expectedSource == null || !expectedSource.equals(source) || !expectedEffect) {
+            throw new IllegalArgumentException("semester archive effect target does not match trusted source/event type");
+        }
+        if (exactLong(envelope.get("event_version"), "event_version") != 1) {
+            throw new IllegalArgumentException("semester archive effect acknowledgement has unsupported version");
+        }
+        UUID sourceEventId = uuid(payload.get("source_event_id"), "source_event_id");
+        UUID acknowledgementEventId = uuid(envelope.get("event_id"), "event_id");
+        long semesterId = exactLong(payload.get("semester_id"), "semester_id");
+        if (semesterId <= 0) {
+            throw new IllegalArgumentException("semester archive effect acknowledgement has invalid semester_id");
+        }
+        String result = requiredString(payload.get("result"), "result");
+        Object rawReason = payload.get("blocking_reason");
+        String reason = rawReason == null ? null : requiredString(rawReason, "blocking_reason");
+        semesterArchiveEffectLedger.acknowledge(
+                sourceEventId,
+                target,
+                eventType,
+                semesterId,
+                requiredString(payload.get("payload_hash"), "payload_hash"),
+                result,
+                reason,
+                acknowledgementEventId);
+    }
+
     private static String requiredString(Object raw, String field) {
         if (!(raw instanceof String value) || value.isBlank()) {
             throw new IllegalArgumentException("lesson transfer acknowledgement has invalid " + field);
@@ -141,6 +187,18 @@ public class EventConsumer extends AbstractEventConsumer {
             return new BigDecimal(number.toString()).longValueExact();
         } catch (NumberFormatException | ArithmeticException invalid) {
             throw new IllegalArgumentException("lesson transfer acknowledgement has invalid " + field, invalid);
+        }
+    }
+
+    private static UUID uuid(Object raw, String field) {
+        if (!(raw instanceof String value)) {
+            throw new IllegalArgumentException("semester archive effect acknowledgement has invalid " + field);
+        }
+        try {
+            return UUID.fromString(value);
+        } catch (IllegalArgumentException malformed) {
+            throw new IllegalArgumentException(
+                    "semester archive effect acknowledgement has invalid " + field, malformed);
         }
     }
 }

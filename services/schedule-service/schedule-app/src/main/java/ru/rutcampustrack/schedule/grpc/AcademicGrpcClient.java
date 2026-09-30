@@ -20,6 +20,8 @@ import ru.rutcampustrack.academic.grpc.AssignmentInfo;
 import ru.rutcampustrack.academic.grpc.AssignmentsByIdsRequest;
 import ru.rutcampustrack.academic.grpc.PreparedAssignmentCloseRequest;
 import ru.rutcampustrack.academic.grpc.PreparedAssignmentCloseResponse;
+import ru.rutcampustrack.academic.grpc.SemesterStateRequest;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.exception.AcademicServiceUnavailableException;
@@ -200,6 +202,24 @@ public class AcademicGrpcClient {
         } catch (StatusRuntimeException error) {
             throw new AcademicServiceUnavailableException(
                     "Academic replacement authority unavailable: " + error.getStatus());
+        }
+    }
+
+    /** Reads the authoritative archive epoch through the directed Schedule -> Academic identity. */
+    public SemesterStateResponse getSemesterArchiveAuthorityState(long semesterId) {
+        if (!DirectedServiceCredential.isCanonicalToken(scheduleToAcademicToken)) {
+            throw new AcademicServiceUnavailableException(
+                    "Schedule archive barrier has no directed Academic service identity");
+        }
+        Metadata metadata = new Metadata();
+        metadata.put(DirectedServiceCredential.TOKEN_METADATA_KEY, scheduleToAcademicToken);
+        try {
+            return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getSemesterState(SemesterStateRequest.newBuilder().setSemesterId(semesterId).build());
+        } catch (StatusRuntimeException error) {
+            throw new AcademicServiceUnavailableException(
+                    "Academic archive authority unavailable: " + error.getStatus());
         }
     }
 }

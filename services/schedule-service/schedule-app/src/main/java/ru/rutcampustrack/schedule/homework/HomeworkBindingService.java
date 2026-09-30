@@ -17,6 +17,7 @@ import ru.rutcampustrack.schedule.grpc.ReserveHomeworkBindingRequest;
 import ru.rutcampustrack.schedule.grpc.ConfirmHomeworkBindingRequest;
 import ru.rutcampustrack.schedule.grpc.HomeworkBindingsRequest;
 import ru.rutcampustrack.schedule.grpc.ArchiveHomeworkBindingRequest;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.sql.ResultSet;
@@ -49,9 +50,12 @@ public class HomeworkBindingService {
             """;
 
     private final JdbcTemplate jdbcTemplate;
+    private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
-    public HomeworkBindingService(JdbcTemplate jdbcTemplate) {
+    public HomeworkBindingService(JdbcTemplate jdbcTemplate,
+                                  ScheduleSemesterArchiveWriteFence archiveWriteFence) {
         this.jdbcTemplate = jdbcTemplate;
+        this.archiveWriteFence = archiveWriteFence;
     }
 
     @Transactional
@@ -93,6 +97,7 @@ public class HomeworkBindingService {
             return toResponse(fresh, current);
         }
 
+        archiveWriteFence.lockForBusinessWrite(semesterIdForOccurrence(occurrenceId));
         // Required lock order: origin -> occurrence/current physical -> bindings.
         OccurrenceSnapshot current = lockCurrentOccurrence(occurrenceId);
         assertWriteAccess(claims, current.groupId());
@@ -148,6 +153,8 @@ public class HomeworkBindingService {
         // The first read only discovers routing. It is never used as the
         // update source: the row is re-read after the ordered locks below.
         BindingRow routed = findBinding(bindingId);
+        archiveWriteFence.lockForPendingBindingConfirmation(
+                semesterIdForOccurrence(routed.occurrenceId()));
         OccurrenceSnapshot current = lockCurrentOccurrence(routed.occurrenceId());
         List<BindingRow> bindings = lockBindings(List.of(routed.occurrenceId()));
         BindingRow binding = bindings.stream()
@@ -212,6 +219,12 @@ public class HomeworkBindingService {
         // Routing is read only. All mutable state is re-read after the common
         // origin -> occurrence/current physical -> bindings lock order.
         BindingRow routed = findBinding(bindingId);
+        boolean archivedReplay = "ARCHIVED".equals(routed.state())
+                && routed.requestKey().equals(requestKey)
+                && (routed.homeworkId() == null || routed.homeworkId() == homeworkId);
+        if (!archivedReplay) {
+            archiveWriteFence.lockForBusinessWrite(semesterIdForOccurrence(routed.occurrenceId()));
+        }
         OccurrenceSnapshot current = lockCurrentOccurrence(routed.occurrenceId());
         List<BindingRow> bindings = lockBindings(List.of(routed.occurrenceId()));
         BindingRow binding = bindings.stream()
@@ -425,6 +438,12 @@ public class HomeworkBindingService {
                         + " FROM lesson_homework_bindings WHERE binding_id = ?",
                         HomeworkBindingService::mapBinding, bindingId,
                 () -> new ResourceNotFoundException("HomeworkBinding", "binding_id", bindingId));
+    }
+
+    private long semesterIdForOccurrence(long occurrenceId) {
+        return queryOne("SELECT semester_id FROM lesson_occurrences WHERE id = ?",
+                (rs, rowNum) -> rs.getLong(1), occurrenceId,
+                () -> new ResourceNotFoundException("LessonOccurrence", "id", occurrenceId));
     }
 
     private BindingRow findBindingByActorAndKey(long actorId, UUID requestKey) {

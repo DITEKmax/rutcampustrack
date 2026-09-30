@@ -22,12 +22,22 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.testcontainers.containers.PostgreSQLContainer;
 import ru.rutcampustrack.auth.config.InternalIssuerProperties;
 import ru.rutcampustrack.auth.config.JwtProperties;
+import ru.rutcampustrack.auth.controller.InternalSemesterDeletionConfirmationController;
 import ru.rutcampustrack.auth.controller.InternalSessionAdmissionController;
 import ru.rutcampustrack.auth.exception.GlobalExceptionHandler;
+import ru.rutcampustrack.auth.exception.OtpRateLimitException;
+import ru.rutcampustrack.auth.exception.SemesterDeletionConfirmationExceptionHandler;
+import ru.rutcampustrack.auth.dto.ConfirmSemesterDeletionRequest;
+import ru.rutcampustrack.auth.repository.UserRepository;
 import ru.rutcampustrack.auth.security.InternalIssuerSecretFilter;
+import ru.rutcampustrack.auth.service.AuthService;
+import ru.rutcampustrack.auth.service.BcryptConcurrencyGuard;
 import ru.rutcampustrack.auth.service.JwtService;
+import ru.rutcampustrack.auth.service.LoginRateLimiter;
+import ru.rutcampustrack.auth.service.SemesterDeletionConfirmationService;
 import ru.rutcampustrack.auth.session.SessionAdmissionException;
 import ru.rutcampustrack.auth.session.SessionAdmissionService;
+import ru.rutcampustrack.auth.session.SessionLifecycleService;
 import ru.rutcampustrack.auth.session.model.AuthMethod;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleGrant;
@@ -36,6 +46,11 @@ import ru.rutcampustrack.auth.session.model.SecurityEvent;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.auth.session.model.SessionState;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
+import ru.rutcampustrack.auth.entity.User;
+import ru.rutcampustrack.shared.observability.BusinessMetrics;
+import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.sql.DataSource;
 import java.nio.file.Files;
@@ -50,12 +65,16 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -304,6 +323,168 @@ class InternalSessionAdmissionIT {
                 assertProblem(mvc, unavailableAccess, 503, "AUTHORITY_UNAVAILABLE", properties));
     }
 
+    @Test
+    void semesterDeletionConfirmationRequiresLiveAdminAndCurrentPasswordWithoutCreatingSessions() throws Exception {
+        Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+        InternalIssuerProperties properties = issuerProperties();
+        UserRepository users = mock(UserRepository.class);
+        LoginRateLimiter rateLimiter = mock(LoginRateLimiter.class);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(4);
+        String currentPassword = "semester-confirm-current-password-sentinel";
+        String currentHash = passwordEncoder.encode(currentPassword);
+
+        UserFixture admin = seedUser(GrantSeed.active(AuthRole.ADMIN, null));
+        CreatedSession adminSession = createSession(admin, now, AuthRole.ADMIN);
+        User adminRecord = mock(User.class);
+        when(adminRecord.getPasswordHash()).thenReturn(currentHash);
+        when(users.findById(admin.userId())).thenReturn(Optional.of(adminRecord));
+
+        AuthService authService = new AuthService(
+                users, signingService, passwordEncoder, new JwtProperties("unused", 900, 604800),
+                rateLimiter, new BcryptConcurrencyGuard(2, 0), mock(BusinessMetrics.class),
+                mock(AuthSessionQueryPort.class),
+                new SessionLifecycleService(authorityHolder.authority(), authorityHolder.authority()),
+                Clock.fixed(now, ZoneOffset.UTC));
+        SemesterDeletionConfirmationService confirmationService = new SemesterDeletionConfirmationService(
+                signingService, authService, users, passwordEncoder, rateLimiter,
+                new BcryptConcurrencyGuard(2, 0));
+        MockMvc mvc = MockMvcBuilders.standaloneSetup(
+                        new InternalSemesterDeletionConfirmationController(confirmationService))
+                .setControllerAdvice(new SemesterDeletionConfirmationExceptionHandler())
+                .addFilters(new InternalIssuerSecretFilter(properties))
+                .build();
+
+        int sessionsBefore = sessionCount(admin.userId());
+        String adminInternal = internalToken(adminSession.snapshot(), now);
+        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody(adminInternal, currentPassword, 41L)))
+                .andExpect(status().isNoContent())
+                .andExpect(header().string("Cache-Control", "no-store"));
+        assertThat(sessionCount(admin.userId())).isEqualTo(sessionsBefore);
+
+        MvcResult wrongPassword = mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody(adminInternal, "wrong-password-sentinel", 41L)))
+                .andExpect(status().isForbidden())
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andReturn();
+        assertThat(wrongPassword.getResponse().getContentAsString())
+                .doesNotContain("wrong-password-sentinel", currentPassword, adminInternal);
+        verify(rateLimiter).recordFailure(
+                "internal-semester-deletion", "__semester_delete_confirmation__:" + admin.userId());
+        assertThat(sessionCount(admin.userId())).isEqualTo(sessionsBefore);
+
+        UserFixture teacher = seedUser(GrantSeed.active(AuthRole.TEACHER, null));
+        CreatedSession teacherSession = createSession(teacher, now, AuthRole.TEACHER);
+        String teacherInternal = internalToken(teacherSession.snapshot(), now);
+        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody(teacherInternal, currentPassword, 41L)))
+                .andExpect(status().isForbidden())
+                .andExpect(header().string("Cache-Control", "no-store"));
+        verify(users, org.mockito.Mockito.never()).findById(teacher.userId());
+        assertThat(sessionCount(teacher.userId())).isEqualTo(1);
+
+        UserFixture revokedAdmin = seedUser(GrantSeed.active(AuthRole.ADMIN, null));
+        CreatedSession revokedSession = createSession(revokedAdmin, now, AuthRole.ADMIN);
+        String revokedInternal = internalToken(revokedSession.snapshot(), now);
+        assertThat(authorityHolder.authority().revokeCurrent(new SessionStatePort.RevokeCurrentCommand(
+                revokedAdmin.userId(), revokedSession.sessionId(), now.plusSeconds(1),
+                event(revokedAdmin.userId(), revokedSession.sessionId(),
+                        SecurityEvent.Type.CURRENT_LOGOUT, now.plusSeconds(1)))).succeeded()).isTrue();
+        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody(revokedInternal, currentPassword, 41L)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("Cache-Control", "no-store"));
+        assertThat(sessionCount(revokedAdmin.userId())).isEqualTo(1);
+
+        UserFixture staleAdmin = seedUser(GrantSeed.active(AuthRole.ADMIN, null));
+        CreatedSession staleSession = createSession(staleAdmin, now, AuthRole.ADMIN);
+        String staleInternal = internalToken(staleSession.snapshot(), now);
+        updateGrantStatus(staleAdmin, AuthRole.ADMIN, RoleStatus.GRADUATED);
+        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody(staleInternal, currentPassword, 41L)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("Cache-Control", "no-store"));
+        assertThat(sessionCount(staleAdmin.userId())).isEqualTo(1);
+
+        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody("forged-internal-token", currentPassword, 41L)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("Cache-Control", "no-store"));
+
+        String accessToken = accessToken(adminSession.snapshot(), now);
+        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody(accessToken, currentPassword, 41L)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("Cache-Control", "no-store"));
+
+        UserFixture hashlessAdmin = seedUser(GrantSeed.active(AuthRole.ADMIN, null));
+        CreatedSession hashlessSession = createSession(hashlessAdmin, now, AuthRole.ADMIN);
+        User hashlessRecord = mock(User.class);
+        when(hashlessRecord.getPasswordHash()).thenReturn(null);
+        when(users.findById(hashlessAdmin.userId())).thenReturn(Optional.of(hashlessRecord));
+        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody(internalToken(hashlessSession.snapshot(), now),
+                                currentPassword, 41L)))
+                .andExpect(status().isForbidden())
+                .andExpect(header().string("Cache-Control", "no-store"));
+        assertThat(sessionCount(hashlessAdmin.userId())).isEqualTo(1);
+
+        MvcResult invalidRequest = mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"internalToken\":\"request-token-sentinel\","
+                                + "\"password\":\"request-password-sentinel\",\"semesterId\":0,"
+                                + "\"operationId\":\"not-a-uuid\",\"previewDigest\":\"digest-sentinel\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andReturn();
+        assertThat(invalidRequest.getResponse().getContentAsString())
+                .doesNotContain("request-token-sentinel", "request-password-sentinel", "digest-sentinel");
+
+        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody(adminInternal, currentPassword, 41L)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("Cache-Control", "no-store"));
+
+        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .header(InternalIssuerSecretFilter.HEADER, "wrong-internal-issuer-secret")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody(adminInternal, currentPassword, 41L)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("Cache-Control", "no-store"));
+
+        doThrow(new OtpRateLimitException("rate-limit-message-sentinel"))
+                .when(rateLimiter).checkBlocked(
+                        eq("internal-semester-deletion"),
+                        eq("__semester_delete_confirmation__:" + admin.userId()));
+        MvcResult limited = mvc.perform(post("/internal/auth/confirm-semester-deletion")
+                        .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody(adminInternal, currentPassword, 41L)))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andReturn();
+        assertThat(limited.getResponse().getContentAsString()).doesNotContain("rate-limit-message-sentinel");
+        assertThat(sessionCount(admin.userId())).isEqualTo(sessionsBefore);
+    }
+
     private SessionAdmissionService admissionService(Instant now) {
         InternalIssuerProperties properties = issuerProperties();
         properties.setTokenTtlSeconds(60);
@@ -369,6 +550,19 @@ class InternalSessionAdmissionIT {
 
     private String accessToken(SessionSnapshot snapshot, Instant now) {
         return jwtService().generateSessionAccessToken(snapshot, now, now.plusSeconds(300));
+    }
+
+    private String internalToken(SessionSnapshot snapshot, Instant now) {
+        return signingService.generateInternalToken(snapshot, now, now.plusSeconds(300));
+    }
+
+    private String confirmationBody(String token, String password, long semesterId) throws Exception {
+        return new ObjectMapper().writeValueAsString(new ConfirmSemesterDeletionRequest(
+                token, password, semesterId, UUID.randomUUID(), "preview-digest-test-value"));
+    }
+
+    private int sessionCount(long userId) {
+        return jdbc.queryForObject("SELECT count(*) FROM auth_sessions WHERE user_id = ?", Integer.class, userId);
     }
 
     private JwtService jwtService() {

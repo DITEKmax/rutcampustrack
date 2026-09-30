@@ -254,6 +254,14 @@ public class JwtService {
         return parsed;
     }
 
+    /** Strict parser for signed Gateway authority carried to internal Auth routes. */
+    public Jws<Claims> parseInternalToken(String token) {
+        Jws<Claims> parsed = parseSignedToken(token, INTERNAL_JWT_AUDIENCE, TOKEN_USE_INTERNAL);
+        RawJwtPayload raw = RawJwtPayload.parse(token);
+        requireInternalTokenWire(raw);
+        return parsed;
+    }
+
     public Jws<Claims> parseRefreshToken(String token) {
         Jws<Claims> parsed = parseSignedToken(token, JWT_AUDIENCE, TOKEN_USE_REFRESH);
         Claims claims = parsed.getPayload();
@@ -546,6 +554,40 @@ public class JwtService {
         }
         raw.requiredBoolean("is_headman");
         raw.requiredBoolean("readOnly");
+        requireWholeSecondTimes(raw);
+    }
+
+    private static void requireInternalTokenWire(RawJwtPayload raw) {
+        if (!JWT_ISSUER.equals(raw.requiredPlainString("iss"))) {
+            throw new IllegalArgumentException("JWT issuer is invalid");
+        }
+        if (!Set.of(INTERNAL_JWT_AUDIENCE).equals(raw.requiredSingletonStringArray("aud"))) {
+            throw new IllegalArgumentException("JWT audience must contain exactly the expected value");
+        }
+        if (!TOKEN_USE_INTERNAL.equals(raw.requiredPlainString(TOKEN_USE_CLAIM))) {
+            throw new IllegalArgumentException("JWT token use is invalid");
+        }
+        requirePositiveDecimal(raw.requiredPlainString("sub"), "sub");
+        parseCanonicalUuid(raw.requiredPlainString("sid"), "sid");
+        requirePositiveDecimal(raw.requiredPlainString("sv"), "sv");
+        requirePositiveDecimal(raw.requiredPlainString("rv"), "rv");
+        String role = raw.requiredPlainString("role");
+        if (!Set.of("STUDENT", "TEACHER", "HEADMAN", "ADMIN").contains(role)) {
+            throw new IllegalArgumentException("JWT role is invalid");
+        }
+        String status = raw.requiredPlainString("status");
+        if (!Set.of("ACTIVE", "SUSPENDED", "EXPELLED", "GRADUATED", "ARCHIVED").contains(status)) {
+            throw new IllegalArgumentException("JWT status is invalid");
+        }
+        if (raw.has("group_id")) {
+            requirePositiveDecimal(raw.requiredPlainString("group_id"), "group_id");
+        }
+        boolean isHeadman = raw.requiredBoolean("is_headman");
+        boolean readOnly = raw.requiredBoolean("readOnly");
+        requireSemanticIdentity(role, status, isHeadman, readOnly);
+        if (raw.has("report_hash") || raw.has("report_ticket_exp")) {
+            throw new IllegalArgumentException("report-bound authority is not accepted here");
+        }
         requireWholeSecondTimes(raw);
     }
 

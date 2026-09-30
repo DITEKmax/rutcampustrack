@@ -26,6 +26,8 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
 
     public static final String HEADER = "X-Internal-Issuer-Secret";
     private static final String INTERNAL_PREFIX = "/internal/";
+    private static final String SEMESTER_DELETE_CONFIRMATION_PATH =
+            "/internal/auth/confirm-semester-deletion";
 
     private static final Logger log = LoggerFactory.getLogger(InternalIssuerSecretFilter.class);
 
@@ -44,6 +46,9 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
+        if (isSemesterDeletionConfirmationRequest(request)) {
+            response.setHeader("Cache-Control", "no-store");
+        }
         String provided = request.getHeader(HEADER);
         if (provided == null || provided.isBlank()) {
             log.warn("Missing {} header on {}", HEADER, request.getRequestURI());
@@ -57,6 +62,16 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
             return;
         }
         chain.doFilter(request, response);
+    }
+
+    private static boolean isSemesterDeletionConfirmationRequest(HttpServletRequest request) {
+        if (SEMESTER_DELETE_CONFIRMATION_PATH.equals(request.getServletPath())) {
+            return true;
+        }
+        String contextPath = request.getContextPath();
+        String expectedRequestUri = (contextPath == null ? "" : contextPath)
+                + SEMESTER_DELETE_CONFIRMATION_PATH;
+        return expectedRequestUri.equals(request.getRequestURI());
     }
 
     private static void writeUnauthorized(HttpServletResponse response, String message) throws IOException {

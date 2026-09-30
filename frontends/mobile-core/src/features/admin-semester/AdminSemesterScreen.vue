@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import {
   type AdminSemesterArchiveAction,
@@ -41,7 +41,8 @@ const error = ref<string | null>(null)
 const notice = ref<string | null>(null)
 const archiveConfirmation = ref<{ semesterId: number; action: AdminSemesterArchiveAction } | null>(null)
 const archiveConfirmationChecking = ref(false)
-const archiveCommand = ref<{
+// Async continuations compare this command by identity; keep the raw object.
+const archiveCommand = shallowRef<{
   semesterId: number
   action: AdminSemesterArchiveAction
   idempotencyKey: string | null

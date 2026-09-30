@@ -2,6 +2,8 @@ package ru.rutcampustrack.academic.semester;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterArchiveOperationResponse;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand;
@@ -54,6 +56,8 @@ public class SemesterArchiveCoordinator {
         }
     }
 
+    /** Suspends afterCommit resources so each durable step starts its own transaction. */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public SemesterArchiveOperationResponse advance(UUID operationId) {
         SemesterArchiveOperation operation = commands.find(operationId);
         if (operation.getOperationState()

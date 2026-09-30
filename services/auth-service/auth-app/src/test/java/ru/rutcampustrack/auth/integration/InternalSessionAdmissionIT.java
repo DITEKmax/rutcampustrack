@@ -350,7 +350,8 @@ class InternalSessionAdmissionIT {
                 new BcryptConcurrencyGuard(2, 0));
         MockMvc mvc = MockMvcBuilders.standaloneSetup(
                         new InternalSemesterDeletionConfirmationController(confirmationService))
-                .setControllerAdvice(new SemesterDeletionConfirmationExceptionHandler())
+                // Register the global handler first so equal priorities cannot hide route-specific denials.
+                .setControllerAdvice(new GlobalExceptionHandler(), new SemesterDeletionConfirmationExceptionHandler())
                 .addFilters(new InternalIssuerSecretFilter(properties))
                 .build();
 

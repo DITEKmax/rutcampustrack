@@ -299,7 +299,7 @@ public class SemesterArchiveCommandTransaction {
                     "Participant deletion receipt does not match the operation identity");
         }
         if (operation.getOperationState() == SemesterArchiveOperationState.COMPLETED) return operation;
-        requireDeleteReceiptPhase(operation, command, status);
+        requireDeleteReceiptStatus(command, status);
         if (participantDigest == null || !participantDigest.matches("[0-9a-fA-F]{64}") || counts == null
                 || counts.scheduleTemplates() < 0 || counts.oneOffLessons() < 0 || counts.lessons() < 0
                 || counts.assignments() < 0 || counts.homeworks() < 0 || counts.attendanceMarks() < 0
@@ -307,6 +307,14 @@ public class SemesterArchiveCommandTransaction {
             throw new ConflictException("Participant deletion receipt has invalid digest or counts");
         }
         validateParticipantCounts(participant, counts);
+        if ((operation.getDeletePhase() == SemesterDeletionPhase.RELEASING
+                || operation.getDeletePhase() == SemesterDeletionPhase.DELETING)
+                && (command == SemesterArchiveParticipantCommand.PREPARE_DELETE
+                || command == SemesterArchiveParticipantCommand.SEAL_DELETE)) {
+            // Trusted exact receipts from the superseded preparation must not regress the current phase.
+            return operation;
+        }
+        requireDeleteReceiptPhase(operation, command);
         if (command == SemesterArchiveParticipantCommand.COMMIT_DELETE) {
             String expectedDigest = switch (participant) {
                 case ACADEMIC -> operation.getAcademicParticipantDigest();
@@ -355,9 +363,8 @@ public class SemesterArchiveCommandTransaction {
         return operationRepository.saveAndFlush(operation);
     }
 
-    private static void requireDeleteReceiptPhase(SemesterArchiveOperation operation,
-                                                  SemesterArchiveParticipantCommand command,
-                                                  SemesterArchiveParticipantStatus status) {
+    private static void requireDeleteReceiptStatus(SemesterArchiveParticipantCommand command,
+                                                   SemesterArchiveParticipantStatus status) {
         boolean allowedStatus = switch (command) {
             case PREPARE_DELETE, SEAL_DELETE -> status == SemesterArchiveParticipantStatus.PENDING
                     || status == SemesterArchiveParticipantStatus.READY;
@@ -367,6 +374,13 @@ public class SemesterArchiveCommandTransaction {
                     || status == SemesterArchiveParticipantStatus.DELETED;
             default -> false;
         };
+        if (!allowedStatus) {
+            throw new ConflictException("Participant deletion receipt has an invalid command or status");
+        }
+    }
+
+    private static void requireDeleteReceiptPhase(SemesterArchiveOperation operation,
+                                                  SemesterArchiveParticipantCommand command) {
         boolean allowedPhase = switch (operation.getDeletePhase()) {
             case PREPARING -> command == SemesterArchiveParticipantCommand.PREPARE_DELETE
                     || command == SemesterArchiveParticipantCommand.SEAL_DELETE;
@@ -375,7 +389,7 @@ public class SemesterArchiveCommandTransaction {
                     && command == SemesterArchiveParticipantCommand.COMMIT_DELETE;
             default -> false;
         };
-        if (!allowedStatus || !allowedPhase) {
+        if (!allowedPhase) {
             throw new ConflictException("Participant deletion receipt does not match the current operation phase");
         }
     }

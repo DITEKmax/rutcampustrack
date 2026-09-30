@@ -19,6 +19,7 @@ import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
 import ru.rutcampustrack.academic.contract.enums.*;
 import ru.rutcampustrack.academic.entity.SemesterArchiveOperation;
 import ru.rutcampustrack.academic.event.HomeworkBindingArchivedEventConsumer;
+import ru.rutcampustrack.academic.event.SemesterArchiveParticipantAcknowledgementConsumer;
 import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierResponse;
 import ru.rutcampustrack.schedule.grpc.SemesterArchiveParticipantState;
 import org.springframework.dao.DataAccessException;
@@ -87,6 +88,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
     @Autowired private AcademicSemesterDeletionSnapshotReader deletionSnapshots;
     @Autowired private SemesterArchiveCoordinator deletionCoordinator;
     @Autowired private HomeworkBindingArchivedEventConsumer archiveConsumer;
+    @Autowired private SemesterArchiveParticipantAcknowledgementConsumer participantAckConsumer;
     @Autowired private HomeworkBindingTransferCoordinator transferCoordinator;
     @MockitoBean private ScheduleGrpcClient scheduleClient;
     @MockitoBean private SemesterDeletionPreviewService deletionPreviews;
@@ -287,12 +289,34 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 semesterId)).isInstanceOf(DataAccessException.class);
         assertThatThrownBy(() -> deletionCommands.startDelete(semesterId, adminId(), UUID.randomUUID(),
                 UUID.randomUUID(), activePreview)).isInstanceOf(ConflictException.class);
+        participantAckConsumer.onEvent(deletionAttendanceEnvelope(timeoutId, started.getStateVersion(),
+                SemesterArchiveParticipantCommand.PREPARE_DELETE, SemesterArchiveParticipantStatus.PENDING));
+        var preparedThroughAfterCommit = deletionCommands.find(timeoutId);
+        assertThat(preparedThroughAfterCommit.getOperationState()).isEqualTo(SemesterArchiveOperationState.PENDING);
+        assertThat(preparedThroughAfterCommit.getAcademic()).isEqualTo(SemesterArchiveParticipantStatus.READY);
+        assertThat(preparedThroughAfterCommit.getSchedule()).isEqualTo(SemesterArchiveParticipantStatus.READY);
+        assertThat(preparedThroughAfterCommit.getAttendance()).isEqualTo(SemesterArchiveParticipantStatus.PENDING);
         jdbcTemplate.update("UPDATE semester_archive_operations SET prepare_expires_at = now() - interval '1 second' "
                 + "WHERE operation_id = ?", timeoutId);
         deletionCoordinator.advance(timeoutId);
         assertThat(deletionCommands.find(timeoutId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.RELEASING);
-        releasedAttendance(timeoutId);
-        deletionCoordinator.advance(timeoutId);
+        participantAckConsumer.onEvent(deletionAttendanceEnvelope(timeoutId, started.getStateVersion(),
+                SemesterArchiveParticipantCommand.PREPARE_DELETE, SemesterArchiveParticipantStatus.READY));
+        participantAckConsumer.onEvent(deletionAttendanceEnvelope(timeoutId, started.getStateVersion(),
+                SemesterArchiveParticipantCommand.SEAL_DELETE, SemesterArchiveParticipantStatus.READY));
+        var releasing = deletionCommands.find(timeoutId);
+        assertThat(releasing.getDeletePhase()).isEqualTo(SemesterDeletionPhase.RELEASING);
+        assertThat(releasing.getAttendance()).isEqualTo(SemesterArchiveParticipantStatus.RELEASE_PENDING);
+        assertThat(releasing.isAttendanceSealed()).isFalse();
+        assertThat(releasing.getCancelReason()).isEqualTo("PREPARE_EXPIRED");
+        assertThatThrownBy(() -> participantAckConsumer.onEvent(deletionAttendanceEnvelope(timeoutId,
+                started.getStateVersion() + 1, SemesterArchiveParticipantCommand.PREPARE_DELETE,
+                SemesterArchiveParticipantStatus.READY))).isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> participantAckConsumer.onEvent(deletionAttendanceEnvelope(timeoutId,
+                started.getStateVersion(), SemesterArchiveParticipantCommand.COMMIT_DELETE,
+                SemesterArchiveParticipantStatus.DELETED))).isInstanceOf(ConflictException.class);
+        participantAckConsumer.onEvent(deletionAttendanceEnvelope(timeoutId, started.getStateVersion(),
+                SemesterArchiveParticipantCommand.RELEASE_DELETE, SemesterArchiveParticipantStatus.RELEASED));
         assertThat(deletionCommands.find(timeoutId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.CANCELLED);
         assertThat(state(semesterId).getActive()).isTrue();
         assertThat(state(semesterId).getWriteBlocked()).isFalse();
@@ -464,6 +488,18 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 participant == SemesterArchiveCommandTransaction.Participant.ACADEMIC
                         ? new SemesterDeletionCounts(0, 0, 0, operation.getAssignmentsCount(), operation.getHomeworksCount(), 0, 0)
                         : ZERO_COUNTS);
+    }
+
+    private Map<String, Object> deletionAttendanceEnvelope(UUID operationId, long stateVersion,
+            SemesterArchiveParticipantCommand command, SemesterArchiveParticipantStatus status) {
+        Map<String, Object> counts = Map.of("scheduleTemplates", 0, "oneOffLessons", 0, "lessons", 0,
+                "assignments", 0, "homeworks", 0, "attendanceMarks", 0, "studentRequests", 0);
+        Map<String, Object> payload = Map.of("operation_id", operationId.toString(), "semester_id", semesterId,
+                "state_version", stateVersion, "command", command.name(), "status", status.name(),
+                "participant_digest", REMOTE_DIGEST, "counts", counts);
+        return Map.of("event_type", "semester.archive.participant.ack", "event_id", UUID.randomUUID().toString(),
+                "occurred_at", "2026-10-01T09:00:00Z", "event_version", 1,
+                "trace_id", UUID.randomUUID().toString(), "source", "attendance-service", "payload", payload);
     }
 
     private void releasedAttendance(UUID operationId) {

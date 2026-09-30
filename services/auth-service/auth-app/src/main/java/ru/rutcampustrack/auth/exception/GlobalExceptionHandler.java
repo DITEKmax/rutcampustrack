@@ -25,7 +25,8 @@ import java.util.Map;
  * <p>M11 G0.7: catch-all Spring MVC exceptions (validation/noHandler/
  * general) делегированы в shared-web GlobalExceptionHandler через
  * {@code @Order(LOWEST_PRECEDENCE)}. Auth-domain handler с
- * {@code @Order(HIGHEST_PRECEDENCE)} обрабатывает только auth-specific.
+ * {@code @Order(HIGHEST_PRECEDENCE + 1)} обрабатывает только auth-specific
+ * после обработчиков отдельных маршрутов с {@code HIGHEST_PRECEDENCE}.
  *
  * <p>До M11 G0.7 auth использовал свой 6-полевой {@code auth/dto/ErrorResponse}
  * (без traceId / fieldErrors) с {@code type="about:blank"}. После
@@ -42,7 +43,7 @@ import java.util.Map;
  * </ul>
  */
 @RestControllerAdvice
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class GlobalExceptionHandler {
 
     private static final org.slf4j.Logger log =

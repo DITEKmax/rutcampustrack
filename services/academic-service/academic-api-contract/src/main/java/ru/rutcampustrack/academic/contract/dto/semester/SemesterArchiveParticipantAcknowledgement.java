@@ -15,5 +15,14 @@ public record SemesterArchiveParticipantAcknowledgement(
         @JsonProperty("state_version") long stateVersion,
         @JsonProperty("command") SemesterArchiveParticipantCommand command,
         @JsonProperty("status") SemesterArchiveParticipantStatus status,
-        @JsonProperty("blocking_reason") String blockingReason) {
+        @JsonProperty("blocking_reason") String blockingReason,
+        @JsonProperty("participant_digest") String participantDigest,
+        @JsonProperty("counts") SemesterDeletionCounts counts) {
+
+    public SemesterArchiveParticipantAcknowledgement(UUID operationId, long semesterId, long stateVersion,
+                                                    SemesterArchiveParticipantCommand command,
+                                                    SemesterArchiveParticipantStatus status,
+                                                    String blockingReason) {
+        this(operationId, semesterId, stateVersion, command, status, blockingReason, null, null);
+    }
 }

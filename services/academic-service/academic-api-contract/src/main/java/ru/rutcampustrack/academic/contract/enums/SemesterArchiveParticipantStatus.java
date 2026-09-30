@@ -7,5 +7,6 @@ public enum SemesterArchiveParticipantStatus {
     READY,
     PREPARED_RESTORE,
     RELEASE_PENDING,
-    RELEASED
+    RELEASED,
+    DELETED
 }

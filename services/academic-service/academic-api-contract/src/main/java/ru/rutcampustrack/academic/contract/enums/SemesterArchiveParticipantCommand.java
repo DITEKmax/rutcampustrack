@@ -5,5 +5,9 @@ public enum SemesterArchiveParticipantCommand {
     PREPARE_ARCHIVE,
     PREPARE_RESTORE,
     RELEASE_RESTORE,
-    SEAL_ARCHIVE
+    SEAL_ARCHIVE,
+    PREPARE_DELETE,
+    SEAL_DELETE,
+    RELEASE_DELETE,
+    COMMIT_DELETE
 }

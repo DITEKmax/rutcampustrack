@@ -188,6 +188,7 @@ enum SemesterTransition {
   NONE = 0;
   ARCHIVING = 1;
   RESTORING = 2;
+  DELETING = 3;
 }
 
 message SemesterStateRequest {
@@ -202,6 +203,8 @@ message SemesterStateResponse {
   SemesterTransition transition = 5;
   bool write_blocked = 6;
   bool release_pending = 7;
+  string deletion_phase = 8;
+  string transition_operation_id = 9;
 }
 
 message GeofenceResponse {

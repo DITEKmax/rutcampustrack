@@ -34,6 +34,25 @@ service AttendanceRequestBotGrpcService {
       returns (ResolveRequestNotificationResponse);
 }
 
+// Directed, read-only semester deletion preview. The caller authenticates with
+// the existing internal service credential; no student identity is accepted.
+service AttendanceSemesterDeletionGrpcService {
+  rpc PreviewSemesterDeletion (SemesterDeletionPreviewRequest)
+      returns (SemesterDeletionParticipantPreview);
+}
+
+message SemesterDeletionPreviewRequest {
+  int64 semester_id = 1;
+}
+
+message SemesterDeletionParticipantPreview {
+  int64 semester_id = 1;
+  string participant_digest = 2;
+  int64 attendance_marks_count = 3;
+  int64 student_requests_count = 4;
+  int64 observed_fence_version = 5;
+}
+
 message StudentAttendanceSnapshotRequest {
   // The RPC fails the whole request when any lesson is missing or outside the
   // authenticated student's group; it never returns a partial foreign snapshot.

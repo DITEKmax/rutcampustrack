@@ -12,5 +12,11 @@ public record SemesterArchiveParticipantCommandRequest(
         @JsonProperty("operation_id") UUID operationId,
         @JsonProperty("semester_id") long semesterId,
         @JsonProperty("state_version") long stateVersion,
-        @JsonProperty("command") SemesterArchiveParticipantCommand command) {
+        @JsonProperty("command") SemesterArchiveParticipantCommand command,
+        @JsonProperty("expected_participant_digest") String expectedParticipantDigest) {
+
+    public SemesterArchiveParticipantCommandRequest(UUID operationId, long semesterId, long stateVersion,
+                                                    SemesterArchiveParticipantCommand command) {
+        this(operationId, semesterId, stateVersion, command, null);
+    }
 }

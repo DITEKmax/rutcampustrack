@@ -20,13 +20,17 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestHeader;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionOperationResponse;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionPreviewResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * REST API contract for academic semester management.
@@ -72,17 +76,24 @@ public interface SemesterApi {
             @PathVariable Long id,
             @Valid @RequestBody UpdateSemesterRequest request);
 
-    @Operation(summary = "Удалить семестр с подтверждением (ADMIN)", description = "Требует фразу подтверждения для защиты от случайного удаления активного семестра.")
+    @Operation(summary = "Окончательно удалить семестр (ADMIN)", description = "Требует свежий preview, пароль ADMIN и ключ идемпотентности.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Семестр удалён"),
-            @ApiResponse(responseCode = "400", description = "Неверная фраза подтверждения"),
+            @ApiResponse(responseCode = "200", description = "Семестр удалён"),
+            @ApiResponse(responseCode = "202", description = "Удаление продолжается; результат доступен по operationId"),
+            @ApiResponse(responseCode = "409", description = "Preview устарел; возвращён свежий preview"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Семестр не найден")
+            @ApiResponse(responseCode = "404", description = "Семестр не найден"),
+            @ApiResponse(responseCode = "503", description = "Auth или участник недоступен; операция не подтверждена")
     })
     @DeleteMapping("/{id}")
-    ResponseEntity<Void> deleteSemester(
+    ResponseEntity<SemesterDeletionOperationResponse> deleteSemester(
             @PathVariable Long id,
-            @Valid @RequestBody DeleteSemesterRequest request);
+            @Valid @RequestBody DeleteSemesterRequest request,
+            @RequestHeader("Idempotency-Key") UUID idempotencyKey);
+
+    @Operation(summary = "Предварительный расчёт последствий окончательного удаления семестра (ADMIN)")
+    @GetMapping("/{id}/delete-preview")
+    ResponseEntity<SemesterDeletionPreviewResponse> previewSemesterDeletion(@PathVariable Long id);
 
     @Operation(summary = "Активировать семестр (ADMIN)", description = "Деактивирует все остальные семестры и активирует указанный.")
     @ApiResponses({

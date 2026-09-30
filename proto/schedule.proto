@@ -54,6 +54,8 @@ service ScheduleGrpcService {
   // Versioned admission barrier controlled only by authenticated Academic authority.
   rpc SetSemesterArchiveBarrier (SetSemesterArchiveBarrierRequest)
       returns (SetSemesterArchiveBarrierResponse);
+  rpc GetSemesterDeletionPreview (SemesterDeletionPreviewRequest)
+      returns (SemesterDeletionParticipantPreview);
 }
 
 enum SemesterArchiveBarrierCommand {
@@ -62,6 +64,10 @@ enum SemesterArchiveBarrierCommand {
   SEMESTER_ARCHIVE_BARRIER_PREPARE_RESTORE = 2;
   SEMESTER_ARCHIVE_BARRIER_RELEASE_RESTORE = 3;
   SEMESTER_ARCHIVE_BARRIER_RECONCILE_HOMEWORK_BINDING = 4;
+  SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE = 5;
+  SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE = 6;
+  SEMESTER_ARCHIVE_BARRIER_RELEASE_DELETE = 7;
+  SEMESTER_ARCHIVE_BARRIER_COMMIT_DELETE = 8;
 }
 
 enum SemesterArchiveHomeworkBindingResolution {
@@ -97,6 +103,7 @@ message SetSemesterArchiveBarrierRequest {
   optional SemesterArchiveHomeworkBindingIdentity binding = 5;
   SemesterArchiveHomeworkBindingResolution binding_resolution = 6;
   int64 homework_id = 7;
+  string expected_participant_digest = 8;
 }
 
 message SetSemesterArchiveBarrierResponse {
@@ -107,6 +114,23 @@ message SetSemesterArchiveBarrierResponse {
   string blocking_reason = 5;
   optional SemesterArchiveHomeworkBindingIdentity pending_binding = 6;
   string terminal_event_id = 7;
+  string participant_digest = 8;
+  int64 schedule_templates_count = 9;
+  int64 one_off_lessons_count = 10;
+  int64 lessons_count = 11;
+}
+
+message SemesterDeletionPreviewRequest {
+  int64 semester_id = 1;
+}
+
+message SemesterDeletionParticipantPreview {
+  int64 semester_id = 1;
+  string participant_digest = 2;
+  int64 schedule_templates_count = 3;
+  int64 one_off_lessons_count = 4;
+  int64 lessons_count = 5;
+  int64 observed_fence_version = 6;
 }
 
 message ActiveLessonRequest {

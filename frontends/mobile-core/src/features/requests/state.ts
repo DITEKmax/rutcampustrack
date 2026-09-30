@@ -118,7 +118,7 @@ export function requestStatusTone(status: RequestStatus): 'warning' | 'success' 
 }
 
 export function lessonTypeLabel(type: string | null | undefined): string {
-  switch (type) {
+  switch (type?.toUpperCase()) {
     case 'LECTURE': return 'Лекция'
     case 'PRACTICE': return 'Практика'
     case 'LAB': return 'Лабораторная'

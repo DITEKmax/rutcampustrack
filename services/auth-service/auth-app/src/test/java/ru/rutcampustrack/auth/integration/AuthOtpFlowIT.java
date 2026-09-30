@@ -59,7 +59,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @TestPropertySource(properties = {
         // Перекрываем exclude из application-test.yml — нужен RabbitTemplate.
-        "spring.autoconfigure.exclude="
+        "spring.autoconfigure.exclude=",
+        "auth.password-reset-url=https://recovery.example.test/password-reset"
 })
 @Sql(scripts = "classpath:sql/set-telegram-id.sql")
 @Sql(scripts = "classpath:sql/clear-telegram-id.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -377,9 +378,103 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(loginStudent("NoSessionPassword42!").accessToken()).isNotBlank();
     }
 
+    @Test
+    @Timeout(value = 30, unit = TimeUnit.SECONDS)
+    void adminRecoveryWithoutTelegramRestoresStudentAndTeacher() throws Exception {
+        TokenResponse admin = loginUser("admin", "password");
+        for (String login : List.of("student", "teacher")) {
+            long id = jdbc.queryForObject("SELECT id FROM users WHERE login = ?", Long.class, login);
+            List<Map<String, Object>> identityBefore = jdbc.queryForList(
+                    "SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY id", id);
+            jdbc.update("UPDATE users SET telegram_id = NULL, password_hash = ? WHERE id = ?", PASSWORD_HASH, id);
+            TokenResponse old = loginUser(login, "password");
+            String beforeHash = jdbc.queryForObject("SELECT password_hash FROM users WHERE id = ?", String.class, id);
+            String beforeStatus = jdbc.queryForObject("SELECT status::text FROM users WHERE id = ?", String.class, id);
+            try {
+                // The public no-Telegram request still gives only an indistinguishable challenge.
+                ResponseEntity<JsonNode> decoy = restTemplate.postForEntity("/auth/password-reset/request",
+                        Map.of("login", login), JsonNode.class);
+                assertThat(decoy.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+                assertThat(decoy.getBody().has("resetTicket")).isFalse();
+                assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
+
+                ResponseEntity<JsonNode> issued = issueAdminRecovery(admin.accessToken(), id);
+                assertThat(issued.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+                assertThat(issued.getHeaders().getCacheControl()).isEqualTo("no-store");
+                String link = issued.getBody().path("url").asText();
+                assertThat(link).startsWith("https://recovery.example.test/password-reset#resetTicket=");
+                assertThat(issued.getBody().path("expiresInSeconds").asInt()).isEqualTo(120);
+                String ticket = recoveryTicket(link);
+                assertThat(ticket).matches("[A-Za-z0-9_-]{43}");
+                assertThat(jdbc.queryForObject("SELECT token_hash FROM password_reset_tokens WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+                        String.class, id)).hasSize(64).isNotEqualTo(ticket);
+                assertThat(jdbc.queryForObject("SELECT password_hash FROM users WHERE id = ?", String.class, id)).isEqualTo(beforeHash);
+                assertThat(bearerSessionStatus(old.accessToken())).isEqualTo(HttpStatus.OK);
+
+                ResponseEntity<String> completed = restTemplate.postForEntity("/auth/password-reset/complete",
+                        Map.of("resetTicket", ticket, "newPassword", "AdminRecoveryPassword42!"), String.class);
+                assertThat(completed.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+                assertThat(bearerSessionStatus(old.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+                assertThat(refreshStatus(old.refreshToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+                assertThat(restTemplate.postForEntity("/auth/password-reset/complete",
+                        Map.of("resetTicket", ticket, "newPassword", "AnotherRecoveryPassword42!"), String.class)
+                        .getStatusCode()).isEqualTo(HttpStatus.GONE);
+                assertThat(loginUser(login, "AdminRecoveryPassword42!").accessToken()).isNotBlank();
+                assertThat(jdbc.queryForObject("SELECT status::text FROM users WHERE id = ?", String.class, id)).isEqualTo(beforeStatus);
+                assertThat(jdbc.queryForList("SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY id", id))
+                        .isEqualTo(identityBefore);
+                assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
+            } finally {
+                jdbc.update("UPDATE users SET password_hash = ? WHERE id = ?", PASSWORD_HASH, id);
+                jdbc.update("UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' WHERE user_id = ? AND revoked_at IS NULL", id);
+                jdbc.update("DELETE FROM password_reset_tokens WHERE user_id = ?", id);
+            }
+        }
+    }
+
+    @Test
+    @Timeout(value = 20, unit = TimeUnit.SECONDS)
+    void adminRecoveryRejectsWrongRoleRevokedSessionAndExpiredTicket() {
+        long targetId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
+        TokenResponse student = loginStudent("password");
+        assertThat(issueAdminRecovery(student.accessToken(), targetId).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ?", Integer.class, targetId)).isZero();
+        TokenResponse admin = loginUser("admin", "password");
+        ResponseEntity<JsonNode> issued = issueAdminRecovery(admin.accessToken(), targetId);
+        assertThat(issued.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        String ticket = recoveryTicket(issued.getBody().path("url").asText());
+        jdbc.update("UPDATE password_reset_tokens SET expires_at = NOW() - INTERVAL '1 second' WHERE user_id = ?", targetId);
+        assertThat(restTemplate.postForEntity("/auth/password-reset/complete",
+                Map.of("resetTicket", ticket, "newPassword", "ExpiredRecoveryPassword42!"), String.class)
+                .getStatusCode()).isEqualTo(HttpStatus.GONE);
+        assertThat(bearerSessionStatus(student.accessToken())).isEqualTo(HttpStatus.OK);
+        jdbc.update("UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' "
+                + "WHERE user_id = (SELECT id FROM users WHERE login = 'admin') AND revoked_at IS NULL");
+        ResponseEntity<JsonNode> denied = issueAdminRecovery(admin.accessToken(), targetId);
+        assertThat(denied.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(denied.getHeaders().getCacheControl()).isEqualTo("no-store");
+    }
+
+    private ResponseEntity<JsonNode> issueAdminRecovery(String token, long id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.set("Host", "untrusted.example.test");
+        return restTemplate.exchange("/auth/admin/users/" + id + "/password-reset-link", HttpMethod.POST,
+                new HttpEntity<>(headers), JsonNode.class);
+    }
+
+    private static String recoveryTicket(String link) {
+        String fragment = java.net.URI.create(link).getRawFragment();
+        return fragment.substring("resetTicket=".length(), fragment.indexOf('&'));
+    }
+
     private TokenResponse loginStudent(String password) {
+        return loginUser("student", password);
+    }
+
+    private TokenResponse loginUser(String login, String password) {
         ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
-                "/auth/login", new LoginRequest("student", password), TokenResponse.class);
+                "/auth/login", new LoginRequest(login, password), TokenResponse.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         return response.getBody();

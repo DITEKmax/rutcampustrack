@@ -37,6 +37,24 @@ describe('PWA password recovery contract', () => {
     expect(operation.isCurrent()).toBe(false)
   })
 
+  it('consumes admin bearer tickets only from a strict fragment and clears even rejected links', () => {
+    const ticket = 'a'.repeat(43)
+    const expiresAt = '2030-10-01T12:00:00.123456Z'
+    const clear = vi.fn()
+    expect(consumePasswordResetFragment(`#resetTicket=${ticket}&expiresAt=${expiresAt}`, clear))
+      .toEqual({ resetTicket: ticket, expiresAt })
+    for (const fragment of [
+      `#resetTicket=${ticket}&resetTicket=${ticket}&expiresAt=${expiresAt}`,
+      `#resetTicket=${ticket}&expiresAt=2030-02-30T12:00:00Z`,
+      `#resetTicket=${ticket}&expiresAt=${expiresAt}&code=731904`,
+      '#resetTicket=short&expiresAt=2030-10-01T12:00:00Z',
+    ]) expect(consumePasswordResetFragment(fragment, clear)).toBeNull()
+    expect(clear).toHaveBeenCalledTimes(5)
+    expect(() => consumePasswordResetFragment(`#resetTicket=${ticket}&expiresAt=${expiresAt}`, () => {
+      throw new Error('history unavailable')
+    })).toThrow('history unavailable')
+  })
+
   it('uses server counters for an invalid code', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({
       extras: { code: 'OTP_INVALID', attemptsRemaining: 2 },

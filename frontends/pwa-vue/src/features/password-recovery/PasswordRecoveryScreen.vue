@@ -12,6 +12,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   initialProof: null,
   initialProofError: null,
+  fetcher: globalThis.fetch,
 })
 
 const emit = defineEmits<{
@@ -31,6 +32,7 @@ const code = ref('')
 const challengeTtlSeconds = ref<number | null>(null)
 const resetTicket = ref<string | null>(null)
 const ticketTtlSeconds = ref<number | null>(null)
+const adminLink = ref(false)
 const attemptsRemaining = ref<number | null>(null)
 const newPassword = ref('')
 const passwordConfirmation = ref('')
@@ -68,8 +70,9 @@ function cancel(): void {
   emit('cancel')
 }
 
-async function requestCode(_event?: SubmitEvent): Promise<void> {
+async function requestCode(): Promise<void> {
   if (!login.value.trim() || busy.value) return
+  adminLink.value = false
   feedback.value = null
   notice.value = null
   const operation = beginOperation()
@@ -94,7 +97,7 @@ async function requestCode(_event?: SubmitEvent): Promise<void> {
   }
 }
 
-async function verifyCode(_event?: SubmitEvent): Promise<void> {
+async function verifyCode(): Promise<void> {
   if (!challengeId.value || !code.value.trim() || busy.value) return
   await verifyProof(challengeId.value, code.value, false)
 }
@@ -121,7 +124,7 @@ async function verifyProof(id: string, proofCode: string, fromBotLink: boolean):
   }
 }
 
-async function completeReset(_event?: SubmitEvent): Promise<void> {
+async function completeReset(): Promise<void> {
   if (!resetTicket.value || busy.value) return
   if (newPassword.value !== passwordConfirmation.value) {
     feedback.value = 'Пароли не совпадают.'
@@ -194,7 +197,9 @@ function handleCompleteError(error: unknown): void {
   if (error instanceof PasswordRecoveryApiError && error.code === 'RESET_TICKET_INVALID') {
     clearProof()
     step.value = 'request'
-    feedback.value = 'Срок подтверждения истёк. Запроси новый код.'
+    feedback.value = adminLink.value
+      ? 'Ссылка недействительна или уже использована. Попроси администратора создать новую.'
+      : 'Срок подтверждения истёк. Запроси новый код.'
     return
   }
   feedback.value = 'Не удалось сохранить пароль. Попробуй ещё раз.'
@@ -212,7 +217,7 @@ function requestErrorMessage(error: unknown): string {
 
 function safePasswordPolicyMessage(error: PasswordRecoveryApiError): string {
   let detail = error.problem.detail
-    ?.replace(/[\u0000-\u001f\u007f]/g, ' ')
+    ?.split('').map((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127 ? ' ' : character).join('')
     .replace(/\s+/g, ' ')
     .trim()
   const secrets = [newPassword.value, passwordConfirmation.value, resetTicket.value]
@@ -239,6 +244,20 @@ onMounted(() => {
   }
   const proof = props.initialProof
   if (!proof) {
+    return
+  }
+
+  if ('resetTicket' in proof) {
+    adminLink.value = true
+    const ttl = Math.ceil((Date.parse(proof.expiresAt) - Date.now()) / 1000)
+    if (ttl <= 0) {
+      feedback.value = 'Срок ссылки истёк. Попроси администратора создать новую.'
+    } else {
+      resetTicket.value = proof.resetTicket
+      ticketTtlSeconds.value = ttl
+      step.value = 'password'
+    }
+    emit('proofConsumed')
     return
   }
 
@@ -400,7 +419,7 @@ onBeforeUnmount(() => {
         Задай новый пароль
       </h1>
       <p class="login-card__hint">
-        Подтверждение действует {{ ticketTtlSeconds === null ? '' : formatDuration(ticketTtlSeconds) }}.
+        {{ ticketTtlSeconds === null ? 'Задай новый пароль.' : 'Подтверждение действует ' + formatDuration(ticketTtlSeconds) + '.' }}
       </p>
       <label class="login-field">
         <span>Новый пароль</span>

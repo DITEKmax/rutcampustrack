@@ -21,7 +21,8 @@ public final class PasswordResetNoStoreFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path == null || !path.startsWith(RESET_PATH_PREFIX);
+        return path == null || !(path.startsWith(RESET_PATH_PREFIX)
+                || (path.startsWith("/auth/admin/users/") && path.endsWith("/password-reset-link")));
     }
 
     @Override

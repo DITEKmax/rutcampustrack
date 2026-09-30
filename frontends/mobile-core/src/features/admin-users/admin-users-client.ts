@@ -78,6 +78,12 @@ export interface TransferAdminStudentInput {
   readonly reason: string
 }
 
+export interface AdminRecoveryLink {
+  readonly url: string
+  readonly expiresAt: string
+  readonly expiresInSeconds: number
+}
+
 export interface AdminUsersApiOptions {
   readonly accessToken: () => string | null
   readonly onUnauthorized?: () => Promise<void>
@@ -159,6 +165,25 @@ export class AdminUsersClient {
       body: JSON.stringify({ newGroupId, reason }),
       ...(signal ? { signal } : {}),
     }).then(normalizeUser)
+  }
+
+  async issueRecoveryLink(id: number, signal?: AbortSignal): Promise<AdminRecoveryLink> {
+    positiveInteger(id, 'userId')
+    const value = requiredRecord(await this.request<unknown>(`/api/auth/admin/users/${id}/password-reset-link`, {
+      method: 'POST',
+      cache: 'no-store',
+      ...(signal ? { signal } : {}),
+    }), 'recovery link')
+    const url = requiredText(value.url, 'recovery link.url')
+    const expiresAt = requiredText(value.expiresAt, 'recovery link.expiresAt')
+    const parsed = new URL(url)
+    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname)
+    if ((parsed.protocol !== 'https:' && !(loopback && parsed.protocol === 'http:'))
+      || parsed.username || parsed.password || parsed.search || !parsed.hash
+      || !/\/password-reset\/?$/.test(parsed.pathname)
+      || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(expiresAt)
+      || !Number.isFinite(Date.parse(expiresAt))) throw new Error('Сервер вернул некорректную ссылку восстановления.')
+    return { url, expiresAt, expiresInSeconds: positiveInteger(value.expiresInSeconds, 'recovery link.expiresInSeconds') }
   }
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {

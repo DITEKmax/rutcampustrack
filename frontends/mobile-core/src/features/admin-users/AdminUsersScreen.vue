@@ -13,6 +13,7 @@ import {
   type AdminUsersClient,
 } from './admin-users-client'
 import './admin-users-screen.pcss'
+import RecoveryLinkPanel from './RecoveryLinkPanel.vue'
 
 const props = withDefaults(defineProps<{
   client: AdminUsersClient
@@ -717,6 +718,13 @@ onBeforeUnmount(() => {
           <div><dt>Табельный номер</dt><dd>{{ selectedUser.employeeNumber ?? '—' }}</dd></div>
           <div><dt>Telegram ID</dt><dd>{{ selectedUser.telegramId ?? '—' }}</dd></div>
         </dl>
+        <RecoveryLinkPanel
+          :key="selectedUser.id"
+          :client="client"
+          :user-id="selectedUser.id"
+          :disabled="saving || profileEditorVisible || createVisible"
+          @owner-error="emit('ownerError', $event)"
+        />
         <button
           v-if="!profileEditorVisible"
           class="admin-users-action admin-users-action--secondary"

@@ -95,7 +95,8 @@ class StudentRequestServiceAuthorizationTest {
         assertThatThrownBy(() -> service.decideExcuse(headman(900L, 10L), "excuse-foreign", false, null))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(pairWriteCoordinator, never()).lock(any(Long.class), any(Long.class), any(Long.class), any());
+        verify(pairWriteCoordinator, never()).lock(
+                any(Long.class), any(Long.class), any(Long.class), any(Long.class), any());
         verify(excuseRepository, never()).save(any());
     }
 
@@ -113,7 +114,8 @@ class StudentRequestServiceAuthorizationTest {
         assertThatThrownBy(() -> service.decideLateCheckin(headman(900L, 10L), "late-foreign", true))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(pairWriteCoordinator, never()).lock(any(Long.class), any(Long.class), any(Long.class), any());
+        verify(pairWriteCoordinator, never()).lock(
+                any(Long.class), any(Long.class), any(Long.class), any(Long.class), any());
         verify(lateCheckinRepository, never()).save(any());
     }
 
@@ -162,7 +164,8 @@ class StudentRequestServiceAuthorizationTest {
         assertThatThrownBy(() -> service.decideExcuse(headman(900L, 10L), "excuse-own", true, null))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(pairWriteCoordinator, never()).lock(any(Long.class), any(Long.class), any(Long.class), any());
+        verify(pairWriteCoordinator, never()).lock(
+                any(Long.class), any(Long.class), any(Long.class), any(Long.class), any());
         verify(excuseRepository, never()).save(any());
     }
 
@@ -182,7 +185,8 @@ class StudentRequestServiceAuthorizationTest {
         assertThatThrownBy(() -> service.decideLateCheckin(headman(900L, 10L), "late-own", false))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(pairWriteCoordinator, never()).lock(any(Long.class), any(Long.class), any(Long.class), any());
+        verify(pairWriteCoordinator, never()).lock(
+                any(Long.class), any(Long.class), any(Long.class), any(Long.class), any());
         verify(lateCheckinRepository, never()).save(any());
     }
 
@@ -196,7 +200,8 @@ class StudentRequestServiceAuthorizationTest {
                 headman(900L, 10L), "late-null-authority", true))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(pairWriteCoordinator, never()).lock(any(Long.class), any(Long.class), any(Long.class), any());
+        verify(pairWriteCoordinator, never()).lock(
+                any(Long.class), any(Long.class), any(Long.class), any(Long.class), any());
         verify(lateCheckinRepository, never()).save(any());
     }
 

@@ -26,6 +26,9 @@ public class LessonCancellationMarker {
     @Field("lesson_id")
     private Long lessonId;
 
+    @Field("semester_id")
+    private Long semesterId;
+
     @Field("marked_at")
     private Instant markedAt;
 }

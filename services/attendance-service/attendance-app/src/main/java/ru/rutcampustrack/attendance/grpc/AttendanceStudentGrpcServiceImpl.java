@@ -164,10 +164,14 @@ public class AttendanceStudentGrpcServiceImpl
                 return;
             }
             LessonResponse lesson = scheduleGrpcClient.getLessonById(command.getLessonId());
+            if (lesson == null || lesson.getSemesterId() <= 0) {
+                throw new StudentCheckinException(StudentCheckinException.Code.LESSON_NOT_FOUND,
+                        "Пара не найдена");
+            }
             String displayName = academicGrpcClient.getUserDisplayName(claims.userId());
             StudentCheckinModels.Lesson domainLesson = new StudentCheckinModels.Lesson(
                     lesson.getId(), lesson.getGroupId(), lesson.getSubjectId(),
-                    semesterCacheService.getActiveSemesterId(), lesson.getLessonNumber(),
+                    lesson.getSemesterId(), lesson.getLessonNumber(),
                     LocalDate.parse(lesson.getDate()), LocalTime.parse(lesson.getStartTime()),
                     LocalTime.parse(lesson.getEndTime()), lesson.getStatus(),
                     lesson.getIsGeoBlocked() || lesson.getIsBlockedByHeadman());

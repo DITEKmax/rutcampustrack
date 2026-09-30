@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
@@ -14,6 +16,7 @@ import ru.rutcampustrack.shared.events.IdempotencyGuard;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -48,13 +51,25 @@ class EventConsumerTest {
     private LessonEventService lessonEventService;
 
     @Mock
+    private LessonTransferParticipantService lessonTransferParticipantService;
+
+    @Mock
     private SemesterCacheService semesterCacheService;
 
     @Mock
     private StudentRequestService studentRequestService;
 
     @Mock
+    private SemesterArchiveParticipantService semesterArchiveParticipantService;
+
+    @Mock
+    private SemesterArchiveEffectService semesterArchiveEffectService;
+
+    @Mock
     private IdempotencyGuard idempotencyGuard;
+
+    @Mock
+    private TransactionTemplate transactionTemplate;
 
     @InjectMocks
     private EventConsumer eventConsumer;
@@ -68,6 +83,16 @@ class EventConsumerTest {
         org.mockito.Mockito.lenient()
                 .when(idempotencyGuard.tryClaim(eq(EventConsumer.CONSUMER_ID), any()))
                 .thenReturn(true);
+        org.mockito.Mockito.lenient().doAnswer(invocation -> {
+            ((Runnable) invocation.getArgument(1)).run();
+            return null;
+        }).when(semesterArchiveEffectService).apply(any(), any());
+        org.mockito.Mockito.lenient().doAnswer(invocation -> {
+            @SuppressWarnings("unchecked")
+            Consumer<TransactionStatus> transaction = invocation.getArgument(0);
+            transaction.accept(null);
+            return null;
+        }).when(transactionTemplate).executeWithoutResult(any());
     }
 
     private Map<String, Object> envelope(String eventType, Map<String, Object> payload) {
@@ -81,6 +106,18 @@ class EventConsumerTest {
         );
     }
 
+    private Map<String, Object> scheduleEnvelope(String eventType, Map<String, Object> payload) {
+        return Map.of(
+                "event_type", eventType,
+                "event_id", UUID.randomUUID().toString(),
+                "occurred_at", Instant.now().toString(),
+                "event_version", 1,
+                "source", "schedule-service",
+                "trace_id", "consumer-test-correlation",
+                "payload", payload
+        );
+    }
+
     @Test
     void semesterArchived_triggersRefresh() {
         eventConsumer.onEvent(envelope("semester.archived", Map.of("semester_id", 1)));
@@ -90,19 +127,88 @@ class EventConsumerTest {
 
     @Test
     void lessonClosed_delegatesToLessonEventService() {
-        eventConsumer.onEvent(envelope("lesson.closed", Map.of(
-                "lesson_id", 1, "group_id", 10
+        LessonEventService.LessonClosedSnapshot snapshot = new LessonEventService.LessonClosedSnapshot(
+                1L, 10L, 3L, null, null, null);
+        when(lessonEventService.prepareLessonClosed(1L, 10L, 3L)).thenReturn(snapshot);
+        eventConsumer.onEvent(scheduleEnvelope("lesson.closed", Map.of(
+                "lesson_id", 1, "group_id", 10, "semester_id", 3
         )));
-        verify(lessonEventService).processLessonClosed(1L, 10L);
+        verify(lessonEventService).prepareLessonClosed(1L, 10L, 3L);
+        verify(lessonEventService).applyLessonClosed(snapshot);
         verifyNoInteractions(semesterCacheService);
     }
 
     @Test
+    void lessonClosed_duplicateReceiptIsAcknowledgedWithoutExternalPreparation() {
+        Map<String, Object> envelope = scheduleEnvelope("lesson.closed", Map.of(
+                "lesson_id", 1, "group_id", 10, "semester_id", 3
+        ));
+        when(semesterArchiveEffectService.hasReceipt(envelope)).thenReturn(true);
+        when(idempotencyGuard.tryClaim(EventConsumer.CONSUMER_ID, envelope)).thenReturn(false);
+
+        eventConsumer.onEvent(envelope);
+
+        verify(semesterArchiveEffectService).apply(eq(envelope), any());
+        verifyNoInteractions(lessonEventService);
+    }
+
+    @Test
+    void duplicateTrackedScheduleEffect_replaysOnlyAnExactStoredReceipt() {
+        Map<String, Object> envelope = scheduleEnvelope("lesson.cancelled", Map.of(
+                "lesson_id", 1, "semester_id", 3));
+        when(idempotencyGuard.tryClaim(EventConsumer.CONSUMER_ID, envelope)).thenReturn(false);
+        when(semesterArchiveEffectService.hasReceipt(envelope)).thenReturn(true);
+
+        eventConsumer.onEvent(envelope);
+
+        verify(semesterArchiveEffectService).apply(eq(envelope), any());
+        verifyNoInteractions(lessonEventService);
+    }
+
+    @Test
+    void duplicateTrackedScheduleEffectWithoutReceiptIsNotAcknowledged() {
+        Map<String, Object> envelope = scheduleEnvelope("lesson.deleted", Map.of(
+                "lesson_ids", java.util.List.of(1L), "semester_id", 3));
+        when(idempotencyGuard.tryClaim(EventConsumer.CONSUMER_ID, envelope)).thenReturn(false);
+        when(semesterArchiveEffectService.hasReceipt(envelope)).thenReturn(false);
+
+        eventConsumer.onEvent(envelope);
+
+        verify(semesterArchiveEffectService).hasReceipt(envelope);
+        org.mockito.Mockito.verify(semesterArchiveEffectService, never()).apply(any(), any());
+        verifyNoInteractions(lessonEventService);
+    }
+
+    @Test
+    void duplicateTransferWithStoredReceiptIsSentThroughReceiptReplay() {
+        Map<String, Object> envelope = scheduleEnvelope("lesson.transfer.requested", Map.of());
+        when(idempotencyGuard.tryClaim(EventConsumer.CONSUMER_ID, envelope)).thenReturn(false);
+        when(lessonTransferParticipantService.hasReceipt(envelope)).thenReturn(true);
+
+        eventConsumer.onEvent(envelope);
+
+        verify(lessonTransferParticipantService).apply(envelope);
+    }
+
+    @Test
+    void duplicateParticipantCommandWithStoredReceiptIsSentThroughReceiptReplay() {
+        Map<String, Object> envelope = new java.util.HashMap<>(scheduleEnvelope(
+                "semester.archive.participant.command", Map.of()));
+        envelope.put("source", "academic-service");
+        when(idempotencyGuard.tryClaim(EventConsumer.CONSUMER_ID, envelope)).thenReturn(false);
+        when(semesterArchiveParticipantService.hasReceipt(envelope)).thenReturn(true);
+
+        eventConsumer.onEvent(envelope);
+
+        verify(semesterArchiveParticipantService).apply(envelope);
+    }
+
+    @Test
     void lessonCancelled_delegatesToLessonEventService() {
-        eventConsumer.onEvent(envelope("lesson.cancelled", Map.of(
-                "lesson_id", 1
+        eventConsumer.onEvent(scheduleEnvelope("lesson.cancelled", Map.of(
+                "lesson_id", 1, "semester_id", 3
         )));
-        verify(lessonEventService).processLessonCancelled(1L);
+        verify(lessonEventService).processLessonCancelled(1L, 3L);
         verifyNoInteractions(semesterCacheService);
     }
 

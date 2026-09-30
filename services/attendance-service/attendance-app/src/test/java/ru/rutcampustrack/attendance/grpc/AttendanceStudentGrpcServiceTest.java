@@ -120,7 +120,7 @@ class AttendanceStudentGrpcServiceTest {
         verify(pairRepository, never()).save(any());
         verify(receiptRepository, never()).save(any());
         verify(lateCheckinRepository, never()).save(any());
-        verify(pairCoordinator, never()).lock(anyLong(), anyLong(), anyLong(), any());
+        verify(pairCoordinator, never()).lock(anyLong(), anyLong(), anyLong(), anyLong(), any());
         verify(transactionTemplate, never()).execute(any());
         verify(geofenceService, never()).isWithinCampus(anyDouble(), anyDouble());
         verify(attendanceEvents, never()).publishMarked(any());

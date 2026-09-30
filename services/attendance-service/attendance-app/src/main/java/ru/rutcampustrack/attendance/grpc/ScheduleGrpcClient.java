@@ -104,7 +104,7 @@ public class ScheduleGrpcClient {
         }
     }
 
-    /** Revalidates mutable Attendance writes after their Mongo lesson fence is held. */
+    /** Revalidates mutable Attendance writes before local Mongo fences are acquired. */
     public LessonResponse requireAttendanceMutationReady(long lessonId, long groupId) {
         LessonResponse lesson = getLessonById(lessonId);
         if (lesson.getId() != lessonId || lesson.getGroupId() != groupId) {

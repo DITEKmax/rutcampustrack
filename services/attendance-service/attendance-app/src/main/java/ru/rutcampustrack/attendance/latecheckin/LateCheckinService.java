@@ -16,6 +16,7 @@ import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
@@ -102,6 +103,9 @@ public class LateCheckinService {
         if (!Objects.equals(lesson.getGroupId(), requestContext.getGroupId())) {
             throw new BadRequestException("Занятие не принадлежит вашей группе");
         }
+        if (lesson.getSemesterId() <= 0) {
+            throw new ScheduleServiceUnavailableException("Schedule returned a lesson without a positive semester");
+        }
         String lessonStatus = lesson.getStatus() == null ? "" : lesson.getStatus();
         boolean statusAllowed = LESSON_STATUS_ACTIVE.equalsIgnoreCase(lessonStatus)
                 || LESSON_STATUS_CLOSED.equalsIgnoreCase(lessonStatus);
@@ -109,9 +113,11 @@ public class LateCheckinService {
             throw new BadRequestException("Запрос можно создать только для идущей или уже прошедшей пары");
         }
 
-        Instant now = clock.instant();
-        pairWriteCoordinator.lock(requestContext.getUserId(), lessonId, lesson.getGroupId(), now);
         lesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
+        if (lesson.getSemesterId() <= 0) {
+            throw new ScheduleServiceUnavailableException("Schedule returned a lesson without a positive semester");
+        }
+        Instant now = clock.instant();
 
         // Already marked present — don't waste headman's time
         attendanceRepository.findByLessonIdAndUserId(lessonId, requestContext.getUserId())
@@ -128,13 +134,18 @@ public class LateCheckinService {
         }
 
         String studentName = academicGrpcClient.getUserDisplayName(requestContext.getUserId());
+        String subjectName = academicGrpcClient
+                .getSubjectsByIds(java.util.List.of(lesson.getSubjectId())).get(lesson.getSubjectId());
+
+        pairWriteCoordinator.lock(lesson.getSemesterId(), requestContext.getUserId(), lessonId,
+                lesson.getGroupId(), now);
 
         LateCheckinRequest request = LateCheckinRequest.builder()
                 .studentId(requestContext.getUserId())
                 .groupId(requestContext.getGroupId())
                 .lessonId(lessonId)
                 .subjectId(lesson.getSubjectId())
-                .semesterId(semesterCacheService.getActiveSemesterId())
+                .semesterId(lesson.getSemesterId())
                 .lessonNumber(lesson.getLessonNumber())
                 .lessonDate(LocalDate.parse(lesson.getDate()))
                 .studentName(studentName)
@@ -147,9 +158,6 @@ public class LateCheckinService {
         LateCheckinRequest saved = repository.save(request);
 
         LocalDate lessonDate = lesson.getDate() == null ? null : LocalDate.parse(lesson.getDate());
-        String subjectName = academicGrpcClient
-                .getSubjectsByIds(java.util.List.of(lesson.getSubjectId()))
-                .get(lesson.getSubjectId());
         eventPublisher.publishRequested(
                 saved,
                 lessonDate,
@@ -292,9 +300,21 @@ public class LateCheckinService {
         LateCheckinRequest initial = repository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
 
+        if (initial.getSemesterId() == null || initial.getSemesterId() <= 0) {
+            throw new ScheduleServiceUnavailableException("Late-check-in request has no authoritative semester");
+        }
+        LessonResponse lesson = scheduleGrpcClient.requireAttendanceMutationReady(
+                initial.getLessonId(), initial.getGroupId());
+        if (lesson.getSemesterId() != initial.getSemesterId()) {
+            throw new ScheduleServiceUnavailableException("Schedule lesson semester does not match the request snapshot");
+        }
+        LocalDate lessonDate = lesson.getDate() == null ? null : LocalDate.parse(lesson.getDate());
+        String subjectName = academicGrpcClient
+                .getSubjectsByIds(java.util.List.of(lesson.getSubjectId())).get(lesson.getSubjectId());
+
         Instant now = clock.instant();
-        pairWriteCoordinator.lock(initial.getStudentId(), initial.getLessonId(), initial.getGroupId(), now);
-        scheduleGrpcClient.requireAttendanceMutationReady(initial.getLessonId(), initial.getGroupId());
+        pairWriteCoordinator.lock(initial.getSemesterId(), initial.getStudentId(),
+                initial.getLessonId(), initial.getGroupId(), now);
         LateCheckinRequest request = repository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
 
@@ -320,11 +340,6 @@ public class LateCheckinService {
                     AttendanceStatus.PRESENT, AttendanceSource.LATE_CHECKIN, decisionBy);
         }
 
-        LessonResponse lesson = scheduleGrpcClient.getLessonById(saved.getLessonId());
-        LocalDate lessonDate = lesson.getDate() == null ? null : LocalDate.parse(lesson.getDate());
-        String subjectName = academicGrpcClient
-                .getSubjectsByIds(java.util.List.of(lesson.getSubjectId()))
-                .get(lesson.getSubjectId());
         eventPublisher.publishDecided(
                 saved,
                 lessonDate,

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
@@ -33,35 +33,75 @@ public class EventConsumer extends AbstractEventConsumer {
 
     private final LessonEventService lessonEventService;
     private final LessonTransferParticipantService lessonTransferParticipantService;
+    private final SemesterArchiveParticipantService semesterArchiveParticipantService;
+    private final SemesterArchiveEffectService semesterArchiveEffectService;
     private final SemesterCacheService semesterCacheService;
     private final StudentRequestService studentRequestService;
     private final IdempotencyGuard idempotencyGuard;
+    private final TransactionTemplate transactionTemplate;
 
     private static final int SUPPORTED_EVENT_VERSION = 1;
     private static final String TRUSTED_BOT_SOURCE = "notification-bot";
 
     @RabbitListener(queues = "attendance-service.events")
     @EventIdempotent(consumer = CONSUMER_ID)
-    @Transactional
     public void onEvent(Map<String, Object> envelope) {
         String eventType = (String) envelope.get("event_type");
         if (eventType == null) {
             log.warn("Received event without event_type, ignoring: {}", envelope);
             return;
         }
-        if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
+
+        if ("lesson.closed".equals(eventType)) {
+            // Schedule and Academic reads must finish before claim/fence/transaction.
+            withTraceContext(envelope, () -> handleLessonClosed(envelope));
             return;
         }
+
+        transactionTemplate.executeWithoutResult(status -> {
+            if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
+                withTraceContext(envelope, () -> replayReceiptIfPresent(eventType, envelope));
+                return;
+            }
+            dispatchClaimed(eventType, envelope);
+        });
+    }
+
+    private void replayReceiptIfPresent(String eventType, Map<String, Object> envelope) {
+        switch (eventType) {
+            case "lesson.cancelled", "lesson.deleted", "lesson.one_off.cancelled" -> {
+                if (semesterArchiveEffectService.hasReceipt(envelope)) {
+                    semesterArchiveEffectService.apply(envelope, () -> { });
+                }
+            }
+            case "lesson.transfer.requested" -> {
+                if (lessonTransferParticipantService.hasReceipt(envelope)) {
+                    lessonTransferParticipantService.apply(envelope);
+                }
+            }
+            case "semester.archive.participant.command" -> {
+                if (semesterArchiveParticipantService.hasReceipt(envelope)) {
+                    semesterArchiveParticipantService.apply(envelope);
+                }
+            }
+            default -> { }
+        }
+    }
+
+    private void dispatchClaimed(String eventType, Map<String, Object> envelope) {
         // M04 QA3 — extract trace_id из envelope в MDC до handler'а.
         withTraceContext(envelope, () -> {
             log.debug("Received event: {}", eventType);
             switch (eventType) {
                 case "lesson.started"          -> handleLessonStarted(envelope);
-                case "lesson.closed"           -> handleLessonClosed(envelope);
-                case "lesson.cancelled"        -> handleLessonCancelled(envelope);
-                case "lesson.deleted"          -> handleLessonDeleted(envelope);
-                case "lesson.one_off.cancelled" -> handleOneOffLessonCancelled(envelope);
+                case "lesson.cancelled"        -> semesterArchiveEffectService.apply(
+                        envelope, () -> handleLessonCancelled(envelope));
+                case "lesson.deleted"          -> semesterArchiveEffectService.apply(
+                        envelope, () -> handleLessonDeleted(envelope));
+                case "lesson.one_off.cancelled" -> semesterArchiveEffectService.apply(
+                        envelope, () -> handleOneOffLessonCancelled(envelope));
                 case "lesson.transfer.requested" -> lessonTransferParticipantService.apply(envelope);
+                case "semester.archive.participant.command" -> semesterArchiveParticipantService.apply(envelope);
                 case "semester.archived"       -> handleSemesterArchived(envelope);
                 case "late_checkin.decision"   -> handleLateCheckinDecision(envelope);
                 case "excuse.decision"         -> handleExcuseDecision(envelope);
@@ -78,18 +118,45 @@ public class EventConsumer extends AbstractEventConsumer {
     }
 
     private void handleLessonClosed(Map<String, Object> envelope) {
-        Map<String, Object> payload = extractPayload(envelope);
-        if (payload == null) return;
-        Long lessonId = extractLong(payload, "lesson_id");
-        Long groupId = extractLong(payload, "group_id");
-        lessonEventService.processLessonClosed(lessonId, groupId);
+        LessonEventService.LessonClosedSnapshot prepared = null;
+        if (!semesterArchiveEffectService.hasReceipt(envelope)) {
+            Map<String, Object> payload = extractRequiredPayload(envelope);
+            Long lessonId = extractPositiveInteger(payload, "lesson_id");
+            Long groupId = extractPositiveInteger(payload, "group_id");
+            Long semesterId = extractPositiveInteger(payload, "semester_id");
+            prepared = lessonEventService.prepareLessonClosed(lessonId, groupId, semesterId);
+        }
+
+        LessonEventService.LessonClosedSnapshot effectSnapshot = prepared;
+        transactionTemplate.executeWithoutResult(status -> {
+            boolean claimed = idempotencyGuard.tryClaim(CONSUMER_ID, envelope);
+            if (!claimed) {
+                // A prior delivery may have committed the idempotency claim and
+                // receipt together. Re-ack its exact receipt without RPC calls.
+                if (!semesterArchiveEffectService.hasReceipt(envelope)) {
+                    throw new IllegalStateException(
+                            "lesson.closed was claimed without a durable Schedule effect receipt");
+                }
+                semesterArchiveEffectService.apply(envelope, () -> { });
+                return;
+            }
+
+            if (effectSnapshot == null) {
+                // Receipt was observed before the transaction; validate it again
+                // in the transaction before re-enqueuing its acknowledgement.
+                semesterArchiveEffectService.apply(envelope, () -> { });
+            } else {
+                semesterArchiveEffectService.apply(
+                        envelope, () -> lessonEventService.applyLessonClosed(effectSnapshot));
+            }
+        });
     }
 
     private void handleLessonCancelled(Map<String, Object> envelope) {
-        Map<String, Object> payload = extractPayload(envelope);
-        if (payload == null) return;
-        Long lessonId = extractLong(payload, "lesson_id");
-        lessonEventService.processLessonCancelled(lessonId);
+        Map<String, Object> payload = extractRequiredPayload(envelope);
+        Long lessonId = extractPositiveInteger(payload, "lesson_id");
+        Long semesterId = extractPositiveInteger(payload, "semester_id");
+        lessonEventService.processLessonCancelled(lessonId, semesterId);
     }
 
     /**
@@ -99,19 +166,22 @@ public class EventConsumer extends AbstractEventConsumer {
      */
     @SuppressWarnings("unchecked")
     private void handleLessonDeleted(Map<String, Object> envelope) {
-        Map<String, Object> payload = extractPayload(envelope);
-        if (payload == null) return;
+        Map<String, Object> payload = extractRequiredPayload(envelope);
         Object raw = payload.get("lesson_ids");
         if (!(raw instanceof java.util.List<?> list) || list.isEmpty()) {
-            log.warn("lesson.deleted: missing or empty lesson_ids, ignoring: {}", payload);
-            return;
+            throw new IllegalArgumentException("lesson.deleted requires non-empty lesson_ids");
         }
         java.util.List<Long> lessonIds = new java.util.ArrayList<>(list.size());
         for (Object id : list) {
-            if (id instanceof Number n) lessonIds.add(n.longValue());
+            Long parsed = positiveInteger(id);
+            if (parsed == null) throw new IllegalArgumentException("lesson.deleted contains invalid lesson_ids");
+            lessonIds.add(parsed);
         }
-        if (lessonIds.isEmpty()) return;
-        lessonEventService.processLessonsDeleted(lessonIds);
+        if (lessonIds.isEmpty() || lessonIds.size() != list.size()) {
+            throw new IllegalArgumentException("lesson.deleted contains invalid lesson_ids");
+        }
+        Long semesterId = extractPositiveInteger(payload, "semester_id");
+        lessonEventService.processLessonsDeleted(lessonIds, semesterId);
     }
 
     /**
@@ -120,18 +190,21 @@ public class EventConsumer extends AbstractEventConsumer {
      * Idempotent — repeated delivery yields 0 deletes without exception.
      */
     private void handleOneOffLessonCancelled(Map<String, Object> envelope) {
-        Map<String, Object> payload = extractPayload(envelope);
-        if (payload == null) return;
-        Long groupId = extractLong(payload, "group_id");
+        Map<String, Object> payload = extractRequiredPayload(envelope);
+        Long groupId = extractPositiveInteger(payload, "group_id");
         String dateStr = (String) payload.get("date");
         Object lessonNumberRaw = payload.get("lesson_number");
-        if (groupId == null || dateStr == null || lessonNumberRaw == null) {
-            log.warn("lesson.one_off.cancelled: missing required fields, ignoring: {}", payload);
-            return;
+        Long semesterId = extractPositiveInteger(payload, "semester_id");
+        if (groupId == null || dateStr == null || lessonNumberRaw == null || semesterId == null) {
+            throw new IllegalArgumentException("lesson.one_off.cancelled has invalid scope");
         }
         LocalDate date = LocalDate.parse(dateStr);
-        Integer lessonNumber = ((Number) lessonNumberRaw).intValue();
-        lessonEventService.processOneOffLessonCancelled(groupId, date, lessonNumber);
+        Long lessonNumberValue = positiveInteger(lessonNumberRaw);
+        if (lessonNumberValue == null || lessonNumberValue > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("lesson.one_off.cancelled has invalid lesson_number");
+        }
+        Integer lessonNumber = lessonNumberValue.intValue();
+        lessonEventService.processOneOffLessonCancelled(semesterId, groupId, date, lessonNumber);
     }
 
     private void handleSemesterArchived(Map<String, Object> envelope) {
@@ -225,6 +298,29 @@ public class EventConsumer extends AbstractEventConsumer {
         Object value = map.get(key);
         if (value == null) return null;
         return ((Number) value).longValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> extractRequiredPayload(Map<String, Object> envelope) {
+        Object raw = envelope.get("payload");
+        if (!(raw instanceof Map<?, ?> payload)
+                || payload.keySet().stream().anyMatch(key -> !(key instanceof String))) {
+            throw new IllegalArgumentException("Tracked Schedule event requires an object payload");
+        }
+        return (Map<String, Object>) payload;
+    }
+
+    private Long extractPositiveInteger(Map<String, Object> payload, String key) {
+        Long value = positiveInteger(payload.get(key));
+        if (value == null) throw new IllegalArgumentException(key + " must be a positive integer");
+        return value;
+    }
+
+    private static Long positiveInteger(Object value) {
+        if (!(value instanceof Byte || value instanceof Short
+                || value instanceof Integer || value instanceof Long)) return null;
+        long parsed = ((Number) value).longValue();
+        return parsed > 0 ? parsed : null;
     }
 
     private Long extractPositiveLong(Object value) {

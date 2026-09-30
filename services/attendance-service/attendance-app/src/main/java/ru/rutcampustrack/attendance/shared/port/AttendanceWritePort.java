@@ -18,10 +18,10 @@ public interface AttendanceWritePort {
 
     /**
      * Upsert an attendance record for a student/lesson with the given status.
-     * Convenience overload — equivalent to {@link #mark(Long, Long, Long, AttendanceStatus, AttendanceSource)}
+     * Convenience overload — equivalent to {@link #mark(Long, Long, Long, Long, AttendanceStatus, AttendanceSource)}
      * with {@code source = HEADMAN_EXCUSE} (excuse approve cascade, D-16).
      */
-    void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status);
+    void mark(Long studentId, Long lessonId, Long groupId, Long semesterId, AttendanceStatus status);
 
     /**
      * Upsert an attendance record for a student/lesson with explicit source.
@@ -36,7 +36,8 @@ public interface AttendanceWritePort {
      *                  EXCUSED / FREE_ATTENDANCE for the excuse cascade)
      * @param source    who/what is claiming this write (LATE_CHECKIN, HEADMAN_EXCUSE, ...)
      */
-    void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status, AttendanceSource source);
+    void mark(Long studentId, Long lessonId, Long groupId, Long semesterId,
+              AttendanceStatus status, AttendanceSource source);
 
     /**
      * Upsert with explicit source and an optional human-readable excuse reason.
@@ -44,7 +45,7 @@ public interface AttendanceWritePort {
      * excuse cascade; passing {@code null} clears the stored reason (e.g. when the
      * status is overwritten by a non-excuse path).
      */
-    void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status,
+    void mark(Long studentId, Long lessonId, Long groupId, Long semesterId, AttendanceStatus status,
               AttendanceSource source, String excuseReason);
 
     void markWithLesson(

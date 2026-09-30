@@ -402,7 +402,7 @@ class LateCheckinServiceTest {
         assertThatThrownBy(() -> service.applyDecision(REQUEST_ID, internalHeadmanId, true))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(pairWriteCoordinator, never()).lock(anyLong(), anyLong(), anyLong(), any());
+        verify(pairWriteCoordinator, never()).lock(anyLong(), anyLong(), anyLong(), anyLong(), any());
         verify(repository, never()).save(any());
         verifyNoInteractions(attendanceWritePort, eventPublisher, scheduleGrpcClient);
     }

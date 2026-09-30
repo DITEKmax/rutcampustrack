@@ -20,6 +20,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -54,6 +56,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -64,6 +71,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Import({
         LessonTransferParticipantService.class,
         LessonEventService.class,
+        SemesterArchiveFence.class,
+        SemesterArchiveParticipantService.class,
+        SemesterArchiveEffectService.class,
         PairWriteCoordinator.class,
         AttendanceAttachmentService.class,
         AttendanceWritePortImpl.class,
@@ -73,6 +83,7 @@ class LessonTransferParticipantIT {
 
     private static final long SOURCE_LESSON_ID = 501L;
     private static final long TARGET_LESSON_ID = 502L;
+    private static final long EFFECT_LESSON_ID = 503L;
     private static final long GROUP_ID = 10L;
     private static final long SEMESTER_ID = 30L;
     private static final Instant CREATED_AT = Instant.parse("2026-08-30T09:00:00Z");
@@ -87,6 +98,7 @@ class LessonTransferParticipantIT {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
+    @EnableTransactionManagement(proxyTargetClass = true)
     static class TestConfig {
         @Bean
         MongoTransactionManager mongoTransactionManager(MongoDatabaseFactory factory) {
@@ -120,6 +132,10 @@ class LessonTransferParticipantIT {
     @Autowired private AttendanceAttachmentService attachmentService;
     @Autowired private MongoTemplate mongoTemplate;
     @Autowired private ObjectMapper objectMapper;
+    @Autowired private MongoTransactionManager mongoTransactionManager;
+    @Autowired private PairWriteCoordinator pairWriteCoordinator;
+    @Autowired private SemesterArchiveParticipantService archiveParticipantService;
+    @Autowired private SemesterArchiveEffectService archiveEffectService;
 
     @MockitoBean private ScheduleGrpcClient scheduleGrpcClient;
     @MockitoBean private AcademicGrpcClient academicGrpcClient;
@@ -129,9 +145,182 @@ class LessonTransferParticipantIT {
     void cleanCollections() {
         for (String collection : List.of("attendances", "request_attachments", "late_checkin_requests",
                 "excuse_tickets", "student_checkin_pairs", "lesson_transfer_fences",
-                "lesson_transfer_receipts", "attendance_outbox", "lesson_cancellation_markers")) {
+                "lesson_transfer_receipts", "attendance_outbox", "lesson_cancellation_markers",
+                "semester_archive_fences", "semester_archive_participant_receipts",
+                "semester_archive_effect_receipts")) {
             mongoTemplate.dropCollection(collection);
         }
+    }
+
+    @Test
+    void archivePrepareDrainsDelayedTrustedTransferAndEffectBeforeSeal_andStaleReleaseCannotUnsealNextArchive() {
+        long semesterId = SEMESTER_ID;
+        String firstArchive = "11111111-1111-4111-8111-111111111111";
+        String restore = "22222222-2222-4222-8222-222222222222";
+        String nextArchive = "33333333-3333-4333-8333-333333333333";
+        Map<String, Object> delayedTransfer = event(0, 1, List.of());
+        mongoTemplate.insert(AttendanceDocument.builder()
+                .id("archive-mark")
+                .lessonId(EFFECT_LESSON_ID)
+                .userId(100L)
+                .groupId(GROUP_ID)
+                .subjectId(20L)
+                .semesterId(semesterId)
+                .status(AttendanceStatus.PRESENT)
+                .source(AttendanceSource.STUDENT_GEO)
+                .createdAt(CREATED_AT)
+                .updatedAt(UPDATED_AT)
+                .build());
+        mongoTemplate.insert(AttendanceDocument.builder()
+                .id("transfer-mark")
+                .lessonId(SOURCE_LESSON_ID)
+                .userId(200L)
+                .groupId(GROUP_ID)
+                .subjectId(20L)
+                .semesterId(semesterId)
+                .status(AttendanceStatus.PRESENT)
+                .source(AttendanceSource.STUDENT_GEO)
+                .createdAt(CREATED_AT)
+                .updatedAt(UPDATED_AT)
+                .build());
+
+        archiveParticipantService.apply(participantCommand("PREPARE_ARCHIVE", firstArchive, semesterId, 1));
+        assertThat(mongoTemplate.findById(Long.toString(semesterId), SemesterArchiveFenceDocument.class)
+                .getBarrierState()).isEqualTo("ARCHIVE_PREPARING");
+        assertThat(mongoTemplate.findById(firstArchive + ":PREPARE_ARCHIVE",
+                SemesterArchiveParticipantReceiptDocument.class).getStatus()).isEqualTo("PENDING");
+        assertThatThrownBy(() -> attendanceWritePort.mark(
+                100L, EFFECT_LESSON_ID, GROUP_ID, semesterId, AttendanceStatus.ABSENT))
+                .isInstanceOf(ConflictException.class);
+
+        transferService.apply(delayedTransfer);
+        assertThat(mongoTemplate.findById("transfer-mark", AttendanceDocument.class).getLessonId())
+                .isEqualTo(TARGET_LESSON_ID);
+        assertThat(mongoTemplate.findById("11111111-1111-4111-8111-111111111111",
+                LessonTransferReceiptDocument.class).getResult()).isEqualTo("APPLIED");
+
+        String eventId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+        Map<String, Object> delayedEffect = scheduleEffect(eventId, semesterId, EFFECT_LESSON_ID, false);
+        archiveEffectService.apply(delayedEffect,
+                () -> lessonEventService.processLessonCancelled(EFFECT_LESSON_ID, semesterId));
+        assertThat(mongoTemplate.findById("archive-mark", AttendanceDocument.class).getStatus())
+                .isEqualTo(AttendanceStatus.CANCELLED);
+        SemesterArchiveEffectReceiptDocument effectReceipt = mongoTemplate.findById(
+                eventId + ":ATTENDANCE", SemesterArchiveEffectReceiptDocument.class);
+        assertThat(effectReceipt.getResult()).isEqualTo("APPLIED");
+        assertThat(effectReceipt.getPayloadHash()).matches("[0-9a-f]{64}");
+
+        archiveParticipantService.apply(participantCommand("SEAL_ARCHIVE", firstArchive, semesterId, 1));
+        assertThat(mongoTemplate.findById(Long.toString(semesterId), SemesterArchiveFenceDocument.class)
+                .getBarrierState()).isEqualTo("ARCHIVE_SEALED");
+        assertThat(mongoTemplate.findById(firstArchive + ":SEAL_ARCHIVE",
+                SemesterArchiveParticipantReceiptDocument.class).getStatus()).isEqualTo("READY");
+
+        transferService.apply(delayedTransfer);
+        assertThat(mongoTemplate.findById("transfer-mark", AttendanceDocument.class).getLessonId())
+                .isEqualTo(TARGET_LESSON_ID);
+        assertThat(mongoTemplate.count(new Query(), LessonTransferReceiptDocument.class)).isEqualTo(1);
+
+        archiveEffectService.apply(scheduleEffect(eventId, semesterId, EFFECT_LESSON_ID, true),
+                () -> { throw new AssertionError("Exact receipt replay must not run the domain effect"); });
+        assertThat(mongoTemplate.findById("archive-mark", AttendanceDocument.class).getStatus())
+                .isEqualTo(AttendanceStatus.CANCELLED);
+        assertThat(mongoTemplate.count(new Query(), SemesterArchiveEffectReceiptDocument.class)).isEqualTo(1);
+
+        archiveParticipantService.apply(participantCommand("PREPARE_RESTORE", restore, semesterId, 2));
+        assertThat(mongoTemplate.findById(restore + ":PREPARE_RESTORE",
+                SemesterArchiveParticipantReceiptDocument.class).getStatus()).isEqualTo("PREPARED_RESTORE");
+        assertThatThrownBy(() -> attendanceWritePort.mark(
+                100L, EFFECT_LESSON_ID, GROUP_ID, semesterId, AttendanceStatus.ABSENT))
+                .isInstanceOf(ConflictException.class);
+        archiveParticipantService.apply(participantCommand("RELEASE_RESTORE", restore, semesterId, 2));
+        assertThat(mongoTemplate.findById(Long.toString(semesterId), SemesterArchiveFenceDocument.class)
+                .getBarrierState()).isEqualTo("RELEASED");
+        attendanceWritePort.mark(100L, EFFECT_LESSON_ID, GROUP_ID, semesterId, AttendanceStatus.ABSENT);
+        assertThat(mongoTemplate.findById("archive-mark", AttendanceDocument.class).getStatus())
+                .isEqualTo(AttendanceStatus.ABSENT);
+
+        archiveParticipantService.apply(participantCommand("PREPARE_ARCHIVE", nextArchive, semesterId, 3));
+        archiveParticipantService.apply(participantCommand("SEAL_ARCHIVE", nextArchive, semesterId, 3));
+        archiveParticipantService.apply(participantCommand("RELEASE_RESTORE", restore, semesterId, 2));
+        assertThat(mongoTemplate.findById(Long.toString(semesterId), SemesterArchiveFenceDocument.class)
+                .getBarrierState()).isEqualTo("ARCHIVE_SEALED");
+        assertThatThrownBy(() -> attendanceWritePort.mark(
+                100L, EFFECT_LESSON_ID, GROUP_ID, semesterId, AttendanceStatus.PRESENT))
+                .isInstanceOf(ConflictException.class);
+
+        String unreceiptedEventId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+        archiveEffectService.apply(scheduleEffect(unreceiptedEventId, semesterId, EFFECT_LESSON_ID, false),
+                () -> lessonEventService.processLessonCancelled(EFFECT_LESSON_ID, semesterId));
+        SemesterArchiveEffectReceiptDocument rejected = mongoTemplate.findById(
+                unreceiptedEventId + ":ATTENDANCE", SemesterArchiveEffectReceiptDocument.class);
+        assertThat(rejected.getResult()).isEqualTo("ERROR");
+        assertThat(rejected.getBlockingReason()).isEqualTo("SEMESTER_ARCHIVE_SEALED");
+        assertThat(mongoTemplate.findById("archive-mark", AttendanceDocument.class).getStatus())
+                .isEqualTo(AttendanceStatus.ABSENT);
+    }
+
+    @Test
+    void prepareArchiveWaitsBehindAlreadyFencedAttendanceWrite() throws Exception {
+        long semesterId = SEMESTER_ID + 1;
+        CountDownLatch writeFenceHeld = new CountDownLatch(1);
+        CountDownLatch allowWriteCommit = new CountDownLatch(1);
+        TransactionTemplate transactionTemplate = new TransactionTemplate(mongoTransactionManager);
+        try (var executor = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+            Future<?> write = executor.submit(() -> transactionTemplate.execute(status -> {
+                pairWriteCoordinator.lock(semesterId, 100L, SOURCE_LESSON_ID, GROUP_ID, Instant.now());
+                writeFenceHeld.countDown();
+                try {
+                    if (!allowWriteCommit.await(10, TimeUnit.SECONDS)) {
+                        throw new IllegalStateException("Timed out waiting to commit the fenced write");
+                    }
+                } catch (InterruptedException error) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Fenced write interrupted", error);
+                }
+                mongoTemplate.insert(AttendanceDocument.builder()
+                        .lessonId(SOURCE_LESSON_ID)
+                        .userId(100L)
+                        .groupId(GROUP_ID)
+                        .semesterId(semesterId)
+                        .status(AttendanceStatus.PRESENT)
+                        .source(AttendanceSource.STUDENT_GEO)
+                        .createdAt(Instant.now())
+                        .updatedAt(Instant.now())
+                        .build());
+                return null;
+            }));
+            assertThat(writeFenceHeld.await(5, TimeUnit.SECONDS)).isTrue();
+
+            String operationId = "44444444-4444-4444-8444-444444444444";
+            Future<?> prepare = executor.submit(() -> archiveParticipantService.apply(
+                    participantCommand("PREPARE_ARCHIVE", operationId, semesterId, 1)));
+            boolean prepareTransactionRetried = false;
+            try {
+                prepare.get(300, TimeUnit.MILLISECONDS);
+                throw new AssertionError("PREPARE_ARCHIVE committed before the fenced writer");
+            } catch (TimeoutException expected) {
+                // Mongo is still serializing the two transactions on the semester fence.
+            } catch (ExecutionException writeConflict) {
+                // A Mongo write-conflict abort is safe; Rabbit redelivery retries after the winner commits.
+                prepareTransactionRetried = true;
+            } finally {
+                allowWriteCommit.countDown();
+            }
+
+            write.get(10, TimeUnit.SECONDS);
+            if (prepareTransactionRetried) {
+                archiveParticipantService.apply(participantCommand(
+                        "PREPARE_ARCHIVE", operationId, semesterId, 1));
+            } else {
+                prepare.get(10, TimeUnit.SECONDS);
+            }
+        }
+
+        assertThat(mongoTemplate.count(Query.query(Criteria.where("semester_id").is(semesterId)),
+                AttendanceDocument.class)).isEqualTo(1);
+        assertThat(mongoTemplate.findById(Long.toString(semesterId), SemesterArchiveFenceDocument.class)
+                .getBarrierState()).isEqualTo("ARCHIVE_PREPARING");
     }
 
     @Test
@@ -225,7 +414,8 @@ class LessonTransferParticipantIT {
         mongoTemplate.insert(excuseTicket);
 
         transferService.apply(event(0, 2, List.of(binding(9_223_372_036_854_775_807L))));
-        transferService.apply(event(1, 2, List.of(binding(9_223_372_036_854_775_806L))));
+        Map<String, Object> secondBatch = event(1, 2, List.of(binding(9_223_372_036_854_775_806L)));
+        transferService.apply(secondBatch);
 
         AttendanceDocument movedMark = mongoTemplate.findById("mark-1", AttendanceDocument.class);
         assertThat(movedMark).isNotNull();
@@ -283,15 +473,20 @@ class LessonTransferParticipantIT {
         assertThat(ack.path("result").asText()).isEqualTo("APPLIED");
         assertThat(ack.path("batch_index").asInt()).isEqualTo(-1);
 
-        lessonEventService.processLessonClosed(SOURCE_LESSON_ID, GROUP_ID);
+        transferService.apply(secondBatch);
+        assertThat(mongoTemplate.count(new Query(), LessonTransferReceiptDocument.class)).isEqualTo(1);
+        assertThat(mongoTemplate.count(Query.query(Criteria.where("event_type")
+                .is("lesson.transfer.participant.applied")), "attendance_outbox")).isEqualTo(2);
+
+        lessonEventService.processLessonClosed(SOURCE_LESSON_ID, GROUP_ID, SEMESTER_ID);
         assertThat(mongoTemplate.findById("mark-1", AttendanceDocument.class).getStatus())
                 .isEqualTo(AttendanceStatus.EXCUSED);
         assertThatThrownBy(() -> attendanceWritePort.mark(
-                100L, SOURCE_LESSON_ID, GROUP_ID, AttendanceStatus.ABSENT))
+                100L, SOURCE_LESSON_ID, GROUP_ID, SEMESTER_ID, AttendanceStatus.ABSENT))
                 .isInstanceOf(ConflictException.class);
         assertThat(mongoTemplate.count(Query.query(Criteria.where("lesson_id").is(SOURCE_LESSON_ID)),
                 AttendanceDocument.class)).isZero();
-        assertThat(mongoTemplate.count(new Query(), "attendance_outbox")).isEqualTo(1);
+        assertThat(mongoTemplate.count(new Query(), "attendance_outbox")).isEqualTo(3);
     }
 
     @Test
@@ -325,7 +520,8 @@ class LessonTransferParticipantIT {
         mongoTemplate.insert(source);
         mongoTemplate.insert(target);
 
-        transferService.apply(event(0, 1, List.of()));
+        Map<String, Object> rejectedTransfer = event(0, 1, List.of());
+        transferService.apply(rejectedTransfer);
 
         assertThat(mongoTemplate.findById("source-mark", AttendanceDocument.class))
                 .usingRecursiveComparison().isEqualTo(source);
@@ -342,6 +538,49 @@ class LessonTransferParticipantIT {
         assertThat(ack.path("result").asText()).isEqualTo("ERROR");
         assertThat(ack.path("retryable").asBoolean()).isFalse();
         assertThat(ack.path("error_code").asText()).isEqualTo("TARGET_DATA_CONFLICT");
+        transferService.apply(rejectedTransfer);
+        assertThat(mongoTemplate.count(new Query(), LessonTransferReceiptDocument.class)).isEqualTo(1);
+        assertThat(mongoTemplate.count(Query.query(Criteria.where("event_type")
+                .is("lesson.transfer.participant.applied")), "attendance_outbox")).isEqualTo(2);
+    }
+
+    private static Map<String, Object> participantCommand(String command, String operationId,
+                                                           long semesterId, long stateVersion) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("operation_id", operationId);
+        payload.put("semester_id", semesterId);
+        payload.put("state_version", stateVersion);
+        payload.put("command", command);
+        Map<String, Object> envelope = new LinkedHashMap<>();
+        envelope.put("event_type", "semester.archive.participant.command");
+        envelope.put("event_id", UUID.randomUUID().toString());
+        envelope.put("event_version", 1);
+        envelope.put("source", "academic-service");
+        envelope.put("trace_id", "archive-command-correlation");
+        envelope.put("occurred_at", Instant.now().toString());
+        envelope.put("payload", payload);
+        return envelope;
+    }
+
+    private static Map<String, Object> scheduleEffect(String eventId, long semesterId,
+                                                       long lessonId, boolean reversePayloadOrder) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        if (reversePayloadOrder) {
+            payload.put("semester_id", semesterId);
+            payload.put("lesson_id", lessonId);
+        } else {
+            payload.put("lesson_id", lessonId);
+            payload.put("semester_id", semesterId);
+        }
+        Map<String, Object> envelope = new LinkedHashMap<>();
+        envelope.put("event_type", "lesson.cancelled");
+        envelope.put("event_id", eventId);
+        envelope.put("event_version", 1);
+        envelope.put("source", "schedule-service");
+        envelope.put("trace_id", "archive-effect-correlation");
+        envelope.put("occurred_at", Instant.now().toString());
+        envelope.put("payload", payload);
+        return envelope;
     }
 
     private static Map<String, Object> event(int batchIndex, int batchCount,

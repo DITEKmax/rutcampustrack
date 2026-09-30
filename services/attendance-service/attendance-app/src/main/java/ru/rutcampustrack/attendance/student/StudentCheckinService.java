@@ -172,6 +172,7 @@ public class StudentCheckinService {
             return fromReceipt(previousReceipt.get());
         }
 
+        pairCoordinator.lockSemesterForWrite(lesson.semesterId(), acceptedAt);
         AttendanceDocument current = attendanceRepository
                 .findByLessonIdAndUserId(lesson.id(), identity.userId())
                 .orElse(null);
@@ -183,7 +184,7 @@ public class StudentCheckinService {
             return presentAck(current, lesson.id(), acceptedAt);
         }
 
-        pairCoordinator.lock(identity.userId(), lesson.id(), identity.groupId(), acceptedAt);
+        pairCoordinator.lock(lesson.semesterId(), identity.userId(), lesson.id(), identity.groupId(), acceptedAt);
         current = attendanceRepository.findByLessonIdAndUserId(lesson.id(), identity.userId())
                 .orElse(null);
         if (isManualHeadmanAbsence(current)) {
@@ -237,7 +238,7 @@ public class StudentCheckinService {
         attendance.setSource(AttendanceSource.STUDENT_GEO);
         attendance.setMarkedBy(null);
         if (journalAttachmentPort != null) {
-            journalAttachmentPort.delete(lesson.id(), identity.userId());
+            journalAttachmentPort.delete(lesson.semesterId(), identity.userId(), lesson.id(), identity.groupId());
         }
         attendance.setExcuseReason(null);
         attendance.setExcuseType(null);
@@ -357,7 +358,7 @@ public class StudentCheckinService {
             throw new StudentCheckinException(Code.CHECKIN_NOT_ELIGIBLE,
                     "Староста отмечает себя через журнал посещаемости");
         }
-        if (lesson == null || lesson.id() <= 0) {
+        if (lesson == null || lesson.id() <= 0 || lesson.semesterId() <= 0) {
             throw new StudentCheckinException(Code.LESSON_NOT_FOUND, "Пара не найдена");
         }
         if (identity.groupId() != lesson.groupId()) {

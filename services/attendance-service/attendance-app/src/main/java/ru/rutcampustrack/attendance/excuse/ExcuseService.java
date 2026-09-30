@@ -17,6 +17,7 @@ import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.exception.LegacyEndpointRetiredException;
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
@@ -26,6 +27,7 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.time.Clock;
@@ -128,13 +130,14 @@ public class ExcuseService {
      */
     @Transactional
     public ExcuseTicket createExcuse(CreateExcuseRequest request) {
+        List<Map<String, Object>> lessonDetails = resolveLessonDetails(request.lessonIds());
         ExcuseTicket saved = createTicketInternal(request);
         // D-19 / D-27: publish excuse.requested after save — notification-bot listens.
         // M13 G7: save (Mongo excuse) + outbox.save (Mongo outbox) обёрнуты в одну
         // MongoTransactionManager tx (replica set обязателен). Если publishRequested
         // бросит — excuse.save rollback'ается, инвариант «excuse существует ⇔ event
         // в outbox» сохраняется.
-        excuseEventPublisher.publishRequested(saved, resolveLessonDetails(saved.getLessonIds()));
+        excuseEventPublisher.publishRequested(saved, lessonDetails);
         // M04 Группа 8 — excuse.created{kind}. kind = enum ExcuseType (illness, ...).
         businessMetrics.excuseCreatedCounter(saved.getExcuseType().name().toLowerCase()).increment();
         return saved;
@@ -169,8 +172,10 @@ public class ExcuseService {
         }
 
         // D-25: validate that every lessonId exists and belongs to the student's group
-        validateLessonIds(request.lessonIds());
-        lockAndValidateLessons(requestContext.getUserId(), requestContext.getGroupId(), request.lessonIds());
+        Long semesterId = validateLessonIds(request.lessonIds());
+        String studentName = academicGrpcClient.getUserDisplayName(requestContext.getUserId());
+        lockAndValidateLessons(requestContext.getUserId(), requestContext.getGroupId(),
+                semesterId, request.lessonIds());
 
         // Excuse tickets only make sense for lessons where the student is marked absent.
         Long studentId = requestContext.getUserId();
@@ -185,15 +190,13 @@ public class ExcuseService {
                     });
         }
 
-        // D-26: snapshot studentName via gRPC
-        String studentName = academicGrpcClient.getUserDisplayName(requestContext.getUserId());
-
         Instant now = clock.instant();
         ExcuseTicket ticket = ExcuseTicket.builder()
                 .studentId(requestContext.getUserId())
                 .groupId(requestContext.getGroupId())
                 .studentName(studentName)
                 .lessonIds(List.copyOf(request.lessonIds()))
+                .semesterId(semesterId)
                 .excuseType(request.excuseType())
                 .comment(request.comment())
                 .status(ExcuseTicketStatus.SUBMITTED)
@@ -281,7 +284,9 @@ public class ExcuseService {
             throw new ConflictException("Решение по тикету уже принято");
         }
 
-        lockAndValidateLessons(ticket.getStudentId(), ticket.getGroupId(), ticket.getLessonIds());
+        requirePositiveSemester(ticket.getSemesterId());
+        lockAndValidateLessons(ticket.getStudentId(), ticket.getGroupId(),
+                ticket.getSemesterId(), ticket.getLessonIds());
         ticket = excuseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
         if (ticket.getStatus() != ExcuseTicketStatus.SUBMITTED) {
@@ -306,6 +311,7 @@ public class ExcuseService {
                         saved.getStudentId(),
                         lessonId,
                         saved.getGroupId(),
+                        saved.getSemesterId(),
                         attendanceStatus,
                         AttendanceSource.HEADMAN_EXCUSE,
                         reason);
@@ -346,7 +352,9 @@ public class ExcuseService {
             return;
         }
 
-        lockAndValidateLessons(ticket.getStudentId(), ticket.getGroupId(), ticket.getLessonIds());
+        requirePositiveSemester(ticket.getSemesterId());
+        lockAndValidateLessons(ticket.getStudentId(), ticket.getGroupId(),
+                ticket.getSemesterId(), ticket.getLessonIds());
         ticket = excuseRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
         if (ticket.getStatus() != ExcuseTicketStatus.SUBMITTED) {
@@ -371,6 +379,7 @@ public class ExcuseService {
                         saved.getStudentId(),
                         lessonId,
                         saved.getGroupId(),
+                        saved.getSemesterId(),
                         attendanceStatus,
                         AttendanceSource.HEADMAN_EXCUSE,
                         reason);
@@ -436,11 +445,16 @@ public class ExcuseService {
      *
      * @throws BadRequestException if any id is unknown or belongs to another group
      */
-    private void validateLessonIds(List<Long> lessonIds) {
+    private Long validateLessonIds(List<Long> lessonIds) {
         List<LessonInfo> lessons = scheduleGrpcClient.getLessonsByIds(lessonIds);
         Set<Long> returnedIds = new HashSet<>();
+        Set<Long> semesterIds = new HashSet<>();
         for (LessonInfo lesson : lessons) {
             returnedIds.add(lesson.getLessonId());
+            if (lesson.getSemesterId() <= 0) {
+                throw new ScheduleServiceUnavailableException("Schedule returned a lesson without a positive semester");
+            }
+            semesterIds.add(lesson.getSemesterId());
         }
         for (Long requestedId : lessonIds) {
             if (!returnedIds.contains(requestedId)) {
@@ -454,16 +468,35 @@ public class ExcuseService {
                         "Урок с id=" + lesson.getLessonId() + " не принадлежит вашей группе");
             }
         }
+        if (semesterIds.size() != 1) {
+            throw new BadRequestException("Все пары заявки должны относиться к одному семестру");
+        }
+        return semesterIds.iterator().next();
     }
 
-    private void lockAndValidateLessons(long studentId, long groupId, List<Long> lessonIds) {
+    private void lockAndValidateLessons(long studentId, long groupId, long semesterId, List<Long> lessonIds) {
         List<Long> orderedIds = lessonIds == null ? List.of()
                 : lessonIds.stream().filter(Objects::nonNull).distinct().sorted().toList();
+        requirePositiveSemester(semesterId);
         for (Long lessonId : orderedIds) {
-            if (pairWriteCoordinator != null) {
-                pairWriteCoordinator.lock(studentId, lessonId, groupId, clock.instant());
+            LessonResponse lesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
+            if (lesson.getSemesterId() != semesterId) {
+                throw new ScheduleServiceUnavailableException(
+                        "Schedule lesson semester does not match the request scope");
             }
-            scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
+        }
+        if (pairWriteCoordinator != null) {
+            Instant now = clock.instant();
+            pairWriteCoordinator.lockLessons(semesterId, orderedIds, groupId, now);
+            for (Long lessonId : orderedIds) {
+                pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, now);
+            }
+        }
+    }
+
+    private static void requirePositiveSemester(Long semesterId) {
+        if (semesterId == null || semesterId <= 0) {
+            throw new ScheduleServiceUnavailableException("Attendance request has no authoritative semester");
         }
     }
 

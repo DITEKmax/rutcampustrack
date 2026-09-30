@@ -46,8 +46,12 @@ class OneOffLessonCancelledConsumerIT extends AbstractAttendanceIntegrationTest 
                 "event_type", "lesson.one_off.cancelled",
                 "event_id", UUID.randomUUID().toString(),
                 "occurred_at", Instant.now().toString(),
+                "event_version", 1,
+                "source", "schedule-service",
+                "trace_id", "one-off-cancel-correlation",
                 "payload", Map.of(
                         "group_id", groupId,
+                        "semester_id", 1L,
                         "subject_id", 7,
                         "date", date.toString(),
                         "lesson_number", lessonNumber

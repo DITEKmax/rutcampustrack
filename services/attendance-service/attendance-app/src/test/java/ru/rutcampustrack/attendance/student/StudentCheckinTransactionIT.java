@@ -18,6 +18,9 @@ import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.core.index.PartialIndexFilter;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -32,7 +35,10 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
+import ru.rutcampustrack.attendance.event.SemesterArchiveFence;
+import ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument;
 import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
@@ -84,6 +90,7 @@ import static org.mockito.Mockito.*;
 @Testcontainers(disabledWithoutDocker = true)
 @Import({
         StudentCheckinService.class,
+        SemesterArchiveFence.class,
         PairWriteCoordinator.class,
         AttendanceWritePortImpl.class,
         LateCheckinService.class,
@@ -104,7 +111,7 @@ class StudentCheckinTransactionIT {
     @TestConfiguration(proxyBeanMethods = false)
     static class TestConfig {
         @Bean
-        MongoTransactionManager transactionManager(MongoDatabaseFactory factory) {
+        MongoTransactionManager mongoTransactionManager(MongoDatabaseFactory factory) {
             return new MongoTransactionManager(factory);
         }
 
@@ -193,6 +200,7 @@ class StudentCheckinTransactionIT {
         mongoTemplate.dropCollection("student_checkin_receipts");
         mongoTemplate.dropCollection("attendance_outbox");
         mongoTemplate.dropCollection("request_attachments");
+        mongoTemplate.dropCollection("semester_archive_fences");
         mongoTemplate.indexOps(AttendanceDocument.class).ensureIndex(new Index()
                 .on("lesson_id", Sort.Direction.ASC).on("user_id", Sort.Direction.ASC)
                 .unique().named("uniq_lesson_user"));
@@ -210,14 +218,40 @@ class StudentCheckinTransactionIT {
                 scheduleGrpcClient, academicGrpcClient, requestContext, semesterCacheService);
         when(metrics.checkinCounter(anyString())).thenReturn(mock(Counter.class));
         when(metrics.lateCheckinCreatedCounter()).thenReturn(mock(Counter.class));
-        when(scheduleGrpcClient.getLessonById(1L)).thenReturn(LessonResponse.newBuilder()
+        LessonResponse scheduleLesson = LessonResponse.newBuilder()
                 .setId(1L).setGroupId(10L).setSubjectId(20L).setSemesterId(30L).setLessonNumber(2)
                 .setDate("2026-09-06").setStartTime("10:00").setEndTime("11:00")
-                .setStatus("active").build());
+                .setStatus("active").build();
+        when(scheduleGrpcClient.getLessonById(1L)).thenReturn(scheduleLesson);
+        when(scheduleGrpcClient.requireAttendanceMutationReady(1L, 10L)).thenReturn(scheduleLesson);
         when(academicGrpcClient.getSubjectsByIds(List.of(20L))).thenReturn(java.util.Map.of(20L, "Предмет"));
         when(academicGrpcClient.isHeadman(any(), any()))
                 .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
         when(semesterCacheService.getActiveSemesterId()).thenReturn(30L);
+    }
+
+    @Test
+    void archivedSemesterFenceRejectsGeoCheckinWithoutAttendanceOrRequestWrites() {
+        mongoTemplate.insert(SemesterArchiveFenceDocument.builder()
+                .id("30")
+                .semesterId(30L)
+                .stateVersion(1L)
+                .operationId("11111111-1111-4111-8111-111111111111")
+                .barrierState("ARCHIVE_PREPARING")
+                .writeFence(0L)
+                .updatedAt(clock.instant())
+                .build());
+        when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.checkin(student, lesson(), "archive-geo-key-0001",
+                new Coordinates(55.75, 37.61)))
+                .isInstanceOf(ConflictException.class);
+
+        assertThat(attendanceRepository.findAll()).isEmpty();
+        assertThat(pairRepository.findAll()).isEmpty();
+        assertThat(receiptRepository.findAll()).isEmpty();
+        assertThat(lateCheckinRepository.findAll()).isEmpty();
+        verifyNoInteractions(attendanceEvents, lateCheckinEvents);
     }
 
     @Test
@@ -231,9 +265,14 @@ class StudentCheckinTransactionIT {
                     assertThat(request.getId()).isEqualTo(ack.request().id());
                 });
         assertThat(receiptRepository.findAll()).hasSize(1);
-        assertThat(pairRepository.findAll()).singleElement()
+        List<CheckinPairStateDocument> pairStates = pairRepository.findAll();
+        assertThat(pairStates).hasSize(2);
+        assertThat(pairStates).filteredOn(state -> state.getStudentId() == 100L).singleElement()
                 .extracting(CheckinPairStateDocument::getRetryAt)
                 .isEqualTo(Instant.parse("2026-09-06T07:05:00Z"));
+        assertThat(pairStates).filteredOn(state -> state.getStudentId() == 0L).singleElement()
+                .satisfies(state -> assertThat(state.getId()).isEqualTo(
+                        PairWriteCoordinator.lessonFenceId(1L)));
         verify(lateCheckinEvents).publishRequested(any(), any(), anyInt(), any(), any());
     }
 
@@ -342,15 +381,41 @@ class StudentCheckinTransactionIT {
     }
 
     @Test
-    void alreadyPresentWithNewKeyDoesNotMutatePairFenceOrCreateReceipt() {
+    void exactReceiptReplaysButNewKeysAreBlockedDuringArchiveTransitions() {
         when(geofence.isWithinCampus(55.75, 37.61)).thenReturn(true);
         service.checkin(student, lesson(), "key-000000000001", new Coordinates(55.75, 37.61));
-        var before = pairRepository.findAll().getFirst();
+        var pairId = PairWriteCoordinator.pairId(100L, 1L);
+        var lessonFenceId = PairWriteCoordinator.lessonFenceId(1L);
+        var pairFenceBefore = pairRepository.findById(pairId).orElseThrow();
+        var lessonFenceBefore = pairRepository.findById(lessonFenceId).orElseThrow();
 
-        Ack second = service.checkin(student, lesson(), "key-000000000002", new Unavailable("TIMEOUT"));
+        mongoTemplate.updateFirst(Query.query(Criteria.where("_id").is("30")), new Update()
+                .set("state_version", 1L)
+                .set("operation_id", "11111111-1111-4111-8111-111111111111")
+                .set("barrier_state", "ARCHIVE_PREPARING")
+                .set("updated_at", clock.instant()), SemesterArchiveFenceDocument.class);
 
-        assertThat(second.outcome()).isEqualTo(Outcome.PRESENT);
-        assertThat(pairRepository.findAll().getFirst().getFence()).isEqualTo(before.getFence());
+        Ack prepareReplay = service.checkin(student, lesson(), "key-000000000001",
+                new Coordinates(55.75, 37.61));
+        assertThat(prepareReplay.outcome()).isEqualTo(Outcome.PRESENT);
+        assertThatThrownBy(() -> service.checkin(student, lesson(), "key-000000000002",
+                new Unavailable("TIMEOUT")))
+                .isInstanceOf(ConflictException.class);
+
+        mongoTemplate.updateFirst(Query.query(Criteria.where("_id").is("30")),
+                new Update().set("barrier_state", "ARCHIVE_SEALED"), SemesterArchiveFenceDocument.class);
+
+        Ack sealedReplay = service.checkin(student, lesson(), "key-000000000001",
+                new Coordinates(55.75, 37.61));
+        assertThat(sealedReplay.outcome()).isEqualTo(Outcome.PRESENT);
+        assertThatThrownBy(() -> service.checkin(student, lesson(), "key-000000000003",
+                new Unavailable("TIMEOUT")))
+                .isInstanceOf(ConflictException.class);
+
+        assertThat(pairRepository.findById(pairId).orElseThrow().getFence())
+                .isEqualTo(pairFenceBefore.getFence());
+        assertThat(pairRepository.findById(lessonFenceId).orElseThrow().getFence())
+                .isEqualTo(lessonFenceBefore.getFence());
         assertThat(receiptRepository.findAll()).hasSize(1);
         verifyNoMoreInteractions(lateCheckinEvents);
     }

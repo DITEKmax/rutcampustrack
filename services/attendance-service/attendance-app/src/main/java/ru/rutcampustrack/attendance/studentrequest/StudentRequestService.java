@@ -4,6 +4,8 @@ import com.mongodb.MongoException;
 import org.bson.Document;
 import org.bson.types.Binary;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -105,6 +107,8 @@ import java.util.function.Supplier;
  */
 @Service
 public class StudentRequestService {
+
+    private static final Logger log = LoggerFactory.getLogger(StudentRequestService.class);
 
     public static final int MANUAL_LATE_LIMIT = 5;
     public static final int MAX_ATTACHMENTS = 2;
@@ -325,7 +329,7 @@ public class StudentRequestService {
             if (excuse != null) {
                 requireOwner(identity, excuse.getStudentId());
                 List<Long> lessonIds = sortedLessonIds(excuse.getLessonIds());
-                lockPairs(studentId, excuse.getGroupId(), lessonIds);
+                lockPairs(excuse.getSemesterId(), studentId, excuse.getGroupId(), lessonIds);
                 ExcuseTicket current = excuseRepository.findById(requestId).orElseThrow(
                         () -> new ResourceNotFoundException("ExcuseTicket", "id", requestId));
                 if (current.getStatus() == ExcuseTicketStatus.CANCELLED) {
@@ -346,7 +350,7 @@ public class StudentRequestService {
             LateCheckinRequest late = lateCheckinRepository.findById(requestId).orElseThrow(
                     () -> new ResourceNotFoundException("StudentRequest", "id", requestId));
             requireOwner(identity, late.getStudentId());
-            lockPairs(studentId, late.getGroupId(), List.of(late.getLessonId()));
+            lockPairs(late.getSemesterId(), studentId, late.getGroupId(), List.of(late.getLessonId()));
             LateCheckinRequest current = lateCheckinRepository.findById(requestId).orElseThrow(
                     () -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
             if (current.getStatus() == LateCheckinRequestStatus.CANCELLED) {
@@ -384,7 +388,6 @@ public class StudentRequestService {
         if (document.getState() == AttachmentState.EXPIRED
                 || document.getExpiresAt() == null
                 || !now.isBefore(document.getExpiresAt())) {
-            expireOne(document, now);
             throw new ResponseStatusException(HttpStatus.GONE, "Срок хранения вложения истёк");
         }
         if (document.getData() == null) {
@@ -420,7 +423,6 @@ public class StudentRequestService {
         if (document.getState() == AttachmentState.EXPIRED
                 || document.getExpiresAt() == null
                 || !now.isBefore(document.getExpiresAt())) {
-            expireOne(document, now);
             throw new ResponseStatusException(HttpStatus.GONE, "Срок хранения вложения истёк");
         }
         if (document.getData() == null) {
@@ -616,13 +618,122 @@ public class StudentRequestService {
     /** Logical expiry plus byte clearing for the task-owned collection only. */
     public long expireAttachments() {
         Instant now = clock.instant();
-        Query query = Query.query(Criteria.where("state").is(AttachmentState.ACTIVE.name())
+        Query due = Query.query(Criteria.where("state").is(AttachmentState.ACTIVE.name())
                 .and("expires_at").lte(now));
-        Update update = new Update()
-                .set("state", AttachmentState.EXPIRED.name())
-                .set("expired_at", now)
-                .unset("data");
-        return mongoTemplate.updateMulti(query, update, "request_attachments").getModifiedCount();
+        List<RequestAttachmentDocument> candidates = mongoTemplate.find(due, RequestAttachmentDocument.class);
+        long expired = 0;
+        for (RequestAttachmentDocument candidate : candidates) {
+            long semesterId = attachmentSemester(candidate);
+            try {
+                expired += expireCandidate(candidate, semesterId);
+            } catch (ConflictException blocked) {
+                log.info("Attachment retention deferred while semester {} is fenced", semesterId);
+            }
+        }
+        return expired;
+    }
+
+    private long attachmentSemester(RequestAttachmentDocument attachment) {
+        if (attachment.getRequestId() == null || attachment.getRequestId().isBlank()) {
+            throw new IllegalStateException("Expired attachment has no owning request identity");
+        }
+        String[] pairKey = attachment.getRequestId() == null ? new String[0] : attachment.getRequestId().split(":", -1);
+        if (pairKey.length == 2) {
+            long studentId = parsePositiveLong(pairKey[0]);
+            long lessonId = parsePositiveLong(pairKey[1]);
+            if (studentId <= 0 || lessonId <= 0 || !Objects.equals(attachment.getOwnerStudentId(), studentId)
+                    || attachment.getGroupId() == null || attachment.getGroupId() <= 0) {
+                throw new IllegalStateException("Expired journal attachment has no valid pair scope");
+            }
+            Long semesterId = attachment.getSemesterId();
+            if (semesterId == null || semesterId <= 0) {
+                AttendanceDocument mark = attendanceRepository.findByLessonIdAndUserId(lessonId, studentId)
+                        .orElseThrow(() -> new IllegalStateException(
+                                "Expired journal attachment semester cannot be resolved from its exact attendance row"));
+                if (!Objects.equals(mark.getGroupId(), attachment.getGroupId())
+                        || mark.getSemesterId() == null || mark.getSemesterId() <= 0) {
+                    throw new IllegalStateException("Expired journal attachment has ambiguous attendance scope");
+                }
+                semesterId = mark.getSemesterId();
+            }
+            return semesterId;
+        }
+        ExcuseTicket ticket = excuseRepository.findById(attachment.getRequestId()).orElseThrow(
+                () -> new IllegalStateException("Expired attachment has no owning excuse ticket"));
+        long semesterId = requireAttachmentSemester(ticket);
+        if (attachment.getSemesterId() != null && !Objects.equals(attachment.getSemesterId(), semesterId)) {
+            throw new IllegalStateException("Expired attachment semester does not match its ticket");
+        }
+        return semesterId;
+    }
+
+    private long expireCandidate(RequestAttachmentDocument candidate, long semesterId) {
+        String[] pairKey = candidate.getRequestId().split(":", -1);
+        if (pairKey.length == 2) {
+            long studentId = parsePositiveLong(pairKey[0]);
+            long lessonId = parsePositiveLong(pairKey[1]);
+            long groupId = candidate.getGroupId();
+            Integer changed = transactionTemplate.execute(status -> {
+                RequestAttachmentDocument current = currentDueAttachment(candidate.getId());
+                if (current == null) return 0;
+                if (!Objects.equals(current.getRequestId(), candidate.getRequestId())
+                        || !Objects.equals(current.getOwnerStudentId(), studentId)
+                        || !Objects.equals(current.getGroupId(), groupId)
+                        || (current.getSemesterId() != null && !Objects.equals(current.getSemesterId(), semesterId))) {
+                    throw new IllegalStateException("Expired journal attachment scope changed");
+                }
+                pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, clock.instant());
+                expireOne(current, clock.instant());
+                return 1;
+            });
+            return changed == null ? 0 : changed;
+        }
+
+        Integer changed = transactionTemplate.execute(status -> {
+            RequestAttachmentDocument current = currentDueAttachment(candidate.getId());
+            if (current == null) return 0;
+            ExcuseTicket ticket = excuseRepository.findById(current.getRequestId()).orElseThrow(
+                    () -> new IllegalStateException("Expired attachment owner disappeared"));
+            if (requireAttachmentSemester(ticket) != semesterId
+                    || !Objects.equals(ticket.getStudentId(), current.getOwnerStudentId())
+                    || !Objects.equals(ticket.getGroupId(), current.getGroupId())
+                    || ticket.getStudentId() == null || ticket.getStudentId() <= 0
+                    || ticket.getGroupId() == null || ticket.getGroupId() <= 0
+                    || (current.getSemesterId() != null && !Objects.equals(current.getSemesterId(), semesterId))) {
+                throw new IllegalStateException("Expired attachment owner scope changed");
+            }
+            List<Long> lessonIds = sortedLessonIds(ticket.getLessonIds());
+            if (ticket.getStudentId() == null || ticket.getStudentId() <= 0 || lessonIds.isEmpty()) {
+                throw new IllegalStateException("Expired attachment owner has no authoritative lesson scope");
+            }
+            Instant updateAt = clock.instant();
+            pairWriteCoordinator.lockLessons(semesterId, lessonIds, ticket.getGroupId(), updateAt);
+            for (Long lessonId : lessonIds) {
+                pairWriteCoordinator.lock(semesterId, ticket.getStudentId(), lessonId,
+                        ticket.getGroupId(), updateAt);
+            }
+            expireOne(current, updateAt);
+            return 1;
+        });
+        return changed == null ? 0 : changed;
+    }
+
+    private RequestAttachmentDocument currentDueAttachment(String attachmentId) {
+        RequestAttachmentDocument current = attachmentRepository.findById(attachmentId).orElse(null);
+        if (current == null || current.getState() != AttachmentState.ACTIVE
+                || current.getExpiresAt() == null || clock.instant().isBefore(current.getExpiresAt())) {
+            return null;
+        }
+        return current;
+    }
+
+    private static long parsePositiveLong(String value) {
+        try {
+            long parsed = Long.parseLong(value);
+            return parsed > 0 ? parsed : -1;
+        } catch (NumberFormatException error) {
+            return -1;
+        }
     }
 
     private RequestDetail submitExcuseInTransaction(
@@ -640,7 +751,7 @@ public class StudentRequestService {
             return replayOrMismatch(identity, previous.document(), payloadHash);
         }
 
-        lockPairs(studentId, identity.groupId(), lessons.stream()
+        lockPairs(semesterId, studentId, identity.groupId(), lessons.stream()
                 .map(ResolvedLesson::lessonId).sorted(LESSON_ORDER).toList());
         for (ResolvedLesson lesson : lessons) {
             AttendanceDocument attendance = attendanceRepository
@@ -675,6 +786,7 @@ public class StudentRequestService {
                     .requestId(saved.getId())
                     .ownerStudentId(studentId)
                     .groupId(identity.groupId())
+                    .semesterId(semesterId)
                     .position(position)
                     .name(file.safeName())
                     .contentType(file.detectedContentType())
@@ -727,7 +839,7 @@ public class StudentRequestService {
             return replayOrMismatch(identity, previous.document(), payloadHash);
         }
 
-        lockPairs(studentId, identity.groupId(), List.of(lesson.lessonId()));
+        lockPairs(semesterId, studentId, identity.groupId(), List.of(lesson.lessonId()));
         AttendanceDocument attendance = attendanceRepository
                 .findByLessonIdAndUserId(lesson.lessonId(), studentId).orElse(null);
         validateLateEligibility(lesson, attendance, studentId);
@@ -771,6 +883,7 @@ public class StudentRequestService {
 
     private void validateExcuseEligibility(ResolvedLesson lesson, AttendanceDocument attendance,
                                            long studentId) {
+        requireAttendanceScope(attendance, lesson.groupId(), lesson.document().getSemesterId());
         String status = lesson.status();
         if ("cancelled".equals(status)) {
             throw new BadRequestException("Пара отменена");
@@ -797,6 +910,7 @@ public class StudentRequestService {
 
     private void validateLateEligibility(ResolvedLesson lesson, AttendanceDocument attendance,
                                           long studentId) {
+        requireAttendanceScope(attendance, lesson.groupId(), lesson.document().getSemesterId());
         if (!"closed".equals(lesson.status())) {
             throw new BadRequestException("Запрос можно создать только по закрытой паре");
         }
@@ -1292,7 +1406,8 @@ public class StudentRequestService {
             if (Objects.equals(ticket.getStudentId(), actor)) {
                 throw new AccessDeniedException("Нельзя принимать решение по собственной заявке");
             }
-            lockPairs(ticket.getStudentId(), ticket.getGroupId(), sortedLessonIds(ticket.getLessonIds()));
+            lockPairs(ticket.getSemesterId(), ticket.getStudentId(), ticket.getGroupId(),
+                    sortedLessonIds(ticket.getLessonIds()));
             ExcuseTicket current = excuseRepository.findById(ticketId).orElseThrow(
                     () -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
             if (current.getStatus() == ExcuseTicketStatus.CANCELLED
@@ -1343,7 +1458,8 @@ public class StudentRequestService {
             if (Objects.equals(request.getStudentId(), actor)) {
                 throw new AccessDeniedException("Нельзя принимать решение по собственной заявке");
             }
-            lockPairs(request.getStudentId(), request.getGroupId(), List.of(request.getLessonId()));
+            lockPairs(request.getSemesterId(), request.getStudentId(), request.getGroupId(),
+                    List.of(request.getLessonId()));
             LateCheckinRequest current = lateCheckinRepository.findById(requestId).orElseThrow(
                     () -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
             if (current.getStatus() != LateCheckinRequestStatus.PENDING) {
@@ -1428,6 +1544,12 @@ public class StudentRequestService {
                                        StudentLessonSnapshotDocument snapshot,
                                        AttendanceDocument current,
                                        Instant now) {
+        long semesterId = requireAttachmentSemester(ticket);
+        if (snapshot != null && snapshot.getSemesterId() != null
+                && !Objects.equals(snapshot.getSemesterId(), semesterId)) {
+            throw new ConflictException("Снимок урока не совпадает с семестром заявки");
+        }
+        requireAttendanceScope(current, ticket.getGroupId(), semesterId);
         AttendanceDocument document = current == null ? new AttendanceDocument() : current;
         AttendanceStatus previousStatus = document.getStatus();
         if (document.getCreatedAt() == null) {
@@ -1440,9 +1562,9 @@ public class StudentRequestService {
         }
         document.setUserId(ticket.getStudentId());
         document.setGroupId(ticket.getGroupId());
+        document.setSemesterId(semesterId);
         if (snapshot != null) {
             document.setSubjectId(snapshot.getSubjectId());
-            document.setSemesterId(snapshot.getSemesterId());
             document.setLessonNumber(snapshot.getLessonNumber());
             document.setLessonDate(snapshot.getDate());
         }
@@ -1459,6 +1581,12 @@ public class StudentRequestService {
                                        AttendanceDocument current,
                                        Instant now,
                                        Long markedBy) {
+        if (request.getSemesterId() == null || request.getSemesterId() <= 0
+                || (snapshot != null && snapshot.getSemesterId() != null
+                && !Objects.equals(snapshot.getSemesterId(), request.getSemesterId()))) {
+            throw new ConflictException("Снимок урока не совпадает с семестром заявки");
+        }
+        requireAttendanceScope(current, request.getGroupId(), request.getSemesterId());
         AttendanceDocument document = current == null ? new AttendanceDocument() : current;
         if (document.getCreatedAt() == null) {
             document.setCreatedAt(now);
@@ -1477,7 +1605,8 @@ public class StudentRequestService {
         document.setExcuseType(null);
         document.setExcuseComment(null);
         if (journalAttachmentPort != null) {
-            journalAttachmentPort.delete(request.getLessonId(), request.getStudentId());
+            journalAttachmentPort.delete(request.getSemesterId(), request.getStudentId(),
+                    request.getLessonId(), request.getGroupId());
         }
         clearJournalAttachmentMetadata(document);
         document.setUpdatedAt(now);
@@ -1496,7 +1625,7 @@ public class StudentRequestService {
                 && journalAttachmentPort.isAvailable(lessonId, studentId, document.getAttachmentId());
         if (!retain) {
             if (journalAttachmentPort != null && lessonId > 0 && studentId > 0) {
-                journalAttachmentPort.delete(lessonId, studentId);
+                journalAttachmentPort.delete(document.getSemesterId(), studentId, lessonId, document.getGroupId());
             }
             clearJournalAttachmentMetadata(document);
         }
@@ -1549,10 +1678,35 @@ public class StudentRequestService {
         return identity.userId();
     }
 
-    private void lockPairs(long studentId, long groupId, List<Long> lessonIds) {
-        for (Long lessonId : sortedLessonIds(lessonIds)) {
-            pairWriteCoordinator.lock(studentId, lessonId, groupId, clock.instant());
-            scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
+    private void lockPairs(Long semesterId, long studentId, long groupId, List<Long> lessonIds) {
+        if (semesterId == null || semesterId <= 0) {
+            throw new ConflictException("В запросе отсутствует подтверждённый семестр");
+        }
+        List<Long> orderedIds = sortedLessonIds(lessonIds);
+        for (Long lessonId : orderedIds) {
+            LessonResponse lesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
+            if (lesson.getSemesterId() != semesterId) {
+                throw new ConflictException("Урок изменил семестр; обнови данные и повтори действие");
+            }
+        }
+        Instant now = clock.instant();
+        pairWriteCoordinator.lockLessons(semesterId, orderedIds, groupId, now);
+        for (Long lessonId : orderedIds) {
+            pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, now);
+        }
+    }
+
+    private static long requireAttachmentSemester(ExcuseTicket ticket) {
+        if (ticket.getSemesterId() == null || ticket.getSemesterId() <= 0) {
+            throw new IllegalStateException("Excuse request has no authoritative semester scope");
+        }
+        return ticket.getSemesterId();
+    }
+
+    private static void requireAttendanceScope(AttendanceDocument document, long groupId, Long semesterId) {
+        if (document != null && ((document.getGroupId() != null && document.getGroupId() != groupId)
+                || (document.getSemesterId() != null && !Objects.equals(document.getSemesterId(), semesterId)))) {
+            throw new ConflictException("Отметка посещаемости не совпадает с семестром урока");
         }
     }
 

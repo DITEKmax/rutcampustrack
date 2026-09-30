@@ -248,7 +248,7 @@ class StudentRequestDomainIT {
 
         @Override
         public ru.rutcampustrack.attendance.student.CheckinPairStateDocument lock(
-                long studentId, long lessonId, long groupId, Instant now) {
+                long semesterId, long studentId, long lessonId, long groupId, Instant now) {
             CyclicBarrier active = barrier;
             if (active != null && this.studentId == studentId && this.lessonId == lessonId) {
                 try {
@@ -260,7 +260,7 @@ class StudentRequestDomainIT {
                     throw new IllegalStateException("Pair-race barrier failed", error);
                 }
             }
-            return super.lock(studentId, lessonId, groupId, now);
+            return super.lock(semesterId, studentId, lessonId, groupId, now);
         }
     }
 
@@ -628,7 +628,7 @@ class StudentRequestDomainIT {
     }
 
     @Test
-    void attachmentDetailProjectsExpiryBeforeDownloadClearsBytes() {
+    void attachmentReadProjectsExpiryButRetentionClearsBytesUnderTheSemesterFence() {
         seedAbsent(42L);
         RequestDetail detail = service.submitExcuse(STUDENT, excuse(List.of(42L), "expiry-file-key-0001", List.of(
                 new AttachmentInput("proof.pdf", "application/pdf", pdfBytes(64)))));
@@ -649,6 +649,11 @@ class StudentRequestDomainIT {
                 .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
                 .satisfies(error -> assertThat(((org.springframework.web.server.ResponseStatusException) error)
                         .getStatusCode().value()).isEqualTo(410));
+        RequestAttachmentDocument stillStored = attachmentRepository.findById(attachmentId).orElseThrow();
+        assertThat(stillStored.getState()).isEqualTo(AttachmentState.ACTIVE);
+        assertThat(stillStored.getData()).isNotNull();
+
+        assertThat(service.expireAttachments()).isEqualTo(1);
         RequestAttachmentDocument expired = attachmentRepository.findById(attachmentId).orElseThrow();
         assertThat(expired.getState()).isEqualTo(AttachmentState.EXPIRED);
         assertThat(expired.getData()).isNull();
@@ -1112,7 +1117,7 @@ class StudentRequestDomainIT {
         for (int attempt = 1; attempt <= 4; attempt++) {
             try {
                 transactionTemplate.execute(status -> {
-                    pairWriteCoordinator.lock(STUDENT_ID, lessonId, GROUP_ID, clock.instant());
+                    pairWriteCoordinator.lock(SEMESTER_ID, STUDENT_ID, lessonId, GROUP_ID, clock.instant());
                     AttendanceDocument current = attendanceRepository
                             .findByLessonIdAndUserId(lessonId, STUDENT_ID).orElseThrow();
                     current.setStatus(AttendanceStatus.PRESENT);

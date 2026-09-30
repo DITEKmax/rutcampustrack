@@ -5,9 +5,11 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.event.LessonTransferFenceDocument;
+import ru.rutcampustrack.attendance.event.SemesterArchiveFence;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -23,13 +25,38 @@ import java.util.List;
 public class PairWriteCoordinator {
 
     private final MongoTemplate mongoTemplate;
+    private final SemesterArchiveFence semesterArchiveFence;
 
-    public PairWriteCoordinator(MongoTemplate mongoTemplate) {
+    @Autowired
+    public PairWriteCoordinator(MongoTemplate mongoTemplate, SemesterArchiveFence semesterArchiveFence) {
         this.mongoTemplate = mongoTemplate;
+        this.semesterArchiveFence = semesterArchiveFence;
     }
 
-    public CheckinPairStateDocument lock(long studentId, long lessonId, long groupId, Instant now) {
-        lockLessons(List.of(lessonId), groupId, now);
+    /** Source-compatible constructor for focused tests that instantiate the coordinator directly. */
+    public PairWriteCoordinator(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+        this.semesterArchiveFence = new SemesterArchiveFence(mongoTemplate);
+    }
+
+    public CheckinPairStateDocument lock(long semesterId, long studentId, long lessonId,
+                                         long groupId, Instant now) {
+        lockLessons(semesterId, List.of(lessonId), groupId, now);
+        return lockPair(studentId, lessonId, groupId, now);
+    }
+
+    public void lockSemesterForWrite(long semesterId, Instant now) {
+        semesterArchiveFence.lockWritable(semesterId, now);
+    }
+
+    /** Pair lock reserved for a strict, trusted Schedule outbox effect while PREPAREd. */
+    public CheckinPairStateDocument lockAcceptedScheduleEffectPair(long semesterId, long studentId,
+                                                                   long lessonId, long groupId, Instant now) {
+        lockAcceptedScheduleEffectLessons(semesterId, List.of(lessonId), groupId, now);
+        return lockPair(studentId, lessonId, groupId, now);
+    }
+
+    private CheckinPairStateDocument lockPair(long studentId, long lessonId, long groupId, Instant now) {
         if (isTransferredSource(lessonId)) {
             throw new ConflictException("Урок перенесён; обнови данные и повтори действие");
         }
@@ -55,7 +82,34 @@ public class PairWriteCoordinator {
      * a writer conflict inside Mongo's transaction boundary even when a mark
      * for a new student would not yet have a pair document.
      */
-    public void lockLessons(Collection<Long> lessonIds, Long groupId, Instant now) {
+    public void lockLessons(long semesterId, Collection<Long> lessonIds, Long groupId, Instant now) {
+        lockLessons(List.of(semesterId), lessonIds, groupId, now);
+    }
+
+    /**
+     * Acquires all semester fences before any physical lesson lock. The collection
+     * overload is used by a batch that can span more than one authoritative semester.
+     */
+    public void lockLessons(Collection<Long> semesterIds, Collection<Long> lessonIds,
+                            Long groupId, Instant now) {
+        if (semesterIds == null || semesterIds.isEmpty()) {
+            throw new IllegalArgumentException("At least one authoritative semester is required");
+        }
+        semesterIds.stream().filter(id -> id == null || id <= 0).findAny()
+                .ifPresent(id -> { throw new IllegalArgumentException("semesterId must be positive"); });
+        semesterIds.stream().distinct().sorted(Comparator.naturalOrder())
+                .forEach(semesterId -> lockSemesterForWrite(semesterId, now));
+        lockLessonFences(lessonIds, groupId, now);
+    }
+
+    /** Acquires the same fences for a trusted Schedule outbox effect before pair/domain locks. */
+    public void lockAcceptedScheduleEffectLessons(long semesterId, Collection<Long> lessonIds,
+                                                  Long groupId, Instant now) {
+        semesterArchiveFence.lockAcceptedScheduleEffect(semesterId, now);
+        lockLessonFences(lessonIds, groupId, now);
+    }
+
+    private void lockLessonFences(Collection<Long> lessonIds, Long groupId, Instant now) {
         if (lessonIds == null || lessonIds.isEmpty()) {
             return;
         }

@@ -315,6 +315,7 @@ class ExcuseServiceTest {
                 .id("t9")
                 .studentId(STUDENT_ID)
                 .groupId(GROUP_ID)
+                .semesterId(3L)
                 .lessonIds(List.of(1L, 2L))
                 .excuseType(ExcuseType.ILLNESS)
                 .status(ExcuseTicketStatus.SUBMITTED)
@@ -334,11 +335,11 @@ class ExcuseServiceTest {
         assertThat(result.getUpdatedAt()).isNotNull();
         verify(excuseRepository).save(submitted);
         // D-16 cascade: one mark() per lessonId with EXCUSED status + excuse reason (ILLNESS → "Болезнь")
-        verify(attendanceWritePort).mark(STUDENT_ID, 1L, GROUP_ID,
+        verify(attendanceWritePort).mark(STUDENT_ID, 1L, GROUP_ID, 3L,
                 ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED,
                 ru.rutcampustrack.attendance.contract.enums.AttendanceSource.HEADMAN_EXCUSE,
                 "Болезнь");
-        verify(attendanceWritePort).mark(STUDENT_ID, 2L, GROUP_ID,
+        verify(attendanceWritePort).mark(STUDENT_ID, 2L, GROUP_ID, 3L,
                 ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED,
                 ru.rutcampustrack.attendance.contract.enums.AttendanceSource.HEADMAN_EXCUSE,
                 "Болезнь");

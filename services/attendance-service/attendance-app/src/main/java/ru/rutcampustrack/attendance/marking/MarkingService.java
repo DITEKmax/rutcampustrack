@@ -24,6 +24,7 @@ import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
+import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.journal.JournalLessonPolicy;
@@ -55,10 +56,9 @@ import java.util.stream.Collectors;
  * 2. Lesson must belong to headman's group
  * 3. Target student must be a member of headman's group
  *
- * Write strategy (D-15): MongoTemplate upsert with $set/$setOnInsert so that
- * immutable fields (lesson_id, user_id, group_id, subject_id, semester_id, etc.)
- * are only written on the first insert and mutable fields (status, source, marked_by,
- * updated_at) are always overwritten.
+ * Write strategy (D-15): MongoTemplate upsert with $set/$setOnInsert. The
+ * authoritative lesson scope is checked against existing rows and fills legacy
+ * rows whose semester field is null.
  *
  * Events (INFRA-06): publishes attendance.marked after successful upsert.
  */
@@ -140,16 +140,23 @@ public class MarkingService {
                                              MarkRequest request, MultipartFile file) {
         validateManualRequest(request, file);
         LessonResponse lesson = requireWritableLesson(lessonId);
+        LessonResponse readyLesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
+        requireSameLessonScope(lesson, readyLesson);
+        lesson = readyLesson;
         requireStudentInRoster(membersForLesson(lesson), userId);
+        boolean hasMarkPermission = hasAttendancePermission(lesson.getGroupId(), "MARK_ATTENDANCE");
+        boolean hasManagePermission = hasAttendancePermission(lesson.getGroupId(), "MANAGE_EXCUSES");
+        String subjectName = resolveSubjectName(lesson.getSubjectId());
 
         Instant now = clock.instant();
-        pairWriteCoordinator.lock(userId, lessonId, lesson.getGroupId(), now);
-        scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
+        pairWriteCoordinator.lock(lesson.getSemesterId(), userId, lessonId, lesson.getGroupId(), now);
         Query filter = pairFilter(lessonId, userId);
         AttendanceDocument existing = mongoTemplate.findOne(filter, AttendanceDocument.class);
-        requireAttendancePermission(lesson.getGroupId(), request.status() == AttendanceStatus.EXCUSED
-                || (existing != null && existing.getStatus() == AttendanceStatus.EXCUSED)
-                ? "MANAGE_EXCUSES" : "MARK_ATTENDANCE");
+        requirePersistedScope(existing, lesson);
+        boolean requiresManagePermission = request.status() == AttendanceStatus.EXCUSED
+                || (existing != null && existing.getStatus() == AttendanceStatus.EXCUSED);
+        requirePrecheckedAttendancePermission(requiresManagePermission,
+                hasMarkPermission, hasManagePermission);
         boolean retainExistingAttachment = request.status() == AttendanceStatus.EXCUSED
                 && file == null
                 && existing != null
@@ -163,9 +170,10 @@ public class MarkingService {
             if (attachmentService == null) {
                 throw new IllegalStateException("Attendance attachment storage is unavailable");
             }
-            attachment = attachmentService.replace(lessonId, userId, lesson.getGroupId(), file);
+            attachment = attachmentService.replace(
+                    lesson.getSemesterId(), lessonId, userId, lesson.getGroupId(), file);
         } else if (!retainExistingAttachment && attachmentService != null) {
-            attachmentService.delete(lessonId, userId);
+            attachmentService.delete(lesson.getSemesterId(), lessonId, userId, lesson.getGroupId());
         }
 
         Update update = new Update()
@@ -173,11 +181,11 @@ public class MarkingService {
                 .set("source", AttendanceSource.HEADMAN)
                 .set("marked_by", requestContext.getUserId())
                 .set("updated_at", now)
+                .set("group_id", lesson.getGroupId())
+                .set("semester_id", lesson.getSemesterId())
                 .setOnInsert("lesson_id", lessonId)
                 .setOnInsert("user_id", userId)
-                .setOnInsert("group_id", lesson.getGroupId())
                 .setOnInsert("subject_id", lesson.getSubjectId())
-                .setOnInsert("semester_id", lesson.getSemesterId())
                 .setOnInsert("lesson_number", lesson.getLessonNumber())
                 .setOnInsert("lesson_date", LocalDate.parse(lesson.getDate()))
                 .setOnInsert("created_at", now);
@@ -213,7 +221,6 @@ public class MarkingService {
             throw new IllegalStateException("Attendance mark was not persisted");
         }
 
-        String subjectName = resolveSubjectName(lesson.getSubjectId());
         eventPublisher.publishMarked(doc, subjectName);
         return doc;
     }
@@ -221,15 +228,21 @@ public class MarkingService {
     @Transactional
     public void clearAttendance(Long lessonId, Long userId) {
         LessonResponse lesson = requireWritableLesson(lessonId);
+        LessonResponse readyLesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
+        requireSameLessonScope(lesson, readyLesson);
+        lesson = readyLesson;
         requireStudentInRoster(membersForLesson(lesson), userId);
-        pairWriteCoordinator.lock(userId, lessonId, lesson.getGroupId(), clock.instant());
-        scheduleGrpcClient.requireAttendanceMutationReady(lessonId, lesson.getGroupId());
+        boolean hasMarkPermission = hasAttendancePermission(lesson.getGroupId(), "MARK_ATTENDANCE");
+        boolean hasManagePermission = hasAttendancePermission(lesson.getGroupId(), "MANAGE_EXCUSES");
+        pairWriteCoordinator.lock(lesson.getSemesterId(), userId, lessonId, lesson.getGroupId(), clock.instant());
         AttendanceDocument existing = mongoTemplate.findOne(pairFilter(lessonId, userId), AttendanceDocument.class);
-        requireAttendancePermission(lesson.getGroupId(), existing != null
-                && existing.getStatus() == AttendanceStatus.EXCUSED ? "MANAGE_EXCUSES" : "MARK_ATTENDANCE");
+        requirePersistedScope(existing, lesson);
+        requirePrecheckedAttendancePermission(existing != null
+                        && existing.getStatus() == AttendanceStatus.EXCUSED,
+                hasMarkPermission, hasManagePermission);
         mongoTemplate.remove(pairFilter(lessonId, userId), AttendanceDocument.class);
         if (attachmentService != null) {
-            attachmentService.delete(lessonId, userId);
+            attachmentService.delete(lesson.getSemesterId(), lessonId, userId, lesson.getGroupId());
         }
     }
 
@@ -273,18 +286,48 @@ public class MarkingService {
         return lesson;
     }
 
+    private static void requireSameLessonScope(LessonResponse expected, LessonResponse actual) {
+        if (actual == null || expected.getId() != actual.getId()
+                || !Objects.equals(expected.getGroupId(), actual.getGroupId())
+                || expected.getSemesterId() <= 0 || actual.getSemesterId() != expected.getSemesterId()) {
+            throw new AcademicServiceUnavailableException(
+                    "Schedule mutation readiness returned a mismatched lesson scope");
+        }
+    }
+
+    private static void requirePersistedScope(AttendanceDocument document, LessonResponse lesson) {
+        if (document != null
+                && ((document.getGroupId() != null && !document.getGroupId().equals(lesson.getGroupId()))
+                || (document.getSemesterId() != null && !document.getSemesterId().equals(lesson.getSemesterId())))) {
+            throw new ConflictException("Семестр или группа отметки не совпадает с уроком");
+        }
+    }
+
     private void requireAttendancePermission(Long targetGroupId, String permission) {
+        if (!hasAttendancePermission(targetGroupId, permission)) {
+            if ("MANAGE_EXCUSES".equals(permission)) {
+                throw new AccessDeniedException("Отсутствует право " + permission);
+            }
+            throw new AccessDeniedException("Отсутствует право " + permission);
+        }
+    }
+
+    private boolean hasAttendancePermission(Long targetGroupId, String permission) {
         if (targetGroupId == null || !Objects.equals(targetGroupId, requestContext.getGroupId())) {
             throw new AccessDeniedException("Нельзя изменять студентов чужой группы");
         }
         if (requestContext.isHeadman()) {
-            if (!academicGrpcClient.isHeadman(requestContext.getUserId(), targetGroupId).getIsHeadman()) {
-                throw new AccessDeniedException("Только староста может отмечать посещаемость");
-            }
-            return;
+            return academicGrpcClient.isHeadman(requestContext.getUserId(), targetGroupId).getIsHeadman();
         }
-        if (!academicGrpcClient.hasAssistantPermission(targetGroupId, permission)) {
-            throw new AccessDeniedException("Отсутствует право " + permission);
+        return academicGrpcClient.hasAssistantPermission(targetGroupId, permission);
+    }
+
+    private void requirePrecheckedAttendancePermission(boolean requiresManagePermission,
+                                                      boolean hasMarkPermission,
+                                                      boolean hasManagePermission) {
+        if (requiresManagePermission ? !hasManagePermission : !hasMarkPermission) {
+            throw new AccessDeniedException("Отсутствует право "
+                    + (requiresManagePermission ? "MANAGE_EXCUSES" : "MARK_ATTENDANCE"));
         }
     }
 
@@ -357,7 +400,6 @@ public class MarkingService {
      *       (обычно все items одного урока — 1 вызов вместо N).</li>
      *   <li>1 gRPC {@code academicGrpcClient.getGroupMembers} (один вызов на
      *       всю группу старосты) вместо N.</li>
-     *   <li>1 cache-hit {@code semesterCacheService.getActiveSemesterId} на batch.</li>
      * </ul>
      *
      * <p>Ожидаемый выигрыш: для 30-student batch ~10× снижение latency
@@ -436,21 +478,43 @@ public class MarkingService {
         // получает 0 дубликатов событий (upsert идемпотентен по данным).
         // Плюс findAndModify(returnNew=true) вместо upsert+findOne — один
         // round-trip на item вместо двух.
-        Long semesterId = semesterCacheService.getActiveSemesterId();
         Instant now = clock.instant();
         Long markedBy = requestContext.getUserId();
         List<AttendanceDocument> result = new ArrayList<>(items.size());
         FindAndModifyOptions opts = FindAndModifyOptions.options().returnNew(true).upsert(true);
 
-        pairWriteCoordinator.lockLessons(uniqueLessonIds, headmanGroupId, now);
+        List<Long> semesterIds = lessonsById.values().stream()
+                .map(LessonResponse::getSemesterId).distinct().toList();
+        if (semesterIds.stream().anyMatch(semesterId -> semesterId == null || semesterId <= 0)) {
+            throw new AcademicServiceUnavailableException("Schedule returned a lesson without a positive semester");
+        }
+        uniqueLessonIds.stream().sorted().forEach(lessonId -> {
+            LessonResponse before = lessonsById.get(lessonId);
+            LessonResponse ready = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, headmanGroupId);
+            requireSameLessonScope(before, ready);
+            lessonsById.put(lessonId, ready);
+        });
+        boolean hasMarkPermission = hasAttendancePermission(headmanGroupId, "MARK_ATTENDANCE");
+        boolean hasManagePermission = hasAttendancePermission(headmanGroupId, "MANAGE_EXCUSES");
+        Set<Long> subjectIdsForBatch = lessonsById.values().stream()
+                .map(LessonResponse::getSubjectId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, String> subjectNames;
+        try {
+            subjectNames = subjectIdsForBatch.isEmpty()
+                    ? Map.of()
+                    : academicGrpcClient.getSubjectsByIds(new ArrayList<>(subjectIdsForBatch));
+        } catch (Exception ex) {
+            subjectNames = Map.of();
+        }
+
+        pairWriteCoordinator.lockLessons(semesterIds, uniqueLessonIds, headmanGroupId, now);
         items.stream()
                 .sorted(java.util.Comparator
                         .comparing(MarkBatchItem::userId)
                         .thenComparing(MarkBatchItem::lessonId))
                 .forEach(item -> pairWriteCoordinator.lock(
-                        item.userId(), item.lessonId(), lessonsById.get(item.lessonId()).getGroupId(), now));
-        uniqueLessonIds.stream().sorted().forEach(lessonId ->
-                scheduleGrpcClient.requireAttendanceMutationReady(lessonId, headmanGroupId));
+                        lessonsById.get(item.lessonId()).getSemesterId(), item.userId(), item.lessonId(),
+                        lessonsById.get(item.lessonId()).getGroupId(), now));
 
         boolean requiresExcusePermission = items.stream().anyMatch(item -> item.status() == AttendanceStatus.EXCUSED);
         if (!requiresExcusePermission) {
@@ -458,14 +522,19 @@ public class MarkingService {
                 AttendanceDocument existing = mongoTemplate.findOne(
                         Query.query(Criteria.where("lesson_id").is(item.lessonId())
                                 .and("user_id").is(item.userId())), AttendanceDocument.class);
+                requirePersistedScope(existing, lessonsById.get(item.lessonId()));
                 if (existing != null && existing.getStatus() == AttendanceStatus.EXCUSED) {
                     requiresExcusePermission = true;
                     break;
                 }
             }
         }
-        requireAttendancePermission(headmanGroupId, "MARK_ATTENDANCE");
-        if (requiresExcusePermission) requireAttendancePermission(headmanGroupId, "MANAGE_EXCUSES");
+        if (!hasMarkPermission) {
+            throw new AccessDeniedException("Отсутствует право MARK_ATTENDANCE");
+        }
+        if (requiresExcusePermission && !hasManagePermission) {
+            throw new AccessDeniedException("Отсутствует право MANAGE_EXCUSES");
+        }
 
         for (MarkBatchItem item : items) {
             LessonResponse lesson = lessonsById.get(item.lessonId());
@@ -473,6 +542,7 @@ public class MarkingService {
                     Criteria.where("lesson_id").is(item.lessonId())
                             .and("user_id").is(item.userId()));
             AttendanceDocument existing = mongoTemplate.findOne(filter, AttendanceDocument.class);
+            requirePersistedScope(existing, lesson);
             boolean retainExistingAttachment = item.status() == AttendanceStatus.EXCUSED
                     && existing != null
                     && existing.getStatus() == AttendanceStatus.EXCUSED
@@ -480,18 +550,18 @@ public class MarkingService {
                     && attachmentService != null
                     && attachmentService.isAvailable(item.lessonId(), item.userId(), existing.getAttachmentId());
             if (!retainExistingAttachment && attachmentService != null) {
-                attachmentService.delete(item.lessonId(), item.userId());
+                attachmentService.delete(lesson.getSemesterId(), item.lessonId(), item.userId(), lesson.getGroupId());
             }
             Update update = new Update()
                     .set("status", item.status())
                     .set("source", AttendanceSource.HEADMAN)
                     .set("marked_by", markedBy)
                     .set("updated_at", now)
+                    .set("group_id", lesson.getGroupId())
+                    .set("semester_id", lesson.getSemesterId())
                     .setOnInsert("lesson_id", item.lessonId())
                     .setOnInsert("user_id", item.userId())
-                    .setOnInsert("group_id", lesson.getGroupId())
                     .setOnInsert("subject_id", lesson.getSubjectId())
-                    .setOnInsert("semester_id", semesterId)
                     .setOnInsert("lesson_number", lesson.getLessonNumber())
                     .setOnInsert("lesson_date", LocalDate.parse(lesson.getDate()))
                     .setOnInsert("created_at", now);
@@ -513,18 +583,6 @@ public class MarkingService {
 
         // Публикация событий — после того как весь batch персистирован.
         // NOTIF unification: один gRPC getSubjectsByIds на batch (не N).
-        Set<Long> subjectIds = new HashSet<>();
-        for (AttendanceDocument doc : result) {
-            if (doc.getSubjectId() != null) subjectIds.add(doc.getSubjectId());
-        }
-        Map<Long, String> subjectNames;
-        try {
-            subjectNames = subjectIds.isEmpty()
-                    ? Map.of()
-                    : academicGrpcClient.getSubjectsByIds(new ArrayList<>(subjectIds));
-        } catch (Exception ex) {
-            subjectNames = Map.of();
-        }
         for (AttendanceDocument doc : result) {
             eventPublisher.publishMarked(doc, subjectNames.get(doc.getSubjectId()));
         }

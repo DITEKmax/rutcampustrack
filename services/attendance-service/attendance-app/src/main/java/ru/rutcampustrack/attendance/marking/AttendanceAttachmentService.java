@@ -49,10 +49,11 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
     }
 
     @Transactional(transactionManager = "mongoTransactionManager")
-    public StoredAttachment replace(long lessonId, long userId, long groupId, MultipartFile file) {
+    public StoredAttachment replace(long semesterId, long lessonId, long userId, long groupId, MultipartFile file) {
+        requireSemesterId(semesterId);
         ValidatedFile validated = validate(file);
         String pairKey = PairWriteCoordinator.pairId(userId, lessonId);
-        repository.deleteAll(repository.findByRequestIdAndOwnerStudentIdOrderByPositionAsc(pairKey, userId));
+        deletePairAttachments(pairKey, userId, groupId, semesterId);
 
         Instant now = clock.instant();
         RequestAttachmentDocument document = RequestAttachmentDocument.builder()
@@ -60,6 +61,7 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
                 .requestId(pairKey)
                 .ownerStudentId(userId)
                 .groupId(groupId)
+                .semesterId(semesterId)
                 .position(0)
                 .name(validated.name())
                 .contentType(validated.contentType())
@@ -76,9 +78,10 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
 
     @Override
     @Transactional(transactionManager = "mongoTransactionManager")
-    public void delete(long lessonId, long userId) {
+    public void delete(long semesterId, long lessonId, long userId, long groupId) {
+        requireSemesterId(semesterId);
         String pairKey = PairWriteCoordinator.pairId(userId, lessonId);
-        repository.deleteAll(repository.findByRequestIdAndOwnerStudentIdOrderByPositionAsc(pairKey, userId));
+        deletePairAttachments(pairKey, userId, groupId, semesterId);
     }
 
     /**
@@ -88,19 +91,23 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
      */
     @Transactional(transactionManager = "mongoTransactionManager")
     public void remapLessonAccessKeys(long groupId,
+                                      long semesterId,
                                       long sourceLessonId,
                                       long targetLessonId,
                                       List<RequestAttachmentDocument> attachments) {
+        requireSemesterId(semesterId);
         if (attachments == null || attachments.isEmpty()) return;
         for (RequestAttachmentDocument attachment : attachments) {
             Long owner = attachment.getOwnerStudentId();
             String sourceKey = owner == null ? null : PairWriteCoordinator.pairId(owner, sourceLessonId);
             if (!Objects.equals(attachment.getGroupId(), groupId)
+                    || (attachment.getSemesterId() != null && attachment.getSemesterId() != semesterId)
                     || owner == null || owner <= 0
                     || !Objects.equals(attachment.getRequestId(), sourceKey)) {
                 throw new IllegalStateException("Attendance attachment access reference changed during transfer");
             }
             attachment.setRequestId(PairWriteCoordinator.pairId(owner, targetLessonId));
+            attachment.setSemesterId(semesterId);
             repository.save(attachment);
         }
     }
@@ -134,7 +141,6 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
         if (document.getState() == AttachmentState.EXPIRED
                 || document.getExpiresAt() == null
                 || !now.isBefore(document.getExpiresAt())) {
-            expire(document, now);
             throw new ResponseStatusException(HttpStatus.GONE, "Вложение больше недоступно");
         }
         if (document.getData() == null) {
@@ -143,11 +149,20 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
         return new AttachmentDownload(document.getData().getData(), document.getContentType(), document.getName());
     }
 
-    private void expire(RequestAttachmentDocument document, Instant now) {
-        document.setState(AttachmentState.EXPIRED);
-        document.setExpiredAt(now);
-        document.setData(null);
-        repository.save(document);
+    private static void requireSemesterId(long semesterId) {
+        if (semesterId <= 0) throw new IllegalArgumentException("semesterId must be positive");
+    }
+
+    private void deletePairAttachments(String pairKey, long userId, long groupId, long semesterId) {
+        List<RequestAttachmentDocument> documents = repository
+                .findByRequestIdAndOwnerStudentIdOrderByPositionAsc(pairKey, userId);
+        for (RequestAttachmentDocument document : documents) {
+            if (!Objects.equals(document.getGroupId(), groupId)
+                    || (document.getSemesterId() != null && document.getSemesterId() != semesterId)) {
+                throw new IllegalStateException("Attendance attachment scope does not match its lesson");
+            }
+        }
+        repository.deleteAll(documents);
     }
 
     private static ValidatedFile validate(MultipartFile file) {

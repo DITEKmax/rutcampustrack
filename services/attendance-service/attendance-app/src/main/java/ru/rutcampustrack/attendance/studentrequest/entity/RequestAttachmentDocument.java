@@ -31,6 +31,8 @@ public class RequestAttachmentDocument {
     private Long ownerStudentId;
     @Field("group_id")
     private Long groupId;
+    @Field("semester_id")
+    private Long semesterId;
     @Field("position")
     private Integer position;
     @Field("name")

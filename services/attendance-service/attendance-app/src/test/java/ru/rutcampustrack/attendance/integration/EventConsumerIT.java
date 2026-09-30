@@ -17,6 +17,7 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.event.LessonCancellationMarker;
 import ru.rutcampustrack.attendance.event.LessonEventService;
+import ru.rutcampustrack.attendance.event.SemesterArchiveEffectReceiptDocument;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Instant;
@@ -101,11 +102,16 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
     // -------------------------------------------------------------------------
 
     private Map<String, Object> buildEnvelope(String eventType, Map<String, Object> payload) {
+        Map<String, Object> eventPayload = new java.util.LinkedHashMap<>(payload);
+        eventPayload.putIfAbsent("semester_id", 1L);
         return Map.of(
                 "event_type", eventType,
                 "event_id", UUID.randomUUID().toString(),
                 "occurred_at", Instant.now().toString(),
-                "payload", payload
+                "event_version", 1,
+                "source", "schedule-service",
+                "trace_id", "event-consumer-correlation",
+                "payload", eventPayload
         );
     }
 
@@ -312,6 +318,33 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
             List<AttendanceDocument> docs = mongoTemplate.findAll(AttendanceDocument.class);
             assertThat(docs).isEmpty();
+        });
+    }
+
+    @Test
+    void duplicateCancelledEventRequeuesAckFromExactStoredReceipt() {
+        String eventId = UUID.randomUUID().toString();
+        long lessonId = 9091L;
+        Map<String, Object> envelope = new java.util.LinkedHashMap<>(buildEnvelope(
+                "lesson.cancelled", Map.of("lesson_id", lessonId, "group_id", 10L)));
+        envelope.put("event_id", eventId);
+
+        Query receiptQuery = Query.query(Criteria.where("_id").is(eventId + ":ATTENDANCE"));
+        Query acknowledgementQuery = Query.query(Criteria.where("event_type")
+                .is("semester.archive.effect.ack").and("payload").regex(eventId));
+
+        publishEvent(envelope);
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            assertThat(mongoTemplate.count(receiptQuery, SemesterArchiveEffectReceiptDocument.class)).isEqualTo(1);
+            assertThat(mongoTemplate.count(acknowledgementQuery, "attendance_outbox")).isEqualTo(1);
+        });
+
+        publishEvent(envelope);
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            assertThat(mongoTemplate.count(receiptQuery, SemesterArchiveEffectReceiptDocument.class)).isEqualTo(1);
+            assertThat(mongoTemplate.count(acknowledgementQuery, "attendance_outbox")).isEqualTo(2);
+            assertThat(mongoTemplate.count(Query.query(Criteria.where("lesson_id").is(lessonId)),
+                    LessonCancellationMarker.class)).isEqualTo(1);
         });
     }
 

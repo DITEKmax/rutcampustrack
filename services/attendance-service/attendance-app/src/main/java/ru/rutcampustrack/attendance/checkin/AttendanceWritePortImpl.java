@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
@@ -36,27 +36,16 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
     private final PairWriteCoordinator pairWriteCoordinator;
     private final Clock clock;
     private final JournalAttachmentPort journalAttachmentPort;
-    private final ScheduleGrpcClient scheduleGrpcClient;
 
     @Autowired
     public AttendanceWritePortImpl(AttendanceRepository attendanceRepository,
                                    PairWriteCoordinator pairWriteCoordinator,
                                    Clock clock,
-                                   JournalAttachmentPort journalAttachmentPort,
-                                   ScheduleGrpcClient scheduleGrpcClient) {
+                                   JournalAttachmentPort journalAttachmentPort) {
         this.attendanceRepository = attendanceRepository;
         this.pairWriteCoordinator = pairWriteCoordinator;
         this.clock = clock;
         this.journalAttachmentPort = journalAttachmentPort;
-        this.scheduleGrpcClient = scheduleGrpcClient;
-    }
-
-    /** Source-compatible constructor for focused tests without Schedule reads. */
-    public AttendanceWritePortImpl(AttendanceRepository attendanceRepository,
-                                   PairWriteCoordinator pairWriteCoordinator,
-                                   Clock clock,
-                                   JournalAttachmentPort journalAttachmentPort) {
-        this(attendanceRepository, pairWriteCoordinator, clock, journalAttachmentPort, null);
     }
 
     /** Source-compatible constructor for focused tests without attachment storage. */
@@ -68,34 +57,38 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
 
     @Override
     @Transactional(transactionManager = "mongoTransactionManager")
-    public void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status) {
-        mark(studentId, lessonId, groupId, status, AttendanceSource.HEADMAN_EXCUSE, null);
+    public void mark(Long studentId, Long lessonId, Long groupId, Long semesterId, AttendanceStatus status) {
+        mark(studentId, lessonId, groupId, semesterId, status, AttendanceSource.HEADMAN_EXCUSE, null);
     }
 
     @Override
     @Transactional(transactionManager = "mongoTransactionManager")
-    public void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status, AttendanceSource source) {
-        mark(studentId, lessonId, groupId, status, source, null);
+    public void mark(Long studentId, Long lessonId, Long groupId, Long semesterId,
+                     AttendanceStatus status, AttendanceSource source) {
+        mark(studentId, lessonId, groupId, semesterId, status, source, null);
     }
 
     @Override
     @Transactional(transactionManager = "mongoTransactionManager")
-    public void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status,
+    public void mark(Long studentId, Long lessonId, Long groupId, Long semesterId, AttendanceStatus status,
                      AttendanceSource source, String excuseReason) {
         Instant now = clock.instant();
-        pairWriteCoordinator.lock(studentId, lessonId, groupId, now);
-        requireTransferStable(lessonId, groupId);
+        requireSemesterId(semesterId);
+        pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, now);
         Optional<AttendanceDocument> existing =
                 attendanceRepository.findByLessonIdAndUserId(lessonId, studentId);
 
         if (existing.isPresent()) {
             AttendanceDocument doc = existing.get();
+            requireExistingScope(doc, groupId, semesterId);
             if (preserveExistingPresent(doc, status, source)) {
                 return;
             }
-            applyJournalAttachmentTransition(doc, status, studentId, lessonId);
+            applyJournalAttachmentTransition(doc, status, studentId, lessonId, groupId, semesterId);
             doc.setStatus(status);
             doc.setSource(source);
+            doc.setGroupId(groupId);
+            doc.setSemesterId(semesterId);
             doc.setExcuseReason(excuseReason);
             doc.setExcuseType(null);
             doc.setExcuseComment(null);
@@ -108,6 +101,7 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
                 .lessonId(lessonId)
                 .userId(studentId)
                 .groupId(groupId)
+                .semesterId(semesterId)
                 .status(status)
                 .source(source)
                 .excuseReason(excuseReason)
@@ -116,7 +110,7 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
-        applyJournalAttachmentTransition(fresh, status, studentId, lessonId);
+        applyJournalAttachmentTransition(fresh, status, studentId, lessonId, groupId, semesterId);
         attendanceRepository.save(fresh);
     }
 
@@ -126,10 +120,11 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
                                Long semesterId, Integer lessonNumber, LocalDate lessonDate,
                                AttendanceStatus status, AttendanceSource source, Long markedBy) {
         Instant now = clock.instant();
-        pairWriteCoordinator.lock(studentId, lessonId, groupId, now);
-        requireTransferStable(lessonId, groupId);
+        requireSemesterId(semesterId);
+        pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, now);
         AttendanceDocument doc = attendanceRepository.findByLessonIdAndUserId(lessonId, studentId)
                 .orElseGet(AttendanceDocument::new);
+        if (doc.getId() != null) requireExistingScope(doc, groupId, semesterId);
         if (preserveExistingPresent(doc, status, source)) {
             return;
         }
@@ -141,7 +136,7 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
         doc.setSemesterId(semesterId);
         doc.setLessonNumber(lessonNumber);
         doc.setLessonDate(lessonDate);
-        applyJournalAttachmentTransition(doc, status, studentId, lessonId);
+        applyJournalAttachmentTransition(doc, status, studentId, lessonId, groupId, semesterId);
         doc.setStatus(status);
         doc.setSource(source);
         doc.setMarkedBy(markedBy);
@@ -150,6 +145,19 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
         doc.setExcuseComment(null);
         doc.setUpdatedAt(now);
         attendanceRepository.save(doc);
+    }
+
+    private static void requireSemesterId(Long semesterId) {
+        if (semesterId == null || semesterId <= 0) {
+            throw new IllegalArgumentException("semesterId must be positive");
+        }
+    }
+
+    private static void requireExistingScope(AttendanceDocument document, Long groupId, Long semesterId) {
+        if ((document.getGroupId() != null && !document.getGroupId().equals(groupId))
+                || (document.getSemesterId() != null && !document.getSemesterId().equals(semesterId))) {
+            throw new ConflictException("Семестр или группа отметки не совпадает с уроком");
+        }
     }
 
     /**
@@ -167,7 +175,9 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
     private void applyJournalAttachmentTransition(AttendanceDocument document,
                                                   AttendanceStatus nextStatus,
                                                   Long studentId,
-                                                  Long lessonId) {
+                                                  Long lessonId,
+                                                  Long groupId,
+                                                  Long semesterId) {
         boolean retain = nextStatus == AttendanceStatus.EXCUSED
                 && document.getStatus() == AttendanceStatus.EXCUSED
                 && document.getAttachmentId() != null
@@ -175,7 +185,7 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
                 && journalAttachmentPort.isAvailable(lessonId, studentId, document.getAttachmentId());
         if (!retain) {
             if (journalAttachmentPort != null) {
-                journalAttachmentPort.delete(lessonId, studentId);
+                journalAttachmentPort.delete(semesterId, studentId, lessonId, groupId);
             }
             document.setAttachmentId(null);
             document.setAttachmentName(null);
@@ -184,9 +194,4 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
         }
     }
 
-    private void requireTransferStable(Long lessonId, Long groupId) {
-        if (scheduleGrpcClient != null) {
-            scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
-        }
-    }
 }

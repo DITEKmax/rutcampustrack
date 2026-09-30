@@ -54,21 +54,35 @@ public class LessonTransferParticipantService {
         this.objectMapper = objectMapper;
     }
 
+    public boolean hasReceipt(Map<String, Object> envelope) {
+        LessonTransferRequestedEvent event = LessonTransferRequestedEvent.parse(envelope);
+        LessonTransferReceiptDocument receipt = mongoTemplate.findById(
+                event.operationId(), LessonTransferReceiptDocument.class);
+        if (receipt == null) {
+            return false;
+        }
+        if (!matches(receipt, event)) {
+            throw new IllegalArgumentException("lesson transfer operation identity changed on replay");
+        }
+        return true;
+    }
+
     @Transactional(transactionManager = "mongoTransactionManager")
     public void apply(Map<String, Object> envelope) {
         LessonTransferRequestedEvent event = LessonTransferRequestedEvent.parse(envelope);
-        Instant now = Instant.now();
-        pairWriteCoordinator.lockLessons(
-                List.of(event.source().lessonId(), event.target().lessonId()), event.groupId(), now);
-
         LessonTransferReceiptDocument previous = mongoTemplate.findById(
                 event.operationId(), LessonTransferReceiptDocument.class);
         if (previous != null) {
             if (!matches(previous, event)) {
                 throw new IllegalArgumentException("lesson transfer operation identity changed on replay");
             }
+            enqueueAcknowledgement(previous);
             return;
         }
+
+        Instant now = Instant.now();
+        pairWriteCoordinator.lockAcceptedScheduleEffectLessons(event.semesterId(),
+                List.of(event.source().lessonId(), event.target().lessonId()), event.groupId(), now);
 
         LessonTransferFenceDocument sourceFence = findFence(event.source().lessonId());
         LessonTransferFenceDocument targetFence = findFence(event.target().lessonId());
@@ -137,8 +151,10 @@ public class LessonTransferParticipantService {
                 .filter(Objects::nonNull).forEach(owners::add);
         submittedExcuses.stream().map(ExcuseTicket::getStudentId).filter(Objects::nonNull).forEach(owners::add);
         for (Long owner : owners) {
-            pairWriteCoordinator.lock(owner, event.source().lessonId(), event.groupId(), now);
-            pairWriteCoordinator.lock(owner, event.target().lessonId(), event.groupId(), now);
+            pairWriteCoordinator.lockAcceptedScheduleEffectPair(
+                    event.semesterId(), owner, event.source().lessonId(), event.groupId(), now);
+            pairWriteCoordinator.lockAcceptedScheduleEffectPair(
+                    event.semesterId(), owner, event.target().lessonId(), event.groupId(), now);
         }
 
         if (!sourceMarks.isEmpty()) {
@@ -146,7 +162,8 @@ public class LessonTransferParticipantService {
             Update move = new Update()
                     .set("lesson_id", event.target().lessonId())
                     .set("lesson_date", event.target().date())
-                    .set("lesson_number", event.target().lessonNumber());
+                    .set("lesson_number", event.target().lessonNumber())
+                    .set("semester_id", event.semesterId());
             long modified = mongoTemplate.updateMulti(sourceQuery, move, AttendanceDocument.class)
                     .getModifiedCount();
             if (modified != sourceMarks.size()) {
@@ -155,7 +172,8 @@ public class LessonTransferParticipantService {
         }
 
         attachmentService.remapLessonAccessKeys(
-                event.groupId(), event.source().lessonId(), event.target().lessonId(), sourceAttachments);
+                event.groupId(), event.semesterId(), event.source().lessonId(),
+                event.target().lessonId(), sourceAttachments);
         moveMutableRequestReferences(event, pendingLateRequests, submittedExcuses);
 
         mongoTemplate.insert(LessonTransferFenceDocument.builder()
@@ -253,8 +271,9 @@ public class LessonTransferParticipantService {
                     || (ticket.getSemesterId() != null
                     && !Objects.equals(ticket.getSemesterId(), event.semesterId()))) return false;
         }
-        if (!validAttachmentScopes(attachments, event.groupId(), event.source().lessonId())
-                || !validAttachmentScopes(targetAttachments, event.groupId(), event.target().lessonId())) {
+        if (!validAttachmentScopes(attachments, event.groupId(), event.semesterId(), event.source().lessonId())
+                || !validAttachmentScopes(targetAttachments, event.groupId(), event.semesterId(),
+                event.target().lessonId())) {
             return false;
         }
         return true;
@@ -262,12 +281,15 @@ public class LessonTransferParticipantService {
 
     private boolean validAttachmentScopes(List<RequestAttachmentDocument> attachments,
                                           long groupId,
+                                          long semesterId,
                                           long lessonId) {
         for (RequestAttachmentDocument attachment : attachments) {
             Long owner = attachment.getOwnerStudentId();
             String expectedKey = owner == null ? null
                     : PairWriteCoordinator.pairId(owner, lessonId);
             if (!Objects.equals(attachment.getGroupId(), groupId)
+                    || (attachment.getSemesterId() != null
+                    && !Objects.equals(attachment.getSemesterId(), semesterId))
                     || owner == null || owner <= 0
                     || !Objects.equals(attachment.getRequestId(), expectedKey)) return false;
         }

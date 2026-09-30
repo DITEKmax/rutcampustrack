@@ -12,7 +12,7 @@ package ru.rutcampustrack.attendance.shared.port;
 public interface JournalAttachmentPort {
 
     /** Remove every journal attachment bound to the student/lesson pair. */
-    void delete(long lessonId, long studentId);
+    void delete(long semesterId, long studentId, long lessonId, long groupId);
 
     /**
      * Return whether the exact metadata id still has live journal bytes for

@@ -1,4 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { compile, createRenderer, h, nextTick, ssrContextKey, type App } from 'vue'
+import { compileScript, parse } from '@vue/compiler-sfc'
+import HeadmanRequestsScreen from '../headman-requests/HeadmanRequestsScreen.vue'
+import headmanScreenSource from '../headman-requests/HeadmanRequestsScreen.vue?raw'
+import { HeadmanRequestsApiError, type HeadmanRequestsApi, type HeadmanRequestDetail } from '../headman-requests/headman-requests-client'
 import {
   openRequestAttachmentPopup,
   requestAttachmentPopupBlockedMessage,
@@ -71,6 +76,178 @@ function actionSetup(overrides: Partial<{
 async function settlePromiseChain(): Promise<void> {
   for (let index = 0; index < 6; index += 1) await Promise.resolve()
 }
+
+// The existing Vue custom-renderer test pattern exercises actual screen events
+// without a browser/DOM platform or exposing setup-private state to the test.
+interface ScreenNode {
+  tag: string
+  text: string
+  props: Record<string, unknown>
+  children: ScreenNode[]
+  parent: ScreenNode | null
+  tagName: string
+  value: string
+  options: never[]
+  addEventListener: () => void
+}
+const screenNode = (tag = ''): ScreenNode => ({
+  tag, text: '', props: {}, children: [], parent: null,
+  tagName: tag.toUpperCase(), value: '', options: [], addEventListener: () => undefined,
+})
+function removeScreenNode(node: ScreenNode): void {
+  if (node.parent) node.parent.children = node.parent.children.filter((child) => child !== node)
+  node.parent = null
+}
+const screenRenderer = createRenderer<ScreenNode, ScreenNode>({
+  patchProp: (node, key, _old, value) => { node.props[key] = value },
+  insert: (node, parent, anchor) => {
+    removeScreenNode(node)
+    const index = anchor ? parent.children.indexOf(anchor) : -1
+    parent.children.splice(index < 0 ? parent.children.length : index, 0, node)
+    node.parent = parent
+  },
+  remove: removeScreenNode,
+  createElement: (tag) => screenNode(tag),
+  createText: (text) => ({ ...screenNode('#text'), text }),
+  createComment: (text) => ({ ...screenNode('#comment'), text }),
+  setText: (node, text) => { node.text = text },
+  setElementText: (node, text) => { node.text = text; node.children = [] },
+  parentNode: (node) => node.parent,
+  nextSibling: (node) => node.parent?.children[node.parent.children.indexOf(node) + 1] ?? null,
+})
+const screenText = (node: ScreenNode): string => node.text + node.children.map(screenText).join('')
+const screenNodes = (node: ScreenNode): ScreenNode[] => [node, ...node.children.flatMap(screenNodes)]
+// Vitest's node environment imports the SFC's SSR setup. Compile its unchanged
+// template for the custom renderer so these assertions observe real UI events.
+const screenDescriptor = parse(headmanScreenSource).descriptor
+const interactiveHeadmanScreen = {
+  ...HeadmanRequestsScreen,
+  render: compile(screenDescriptor.template!.content, {
+    bindingMetadata: compileScript(screenDescriptor, { id: 'headman-attachments-test' }).bindings,
+    prefixIdentifiers: true,
+  }),
+}
+
+describe('headman attachment availability transitions', () => {
+  let app: App | null = null
+  afterEach(() => {
+    app?.unmount()
+    app = null
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  async function mountScreen(expiresAt = '2027-01-01T00:00:00Z') {
+    vi.stubGlobal('window', {})
+    const details: HeadmanRequestDetail[] = ['request-1', 'request-2'].map((id) => ({
+      summary: {
+        id, kind: 'EXCUSE', status: 'APPROVED', studentId: 1, studentName: id,
+        reason: null, comment: null, coverageStart: null, coverageEnd: null,
+        lessonCount: 1, alreadyMarkedCount: 0, hasAttachments: true,
+        createdAt: null, updatedAt: null, decisionBy: null, decisionAt: null, decisionComment: null,
+      },
+      lessons: [],
+      attachments: ['file-1', 'file-2'].map((attachmentId) => ({
+        id: attachmentId, name: attachmentId + '.png', contentType: 'image/png', size: 10,
+        sha256: null, state: 'ACTIVE', uploadedAt: null, expiresAt, downloadUrl: null,
+      })),
+    }))
+    const api = {
+      list: vi.fn(async () => ({ content: details.map((detail) => detail.summary), page: 0, size: 20, totalPages: 1, totalElements: 2 })),
+      get: vi.fn(async (id: string) => details.find((detail) => detail.summary.id === id)!),
+      downloadAttachment: vi.fn(async (_requestId: string, id: string) => {
+        throw new HeadmanRequestsApiError(new Response(null, { status: id === 'file-1' ? 410 : 404 }), null)
+      }),
+    }
+    const root = screenNode('root')
+    app = screenRenderer.createApp({ render: () => h(interactiveHeadmanScreen, { api: api as unknown as HeadmanRequestsApi }) })
+    app.provide(ssrContextKey, { modules: new Set() })
+    app.mount(root)
+    await settlePromiseChain()
+    await nextTick()
+    const cards = () => screenNodes(root).filter((node) => node.tag === 'article')
+    const button = (card: ScreenNode, label: string, index = 0) => {
+      const result = screenNodes(card).filter((node) => node.tag === 'button' && screenText(node).trim() === label)[index]
+      if (!result) throw new Error(`Button ${label} missing`)
+      return result
+    }
+    const click = async (target: ScreenNode) => {
+      await (target.props.onClick as () => unknown)()
+      await settlePromiseChain()
+      await nextTick()
+    }
+    return { root, api, cards, button, click }
+  }
+
+  it('retains and merges server denials across cached collapse/reopen and another card until API refresh', async () => {
+    const screen = await mountScreen()
+    const card = screen.cards()[0]!
+    await screen.click(screen.button(card, 'Открыть детали'))
+    await screen.click(screen.button(card, 'Скачать'))
+    expect(screenText(card)).toContain('Срок хранения истёк или файл удалён')
+    await screen.click(screen.button(card, 'Скрыть детали'))
+    await screen.click(screen.button(card, 'Открыть детали'))
+    expect(screen.api.get).toHaveBeenCalledTimes(1)
+    expect(screen.button(card, 'Скачать').props.disabled).toBe(true)
+    await screen.click(screen.button(screen.cards()[1]!, 'Открыть детали'))
+    expect(screen.button(card, 'Скачать').props.disabled).toBe(true)
+    await screen.click(screen.button(card, 'Скачать', 1))
+    expect(screenText(card)).toContain('Срок хранения истёк или файл удалён')
+    expect(screenText(card)).toContain('Обнови список заявок')
+    expect(screen.button(card, 'Скачать').props.disabled).toBe(true)
+    expect(screen.button(card, 'Скачать', 1).props.disabled).toBe(true)
+    await screen.click(screen.button(screen.root, 'Архив'))
+    await screen.click(screen.button(screen.cards()[0]!, 'Открыть детали'))
+    expect(screen.api.get).toHaveBeenCalledTimes(3)
+    expect(screen.button(screen.cards()[0]!, 'Скачать').props.disabled).toBe(false)
+    expect(screenText(screen.root)).not.toContain('Срок хранения истёк или файл удалён')
+  })
+
+  it('renders expiry without a click and cleans the expiry timer on teardown', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-01T00:00:00Z'))
+    const screen = await mountScreen('2026-10-01T00:00:01Z')
+    const card = screen.cards()[0]!
+    await screen.click(screen.button(card, 'Открыть детали'))
+    expect(screen.button(card, 'Скачать').props.disabled).toBe(false)
+    await vi.advanceTimersByTimeAsync(1_000)
+    await nextTick()
+    expect(screenText(card)).toContain('Срок хранения вложения истёк')
+    expect(screenNodes(card).some((node) => node.tag === 'button' && screenText(node) === 'Скачать')).toBe(false)
+    app!.unmount()
+    app = null
+    expect(vi.getTimerCount()).toBe(0)
+    expect(screen.api.downloadAttachment).not.toHaveBeenCalled()
+  })
+
+  it('turns a click after a throttled expiry timer into a visible expired state without fetching', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-01T00:00:00Z'))
+    const screen = await mountScreen('2026-10-01T00:00:01Z')
+    const card = screen.cards()[0]!
+    await screen.click(screen.button(card, 'Открыть детали'))
+    const download = screen.button(card, 'Скачать')
+    vi.setSystemTime(new Date('2026-10-01T00:00:02Z'))
+    await screen.click(download)
+    expect(screenText(card)).toContain('Срок хранения вложения истёк')
+    expect(screen.api.downloadAttachment).not.toHaveBeenCalled()
+  })
+
+  it('cleans a still-pending expiry timer on list refresh and teardown', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-01T00:00:00Z'))
+    const screen = await mountScreen('2026-10-01T00:00:10Z')
+    await screen.click(screen.button(screen.cards()[0]!, 'Открыть детали'))
+    expect(vi.getTimerCount()).toBe(1)
+    await screen.click(screen.button(screen.root, 'Архив'))
+    expect(vi.getTimerCount()).toBe(0)
+    await screen.click(screen.button(screen.cards()[0]!, 'Открыть детали'))
+    expect(vi.getTimerCount()).toBe(1)
+    app!.unmount()
+    app = null
+    expect(vi.getTimerCount()).toBe(0)
+  })
+})
 
 describe('request attachment download', () => {
   function downloadSetup(download?: () => Promise<Blob>) {

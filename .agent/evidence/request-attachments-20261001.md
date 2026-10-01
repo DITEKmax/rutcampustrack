@@ -48,3 +48,23 @@ Docker/Gradle/общий build и серверные тесты не запус�
 4. Для expired descriptor увидеть текст истёкшего срока без действий. Для реального 404/410/403 при получении файла увидеть понятный alert в его строке, старый URL очищен, карточка не исчезает; 403 блокирует файлы заявки до refresh. Для сети/5xx остаётся повторная попытка. После refresh результат перечитывается через API.
 
 Для негативных HTTP UI состояний допустим bounded browser response interception; это не доказательство серверной авторизации. Серверное denial проверять настоящим пользователем/правами общего disposable fixture. Нельзя менять пароли/права реальных учётных записей. Никакой ticket/token/credential/file payload не хранить в evidence.
+
+## Correction после независимого review 891c60e1
+
+Review: два P2. Lifecycle reset при toggle стирал 404/410 и ошибки, хотя cached details оставались; второй denial тоже стирал первый. Нереактивный Date.now оставлял визуально активную кнопку после expiry и давал silent click. Helper blob fencing/cleanup прошёл review и не изменён.
+
+Correction: `cancelAttachmentActions` отменяет pending, закрывает ожидающие popup и очищает URL, сохраняет ошибки/known-unavailable. Отказы объединяются. Только `resetAttachments` на реальном list refresh/context change снимает server-state вместе с cached details. Reactive clock + ближайший expiry timeout обновляет русский expired state без click; delayed/throttled click синхронно обновляет clock и очищает старые resources. Expiry timer очищается при reset/unmount.
+
+Точный correction inventory: изменены `HeadmanRequestsScreen.vue`, существующий `request-attachment-action.test.ts` и этот evidence. `request-attachment-action.ts` product helper после 891c60e1 не менялся. Остальной запрещённый scope/backend без изменений.
+
+Affected verification, без повтора исходных 43/helper cases:
+- `node node_modules/vitest/vitest.mjs run --config pwa-vue/vite.config.ts mobile-core/src/features/requests/request-attachment-action.test.ts -t 'headman attachment availability transitions'` — exit0, **4/4 PASS**, 22 других теста намеренно исключены selector. Тесты выполняют настоящие события и рендер текущего HeadmanRequestsScreen, используя существующий Vue custom renderer pattern; client template компилируется из неизменённого SFC source, т.к. существующий config импортирует SSR setup в Node. Native v-model host surface минимальная, сторонних DOM packages/config/platform не добавлено.
+  - 410 → collapse/reopen cached details → другая карточка → 404 второго файла: оба alert и disabled сохраняются; API refresh повторно получает detail и снимает known denial.
+  - Таймер наступления expiry убирает действия и показывает русский текст без click.
+  - Clock jump с задержанным таймером: click показывает expired и не вызывает download.
+  - Ещё pending expiry timeout очищается на list refresh и unmount.
+- Финальный `npm run typecheck --workspace @rct/pwa-vue` — exit0.
+- Scoped ESLint двух correction source/test файлов с теми же только тремя отключёнными форматными правилами — exit0; остальные правила активны.
+- Scoped `git diff --check` — exit0.
+
+Промежуточные проверки тестовой обвязки: sandbox блокировал esbuild config read; targeted require_escalated разрешён. Затем SSR setup без SSR context и native v-model host surface давали тестовый FAIL; исправлено в test-only fixture, финальные четыре перехода PASS без unhandled errors. Эти FAIL не являются дополнительными продуктовыми дефектами. Docker/Gradle/build/backend не запускались. Требуется affected independent recheck перед интеграцией исходного и correction commit.

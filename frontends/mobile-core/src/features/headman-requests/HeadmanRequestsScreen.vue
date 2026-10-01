@@ -62,6 +62,8 @@ const unavailableAttachments = ref(new Set<string>())
 const attachmentUrls = new Map<string, ReturnType<typeof setTimeout>>()
 const pendingPopups = new Set<RequestAttachmentPopup>()
 const detailGenerations = new Map<string, number>()
+const attachmentNow = ref(Date.now())
+let expiryTimer: ReturnType<typeof setTimeout> | null = null
 
 function releaseAttachmentUrl(url: string): void {
   const timer = attachmentUrls.get(url)
@@ -80,11 +82,35 @@ function closeAttachmentPopup(popup: RequestAttachmentPopup): void {
   try { popup.close?.() } catch { /* The user may already have closed the target. */ }
 }
 
-function invalidateAttachments(): void {
+function cancelAttachmentActions(): void {
   attachmentGeneration += 1
   releaseAttachmentResources()
+  attachmentStates.value = Object.fromEntries(Object.entries(attachmentStates.value)
+    .filter(([, state]) => state.status !== 'pending'))
+}
+
+function resetAttachments(): void {
+  cancelAttachmentActions()
   attachmentStates.value = {}
   unavailableAttachments.value = new Set()
+  if (expiryTimer !== null) clearTimeout(expiryTimer)
+  expiryTimer = null
+}
+
+function scheduleAttachmentExpiry(): void {
+  if (expiryTimer !== null) clearTimeout(expiryTimer)
+  expiryTimer = null
+  attachmentNow.value = Date.now()
+  if (disposed) return
+  const expiry = Math.min(...Object.values(details.value).flatMap((detail) => detail.attachments)
+    .map((attachment) => Date.parse(attachment.expiresAt ?? ''))
+    .filter((timestamp) => Number.isFinite(timestamp) && timestamp > attachmentNow.value))
+  if (!Number.isFinite(expiry)) return
+  expiryTimer = setTimeout(() => {
+    expiryTimer = null
+    cancelAttachmentActions()
+    scheduleAttachmentExpiry()
+  }, Math.min(expiry - attachmentNow.value, 2_147_483_647))
 }
 
 const pageCount = () => page.value?.totalPages ?? 0
@@ -103,7 +129,7 @@ function canManageExcuses(): boolean {
 
 async function load(): Promise<void> {
   const revision = ++loadRevision
-  invalidateAttachments()
+  resetAttachments()
   expanded.value = new Set()
   details.value = {}
   detailErrors.value = {}
@@ -166,7 +192,7 @@ function changePage(next: number): void {
 }
 
 async function toggle(item: HeadmanRequestSummary): Promise<void> {
-  invalidateAttachments()
+  cancelAttachmentActions()
   const detailGeneration = (detailGenerations.get(item.id) ?? 0) + 1
   detailGenerations.set(item.id, detailGeneration)
   const next = new Set(expanded.value)
@@ -231,7 +257,7 @@ function attachmentKey(requestId: string, attachmentId: string): string {
 
 function attachmentExpired(attachment: HeadmanRequestAttachment): boolean {
   return attachment.state === 'EXPIRED'
-    || Boolean(attachment.expiresAt && Date.parse(attachment.expiresAt) <= Date.now())
+    || Boolean(attachment.expiresAt && Date.parse(attachment.expiresAt) <= attachmentNow.value)
 }
 
 function attachmentDisabled(requestId: string, attachment: HeadmanRequestAttachment): boolean {
@@ -251,6 +277,13 @@ function attachmentErrorMessage(cause: unknown): string {
 }
 
 function attachmentDependencies(item: HeadmanRequestSummary, attachment: HeadmanRequestAttachment): RequestAttachmentDownloadDependencies | null {
+  // A delayed/throttled timer must still make an expired click visibly unavailable.
+  attachmentNow.value = Date.now()
+  if (attachmentExpired(attachment)) {
+    cancelAttachmentActions()
+    scheduleAttachmentExpiry()
+    return null
+  }
   const api = props.api
   if (!api || disposed || attachmentDisabled(item.id, attachment) || typeof window === 'undefined') return null
   const generation = attachmentGeneration
@@ -279,12 +312,12 @@ function attachmentDependencies(item: HeadmanRequestSummary, attachment: Headman
     setState: (state) => { attachmentStates.value = { ...attachmentStates.value, [key]: state } },
     errorMessage: attachmentErrorMessage,
     onError: (cause) => {
-      invalidateAttachments()
+      cancelAttachmentActions()
       if (cause instanceof HeadmanRequestsApiError && [401, 403, 404, 410].includes(cause.response.status)) {
         const ids = [401, 403].includes(cause.response.status)
           ? details.value[item.id]?.attachments.map((entry) => attachmentKey(item.id, entry.id)) ?? [key]
           : [key]
-        unavailableAttachments.value = new Set(ids)
+        unavailableAttachments.value = new Set([...unavailableAttachments.value, ...ids])
       }
       emit('error', cause)
     },
@@ -341,7 +374,8 @@ watch(
   { immediate: true },
 )
 
-onBeforeUnmount(() => { disposed = true; loadRevision += 1; invalidateAttachments() })
+watch(details, scheduleAttachmentExpiry, { flush: 'sync' })
+onBeforeUnmount(() => { disposed = true; loadRevision += 1; resetAttachments() })
 </script>
 
 <template>

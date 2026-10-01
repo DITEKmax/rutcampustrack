@@ -253,7 +253,9 @@ class StudentHomeworkGrpcIdentityInterceptorTest {
                 arguments("missing token", "ReadCampusMapAsset", (String) null),
                 arguments("bad token", "ReadCampusMapAsset", "bad"),
                 arguments("missing token", "RecordCampusFloorOpen", (String) null),
-                arguments("bad token", "RecordCampusFloorOpen", "bad"));
+                arguments("bad token", "RecordCampusFloorOpen", "bad"),
+                arguments("missing token", "GetHeadmanGroupComposition", (String) null),
+                arguments("bad token", "GetHeadmanGroupComposition", "bad"));
     }
 
     private static AcademicGrpcServiceImpl service(

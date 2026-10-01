@@ -42,6 +42,28 @@ import java.time.LocalDate;
 @Tag(name = "Reports", description = "Attendance reports")
 @RequestMapping("/attendance/reports")
 public interface ReportApi {
+    @Operation(summary = "List own-group composition export formats for the current headman")
+    @GetMapping("/headman/group-composition/formats")
+    ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanGroupCompositionFormatsResponse>
+            getHeadmanGroupCompositionFormats();
+
+    @Operation(summary = "Export the current authoritative composition of the headman's own group")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Roster file; PNG is a ZIP of pages",
+                    content = {
+                            @Content(mediaType = DOCX_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = PDF_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = ZIP_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = HTML_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = XLSX_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary"))}),
+            @ApiResponse(responseCode = "400", description = "Unknown export format"),
+            @ApiResponse(responseCode = "403", description = "Current own-group HEADMAN required; assistants are denied"),
+            @ApiResponse(responseCode = "413", description = "Roster or rendered file exceeds the export limit"),
+            @ApiResponse(responseCode = "503", description = "Academic or document renderer is unavailable")
+    })
+    @GetMapping("/headman/group-composition/export")
+    ResponseEntity<byte[]> exportHeadmanGroupComposition(@RequestParam String format);
+
 
     String DOCX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     String PDF_MEDIA_TYPE = "application/pdf";

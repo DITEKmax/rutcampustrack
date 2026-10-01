@@ -44,6 +44,55 @@ class GroupHeadmanAssignmentIT extends AbstractAcademicIntegrationTest {
     @Autowired private UserService userService;
     @Autowired private GroupRegistryReadRepository registryReadRepository;
     @Autowired private MockMvc mockMvc;
+    @Autowired private ru.rutcampustrack.academic.grpc.HeadmanGroupCompositionReadService compositionReadService;
+
+    @Test
+    void currentHeadmanCompositionUsesFreshGrantRosterAndGroupRoles() {
+        Fixture fixture = fixture("composition");
+        assignmentService.assign(fixture.groupId(), new AssignHeadmanRequest(fixture.firstId(), null));
+        jdbc.update("INSERT INTO headman_assistants "
+                + "(group_id, student_id, permissions, assigned_by, is_active, assigned_at) "
+                + "VALUES (?, ?, ARRAY['view_stats']::varchar[], ?, true, NOW())",
+                fixture.groupId(), fixture.thirdId(), adminId());
+        var actor = compositionActor(fixture.firstId(), fixture.groupId(), "HEADMAN", true);
+        var snapshot = compositionReadService.read(actor, fixture.groupId());
+        assertThat(snapshot.getGroupName()).isEqualTo(fixture.name());
+        assertThat(snapshot.getMembersList()).extracting(member -> member.getUserId())
+                .containsExactly(fixture.secondId(), fixture.firstId(), fixture.thirdId());
+        assertThat(snapshot.getMembersList()).extracting(member -> member.getGroupRole())
+                .containsExactly("STUDENT", "HEADMAN", "ASSISTANT");
+        assertThat(snapshot.getMembersList()).allSatisfy(member -> {
+            assertThat(member.getDisplayName()).startsWith("Тестов ");
+            assertThat(member.getLogin()).isNotBlank();
+        });
+        // A VIEW_STATS assistant cannot reuse the personal roster projection.
+        assertThatThrownBy(() -> compositionReadService.read(
+                compositionActor(fixture.thirdId(), fixture.groupId(), "STUDENT", false), fixture.groupId()))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.AccessDeniedException.class);
+        assertThatThrownBy(() -> compositionReadService.read(actor, fixture.groupId() + 1))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.AccessDeniedException.class);
+
+        jdbc.update("UPDATE headman_assistants SET is_active = false, revoked_at = NOW() "
+                + "WHERE group_id = ?", fixture.groupId());
+        String changedLogin = "roster_" + Long.toUnsignedString(System.nanoTime(), 36);
+        jdbc.update("UPDATE users SET login = ? WHERE id = ?", changedLogin, fixture.thirdId());
+        Long added = student("composition_new", "Александр", fixture.groupId());
+        var fresh = compositionReadService.read(actor, fixture.groupId());
+        assertThat(fresh.getMembersList()).extracting(member -> member.getUserId())
+                .containsExactly(added, fixture.secondId(), fixture.firstId(), fixture.thirdId());
+        assertThat(fresh.getMembersList().getLast().getLogin()).isEqualTo(changedLogin);
+        assertThat(fresh.getMembersList().getLast().getGroupRole()).isEqualTo("STUDENT");
+        // Durable transfer invalidates the old signed HEADMAN identity on the next read.
+        assignmentService.assign(fixture.groupId(), new AssignHeadmanRequest(fixture.secondId(), fixture.firstId()));
+        assertThatThrownBy(() -> compositionReadService.read(actor, fixture.groupId()))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.AccessDeniedException.class);
+    }
+
+    private static ru.rutcampustrack.shared.security.InternalJwtClaims compositionActor(
+            long userId, long groupId, String role, boolean headman) {
+        return new ru.rutcampustrack.shared.security.InternalJwtClaims(userId,
+                java.util.UUID.randomUUID(), 1, 1, role, "ACTIVE", groupId, headman, false);
+    }
 
     @Test
     void assignmentChangesDurableHeadmanRevokesAssistantsAndReloadsRegistry() throws Exception {

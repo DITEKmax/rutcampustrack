@@ -34,6 +34,8 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/RecordCampusFloorOpen";
     static final String ASSISTANT_PERMISSION_METHOD_NAME =
             AcademicGrpcServiceGrpc.SERVICE_NAME + "/CheckAssistantPermission";
+    static final String GROUP_COMPOSITION_METHOD_NAME =
+            AcademicGrpcServiceGrpc.SERVICE_NAME + "/GetHeadmanGroupComposition";
     static final Metadata.Key<String> INTERNAL_TOKEN =
             Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER);
 
@@ -56,7 +58,8 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
                 && !MAP_FLOOR_PLAN_METHOD_NAME.equals(methodName)
                 && !MAP_ASSET_METHOD_NAME.equals(methodName)
                 && !MAP_OPEN_METHOD_NAME.equals(methodName)
-                && !ASSISTANT_PERMISSION_METHOD_NAME.equals(methodName)) {
+                && !ASSISTANT_PERMISSION_METHOD_NAME.equals(methodName)
+                && !GROUP_COMPOSITION_METHOD_NAME.equals(methodName)) {
             return next.startCall(call, headers);
         }
         try {

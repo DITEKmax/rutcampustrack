@@ -13,6 +13,7 @@ import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GeofenceResponse;
 import ru.rutcampustrack.academic.grpc.GroupRequest;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
+import ru.rutcampustrack.academic.grpc.HeadmanGroupCompositionResponse;
 import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
@@ -169,6 +170,30 @@ public class AcademicGrpcClient {
         } catch (StatusRuntimeException error) {
             switch (error.getStatus().getCode()) {
                 case PERMISSION_DENIED -> { return false; }
+                case UNAUTHENTICATED -> throw new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, "Academic Service отклонил internal-сессию");
+                default -> throw new AcademicServiceUnavailableException(
+                        "Academic Service unavailable: " + error.getStatus());
+            }
+        }
+    }
+
+    /** Minimal personal roster, admitted by the fresh HEADMAN authority in Academic. */
+    public HeadmanGroupCompositionResponse getHeadmanGroupComposition(long groupId) {
+        String token = requestContext == null ? null : requestContext.getInternalToken();
+        if (token == null || token.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Подписанная internal-сессия отсутствует");
+        }
+        Metadata metadata = new Metadata();
+        metadata.put(INTERNAL_TOKEN, token);
+        try {
+            return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getHeadmanGroupComposition(GroupRequest.newBuilder().setGroupId(groupId).build());
+        } catch (StatusRuntimeException error) {
+            switch (error.getStatus().getCode()) {
+                case PERMISSION_DENIED -> throw new ru.rutcampustrack.attendance.exception.AccessDeniedException(
+                        "Выгрузка состава доступна только текущему старосте своей группы");
                 case UNAUTHENTICATED -> throw new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, "Academic Service отклонил internal-сессию");
                 default -> throw new AcademicServiceUnavailableException(

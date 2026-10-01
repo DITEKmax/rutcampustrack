@@ -103,6 +103,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     private final StudentProjectionScopeService studentProjectionScopeService;
     private final AssistantPermissionAuthority assistantPermissionAuthority;
     private final AssignmentReplacementOperationRepository replacementOperationRepository;
+    private final HeadmanGroupCompositionReadService groupCompositionReadService;
 
     @Autowired
     public AcademicGrpcServiceImpl(
@@ -121,7 +122,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             CampusMapReadService campusMapReadService,
             CampusMapUsageService campusMapUsageService,
             AssistantPermissionAuthority assistantPermissionAuthority,
-            AssignmentReplacementOperationRepository replacementOperationRepository) {
+            AssignmentReplacementOperationRepository replacementOperationRepository,
+            HeadmanGroupCompositionReadService groupCompositionReadService) {
         this.academicReadService = academicReadService;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
@@ -139,6 +141,45 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.campusMapUsageService = campusMapUsageService;
         this.assistantPermissionAuthority = assistantPermissionAuthority;
         this.replacementOperationRepository = replacementOperationRepository;
+        this.groupCompositionReadService = groupCompositionReadService;
+    }
+
+    /** Compatibility constructor for existing focused RPC tests. */
+    public AcademicGrpcServiceImpl(
+            AcademicReadService academicReadService, GroupRepository groupRepository,
+            UserRepository userRepository, SubjectRepository subjectRepository,
+            AssignmentRepository assignmentRepository, SemesterRepository semesterRepository,
+            UserRoleGrantRepository grantRepository, HomeworkRepository homeworkRepository,
+            HomeworkCompletionRepository completionRepository, HeadmanRateLimiter headmanRateLimiter,
+            HomeworkStudentService homeworkStudentService, StudentProjectionScopeService studentProjectionScopeService,
+            CampusMapReadService campusMapReadService, CampusMapUsageService campusMapUsageService,
+            AssistantPermissionAuthority assistantPermissionAuthority,
+            AssignmentReplacementOperationRepository replacementOperationRepository) {
+        this(academicReadService, groupRepository, userRepository, subjectRepository, assignmentRepository,
+                semesterRepository, grantRepository, homeworkRepository, completionRepository, headmanRateLimiter,
+                homeworkStudentService, studentProjectionScopeService, campusMapReadService, campusMapUsageService,
+                assistantPermissionAuthority, replacementOperationRepository, null);
+    }
+
+    @Override
+    public void getHeadmanGroupComposition(GroupRequest request,
+            StreamObserver<HeadmanGroupCompositionResponse> responseObserver) {
+        final InternalJwtClaims claims;
+        try {
+            claims = StudentHomeworkGrpcIdentity.requireClaims();
+        } catch (IllegalStateException error) {
+            responseObserver.onError(Status.UNAUTHENTICATED
+                    .withDescription("Signed internal identity is required").asRuntimeException());
+            return;
+        }
+        try {
+            var snapshot = groupCompositionReadService.read(claims, request.getGroupId());
+            responseObserver.onNext(snapshot);
+            responseObserver.onCompleted();
+        } catch (AccessDeniedException error) {
+            responseObserver.onError(Status.PERMISSION_DENIED
+                    .withDescription("Current own-group headman authority is required").asRuntimeException());
+        }
     }
 
     /** Source-compatible constructor for focused tests predating assistant RPC. */

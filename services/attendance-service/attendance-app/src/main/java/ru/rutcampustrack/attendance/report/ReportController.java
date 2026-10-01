@@ -45,6 +45,26 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 @RequiredArgsConstructor
 public class ReportController implements ReportApi {
+    private final HeadmanGroupCompositionService groupCompositionService;
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<ru.rutcampustrack.attendance.contract.dto.report.HeadmanGroupCompositionFormatsResponse>
+            getHeadmanGroupCompositionFormats() {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(groupCompositionService.formats());
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<byte[]> exportHeadmanGroupComposition(String format) {
+        var result = groupCompositionService.export(format);
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(result.contentType()))
+                .cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(result.fileName(), StandardCharsets.UTF_8).build().toString())
+                .body(result.content());
+    }
+
 
     private final ReportService reportService;
     private final HeadmanWeeklyReportService headmanWeeklyReportService;

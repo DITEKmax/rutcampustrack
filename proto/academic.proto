@@ -9,6 +9,8 @@ option java_package = "ru.rutcampustrack.academic.grpc";
 // Используется другими сервисами для получения справочных данных
 
 service AcademicGrpcService {
+  // Fresh own-group roster for HEADMAN exports; signed identity is mandatory.
+  rpc GetHeadmanGroupComposition (GroupRequest) returns (HeadmanGroupCompositionResponse);
 
   // Получить информацию о группе
   rpc GetGroup (GroupRequest) returns (GroupResponse);
@@ -89,6 +91,21 @@ message GroupResponse {
   reserved 3;
   reserved "code";
   bool is_active = 4;
+}
+
+// Minimal personal projection. No Telegram, credentials, or account-wide roles.
+message HeadmanGroupCompositionResponse {
+  int64 group_id = 1;
+  string group_name = 2;
+  repeated GroupCompositionMember members = 3;
+}
+
+message GroupCompositionMember {
+  int64 user_id = 1;
+  string display_name = 2;
+  string login = 3;
+  // Closed group roles: HEADMAN, ASSISTANT, STUDENT.
+  string group_role = 4;
 }
 
 message GroupMembersRequest {

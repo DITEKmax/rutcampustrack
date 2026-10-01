@@ -43,6 +43,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 @Import(GlobalExceptionHandler.class)
 class ReportControllerMvcTest {
+    @MockitoBean
+    private HeadmanGroupCompositionService groupCompositionService;
+
+    @Test
+    void ownGroupCompositionExportPreservesFormatAndAttachmentNoStore() throws Exception {
+        when(groupCompositionService.export("html")).thenReturn(new HeadmanGroupCompositionExportResult(
+                "состав_уит-311_2026-10-01.html", ReportApi.HTML_MEDIA_TYPE, new byte[]{1, 2, 3}));
+        mockMvc.perform(get("/attendance/reports/headman/group-composition/export").param("format", "html"))
+                .andExpect(status().isOk()).andExpect(content().contentType(ReportApi.HTML_MEDIA_TYPE))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, containsString("no-store")))
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("attachment")))
+                .andExpect(content().bytes(new byte[]{1, 2, 3}));
+        verify(groupCompositionService).export("html");
+    }
 
     @Autowired
     private MockMvc mockMvc;

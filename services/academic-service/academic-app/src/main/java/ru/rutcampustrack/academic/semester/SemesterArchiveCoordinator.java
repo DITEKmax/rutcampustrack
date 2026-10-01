@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.semester;
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -50,6 +51,7 @@ public class SemesterArchiveCoordinator {
 
     /** Retries a small ordered batch of live operations without depending on another client request. */
     @Scheduled(fixedDelayString = "${semester.archive.retry-delay-ms:3000}")
+    @SchedulerLock(name = "academic-semester-archive-retry", lockAtMostFor = "PT5M", lockAtLeastFor = "PT3S")
     public void retryPendingOperations() {
         for (UUID operationId : commands.retryableOperationIds()) {
             advance(operationId);

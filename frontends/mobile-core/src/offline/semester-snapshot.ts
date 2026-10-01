@@ -120,10 +120,13 @@ export class SemesterSnapshotStore {
       if (capturedGeneration !== this.lifecycleGeneration || capturedWriteGeneration !== this.writeGeneration) return
       const expectedScopeKey = this.currentContextScopeKey()
       if (expectedScopeKey && snapshot.scopeKey !== expectedScopeKey) return
-      if (snapshot.scopeKey) this.storage().setItem(currentScopeKey, snapshot.scopeKey)
-      const writeResult = await this.withWriteStore(capturedWriteGeneration, (store) => this.request(store.put(snapshot)))
+      const durableScopeKey = this.storage().getItem(currentScopeKey)
+      if (durableScopeKey && durableScopeKey !== snapshot.scopeKey) return
+      if (snapshot.scopeKey && !durableScopeKey) this.storage().setItem(currentScopeKey, snapshot.scopeKey)
+      const writeResult = await this.withWriteStore(capturedWriteGeneration, snapshot.scopeKey, (store) => this.request(store.put(snapshot)))
       if (!writeResult) return
       if (capturedGeneration !== this.lifecycleGeneration) return
+      if (snapshot.scopeKey && this.storage().getItem(currentScopeKey) !== snapshot.scopeKey) return
       this.writeCurrentOwner(snapshot.ownerId)
     })
   }
@@ -175,8 +178,20 @@ export class SemesterSnapshotStore {
    */
   switchToDetailed(ownerId: string): Promise<SnapshotCleanupResult> {
     this.invalidatePendingWrites()
+    const expectedScopeKey = this.currentContextScopeKey()
     const capturedGeneration = ++this.lifecycleGeneration
-    return this.enqueue(() => this.performSwitch(ownerId, capturedGeneration))
+    let guard: ReturnType<SemesterSnapshotStore['writeContextGuard']> | undefined
+    if (expectedScopeKey) {
+      this.confirmedContext = { scopeKey: expectedScopeKey, generation: capturedGeneration }
+      guard = this.writeContextGuard(expectedScopeKey)
+    }
+    return this.enqueue(async () => {
+      if (expectedScopeKey) {
+        const context = await this.performContextCheck(expectedScopeKey, capturedGeneration, undefined, guard)
+        if (context?.retryRequired) return context
+      }
+      return this.performSwitch(ownerId, capturedGeneration)
+    })
   }
 
   /**
@@ -257,9 +272,10 @@ export class SemesterSnapshotStore {
       return withContext(makeCleanupResult('clear', null, null, skipped('no-owner'), failed(error)))
     }
     let snapshot: SemesterSnapshot | null = null
-    if (ownerId) {
+    const recordOwnerId = ownerId ?? retryOwnerId
+    if (recordOwnerId) {
       try {
-        snapshot = await this.readByOwner(ownerId)
+        snapshot = await this.readByOwner(recordOwnerId)
       } catch {
         // An unreadable record cannot establish an offline context. Still
         // attempt pointer retirement independently of IndexedDB cleanup.
@@ -270,7 +286,7 @@ export class SemesterSnapshotStore {
     }
     if (snapshot?.scopeKey === expectedScopeKey && contextGuard.status === 'completed') {
       this.unresolvedContextGeneration = null
-      if (ownerId) this.unresolvedOwnerIds.delete(ownerId)
+      if (recordOwnerId) this.unresolvedOwnerIds.delete(recordOwnerId)
       return null
     }
     const target = ownerId ?? retryOwnerId
@@ -279,7 +295,10 @@ export class SemesterSnapshotStore {
       this.unresolvedContextGeneration = null
       return null
     }
-    const cleanup = await this.performClear(target, capturedGeneration, { expectedScopeKey, previousSnapshotScopeKey: snapshot?.scopeKey })
+    const cleanup = await this.performClear(target, capturedGeneration, {
+      expectedScopeKey, previousSnapshotScopeKey: snapshot?.scopeKey,
+      previousGuardScopeKey: contextGuard.status === 'failed' ? guard.previousScopeKey : undefined,
+    })
     return withContext(cleanup)
   }
 
@@ -297,7 +316,7 @@ export class SemesterSnapshotStore {
   private async performClear(
     requestedOwnerId: string | undefined,
     capturedGeneration: number,
-    context?: { expectedScopeKey: string; previousSnapshotScopeKey: string | undefined },
+    context?: { expectedScopeKey: string; previousSnapshotScopeKey: string | undefined; previousGuardScopeKey?: string | null },
   ): Promise<SnapshotCleanupResult> {
     let target: string | null = requestedOwnerId ?? null
     let pointerReadError: unknown = null
@@ -318,7 +337,7 @@ export class SemesterSnapshotStore {
     this.unresolvedOwnerIds.add(target)
     const [idbDeleteOutcome, pointerCleanupOutcome] = await Promise.allSettled([
       this.deleteOwner(target, context ? { ...context, generation: capturedGeneration } : undefined),
-      Promise.resolve().then(() => this.removeCurrentOwnerIf(target, capturedGeneration, context?.expectedScopeKey)),
+      Promise.resolve().then(() => this.removeCurrentOwnerIf(target, capturedGeneration, context?.expectedScopeKey, context?.previousGuardScopeKey)),
     ])
     const idbDelete = settledOperation(idbDeleteOutcome)
     const pointerCleanup = settledOperation(pointerCleanupOutcome)
@@ -402,9 +421,12 @@ export class SemesterSnapshotStore {
     })
   }
 
-  private removeCurrentOwnerIf(ownerId: string, capturedGeneration: number, expectedScopeKey?: string): SnapshotOperationResult {
+  private removeCurrentOwnerIf(ownerId: string, capturedGeneration: number, expectedScopeKey?: string, previousGuardScopeKey?: string | null): SnapshotOperationResult {
     if (capturedGeneration !== this.lifecycleGeneration) return skipped('stale-generation')
-    if (expectedScopeKey && this.storage().getItem(currentScopeKey) !== expectedScopeKey) return skipped('owner-replaced')
+    if (expectedScopeKey) {
+      const currentGuard = this.storage().getItem(currentScopeKey)
+      if (currentGuard !== expectedScopeKey && currentGuard !== previousGuardScopeKey) return skipped('owner-replaced')
+    }
     const current = this.readCurrentOwner()
     if (current !== ownerId) return skipped('owner-replaced')
     this.removeCurrentOwner()
@@ -443,10 +465,14 @@ export class SemesterSnapshotStore {
     this.unresolvedOwnerIds.delete(replacement)
   }
 
-  private async withWriteStore<T>(capturedWriteGeneration: number, work: (store: IDBObjectStore) => Promise<T>): Promise<{ result: T } | null> {
+  private async withWriteStore<T>(capturedWriteGeneration: number, expectedScopeKey: string | undefined, work: (store: IDBObjectStore) => Promise<T>): Promise<{ result: T } | null> {
     const database = await this.open()
     try {
       if (capturedWriteGeneration !== this.writeGeneration) return null
+      // Another tab may have confirmed/persisted a new context while open()
+      // was pending. Check before acquiring the write transaction, then again
+      // before publishing its current-owner pointer in write().
+      if (expectedScopeKey && this.storage().getItem(currentScopeKey) !== expectedScopeKey) return null
       const transaction = database.transaction(storeName, 'readwrite')
       const activeWrite: ActiveSnapshotWrite = { transaction, committed: false, abortRequested: false }
       this.activeWrite = activeWrite

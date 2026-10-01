@@ -76,6 +76,7 @@ class FakeStorage {
 
 interface FakeControls {
   deleteFailures: number
+  holdOpen: boolean
 }
 
 interface FakeEnvironment {
@@ -113,7 +114,7 @@ function makeSnapshot(ownerId: string, serverNow: string): SemesterSnapshot {
 function installEnvironment(autoResolveOpen: boolean): FakeEnvironment {
   const records = new Map<string, unknown>([['42', makeSnapshot('42', '2026-09-08T08:30:00Z')]])
   const openRequests: FakeOpenRequest[] = []
-  const controls: FakeControls = { deleteFailures: 0 }
+  const controls: FakeControls = { deleteFailures: 0, holdOpen: false }
   const database = {
     records,
     controls,
@@ -178,7 +179,7 @@ function installEnvironment(autoResolveOpen: boolean): FakeEnvironment {
     open: () => {
       const request = new FakeOpenRequest(database)
       openRequests.push(request)
-      if (autoResolveOpen) queueMicrotask(() => request.resolve(database))
+      if (autoResolveOpen && !controls.holdOpen) queueMicrotask(() => request.resolve(database))
       return request
     },
   } as unknown as IDBFactory
@@ -245,7 +246,23 @@ describe('SemesterSnapshotStore write fence', () => {
     expect(store.hasUnresolvedCleanup()).toBe(false)
   })
 
-  it('keeps total persistent retirement failure unresolved instead of claiming cold-reload safety', async () => {
+  it('does not report a later owner switch as safe while the confirmed context guard still fails', async () => {
+    const environment = setup(true)
+    const store = new SemesterSnapshotStore()
+    environment.storage.scopeSetFailures = 2
+    const failure = await store.clearMismatchedCurrent('new-context')
+    expect(failure?.retryRequired).toBe(true)
+    const replacement = await store.switchToDetailed('42')
+    expect(replacement.contextGuard?.status).toBe('failed')
+    expect(replacement.safeOffline).toBe(false)
+    expect(replacement.retryRequired).toBe(true)
+    expect(store.hasUnresolvedCleanup()).toBe(true)
+    const retry = await store.retryCleanup(replacement)
+    expect(retry.safeOffline).toBe(true)
+    expect(store.hasUnresolvedCleanup()).toBe(false)
+  })
+
+  it('retires the pointer independently when both guard write and IDB delete fail', async () => {
     const environment = setup(true)
     const store = new SemesterSnapshotStore()
     environment.storage.scopeSetFailures = 1
@@ -256,10 +273,36 @@ describe('SemesterSnapshotStore write fence', () => {
     expect(failure?.retryRequired).toBe(true)
     expect(failure?.safeOffline).toBe(false)
     expect(environment.database.records.has('42')).toBe(true)
-    expect(environment.storage.getItem(currentOwnerKey)).toBe('42')
+    expect(failure?.pointerCleanup.status).toBe('completed')
+    expect(environment.storage.getItem(currentOwnerKey)).toBeNull()
     await expect(store.readCurrent()).resolves.toBeNull()
-    await store.retryCleanup(failure!)
     await expect(new SemesterSnapshotStore().readCurrent()).resolves.toBeNull()
+    await store.retryCleanup(failure!)
+    expect(environment.database.records.has('42')).toBe(false)
+    await expect(new SemesterSnapshotStore().readCurrent()).resolves.toBeNull()
+  })
+
+  it('does not overwrite a newer durable partition with a delayed write from another store', async () => {
+    const environment = setup(true)
+    const oldStore = new SemesterSnapshotStore()
+    const older = makeSnapshot('42', '2026-09-08T08:30:00Z')
+    await oldStore.clearMismatchedCurrent(older.scopeKey!)
+    environment.database.controls.holdOpen = true
+    const pendingOldWrite = oldStore.write(older)
+    await new Promise<void>((resolve) => queueMicrotask(resolve))
+    const delayedOpen = environment.openRequests.at(-1)!
+    environment.database.controls.holdOpen = false
+    const currentStore = new SemesterSnapshotStore()
+    const newest = makeSnapshot('42', '2026-09-08T09:00:00Z')
+    newest.scope!.groupId = '19'
+    newest.scopeKey = JSON.stringify(['student-read-model-v1', '42', 'STUDENT', '19', '9'])
+    await currentStore.clearMismatchedCurrent(newest.scopeKey)
+    await currentStore.write(newest)
+    delayedOpen.resolve(environment.database)
+    await pendingOldWrite
+    // An old request that is queued only after C committed must also be inert.
+    await oldStore.write(older)
+    await expect(new SemesterSnapshotStore().readCurrent()).resolves.toEqual(newest)
   })
 
   it('does not overwrite a newer durable context from another store during an old retry', async () => {

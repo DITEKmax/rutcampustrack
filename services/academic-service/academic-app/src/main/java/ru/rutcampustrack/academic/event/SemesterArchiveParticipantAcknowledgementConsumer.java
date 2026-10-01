@@ -7,6 +7,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantStatus;
+import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCoordinator;
@@ -17,6 +18,7 @@ import ru.rutcampustrack.shared.events.IdempotencyGuard;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Applies Attendance's typed receipt against the exact central operation epoch. */
 @Component
@@ -71,17 +73,21 @@ public class SemesterArchiveParticipantAcknowledgementConsumer extends AbstractE
                 || command == SemesterArchiveParticipantCommand.SEAL_DELETE
                 || command == SemesterArchiveParticipantCommand.RELEASE_DELETE
                 || command == SemesterArchiveParticipantCommand.COMMIT_DELETE;
+        AtomicReference<SemesterDeletionPhase> recordedDeletePhase = new AtomicReference<>();
         if (deletionCommand) {
             String digest = requiredString(payload.get("participant_digest"), "participant_digest");
             SemesterDeletionCounts counts = deletionCounts(payload.get("counts"));
-            withTraceContext(envelope, () -> commands.recordDeleteParticipant(
+            withTraceContext(envelope, () -> recordedDeletePhase.set(commands.recordDeleteParticipant(
                     operationId, semesterId, stateVersion, SemesterArchiveCommandTransaction.Participant.ATTENDANCE,
-                    command, status, reason, digest, counts));
+                    command, status, reason, digest, counts).getDeletePhase()));
         } else {
             withTraceContext(envelope, () -> commands.recordAttendanceAcknowledgement(
                     operationId, semesterId, stateVersion, command, status, reason));
         }
-        if (deletionCommand && status == SemesterArchiveParticipantStatus.PENDING) {
+        boolean releaseForStalePreview = command == SemesterArchiveParticipantCommand.SEAL_DELETE
+                && "ATTENDANCE_DELETE_PREVIEW_CHANGED".equals(reason)
+                && recordedDeletePhase.get() == SemesterDeletionPhase.RELEASING;
+        if (deletionCommand && status == SemesterArchiveParticipantStatus.PENDING && !releaseForStalePreview) {
             // A pending drain retries through the existing scheduler, not an ACK/command feedback loop.
             return;
         }

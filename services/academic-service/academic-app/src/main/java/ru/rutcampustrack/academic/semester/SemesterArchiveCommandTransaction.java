@@ -315,6 +315,17 @@ public class SemesterArchiveCommandTransaction {
             return operation;
         }
         requireDeleteReceiptPhase(operation, command);
+        if (participant == Participant.ATTENDANCE
+                && command == SemesterArchiveParticipantCommand.SEAL_DELETE
+                && status == SemesterArchiveParticipantStatus.PENDING
+                && "ATTENDANCE_DELETE_PREVIEW_CHANGED".equals(blockingReason)
+                && operation.getDeletePhase() == SemesterDeletionPhase.PREPARING
+                && !operation.isIrreversibleIntent()) {
+            if (operation.getAttendanceParticipantDigest().equalsIgnoreCase(participantDigest)) {
+                throw new ConflictException("Attendance stale preview receipt must report a changed digest");
+            }
+            return beginDeleteRelease(operationId, "STALE_PREVIEW");
+        }
         if (command == SemesterArchiveParticipantCommand.COMMIT_DELETE) {
             String expectedDigest = switch (participant) {
                 case ACADEMIC -> operation.getAcademicParticipantDigest();

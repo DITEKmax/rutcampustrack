@@ -368,6 +368,50 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(state(semesterId).getArchived()).isTrue();
         assertThat(state(semesterId).getActive()).isFalse();
         assertThat(state(semesterId).getStateVersion()).isEqualTo(archivedPreview.stateVersion() + 2);
+
+        UUID receiptDriftId = UUID.randomUUID();
+        var receiptDriftPreview = deletionSnapshot(semesterId);
+        var receiptDriftStart = deletionCommands.startDelete(semesterId, adminId(), receiptDriftId,
+                receiptDriftId, receiptDriftPreview);
+        participantAckConsumer.onEvent(deletionAttendanceEnvelope(receiptDriftId, receiptDriftStart.getStateVersion(),
+                SemesterArchiveParticipantCommand.PREPARE_DELETE, SemesterArchiveParticipantStatus.PENDING));
+        deletionCoordinator.advance(receiptDriftId);
+        String changedDigest = "d".repeat(64);
+        assertThatThrownBy(() -> participantAckConsumer.onEvent(deletionAttendanceEnvelope(receiptDriftId,
+                receiptDriftStart.getStateVersion() + 1, SemesterArchiveParticipantCommand.SEAL_DELETE,
+                SemesterArchiveParticipantStatus.PENDING, changedDigest, "ATTENDANCE_DELETE_PREVIEW_CHANGED", 4)))
+                .isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> participantAckConsumer.onEvent(deletionAttendanceEnvelope(receiptDriftId,
+                receiptDriftStart.getStateVersion(), SemesterArchiveParticipantCommand.SEAL_DELETE,
+                SemesterArchiveParticipantStatus.PENDING, REMOTE_DIGEST, "ATTENDANCE_DELETE_PREVIEW_CHANGED", 4)))
+                .isInstanceOf(ConflictException.class);
+        participantAckConsumer.onEvent(deletionAttendanceEnvelope(receiptDriftId, receiptDriftStart.getStateVersion(),
+                SemesterArchiveParticipantCommand.SEAL_DELETE, SemesterArchiveParticipantStatus.PENDING,
+                changedDigest, "ATTENDANCE_DELETE_DRAIN_PENDING", 4));
+        assertThat(deletionCommands.find(receiptDriftId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.PREPARING);
+        long sealCommandsBeforeDrift = deletionCommandCount(receiptDriftId, SemesterArchiveParticipantCommand.SEAL_DELETE);
+        participantAckConsumer.onEvent(deletionAttendanceEnvelope(receiptDriftId, receiptDriftStart.getStateVersion(),
+                SemesterArchiveParticipantCommand.SEAL_DELETE, SemesterArchiveParticipantStatus.PENDING,
+                changedDigest, "ATTENDANCE_DELETE_PREVIEW_CHANGED", 4));
+        var releasingDrift = deletionCommands.find(receiptDriftId);
+        assertThat(releasingDrift.getDeletePhase()).isEqualTo(SemesterDeletionPhase.RELEASING);
+        assertThat(releasingDrift.getCancelReason()).isEqualTo("STALE_PREVIEW");
+        assertThat(releasingDrift.isIrreversibleIntent()).isFalse();
+        assertThat(releasingDrift.getPrepareExpiresAt()).isAfter(java.time.OffsetDateTime.now());
+        assertThat(releasingDrift.getAttendanceParticipantDigest()).isEqualTo(REMOTE_DIGEST);
+        assertThat(releasingDrift.getAttendanceMarksCount()).isZero();
+        assertThat(releasingDrift.getPreviewDigest()).isEqualTo(receiptDriftPreview.digest());
+        assertThat(releasingDrift.getAcademic()).isEqualTo(SemesterArchiveParticipantStatus.RELEASED);
+        assertThat(releasingDrift.getSchedule()).isEqualTo(SemesterArchiveParticipantStatus.RELEASED);
+        assertThat(deletionCommandCount(receiptDriftId, SemesterArchiveParticipantCommand.SEAL_DELETE))
+                .isEqualTo(sealCommandsBeforeDrift);
+        participantAckConsumer.onEvent(deletionAttendanceEnvelope(receiptDriftId, receiptDriftStart.getStateVersion(),
+                SemesterArchiveParticipantCommand.RELEASE_DELETE, SemesterArchiveParticipantStatus.RELEASED,
+                changedDigest, null, 4));
+        assertThat(deletionCommands.find(receiptDriftId).getDeletePhase()).isEqualTo(SemesterDeletionPhase.CANCELLED);
+        assertThat(deletionCommands.find(receiptDriftId).getCancelReason()).isEqualTo("STALE_PREVIEW");
+        assertThat(state(semesterId).getArchived()).isTrue();
+        assertThat(state(semesterId).getStateVersion()).isEqualTo(receiptDriftPreview.stateVersion() + 2);
     }
 
     @Test
@@ -526,11 +570,18 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
 
     private Map<String, Object> deletionAttendanceEnvelope(UUID operationId, long stateVersion,
             SemesterArchiveParticipantCommand command, SemesterArchiveParticipantStatus status) {
+        return deletionAttendanceEnvelope(operationId, stateVersion, command, status, REMOTE_DIGEST, null, 0);
+    }
+
+    private Map<String, Object> deletionAttendanceEnvelope(UUID operationId, long stateVersion,
+            SemesterArchiveParticipantCommand command, SemesterArchiveParticipantStatus status,
+            String digest, String reason, long attendanceMarks) {
         Map<String, Object> counts = Map.of("scheduleTemplates", 0, "oneOffLessons", 0, "lessons", 0,
-                "assignments", 0, "homeworks", 0, "attendanceMarks", 0, "studentRequests", 0);
-        Map<String, Object> payload = Map.of("operation_id", operationId.toString(), "semester_id", semesterId,
+                "assignments", 0, "homeworks", 0, "attendanceMarks", attendanceMarks, "studentRequests", 0);
+        Map<String, Object> payload = new HashMap<>(Map.of("operation_id", operationId.toString(), "semester_id", semesterId,
                 "state_version", stateVersion, "command", command.name(), "status", status.name(),
-                "participant_digest", REMOTE_DIGEST, "counts", counts);
+                "participant_digest", digest, "counts", counts));
+        if (reason != null) payload.put("blocking_reason", reason);
         return Map.of("event_type", "semester.archive.participant.ack", "event_id", UUID.randomUUID().toString(),
                 "occurred_at", "2026-10-01T09:00:00Z", "event_version", 1,
                 "trace_id", UUID.randomUUID().toString(), "source", "attendance-service", "payload", payload);

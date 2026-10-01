@@ -118,7 +118,8 @@ public class ScheduleGrpcClient {
                                                           long expectedRevision,
                                                           byte[] payloadHash) {
         try {
-            return bindingStub().reserveHomeworkBinding(ReserveHomeworkBindingRequest.newBuilder()
+            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .reserveHomeworkBinding(ReserveHomeworkBindingRequest.newBuilder()
                     .setOccurrenceId(occurrenceId)
                     .setRequestKey(requestKey.toString())
                     .setExpectedRevision(expectedRevision)
@@ -133,7 +134,8 @@ public class ScheduleGrpcClient {
                                                            long homeworkId,
                                                            UUID requestKey) {
         try {
-            return bindingStub().confirmHomeworkBinding(ConfirmHomeworkBindingRequest.newBuilder()
+            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .confirmHomeworkBinding(ConfirmHomeworkBindingRequest.newBuilder()
                     .setBindingId(bindingId)
                     .setHomeworkId(homeworkId)
                     .setRequestKey(requestKey.toString())
@@ -147,7 +149,8 @@ public class ScheduleGrpcClient {
                                                           long homeworkId,
                                                           UUID requestKey) {
         try {
-            return bindingStub().archiveHomeworkBinding(ArchiveHomeworkBindingRequest.newBuilder()
+            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .archiveHomeworkBinding(ArchiveHomeworkBindingRequest.newBuilder()
                     .setBindingId(bindingId)
                     .setHomeworkId(homeworkId)
                     .setRequestKey(requestKey.toString())
@@ -161,7 +164,8 @@ public class ScheduleGrpcClient {
         try {
             HomeworkBindingsRequest.Builder request = HomeworkBindingsRequest.newBuilder();
             occurrenceIds.forEach(request::addOccurrenceIds);
-            return bindingStub().getHomeworkBindings(request.build());
+            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getHomeworkBindings(request.build());
         } catch (StatusRuntimeException e) {
             throw mapBindingError(e, "прочитать привязки домашних работ");
         }
@@ -173,7 +177,8 @@ public class ScheduleGrpcClient {
                                                              LocalDate effectiveFrom,
                                                              byte[] payloadHash) {
         try {
-            return directedStub().installAssignmentCloseCap(InstallAssignmentCloseCapRequest.newBuilder()
+            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .installAssignmentCloseCap(InstallAssignmentCloseCapRequest.newBuilder()
                     .setOperationId(operationId.toString())
                     .setSourceAssignmentId(sourceAssignmentId)
                     .setTargetAssignmentId(targetAssignmentId)
@@ -187,7 +192,8 @@ public class ScheduleGrpcClient {
 
     public AssignmentCloseReceipt commitAssignmentClose(UUID operationId, byte[] payloadHash) {
         try {
-            return directedStub().commitAssignmentClose(CommitAssignmentCloseRequest.newBuilder()
+            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .commitAssignmentClose(CommitAssignmentCloseRequest.newBuilder()
                     .setOperationId(operationId.toString())
                     .setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash))
                     .build());
@@ -210,7 +216,8 @@ public class ScheduleGrpcClient {
                     "Delete commands require the exact deletion participant digest");
         };
         try {
-            return directedStub().setSemesterArchiveBarrier(SetSemesterArchiveBarrierRequest.newBuilder()
+            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .setSemesterArchiveBarrier(SetSemesterArchiveBarrierRequest.newBuilder()
                     .setOperationId(operationId.toString())
                     .setSemesterId(semesterId)
                     .setStateVersion(stateVersion)
@@ -224,7 +231,8 @@ public class ScheduleGrpcClient {
     public SemesterDeletionParticipantPreview previewSemesterDeletion(long semesterId) {
         if (semesterId <= 0) throw new IllegalArgumentException("semesterId must be positive");
         try {
-            return directedStub().getSemesterDeletionPreview(SemesterDeletionPreviewRequest.newBuilder()
+            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getSemesterDeletionPreview(SemesterDeletionPreviewRequest.newBuilder()
                     .setSemesterId(semesterId)
                     .build());
         } catch (StatusRuntimeException error) {
@@ -247,7 +255,8 @@ public class ScheduleGrpcClient {
             default -> throw new IllegalArgumentException("command is not part of semester deletion");
         };
         try {
-            return directedStub().setSemesterArchiveBarrier(SetSemesterArchiveBarrierRequest.newBuilder()
+            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .setSemesterArchiveBarrier(SetSemesterArchiveBarrierRequest.newBuilder()
                     .setOperationId(operationId.toString())
                     .setSemesterId(semesterId)
                     .setStateVersion(stateVersion)
@@ -283,7 +292,8 @@ public class ScheduleGrpcClient {
                 .setBindingResolution(resolution);
         if (homeworkId != null) request.setHomeworkId(homeworkId);
         try {
-            return directedStub().setSemesterArchiveBarrier(request.build());
+            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .setSemesterArchiveBarrier(request.build());
         } catch (StatusRuntimeException error) {
             throw mapBindingError(error, "сверить принятую публикацию домашнего задания с архивом");
         }
@@ -296,8 +306,7 @@ public class ScheduleGrpcClient {
         }
         Metadata headers = new Metadata();
         headers.put(DirectedServiceCredential.TOKEN_METADATA_KEY, academicToScheduleToken);
-        return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
-                .withDeadlineAfter(3, TimeUnit.SECONDS);
+        return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers));
     }
 
     private ScheduleGrpcServiceGrpc.ScheduleGrpcServiceBlockingStub bindingStub() {
@@ -315,8 +324,7 @@ public class ScheduleGrpcClient {
         Metadata headers = new Metadata();
         headers.put(INTERNAL_TOKEN, internalToken);
         headers.put(DirectedServiceCredential.TOKEN_METADATA_KEY, academicToScheduleToken);
-        return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
-                .withDeadlineAfter(3, TimeUnit.SECONDS);
+        return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers));
     }
 
     private RuntimeException mapBindingError(StatusRuntimeException error, String action) {

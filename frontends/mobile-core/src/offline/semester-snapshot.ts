@@ -80,7 +80,7 @@ export class SemesterSnapshotStore {
   private activeWrite: ActiveSnapshotWrite | null = null
   private operationQueue: Promise<unknown> = Promise.resolve()
   private readonly unresolvedOwnerIds = new Set<string>()
-  private confirmedContext: { scopeKey: string; generation: number } | null = null
+  private confirmedContext: { scopeKey: string; generation: number; previousGuardScopeKey?: string | null } | null = null
   private unresolvedContextGeneration: number | null = null
 
   read(ownerId: string, expectedScopeKey?: string): Promise<SemesterSnapshot | null> {
@@ -179,18 +179,41 @@ export class SemesterSnapshotStore {
   switchToDetailed(ownerId: string): Promise<SnapshotCleanupResult> {
     this.invalidatePendingWrites()
     const expectedScopeKey = this.currentContextScopeKey()
+    const previousGuardScopeKey = this.confirmedContext?.previousGuardScopeKey
+    let guardReadError: unknown
+    if (expectedScopeKey) {
+      try {
+        const durableGuard = this.storage().getItem(currentScopeKey)
+        // A confirmed scope is not renewed authority after a delayed GET.
+        // Permit only our guard or the observed predecessor of our own failed
+        // guard write; another store's newer guard makes switch/write inert.
+        if (durableGuard !== expectedScopeKey && durableGuard !== previousGuardScopeKey) {
+          return Promise.resolve(makeCleanupResult('switch', null, ownerId, skipped('owner-replaced'), skipped('owner-replaced')))
+        }
+      } catch (error) {
+        guardReadError = error
+      }
+    }
     const capturedGeneration = ++this.lifecycleGeneration
     let guard: ReturnType<SemesterSnapshotStore['writeContextGuard']> | undefined
     if (expectedScopeKey) {
       this.confirmedContext = { scopeKey: expectedScopeKey, generation: capturedGeneration }
+      if (guardReadError) {
+        this.unresolvedContextGeneration = capturedGeneration
+        return Promise.resolve({
+          ...makeCleanupResult('switch', null, ownerId, skipped('no-owner'), failed(guardReadError)),
+          expectedScopeKey, lifecycleGeneration: capturedGeneration, previousGuardScopeKey,
+        })
+      }
       guard = this.writeContextGuard(expectedScopeKey)
     }
     return this.enqueue(async () => {
       if (expectedScopeKey) {
         const context = await this.performContextCheck(expectedScopeKey, capturedGeneration, undefined, guard)
-        if (context?.retryRequired) return context
+        if (context?.retryRequired || context?.pointerCleanup.reason === 'owner-replaced') return context
       }
-      return this.performSwitch(ownerId, capturedGeneration)
+      const result = await this.performSwitch(ownerId, capturedGeneration, expectedScopeKey)
+      return expectedScopeKey ? { ...result, expectedScopeKey, lifecycleGeneration: capturedGeneration } : result
     })
   }
 
@@ -254,6 +277,9 @@ export class SemesterSnapshotStore {
     }
     const guard = capturedGuard ?? this.writeContextGuard(expectedScopeKey)
     const contextGuard = guard.outcome
+    if (this.confirmedContext?.generation === capturedGeneration) {
+      this.confirmedContext.previousGuardScopeKey = contextGuard.status === 'failed' ? guard.previousScopeKey : undefined
+    }
     const withContext = (cleanup: SnapshotCleanupResult): SnapshotCleanupResult => {
       const retryRequired = cleanup.retryRequired || contextGuard.status === 'failed'
       if (capturedGeneration === this.lifecycleGeneration) {
@@ -283,6 +309,15 @@ export class SemesterSnapshotStore {
     }
     if (capturedGeneration !== this.lifecycleGeneration) {
       return makeCleanupResult('clear', null, null, skipped('owner-replaced'), skipped('owner-replaced'))
+    }
+    try {
+      const durableGuard = this.storage().getItem(currentScopeKey)
+      if (durableGuard !== expectedScopeKey
+        && !(contextGuard.status === 'failed' && durableGuard === guard.previousScopeKey)) {
+        return makeCleanupResult('clear', null, null, skipped('owner-replaced'), skipped('owner-replaced'))
+      }
+    } catch (error) {
+      return withContext(makeCleanupResult('clear', ownerId, null, skipped('no-owner'), failed(error)))
     }
     if (snapshot?.scopeKey === expectedScopeKey && contextGuard.status === 'completed') {
       this.unresolvedContextGeneration = null
@@ -346,10 +381,13 @@ export class SemesterSnapshotStore {
     return result
   }
 
-  private async performSwitch(ownerId: string, capturedGeneration: number): Promise<SnapshotCleanupResult> {
+  private async performSwitch(ownerId: string, capturedGeneration: number, expectedScopeKey?: string): Promise<SnapshotCleanupResult> {
     let previous: string | null = null
     let pointerReadError: unknown = null
     try {
+      if (expectedScopeKey && this.storage().getItem(currentScopeKey) !== expectedScopeKey) {
+        return makeCleanupResult('switch', null, ownerId, skipped('owner-replaced'), skipped('owner-replaced'))
+      }
       previous = this.readCurrentOwner()
     } catch (error) {
       pointerReadError = error
@@ -368,11 +406,11 @@ export class SemesterSnapshotStore {
     }
 
     const idbDeletePromise = previous && previous !== ownerId
-      ? this.deleteOwner(previous)
+      ? this.deleteOwner(previous, expectedScopeKey ? { generation: capturedGeneration, expectedScopeKey } : undefined)
       : Promise.resolve(undefined)
     const [idbDeleteOutcome, pointerCleanupOutcome] = await Promise.allSettled([
       idbDeletePromise,
-      Promise.resolve().then(() => this.writeCurrentOwnerIfCurrent(previous, ownerId, capturedGeneration)),
+      Promise.resolve().then(() => this.writeCurrentOwnerIfCurrent(previous, ownerId, capturedGeneration, expectedScopeKey)),
     ])
     const idbDelete = previous && previous !== ownerId
       ? settledOperation(idbDeleteOutcome)
@@ -408,13 +446,18 @@ export class SemesterSnapshotStore {
 
   private async deleteOwner(
     ownerId: string,
-    context?: { previousSnapshotScopeKey: string | undefined; generation: number },
+    context?: { previousSnapshotScopeKey?: string; expectedScopeKey?: string; generation: number },
   ): Promise<SnapshotOperationResult | void> {
     return this.withStore('readwrite', async (store) => {
       if (context) {
-        const current = await this.request<SemesterSnapshot | undefined>(store.get(ownerId))
-        if (context.generation !== this.lifecycleGeneration || current?.scopeKey !== context.previousSnapshotScopeKey) {
+        if (context.generation !== this.lifecycleGeneration
+          || (!('previousSnapshotScopeKey' in context) && context.expectedScopeKey
+            && this.storage().getItem(currentScopeKey) !== context.expectedScopeKey)) {
           return skipped('owner-replaced')
+        }
+        if ('previousSnapshotScopeKey' in context) {
+          const current = await this.request<SemesterSnapshot | undefined>(store.get(ownerId))
+          if (context.generation !== this.lifecycleGeneration || current?.scopeKey !== context.previousSnapshotScopeKey) return skipped('owner-replaced')
         }
       }
       await this.request(store.delete(ownerId))
@@ -433,8 +476,9 @@ export class SemesterSnapshotStore {
     return completed()
   }
 
-  private writeCurrentOwnerIfCurrent(previous: string | null, ownerId: string, capturedGeneration: number): SnapshotOperationResult {
+  private writeCurrentOwnerIfCurrent(previous: string | null, ownerId: string, capturedGeneration: number, expectedScopeKey?: string): SnapshotOperationResult {
     if (capturedGeneration !== this.lifecycleGeneration) return skipped('stale-generation')
+    if (expectedScopeKey && this.storage().getItem(currentScopeKey) !== expectedScopeKey) return skipped('owner-replaced')
     const current = this.readCurrentOwner()
     if (current !== previous) return skipped('owner-replaced')
     this.writeCurrentOwner(ownerId)

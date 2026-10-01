@@ -66,6 +66,18 @@ public class UserRoleGrantWriter {
             WHERE user_id = ?
             """;
 
+    private static final String CLEAR_UNSELECTABLE_SESSIONS_SQL = """
+            UPDATE auth_sessions session
+            SET active_role_grant_id = NULL,
+                session_version = session.session_version + 1
+            FROM user_role_grants grant_row
+            WHERE session.user_id = ?
+              AND session.revoked_at IS NULL
+              AND session.active_role_grant_id = grant_row.id
+              AND grant_row.user_id = session.user_id
+              AND grant_row.status <> 'active'
+            """;
+
     private final JdbcTemplate jdbcTemplate;
 
     public UserRoleGrantWriter(JdbcTemplate jdbcTemplate) {
@@ -101,6 +113,7 @@ public class UserRoleGrantWriter {
             // its selectable authority and preserve its former group scope.
             jdbcTemplate.update(SUSPEND_HEADMAN_SQL, now, userId);
         }
+        clearUnselectableSelections(userId);
     }
 
     /**
@@ -116,6 +129,7 @@ public class UserRoleGrantWriter {
         jdbcTemplate.queryForObject(LOCK_USER_SQL, Long.class, userId);
         upsertGrant(userId, role.toLowerCase(Locale.ROOT), status.toLowerCase(Locale.ROOT),
                 groupId, OffsetDateTime.now());
+        clearUnselectableSelections(userId);
     }
 
     /**
@@ -133,6 +147,7 @@ public class UserRoleGrantWriter {
         } else {
             jdbcTemplate.update(SUSPEND_HEADMAN_SQL, OffsetDateTime.now(), userId);
         }
+        clearUnselectableSelections(userId);
     }
 
     /**
@@ -152,6 +167,14 @@ public class UserRoleGrantWriter {
                 user.getGroupId(),
                 now);
         jdbcTemplate.update(ARCHIVE_GRANTS_SQL, now, userId);
+        clearUnselectableSelections(userId);
+    }
+
+    private void clearUnselectableSelections(Long userId) {
+        // Revoke the selection in the same user-locked transaction as its grant.
+        // Waiting for an Auth read would let suspend -> restore resurrect the
+        // old selection. Other active roles and the owning session remain usable.
+        jdbcTemplate.update(CLEAR_UNSELECTABLE_SESSIONS_SQL, userId);
     }
 
     private void upsertGrant(Long userId,

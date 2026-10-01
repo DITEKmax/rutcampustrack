@@ -7,6 +7,8 @@ import org.mockito.stubbing.Answer;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
@@ -67,6 +69,9 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
     @MockitoSpyBean
     private StudentGroupHistoryRepository historyRepository;
 
@@ -82,16 +87,26 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                 (rs, rowNum) -> rs.getLong(1));
         jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
         LocalDate today = LocalDate.now(MOSCOW);
-        testSemesterId = jdbcTemplate.queryForObject(
-                "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
-                        + "VALUES (?, ?, ?, true, NOW()) RETURNING id",
-                Long.class, "L5B historical " + UUID.randomUUID(),
-                today.minusDays(7), today.plusDays(7));
+        List<Long> writableSemesters = jdbcTemplate.query(
+                "SELECT id FROM semesters WHERE date_from <= ? AND date_to >= ? "
+                        + "AND NOT is_archived AND archive_transition = 'NONE' "
+                        + "AND NOT archive_release_pending "
+                        + "ORDER BY (name LIKE 'L5B historical %') DESC, id LIMIT 1",
+                (rs, rowNum) -> rs.getLong(1), today, today);
+        testSemesterId = writableSemesters.isEmpty()
+                ? jdbcTemplate.queryForObject(
+                        "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
+                                + "VALUES (?, ?, ?, true, NOW()) RETURNING id",
+                        Long.class, "L5B historical " + UUID.randomUUID(),
+                        today.minusDays(7), today.plusDays(7))
+                : writableSemesters.get(0);
+        jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", testSemesterId);
     }
 
     @AfterEach
     void cleanManagedRows() {
         if (createdUserId != null) {
+            jdbcTemplate.update("DELETE FROM auth_sessions WHERE user_id = ?", createdUserId);
             jdbcTemplate.update("DELETE FROM student_group_history WHERE user_id = ?", createdUserId);
             jdbcTemplate.update("DELETE FROM user_role_grants WHERE user_id = ?", createdUserId);
             jdbcTemplate.update("DELETE FROM users WHERE id = ?", createdUserId);
@@ -100,9 +115,9 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
             jdbcTemplate.update("DELETE FROM group_history_coverage WHERE group_id = ?", groupId);
             jdbcTemplate.update("DELETE FROM groups WHERE id = ?", groupId);
         }
-        if (testSemesterId != null) {
-            jdbcTemplate.update("DELETE FROM semesters WHERE id = ?", testSemesterId);
-        }
+        // The disposable Testcontainers fixture is retained and reused. Semester
+        // deletion now requires the real multi-service saga; cleanup must not
+        // bypass its receipts guard merely to remove this empty test semester.
         jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
         for (Long semesterId : previousActiveSemesterIds) {
             jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", semesterId);
@@ -253,6 +268,79 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                 historyRepository.findByUserIdOrderByJoinedAtAscIdAsc(student.getId());
         assertThat(afterGraduation).hasSize(2);
         assertThat(afterGraduation.get(1).getLeftAt()).isEqualTo(transitionDate);
+    }
+
+    @Test
+    void revokedSelectionsStayClearedAfterImmediateRestoreAndArchivePreservesGrantHistory() {
+        Group group = createGroup();
+        User student = createStudent(group.getId());
+        jdbcTemplate.update(
+                "INSERT INTO user_role_grants "
+                        + "(user_id, role, status, created_at, updated_at) "
+                        + "VALUES (?, 'teacher', 'active', NOW(), NOW())", student.getId());
+        userService.patchUser(student.getId(),
+                new PatchUserRequest(null, null, null, true, null, null, null, null));
+        long studentGrant = grantId(student.getId(), "student");
+        long headmanGrant = grantId(student.getId(), "headman");
+        long teacherGrant = grantId(student.getId(), "teacher");
+        UUID studentSession = createSession(student.getId(), studentGrant);
+        UUID headmanSession = createSession(student.getId(), headmanGrant);
+        UUID teacherSession = createSession(student.getId(), teacherGrant);
+
+        userService.updateRoleGrant(student.getId(), "STUDENT",
+                new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
+
+        // No Auth snapshot/refresh is made between the administrative writes.
+        assertSelection(studentSession, null, 2);
+        assertSelection(headmanSession, null, 2);
+        assertSelection(teacherSession, teacherGrant, 1);
+        assertThat(grantStatus(student.getId(), "teacher")).isEqualTo("active");
+        userService.updateRoleGrant(student.getId(), "STUDENT",
+                new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
+        assertSelection(studentSession, null, 2);
+        userService.updateRoleGrant(student.getId(), "STUDENT",
+                new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE, null, null, null));
+        assertThat(grantId(student.getId(), "student")).isEqualTo(studentGrant);
+        assertSelection(studentSession, null, 2);
+        assertSelection(headmanSession, null, 2);
+        assertSelection(teacherSession, teacherGrant, 1);
+
+        userService.archiveUser(student.getId());
+
+        assertSelection(teacherSession, null, 2);
+        assertSelection(studentSession, null, 2);
+        assertThat(grantId(student.getId(), "teacher")).isEqualTo(teacherGrant);
+        assertThat(grantStatus(student.getId(), "teacher")).isEqualTo("archived");
+        assertThat(historyRepository.findByUserIdOrderByJoinedAtAscIdAsc(student.getId()))
+                .hasSize(1).allSatisfy(history -> assertThat(history.getLeftAt()).isNotNull());
+    }
+
+    @Test
+    void selectionClearRollsBackWithGrantAndLegacySuspensionAlsoClearsSelection() {
+        Group group = createGroup();
+        User student = createStudent(group.getId());
+        long studentGrant = grantId(student.getId(), "student");
+        UUID session = createSession(student.getId(), studentGrant);
+        long originalRolesVersion = rolesVersion(student.getId());
+
+        assertThatThrownBy(() -> new TransactionTemplate(transactionManager).executeWithoutResult(tx -> {
+            userService.updateRoleGrant(student.getId(), "STUDENT",
+                    new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
+            assertSelection(session, null, 2);
+            throw new IllegalStateException("injected failure after role revocation");
+        })).isInstanceOf(IllegalStateException.class)
+                .hasMessage("injected failure after role revocation");
+
+        assertSelection(session, studentGrant, 1);
+        assertThat(grantStatus(student.getId(), "student")).isEqualTo("active");
+        assertThat(rolesVersion(student.getId())).isEqualTo(originalRolesVersion);
+        userService.patchUser(student.getId(), new PatchUserRequest(
+                null, null, null, null, null, null, null,
+                ru.rutcampustrack.academic.contract.enums.AccountStatus.SUSPENDED));
+        assertSelection(session, null, 2);
+        userService.updateRoleGrant(student.getId(), "STUDENT",
+                new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE, null, null, null));
+        assertSelection(session, null, 2);
     }
 
     @Test
@@ -438,6 +526,30 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
     private long rolesVersion(Long userId) {
         return jdbcTemplate.queryForObject(
                 "SELECT roles_version FROM users WHERE id = ?", Long.class, userId);
+    }
+
+    private long grantId(Long userId, String role) {
+        return jdbcTemplate.queryForObject(
+                "SELECT id FROM user_role_grants WHERE user_id = ? AND role = ?", Long.class, userId, role);
+    }
+
+    private UUID createSession(Long userId, long grantId) {
+        UUID sessionId = UUID.randomUUID();
+        jdbcTemplate.update("""
+                INSERT INTO auth_sessions (sid, user_id, active_role_grant_id, session_version,
+                    current_refresh_jti, refresh_expires_at, created_at, last_seen_at, auth_method)
+                VALUES (?, ?, ?, 1, ?, NOW() + INTERVAL '1 day', NOW(), NOW(), 'PASSWORD')
+                """, sessionId, userId, grantId, UUID.randomUUID());
+        return sessionId;
+    }
+
+    private void assertSelection(UUID sessionId, Long grantId, long version) {
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT active_role_grant_id FROM auth_sessions WHERE sid = ?", Long.class, sessionId))
+                .isEqualTo(grantId);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT session_version FROM auth_sessions WHERE sid = ?", Long.class, sessionId))
+                .isEqualTo(version);
     }
 
     private int grantCount(Long userId, String role) {

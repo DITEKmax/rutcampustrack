@@ -95,6 +95,14 @@ export interface HeadmanStatsFormat {
   readonly extension: string
 }
 
+const STATS_EXPORT_CONTENT_TYPES: Readonly<Record<ReportDownloadFormat, string>> = {
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  pdf: 'application/pdf',
+  png: 'application/zip',
+  html: 'text/html',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+}
+
 export interface HeadmanStatsResponse {
   readonly context: HeadmanStatsContext
   readonly summary: HeadmanStatsMetrics
@@ -349,7 +357,12 @@ export class HeadmanStatsApi {
     signal?: AbortSignal,
   ): Promise<HeadmanStatsDownload> {
     validateExportQuery(query)
-    if (!format.code.trim()) throw new RangeError('Выбери формат выгрузки')
+    const expectedType = STATS_EXPORT_CONTENT_TYPES[format.code]
+    const expectedExtension = format.code === 'png' ? 'zip' : format.code
+    if (!expectedType || format.extension !== expectedExtension
+      || format.contentType.split(';', 1)[0]?.trim().toLowerCase() !== expectedType) {
+      throw new RangeError('Выбран неподдерживаемый формат статистики.')
+    }
     const response = await this.response('/api/attendance/reports/headman/stats/export', {
       method: 'POST',
       headers: { Accept: '*/*' },
@@ -359,11 +372,22 @@ export class HeadmanStatsApi {
     if (!response.ok) throw await this.apiError(response)
     const blob = await response.blob()
     this.options.assertCurrent?.()
-    const fallbackName = `statistika.${format.extension}`
+    if (blob.size === 0) throw new Error('Сервер вернул пустой файл статистики.')
+    const contentType = response.headers.get('Content-Type') ?? ''
+    let filename: string
+    try {
+      filename = filenameFromContentDisposition(response.headers.get('Content-Disposition'), '')
+    } catch {
+      throw new Error('Сервер вернул некорректное имя файла статистики.')
+    }
+    if (!filename.toLowerCase().endsWith(`.${expectedExtension}`)
+      || contentType.split(';', 1)[0]?.trim().toLowerCase() !== expectedType) {
+      throw new Error('Сервер вернул некорректные метаданные файла статистики.')
+    }
     return {
       blob,
-      filename: filenameFromContentDisposition(response.headers.get('Content-Disposition'), fallbackName),
-      contentType: response.headers.get('Content-Type') ?? format.contentType,
+      filename,
+      contentType,
     }
   }
 

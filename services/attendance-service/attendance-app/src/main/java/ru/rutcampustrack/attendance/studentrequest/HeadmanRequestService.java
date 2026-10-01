@@ -190,7 +190,7 @@ public class HeadmanRequestService {
                 valueAsString(document.get("status")),
                 studentId,
                 valueAsString(document.get("student_name")),
-                kind == StudentRequestKind.EXCUSE ? valueAsString(document.get("excuse_type")) : "LATE_CHECKIN",
+                kind == StudentRequestKind.EXCUSE ? canonicalReason(document.get("excuse_type")) : "LATE_CHECKIN",
                 kind == StudentRequestKind.EXCUSE ? valueAsString(document.get("comment")) : null,
                 lessons,
                 booleanCollection(document.get("attachment_descriptors")),
@@ -527,6 +527,11 @@ public class HeadmanRequestService {
         return value == null ? null : value.toString();
     }
 
+    private static String canonicalReason(Object value) {
+        String reason = normalize(valueAsString(value));
+        return reason == null ? null : reason.toUpperCase(Locale.ROOT);
+    }
+
     private static long numberAsLong(Object value) {
         Long number = nullableLong(value);
         return number == null ? 0L : number;
@@ -551,10 +556,13 @@ public class HeadmanRequestService {
         try { return Instant.parse(value.toString()); } catch (RuntimeException ignored) { return null; }
     }
 
-    private static LocalDate localDate(Object value) {
+    private LocalDate localDate(Object value) {
         if (value instanceof LocalDate date) return date;
         Instant instant = instant(value);
-        if (instant != null) return instant.atZone(ZoneOffset.UTC).toLocalDate();
+        // Raw aggregation BSON must use the same reader as repository projections.
+        // LocalDate's persisted midnight can be the preceding UTC calendar day.
+        if (instant != null) return mongoTemplate.getConverter().getConversionService()
+                .convert(Date.from(instant), LocalDate.class);
         if (value == null) return null;
         try { return LocalDate.parse(value.toString()); } catch (RuntimeException ignored) { return null; }
     }

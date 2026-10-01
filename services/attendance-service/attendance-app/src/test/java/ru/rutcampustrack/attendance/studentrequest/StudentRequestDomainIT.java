@@ -853,6 +853,43 @@ class StudentRequestDomainIT {
     }
 
     @Test
+    void headmanMongoDatesMatchDetailAndInclusiveCoverageInMoscow() {
+        TimeZone previousTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"));
+        try {
+            LocalDate lessonDate = LocalDate.of(2026, 10, 1);
+            ExcuseTicket ticket = seedHeadmanTicket("62a000000000000000000101", ExcuseTicketStatus.SUBMITTED,
+                    List.of(lessonDate), START, START, null);
+            ticket.setExcuseType(ExcuseType.OTHER);
+            excuseRepository.save(ticket);
+            Document stored = mongoTemplate.getCollection("excuse_tickets")
+                    .find(Filters.eq("_id", new ObjectId(ticket.getId()))).first();
+            assertThat(stored).isNotNull();
+            assertThat(stored.getList("lesson_snapshots", Document.class).getFirst().getDate("date").toInstant())
+                    .isEqualTo(Instant.parse("2026-09-30T21:00:00Z"));
+            assertThat(stored.getString("excuse_type")).isEqualTo("other");
+
+            var detail = headmanRequestService.get(HEADMAN, ticket.getId());
+            assertThat(detail.lessons()).singleElement().satisfies(lesson ->
+                    assertThat(lesson.date()).isEqualTo(lessonDate));
+            HeadmanRequestPageResponse page = headmanRequestService.list(
+                    HEADMAN, "OPEN", 0, 20, "EXCUSE", null, "2026-10-01", "2026-10-01");
+            assertThat(page.content()).singleElement().satisfies(summary -> {
+                assertThat(summary.coverageStart()).isEqualTo(lessonDate);
+                assertThat(summary.coverageEnd()).isEqualTo(lessonDate);
+                assertThat(summary.reason()).isEqualTo("OTHER");
+                assertThat(summary).isEqualTo(detail.summary());
+            });
+            assertThat(headmanRequestService.list(HEADMAN, "OPEN", 0, 20, "EXCUSE", null,
+                    "2026-09-30", "2026-09-30").content()).isEmpty();
+            assertThat(headmanRequestService.list(HEADMAN, "OPEN", 0, 20, "EXCUSE", null,
+                    "2026-10-02", "2026-10-02").content()).isEmpty();
+        } finally {
+            TimeZone.setDefault(previousTimeZone);
+        }
+    }
+
+    @Test
     void headmanCoverageFilterMatchesCoverageIntervalGap() {
         seedHeadmanTicket("headman-gap", ExcuseTicketStatus.APPROVED,
                 List.of(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 10)),

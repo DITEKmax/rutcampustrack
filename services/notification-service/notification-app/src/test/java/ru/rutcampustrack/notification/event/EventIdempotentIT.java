@@ -148,6 +148,11 @@ class EventIdempotentIT extends ContainerTestBase {
         publish(envelope);
         await().pollDelay(2, TimeUnit.SECONDS).atMost(ofSeconds(5)).untilAsserted(() -> {
             assertThat(repository.findAll()).hasSize(1);
+            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1L);
+            assertThat(claimsForConsumer(NotificationHistoryConsumer.CONSUMER_ID, eventId)).isEqualTo(1L);
+            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
+            verify(webPushDeliveryService, times(1)).sendToGroup(7L, "excuse.requested",
+                    (Map<String, Object>) envelope.get("payload"));
         });
     }
 
@@ -168,9 +173,11 @@ class EventIdempotentIT extends ContainerTestBase {
                     (Map<String, Object>) envelope.get("payload"));
         });
         publish(envelope);
-        await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() ->
+        await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
                 verify(webPushDeliveryService, times(2)).sendToGroup(7L, "excuse.requested",
-                        (Map<String, Object>) envelope.get("payload")));
+                        (Map<String, Object>) envelope.get("payload"));
+                assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isZero();
+        });
     }
 
     @Test

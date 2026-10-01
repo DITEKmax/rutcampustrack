@@ -1,7 +1,6 @@
 package ru.rutcampustrack.notification.event;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -73,8 +72,6 @@ public class EventConsumer extends AbstractEventConsumer {
         this(messagingTemplate, webPushDeliveryService, idempotencyGuard, null);
     }
 
-    @RabbitListener(queues = "notification-web.events",
-            containerFactory = "notificationHistoryRabbitListenerContainerFactory")
     @EventIdempotent(consumer = CONSUMER_ID)
     @org.springframework.transaction.annotation.Transactional
     @SuppressWarnings("unchecked")

@@ -254,6 +254,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.campusMapUsageService = null;
         this.assistantPermissionAuthority = null;
         this.replacementOperationRepository = null;
+        this.groupCompositionReadService = null;
     }
 
     /** Compatibility constructor retained for source-era identity tests. */
@@ -284,6 +285,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.campusMapUsageService = null;
         this.assistantPermissionAuthority = null;
         this.replacementOperationRepository = null;
+        this.groupCompositionReadService = null;
     }
 
     /**

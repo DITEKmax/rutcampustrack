@@ -3,6 +3,7 @@ package ru.rutcampustrack.notification.event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -10,10 +11,13 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.notification.history.NotificationHistoryConsumer;
 import ru.rutcampustrack.notification.history.NotificationHistoryDocument;
 import ru.rutcampustrack.notification.history.NotificationHistoryRepository;
+import ru.rutcampustrack.notification.history.AcademicGroupMemberClient;
+import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
 
 import java.net.URISyntaxException;
@@ -24,10 +28,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
 
 import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 /**
  * M13 G8 — IT для consumer-side dedup в notification-app.
@@ -43,6 +54,7 @@ import static org.awaitility.Awaitility.await;
         "vapid.private-key=test-priv",
         "notification.history.ttl-days=30"
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class EventIdempotentIT extends ContainerTestBase {
 
     @DynamicPropertySource
@@ -67,6 +79,10 @@ class EventIdempotentIT extends ContainerTestBase {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired private RabbitAdmin rabbitAdmin;
+    @MockitoBean private AcademicGroupMemberClient academicGroupMemberClient;
+    @MockitoBean private WebPushDeliveryService webPushDeliveryService;
+
     @MockitoBean
     private nl.martijndwars.webpush.PushService pushService;
 
@@ -74,6 +90,11 @@ class EventIdempotentIT extends ContainerTestBase {
     void clean() {
         repository.deleteAll();
         mongoTemplate.remove(new Query(), COLLECTION);
+        rabbitAdmin.purgeQueue("notification-web.events.dlq", false);
+        when(academicGroupMemberClient.getCurrentHeadmanUserIds(7L)).thenReturn(List.of());
+        when(webPushDeliveryService.shouldPush(anyString())).thenReturn(true);
+        when(webPushDeliveryService.sendToGroup(anyLong(), anyString(), any()))
+                .thenReturn(CompletableFuture.completedFuture(null));
     }
 
     private Map<String, Object> envelope(UUID eventId) {
@@ -85,6 +106,7 @@ class EventIdempotentIT extends ContainerTestBase {
         envelope.put("payload", Map.of(
                 "user_id", 42,
                 "group_id", 7,
+                "ticket_id", "request-it-1",
                 "excuse_type", "illness"));
         return envelope;
     }
@@ -127,5 +149,46 @@ class EventIdempotentIT extends ContainerTestBase {
         await().pollDelay(2, TimeUnit.SECONDS).atMost(ofSeconds(5)).untilAsserted(() -> {
             assertThat(repository.findAll()).hasSize(1);
         });
+    }
+
+    @Test
+    void headmanLookupFailureRollsBackDeliveryClaimThenRetryCommitsOnce() {
+        UUID eventId = UUID.randomUUID();
+        Map<String, Object> envelope = envelope(eventId);
+        when(webPushDeliveryService.sendToGroup(7L, "excuse.requested", (Map<String, Object>) envelope.get("payload")))
+                .thenReturn(CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()),
+                        CompletableFuture.completedFuture(null));
+
+        publish(envelope);
+
+        await().atMost(ofSeconds(10)).untilAsserted(() -> {
+            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isEqualTo(1);
+            assertThat(repository.findAll()).hasSize(1);
+            verify(webPushDeliveryService, times(2)).sendToGroup(7L, "excuse.requested",
+                    (Map<String, Object>) envelope.get("payload"));
+        });
+        publish(envelope);
+        await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() ->
+                verify(webPushDeliveryService, times(2)).sendToGroup(7L, "excuse.requested",
+                        (Map<String, Object>) envelope.get("payload")));
+    }
+
+    @Test
+    void exhaustedHeadmanLookupRetriesLeaveNoCommittedDeliveryClaimAndReachDlq() {
+        UUID eventId = UUID.randomUUID();
+        Map<String, Object> envelope = envelope(eventId);
+        when(webPushDeliveryService.sendToGroup(7L, "excuse.requested", (Map<String, Object>) envelope.get("payload")))
+                .thenReturn(CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()));
+
+        publish(envelope);
+
+        await().atMost(ofSeconds(10)).untilAsserted(() -> {
+            verify(webPushDeliveryService, times(3)).sendToGroup(7L, "excuse.requested",
+                    (Map<String, Object>) envelope.get("payload"));
+            assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, eventId)).isZero();
+            assertThat(rabbitAdmin.getQueueInfo("notification-web.events.dlq").getMessageCount()).isEqualTo(1);
+        });
+        Map<?, ?> retained = (Map<?, ?>) rabbitTemplate.receiveAndConvert("notification-web.events.dlq");
+        assertThat(retained.get("event_id")).isEqualTo(eventId.toString());
     }
 }

@@ -147,18 +147,18 @@ public class WebPushDeliveryService {
         }
 
         Set<Long> currentHeadmanIds = null;
-        if ("lesson.closed".equals(eventType)) {
+        if (HEADMAN_ONLY_EVENT_TYPES.contains(eventType)) {
             if (academicGroupMemberClient == null) {
-                log.warn("Skipping lesson.closed Web Push because current headman resolver is unavailable group={}",
-                        groupId);
-                return CompletableFuture.completedFuture(null);
+                log.warn("Skipping {} Web Push because current headman resolver is unavailable group={}",
+                        eventType, groupId);
+                return CompletableFuture.failedFuture(new IllegalStateException("Current headman resolver is unavailable"));
             }
             try {
                 currentHeadmanIds = Set.copyOf(academicGroupMemberClient.getCurrentHeadmanUserIds(groupId));
             } catch (RuntimeException error) {
-                log.warn("Skipping lesson.closed Web Push because current headman lookup failed group={}: {}",
-                        groupId, error.toString());
-                return CompletableFuture.completedFuture(null);
+                log.warn("Skipping {} Web Push because current headman lookup failed group={}: {}",
+                        eventType, groupId, error.toString());
+                return CompletableFuture.failedFuture(error);
             }
         }
         List<PushSubscriptionDocument> targets = filterRecipients(subs, eventType, payload, currentHeadmanIds);
@@ -218,8 +218,7 @@ public class WebPushDeliveryService {
     /**
      * Narrows subscribers to those eligible for this event:
      * <ul>
-     *   <li>Existing headman requests → subscriptions captured with headman=true</li>
-     *   <li>{@code lesson.closed} → only subscriptions whose user is the current Academic headman</li>
+     *   <li>Headman events → only subscriptions whose user is the current Academic headman</li>
      *   <li>USER_SCOPED events  → only subscriber matching payload.user_id</li>
      *   <li>everyone else       → all group subscribers</li>
      * </ul>
@@ -233,17 +232,11 @@ public class WebPushDeliveryService {
             return List.of();
         }
         if (HEADMAN_ONLY_EVENT_TYPES.contains(eventType)) {
-            if ("lesson.closed".equals(eventType)) {
-                if (currentHeadmanIds == null || currentHeadmanIds.isEmpty()) {
-                    return List.of();
-                }
-                return subs.stream()
-                        .filter(s -> s.getUserId() != null && currentHeadmanIds.contains(s.getUserId()))
-                        .filter(s -> preferencesEnabled(s, eventType))
-                        .collect(Collectors.toList());
+            if (currentHeadmanIds == null || currentHeadmanIds.isEmpty()) {
+                return List.of();
             }
             return subs.stream()
-                    .filter(PushSubscriptionDocument::isHeadman)
+                    .filter(s -> s.getUserId() != null && currentHeadmanIds.contains(s.getUserId()))
                     .filter(s -> preferencesEnabled(s, eventType))
                     .collect(Collectors.toList());
         }

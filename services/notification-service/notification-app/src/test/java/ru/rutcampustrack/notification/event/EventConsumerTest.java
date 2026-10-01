@@ -3,6 +3,8 @@ package ru.rutcampustrack.notification.event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -11,6 +13,7 @@ import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -21,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
 class EventConsumerTest {
@@ -45,10 +49,30 @@ class EventConsumerTest {
         // (unknown event_type) early-return до tryClaim.
         org.mockito.Mockito.lenient()
                 .when(idempotencyGuard.tryClaim(any(), any())).thenReturn(true);
+        org.mockito.Mockito.lenient().when(webPushDeliveryService.sendToGroup(anyLong(), anyString(), any()))
+                .thenReturn(CompletableFuture.completedFuture(null));
         consumer = new EventConsumer(messagingTemplate, webPushDeliveryService, idempotencyGuard);
     }
 
     // --- Existing STOMP routing tests (must all still pass) ---
+
+    @ParameterizedTest
+    @ValueSource(strings = {"excuse.requested", "late_checkin.requested", "lesson.closed"})
+    void headmanLookupFailureReachesListenerWithoutPublishingWsAndRetrySucceedsOnce(String eventType) {
+        Map<String, Object> payload = Map.of("group_id", 42, "user_id", 7);
+        Map<String, Object> envelope = Map.of("event_type", eventType, "payload", payload);
+        when(webPushDeliveryService.shouldPush(eventType)).thenReturn(true);
+        when(webPushDeliveryService.sendToGroup(42L, eventType, payload)).thenReturn(
+                CompletableFuture.failedFuture(io.grpc.Status.UNAVAILABLE.asRuntimeException()),
+                CompletableFuture.completedFuture(null));
+
+        assertThatThrownBy(() -> consumer.onEvent(envelope))
+                .hasCauseInstanceOf(io.grpc.StatusRuntimeException.class);
+        verifyNoInteractions(messagingTemplate);
+        consumer.onEvent(envelope);
+
+        verify(messagingTemplate).convertAndSend("/topic/group/42/headman", Map.of("type", eventType, "payload", payload));
+    }
 
     @Test
     void lessonStarted_routesToGroupTopic() {

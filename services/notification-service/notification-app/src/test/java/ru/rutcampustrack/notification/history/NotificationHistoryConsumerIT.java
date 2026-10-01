@@ -4,6 +4,8 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -14,6 +16,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import ru.rutcampustrack.notification.contract.enums.NotificationType;
@@ -50,6 +53,7 @@ import static org.mockito.Mockito.verify;
         "notification.history.ttl-days=30",
         "grpc.auth.secret=test-grpc-secret"
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class NotificationHistoryConsumerIT extends ContainerTestBase {
 
     @DynamicPropertySource
@@ -77,29 +81,48 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
         mongoTemplate.remove(new Query(), NotificationHistoryDocument.class);
     }
 
-    @Test
-    void excuseRequestedIsPersistedWithEventIdentity() {
+    @ParameterizedTest
+    @ValueSource(strings = {"excuse.requested", "late_checkin.requested"})
+    void requestedHistoryRetriesLookupAndKeepsOwnerAndCurrentHeadmanRowsOnCommittedReplay(String eventType) {
+        String idField = "excuse.requested".equals(eventType) ? "ticket_id" : "request_id";
         Map<String, Object> payload = Map.of(
                 "user_id", 42,
                 "group_id", 7,
+                idField, "request-it-1",
                 "excuse_type", "illness"
         );
-        Map<String, Object> envelope = event("excuse.requested", UUID.randomUUID().toString(), payload,
+        Map<String, Object> envelope = event(eventType, UUID.randomUUID().toString(), payload,
                 "2026-04-24T12:00:00Z");
         envelope.put("trace_id", "trace-it-123");
+        doThrow(new StatusRuntimeException(Status.UNAVAILABLE)).doReturn(List.of(11L))
+                .when(academicGroupMemberClient).getCurrentHeadmanUserIds(7L);
 
         rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
 
         await().atMost(ofSeconds(10)).untilAsserted(() -> {
             List<NotificationHistoryDocument> all = repository.findAll();
-            assertThat(all).hasSize(1);
-            NotificationHistoryDocument doc = all.get(0);
-            assertThat(doc.getUserId()).isEqualTo(42L);
-            assertThat(doc.getEventId()).isEqualTo(envelope.get("event_id"));
-            assertThat(doc.getType()).isEqualTo(NotificationType.EXCUSE_REQUESTED);
-            assertThat(doc.getTraceId()).isEqualTo("trace-it-123");
-            assertThat(doc.getSentAt()).isNotNull();
-            assertThat(doc.getReadAt()).isNull();
+            assertThat(all).hasSize(2).extracting(NotificationHistoryDocument::getUserId)
+                    .containsExactlyInAnyOrder(42L, 11L);
+            assertThat(all).allSatisfy(doc -> {
+                assertThat(doc.getEventId()).isEqualTo(envelope.get("event_id"));
+                assertThat(doc.getType()).isEqualTo("excuse.requested".equals(eventType)
+                        ? NotificationType.EXCUSE_REQUESTED : NotificationType.LATE_CHECKIN_REQUESTED);
+                assertThat(doc.getTraceId()).isEqualTo("trace-it-123");
+                assertThat(doc.getSentAt()).isNotNull();
+                assertThat(doc.getReadAt()).isNull();
+                assertThat(doc.getPayload()).isEqualTo(doc.getUserId() == 42L ? payload
+                        : Map.of("group_id", 7L, idField, "request-it-1"));
+            });
+        });
+        verify(academicGroupMemberClient, times(2)).getCurrentHeadmanUserIds(7L);
+        // Reassignment after commit cannot backfill a replay into another person's history.
+        doReturn(List.of(12L)).when(academicGroupMemberClient).getCurrentHeadmanUserIds(7L);
+        clearInvocations(academicGroupMemberClient);
+        rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
+        await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> {
+            assertThat(repository.findAll()).hasSize(2).extracting(NotificationHistoryDocument::getUserId)
+                    .containsExactlyInAnyOrder(42L, 11L);
+            verify(academicGroupMemberClient, never()).getCurrentHeadmanUserIds(7L);
         });
     }
 

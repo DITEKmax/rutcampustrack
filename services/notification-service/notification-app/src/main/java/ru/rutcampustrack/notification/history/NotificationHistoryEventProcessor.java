@@ -34,6 +34,7 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
     private static final Map<String, String> HISTORY_CHANGED_SIGNAL =
             Map.of("type", "notification.history.changed");
     private static final Set<String> HEADMAN_EVENT_TYPES = Set.of("lesson.closed");
+    private static final Set<String> REQUEST_EVENT_TYPES = Set.of("excuse.requested", "late_checkin.requested");
     private static final Set<String> GROUP_EVENT_TYPES = Set.of(
             "lesson.started", "lesson.cancelled", "homework.published", "homework.updated");
     private static final Set<String> GROUP_ID_FIELDS = Set.of(
@@ -77,6 +78,19 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
 
             String eventId = UUID.fromString(envelope.get("event_id").toString()).toString();
             String traceId = envelope.get("trace_id") instanceof String value ? value : null;
+            if (REQUEST_EVENT_TYPES.contains(eventType)) {
+                long ownerId = requirePositiveLong(payload.get("user_id"), "user_id");
+                long groupId = requirePositiveLong(payload.get("group_id"), "group_id");
+                Map<String, Object> requestSnapshot = requestDisplayPayload(eventType, groupId, payload);
+                // Resolve before saving either audience. Lookup failures roll back the
+                // event claim, leaving the existing listener retry/DLQ path available.
+                List<Long> headmanIds = validateRecipientIds(
+                        academicGroupMemberClient.getCurrentHeadmanUserIds(groupId)).stream()
+                        .filter(userId -> userId != ownerId).toList();
+                persistForRecipients(eventId, List.of(ownerId), maybeType.get(), payload, traceId);
+                persistForRecipients(eventId, headmanIds, maybeType.get(), requestSnapshot, traceId);
+                return;
+            }
             if (HEADMAN_EVENT_TYPES.contains(eventType)) {
                 long groupId = requirePositiveLong(payload.get("group_id"), "group_id");
                 List<Long> recipientIds = validateRecipientIds(
@@ -182,6 +196,13 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
             payload.put(name, value);
         });
         return payload;
+    }
+
+    /** Retained headman history contains lookup keys, never private request detail. */
+    private static Map<String, Object> requestDisplayPayload(String eventType, long groupId, Map<String, Object> source) {
+        String idField = "excuse.requested".equals(eventType) ? "ticket_id" : "request_id";
+        String requestId = requireString(source.get(idField), idField);
+        return Map.of("group_id", groupId, idField, requestId);
     }
 
     /**

@@ -7,6 +7,8 @@ import org.apache.http.client.HttpResponseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -220,6 +223,39 @@ class WebPushDeliveryServiceTest {
         assertThat(notification.get("body").asText()).isEqualTo("Откройте расписание для подробностей");
         assertThat(notification.get("event_type").asText()).isEqualTo("lesson.closed");
         assertThat(notification.get("data").get("lesson_id").asLong()).isEqualTo(101L);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"excuse.requested", "late_checkin.requested"})
+    void requestedPushUsesCurrentHeadmanDespiteStaleSubscriptionFlags(String eventType) throws Exception {
+        var currentHeadman = sub(1L, "https://push.example.com/current-headman");
+        var formerHeadman = sub(2L, "https://push.example.com/former-headman");
+        formerHeadman.setHeadman(true);
+        var student = sub(3L, "https://push.example.com/student");
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(currentHeadman, formerHeadman, student));
+        when(academicGroupMemberClient.getCurrentHeadmanUserIds(10L)).thenReturn(List.of(1L));
+        var recipients = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        doReturn(mockNotification).when(service).createNotification(recipients.capture(), any(byte[].class));
+
+        service.sendToGroup(10L, eventType, Map.of("group_id", 10, "user_id", 3)).join();
+
+        assertThat(recipients.getAllValues()).containsExactly(currentHeadman);
+        verify(webPushService).send(mockNotification);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"excuse.requested", "late_checkin.requested"})
+    void requestedPushFailsClosedWhenCurrentHeadmanLookupFails(String eventType) throws Exception {
+        var formerHeadman = sub(2L, "https://push.example.com/former-headman");
+        formerHeadman.setHeadman(true);
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(formerHeadman));
+        when(academicGroupMemberClient.getCurrentHeadmanUserIds(10L))
+                .thenThrow(new IllegalStateException("Academic unavailable"));
+
+        assertThatThrownBy(() -> service.sendToGroup(10L, eventType, Map.of("group_id", 10)).join())
+                .hasCauseInstanceOf(IllegalStateException.class);
+
+        verify(webPushService, never()).send(any(Notification.class));
     }
 
     // --- 58-07 / BUG-006-6: group.renamed / group.archived ---

@@ -65,9 +65,10 @@ class NotificationHistoryConsumerTest {
 
     @Test
     void persistsPersonalEventWithItsEventIdAndInvalidatesUnread() {
-        Map<String, Object> payload = Map.of("user_id", 42, "group_id", 7, "excuse_type", "illness");
+        Map<String, Object> payload = Map.of("user_id", 42, "group_id", 7, "ticket_id", "ticket-1", "excuse_type", "illness");
         Map<String, Object> envelope = event("excuse.requested", payload);
         envelope.put("trace_id", "trace-xyz");
+        when(academicGroupMemberClient.getCurrentHeadmanUserIds(7L)).thenReturn(List.of());
 
         consumer.onEvent(envelope);
 
@@ -158,7 +159,8 @@ class NotificationHistoryConsumerTest {
     @Test
     void rolledBackHistoryDoesNotInvalidateUnreadOrPublishSignal() {
         Map<String, Object> envelope = event("excuse.requested",
-                Map.of("user_id", 42, "group_id", 7, "excuse_type", "illness"));
+                Map.of("user_id", 42, "group_id", 7, "ticket_id", "ticket-1", "excuse_type", "illness"));
+        when(academicGroupMemberClient.getCurrentHeadmanUserIds(7L)).thenReturn(List.of());
         TransactionSynchronizationManager.initSynchronization();
         try {
             consumer.onEvent(envelope);

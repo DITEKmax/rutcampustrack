@@ -73,7 +73,8 @@ public class EventConsumer extends AbstractEventConsumer {
         this(messagingTemplate, webPushDeliveryService, idempotencyGuard, null);
     }
 
-    @RabbitListener(queues = "notification-web.events")
+    @RabbitListener(queues = "notification-web.events",
+            containerFactory = "notificationHistoryRabbitListenerContainerFactory")
     @EventIdempotent(consumer = CONSUMER_ID)
     @org.springframework.transaction.annotation.Transactional
     @SuppressWarnings("unchecked")
@@ -123,6 +124,13 @@ public class EventConsumer extends AbstractEventConsumer {
                 log.debug("Event {} is not a supported WebSocket notification", eventType);
             }
 
+            boolean pushEligible = groupId != null && webPushDeliveryService.shouldPush(eventType);
+            if (pushEligible && HEADMAN_ONLY_EVENTS.contains(eventType)) {
+                // The Mongo claim stays uncommitted until audience resolution succeeds.
+                // A failed async lookup must reach Rabbit retry/DLQ, before any WS side effect.
+                webPushDeliveryService.sendToGroup(groupId, eventType, payload).join();
+            }
+
             if (destination != null) {
                 // D-06: Wrap in {type, payload} envelope — no enrichment
                 Map<String, Object> wsMessage = Map.of("type", eventType, "payload", payload);
@@ -131,7 +139,7 @@ public class EventConsumer extends AbstractEventConsumer {
             }
 
             // D-07, D-08: After STOMP delivery — trigger async Web Push for push-eligible events.
-            if (groupId != null && webPushDeliveryService.shouldPush(eventType)) {
+            if (pushEligible && !HEADMAN_ONLY_EVENTS.contains(eventType)) {
                 webPushDeliveryService.sendToGroup(groupId, eventType, payload);
                 log.debug("Triggered async push for {} to group {}", eventType, groupId);
             }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue'
+import { useQueryClient } from '@tanstack/vue-query'
 import type { CampusMapClient } from '../../api/map-client'
 import { StudentApi, StudentApiError } from '../../api/student-client'
 import type {
@@ -23,7 +24,7 @@ import { findAttendanceLesson, type AttendanceGraphRange, type AttendanceLesson,
 import { useAttendance } from '../../features/attendance/use-attendance'
 import HomeworkScreen from '../../features/homework/HomeworkScreen.vue'
 import type { HeadmanHomeworkApi } from '../../features/homework/headman-homework-client'
-import { useHomework } from '../../features/homework/use-homework'
+import { homeworkQueryKey, useHomework } from '../../features/homework/use-homework'
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue'
 import AppearanceScreen from '../../features/profile/AppearanceScreen.vue'
 import MoreScreen from '../../features/profile/MoreScreen.vue'
@@ -42,7 +43,7 @@ import SessionsScreen from '../../features/profile/SessionsScreen.vue'
 import { DEFAULT_PASSWORD_POLICY } from '../../features/profile/profile-types'
 import type { ProfilePort, ProfileRole, ProfileRoute, ProfileTheme } from '../../features/profile/profile-types'
 import TodayScreen from '../../features/today/TodayScreen.vue'
-import { useToday } from '../../features/today/use-today'
+import { todayQueryKey, useToday } from '../../features/today/use-today'
 import ExcuseRequestScreen from '../../features/requests/ExcuseRequestScreen.vue'
 import LateCheckinRequestScreen from '../../features/requests/LateCheckinRequestScreen.vue'
 import RequestsScreen from '../../features/requests/RequestsScreen.vue'
@@ -256,12 +257,59 @@ watch(() => route.value, (value, previous) => {
   }
 }, { immediate: true })
 
+const todayNeedsFreshRead = ref(false)
+const homeworkNeedsFreshRead = ref(false)
+const todayRevalidating = ref(false)
+const homeworkRevalidating = ref(false)
+let reconnectRevision = 0
+const queryClient = useQueryClient()
+watch(offline, (value, previous) => {
+  const revision = ++reconnectRevision
+  if (value) {
+    // Cancel reads that crossed the disconnected interval, retaining query
+    // data and every mutation/recovery command for this owner.
+    void queryClient.cancelQueries({ queryKey: todayQueryKey(scope.value), exact: true })
+    void queryClient.cancelQueries({ queryKey: homeworkQueryKey(scope.value, homework.range.value), exact: true })
+    return
+  }
+  if (!previous || !scope.value) return
+  const identity = studentFeatureScopeIdentity(scope.value)
+  const isCurrent = (): boolean => !disposed && !offline.value
+    && revision === reconnectRevision && scope.value !== null
+    && identity === studentFeatureScopeIdentity(scope.value)
+  todayNeedsFreshRead.value = true
+  homeworkNeedsFreshRead.value = true
+  todayRevalidating.value = true
+  homeworkRevalidating.value = true
+  // Completion follows the query's data commit. The automatic enabled-query
+  // read and this explicit revalidation share one request.
+  void today.query.refetch({ cancelRefetch: false }).then((result) => {
+    if (isCurrent() && result.isSuccess) todayNeedsFreshRead.value = false
+  }).catch(() => undefined).finally(() => {
+    if (isCurrent()) todayRevalidating.value = false
+  })
+  void homework.query.refetch({ cancelRefetch: false }).then((result) => {
+    if (isCurrent() && result.isSuccess) homeworkNeedsFreshRead.value = false
+  }).catch(() => undefined).finally(() => {
+    if (isCurrent()) homeworkRevalidating.value = false
+  })
+}, { flush: 'sync' })
+const stopReadFreshness = queryClient.getQueryCache().subscribe((event) => {
+  if (offline.value || !scope.value || event.type !== 'updated'
+    || event.action.type !== 'success' || event.action.manual) return
+  // A later successful retry also restores freshness after an earlier GET
+  // failed. Mutation-driven setQueryData cannot satisfy this read gate.
+  const key = JSON.stringify(event.query.queryKey)
+  if (key === JSON.stringify(todayQueryKey(scope.value))) todayNeedsFreshRead.value = false
+  if (key === JSON.stringify(homeworkQueryKey(scope.value, homework.range.value))) homeworkNeedsFreshRead.value = false
+})
+
 const displayToday = computed(() => offline.value
   ? props.todayFallback
-  : today.query.data.value ?? null)
+  : todayNeedsFreshRead.value ? null : today.query.data.value ?? null)
 const displayHomework = computed(() => offline.value
   ? props.homeworkFallback
-  : homework.query.data.value ?? null)
+  : homeworkNeedsFreshRead.value ? null : homework.query.data.value ?? null)
 const todayError = computed(() => {
   if (displayToday.value) return null
   const value = today.query.error.value
@@ -272,8 +320,10 @@ const homeworkError = computed(() => {
   const value = homework.query.error.value
   return value instanceof StudentApiError ? value.problem?.detail ?? value.message : value instanceof Error ? value.message : null
 })
-const todayLoading = computed(() => !displayToday.value && props.api !== null && !offline.value && today.query.isPending.value)
-const homeworkLoading = computed(() => !displayHomework.value && props.api !== null && !offline.value && homework.query.isPending.value)
+const todayLoading = computed(() => !displayToday.value && props.api !== null && !offline.value
+  && (today.query.isPending.value || todayRevalidating.value))
+const homeworkLoading = computed(() => !displayHomework.value && props.api !== null && !offline.value
+  && (homework.query.isPending.value || homeworkRevalidating.value))
 const ownerIdentity = computed(() => scope.value ? studentFeatureScopeIdentity(scope.value) : null)
 function refreshTodayAfterRequestDecision(ownerScopeAtStart: StudentFeatureScope | null): void {
   if (!ownerScopeAtStart
@@ -315,6 +365,12 @@ const focusedNotificationLessonId = computed(() => activeLessonNotification.valu
   ? activeLessonNotification.value.target.lessonId
   : null)
 const homeworkScreenData = computed(() => {
+  if (!offline.value && homeworkNeedsFreshRead.value) {
+    return {
+      homework: null, loading: homeworkLoading.value, error: homeworkError.value,
+      unavailableMessage: null, focusItemId: null, focusRequestId: null,
+    }
+  }
   const targetState = activeHomeworkNotification.value
   if (!targetState) {
     return {
@@ -1311,6 +1367,7 @@ function openMaterialFromItem(url: string, item: StudentHomeworkItem): void {
 
 onBeforeUnmount(() => {
   disposed = true
+  stopReadFreshness()
   const currentScope = scope.value
   if (currentScope?.userId) purgeRequestsDrafts(currentScope.userId)
   requestDraft.value = null

@@ -3,6 +3,7 @@ import type { StudentSemesterSchedule } from '../api/types'
 import { SemesterSnapshotStore, type SemesterSnapshot } from './semester-snapshot'
 
 const currentOwnerKey = 'rct-student-mobile.current-owner'
+const currentScopeKey = 'rct-student-mobile.current-scope'
 
 type Handler = ((event: Event) => void) | null
 
@@ -35,16 +36,26 @@ class FakeStorage {
   removeItemCalls = 0
   setItemFailures = 0
   removeItemFailures = 0
+  getItemFailures = 0
+  scopeSetFailures = 0
 
   seed(key: string, value: string): void {
     this.values.set(key, value)
   }
 
   getItem(key: string): string | null {
+    if (this.getItemFailures > 0) {
+      this.getItemFailures -= 1
+      throw new DOMException('controlled current-owner read failure', 'SecurityError')
+    }
     return this.values.get(key) ?? null
   }
 
   setItem(key: string, value: string): void {
+    if (key === currentScopeKey && this.scopeSetFailures > 0) {
+      this.scopeSetFailures -= 1
+      throw new DOMException('controlled current-scope write failure', 'QuotaExceededError')
+    }
     if (key === currentOwnerKey) this.setItemCalls += 1
     if (key === currentOwnerKey && this.setItemFailures > 0) {
       this.setItemFailures -= 1
@@ -197,6 +208,75 @@ function setup(autoResolveOpen: boolean): FakeEnvironment {
 }
 
 describe('SemesterSnapshotStore write fence', () => {
+  it('blocks old offline fallback after a transient pointer read failure and protects a newer context from retry', async () => {
+    const environment = setup(true)
+    const store = new SemesterSnapshotStore()
+    const nextScopeKey = JSON.stringify(['student-read-model-v1', '42', 'STUDENT', '18', '9'])
+    environment.storage.getItemFailures = 1
+    const failure = await store.clearMismatchedCurrent(nextScopeKey)
+    expect(failure?.retryRequired).toBe(true)
+    expect(store.hasUnresolvedCleanup()).toBe(true)
+    await expect(store.readCurrent()).resolves.toBeNull()
+    // The guard survives a new runtime even though the old pointer/record do.
+    expect(environment.database.records.has('42')).toBe(true)
+    await expect(new SemesterSnapshotStore().readCurrent()).resolves.toBeNull()
+
+    const newest = makeSnapshot('42', '2026-09-08T09:00:00Z')
+    newest.scope!.groupId = '19'
+    newest.scopeKey = JSON.stringify(['student-read-model-v1', '42', 'STUDENT', '19', '9'])
+    await store.clearMismatchedCurrent(newest.scopeKey)
+    await store.write(newest)
+    await store.retryCleanup(failure!)
+    await expect(store.readCurrent()).resolves.toEqual(newest)
+  })
+
+  it('reports a failed guard write while attempting independent retirement, then retries', async () => {
+    const environment = setup(true)
+    const store = new SemesterSnapshotStore()
+    environment.storage.scopeSetFailures = 1
+    const failure = await store.clearMismatchedCurrent('new-context')
+    expect(failure?.contextGuard?.status).toBe('failed')
+    expect(failure?.idbDelete.status).toBe('completed')
+    expect(failure?.safeOffline).toBe(false)
+    expect(failure?.retryRequired).toBe(true)
+    await expect(new SemesterSnapshotStore().readCurrent()).resolves.toBeNull()
+    const retry = await store.retryCleanup(failure!)
+    expect(retry.safeOffline).toBe(true)
+    expect(store.hasUnresolvedCleanup()).toBe(false)
+  })
+
+  it('keeps total persistent retirement failure unresolved instead of claiming cold-reload safety', async () => {
+    const environment = setup(true)
+    const store = new SemesterSnapshotStore()
+    environment.storage.scopeSetFailures = 1
+    environment.database.controls.deleteFailures = 1
+    const failure = await store.clearMismatchedCurrent('new-context')
+    expect(failure?.contextGuard?.status).toBe('failed')
+    expect(failure?.idbDelete.status).toBe('failed')
+    expect(failure?.retryRequired).toBe(true)
+    expect(failure?.safeOffline).toBe(false)
+    expect(environment.database.records.has('42')).toBe(true)
+    expect(environment.storage.getItem(currentOwnerKey)).toBe('42')
+    await expect(store.readCurrent()).resolves.toBeNull()
+    await store.retryCleanup(failure!)
+    await expect(new SemesterSnapshotStore().readCurrent()).resolves.toBeNull()
+  })
+
+  it('does not overwrite a newer durable context from another store during an old retry', async () => {
+    const environment = setup(true)
+    const oldStore = new SemesterSnapshotStore()
+    environment.storage.getItemFailures = 1
+    const failure = await oldStore.clearMismatchedCurrent('context-B')
+    const currentStore = new SemesterSnapshotStore()
+    const newest = makeSnapshot('42', '2026-09-08T09:00:00Z')
+    newest.scope!.groupId = '19'
+    newest.scopeKey = JSON.stringify(['student-read-model-v1', '42', 'STUDENT', '19', '9'])
+    await currentStore.clearMismatchedCurrent(newest.scopeKey)
+    await currentStore.write(newest)
+    await oldStore.retryCleanup(failure!)
+    await expect(new SemesterSnapshotStore().readCurrent()).resolves.toEqual(newest)
+  })
+
   it('does not recover the previous group when a confirmed new context schedule request fails', async () => {
     setup(true)
     const store = new SemesterSnapshotStore()

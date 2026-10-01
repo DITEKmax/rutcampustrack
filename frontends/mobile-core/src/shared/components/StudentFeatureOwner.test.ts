@@ -31,10 +31,12 @@ vi.mock('../../features/today/TodayScreen.vue', () => ({
 vi.mock('../../features/homework/HomeworkScreen.vue', () => ({
   default: {
     props: ['homework', 'offline', 'readOnly'],
-    setup(props: { homework: StudentHomework | null; offline: boolean; readOnly: boolean }) {
+    emits: ['navigate'],
+    setup(props: { homework: StudentHomework | null; offline: boolean; readOnly: boolean }, { emit }: SetupContext) {
       return () => h('section', [
         h('output', { class: 'test-homework-data' }, JSON.stringify(props.homework ?? null)),
         h('output', { class: 'test-homework-offline' }, String(props.offline)),
+        h('button', { class: 'test-return-today', onClick: () => emit('navigate', 'today') }, 'Сегодня'),
       ])
     },
   },
@@ -137,19 +139,25 @@ const refreshToday = vi.hoisted(() => vi.fn())
 const ownerQueryData = vi.hoisted(() => ({
   today: null as Ref<StudentToday | null> | null,
   homework: null as Ref<StudentHomework | null> | null,
+  todayRefetch: vi.fn(() => Promise.resolve({ isSuccess: true })),
+  homeworkRefetch: vi.fn(() => Promise.resolve({ isSuccess: true })),
+  realReads: false,
 }))
 
-vi.mock('../../features/today/use-today', () => ({
-  useToday: () => ({
-    query: { data: ownerQueryData.today = ref<StudentToday | null>(null), error: ref(null), isPending: ref(false) },
+vi.mock('../../features/today/use-today', async () => {
+  const actual = await vi.importActual<typeof import('../../features/today/use-today')>('../../features/today/use-today')
+  return { ...actual, useToday: (...args: Parameters<typeof actual.useToday>) => ownerQueryData.realReads ? actual.useToday(...args) : ({
+    query: { data: ownerQueryData.today = ref<StudentToday | null>(null), error: ref(null), isPending: ref(false), refetch: ownerQueryData.todayRefetch },
     mutation: { isPending: ref(false), variables: ref(undefined), mutateAsync: vi.fn() },
     refresh: refreshToday,
   }),
-}))
+  }
+})
 
-vi.mock('../../features/homework/use-homework', () => ({
-  useHomework: () => ({
-    query: { data: ownerQueryData.homework = ref<StudentHomework | null>(null), error: ref(null), isPending: ref(false), refetch: vi.fn() },
+vi.mock('../../features/homework/use-homework', async () => {
+  const actual = await vi.importActual<typeof import('../../features/homework/use-homework')>('../../features/homework/use-homework')
+  return { ...actual, useHomework: (...args: Parameters<typeof actual.useHomework>) => ownerQueryData.realReads ? actual.useHomework(...args) : ({
+    query: { data: ownerQueryData.homework = ref<StudentHomework | null>(null), error: ref(null), isPending: ref(false), refetch: ownerQueryData.homeworkRefetch },
     range: ref(null),
     submitCompletion: vi.fn(),
     retryCompletion: vi.fn(() => null),
@@ -159,7 +167,8 @@ vi.mock('../../features/homework/use-homework', () => ({
     itemError: vi.fn(() => null),
     returnToToday: vi.fn(),
   }),
-}))
+  }
+})
 
 type OwnerTestHostNode = {
   kind: 'element' | 'text' | 'comment'
@@ -275,6 +284,9 @@ afterEach(() => {
   for (const client of ownerTestQueryClients) client.clear()
   ownerTestQueryClients = []
   refreshToday.mockReset()
+  ownerQueryData.todayRefetch.mockReset().mockResolvedValue({ isSuccess: true })
+  ownerQueryData.homeworkRefetch.mockReset().mockResolvedValue({ isSuccess: true })
+  ownerQueryData.realReads = false
 })
 
 const command: StudentCheckinCommand = {
@@ -398,6 +410,90 @@ function mountOwnerTest(api: StudentApi, overrides: Record<string, unknown> = {}
 }
 
 describe('StudentFeatureOwner offline read models', () => {
+  it('waits for real warm Vue Query GETs, keeps one read per feed, and accepts a later successful retry', async () => {
+    ownerQueryData.realReads = true
+    const warmToday = { serverNow: 'warm-today', lessons: [] } as unknown as StudentToday
+    const warmHomework = { serverNow: 'warm-homework', from: '2026-09-08', to: '2026-09-09', semester: { dateFrom: '2026-09-01', dateTo: '2026-12-31' }, items: [] } as unknown as StudentHomework
+    const getToday = vi.fn(() => Promise.resolve(warmToday))
+    const getHomework = vi.fn(() => Promise.resolve(warmHomework))
+    const props = reactive({ offline: false, readOnly: false, todayFallback: warmToday, homeworkFallback: warmHomework })
+    const root = mountOwnerTest({ getToday, getHomework } as unknown as StudentApi, props)
+    await vi.waitFor(() => expect(ownerTestOutput(root, 'test-today-data')).toContain('warm-today'))
+    props.offline = true
+    props.readOnly = true
+    await settleOwnerTestRender()
+    let resolveToday!: (today: StudentToday) => void
+    let rejectHomework!: (error: Error) => void
+    getToday.mockImplementation(() => new Promise((resolve) => { resolveToday = resolve }))
+    getHomework.mockImplementation(() => new Promise((_resolve, reject) => { rejectHomework = reject }))
+    props.offline = false
+    props.readOnly = false
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-today-data')).toBe('null')
+    clickOwnerTestButton(root, 'test-enter-homework')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-homework-data')).toBe('null')
+
+    expect(getToday).toHaveBeenCalledTimes(2)
+    expect(getHomework).toHaveBeenCalledTimes(2)
+    resolveToday({ ...warmToday, serverNow: 'fresh-today' })
+    // useHomework has one query retry; both failures must leave warm data hidden.
+    getHomework.mockRejectedValue(new Error('offline again'))
+    rejectHomework(new Error('offline again'))
+    const queryClient = ownerTestQueryClients.at(-1)!
+    await vi.waitFor(() => expect(queryClient.getQueryCache().find({ queryKey: ['student', 'homework'], exact: false })?.state.status).toBe('error'), { timeout: 2500 })
+    expect(ownerTestOutput(root, 'test-homework-data')).toBe('null')
+    getHomework.mockResolvedValue({ ...warmHomework, serverNow: 'fresh-homework' })
+    await queryClient.refetchQueries({ queryKey: ['student', 'homework'] })
+    await vi.waitFor(() => expect(ownerTestOutput(root, 'test-homework-data')).toContain('fresh-homework'))
+    clickOwnerTestButton(root, 'test-return-today')
+    await vi.waitFor(() => expect(ownerTestOutput(root, 'test-today-data')).toContain('fresh-today'))
+  })
+
+  it('does not present warm Today/HW as fresh while the same owner reconnects', async () => {
+    let finishToday!: (result: { isSuccess: boolean }) => void
+    let finishHomework!: (result: { isSuccess: boolean }) => void
+    ownerQueryData.todayRefetch.mockImplementation(() => new Promise((resolve) => { finishToday = resolve }))
+    ownerQueryData.homeworkRefetch.mockImplementation(() => new Promise((resolve) => { finishHomework = resolve }))
+    const props = reactive({ offline: false, readOnly: false })
+    const root = mountOwnerTest({} as StudentApi, props)
+    ownerQueryData.today!.value = { serverNow: 'warm-today', lessons: [] } as unknown as StudentToday
+    ownerQueryData.homework!.value = { serverNow: 'warm-homework', items: [] } as unknown as StudentHomework
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-today-data')).toContain('warm-today')
+    props.offline = true
+    props.readOnly = true
+    await settleOwnerTestRender()
+    props.offline = false
+    props.readOnly = false
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-today-data')).toBe('null')
+    clickOwnerTestButton(root, 'test-enter-homework')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-homework-data')).toBe('null')
+
+    const previousToday = finishToday
+    const previousHomework = finishHomework
+    props.offline = true
+    await settleOwnerTestRender()
+    props.offline = false
+    await settleOwnerTestRender()
+    previousToday({ isSuccess: true })
+    previousHomework({ isSuccess: true })
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-homework-data')).toBe('null')
+
+    ownerQueryData.today!.value = { serverNow: 'fresh-today', lessons: [] } as unknown as StudentToday
+    ownerQueryData.homework!.value = { serverNow: 'fresh-homework', items: [] } as unknown as StudentHomework
+    finishToday({ isSuccess: true })
+    finishHomework({ isSuccess: true })
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-homework-data')).toContain('fresh-homework')
+    // Both queries were revalidated without replacing the owner or its state.
+    expect(ownerQueryData.todayRefetch).toHaveBeenCalledTimes(2)
+    expect(ownerQueryData.homeworkRefetch).toHaveBeenCalledTimes(2)
+  })
+
   it('keeps saved Today/HW read-only offline and waits for fresh feeds after reconnect', async () => {
     const savedToday = { serverNow: 'saved-today', lessons: [] } as unknown as StudentToday
     const savedHomework = { serverNow: 'saved-homework', items: [] } as unknown as StudentHomework

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 import type {
   HeadmanRequestBucket,
+  HeadmanRequestAttachment,
   HeadmanRequestDetail,
   HeadmanRequestKind,
   HeadmanRequestPage,
@@ -10,6 +11,14 @@ import type {
 } from './headman-requests-client'
 import { HeadmanRequestsApiError } from './headman-requests-client'
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
+import type { RequestAttachmentViewState } from '../requests/types'
+import {
+  openRequestAttachmentPopup,
+  runRequestAttachmentDownload,
+  runRequestAttachmentOpen,
+  type RequestAttachmentDownloadDependencies,
+  type RequestAttachmentPopup,
+} from '../requests/request-attachment-action'
 import './headman-requests-screen.pcss'
 
 const props = withDefaults(defineProps<{
@@ -44,7 +53,39 @@ const details = ref<Record<string, HeadmanRequestDetail>>({})
 const rejectReasons = ref<Record<string, string>>({})
 const busyId = ref<string | null>(null)
 const decisionError = ref<Record<string, string>>({})
+const detailErrors = ref<Record<string, string>>({})
 let loadRevision = 0
+let attachmentGeneration = 0
+let disposed = false
+const attachmentStates = ref<Record<string, RequestAttachmentViewState>>({})
+const unavailableAttachments = ref(new Set<string>())
+const attachmentUrls = new Map<string, ReturnType<typeof setTimeout>>()
+const pendingPopups = new Set<RequestAttachmentPopup>()
+const detailGenerations = new Map<string, number>()
+
+function releaseAttachmentUrl(url: string): void {
+  const timer = attachmentUrls.get(url)
+  if (timer !== undefined) clearTimeout(timer)
+  attachmentUrls.delete(url)
+  try { URL.revokeObjectURL(url) } catch { /* Continue releasing the remaining browser resources. */ }
+}
+
+function releaseAttachmentResources(): void {
+  for (const url of attachmentUrls.keys()) releaseAttachmentUrl(url)
+  for (const popup of pendingPopups) closeAttachmentPopup(popup)
+}
+
+function closeAttachmentPopup(popup: RequestAttachmentPopup): void {
+  pendingPopups.delete(popup)
+  try { popup.close?.() } catch { /* The user may already have closed the target. */ }
+}
+
+function invalidateAttachments(): void {
+  attachmentGeneration += 1
+  releaseAttachmentResources()
+  attachmentStates.value = {}
+  unavailableAttachments.value = new Set()
+}
 
 const pageCount = () => page.value?.totalPages ?? 0
 
@@ -62,7 +103,18 @@ function canManageExcuses(): boolean {
 
 async function load(): Promise<void> {
   const revision = ++loadRevision
+  invalidateAttachments()
+  expanded.value = new Set()
+  details.value = {}
+  detailErrors.value = {}
+  detailGenerations.clear()
+  page.value = null
   error.value = null
+  if (!canManageExcuses()) {
+    error.value = 'Нет доступа к заявкам этой группы.'
+    loading.value = false
+    return
+  }
   if (props.offline) {
     page.value = null
     loading.value = false
@@ -114,6 +166,9 @@ function changePage(next: number): void {
 }
 
 async function toggle(item: HeadmanRequestSummary): Promise<void> {
+  invalidateAttachments()
+  const detailGeneration = (detailGenerations.get(item.id) ?? 0) + 1
+  detailGenerations.set(item.id, detailGeneration)
   const next = new Set(expanded.value)
   if (next.has(item.id)) {
     next.delete(item.id)
@@ -122,13 +177,22 @@ async function toggle(item: HeadmanRequestSummary): Promise<void> {
   }
   next.add(item.id)
   expanded.value = next
-  if (details.value[item.id] || !props.api) return
+  detailErrors.value = { ...detailErrors.value, [item.id]: '' }
+  const api = props.api
+  const revision = loadRevision
+  const isCurrent = () => !disposed && props.api === api && revision === loadRevision
+    && detailGenerations.get(item.id) === detailGeneration && expanded.value.has(item.id) && canManageExcuses()
+  if (details.value[item.id] || !api) return
   try {
-    details.value = { ...details.value, [item.id]: await props.api.get(item.id) }
+    const detail = await api.get(item.id)
+    if (!isCurrent()) return
+    details.value = { ...details.value, [item.id]: detail }
   } catch (cause) {
-    next.delete(item.id)
-    expanded.value = next
-    decisionError.value = { ...decisionError.value, [item.id]: apiFailureMessage(
+    if (!isCurrent()) return
+    const currentExpanded = new Set(expanded.value)
+    currentExpanded.delete(item.id)
+    expanded.value = currentExpanded
+    detailErrors.value = { ...detailErrors.value, [item.id]: apiFailureMessage(
       cause,
       'Не удалось открыть детали.',
       'Нет доступа к деталям этой заявки.',
@@ -161,21 +225,88 @@ async function decide(item: HeadmanRequestSummary, decision: 'APPROVED' | 'REJEC
   }
 }
 
-async function downloadAttachment(item: HeadmanRequestSummary, attachmentId: string, filename: string | null): Promise<void> {
-  if (!props.api || props.offline) return
-  try {
-    const blob = await props.api.downloadAttachment(item.id, attachmentId)
-    if (typeof window === 'undefined') return
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename || 'attachment'
-    link.click()
-    URL.revokeObjectURL(url)
-  } catch (cause) {
-    error.value = apiFailureMessage(cause, 'Не удалось скачать вложение.', 'Нет доступа к вложению этой заявки.')
-    emit('error', cause)
+function attachmentKey(requestId: string, attachmentId: string): string {
+  return `${requestId}:${attachmentId}`
+}
+
+function attachmentExpired(attachment: HeadmanRequestAttachment): boolean {
+  return attachment.state === 'EXPIRED'
+    || Boolean(attachment.expiresAt && Date.parse(attachment.expiresAt) <= Date.now())
+}
+
+function attachmentDisabled(requestId: string, attachment: HeadmanRequestAttachment): boolean {
+  return props.offline || !canManageExcuses() || attachmentExpired(attachment)
+    || unavailableAttachments.value.has(attachmentKey(requestId, attachment.id))
+    || attachmentStates.value[attachmentKey(requestId, attachment.id)]?.status === 'pending'
+}
+
+function attachmentErrorMessage(cause: unknown): string {
+  if (cause instanceof HeadmanRequestsApiError) {
+    if (cause.response.status === 410) return 'Вложение больше недоступно. Срок хранения истёк или файл удалён.'
+    if (cause.response.status === 404) return 'Вложение больше недоступно. Обнови список заявок.'
+    if (cause.response.status >= 500) return 'Не удалось загрузить вложение. Повтори попытку позже.'
+    return apiFailureMessage(cause, 'Не удалось загрузить вложение.', 'Нет доступа к вложению этой заявки. Обнови список заявок.')
   }
+  return 'Не удалось загрузить вложение. Проверь соединение и повтори.'
+}
+
+function attachmentDependencies(item: HeadmanRequestSummary, attachment: HeadmanRequestAttachment): RequestAttachmentDownloadDependencies | null {
+  const api = props.api
+  if (!api || disposed || attachmentDisabled(item.id, attachment) || typeof window === 'undefined') return null
+  const generation = attachmentGeneration
+  const key = attachmentKey(item.id, attachment.id)
+  return {
+    ownerIdentity: item.id,
+    ownerGeneration: generation,
+    currentOwnerIdentity: () => props.api === api && !props.offline && canManageExcuses()
+      && expanded.value.has(item.id) && page.value?.content.some((entry) => entry.id === item.id) ? item.id : null,
+    currentOwnerGeneration: () => attachmentGeneration,
+    isDisposed: () => disposed,
+    download: () => api.downloadAttachment(item.id, attachment.id),
+    createObjectUrl: (blob) => {
+      const url = URL.createObjectURL(blob)
+      attachmentUrls.set(url, setTimeout(() => releaseAttachmentUrl(url), 60_000))
+      return url
+    },
+    releaseObjectUrl: releaseAttachmentUrl,
+    scheduleRelease: () => { /* Every created URL already has a bounded lifetime. */ },
+    save: (url) => {
+      const link = document.createElement('a')
+      link.href = url
+      link.download = attachment.name || 'attachment'
+      link.click()
+    },
+    setState: (state) => { attachmentStates.value = { ...attachmentStates.value, [key]: state } },
+    errorMessage: attachmentErrorMessage,
+    onError: (cause) => {
+      invalidateAttachments()
+      if (cause instanceof HeadmanRequestsApiError && [401, 403, 404, 410].includes(cause.response.status)) {
+        const ids = [401, 403].includes(cause.response.status)
+          ? details.value[item.id]?.attachments.map((entry) => attachmentKey(item.id, entry.id)) ?? [key]
+          : [key]
+        unavailableAttachments.value = new Set(ids)
+      }
+      emit('error', cause)
+    },
+  }
+}
+
+function openAttachment(item: HeadmanRequestSummary, attachment: HeadmanRequestAttachment): void {
+  const deps = attachmentDependencies(item, attachment)
+  if (!deps) return
+  runRequestAttachmentOpen({
+    ...deps,
+    openPopup: () => openRequestAttachmentPopup(window),
+    navigate: (popup, url) => { popup.location.href = url },
+    closePopup: closeAttachmentPopup,
+    onPopupOpened: (popup) => pendingPopups.add(popup),
+    onPopupNavigated: (popup) => pendingPopups.delete(popup),
+  })
+}
+
+function downloadAttachment(item: HeadmanRequestSummary, attachment: HeadmanRequestAttachment): void {
+  const deps = attachmentDependencies(item, attachment)
+  if (deps) void runRequestAttachmentDownload(deps)
 }
 
 function statusLabel(status: HeadmanRequestSummary['status']): string {
@@ -205,13 +336,12 @@ function detailFor(id: string): HeadmanRequestDetail {
 }
 
 watch(
-  () => [props.api, props.offline] as const,
+  () => [props.api, props.offline, props.assistantPermissions?.join(',')] as const,
   () => { void load() },
   { immediate: true },
 )
 
-onMounted(() => { void load() })
-onBeforeUnmount(() => { loadRevision += 1 })
+onBeforeUnmount(() => { disposed = true; loadRevision += 1; invalidateAttachments() })
 </script>
 
 <template>
@@ -290,6 +420,7 @@ onBeforeUnmount(() => { loadRevision += 1 })
         <button class="headman-requests__details-button" type="button" :aria-expanded="expanded.has(item.id)" @click="toggle(item)">
           {{ expanded.has(item.id) ? 'Скрыть детали' : 'Открыть детали' }}
         </button>
+        <p v-if="detailErrors[item.id]" class="headman-requests__state headman-requests__state--error" role="alert">{{ detailErrors[item.id] }}</p>
 
         <div v-if="expanded.has(item.id)" class="headman-requests__details">
           <p v-if="!details[item.id]" class="headman-requests__state">Загружаем детали…</p>
@@ -307,9 +438,14 @@ onBeforeUnmount(() => { loadRevision += 1 })
               <h3>Вложения</h3>
               <ul class="headman-requests__attachments">
                 <li v-for="attachment in detailFor(item.id).attachments" :key="attachment.id">
-                  <button type="button" :disabled="attachment.state === 'EXPIRED' || offline" @click="downloadAttachment(item, attachment.id, attachment.name)">
-                    {{ attachment.name || 'Файл' }} · {{ attachment.size }} Б
-                  </button>
+                  <p>{{ attachment.name || 'Файл' }} · {{ attachment.size }} Б</p>
+                  <p v-if="attachmentExpired(attachment)" class="headman-requests__state" role="status">Срок хранения вложения истёк. Файл больше недоступен.</p>
+                  <template v-else>
+                    <button type="button" :disabled="attachmentDisabled(item.id, attachment)" @click="openAttachment(item, attachment)">Открыть</button>
+                    <button type="button" :disabled="attachmentDisabled(item.id, attachment)" @click="downloadAttachment(item, attachment)">Скачать</button>
+                    <p v-if="attachmentStates[attachmentKey(item.id, attachment.id)]?.status === 'pending'" role="status">Загружаем вложение…</p>
+                    <p v-if="attachmentStates[attachmentKey(item.id, attachment.id)]?.error" class="headman-requests__state headman-requests__state--error" role="alert">{{ attachmentStates[attachmentKey(item.id, attachment.id)]?.error }}</p>
+                  </template>
                 </li>
               </ul>
             </section>

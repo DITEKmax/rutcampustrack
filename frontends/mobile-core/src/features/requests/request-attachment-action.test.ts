@@ -4,7 +4,9 @@ import {
   requestAttachmentPopupBlockedMessage,
   requestAttachmentPopupIsolationMessage,
   runRequestAttachmentOpen,
+  runRequestAttachmentDownload,
   type RequestAttachmentActionDependencies,
+  type RequestAttachmentDownloadDependencies,
   type RequestAttachmentPopup,
   type RequestAttachmentWindow,
 } from './request-attachment-action'
@@ -69,6 +71,75 @@ function actionSetup(overrides: Partial<{
 async function settlePromiseChain(): Promise<void> {
   for (let index = 0; index < 6; index += 1) await Promise.resolve()
 }
+
+describe('request attachment download', () => {
+  function downloadSetup(download?: () => Promise<Blob>) {
+    const setup = actionSetup({ download })
+    const saved: string[] = []
+    const deps: RequestAttachmentDownloadDependencies = { ...setup.deps, save: (url) => saved.push(url) }
+    return { ...setup, deps, saved }
+  }
+
+  it('saves only the authenticated blob and schedules its release', async () => {
+    const setup = downloadSetup()
+    await runRequestAttachmentDownload(setup.deps)
+    expect(setup.saved).toEqual(['blob:request-1'])
+    expect(setup.calls.released).toEqual(['blob:request-1'])
+    expect(setup.state.status).toBe('idle')
+  })
+
+  it.each(['request change', 'context invalidation', 'dispose'] as const)('does not publish a late blob after %s', async (reason) => {
+    const response = deferred<Blob>()
+    const setup = downloadSetup(() => response.promise)
+    let created = 0
+    setup.deps.createObjectUrl = () => { created += 1; return 'blob:stale' }
+    const operation = runRequestAttachmentDownload(setup.deps)
+    if (reason === 'request change') setup.setContext('owner-2', 0)
+    else if (reason === 'context invalidation') setup.setContext('owner-1', 1)
+    else setup.deps.isDisposed = () => true
+    response.resolve(new Blob(['stale']))
+    await operation
+    expect(created).toBe(0)
+    expect(setup.saved).toEqual([])
+    expect(setup.calls.errors).toEqual([])
+  })
+
+  it('releases an allocated URL when its owner changes during allocation', async () => {
+    const setup = downloadSetup()
+    setup.deps.createObjectUrl = () => { setup.setContext(null, 1); return 'blob:stale' }
+    await runRequestAttachmentDownload(setup.deps)
+    expect(setup.saved).toEqual([])
+    expect(setup.calls.released).toEqual(['blob:stale'])
+  })
+
+  it('releases the URL if the browser cannot start the download', async () => {
+    const setup = downloadSetup()
+    setup.deps.save = () => { throw new Error('download blocked') }
+    await runRequestAttachmentDownload(setup.deps)
+    expect(setup.calls.released).toEqual(['blob:request-1'])
+    expect(setup.state).toEqual({ status: 'error', error: 'download blocked' })
+  })
+
+  it.each([403, 404, 410, 503])('reports HTTP %i without allocating or saving a file', async (status) => {
+    const setup = downloadSetup(() => Promise.reject({ status }))
+    await runRequestAttachmentDownload(setup.deps)
+    expect(setup.saved).toEqual([])
+    expect(setup.calls.released).toEqual([])
+    expect(setup.state).toEqual({ status: 'error', error: `HTTP ${status}` })
+  })
+
+  it('ignores a late denial from an old context', async () => {
+    let reject!: (cause: unknown) => void
+    const response = new Promise<Blob>((_, rejectPromise) => { reject = rejectPromise })
+    const setup = downloadSetup(() => response)
+    const operation = runRequestAttachmentDownload(setup.deps)
+    setup.setContext(null, 1)
+    reject({ status: 403 })
+    await operation
+    expect(setup.calls.errors).toEqual([])
+    expect(setup.state.status).toBe('pending')
+  })
+})
 
 describe('request attachment action', () => {
   it('acquires a WindowProxy without noopener features and severs opener synchronously', () => {

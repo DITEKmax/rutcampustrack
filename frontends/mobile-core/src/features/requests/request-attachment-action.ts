@@ -139,3 +139,36 @@ export function runRequestAttachmentOpen(deps: RequestAttachmentActionDependenci
       deps.setState(errorState(deps.errorMessage(error)))
     })
 }
+
+export type RequestAttachmentDownloadDependencies = Pick<RequestAttachmentActionDependencies,
+  'ownerIdentity' | 'ownerGeneration' | 'currentOwnerIdentity' | 'currentOwnerGeneration'
+  | 'isDisposed' | 'download' | 'createObjectUrl' | 'releaseObjectUrl' | 'scheduleRelease'
+  | 'setState' | 'onError' | 'errorMessage'> & {
+  save: (url: string) => void
+}
+
+/** The authenticated response may only become a download while its request is current. */
+export async function runRequestAttachmentDownload(deps: RequestAttachmentDownloadDependencies): Promise<void> {
+  const isCurrent = (): boolean => Boolean(deps.ownerIdentity) && !deps.isDisposed()
+    && deps.ownerIdentity === deps.currentOwnerIdentity()
+    && deps.ownerGeneration === deps.currentOwnerGeneration()
+  if (!isCurrent()) return
+  deps.setState(pendingState())
+  let objectUrl: string | null = null
+  try {
+    const blob = await deps.download()
+    if (!isCurrent()) return
+    objectUrl = deps.createObjectUrl(blob)
+    if (!isCurrent()) return
+    deps.save(objectUrl)
+    deps.scheduleRelease(objectUrl)
+    objectUrl = null
+    deps.setState(idleState())
+  } catch (error) {
+    if (!isCurrent()) return
+    deps.onError?.(error)
+    deps.setState(errorState(deps.errorMessage(error)))
+  } finally {
+    if (objectUrl) deps.releaseObjectUrl(objectUrl)
+  }
+}

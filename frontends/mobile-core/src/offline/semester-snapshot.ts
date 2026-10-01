@@ -47,7 +47,7 @@ export interface SnapshotCleanupResult {
   expectedScopeKey?: string
   lifecycleGeneration?: number
   contextGuard?: SnapshotOperationResult
-  previousGuardScopeKey?: string | null
+  previousGuardScopeKey?: string | null | undefined
 }
 
 /** Keeps the existing Promise<void> API fail-visible for auth.logout callers. */
@@ -80,7 +80,7 @@ export class SemesterSnapshotStore {
   private activeWrite: ActiveSnapshotWrite | null = null
   private operationQueue: Promise<unknown> = Promise.resolve()
   private readonly unresolvedOwnerIds = new Set<string>()
-  private confirmedContext: { scopeKey: string; generation: number; previousGuardScopeKey?: string | null } | null = null
+  private confirmedContext: { scopeKey: string; generation: number; previousGuardScopeKey?: string | null | undefined } | null = null
   private unresolvedContextGeneration: number | null = null
 
   read(ownerId: string, expectedScopeKey?: string): Promise<SemesterSnapshot | null> {
@@ -253,7 +253,7 @@ export class SemesterSnapshotStore {
     return this.confirmedContext?.generation === this.lifecycleGeneration ? this.confirmedContext.scopeKey : undefined
   }
 
-  private writeContextGuard(scopeKey: string): { outcome: SnapshotOperationResult; previousScopeKey?: string | null } {
+  private writeContextGuard(scopeKey: string): { outcome: SnapshotOperationResult; previousScopeKey?: string | null | undefined } {
     try {
       this.storage().setItem(currentScopeKey, scopeKey)
       return { outcome: completed() }
@@ -351,7 +351,7 @@ export class SemesterSnapshotStore {
   private async performClear(
     requestedOwnerId: string | undefined,
     capturedGeneration: number,
-    context?: { expectedScopeKey: string; previousSnapshotScopeKey: string | undefined; previousGuardScopeKey?: string | null },
+    context?: { expectedScopeKey: string; previousSnapshotScopeKey: string | undefined; previousGuardScopeKey?: string | null | undefined },
   ): Promise<SnapshotCleanupResult> {
     let target: string | null = requestedOwnerId ?? null
     let pointerReadError: unknown = null
@@ -446,7 +446,7 @@ export class SemesterSnapshotStore {
 
   private async deleteOwner(
     ownerId: string,
-    context?: { previousSnapshotScopeKey?: string; expectedScopeKey?: string; generation: number },
+    context?: { previousSnapshotScopeKey?: string | undefined; expectedScopeKey?: string; generation: number },
   ): Promise<SnapshotOperationResult | void> {
     return this.withStore('readwrite', async (store) => {
       if (context) {

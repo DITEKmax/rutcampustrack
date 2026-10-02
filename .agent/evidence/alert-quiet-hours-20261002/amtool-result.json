@@ -1,0 +1,12 @@
+{
+  "revision": "c77067e7b637adc15c7cd23915a31997c6c6a0b5",
+  "image": "prom/alertmanager:v0.27.0@sha256:e13b6ed5cb929eeaee733479dce55e10eb3bc2e9c4586c705a4e8da41e5eacf5",
+  "startedAt": "2026-10-02T17:33:40.2577676Z",
+  "terminalAt": "2026-10-02T17:33:41.2347779Z",
+  "exitCode": 0,
+  "ownedContainersRemaining": [],
+  "lease": "root bounded cached amtool",
+  "network": "none",
+  "configMount": "readonly",
+  "limitation": "routes test does not simulate wall clock"
+}

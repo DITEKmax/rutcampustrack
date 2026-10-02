@@ -1,0 +1,28 @@
+amtool, version 0.27.0 (branch: HEAD, revision: 0aa3c2aad14cff039931923ab16b26b7481783b5)
+  build user:       root@22cd11f671e9
+  build date:       20240228-11:51:20
+  go version:       go1.21.7
+  platform:         linux/amd64
+  tags:             netgo
+Checking '/etc/alertmanager/alertmanager.yml'  SUCCESS
+Found:
+ - global config
+ - route
+ - 1 inhibit rules
+ - 1 receivers
+ - 0 templates
+
+Matching routes:
+.
+└── default-route
+    └── {severity="warning"}  receiver: notification-webhook
+
+
+notification-webhook
+Matching routes:
+.
+└── default-route
+    └── {severity="critical"}  receiver: notification-webhook
+
+
+notification-webhook

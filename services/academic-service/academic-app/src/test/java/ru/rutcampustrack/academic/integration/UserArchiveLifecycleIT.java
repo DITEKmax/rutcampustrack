@@ -34,6 +34,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 
 class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
+    private static final String OWNED_SEMESTER_NAME="user-archive-"+UUID.randomUUID();
     @Autowired JdbcTemplate jdbc;
     @Autowired UserService users;
     @Autowired GroupService groups;
@@ -58,8 +59,14 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         today=LocalDate.now(ZoneId.of("Europe/Moscow"));
         previousActive=jdbc.queryForList("SELECT id FROM semesters WHERE is_active",Long.class);
         jdbc.update("UPDATE semesters SET is_active=FALSE WHERE is_active");
-        semester=jdbc.queryForObject("INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,TRUE,NOW()) RETURNING id",
-                Long.class,"user-archive-"+UUID.randomUUID(),today.minusDays(5),today.plusDays(5));
+        var ownedSemesters=jdbc.queryForList("SELECT id FROM semesters WHERE name=?",Long.class,OWNED_SEMESTER_NAME);
+        if (ownedSemesters.isEmpty()) {
+            semester=jdbc.queryForObject("INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,TRUE,NOW()) RETURNING id",
+                    Long.class,OWNED_SEMESTER_NAME,today.minusDays(5),today.plusDays(5));
+        } else {
+            semester=ownedSemesters.getFirst();
+            jdbc.update("UPDATE semesters SET is_active=TRUE WHERE id=?",semester);
+        }
         group=groups.createGroup(new CreateGroupRequest("УАР-11"+Math.floorMod(System.nanoTime(),10))).getId();
         groupIds.add(group);
         owner=jdbc.queryForObject("""
@@ -99,8 +106,13 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
             jdbc.update("DELETE FROM users WHERE id=?",id);
         }
         for(long id:groupIds) { jdbc.update("DELETE FROM group_history_coverage WHERE group_id=?",id); jdbc.update("DELETE FROM groups WHERE id=?",id); }
-        jdbc.update("DELETE FROM semesters WHERE id=?",semester);
+        // V41 correctly prevents direct deletion without the participant receipts.
+        // Retain our one semester across cases; disposal of the isolated container
+        // removes this fixture after the class, without bypassing history guards.
+        jdbc.update("UPDATE semesters SET is_active=FALSE WHERE id=?",semester);
         previousActive.forEach(id->jdbc.update("UPDATE semesters SET is_active=TRUE WHERE id=?",id));
+        for (long id:userIds) assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM users WHERE id=?",Long.class,id)).isZero();
+        for (long id:groupIds) assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM groups WHERE id=?",Long.class,id)).isZero();
     }
 
     @Test void protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment() {
@@ -115,7 +127,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         assertThatThrownBy(()->service.archive(target,request)).isInstanceOf(ResponseStatusException.class);
         assertThat(repository.observe(target).status()).isEqualTo("active");
         reset(auth);
-        UserArchiveRepository failing=spy(repository);
+        UserArchiveRepository failing=spy(new UserArchiveRepository(jdbc));
         doThrow(new IllegalStateException("synthetic receipt write failure")).when(failing)
                 .saveReceipt(eq(request.operationId()),eq(owner),eq(target),eq("ARCHIVE"),eq(request.previewDigest()),eq(true));
         var rollback=new UserArchiveService(failing,users,auth,attendance,context,transactionManager,null);
@@ -184,7 +196,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         AssistantService assistant=new AssistantService(assistantRepository,userRepository,groupRepository,roleGrantRepository,headman);
         AssignAssistantRequest assign=new AssignAssistantRequest(candidate,group,List.of(AssistantPermission.MARK_ATTENDANCE));
         AtomicInteger archivePid=new AtomicInteger();
-        UserArchiveRepository observed=spy(repository);
+        UserArchiveRepository observed=spy(new UserArchiveRepository(jdbc));
         doAnswer(invocation -> {
             archivePid.set(jdbc.queryForObject("SELECT pg_backend_pid()",Integer.class));
             return invocation.callRealMethod();

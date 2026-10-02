@@ -1,0 +1,35 @@
+{
+  "runId": "20261002-144254022-yxmgddhj",
+  "status": "FAIL",
+  "startedAt": "2026-10-02T17:47:21.8262955+03:00",
+  "scopes": {
+    "fixture-date": {
+      "exitCode": 0
+    },
+    "fixture-a": {
+      "exitCode": 0
+    },
+    "DATE-homework": {
+      "exitCode": 0,
+      "status": "PASS",
+      "steps": 15,
+      "checks": 7,
+      "failure": null
+    },
+    "A-only": {
+      "exitCode": 0,
+      "status": "PASS",
+      "steps": 53,
+      "checks": 10,
+      "failure": null
+    }
+  },
+  "fixturePrerequisite": {
+    "originalSemester": 2,
+    "groupIds": [
+      2,
+      3
+    ],
+    "disjointUsers": true
+  }
+}

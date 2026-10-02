@@ -1,0 +1,68 @@
+{
+  "revision": "2ca6fc7e4301b6547a323b58155135d932080003",
+  "reuseBaselineManifestSha256": "d8bdd51c6aee18077d43810175dd49e5ffe5391fff09d07443142e571856ed9b",
+  "unchangedServiceSourceDiff": [],
+  "protoScope": "Academic binding_mode16 and Schedule new fields/messages/RPCs additive; unchanged consumers reusable",
+  "jars": [
+    {
+      "name": "academic",
+      "relativePath": "services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "mode": "rebuilt",
+      "bytes": 99135430,
+      "sha256": "60d8ae43ef911b825e5328ab9c9ad7de483be6b968d907b91e3e9c1a6619df70"
+    },
+    {
+      "name": "gateway",
+      "relativePath": "services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "mode": "verified reuse",
+      "bytes": 62033856,
+      "sha256": "058f2b684952e2dc6c8f4d94e825b0fe07670d78b5908fdcc62f7e591c6b5223"
+    },
+    {
+      "name": "attendance",
+      "relativePath": "services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "mode": "rebuilt",
+      "bytes": 95461373,
+      "sha256": "156ee046b8aea52f6cc7ff202fd24d88626def6fe036a7a9e78be80b3c92dd68"
+    },
+    {
+      "name": "auth",
+      "relativePath": "services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "mode": "verified reuse",
+      "bytes": 99606349,
+      "sha256": "f329f99922f11bb1acb4b9bba8f65339c5cab36f10f974aa3761cfa48588903a"
+    },
+    {
+      "name": "documentRenderer",
+      "relativePath": "services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "mode": "verified reuse",
+      "bytes": 48259456,
+      "sha256": "b21891315efd3496719d1215f6512a1586e48cc64ee40ee1b9ef563083d623cf"
+    },
+    {
+      "name": "mobileBff",
+      "relativePath": "services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "mode": "rebuilt",
+      "bytes": 49745060,
+      "sha256": "0e4d46d212f86092e15d867e1d5cfc1c27d20d2d8983203531759a87d8255532"
+    },
+    {
+      "name": "notification",
+      "relativePath": "services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "mode": "verified reuse",
+      "bytes": 86105528,
+      "sha256": "ba1c94544019e90773991680ffaab2ce2a6666c57bf02cd80976e7cc642d5402"
+    },
+    {
+      "name": "schedule",
+      "relativePath": "services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "mode": "rebuilt",
+      "bytes": 92641962,
+      "sha256": "229a344c170feaa2bc970c23af9040c0341b276c377931fcabd99d467e84295f"
+    }
+  ],
+  "pwaFilesVerified": 10,
+  "manifestSha256": "32125fa72e70ddccff2fc5cf7fcd984016eab9ebf28bfc5211c07b23a9ef1bc8",
+  "buildExit": 0,
+  "buildLog": "homework-build.log"
+}

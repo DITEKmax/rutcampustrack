@@ -1,0 +1,539 @@
+{
+  "status": "PASS",
+  "scope": "A-only",
+  "revision": "2ca6fc7e4301b6547a323b58155135d932080003",
+  "runId": "20261002-144254022-yxmgddhj",
+  "startedAt": "2026-10-02T14:49:20.022Z",
+  "fixture": {
+    "groupId": 3,
+    "semesterId": 2,
+    "lessonId": 14,
+    "subjectId": 2,
+    "headmanStudentId": 6,
+    "studentId": 7,
+    "headmanLogin": "runtime484432-transferheadm-4432",
+    "studentLogin": "runtime484432-geostudent-4432",
+    "lessonDate": "2026-10-02"
+  },
+  "steps": [
+    {
+      "name": "A.DATE.absence.1",
+      "status": 200
+    },
+    {
+      "name": "A.DATE.absence.2",
+      "status": 200
+    },
+    {
+      "name": "A.DATE.create",
+      "status": 201
+    },
+    {
+      "name": "A.target.submit",
+      "status": 200
+    },
+    {
+      "name": "A.target.download.before",
+      "status": 200
+    },
+    {
+      "name": "A.semesters",
+      "status": 200
+    },
+    {
+      "name": "A.foreign.semester",
+      "status": 201
+    },
+    {
+      "name": "A.foreign.activate",
+      "status": 200
+    },
+    {
+      "name": "A.activation.refresh.options",
+      "status": 200
+    },
+    {
+      "name": "A.activation.refresh.options",
+      "status": 200
+    },
+    {
+      "name": "A.activation.refresh.options",
+      "status": 200
+    },
+    {
+      "name": "A.activation.refresh.options",
+      "status": 200
+    },
+    {
+      "name": "A.activation.refresh.options",
+      "status": 200
+    },
+    {
+      "name": "A.activation.refresh.options",
+      "status": 200
+    },
+    {
+      "name": "A.activation.refresh.options",
+      "status": 200
+    },
+    {
+      "name": "A.activation.refresh.options",
+      "status": 200
+    },
+    {
+      "name": "A.foreign.subject",
+      "status": 201
+    },
+    {
+      "name": "A.foreign.schedule",
+      "status": 201
+    },
+    {
+      "name": "A.foreign.lessons",
+      "status": 200
+    },
+    {
+      "name": "A.foreign.submit",
+      "status": 200
+    },
+    {
+      "name": "A.foreign.detail.before",
+      "status": 200
+    },
+    {
+      "name": "A.foreign.download.before",
+      "status": 200
+    },
+    {
+      "name": "A.preview",
+      "status": 200
+    },
+    {
+      "name": "A.student.before",
+      "status": 200
+    },
+    {
+      "name": "A.headman.before",
+      "status": 200
+    },
+    {
+      "name": "A.group.before",
+      "status": 200
+    },
+    {
+      "name": "A.ready.Attendance",
+      "status": 200
+    },
+    {
+      "name": "A.delete.async",
+      "status": 202
+    },
+    {
+      "name": "A.resumed.Attendance",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.status",
+      "status": 200
+    },
+    {
+      "name": "A.target.semester.deleted",
+      "status": 404
+    },
+    {
+      "name": "A.target.request.deleted",
+      "status": 404
+    },
+    {
+      "name": "A.target.file.deleted",
+      "status": 404
+    },
+    {
+      "name": "A.DATE.homework.deleted",
+      "status": 404
+    },
+    {
+      "name": "A.foreign.detail.retained",
+      "status": 200
+    },
+    {
+      "name": "A.foreign.file.retained",
+      "status": 200
+    },
+    {
+      "name": "A.student.after",
+      "status": 200
+    },
+    {
+      "name": "A.headman.after",
+      "status": 200
+    },
+    {
+      "name": "A.group.after",
+      "status": 200
+    },
+    {
+      "name": "A.same.operation.replay",
+      "status": 200
+    }
+  ],
+  "checks": [
+    "A.DATE DATE admitted without lesson or occurrence and counted from actual baseline",
+    "A.target actual stored file bytes",
+    "A.foreign actual stored file bytes",
+    "A preview includes target request and actual DATE-inclusive homework inventory",
+    "A HTTP pending response exact durable operation",
+    "A same operation recovered with exact preview counts",
+    "A DATE content removed; immutable terminal Schedule publication retained with cleared homework reference",
+    "A foreign request metadata and bytes exactly retained",
+    "A retained users/group unchanged",
+    "A completed receipt replay stable"
+  ],
+  "pauseTimeline": [
+    {
+      "name": "rabbit",
+      "event": "pauseIntent",
+      "containerId": "bc3d8087e597411ad52ab803378ba5e58cbec8bd64a8d13c60d5cc10f41af47e",
+      "at": "2026-10-02T14:49:57.851Z",
+      "deadlineMs": 10000
+    },
+    {
+      "name": "rabbit",
+      "event": "pausedVerified",
+      "at": "2026-10-02T14:49:58.229Z"
+    },
+    {
+      "name": "attendance",
+      "event": "pauseIntent",
+      "containerId": "22278a540b7d0d06a44386e155879cf9b966690aa7bedd138a688125b906d09b",
+      "at": "2026-10-02T14:50:00.213Z",
+      "deadlineMs": 10000
+    },
+    {
+      "name": "attendance",
+      "event": "pausedVerified",
+      "at": "2026-10-02T14:50:00.580Z"
+    },
+    {
+      "name": "rabbit",
+      "event": "unpauseVerified",
+      "cause": "participant-paused",
+      "at": "2026-10-02T14:50:01.140Z",
+      "elapsedMs": 3289,
+      "withinBound": true
+    },
+    {
+      "name": "attendance",
+      "event": "unpauseVerified",
+      "cause": "outage-finally",
+      "at": "2026-10-02T14:50:02.803Z",
+      "elapsedMs": 2590,
+      "withinBound": true
+    }
+  ],
+  "limitations": [
+    "Previously passed B/geo criteria remain immutable and are not in the next wrapper scopes.",
+    "DATE midnight/revocation/foreign-manager boundaries use existing component evidence; no clock control.",
+    "HTTP absence proves inaccessible file; accepted component IT provides physical orphan-byte coverage."
+  ],
+  "activeSemesterRefresh": {
+    "expectedSemesterId": "3",
+    "observations": [
+      {
+        "semesterId": "2",
+        "at": "2026-10-02T14:49:50.849Z"
+      },
+      {
+        "semesterId": "2",
+        "at": "2026-10-02T14:49:51.491Z"
+      },
+      {
+        "semesterId": "2",
+        "at": "2026-10-02T14:49:52.140Z"
+      },
+      {
+        "semesterId": "2",
+        "at": "2026-10-02T14:49:52.783Z"
+      },
+      {
+        "semesterId": "2",
+        "at": "2026-10-02T14:49:53.400Z"
+      },
+      {
+        "semesterId": "2",
+        "at": "2026-10-02T14:49:54.028Z"
+      },
+      {
+        "semesterId": "2",
+        "at": "2026-10-02T14:49:54.636Z"
+      },
+      {
+        "semesterId": "3",
+        "at": "2026-10-02T14:49:55.187Z"
+      }
+    ]
+  },
+  "A": {
+    "operationId": "b00a5e2e-4046-4709-b0e6-56a95af1749b",
+    "semesterId": 2,
+    "foreignSemesterId": 3,
+    "previewCounts": {
+      "scheduleTemplates": 2,
+      "oneOffLessons": 0,
+      "lessons": 22,
+      "assignments": 2,
+      "homeworks": 4,
+      "attendanceMarks": 8,
+      "studentRequests": 1
+    },
+    "target": {
+      "requestId": "6abfc48e87e859628f83a0bf",
+      "attachmentId": "6abfc48e87e859628f83a0c0",
+      "sizeBytes": 70,
+      "sha256": "d5a51b6aed15684ec8c123e30fe5703155359d6543b6d7b47cb5766ef44939de"
+    },
+    "foreign": {
+      "requestId": "6abfc49387e859628f83a0c5",
+      "attachmentId": "6abfc49387e859628f83a0c6",
+      "sizeBytes": 70,
+      "sha256": "d5a51b6aed15684ec8c123e30fe5703155359d6543b6d7b47cb5766ef44939de",
+      "metadataBefore": {
+        "summary": {
+          "id": "6abfc49387e859628f83a0c5",
+          "kind": "EXCUSE",
+          "status": "PENDING",
+          "origin": "MANUAL",
+          "createdAt": "2026-10-02T14:49:55.478Z",
+          "updatedAt": "2026-10-02T14:49:55.478Z",
+          "lessons": [
+            {
+              "id": "23",
+              "lessonNumber": 1,
+              "status": "planned",
+              "blocked": false,
+              "subjectId": "3",
+              "subjectType": "lecture",
+              "semesterId": "3",
+              "date": "2026-11-30",
+              "startsAt": "10:00:00",
+              "endsAt": "11:30:00"
+            }
+          ]
+        },
+        "reason": "OTHER",
+        "decisionAt": null,
+        "attachments": [
+          {
+            "id": "6abfc49387e859628f83a0c6",
+            "contentType": "image/png",
+            "sizeBytes": 70,
+            "sha256": "d5a51b6aed15684ec8c123e30fe5703155359d6543b6d7b47cb5766ef44939de",
+            "state": "ACTIVE",
+            "uploadedAt": "2026-10-02T14:49:55.478Z",
+            "expiresAt": "2027-10-02T14:49:55.478Z",
+            "expiredAt": null
+          }
+        ]
+      }
+    },
+    "dateInventory": {
+      "homework": {
+        "id": 4,
+        "bindingId": 4,
+        "publishedBy": 6,
+        "requestKey": "95e861cd-3333-48f0-940a-def92d5337e9",
+        "subjectId": 2,
+        "groupId": 3,
+        "semesterId": 2,
+        "bindingMode": "DATE",
+        "lessonDate": "2026-10-03",
+        "lessonNumber": null,
+        "revision": 1,
+        "archived": false
+      },
+      "baseline": {
+        "homeworks": 3
+      },
+      "afterCreate": {
+        "homeworks": 4
+      },
+      "actualInventory": {
+        "homeworks": 4,
+        "dateHomeworks": 2
+      },
+      "deletedStore": {
+        "academic": {
+          "homeworkRows": 0,
+          "historyRows": 0,
+          "receiptRows": 0,
+          "completion": []
+        },
+        "schedule": {
+          "bindingRows": 1,
+          "binding": {
+            "bindingId": 4,
+            "homeworkId": null,
+            "actorId": 6,
+            "requestKey": "95e861cd-3333-48f0-940a-def92d5337e9",
+            "payloadHash": "84a11830ac3f6edafde55dd626d5c0cca27105576750f959459afb179df9a5bf",
+            "groupId": 3,
+            "subjectId": 2,
+            "semesterId": 2,
+            "originalMode": "DATE",
+            "originalDate": "2026-10-03",
+            "originalNumber": null,
+            "originalOccurrenceId": null,
+            "mode": "DATE",
+            "occurrenceId": null,
+            "lessonId": null,
+            "state": "ARCHIVED"
+          }
+        }
+      }
+    },
+    "originalPreview": {
+      "semesterId": 2,
+      "priorState": "INACTIVE",
+      "stateVersion": 2,
+      "previewDigest": "76aeac95a6877285e0f23518824191dbebbede7f2c8e5586596186c87f1b064d",
+      "counts": {
+        "scheduleTemplates": 2,
+        "oneOffLessons": 0,
+        "lessons": 22,
+        "assignments": 2,
+        "homeworks": 4,
+        "attendanceMarks": 8,
+        "studentRequests": 1
+      }
+    },
+    "durableBeforePause": {
+      "exists": true,
+      "phase": "PREPARING",
+      "attendanceStatus": "PENDING",
+      "outboxExists": true,
+      "receiptCount": 0,
+      "at": "2026-10-02T14:50:00.034Z"
+    },
+    "interrupted": {
+      "exists": true,
+      "phase": "PREPARING",
+      "attendanceStatus": "PENDING",
+      "outboxExists": true,
+      "receiptCount": 0,
+      "at": "2026-10-02T14:50:02.234Z"
+    },
+    "completed": {
+      "operationId": "b00a5e2e-4046-4709-b0e6-56a95af1749b",
+      "phase": "COMPLETED",
+      "counts": {
+        "scheduleTemplates": 2,
+        "oneOffLessons": 0,
+        "lessons": 22,
+        "assignments": 2,
+        "homeworks": 4,
+        "attendanceMarks": 8,
+        "studentRequests": 1
+      }
+    },
+    "foreignRetention": {
+      "metadataMatches": true,
+      "shaMatches": true,
+      "sizeMatches": true,
+      "afterSha256": "d5a51b6aed15684ec8c123e30fe5703155359d6543b6d7b47cb5766ef44939de",
+      "afterSizeBytes": 70,
+      "metadataAfter": {
+        "summary": {
+          "id": "6abfc49387e859628f83a0c5",
+          "kind": "EXCUSE",
+          "status": "PENDING",
+          "origin": "MANUAL",
+          "createdAt": "2026-10-02T14:49:55.478Z",
+          "updatedAt": "2026-10-02T14:49:55.478Z",
+          "lessons": [
+            {
+              "id": "23",
+              "lessonNumber": 1,
+              "status": "planned",
+              "blocked": false,
+              "subjectId": "3",
+              "subjectType": "lecture",
+              "semesterId": "3",
+              "date": "2026-11-30",
+              "startsAt": "10:00:00",
+              "endsAt": "11:30:00"
+            }
+          ]
+        },
+        "reason": "OTHER",
+        "decisionAt": null,
+        "attachments": [
+          {
+            "id": "6abfc49387e859628f83a0c6",
+            "contentType": "image/png",
+            "sizeBytes": 70,
+            "sha256": "d5a51b6aed15684ec8c123e30fe5703155359d6543b6d7b47cb5766ef44939de",
+            "state": "ACTIVE",
+            "uploadedAt": "2026-10-02T14:49:55.478Z",
+            "expiresAt": "2027-10-02T14:49:55.478Z",
+            "expiredAt": null
+          }
+        ]
+      },
+      "differences": [],
+      "outsideAllowlistDifference": false
+    }
+  },
+  "finishedAt": "2026-10-02T14:50:11.763Z"
+}

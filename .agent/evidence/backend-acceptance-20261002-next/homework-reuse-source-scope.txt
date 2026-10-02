@@ -1,0 +1,80 @@
+diff --git a/proto/academic.proto b/proto/academic.proto
+index 2787ea96..7f4fad25 100644
+--- a/proto/academic.proto
++++ b/proto/academic.proto
+@@ -366,6 +366,8 @@ message HomeworkInfo {
+   optional int64 current_lesson_id = 13;
+   optional int64 binding_revision = 14;
+   bool archived = 15;
++  // Empty on older producers means LESSON. DATE has no numbered pair.
++  string binding_mode = 16;
+ }
+ 
+ message SetHomeworkCompletionRequest {
+diff --git a/proto/schedule.proto b/proto/schedule.proto
+index d67ac075..b6cc10be 100644
+--- a/proto/schedule.proto
++++ b/proto/schedule.proto
+@@ -44,6 +44,12 @@ service ScheduleGrpcService {
+ 
+   // Прочитать текущие привязки домашних работ для occurrences.
+   rpc GetHomeworkBindings (HomeworkBindingsRequest) returns (HomeworkBindingsResponse);
++  rpc GetHomeworkBinding (HomeworkBindingLookupRequest) returns (HomeworkBindingResponse);
++  rpc MoveHomeworkBinding (MoveHomeworkBindingRequest) returns (HomeworkEditReceipt);
++  // Directed Academic recovery is limited to an exact persisted command tuple.
++  rpc ContinueHomeworkEdit (HomeworkEditIdentity) returns (HomeworkEditReceipt);
++  rpc AbortUnacceptedHomeworkEdit (HomeworkEditIdentity) returns (HomeworkEditReceipt);
++  rpc AcknowledgeHomeworkEdit (HomeworkEditIdentity) returns (HomeworkEditReceipt);
+ 
+   // Directed Academic service boundary for assignment replacement.
+   rpc InstallAssignmentCloseCap (InstallAssignmentCloseCapRequest)
+@@ -300,6 +306,11 @@ message ReserveHomeworkBindingRequest {
+   string request_key = 2;
+   int64 expected_revision = 3;
+   bytes payload_hash = 4;
++  string binding_mode = 5;
++  int64 group_id = 6;
++  int64 subject_id = 7;
++  int64 semester_id = 8;
++  string date = 9;
+ }
+ 
+ message ConfirmHomeworkBindingRequest {
+@@ -326,6 +337,37 @@ message HomeworkBindingResponse {
+   int64 semester_id = 9;
+   string date = 10;
+   int32 lesson_number = 11;
++  string binding_mode = 12;
++}
++
++message HomeworkBindingLookupRequest { int64 binding_id = 1; }
++
++message HomeworkEditIdentity {
++  string operation_id = 1;
++  int64 binding_id = 2;
++  int64 homework_id = 3;
++  int64 actor_id = 4;
++  string request_key = 5;
++  bytes command_hash = 6;
++  int64 group_id = 7;
++  int64 subject_id = 8;
++  int64 semester_id = 9;
++}
++
++message MoveHomeworkBindingRequest {
++  HomeworkEditIdentity identity = 1;
++  int64 expected_binding_revision = 2;
++  string binding_mode = 3;
++  int64 target_occurrence_id = 4;
++  int64 expected_lesson_revision = 5;
++  string date = 6;
++  int32 lesson_number = 7;
++}
++
++message HomeworkEditReceipt {
++  HomeworkEditIdentity identity = 1;
++  string state = 2;
++  HomeworkBindingResponse accepted_binding = 3;
+ }
+ 
+ message HomeworkBindingsRequest {

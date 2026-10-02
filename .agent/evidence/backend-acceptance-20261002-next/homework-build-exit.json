@@ -1,0 +1,8 @@
+{
+  "revision": "2ca6fc7e4301b6547a323b58155135d932080003",
+  "command": "./gradlew.bat :services:academic-service:academic-app:bootJar :services:schedule-service:schedule-app:bootJar :services:attendance-service:attendance-app:bootJar :services:mobile-bff:mobile-bff-app:bootJar --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --no-parallel --max-workers=1",
+  "exitCode": 0,
+  "startedAt": "2026-10-02T17:40:36.6390379+03:00",
+  "finishedAt": "2026-10-02T17:41:57.2305588+03:00",
+  "daemonMode": "single-use --no-daemon; do not stop foreign daemons"
+}

@@ -1,0 +1,222 @@
+{
+  "status": "PASS",
+  "scope": "DATE-homework",
+  "revision": "2ca6fc7e4301b6547a323b58155135d932080003",
+  "runId": "20261002-144254022-yxmgddhj",
+  "startedAt": "2026-10-02T14:48:45.070Z",
+  "fixture": {
+    "groupId": 2,
+    "semesterId": 2,
+    "lessonId": 3,
+    "subjectId": 1,
+    "headmanStudentId": 4,
+    "studentId": 5,
+    "headmanLogin": "runtime444265-transferheadm-4265",
+    "studentLogin": "runtime444265-geostudent-4265",
+    "lessonDate": "2026-10-02"
+  },
+  "steps": [
+    {
+      "name": "DATE.absence.1",
+      "status": 200
+    },
+    {
+      "name": "DATE.absence.2",
+      "status": 200
+    },
+    {
+      "name": "DATE.create",
+      "status": 201
+    },
+    {
+      "name": "DATE.helper.assign",
+      "status": 201
+    },
+    {
+      "name": "DATE.helper.current.session",
+      "status": 200
+    },
+    {
+      "name": "DATE.helper.current.permissions",
+      "status": 200
+    },
+    {
+      "name": "DATE.complete",
+      "status": 200
+    },
+    {
+      "name": "DATE.feed.before.edit",
+      "status": 200
+    },
+    {
+      "name": "DATE.history.before",
+      "status": 200
+    },
+    {
+      "name": "DATE.nonpublisher.edit",
+      "status": 200
+    },
+    {
+      "name": "DATE.feed.after.edit",
+      "status": 200
+    },
+    {
+      "name": "DATE.history.after",
+      "status": 200
+    },
+    {
+      "name": "DATE.edit.exact.replay",
+      "status": 200
+    },
+    {
+      "name": "DATE.create.original.replay",
+      "status": 201
+    },
+    {
+      "name": "DATE.history.replay",
+      "status": 200
+    }
+  ],
+  "checks": [
+    "DATE DATE admitted without lesson or occurrence and counted from actual baseline",
+    "DATE same STUDENT token retains current role and has live MANAGE_HOMEWORK permission",
+    "DATE public student projection has null lesson number and persisted completion",
+    "DATE other authorized manager edits content/date preserving publication identity",
+    "DATE edit preserves persisted student completion and public timestamp",
+    "DATE same-group student reads chronological before/after history from nonpublisher edit",
+    "DATE exact edit/create replay returns current same identity with no duplicate history/receipt/completion"
+  ],
+  "pauseTimeline": [],
+  "limitations": [
+    "Previously passed B/geo criteria remain immutable and are not in the next wrapper scopes.",
+    "DATE midnight/revocation/foreign-manager boundaries use existing component evidence; no clock control.",
+    "HTTP absence proves inaccessible file; accepted component IT provides physical orphan-byte coverage."
+  ],
+  "DATE": {
+    "created": {
+      "id": 3,
+      "bindingId": 3,
+      "publishedBy": 4,
+      "requestKey": "3ca618b4-b361-4c9f-9240-426daad50617",
+      "subjectId": 1,
+      "groupId": 2,
+      "semesterId": 2,
+      "bindingMode": "DATE",
+      "lessonDate": "2026-10-03",
+      "lessonNumber": null,
+      "revision": 1,
+      "archived": false
+    },
+    "baseline": {
+      "homeworks": 2
+    },
+    "afterCreate": {
+      "homeworks": 3
+    },
+    "store": {
+      "academic": {
+        "homeworkRows": 1,
+        "historyRows": 0,
+        "receiptRows": 0,
+        "completion": []
+      },
+      "schedule": {
+        "bindingRows": 1,
+        "binding": {
+          "bindingId": 3,
+          "homeworkId": 3,
+          "actorId": 4,
+          "requestKey": "3ca618b4-b361-4c9f-9240-426daad50617",
+          "payloadHash": "c66c4c77bf29c8f64ad8861faa4941361991c2251515f2c06370fa3197f62324",
+          "groupId": 2,
+          "subjectId": 1,
+          "semesterId": 2,
+          "originalMode": "DATE",
+          "originalDate": "2026-10-03",
+          "originalNumber": null,
+          "originalOccurrenceId": null,
+          "mode": "DATE",
+          "occurrenceId": null,
+          "lessonId": null,
+          "state": "ACTIVE"
+        }
+      }
+    },
+    "helper": {
+      "userId": 5,
+      "activeRole": "STUDENT",
+      "manageHomework": true
+    },
+    "edited": {
+      "id": 3,
+      "bindingId": 3,
+      "publishedBy": 4,
+      "requestKey": "3ca618b4-b361-4c9f-9240-426daad50617",
+      "subjectId": 1,
+      "groupId": 2,
+      "semesterId": 2,
+      "bindingMode": "DATE",
+      "lessonDate": "2026-10-04",
+      "lessonNumber": null,
+      "revision": 2,
+      "archived": false
+    },
+    "history": {
+      "beforeCount": 0,
+      "afterCount": 1,
+      "actorId": 5,
+      "revision": 2
+    },
+    "completionBefore": [
+      {
+        "id": 1,
+        "studentId": 5,
+        "completedAt": "2026-10-02T17:49:15.685827+03:00"
+      }
+    ],
+    "completionAfter": [
+      {
+        "id": 1,
+        "studentId": 5,
+        "completedAt": "2026-10-02T17:49:15.685827+03:00"
+      }
+    ],
+    "replayStore": {
+      "academic": {
+        "homeworkRows": 1,
+        "historyRows": 1,
+        "receiptRows": 1,
+        "completion": [
+          {
+            "id": 1,
+            "studentId": 5,
+            "completedAt": "2026-10-02T17:49:15.685827+03:00"
+          }
+        ]
+      },
+      "schedule": {
+        "bindingRows": 1,
+        "binding": {
+          "bindingId": 3,
+          "homeworkId": 3,
+          "actorId": 4,
+          "requestKey": "3ca618b4-b361-4c9f-9240-426daad50617",
+          "payloadHash": "c66c4c77bf29c8f64ad8861faa4941361991c2251515f2c06370fa3197f62324",
+          "groupId": 2,
+          "subjectId": 1,
+          "semesterId": 2,
+          "originalMode": "DATE",
+          "originalDate": "2026-10-03",
+          "originalNumber": null,
+          "originalOccurrenceId": null,
+          "mode": "DATE",
+          "occurrenceId": null,
+          "lessonId": null,
+          "state": "ACTIVE"
+        }
+      }
+    },
+    "status": "PASS"
+  },
+  "finishedAt": "2026-10-02T14:49:18.891Z"
+}

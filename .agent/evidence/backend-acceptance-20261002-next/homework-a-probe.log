@@ -1,0 +1,3 @@
+(node:10512) [DEP0123] DeprecationWarning: Setting the TLS ServerName to an IP address is not permitted by RFC 6066. This will be ignored in a future version.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"status":"PASS","evidence":"C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\evidence\\backend-acceptance-20261002-next/homework-a-api.json","steps":53,"checks":10}

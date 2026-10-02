@@ -1,0 +1,18 @@
+{
+  "kind": "transfer-assistant-ui-fixture",
+  "createdAt": "2026-10-02T14:48:04.158Z",
+  "groupId": 2,
+  "semesterId": 2,
+  "semesterDateTo": "2026-11-27",
+  "headmanStudentId": 4,
+  "headmanLogin": "runtime444265-transferheadm-4265",
+  "subjectId": 1,
+  "assignmentId": 1,
+  "lessonId": 3,
+  "lessonDate": "2026-10-02",
+  "homeworkId": 1,
+  "passwordTemplateSource": "transfer-assistant-ui-fixture.mjs: FINAL_HEADMAN_PASSWORD",
+  "scenario": "geo",
+  "studentLogin": "runtime444265-geostudent-4265",
+  "studentId": 5
+}

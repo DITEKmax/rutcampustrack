@@ -1,0 +1,38 @@
+{
+  "runId": "20261002-144254022-yxmgddhj",
+  "at": "2026-10-02T17:47:16.2209543+03:00",
+  "ownedCount": 14,
+  "states": [
+    "/rct-requests-20261002-144254022-yxmgddhj-gateway|true|false|false|none",
+    "/rct-requests-20261002-144254022-yxmgddhj-bff|true|false|false|healthy",
+    "/rct-requests-20261002-144254022-yxmgddhj-attendance|true|false|false|none",
+    "/rct-requests-20261002-144254022-yxmgddhj-document-renderer|true|false|false|healthy",
+    "/rct-requests-20261002-144254022-yxmgddhj-notification-web|true|false|false|none",
+    "/rct-requests-20261002-144254022-yxmgddhj-auth|true|false|false|none",
+    "/rct-requests-20261002-144254022-yxmgddhj-schedule|true|false|false|none",
+    "/rct-requests-20261002-144254022-yxmgddhj-academic|true|false|false|none",
+    "/rct-requests-20261002-144254022-yxmgddhj-mongo|true|false|false|none",
+    "/rct-requests-20261002-144254022-yxmgddhj-rabbit|true|false|false|none",
+    "/rct-requests-20261002-144254022-yxmgddhj-redis|true|false|false|none",
+    "/rct-requests-20261002-144254022-yxmgddhj-pg-schedule|true|false|false|none",
+    "/rct-requests-20261002-144254022-yxmgddhj-pg-academic|true|false|false|none",
+    "/rct-requests-20261002-144254022-yxmgddhj-nginx|true|false|false|none"
+  ],
+  "stats": [
+    "rct-requests-20261002-144254022-yxmgddhj-gateway|0.20%|282.7MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-bff|0.21%|234.1MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-attendance|0.28%|428.8MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-document-renderer|0.17%|237.9MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-notification-web|0.29%|357.8MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-auth|0.19%|411.6MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-schedule|0.20%|409MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-academic|1.63%|502.8MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-mongo|0.77%|89.03MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-rabbit|0.19%|126.4MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-redis|0.38%|3.246MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-pg-schedule|0.02%|52MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-pg-academic|0.25%|60.86MiB / 11.68GiB",
+    "rct-requests-20261002-144254022-yxmgddhj-nginx|0.00%|4.789MiB / 11.68GiB"
+  ],
+  "badCount": 0
+}

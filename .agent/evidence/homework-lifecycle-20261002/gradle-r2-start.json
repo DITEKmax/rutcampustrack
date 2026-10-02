@@ -1,0 +1,13 @@
+{
+  "state": "LIVE",
+  "javaHome": "C:/Users/maksd/.jdks/ms-21.0.10",
+  "heavyLease": "root exclusive retained",
+  "revision": "6bf699100ddd0ac75b2fbb9c69498445a3960c5a",
+  "sessionId": 79177,
+  "evidence": "gradle-r2.log",
+  "testcontainersReuse": false,
+  "owner": "/root/v_homework_lifecycle_1002",
+  "tasks": [
+    "academic-app:integrationTest HomeworkEditLifecycleIT"
+  ]
+}

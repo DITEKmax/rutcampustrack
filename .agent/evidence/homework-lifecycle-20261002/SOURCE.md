@@ -1,4 +1,4 @@
-# Academic lifecycle source checkpoint — S3
+# Academic lifecycle delivery — S3
 
 Scope: assigned map-usage-delivery-20260922 worktree, Academic/V45 sole writer. Schedule was handed off in3264cb7d; no Schedule edits after handoff. Additive Academic proto frozen092e5006 for independent BFF consumer. Foreign headman/auth/user-archive evidence preserved.
 
@@ -8,6 +8,6 @@ Implemented: DTO mode/revision/history, ORIGINAL_CREATE and pre-edit LEGACY_ACCE
 
 Acceptance boundary: HomeworkEditLifecycleIT owns one fresh PostgreSQL and uses real committed Academic Spring transactions plus mocked Schedule RPC boundary. Covers nonauthor/foreign/revoked permissions, completion retention, exact retry after later edit, changed-key/no-op/A→B→A, original/legacy create replay, DATE without Schedule lesson, durable updated outbox, accepted recovery through PREPARE after revocation and old marker supersession, trusted DATE terminal event before finalization, midnight cutoff. Schedule author owns Schedule PostgreSQL side. Existing affected HomeworkServiceTest and archive race fixture updated; only obsolete EventIT update scenario moved into consolidated boundary.
 
-Checks: source reads/git ownership and whitespace exit0. Failed exploratory wildcard/path reads and one patch anchor were corrected, no product inference from their diagnostics. Runtime NOT_RUN at this checkpoint; root lease required for scoped compileJava/compileTestJava and HomeworkServiceTest/HomeworkEditLifecycleIT. No Gradle/Docker/push/deploy/production migration run by this leaf. Independent stable source review pending.
+Checks: source reads/git ownership and whitespace exit0. Failed exploratory wildcard/path reads and one patch anchor were corrected, no product inference from their diagnostics. Academic compileJava/compileTestJava PASS; HomeworkServiceTest11PASS R1; all six selected PG criteria accepted across R2/R3/R4. Fixture failures isolated without guard changes; real R3 Hibernate date fingerprint mismatch fixed field-locally after independent affected PASS. R4 session7643 exit0; final docker ps exit0 empty and graceful shutdown. Full failures/results retained in checks.json and raw evidence. Independent stable source and affected correction rechecks PASS. No push/deploy/production migration.
 
-Limitations: no frontend adapter/live bot/production delivery acceptance; two-service real-network move boundary awaits root combined acceptance. Legacy fingerprint preserves previously accepted legacy retry input, never claims unknown original pre-old-edit content. Source compilation and PG migration evidence must precede completion.
+Limitations: no frontend adapter/live bot/production delivery acceptance; two-service real-network move boundary awaits root combined acceptance. Legacy fingerprint preserves previously accepted legacy retry input, never claims unknown original pre-old-edit content. Source compilation and real PG migration criteria accepted; see SUMMARY.md.

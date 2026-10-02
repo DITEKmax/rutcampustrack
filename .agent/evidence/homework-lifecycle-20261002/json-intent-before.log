@@ -1,0 +1,2 @@
+Hibernate JSON: {"groupId":1,"subjectId":2,"semesterId":3,"title":"legacy","description":null,"link":null,"bindingMode":"LESSON","lessonDate":[2201,5,13],"lessonNumber":1}
+SQL expected lessonDate: "2201-05-13"

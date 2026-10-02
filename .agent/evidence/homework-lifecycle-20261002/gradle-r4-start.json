@@ -1,0 +1,17 @@
+{
+  "revision": "701e6d0f42df85dd6ffed5941dab3565148c2d13",
+  "heavyLease": "root exclusive retained",
+  "testcontainersReuse": false,
+  "javaHome": "C:/Users/maksd/.jdks/ms-21.0.10",
+  "evidence": "gradle-r4.log",
+  "state": "LIVE",
+  "excludes": [
+    "HomeworkServiceTest11accepted",
+    "other5PGcriteriaacceptedR2R3"
+  ],
+  "tasks": [
+    "academic-app:integrationTest solefailed legacyAcceptedReplayFreezesBeforeEditAndEffectiveDateCutoffKeepsHistoryReadable"
+  ],
+  "sessionId": 7643,
+  "owner": "/root/v_homework_lifecycle_1002"
+}

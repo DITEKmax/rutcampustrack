@@ -1,0 +1,17 @@
+{
+  "sessionId": 47230,
+  "owner": "/root/v_homework_lifecycle_1002",
+  "tasks": [
+    "academic-app:integrationTest five previously unentered HomeworkEditLifecycleIT methods"
+  ],
+  "state": "LIVE",
+  "evidence": "gradle-r3.log",
+  "testcontainersReuse": false,
+  "heavyLease": "root exclusive retained",
+  "excludes": [
+    "HomeworkServiceTest11accepted",
+    "acceptedPlacementDrainsThroughArchivePrepareAfterRevocationAndSupersedesOldTransfer acceptedR2"
+  ],
+  "revision": "86e386f9e63296f2770916842f8dfd173c8a1b7e",
+  "javaHome": "C:/Users/maksd/.jdks/ms-21.0.10"
+}

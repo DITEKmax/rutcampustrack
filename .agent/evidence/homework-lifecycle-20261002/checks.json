@@ -1,13 +1,22 @@
 {
-  "revision": "092e500690c243a72c6bf850451a9477a0a2ce97+Academic-source-checkpoint",
-  "environment": "assigned Windows worktree map-usage-delivery-20260922",
+  "revision": "701e6d0f42df85dd6ffed5941dab3565148c2d13",
+  "environment": "Windows assigned WT; JDK21; PostgreSQL16 fresh non-reused Testcontainers; exclusive root heavy lease",
+  "risk": "S3",
   "checks": [
-    {"command":"canonical rules/skills/AGENTS reads + SHA256", "exitCode":0,"result":"PASS","evidence":"CONTRACT.md"},
-    {"command":"git diff a5974af8 -- Academic/Schedule/proto", "exitCode":0,"result":"no relevant baseline diff"},
-    {"command":"initial WT owner-decision read", "exitCode":1,"result":"path absent in WT; read canonical root decision exit0"},
-    {"command":"initial combined rg with POSIX brace list in PowerShell", "exitCode":1,"result":"shell ParserError; corrected explicit paths exit0; no product inference"},
-    {"command":"git diff --check", "exitCode":0,"result":"PASS WIP whitespace only"}
+    {"command":"canonical RULES/skills/AGENTS reads and ownership", "exitCode":0,"result":"PASS"},
+    {"command":"relevant baseline diff vs a5974af8", "exitCode":0,"result":"no relevant baseline diff"},
+    {"command":"initial explicit path/wildcard exploration", "exitCode":1,"result":"corrected; no product inference"},
+    {"command":"git diff --check", "exitCode":0,"result":"PASS"},
+    {"command":"independent source review c8d83540+da05202b", "result":"two P2 corrected a56ae677; affected independent recheck PASS"},
+    {"command":"actual Hibernate6.6.53 synthetic intent mapper", "exitCode":0,"result":"confirmed array-date mismatch; field-local fix701e6d0f; independent affected PASS", "evidence":"json-intent-before.log"}
   ],
-  "runtime": {"result":"NOT_RUN","reason":"root heavy lease requested; architecture frozen and source implemented"},
-  "limitations": ["independent stable code review and scoped compile/PostgreSQL runtime pending", "real-network combined Schedule/Academic acceptance pending", "backend contract requires next-stage client requestKey/revision adapter"]
+  "runtime": [
+    {"run":"R1","sessionId":21731,"revision":"a56ae677","exitCode":1,"elapsed":"1m26s","result":"compileJava/compileTestJava PASS; HomeworkServiceTest11PASS; six PG cases unentered due subject/type fixture invariant","evidence":["gradle-r1.log","gradle-r1-start.json","gradle-r1-exit.json","r1-xml"]},
+    {"run":"R2","sessionId":79177,"revision":"6bf69910","exitCode":1,"elapsed":"55s","result":"accepted placement/PREPARE/revoked rights/marker supersession PASS; remaining five unentered overlapping-semester fixtures","evidence":["gradle-r2.log","gradle-r2-start.json","gradle-r2-exit.json","r2-xml"]},
+    {"run":"R3","sessionId":47230,"revision":"86e386f9","exitCode":1,"elapsed":"53s","result":"four PASS: Abort tombstone; nonauthor history/receipts/completion/outbox; DATE terminal-before-finalize; DATE create/replay. Legacy failed real Hibernate array-date fingerprint","evidence":["gradle-r3.log","gradle-r3-start.json","gradle-r3-exit.json","r3-xml"]},
+    {"run":"R4","sessionId":7643,"revision":"701e6d0f","exitCode":0,"elapsed":"1m03s","result":"sole failed legacy/midnight method PASS; affected production/test compile PASS; other accepted criteria not repeated","evidence":["gradle-r4.log","gradle-r4-start.json","gradle-r4-exit.json","r4-xml"]}
+  ],
+  "cleanup": {"allRuns":"graceful Tomcat/JPA/Hikari shutdown; docker ps exit0 empty after each run", "final":"R4 terminal2026-10-02T14:35:54.4415787Z; no live exec; heavy lease released"},
+  "acceptedCriteria": "six cohesive PG criteria across R2/R3/R4; eleven existing units R1; not a whole-class final-head rerun",
+  "limitations": ["Schedule RPC mocked at Academic boundary; combined network acceptance unclaimed", "frontend key/revision adapter deferred", "no full retention/cancel/whole-project suite", "no production migration/deploy/push"]
 }

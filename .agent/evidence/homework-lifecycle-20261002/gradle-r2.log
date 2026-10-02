@@ -1,0 +1,125 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:academic-service:academic-api-contract:compileJava UP-TO-DATE
+> Task :services:academic-service:academic-api-contract:processResources NO-SOURCE
+> Task :services:academic-service:academic-api-contract:classes UP-TO-DATE
+> Task :services:academic-service:academic-api-contract:jar UP-TO-DATE
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-security:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:academic-service:academic-app:extractIncludeProto UP-TO-DATE
+> Task :services:academic-service:academic-app:extractProto UP-TO-DATE
+> Task :services:academic-service:academic-app:generateProto UP-TO-DATE
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-outbox:compileJava UP-TO-DATE
+> Task :services:shared:shared-outbox:classes UP-TO-DATE
+> Task :services:shared:shared-outbox:jar UP-TO-DATE
+> Task :services:shared:shared-security:compileJava UP-TO-DATE
+> Task :services:shared:shared-security:classes UP-TO-DATE
+> Task :services:shared:shared-security:jar UP-TO-DATE
+> Task :services:shared:shared-web:compileJava UP-TO-DATE
+> Task :services:shared:shared-web:classes UP-TO-DATE
+> Task :services:shared:shared-web:jar UP-TO-DATE
+> Task :services:academic-service:academic-app:compileJava UP-TO-DATE
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:academic-service:academic-app:processResources UP-TO-DATE
+> Task :services:academic-service:academic-app:classes UP-TO-DATE
+> Task :services:shared:shared-observability:processTestFixturesResources NO-SOURCE
+> Task :services:shared:shared-security:processTestFixturesResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processTestFixturesResources NO-SOURCE
+> Task :services:academic-service:academic-app:extractIncludeTestProto UP-TO-DATE
+> Task :services:academic-service:academic-app:extractTestProto UP-TO-DATE
+> Task :services:academic-service:academic-app:generateTestProto NO-SOURCE
+> Task :services:shared:shared-observability:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-observability:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-observability:testFixturesJar UP-TO-DATE
+> Task :services:shared:shared-security:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesJar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileJava NO-SOURCE
+> Task :services:shared:shared-test-containers:classes UP-TO-DATE
+> Task :services:shared:shared-test-containers:jar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesJar UP-TO-DATE
+
+> Task :services:academic-service:academic-app:compileTestJava
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\map-usage-delivery-20260922\services\academic-service\academic-app\src\test\java\ru\rutcampustrack\academic\user\UserRepositorySearchIT.java:111: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                Specification.where(empty), PageRequest.of(0, 500));
+                             ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\map-usage-delivery-20260922\services\academic-service\academic-app\src\test\java\ru\rutcampustrack\academic\user\UserRepositorySearchIT.java:132: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesSearch("Пётр"))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+2 warnings
+
+> Task :services:academic-service:academic-app:processTestResources UP-TO-DATE
+> Task :services:academic-service:academic-app:testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :services:academic-service:academic-app:integrationTest
+
+HomeworkEditLifecycleIT > missingMoveRequiresDurableAbortTombstoneBeforePreparedCommandIsCancelled() FAILED
+    org.springframework.dao.DataIntegrityViolationException at HomeworkEditLifecycleIT.java:93
+        Caused by: org.postgresql.util.PSQLException at HomeworkEditLifecycleIT.java:93
+
+HomeworkEditLifecycleIT > nonAuthorEditsKeepCompletionReplayHistoryAndDurableUpdatedOutbox() FAILED
+    org.springframework.dao.DataIntegrityViolationException at HomeworkEditLifecycleIT.java:93
+        Caused by: org.postgresql.util.PSQLException at HomeworkEditLifecycleIT.java:93
+
+HomeworkEditLifecycleIT > dateTerminalEventWinsBeforeAcademicFinalizationWithoutSuccessfulEditOrCompletionLoss() FAILED
+    org.springframework.dao.DataIntegrityViolationException at HomeworkEditLifecycleIT.java:93
+        Caused by: org.postgresql.util.PSQLException at HomeworkEditLifecycleIT.java:93
+
+HomeworkEditLifecycleIT > dateCreateNeedsNoLessonAndOriginalCreateReplaySurvivesContentEdit() FAILED
+    org.springframework.dao.DataIntegrityViolationException at HomeworkEditLifecycleIT.java:93
+        Caused by: org.postgresql.util.PSQLException at HomeworkEditLifecycleIT.java:93
+
+HomeworkEditLifecycleIT > legacyAcceptedReplayFreezesBeforeEditAndEffectiveDateCutoffKeepsHistoryReadable() FAILED
+    org.springframework.dao.DataIntegrityViolationException at HomeworkEditLifecycleIT.java:93
+        Caused by: org.postgresql.util.PSQLException at HomeworkEditLifecycleIT.java:93
+
+{"ts":"2026-10-02T17:20:49.178+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"SpringApplicationShutdownHook","msg":"Commencing graceful shutdown. Waiting for active requests to complete","service":"academic-service"}
+{"ts":"2026-10-02T17:20:49.190+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"tomcat-shutdown","msg":"Graceful shutdown complete","service":"academic-service"}
+{"ts":"2026-10-02T17:20:49.644+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"SpringApplicationShutdownHook","msg":"Closing JPA EntityManagerFactory for persistence unit 'default'","service":"academic-service"}
+{"ts":"2026-10-02T17:20:49.652+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"SpringApplicationShutdownHook","msg":"HikariPool-1 - Shutdown initiated...","service":"academic-service"}
+{"ts":"2026-10-02T17:20:49.657+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"SpringApplicationShutdownHook","msg":"HikariPool-1 - Shutdown completed.","service":"academic-service"}
+
+> Task :services:academic-service:academic-app:integrationTest FAILED
+
+6 tests completed, 5 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':services:academic-service:academic-app:integrationTest'.
+> There were failing tests. See the report at: file:///C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/map-usage-delivery-20260922/services/academic-service/academic-app/build/reports/integrationTest/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 55s
+37 actionable tasks: 2 executed, 35 up-to-date

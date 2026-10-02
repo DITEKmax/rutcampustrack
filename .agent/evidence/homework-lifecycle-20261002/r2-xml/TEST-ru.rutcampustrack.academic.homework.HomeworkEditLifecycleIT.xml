@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT" tests="6" skipped="0" failures="5" errors="0" timestamp="2026-10-02T14:20:47" hostname="DITEK-PK" time="1.071">
+  <properties/>
+  <testcase name="acceptedPlacementDrainsThroughArchivePrepareAfterRevocationAndSupersedesOldTransfer()" classname="ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT" time="0.909"/>
+  <testcase name="missingMoveRequiresDurableAbortTombstoneBeforePreparedCommandIsCancelled()" classname="ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT" time="0.048">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id]; ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;&#10;  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05))." type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id]; ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;
+  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)).
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT.fixture(HomeworkEditLifecycleIT.java:93)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;
+  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)).
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 9 more
+</failure>
+  </testcase>
+  <testcase name="nonAuthorEditsKeepCompletionReplayHistoryAndDurableUpdatedOutbox()" classname="ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT" time="0.025">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id]; ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;&#10;  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05))." type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id]; ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;
+  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)).
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT.fixture(HomeworkEditLifecycleIT.java:93)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;
+  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)).
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 9 more
+</failure>
+  </testcase>
+  <testcase name="dateTerminalEventWinsBeforeAcademicFinalizationWithoutSuccessfulEditOrCompletionLoss()" classname="ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT" time="0.026">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id]; ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;&#10;  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05))." type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id]; ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;
+  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)).
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT.fixture(HomeworkEditLifecycleIT.java:93)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;
+  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)).
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 9 more
+</failure>
+  </testcase>
+  <testcase name="dateCreateNeedsNoLessonAndOriginalCreateReplaySurvivesContentEdit()" classname="ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT" time="0.028">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id]; ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;&#10;  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05))." type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id]; ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;
+  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)).
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT.fixture(HomeworkEditLifecycleIT.java:93)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;
+  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)).
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 9 more
+</failure>
+  </testcase>
+  <testcase name="legacyAcceptedReplayFreezesBeforeEditAndEffectiveDateCutoffKeepsHistoryReadable()" classname="ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT" time="0.024">
+    <failure message="org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id]; ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;&#10;  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05))." type="org.springframework.dao.DataIntegrityViolationException">org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id]; ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;
+  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)).
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:140)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT.fixture(HomeworkEditLifecycleIT.java:93)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: conflicting key value violates exclusion constraint &quot;semesters_no_overlap&quot;
+  Подробности: Key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)) conflicts with existing key (daterange(date_from, date_to, '[]'::text))=([2026-09-25,2026-11-05)).
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 9 more
+</failure>
+  </testcase>
+  <system-out><![CDATA[17:20:21.418 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT]: HomeworkEditLifecycleIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+17:20:21.850 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.rutcampustrack.academic.AcademicApplication for test class ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT
+17:20:22.095 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+17:20:22.101 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+17:20:22.116 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.20.4
+17:20:22.562 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+17:20:22.999 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+17:20:23.000 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+17:20:23.024 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.5.2
+  API Version: 1.51
+  Operating System: Docker Desktop
+  Total Memory: 11963 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+17:20:23.938 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Creating container for image: testcontainers/ryuk:0.11.0
+17:20:24.072 [Test worker] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+17:20:24.272 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 is starting: dc8bcd70a66eea2ef036c89140c5c7b7ee8a862eb61602dc37f3bc4843460240
+17:20:24.867 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 started in PT0.9295183S
+17:20:24.874 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+17:20:24.875 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+17:20:24.876 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+17:20:24.876 [Test worker] INFO tc.postgres:16 -- Creating container for image: postgres:16
+17:20:25.016 [Test worker] INFO tc.postgres:16 -- Container postgres:16 is starting: e70b60656cfcf782d057fc5228fe3e6a1e5e6cde4308845e15a378249a8e4170
+17:20:27.314 [Test worker] INFO tc.postgres:16 -- Container postgres:16 started in PT2.4374799S
+17:20:27.315 [Test worker] INFO tc.postgres:16 -- Container is started (JDBC URL: jdbc:postgresql://localhost:55079/homework_lifecycle?loggerLevel=OFF)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+{"ts":"2026-10-02T17:20:28.259+03:00","v":"1","level":"INFO","logger":"org.hibernate.validator.internal.util.Version","thread":"background-preinit","msg":"HV000001: Hibernate Validator 8.0.3.Final","service":"academic-service"}
+{"ts":"2026-10-02T17:20:28.351+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT","thread":"Test worker","msg":"Starting HomeworkEditLifecycleIT using Java 21.0.10 with PID 13024 (started by maksd in C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\map-usage-delivery-20260922\\services\\academic-service\\academic-app)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:28.352+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT","thread":"Test worker","msg":"Running with Spring Boot v3.5.16, Spring v6.2.19","service":"academic-service"}
+{"ts":"2026-10-02T17:20:28.353+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT","thread":"Test worker","msg":"The following 1 profile is active: \"test\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:30.887+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Multiple Spring Data modules found, entering strict repository configuration mode","service":"academic-service"}
+{"ts":"2026-10-02T17:20:30.890+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Bootstrapping Spring Data JPA repositories in DEFAULT mode.","service":"academic-service"}
+{"ts":"2026-10-02T17:20:31.245+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Finished Spring Data repository scanning in 342 ms. Found 20 JPA repository interfaces.","service":"academic-service"}
+{"ts":"2026-10-02T17:20:35.250+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat initialized with port 0 (http)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:35.687+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Initializing ProtocolHandler [\"http-nio-auto-1\"]","service":"academic-service"}
+{"ts":"2026-10-02T17:20:35.710+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardService","thread":"Test worker","msg":"Starting service [Tomcat]","service":"academic-service"}
+{"ts":"2026-10-02T17:20:35.711+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardEngine","thread":"Test worker","msg":"Starting Servlet engine: [Apache Tomcat/10.1.59]","service":"academic-service"}
+{"ts":"2026-10-02T17:20:35.988+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","thread":"Test worker","msg":"Initializing Spring embedded WebApplicationContext","service":"academic-service"}
+{"ts":"2026-10-02T17:20:35.990+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","thread":"Test worker","msg":"Root WebApplicationContext: initialization completed in 7615 ms","service":"academic-service"}
+{"ts":"2026-10-02T17:20:37.248+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.security.AcademicUserContextFilter","thread":"Test worker","msg":"Filter 'academicUserContextFilter' configured for use","service":"academic-service"}
+{"ts":"2026-10-02T17:20:37.772+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Starting...","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.062+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.pool.HikariPool","thread":"Test worker","msg":"HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@2d8a7544","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.066+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Start completed.","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.134+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.FlywayExecutor","thread":"Test worker","msg":"Database: jdbc:postgresql://localhost:55079/homework_lifecycle?loggerLevel=OFF (PostgreSQL 16.13)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.309+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Schema history table \"public\".\"flyway_schema_history\" does not exist yet","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.319+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbValidate","thread":"Test worker","msg":"Successfully validated 45 migrations (execution time 00:00.128s)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.341+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Creating Schema History table \"public\".\"flyway_schema_history\" ...","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.402+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Current version of schema \"public\": << Empty Schema >>","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.431+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"1 - baseline\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.525+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"2 - seed test data\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.552+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"3 - login sequences\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.572+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"4 - campus settings bigserial\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.597+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"5 - add enum casts\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.616+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"6 - add semester first week type\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.636+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"7 - add user avatar\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.658+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"8 - group unify name\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.685+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"9 - groups archived at\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.707+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"10 - semesters no overlap\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.756+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"11 - enum equality operators\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.781+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"12 - subjects group id\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.786+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.805+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"13 - homework lesson binding\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.826+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"14 - update campus coordinates\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.841+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"15 - shedlock table\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.859+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"16 - academic outbox\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.878+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"17 - add performance indexes\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.893+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"18 - event consumer processed\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.911+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"19 - audit log\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.931+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"20 - audit log indexes\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.949+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"21 - user name icu collation\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.965+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"22 - user name sort index\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:38.980+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"23 - homework notifications\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.001+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"24 - auth session authority\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.041+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"25 - student subject homework foundation\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.045+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: extension \"btree_gist\" already exists, skipping (SQL State: 42710 - Error Code: 0)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.091+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"26 - campus map\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.154+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"27 - historical membership coverage\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.170+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"28 - homework terminal archive\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.185+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"29 - admin role statuses\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.200+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"30 - campus map distinct openings\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.214+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"31 - admin group registry\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.233+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"32 - headman assistant active history\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.248+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"33 - unique active headman per group\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.270+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"34 - assignment replacement operation\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.297+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"35 - semester type\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.313+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"36 - group promotion cycle record\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.329+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"37 - homework binding terminal archive\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.350+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"38 - durable lesson transfer participant\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.383+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"39 - semester archive state\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.406+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"40 - semester archive operations\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.464+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"41 - final semester deletion\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.499+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"42 - auth password changed outbox\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.521+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"43 - campus map final deletion\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.544+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"44 - user archive receipts\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.567+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"45 - homework edit history\"","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.616+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Successfully applied 45 migrations to schema \"public\", now at version v45 (execution time 00:00.623s)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.856+03:00","v":"1","level":"INFO","logger":"org.hibernate.jpa.internal.util.LogHelper","thread":"Test worker","msg":"HHH000204: Processing PersistenceUnitInfo [name: default]","service":"academic-service"}
+{"ts":"2026-10-02T17:20:39.996+03:00","v":"1","level":"INFO","logger":"org.hibernate.Version","thread":"Test worker","msg":"HHH000412: Hibernate ORM core version 6.6.53.Final","service":"academic-service"}
+{"ts":"2026-10-02T17:20:40.092+03:00","v":"1","level":"INFO","logger":"org.hibernate.cache.internal.RegionFactoryInitiator","thread":"Test worker","msg":"HHH000026: Second-level cache disabled","service":"academic-service"}
+{"ts":"2026-10-02T17:20:40.301+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo","thread":"Test worker","msg":"No LoadTimeWeaver setup: ignoring JPA class transformer","service":"academic-service"}
+{"ts":"2026-10-02T17:20:40.394+03:00","v":"1","level":"WARN","logger":"org.hibernate.orm.deprecation","thread":"Test worker","msg":"HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:40.418+03:00","v":"1","level":"INFO","logger":"org.hibernate.orm.connections.pooling","thread":"Test worker","msg":"HHH10001005: Database info:\n\tDatabase JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']\n\tDatabase driver: undefined/unknown\n\tDatabase version: 16.13\n\tAutocommit mode: undefined/unknown\n\tIsolation level: undefined/unknown\n\tMinimum pool size: undefined/unknown\n\tMaximum pool size: undefined/unknown","service":"academic-service"}
+{"ts":"2026-10-02T17:20:42.250+03:00","v":"1","level":"INFO","logger":"org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator","thread":"Test worker","msg":"HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:42.315+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"Test worker","msg":"Initialized JPA EntityManagerFactory for persistence unit 'default'","service":"academic-service"}
+{"ts":"2026-10-02T17:20:42.802+03:00","v":"1","level":"INFO","logger":"org.springframework.data.jpa.repository.query.QueryEnhancerFactory","thread":"Test worker","msg":"Hibernate is in classpath; If applicable, HQL parser will be used.","service":"academic-service"}
+{"ts":"2026-10-02T17:20:44.888+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.client.autoconfigure.GrpcClientAutoConfiguration","thread":"Test worker","msg":"Detected grpc-netty: Creating NettyChannelFactory + InProcessChannelFactory","service":"academic-service"}
+{"ts":"2026-10-02T17:20:46.116+03:00","v":"1","level":"ERROR","logger":"ru.rutcampustrack.shared.security.PublicKeyProvider","thread":"Test worker","msg":"Auth Service unreachable: I/O error on GET request for \"http://localhost:9999/auth/public-key\": null","service":"academic-service"}
+{"ts":"2026-10-02T17:20:47.397+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.actuate.endpoint.web.EndpointLinksResolver","thread":"Test worker","msg":"Exposing 2 endpoints beneath base path '/actuator'","service":"academic-service"}
+{"ts":"2026-10-02T17:20:47.472+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Starting ProtocolHandler [\"http-nio-auto-1\"]","service":"academic-service"}
+{"ts":"2026-10-02T17:20:47.485+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat started on port 51733 (http) with context path '/'","service":"academic-service"}
+{"ts":"2026-10-02T17:20:47.506+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT","thread":"Test worker","msg":"Started HomeworkEditLifecycleIT in 20.136 seconds (process running for 28.33)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:47.655+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.homeworks (actor_id,binding_id,binding_mode,create_intent,create_intent_kind,created_at,description,due_reminder_sent_at,group_id,lesson_date,lesson_number,link,payload_hash,publication_state,published_by,request_key,revision,semester_id,subject_id,title,updated_at) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:47.927+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:47.956+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select h1_0.id,h1_0.actor_id,h1_0.binding_id,h1_0.binding_mode,h1_0.create_intent,h1_0.create_intent_kind,h1_0.created_at,h1_0.description,h1_0.due_reminder_sent_at,h1_0.group_id,h1_0.lesson_date,h1_0.lesson_number,h1_0.link,h1_0.payload_hash,h1_0.publication_state,h1_0.published_by,h1_0.request_key,h1_0.revision,h1_0.semester_id,h1_0.subject_id,h1_0.title,h1_0.updated_at from public.homeworks h1_0 where h1_0.id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:47.996+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select h1_0.id,h1_0.actor_id,h1_0.binding_id,h1_0.binding_mode,h1_0.create_intent,h1_0.create_intent_kind,h1_0.created_at,h1_0.description,h1_0.due_reminder_sent_at,h1_0.group_id,h1_0.lesson_date,h1_0.lesson_number,h1_0.link,h1_0.payload_hash,h1_0.publication_state,h1_0.published_by,h1_0.request_key,h1_0.revision,h1_0.semester_id,h1_0.subject_id,h1_0.title,h1_0.updated_at from public.homeworks h1_0 where h1_0.id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.002+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.023+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.025+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select h1_0.id,h1_0.actor_id,h1_0.binding_id,h1_0.binding_mode,h1_0.create_intent,h1_0.create_intent_kind,h1_0.created_at,h1_0.description,h1_0.due_reminder_sent_at,h1_0.group_id,h1_0.lesson_date,h1_0.lesson_number,h1_0.link,h1_0.payload_hash,h1_0.publication_state,h1_0.published_by,h1_0.request_key,h1_0.revision,h1_0.semester_id,h1_0.subject_id,h1_0.title,h1_0.updated_at from public.homeworks h1_0 where h1_0.id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.031+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select h1_0.id,h1_0.actor_id,h1_0.binding_id,h1_0.binding_mode,h1_0.create_intent,h1_0.create_intent_kind,h1_0.created_at,h1_0.description,h1_0.due_reminder_sent_at,h1_0.group_id,h1_0.lesson_date,h1_0.lesson_number,h1_0.link,h1_0.payload_hash,h1_0.publication_state,h1_0.published_by,h1_0.request_key,h1_0.revision,h1_0.semester_id,h1_0.subject_id,h1_0.title,h1_0.updated_at from public.homeworks h1_0 where h1_0.id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.035+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.044+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.047+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select h1_0.id,h1_0.actor_id,h1_0.binding_id,h1_0.binding_mode,h1_0.create_intent,h1_0.create_intent_kind,h1_0.created_at,h1_0.description,h1_0.due_reminder_sent_at,h1_0.group_id,h1_0.lesson_date,h1_0.lesson_number,h1_0.link,h1_0.payload_hash,h1_0.publication_state,h1_0.published_by,h1_0.request_key,h1_0.revision,h1_0.semester_id,h1_0.subject_id,h1_0.title,h1_0.updated_at from public.homeworks h1_0 where h1_0.id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.059+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select h1_0.id,h1_0.actor_id,h1_0.binding_id,h1_0.binding_mode,h1_0.create_intent,h1_0.create_intent_kind,h1_0.created_at,h1_0.description,h1_0.due_reminder_sent_at,h1_0.group_id,h1_0.lesson_date,h1_0.lesson_number,h1_0.link,h1_0.payload_hash,h1_0.publication_state,h1_0.published_by,h1_0.request_key,h1_0.revision,h1_0.semester_id,h1_0.subject_id,h1_0.title,h1_0.updated_at from public.homeworks h1_0 where h1_0.id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.063+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select urg1_0.id,urg1_0.created_at,urg1_0.group_id,urg1_0.role,urg1_0.status,urg1_0.updated_at,urg1_0.user_id from public.user_role_grants urg1_0 where urg1_0.user_id=? and urg1_0.role=? and urg1_0.status=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.125+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select sao1_0.operation_id,sao1_0.academic_status,sao1_0.academic_participant_digest,sao1_0.academic_sealed,sao1_0.action,sao1_0.is_active,sao1_0.actor_id,sao1_0.is_archived,sao1_0.assignments_count,sao1_0.attendance_status,sao1_0.attendance_marks_count,sao1_0.attendance_participant_digest,sao1_0.attendance_sealed,sao1_0.blocking_reason,sao1_0.cancel_reason,sao1_0.created_at,sao1_0.delete_phase,sao1_0.homeworks_count,sao1_0.idempotency_key,sao1_0.irreversible_intent,sao1_0.lessons_count,sao1_0.one_off_lessons_count,sao1_0.operation_state,sao1_0.original_state_version,sao1_0.prepare_expires_at,sao1_0.preview_digest,sao1_0.prior_state,sao1_0.release_pending,sao1_0.retryable,sao1_0.row_version,sao1_0.schedule_status,sao1_0.schedule_participant_digest,sao1_0.schedule_sealed,sao1_0.schedule_templates_count,sao1_0.semester_id,sao1_0.semester_name,sao1_0.state_version,sao1_0.student_requests_count,sao1_0.transition,sao1_0.updated_at from public.semester_archive_operations sao1_0 where sao1_0.idempotency_key=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.133+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select sao1_0.operation_id,sao1_0.academic_status,sao1_0.academic_participant_digest,sao1_0.academic_sealed,sao1_0.action,sao1_0.is_active,sao1_0.actor_id,sao1_0.is_archived,sao1_0.assignments_count,sao1_0.attendance_status,sao1_0.attendance_marks_count,sao1_0.attendance_participant_digest,sao1_0.attendance_sealed,sao1_0.blocking_reason,sao1_0.cancel_reason,sao1_0.created_at,sao1_0.delete_phase,sao1_0.homeworks_count,sao1_0.idempotency_key,sao1_0.irreversible_intent,sao1_0.lessons_count,sao1_0.one_off_lessons_count,sao1_0.operation_state,sao1_0.original_state_version,sao1_0.prepare_expires_at,sao1_0.preview_digest,sao1_0.prior_state,sao1_0.release_pending,sao1_0.retryable,sao1_0.row_version,sao1_0.schedule_status,sao1_0.schedule_participant_digest,sao1_0.schedule_sealed,sao1_0.schedule_templates_count,sao1_0.semester_id,sao1_0.semester_name,sao1_0.state_version,sao1_0.student_requests_count,sao1_0.transition,sao1_0.updated_at from public.semester_archive_operations sao1_0 where sao1_0.semester_id=? order by sao1_0.created_at desc,sao1_0.operation_id desc fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.145+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.academic_year,s1_0.archive_transition,s1_0.is_archived,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.deletion_phase,s1_0.first_week_type,s1_0.is_active,s1_0.name,s1_0.archive_release_pending,s1_0.semester_type,s1_0.state_version,s1_0.transition_operation_id from public.semesters s1_0 where s1_0.id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.162+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select s1_0.id,s1_0.academic_year,s1_0.archive_transition,s1_0.is_archived,s1_0.created_at,s1_0.date_from,s1_0.date_to,s1_0.deletion_phase,s1_0.first_week_type,s1_0.is_active,s1_0.name,s1_0.archive_release_pending,s1_0.semester_type,s1_0.state_version,s1_0.transition_operation_id from public.semesters s1_0 where s1_0.id=? for no key update","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.185+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"update public.semesters set academic_year=?,archive_transition=?,is_archived=?,date_from=?,date_to=?,deletion_phase=?,first_week_type=?,is_active=?,name=?,archive_release_pending=?,semester_type=?,state_version=?,transition_operation_id=? where id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.209+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select sao1_0.operation_id,sao1_0.academic_status,sao1_0.academic_participant_digest,sao1_0.academic_sealed,sao1_0.action,sao1_0.is_active,sao1_0.actor_id,sao1_0.is_archived,sao1_0.assignments_count,sao1_0.attendance_status,sao1_0.attendance_marks_count,sao1_0.attendance_participant_digest,sao1_0.attendance_sealed,sao1_0.blocking_reason,sao1_0.cancel_reason,sao1_0.created_at,sao1_0.delete_phase,sao1_0.homeworks_count,sao1_0.idempotency_key,sao1_0.irreversible_intent,sao1_0.lessons_count,sao1_0.one_off_lessons_count,sao1_0.operation_state,sao1_0.original_state_version,sao1_0.prepare_expires_at,sao1_0.preview_digest,sao1_0.prior_state,sao1_0.release_pending,sao1_0.retryable,sao1_0.row_version,sao1_0.schedule_status,sao1_0.schedule_participant_digest,sao1_0.schedule_sealed,sao1_0.schedule_templates_count,sao1_0.semester_id,sao1_0.semester_name,sao1_0.state_version,sao1_0.student_requests_count,sao1_0.transition,sao1_0.updated_at from public.semester_archive_operations sao1_0 where sao1_0.operation_id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.227+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.semester_archive_operations (academic_status,academic_participant_digest,academic_sealed,action,is_active,actor_id,is_archived,assignments_count,attendance_status,attendance_marks_count,attendance_participant_digest,attendance_sealed,blocking_reason,cancel_reason,created_at,delete_phase,homeworks_count,idempotency_key,irreversible_intent,lessons_count,one_off_lessons_count,operation_state,original_state_version,prepare_expires_at,preview_digest,prior_state,release_pending,retryable,row_version,schedule_status,schedule_participant_digest,schedule_sealed,schedule_templates_count,semester_id,semester_name,state_version,student_requests_count,transition,updated_at,operation_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.264+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.academic_outbox (created_at,event_type,last_error,payload,retry_count,sent_at,status) values (?,?,?,?,?,?,?)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.267+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.event.DomainEventListener","thread":"Test worker","msg":"Outbox saved: type=semester.archive.participant.command, id=472c598a-f5d9-4051-873c-1a29ec0227a4","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.288+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select h1_0.id,h1_0.actor_id,h1_0.binding_id,h1_0.binding_mode,h1_0.create_intent,h1_0.create_intent_kind,h1_0.created_at,h1_0.description,h1_0.due_reminder_sent_at,h1_0.group_id,h1_0.lesson_date,h1_0.lesson_number,h1_0.link,h1_0.payload_hash,h1_0.publication_state,h1_0.published_by,h1_0.request_key,h1_0.revision,h1_0.semester_id,h1_0.subject_id,h1_0.title,h1_0.updated_at from public.homeworks h1_0 where h1_0.id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.292+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select hbam1_0.binding_id,hbam1_0.actor_id,hbam1_0.archived_at,hbam1_0.homework_id,hbam1_0.request_key,hbam1_0.semester_id,hbam1_0.source_event_id from public.homework_binding_archives hbam1_0 where hbam1_0.binding_id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.314+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"update public.homeworks set binding_mode=?,create_intent=?,create_intent_kind=?,description=?,due_reminder_sent_at=?,group_id=?,lesson_date=?,lesson_number=?,link=?,publication_state=?,published_by=?,revision=?,semester_id=?,subject_id=?,title=?,updated_at=? where id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.326+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into public.academic_outbox (created_at,event_type,last_error,payload,retry_count,sent_at,status) values (?,?,?,?,?,?,?)","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.329+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.academic.event.DomainEventListener","thread":"Test worker","msg":"Outbox saved: type=homework.updated, id=83e8a43c-0a55-4587-aa9e-d8e13bbc621a","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.355+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select h1_0.id,h1_0.actor_id,h1_0.binding_id,h1_0.binding_mode,h1_0.create_intent,h1_0.create_intent_kind,h1_0.created_at,h1_0.description,h1_0.due_reminder_sent_at,h1_0.group_id,h1_0.lesson_date,h1_0.lesson_number,h1_0.link,h1_0.payload_hash,h1_0.publication_state,h1_0.published_by,h1_0.request_key,h1_0.revision,h1_0.semester_id,h1_0.subject_id,h1_0.title,h1_0.updated_at from public.homeworks h1_0 where h1_0.id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.371+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select h1_0.id,h1_0.actor_id,h1_0.binding_id,h1_0.binding_mode,h1_0.create_intent,h1_0.create_intent_kind,h1_0.created_at,h1_0.description,h1_0.due_reminder_sent_at,h1_0.group_id,h1_0.lesson_date,h1_0.lesson_number,h1_0.link,h1_0.payload_hash,h1_0.publication_state,h1_0.published_by,h1_0.request_key,h1_0.revision,h1_0.semester_id,h1_0.subject_id,h1_0.title,h1_0.updated_at from public.homeworks h1_0 where h1_0.id=?","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.386+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select hc1_0.id from public.homework_completions hc1_0 where hc1_0.homework_id=? and hc1_0.student_id=? fetch first ? rows only","service":"academic-service"}
+{"ts":"2026-10-02T17:20:48.392+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select h1_0.id,h1_0.actor_id,h1_0.binding_id,h1_0.binding_mode,h1_0.create_intent,h1_0.create_intent_kind,h1_0.created_at,h1_0.description,h1_0.due_reminder_sent_at,h1_0.group_id,h1_0.lesson_date,h1_0.lesson_number,h1_0.link,h1_0.payload_hash,h1_0.publication_state,h1_0.published_by,h1_0.request_key,h1_0.revision,h1_0.semester_id,h1_0.subject_id,h1_0.title,h1_0.updated_at from public.homeworks h1_0 where h1_0.id=?","service":"academic-service"}
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.8\f09415827a71be7ed621c7bd02550678f28bc81c\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

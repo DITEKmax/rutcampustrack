@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.schedule.integration.LessonApiIT" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-10-02T15:29:38" hostname="DITEK-PK" time="1.681">
+  <properties/>
+  <testcase name="nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope()" classname="ru.rutcampustrack.schedule.integration.LessonApiIT" time="1.681">
+    <failure message="org.springframework.jdbc.UncategorizedSQLException: PreparedStatementCallback; uncategorized SQLException for SQL [INSERT INTO lesson_occurrences (one_off_lesson_id, occurrence_date, assignment_id,&#10;    group_id, subject_id, semester_id, assigned_teacher_id, lesson_type)&#10;VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture') RETURNING id&#10;]; SQL state [P0001]; error code [0]; ERROR: recurring occurrence requires a schedule item&#10;  Где: PL/pgSQL function validate_recurring_occurrence_fence() line 9 at RAISE" type="org.springframework.jdbc.UncategorizedSQLException">org.springframework.jdbc.UncategorizedSQLException: PreparedStatementCallback; uncategorized SQLException for SQL [INSERT INTO lesson_occurrences (one_off_lesson_id, occurrence_date, assignment_id,
+    group_id, subject_id, semester_id, assigned_teacher_id, lesson_type)
+VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture') RETURNING id
+]; SQL state [P0001]; error code [0]; ERROR: recurring occurrence requires a schedule item
+  Где: PL/pgSQL function validate_recurring_occurrence_fence() line 9 at RAISE
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1557)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:889)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForObject(JdbcTemplate.java:918)
+	at app//ru.rutcampustrack.schedule.integration.LessonApiIT.insertOneOffChoice(LessonApiIT.java:254)
+	at app//ru.rutcampustrack.schedule.integration.LessonApiIT.nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope(LessonApiIT.java:187)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: recurring occurrence requires a schedule item
+  Где: PL/pgSQL function validate_recurring_occurrence_fence() line 9 at RAISE
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 10 more
+</failure>
+  </testcase>
+  <system-out><![CDATA[18:28:57.804 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.rutcampustrack.schedule.integration.LessonApiIT]: LessonApiIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+18:28:58.368 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.rutcampustrack.schedule.ScheduleApplication for test class ru.rutcampustrack.schedule.integration.LessonApiIT
+18:28:58.869 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+18:28:58.883 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+18:28:58.913 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.20.4
+18:28:59.896 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+18:29:00.737 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+18:29:00.739 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+18:29:00.780 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.5.2
+  API Version: 1.51
+  Operating System: Docker Desktop
+  Total Memory: 11963 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+18:29:02.214 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Creating container for image: testcontainers/ryuk:0.11.0
+18:29:02.423 [Test worker] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+18:29:02.694 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 is starting: f0f02e1dc7e303583e273170e450ef27a2624e7fa65dd26e5c36ecccea34e6ce
+18:29:03.495 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 started in PT1.2801512S
+18:29:03.508 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+18:29:03.509 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+18:29:03.513 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+18:29:03.516 [Test worker] INFO tc.postgres:16 -- Creating container for image: postgres:16
+18:29:03.521 [Test worker] WARN tc.postgres:16 -- Reuse was requested but the environment does not support the reuse of containers
+To enable reuse of containers, you must set 'testcontainers.reuse.enable=true' in a file located at C:\Users\maksd\.testcontainers.properties
+18:29:03.668 [Test worker] INFO tc.postgres:16 -- Container postgres:16 is starting: c0fb7e48039bb3a061f9fc2f8944a2976d425113d23e60b69ba3bc559e2d0388
+18:29:06.171 [Test worker] INFO tc.postgres:16 -- Container postgres:16 started in PT2.655404S
+18:29:06.172 [Test worker] INFO tc.postgres:16 -- Container is started (JDBC URL: jdbc:postgresql://localhost:62068/schedule_db?loggerLevel=OFF)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+{"ts":"2026-10-02T18:29:08.312+03:00","v":"1","level":"INFO","logger":"org.hibernate.validator.internal.util.Version","thread":"background-preinit","msg":"HV000001: Hibernate Validator 8.0.3.Final","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:08.516+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.schedule.integration.LessonApiIT","thread":"Test worker","msg":"Starting LessonApiIT using Java 21.0.10 with PID 38480 (started by maksd in C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\admin-group-promotion-20260927\\services\\schedule-service\\schedule-app)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:08.518+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.schedule.integration.LessonApiIT","thread":"Test worker","msg":"Running with Spring Boot v3.5.16, Spring v6.2.19","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:08.518+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.schedule.integration.LessonApiIT","thread":"Test worker","msg":"The following 1 profile is active: \"test\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:13.319+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Bootstrapping Spring Data JPA repositories in DEFAULT mode.","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:13.594+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Finished Spring Data repository scanning in 247 ms. Found 3 JPA repository interfaces.","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:21.173+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat initialized with port 0 (http)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:21.804+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Initializing ProtocolHandler [\"http-nio-auto-1\"]","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:21.845+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardService","thread":"Test worker","msg":"Starting service [Tomcat]","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:21.848+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardEngine","thread":"Test worker","msg":"Starting Servlet engine: [Apache Tomcat/10.1.59]","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:22.353+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","thread":"Test worker","msg":"Initializing Spring embedded WebApplicationContext","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:22.357+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","thread":"Test worker","msg":"Root WebApplicationContext: initialization completed in 13791 ms","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:24.704+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.schedule.security.ScheduleUserContextFilter","thread":"Test worker","msg":"Filter 'scheduleUserContextFilter' configured for use","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:25.634+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Starting...","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.081+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.pool.HikariPool","thread":"Test worker","msg":"HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@14e513e5","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.087+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Start completed.","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.180+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.FlywayExecutor","thread":"Test worker","msg":"Database: jdbc:postgresql://localhost:62068/schedule_db?loggerLevel=OFF (PostgreSQL 16.13)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.416+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Schema history table \"public\".\"flyway_schema_history\" does not exist yet","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.431+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbValidate","thread":"Test worker","msg":"Successfully validated 24 migrations (execution time 00:00.158s)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.488+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Creating Schema History table \"public\".\"flyway_schema_history\" ...","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.608+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Current version of schema \"public\": << Empty Schema >>","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.649+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"1 - baseline\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.738+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"2 - add enum casts\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.784+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"3 - drop teacher id\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.822+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"4 - one off lessons\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.832+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.879+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"5 - schedule items constraints\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.888+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: identifier \"schedule_items_group_id_day_of_week_lesson_number_week_type_se_key\" will be truncated to \"schedule_items_group_id_day_of_week_lesson_number_week_type_se_\" (SQL State: 42622 - Error Code: 0)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.889+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: constraint \"schedule_items_group_id_day_of_week_lesson_number_week_type_se_\" of relation \"schedule_items\" does not exist, skipping","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.935+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"6 - lesson headman blockage\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:26.966+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"7 - iso parity reconciliation marker\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.000+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"8 - reset iso parity reconciler\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.042+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"9 - rerun iso parity reconciler\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.077+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"10 - shedlock table\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.118+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"11 - schedule outbox\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.165+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"12 - add performance indexes\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.210+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"13 - lesson cancellation columns\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.252+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"14 - event consumer processed\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.299+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"15 - lesson reminder midpoint\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.331+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"16 - lesson reminder near end\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.393+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"17 - student occurrence homework binding\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.570+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"18 - recurring assignment fence\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.666+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"19 - teacher assignment replacement\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.797+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"20 - canonical lesson restore authority\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.911+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"21 - durable lesson transfer\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:27.914+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: enum label \"transferred\" already exists, skipping (SQL State: 42710 - Error Code: 0)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:28.028+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"22 - semester archive barriers\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:28.089+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"23 - final semester deletion\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:28.196+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"24 - homework edit placement\"","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:28.291+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Successfully applied 24 migrations to schema \"public\", now at version v24 (execution time 00:00.900s)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:28.716+03:00","v":"1","level":"INFO","logger":"org.hibernate.jpa.internal.util.LogHelper","thread":"Test worker","msg":"HHH000204: Processing PersistenceUnitInfo [name: default]","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:28.951+03:00","v":"1","level":"INFO","logger":"org.hibernate.Version","thread":"Test worker","msg":"HHH000412: Hibernate ORM core version 6.6.53.Final","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:29.092+03:00","v":"1","level":"INFO","logger":"org.hibernate.cache.internal.RegionFactoryInitiator","thread":"Test worker","msg":"HHH000026: Second-level cache disabled","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:29.522+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo","thread":"Test worker","msg":"No LoadTimeWeaver setup: ignoring JPA class transformer","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:29.679+03:00","v":"1","level":"WARN","logger":"org.hibernate.orm.deprecation","thread":"Test worker","msg":"HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:29.715+03:00","v":"1","level":"INFO","logger":"org.hibernate.orm.connections.pooling","thread":"Test worker","msg":"HHH10001005: Database info:\n\tDatabase JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']\n\tDatabase driver: undefined/unknown\n\tDatabase version: 16.13\n\tAutocommit mode: undefined/unknown\n\tIsolation level: undefined/unknown\n\tMinimum pool size: undefined/unknown\n\tMaximum pool size: undefined/unknown","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:32.650+03:00","v":"1","level":"INFO","logger":"org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator","thread":"Test worker","msg":"HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:32.769+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"Test worker","msg":"Initialized JPA EntityManagerFactory for persistence unit 'default'","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:33.994+03:00","v":"1","level":"INFO","logger":"org.springframework.data.jpa.repository.query.QueryEnhancerFactory","thread":"Test worker","msg":"Hibernate is in classpath; If applicable, HQL parser will be used.","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:35.439+03:00","v":"1","level":"ERROR","logger":"ru.rutcampustrack.shared.security.PublicKeyProvider","thread":"Test worker","msg":"Auth Service unreachable: I/O error on GET request for \"http://localhost:9999/auth/public-key\": null","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:37.323+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.client.autoconfigure.GrpcClientAutoConfiguration","thread":"Test worker","msg":"Detected grpc-netty: Creating NettyChannelFactory + InProcessChannelFactory","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:38.397+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.schedule.security.ScheduleUserContextFilter","thread":"Test worker","msg":"Filter 'scheduleUserContextFilter' configured for use","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:38.401+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","thread":"Test worker","msg":"Initializing Spring TestDispatcherServlet ''","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:38.402+03:00","v":"1","level":"INFO","logger":"org.springframework.test.web.servlet.TestDispatcherServlet","thread":"Test worker","msg":"Initializing Servlet ''","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:38.424+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.actuate.endpoint.web.EndpointLinksResolver","thread":"Test worker","msg":"Exposing 2 endpoints beneath base path '/actuator'","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:38.452+03:00","v":"1","level":"INFO","logger":"org.springframework.test.web.servlet.TestDispatcherServlet","thread":"Test worker","msg":"Completed initialization in 49 ms","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:38.645+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Starting ProtocolHandler [\"http-nio-auto-1\"]","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:38.673+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat started on port 49781 (http) with context path '/'","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:38.711+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.schedule.integration.LessonApiIT","thread":"Test worker","msg":"Started LessonApiIT in 32.423 seconds (process running for 44.748)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:39.009+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select si1_0.id,si1_0.assignment_id,si1_0.created_at,si1_0.day_of_week,si1_0.end_time,si1_0.generated_count,si1_0.generated_from,si1_0.generated_until,si1_0.group_id,si1_0.is_active,si1_0.lesson_number,si1_0.room,si1_0.semester_id,si1_0.start_time,si1_0.subject_id,si1_0.week_type from schedule_items si1_0 where si1_0.id=?","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:39.147+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select l1_0.id,l1_0.assigned_teacher_id,l1_0.assignment_id,l1_0.blocked_at,l1_0.blocked_by_user_id,l1_0.cancel_reason,l1_0.cancelled_at,l1_0.cancelled_by,l1_0.closed_at,l1_0.created_at,l1_0.date,l1_0.day_of_week,l1_0.end_time,l1_0.generation,l1_0.group_id,l1_0.is_blocked_by_headman,l1_0.is_geo_blocked,l1_0.lesson_number,l1_0.lesson_type,l1_0.occurrence_id,l1_0.one_off_lesson_id,l1_0.reminder_midpoint_sent_at,l1_0.reminder_near_end_sent_at,l1_0.revision,l1_0.room_snapshot,l1_0.schedule_item_id,l1_0.semester_id,l1_0.start_time,l1_0.status,l1_0.subject_id,l1_0.week_type_snapshot from lessons l1_0 where l1_0.id=?","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:39.170+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select l1_0.id,l1_0.assigned_teacher_id,l1_0.assignment_id,l1_0.blocked_at,l1_0.blocked_by_user_id,l1_0.cancel_reason,l1_0.cancelled_at,l1_0.cancelled_by,l1_0.closed_at,l1_0.created_at,l1_0.date,l1_0.day_of_week,l1_0.end_time,l1_0.generation,l1_0.group_id,l1_0.is_blocked_by_headman,l1_0.is_geo_blocked,l1_0.lesson_number,l1_0.lesson_type,l1_0.occurrence_id,l1_0.one_off_lesson_id,l1_0.reminder_midpoint_sent_at,l1_0.reminder_near_end_sent_at,l1_0.revision,l1_0.room_snapshot,l1_0.schedule_item_id,l1_0.semester_id,l1_0.start_time,l1_0.status,l1_0.subject_id,l1_0.week_type_snapshot from lessons l1_0 where l1_0.id=?","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:39.188+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select l1_0.id,l1_0.assigned_teacher_id,l1_0.assignment_id,l1_0.blocked_at,l1_0.blocked_by_user_id,l1_0.cancel_reason,l1_0.cancelled_at,l1_0.cancelled_by,l1_0.closed_at,l1_0.created_at,l1_0.date,l1_0.day_of_week,l1_0.end_time,l1_0.generation,l1_0.group_id,l1_0.is_blocked_by_headman,l1_0.is_geo_blocked,l1_0.lesson_number,l1_0.lesson_type,l1_0.occurrence_id,l1_0.one_off_lesson_id,l1_0.reminder_midpoint_sent_at,l1_0.reminder_near_end_sent_at,l1_0.revision,l1_0.room_snapshot,l1_0.schedule_item_id,l1_0.semester_id,l1_0.start_time,l1_0.status,l1_0.subject_id,l1_0.week_type_snapshot from lessons l1_0 where l1_0.id=?","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:39.211+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select l1_0.id,l1_0.assigned_teacher_id,l1_0.assignment_id,l1_0.blocked_at,l1_0.blocked_by_user_id,l1_0.cancel_reason,l1_0.cancelled_at,l1_0.cancelled_by,l1_0.closed_at,l1_0.created_at,l1_0.date,l1_0.day_of_week,l1_0.end_time,l1_0.generation,l1_0.group_id,l1_0.is_blocked_by_headman,l1_0.is_geo_blocked,l1_0.lesson_number,l1_0.lesson_type,l1_0.occurrence_id,l1_0.one_off_lesson_id,l1_0.reminder_midpoint_sent_at,l1_0.reminder_near_end_sent_at,l1_0.revision,l1_0.room_snapshot,l1_0.schedule_item_id,l1_0.semester_id,l1_0.start_time,l1_0.status,l1_0.subject_id,l1_0.week_type_snapshot from lessons l1_0 where l1_0.id=?","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:39.471+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"insert into schedule_outbox (created_at,event_type,last_error,payload,retry_count,sent_at,status) values (?,?,?,?,?,?,?)","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:39.510+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.schedule.event.DomainEventListener","thread":"Test worker","msg":"Outbox saved: type=lesson.transfer.requested, id=0000ae48-b37f-4eb7-90a3-00e2a23b8719","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:39.552+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"select l1_0.id,l1_0.assigned_teacher_id,l1_0.assignment_id,l1_0.blocked_at,l1_0.blocked_by_user_id,l1_0.cancel_reason,l1_0.cancelled_at,l1_0.cancelled_by,l1_0.closed_at,l1_0.created_at,l1_0.date,l1_0.day_of_week,l1_0.end_time,l1_0.generation,l1_0.group_id,l1_0.is_blocked_by_headman,l1_0.is_geo_blocked,l1_0.lesson_number,l1_0.lesson_type,l1_0.occurrence_id,l1_0.one_off_lesson_id,l1_0.reminder_midpoint_sent_at,l1_0.reminder_near_end_sent_at,l1_0.revision,l1_0.room_snapshot,l1_0.schedule_item_id,l1_0.semester_id,l1_0.start_time,l1_0.status,l1_0.subject_id,l1_0.week_type_snapshot from lessons l1_0 where l1_0.id=?","service":"schedule-service"}
+{"ts":"2026-10-02T18:29:40.032+03:00","v":"1","level":"DEBUG","logger":"org.hibernate.SQL","thread":"Test worker","msg":"SELECT l.id AS lessonId, o.id AS occurrenceId, o.revision AS occurrenceRevision,\n       l.group_id AS groupId, l.subject_id AS subjectId, l.semester_id AS semesterId,\n       l.lesson_type AS lessonType, l.date AS date, l.lesson_number AS lessonNumber,\n       l.start_time AS startTime, l.end_time AS endTime\n  FROM lesson_occurrences o\n  JOIN lessons l ON l.id = o.current_lesson_id AND l.occurrence_id = o.id\n WHERE l.group_id = ? AND l.semester_id = ?\n   AND l.subject_id = ? AND l.lesson_type = ?\n   AND l.date >= ? AND l.status::text IN ('planned', 'active')\n   AND l.date + l.end_time + INTERVAL '5 minutes' > ?\n   AND NOT EXISTS (\n       SELECT 1 FROM lesson_transfer_operations transfer\n        WHERE transfer.occurrence_id = o.id AND transfer.state <> 'COMPLETED')\n ORDER BY l.date, l.start_time, l.id\n LIMIT 1\n","traceId":"2a16b7af9ba5271333f980b8bf60dcef","service":"schedule-service"}
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /schedule/lessons/next
+       Parameters = {groupId=[1790954946173001], semesterId=[10], subjectId=[100], lessonType=[LECTURE], fromDate=[2026-10-01]}
+          Headers = [X-User-Id:"42", X-User-Role:"STUDENT", X-Group-Id:"1790954946173001", X-Is-Headman:"true"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = ru.rutcampustrack.schedule.lesson.LessonController
+           Method = ru.rutcampustrack.schedule.lesson.LessonController#getNextHomeworkLesson(Long, Long, Long, LessonType, LocalDate)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Content-Type:"application/json"]
+     Content type = application/json
+             Body = {"lessonId":6,"occurrenceId":5,"occurrenceRevision":1,"groupId":1790954946173001,"subjectId":100,"semesterId":10,"lessonType":"lecture","date":"2026-11-01","lessonNumber":1,"startTime":"08:30:00","endTime":"10:00:00"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.8\f09415827a71be7ed621c7bd02550678f28bc81c\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

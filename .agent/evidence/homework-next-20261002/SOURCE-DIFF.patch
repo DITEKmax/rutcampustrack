@@ -1,0 +1,424 @@
+diff --git a/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/api/LessonApi.java b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/api/LessonApi.java
+index 44b5b2b7..9ec7b1bd 100644
+--- a/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/api/LessonApi.java
++++ b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/api/LessonApi.java
+@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
+ import io.swagger.v3.oas.annotations.responses.ApiResponses;
+ import io.swagger.v3.oas.annotations.tags.Tag;
+ import jakarta.validation.Valid;
++import jakarta.validation.constraints.Positive;
+ import org.springframework.data.domain.Pageable;
+ import org.springframework.data.web.PagedResourcesAssembler;
+ import org.springframework.format.annotation.DateTimeFormat;
+@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
+ import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
+ import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
+ import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
++import ru.rutcampustrack.schedule.contract.dto.lesson.NextHomeworkLessonResponse;
++import ru.rutcampustrack.schedule.contract.enums.LessonType;
+ import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
+ import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
+ import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
+@@ -39,6 +42,24 @@ import java.util.UUID;
+ @RequestMapping("/schedule")
+ public interface LessonApi {
+ 
++    @Operation(summary = "Ближайшая подходящая пара для ДЗ начиная с fromDate включительно",
++            description = "Возвращает текущую физическую пару предмета и типа без ограничения горизонта. "
++                    + "Сегодняшняя пара доступна до конца пары + 5 минут по Москве. "
++                    + "Результат — снимок выбора; запись ДЗ повторно проверяет occurrenceRevision.")
++    @ApiResponses({
++            @ApiResponse(responseCode = "200", description = "Ближайшая подходящая пара"),
++            @ApiResponse(responseCode = "204", description = "Подходящих пар нет"),
++            @ApiResponse(responseCode = "400", description = "Некорректные параметры"),
++            @ApiResponse(responseCode = "403", description = "Нет права управлять ДЗ этой группы")
++    })
++    @GetMapping("/lessons/next")
++    ResponseEntity<NextHomeworkLessonResponse> getNextHomeworkLesson(
++            @RequestParam @Positive Long groupId,
++            @RequestParam @Positive Long semesterId,
++            @RequestParam @Positive Long subjectId,
++            @RequestParam LessonType lessonType,
++            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate);
++
+     @Operation(summary = "Перенести будущую пару с сохранением её логической истории")
+     @ApiResponses({
+             @ApiResponse(responseCode = "200", description = "Перенос завершён обеими системами"),
+diff --git a/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/NextHomeworkLessonResponse.java b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/NextHomeworkLessonResponse.java
+new file mode 100644
+index 00000000..54b7d0ee
+--- /dev/null
++++ b/services/schedule-service/schedule-api-contract/src/main/java/ru/rutcampustrack/schedule/contract/dto/lesson/NextHomeworkLessonResponse.java
+@@ -0,0 +1,10 @@
++package ru.rutcampustrack.schedule.contract.dto.lesson;
++
++import java.time.LocalDate;
++import java.time.LocalTime;
++
++/** Current physical identity shared by recurring and one-off homework choices. */
++public record NextHomeworkLessonResponse(
++        Long lessonId, Long occurrenceId, Long occurrenceRevision,
++        Long groupId, Long subjectId, Long semesterId, String lessonType,
++        LocalDate date, Short lessonNumber, LocalTime startTime, LocalTime endTime) {}
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveWriteFence.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveWriteFence.java
+index c6decd1c..9bab2c68 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveWriteFence.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveWriteFence.java
+@@ -28,6 +28,18 @@ public class ScheduleSemesterArchiveWriteFence {
+         this.academicGrpcClient = academicGrpcClient;
+     }
+ 
++    /**
++     * Read-only eligibility for a homework choice. Never acquires a business-write or
++     * advisory lock: reservation rechecks this authority under its existing fence.
++     * Unknown/mismatched authority fails closed through readAuthority.
++     */
++    public boolean isWritableForLookup(long semesterId) {
++        Map<String, Object> observed = localBarrier(semesterId);
++        if (localBarrierBlocks(observed) || authorityBlocksWrites(readAuthority(semesterId))) return false;
++        Map<String, Object> current = localBarrier(semesterId);
++        return !localBarrierBlocks(current) && !currentIsNewReleasedEpoch(current, observed);
++    }
++
+     /**
+      * Serializes against Schedule PREPARE and rechecks its durable barrier.
+      * Academic is queried only when the local participant says RELEASED: that
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonController.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonController.java
+index 2412cfef..45e0dfff 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonController.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonController.java
+@@ -8,6 +8,8 @@ import org.springframework.hateoas.PagedModel;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.web.bind.annotation.RestController;
+ import ru.rutcampustrack.schedule.contract.api.LessonApi;
++import ru.rutcampustrack.schedule.contract.dto.lesson.NextHomeworkLessonResponse;
++import ru.rutcampustrack.schedule.contract.enums.LessonType;
+ import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
+ import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
+ import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
+@@ -42,6 +44,15 @@ public class LessonController implements LessonApi {
+         this.lessonAssembler = lessonAssembler;
+     }
+ 
++    @Override
++    @RequireRole({UserRole.STUDENT})
++    public ResponseEntity<NextHomeworkLessonResponse> getNextHomeworkLesson(
++            Long groupId, Long semesterId, Long subjectId, LessonType lessonType, LocalDate fromDate) {
++        return lessonService.getNextHomeworkLesson(groupId, semesterId, subjectId, lessonType, fromDate)
++                .map(ResponseEntity::ok)
++                .orElseGet(() -> ResponseEntity.noContent().build());
++    }
++
+     @Override
+     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
+     public ResponseEntity<TransferLessonResponse> transferLesson(Long id, TransferLessonRequest request) {
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java
+index 4d1e5738..0d7397a4 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java
+@@ -26,6 +26,14 @@ import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+ import ru.rutcampustrack.schedule.security.RequestContext;
+ 
+ import java.time.LocalDate;
++import java.time.LocalDateTime;
++import java.time.Clock;
++import java.time.ZoneId;
++import java.util.Optional;
++import java.util.Objects;
++import java.util.Locale;
++import ru.rutcampustrack.schedule.contract.enums.LessonType;
++import ru.rutcampustrack.schedule.contract.dto.lesson.NextHomeworkLessonResponse;
+ import java.time.OffsetDateTime;
+ import java.util.List;
+ import java.util.Map;
+@@ -48,7 +56,8 @@ public class LessonService {
+     private final EntityManager entityManager;
+     private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
+ 
+-    @Autowired
++    private final Clock clock;
++
+     public LessonService(LessonRepository lessonRepository,
+                          ScheduleItemRepository scheduleItemRepository,
+                          AcademicGrpcClient academicGrpcClient,
+@@ -57,6 +66,21 @@ public class LessonService {
+                          RecurringLessonLifecycleWriter recurringLifecycleWriter,
+                          EntityManager entityManager,
+                          ScheduleSemesterArchiveWriteFence archiveWriteFence) {
++        this(lessonRepository, scheduleItemRepository, academicGrpcClient, requestContext,
++                eventPublisher, recurringLifecycleWriter, entityManager, archiveWriteFence, Clock.systemUTC());
++    }
++
++    @Autowired
++    public LessonService(LessonRepository lessonRepository,
++                         ScheduleItemRepository scheduleItemRepository,
++                         AcademicGrpcClient academicGrpcClient,
++                         RequestContext requestContext,
++                         ApplicationEventPublisher eventPublisher,
++                         RecurringLessonLifecycleWriter recurringLifecycleWriter,
++                         EntityManager entityManager,
++                         ScheduleSemesterArchiveWriteFence archiveWriteFence,
++                         Clock clock) {
++        this.clock = clock;
+         this.lessonRepository = lessonRepository;
+         this.scheduleItemRepository = scheduleItemRepository;
+         this.academicGrpcClient = academicGrpcClient;
+@@ -67,6 +91,28 @@ public class LessonService {
+         this.archiveWriteFence = archiveWriteFence;
+     }
+ 
++    @Transactional(readOnly = true)
++    public Optional<NextHomeworkLessonResponse> getNextHomeworkLesson(
++            Long groupId, Long semesterId, Long subjectId, LessonType lessonType, LocalDate fromDate) {
++        if (groupId == null || groupId <= 0 || semesterId == null || semesterId <= 0
++                || subjectId == null || subjectId <= 0 || lessonType == null || fromDate == null) {
++            throw new IllegalArgumentException("Параметры выбора пары должны содержать положительные ID, тип и дату");
++        }
++        if (requestContext.getRole() != UserRole.STUDENT
++                || !Objects.equals(requestContext.getGroupId(), groupId)) {
++            throw new AccessDeniedException("ДЗ принадлежит другой группе");
++        }
++        requireHeadmanForGroup(groupId, "MANAGE_HOMEWORK");
++        if (!archiveWriteFence.isWritableForLookup(semesterId)) return Optional.empty();
++        return lessonRepository.findNextHomeworkLesson(groupId, semesterId, subjectId,
++                        lessonType.name().toLowerCase(Locale.ROOT), fromDate,
++                        LocalDateTime.now(clock.withZone(ZoneId.of("Europe/Moscow"))))
++                .map(choice -> new NextHomeworkLessonResponse(choice.getLessonId(), choice.getOccurrenceId(),
++                        choice.getOccurrenceRevision(), choice.getGroupId(), choice.getSubjectId(),
++                        choice.getSemesterId(), choice.getLessonType(), choice.getDate(),
++                        choice.getLessonNumber(), choice.getStartTime(), choice.getEndTime()));
++    }
++
+     /**
+      * Verifies the current user is either ADMIN or headman of the target group.
+      * ADMIN bypasses the check entirely (D-08/D-10).
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/projection/NextHomeworkLessonProjection.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/projection/NextHomeworkLessonProjection.java
+new file mode 100644
+index 00000000..205f16a2
+--- /dev/null
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/projection/NextHomeworkLessonProjection.java
+@@ -0,0 +1,19 @@
++package ru.rutcampustrack.schedule.lesson.projection;
++
++import java.time.LocalDate;
++import java.time.LocalTime;
++
++/** Selection and occurrence revision read atomically from the current physical snapshot. */
++public interface NextHomeworkLessonProjection {
++    Long getLessonId();
++    Long getOccurrenceId();
++    Long getOccurrenceRevision();
++    Long getGroupId();
++    Long getSubjectId();
++    Long getSemesterId();
++    String getLessonType();
++    LocalDate getDate();
++    Short getLessonNumber();
++    LocalTime getStartTime();
++    LocalTime getEndTime();
++}
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java
+index cde8ea09..9804beb7 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java
+@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
+ import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
+ import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+ import ru.rutcampustrack.schedule.lesson.projection.LessonDetailsProjection;
++import ru.rutcampustrack.schedule.lesson.projection.NextHomeworkLessonProjection;
+ 
+ import java.time.LocalDate;
+ import java.time.LocalDateTime;
+@@ -17,6 +18,30 @@ import java.util.Optional;
+ 
+ public interface LessonRepository extends JpaRepository<Lesson, Long> {
+ 
++    /** One MVCC snapshot: never resolve through a mutable template or old transfer side. */
++    @Query(value = """
++            SELECT l.id AS lessonId, o.id AS occurrenceId, o.revision AS occurrenceRevision,
++                   l.group_id AS groupId, l.subject_id AS subjectId, l.semester_id AS semesterId,
++                   l.lesson_type AS lessonType, l.date AS date, l.lesson_number AS lessonNumber,
++                   l.start_time AS startTime, l.end_time AS endTime
++              FROM lesson_occurrences o
++              JOIN lessons l ON l.id = o.current_lesson_id AND l.occurrence_id = o.id
++             WHERE l.group_id = :groupId AND l.semester_id = :semesterId
++               AND l.subject_id = :subjectId AND l.lesson_type = :lessonType
++               AND l.date >= :fromDate AND l.status::text IN ('planned', 'active')
++               AND l.date + l.end_time + INTERVAL '5 minutes' > :moscowNow
++               AND NOT EXISTS (
++                   SELECT 1 FROM lesson_transfer_operations transfer
++                    WHERE transfer.occurrence_id = o.id AND transfer.state <> 'COMPLETED')
++             ORDER BY l.date, l.start_time, l.id
++             LIMIT 1
++            """, nativeQuery = true)
++    Optional<NextHomeworkLessonProjection> findNextHomeworkLesson(
++            @Param("groupId") Long groupId, @Param("semesterId") Long semesterId,
++            @Param("subjectId") Long subjectId, @Param("lessonType") String lessonType,
++            @Param("fromDate") LocalDate fromDate, @Param("moscowNow") LocalDateTime moscowNow);
++
++
+     /**
+      * M05 Группа 2 — reference-pattern для NEW-143 (Spring Data projection).
+      *
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java
+index cc4e3bf1..a8cf393a 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java
+@@ -19,6 +19,11 @@ import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+ import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+ 
+ import java.time.LocalDate;
++import java.time.ZoneId;
++import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
++import ru.rutcampustrack.academic.grpc.SemesterTransition;
++import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
++import ru.rutcampustrack.schedule.lesson.LessonTransferWriter;
+ import java.time.OffsetDateTime;
+ import java.util.Map;
+ import java.util.UUID;
+@@ -46,6 +51,9 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
+     @MockitoBean
+     AcademicGrpcClient academicGrpcClient;
+ 
++    @Autowired
++    LessonTransferWriter transferWriter;
++
+     @Autowired
+     MockMvc mockMvc;
+ 
+@@ -76,13 +84,16 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
+     }
+ 
+     private ScheduleItem createScheduleItem() {
++        return createScheduleItem(LocalDate.of(2026, 1, 1), LocalDate.of(2027, 1, 1));
++    }
++
++    private ScheduleItem createScheduleItem(LocalDate from, LocalDate untilExclusive) {
+         jdbcTemplate.update("""
+                 INSERT INTO schedule_assignment_fences
+                     (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
+                      lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive)
+-                VALUES (?, ?, 100, 10, 700, 'lecture', DATE '2026-01-01',
+-                        DATE '2027-01-01', DATE '2027-01-01')
+-                """, testGroupId, testGroupId);
++                VALUES (?, ?, 100, 10, 700, 'lecture', ?, ?, ?)
++                """, testGroupId, testGroupId, from, untilExclusive, untilExclusive);
+         Long itemId = jdbcTemplate.queryForObject("""
+                 INSERT INTO schedule_items
+                     (assignment_id, group_id, subject_id, semester_id, day_of_week,
+@@ -148,6 +159,115 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
+                 .header("X-User-Role", "ADMIN");
+     }
+ 
++    @Test
++    void nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope() throws Exception {
++        LocalDate today = LocalDate.now(ZoneId.of("Europe/Moscow"));
++        ScheduleItem item = createScheduleItem(today.minusYears(1), today.plusYears(1));
++        createLesson(item.getId(), LessonStatus.PLANNED, today.minusDays(1)); // elapsed despite stale status
++        createLesson(item.getId(), LessonStatus.CLOSED, today.plusDays(2));
++        createLesson(item.getId(), LessonStatus.CANCELLED, today.plusDays(3));
++        Lesson source = createLesson(item.getId(), LessonStatus.PLANNED, today.plusDays(4));
++        LocalDate transferDate = today.plusDays(5);
++        if (transferDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) transferDate = transferDate.plusDays(1);
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
++                .thenReturn(SemesterStateResponse.newBuilder().setId(10L).build());
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(11L))
++                .thenReturn(SemesterStateResponse.newBuilder().setId(11L).build());
++        transferWriter.transfer(source.getId(), USER_ID,
++                new TransferLessonRequest(transferDate, 3, null, null, null, "1", UUID.randomUUID()));
++        Lesson nearest = createLesson(item.getId(), LessonStatus.PLANNED, today.plusDays(30));
++
++        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.minusDays(1))))
++                .andExpect(status().isOk())
++                .andExpect(jsonPath("$.lessonId").value(nearest.getId()))
++                .andExpect(jsonPath("$.occurrenceId").value(nearest.getOccurrenceId()))
++                .andExpect(jsonPath("$.occurrenceRevision", is(1)))
++                .andExpect(jsonPath("$.date", is(today.plusDays(30).toString())));
++        // A one-off uses the same physical snapshot contract; at equal date/time the lower ID wins.
++        long oneOff = insertOneOffChoice(today.plusDays(29), (short) 2);
++        insertOneOffChoice(today.plusDays(29), (short) 4);
++        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.minusDays(1))))
++                .andExpect(status().isOk())
++                .andExpect(jsonPath("$.lessonId").value(oneOff))
++                .andExpect(jsonPath("$.groupId", is(testGroupId)))
++                .andExpect(jsonPath("$.semesterId", is(10)))
++                .andExpect(jsonPath("$.subjectId", is(100)))
++                .andExpect(jsonPath("$.lessonType", is("lecture")));
++        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.plusDays(30))))
++                .andExpect(status().isOk()).andExpect(jsonPath("$.lessonId").value(nearest.getId()));
++        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.plusDays(31))))
++                .andExpect(status().isNoContent());
++        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, 11L, "LECTURE", today)))
++                .andExpect(status().isNoContent());
++        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, 10L, "LAB", today)))
++                .andExpect(status().isNoContent());
++        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId + 1, today)))
++                .andExpect(status().isForbidden());
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
++                .thenReturn(SemesterStateResponse.newBuilder().setId(10L).setArchived(true).build());
++        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today)))
++                .andExpect(status().isNoContent());
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
++                .thenReturn(SemesterStateResponse.newBuilder().setId(10L)
++                        .setTransition(SemesterTransition.ARCHIVING).build());
++        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today)))
++                .andExpect(status().isNoContent());
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
++                .thenReturn(SemesterStateResponse.newBuilder().setId(10L).build());
++        when(academicGrpcClient.isHeadman(USER_ID, testGroupId)).thenReturn(false);
++        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today)))
++                .andExpect(status().isForbidden());
++        when(academicGrpcClient.hasAssistantPermission(testGroupId, "MANAGE_HOMEWORK")).thenReturn(true);
++        mockMvc.perform(withAssistantHeaders(nextChoice(testGroupId, today)))
++                .andExpect(status().isOk()).andExpect(jsonPath("$.lessonId").value(oneOff));
++        when(academicGrpcClient.hasAssistantPermission(testGroupId, "MANAGE_HOMEWORK")).thenReturn(false);
++        mockMvc.perform(withAssistantHeaders(nextChoice(testGroupId, today)))
++                .andExpect(status().isForbidden());
++        mockMvc.perform(withHeadmanHeaders(nextChoice(0L, today))).andExpect(status().isBadRequest());
++        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, 10L, "UNKNOWN", today)))
++                .andExpect(status().isBadRequest());
++    }
++
++    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder nextChoice(
++            Long groupId, LocalDate fromDate) {
++        return nextChoice(groupId, 10L, "LECTURE", fromDate);
++    }
++
++    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder nextChoice(
++            Long groupId, Long semesterId, String lessonType, LocalDate fromDate) {
++        return get("/schedule/lessons/next").param("groupId", groupId.toString())
++                .param("semesterId", semesterId.toString()).param("subjectId", "100")
++                .param("lessonType", lessonType).param("fromDate", fromDate.toString());
++    }
++
++    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder withAssistantHeaders(
++            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request) {
++        return request.header("X-User-Id", USER_ID.toString()).header("X-User-Role", "STUDENT")
++                .header("X-Group-Id", testGroupId.toString()).header("X-Is-Headman", "false");
++    }
++
++    private long insertOneOffChoice(LocalDate date, short lessonNumber) {
++        long oneOffId = jdbcTemplate.queryForObject("""
++                INSERT INTO schedule_one_off_lessons (group_id, subject_id, semester_id, date,
++                    lesson_number, created_by) VALUES (?, 100, 10, ?, ?, ?) RETURNING id
++                """, Long.class, testGroupId, date, lessonNumber, USER_ID);
++        long occurrenceId = jdbcTemplate.queryForObject("""
++                INSERT INTO lesson_occurrences (one_off_lesson_id, occurrence_date, assignment_id,
++                    group_id, subject_id, semester_id, assigned_teacher_id, lesson_type)
++                VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture') RETURNING id
++                """, Long.class, oneOffId, date, testGroupId, testGroupId);
++        long lessonId = jdbcTemplate.queryForObject("""
++                INSERT INTO lessons (one_off_lesson_id, occurrence_id, assignment_id, group_id,
++                    subject_id, semester_id, assigned_teacher_id, lesson_type, date, lesson_number,
++                    start_time, end_time, status, generation, revision)
++                VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture', ?, ?, '08:30'::time,
++                    '10:00'::time, 'planned', 1, 1) RETURNING id
++                """, Long.class, oneOffId, occurrenceId, testGroupId, testGroupId, date, lessonNumber);
++        jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?", lessonId, occurrenceId);
++        jdbcTemplate.update("UPDATE schedule_one_off_lessons SET physical_lesson_id = ? WHERE id = ?", lessonId, oneOffId);
++        return lessonId;
++    }
++
+     // --- LSSN-04: Cancel ---
+ 
+     @Test

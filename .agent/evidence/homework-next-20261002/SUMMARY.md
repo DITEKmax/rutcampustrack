@@ -1,0 +1,19 @@
+# JS-HEADMAN16 next-lesson source and runtime packet
+
+Scope/risk: Schedule server lookup only, S3 authorization. Root ACKed inclusive fromDate and common physical DTO. Canonical baseline main cefd8fefc6076720175a35edb51727918283b7ed; leaf ea49cefec9da209bc0e46a087b1599c802941f44 had identical Schedule source. Source8046e9ec → review correction49fd350b.
+
+User result: GET /schedule/lessons/next(groupId,semesterId,subjectId,lessonType,fromDate) selects the nearest current physical lesson without client lookahead. Date is inclusive; current eligibility ends strictly at lesson end+5min Moscow. Exact group/semester/subject/type, current occurrence pointer, planned/active, unresolved transfers excluded, deterministic date/time/ID order. 200 common DTO physicallesson+occurrenceID/revision; 204 absence/blockedsemester. Auth is own STUDENT group plus existing current headman/helper MANAGE_HOMEWORK check. No ADMIN bypass. GET has no mutation/lock; reserve rechecks revision/gates.
+
+Changed product files (8, full paths inventory.txt): LessonApi; new NextHomeworkLessonResponse; LessonController; LessonService; LessonRepository; new NextHomeworkLessonProjection; ScheduleSemesterArchiveWriteFence read-only eligibility; existing LessonApiIT one method+own fixtures. No deleted files, migration/proto/UI/other service edits. Aggregate diff SOURCE-DIFF.patch. Foreign .agent/transfer-attendance-evidence.md and unrelated evidence preserved.
+
+Acceptance/source: source implements exact selection/currentpointer/type/semester/inclusive/absence/authz and archive/transition alignment. Independent review initial8046e9ec FAIL oneP2 stablearchivedfalsechoice; correction49fd350b affectedreview PASS perroot. Diffcheck exit0. No new tests for old lifecycle or wiring.
+
+R1 exact command (exclusive lease SCHEDULE-NEXT-1002-R1):
+./gradlew.bat :services:schedule-service:schedule-app:compileJava :services:schedule-service:schedule-app:compileTestJava :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.integration.LessonApiIT.nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope --max-workers=1 --no-daemon --no-parallel --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true
+JAVA_HOME C:/Users/maksd/.jdks/ms-21.0.10, PATH bin prepend, TESTCONTAINERS_REUSE_ENABLE=false, exact require_escalated allowed byroot for known JAR access.
+
+R1 session6641 terminal exit1,1m33s. compileJava/compileTestJava PASS; oneIT tests1/failures1. Initial recurring selection/gap30days and stale source/pendingtransfer exclusion passed. Then oneofffixture INSERT occurrence failed SQLP0001: validate_recurring_occurrence_fence requires scheduleitem. No oneoff/assertions or subsequent archive/security cases executed; do not claim wholeIT PASS. RawXML r1, full gradle-r1.log, exec-start/exec-terminal JSON preserved. Existing unchecked/JVM sharing warnings caused no code changes.
+
+Runtime blocker: public POST /schedule/one-off-lessons delegates OneOffLessonController→OneOffLessonService.create (save142), logical-only, no assignment/type/time input. Last DB validate_recurring_occurrence_fence V19:513/524 unconditionally rejects oneoff NULLscheduleitem. Root personally accepted linked blocker and assigned a separate cohesive oneoff packet. This task does not bypass triggers, fake recurring origins, or guess authority. Rerun ONLY failedmethod after authorized coherent oneoff source/review/lease; no automatic retry.
+
+Resources/cleanup: prelaunchfree2.64GiB/15.41,Java0,dockerempty. Ownpostgres c0fb7e48039b/compassionate_turing and Ryukf0f02e1dc7e3/testcontainers-ryuk-179cd4c6-009f-4ea8-be46-fd9fa7ad6c28 auto removed afterterminal; elevateddockerps exit0 EMPTY. No own runninghandles. Lease released toroot. Nofullstack/fullsuite/DONE claim; source reviewed, runtime partial pending linked oneoff correction.

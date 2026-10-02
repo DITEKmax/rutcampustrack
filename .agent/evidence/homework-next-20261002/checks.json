@@ -3,7 +3,31 @@
     "command": "git diff --check -- services/schedule-service",
     "exit_code": 0
   },
-  "heavy": "not launched; review and root lease required",
-  "runtime": "not verified yet",
-  "foreign_work": "preserved .agent/transfer-attendance-evidence.md and unrelated untracked evidence"
+  "heavy": "R1 terminal6641 exit1 1m33s",
+  "runtime": {
+    "compileJava": "PASS",
+    "compileTestJava": "PASS",
+    "integrationTest": {
+      "tests": 1,
+      "failures": 1,
+      "case": "nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope",
+      "failure": "SQLP0001 validate_recurring_occurrence_fence rejects oneoff occurrence without schedule item; fixture insertion before oneoff assertions",
+      "recurring_selection_before_failure": "PASS gap30days and current pointer/pending transfer skip"
+    }
+  },
+  "foreign_work": "preserved .agent/transfer-attendance-evidence.md and unrelated untracked evidence",
+  "source_revision": "49fd350ba9e88e06a9f740d8aaf7c4f6817cf230",
+  "review": {
+    "initial": "FAIL 8046e9ec one P2 archive gate false choice",
+    "correction": "49fd350b",
+    "affected_recheck": "PASS49fd350b per root"
+  },
+  "resources": {
+    "free_host_gib_before_launch": 2.64,
+    "total_host_gib": 15.41,
+    "postgres_container": "c0fb7e48039b compassionate_turing postgres:16",
+    "ryuk_container": "f0f02e1dc7e3 testcontainers-ryuk-179cd4c6-009f-4ea8-be46-fd9fa7ad6c28",
+    "cleanup": "terminal docker ps elevated exit0 EMPTY",
+    "own_handles": []
+  }
 }

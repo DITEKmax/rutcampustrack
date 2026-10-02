@@ -1,0 +1,20 @@
+FAIL homework.published mode=DATE number=None: date=False pair=True content=True audience=PASS
+Traceback (most recent call last):
+  File "C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\headman-assistants-delivery-20260922\.agent\evidence\homework-date-bot-20261002\probe.py", line 72, in <module>
+    raise SystemExit(asyncio.run(main()))
+                     ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maksd\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\maksd\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\maksd\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\headman-assistants-delivery-20260922\.agent\evidence\homework-date-bot-20261002\probe.py", line 65, in main
+    print(text)
+  File "C:\Users\maksd\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f4dd' in position 0: character maps to <undefined>

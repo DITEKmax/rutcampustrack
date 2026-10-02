@@ -63,8 +63,11 @@ async def handle_homework(
 
     def _build_card(prefix, subject_name):
         lines = [prefix, "", f"Предмет: {subject_name}", f"Задание: {title}"]
-        if lesson_date and lesson_number:
-            lines.append(f"Пара: №{lesson_number}, {lesson_date}")
+        if lesson_date:
+            if lesson_number and payload.get("binding_mode") != "DATE":
+                lines.append(f"Пара: №{lesson_number}, {lesson_date}")
+            else:
+                lines.append(f"Дата: {lesson_date}")
         _add_optional_block(lines, "Описание", payload.get("description"))
         _add_optional_block(lines, "Ссылка", payload.get("link"))
         return "\n".join(lines)

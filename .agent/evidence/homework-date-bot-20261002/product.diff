@@ -1,0 +1,12 @@
+diff --git a/services/notification-bot/bot/notifications/homework.py b/services/notification-bot/bot/notifications/homework.py
+index 12297915..e84ee1f1 100644
+--- a/services/notification-bot/bot/notifications/homework.py
++++ b/services/notification-bot/bot/notifications/homework.py
+@@ -66,2 +66,5 @@ async def handle_homework(
+-        if lesson_date and lesson_number:
+-            lines.append(f"Пара: №{lesson_number}, {lesson_date}")
++        if lesson_date:
++            if lesson_number and payload.get("binding_mode") != "DATE":
++                lines.append(f"Пара: №{lesson_number}, {lesson_date}")
++            else:
++                lines.append(f"Дата: {lesson_date}")

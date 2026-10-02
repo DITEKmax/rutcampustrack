@@ -1,0 +1,76 @@
+{
+  "baseline": "f5b2ed147a43c50bb25636ed5241027169a9e804",
+  "source_revision": "baseline plus product.diff (included scoped commit)",
+  "environment": "Windows PowerShell, Python 3.12, local actual consumer/SendTask, synthetic academic audience, recording bot/queue, annotation-only aiogram.Bot placeholder",
+  "checks": [
+    {
+      "command": "git diff a3d64e0f --quiet -- services/notification-bot/bot/notifications/homework.py",
+      "exit_code": 0,
+      "criterion": "owned file identical to expected main before edit"
+    },
+    {
+      "command": "python -c \"import aiogram, pytest, fakeredis; print('imports available')\"",
+      "exit_code": 1,
+      "criterion": "environment probe only",
+      "result": "ModuleNotFoundError: aiogram; no install; no product change inferred"
+    },
+    {
+      "command": "python .agent/evidence/homework-date-bot-20261002/probe.py",
+      "exit_code": 1,
+      "log": "runtime-before.log",
+      "result": "DATE/null number loses date, then cp1251 stdout cannot encode emoji; harness environment issue"
+    },
+    {
+      "command": "python -X utf8 .agent/evidence/homework-date-bot-20261002/probe.py (before change)",
+      "exit_code": 1,
+      "log": "runtime-before-utf8.log",
+      "result": "reproduced 6 formatting failures across 10 cases; old numbered LESSON/no-mode cases pass"
+    },
+    {
+      "command": "python -X utf8 .agent/evidence/homework-date-bot-20261002/probe.py (after change)",
+      "exit_code": 0,
+      "log": "runtime-after.log",
+      "result": "10 cases PASS; published+updated DATE/null, no-mode/null, DATE/stale number, LESSON/number and no-mode/number; optional content and audience metadata PASS"
+    },
+    {
+      "command": "python -X utf8 -c \"from pathlib import Path; p=Path('services/notification-bot/bot/notifications/homework.py'); compile(p.read_text(encoding='utf-8'), str(p), 'exec'); print('PASS syntax compile')\"",
+      "exit_code": 0,
+      "log": "syntax.log",
+      "result": "syntax PASS without bytecode files"
+    },
+    {
+      "command": "git diff --check -- services/notification-bot/bot/notifications/homework.py",
+      "exit_code": 0,
+      "log": "diff-check.log",
+      "result": "scoped whitespace check PASS"
+    },
+    {
+      "command": "git add -- services/notification-bot/bot/notifications/homework.py .agent/evidence/homework-date-bot-20261002",
+      "exit_code": 128,
+      "result": "sandbox Git index.lock write denied; scoped escalation next succeeded exit0"
+    },
+    {
+      "command": "git diff --cached --check (initial evidence staging)",
+      "exit_code": 2,
+      "result": "product.diff full-context blank line has whitespace; regenerate evidence with -U0, product unaffected"
+    },
+    {
+      "command": "git diff --cached --check (evidence restaging)",
+      "exit_code": 2,
+      "result": "same evidence whitespace: unstaged diff produced no replacement after product was staged; changed to git diff HEAD -U0"
+    },
+    {
+      "command": "git diff --cached --check (frozen HEAD diff evidence)",
+      "exit_code": 0,
+      "result": "all scoped product and evidence files PASS"
+    }
+  ],
+  "runtime": "Local handler text and queued SendTask coroutine invocation verified; import placeholder does not verify installed aiogram, integration or Telegram/provider delivery",
+  "repeats": "Three probe runs: cp1251 diagnostic failure, UTF8 baseline reproduction, post-fix PASS. No repeated PASS. No added product tests or scope expansion.",
+  "limitations": [
+    "Existing pytest suite not run: aiogram unavailable",
+    "No live Telegram, producer integration, Docker, Gradle, network or secrets",
+    "Root owns main integration",
+    "Independent review not required by RULES for this reversible S1 formatting change"
+  ]
+}

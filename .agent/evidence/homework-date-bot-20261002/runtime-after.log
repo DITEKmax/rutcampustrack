@@ -1,0 +1,33 @@
+PASS homework.published mode=DATE number=None: date=True pair=True content=True audience=PASS
+📝 Новое домашнее задание
+
+Предмет: Математика
+Задание: Задачи 1–5
+Дата: 2026-10-05
+
+Описание:
+Реши задачи
+
+Ссылка:
+https://example.invalid/hw
+PASS homework.published mode=None number=None: date=True pair=True content=True audience=PASS
+PASS homework.published mode=DATE number=2: date=True pair=True content=True audience=PASS
+PASS homework.published mode=LESSON number=2: date=True pair=True content=True audience=PASS
+PASS homework.published mode=None number=2: date=True pair=True content=True audience=PASS
+PASS homework.updated mode=DATE number=None: date=True pair=True content=True audience=PASS
+✏️ Домашнее задание изменено
+
+Предмет: Математика
+Задание: Задачи 1–5
+Дата: 2026-10-05
+
+Описание:
+Реши задачи
+
+Ссылка:
+https://example.invalid/hw
+PASS homework.updated mode=None number=None: date=True pair=True content=True audience=PASS
+PASS homework.updated mode=DATE number=2: date=True pair=True content=True audience=PASS
+PASS homework.updated mode=LESSON number=2: date=True pair=True content=True audience=PASS
+PASS homework.updated mode=None number=2: date=True pair=True content=True audience=PASS
+Cases=10 failures=0; local handler only, no external Telegram delivery

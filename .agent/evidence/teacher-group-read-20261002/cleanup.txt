@@ -1,0 +1,4 @@
+After session 68716 terminal exit0:
+docker ps -a --filter label=org.testcontainers=true --format '{{.ID}} {{.Names}} {{.Image}} {{.Status}}'
+Tool chunk d698fa, exit_code=0, output empty. Testcontainers inventory EMPTY.
+No owned live session/container; heavy lease released to root. No manual deletion required.

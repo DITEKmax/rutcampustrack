@@ -137,7 +137,7 @@ public class ScheduleSemesterArchiveWriteFence {
         }
     }
 
-    static void lockSemester(JdbcTemplate jdbc, long semesterId) {
+    public static void lockSemester(JdbcTemplate jdbc, long semesterId) {
         if (semesterId <= 0) {
             throw new ConflictException("Нельзя изменить данные без подтверждённого semester scope");
         }

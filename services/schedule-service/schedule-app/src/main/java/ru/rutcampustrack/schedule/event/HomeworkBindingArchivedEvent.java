@@ -22,8 +22,8 @@ public class HomeworkBindingArchivedEvent extends DomainEvent {
                                         long bindingId,
                                         long actorId,
                                         UUID requestKey,
-                                        long occurrenceId,
-                                        long lessonId,
+                                        Long occurrenceId,
+                                        Long lessonId,
                                         Long homeworkId,
                                         long bindingRevision,
                                         long semesterId) {

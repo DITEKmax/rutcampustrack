@@ -1,0 +1,8 @@
+services/notification-bot/tests/test_attendance_marked.py
+services/notification-bot/tests/test_callback_prefs.py
+services/notification-bot/tests/test_event_dispatcher.py
+services/notification-bot/tests/test_send_queue.py
+services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventIdempotentIT.java
+services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/NotificationPreferencesServiceTest.java
+services/notification-bot/tests/test_durable_preferences_delivery.py
+services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/DurableNotificationPreferencesIT.java

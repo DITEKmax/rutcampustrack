@@ -1,0 +1,1 @@
+context/builders AST identical baseline c38786a3 vs source82b9; original API requires canonical attendance detail and requestID, legacy tests omit both

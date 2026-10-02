@@ -1,0 +1,3 @@
+Gradle8.12 cached gradle-core JAR: StartParameterBuildOptions$ProblemReportGenerationOption has problems-report and extends BooleanBuildOption. Actual IT CLI accepted --no-problems-report.
+R1 exact cleanup elevated exec7a3924 exit0: Testcontainers listing empty; Java processes empty.
+Report move elevated exec16afee emitted AccessDenied, original report retained; no ACL change.

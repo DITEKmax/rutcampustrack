@@ -1,0 +1,19 @@
+gradle.projectsEvaluated {
+    [':services:notification-service:notification-app'].each { module ->
+        def target = gradle.rootProject.project(module)
+        ['compileJava', 'compileTestJava'].each { name ->
+            target.tasks.named(name, org.gradle.api.tasks.compile.JavaCompile).configure { task ->
+                options.incremental = false
+                outputs.upToDateWhen { false }
+                doFirst {
+                    def inventory = new File(gradle.rootProject.projectDir, '.agent/evidence/durable-notification-prefs-20261002/' + target.name + '-' + name + '-r5-inputs.txt')
+                    inventory.text = 'task=' + task.path + '\nincremental=' + options.incremental + '\nsources=' + source.files.size() + '\n'
+                    inventory.append('SOURCE\n' + source.files.sort().collect { it.absolutePath + ' exists=' + it.exists() }.join('\n'))
+                    inventory.append('\nCLASSPATH\n' + classpath.files.collect { it.absolutePath + ' exists=' + it.exists() }.join('\n'))
+                    println('Notification input inventory: ' + task.path + ' sources=' + source.files.size() + ' incremental=' + options.incremental)
+                }
+            }
+        }
+    }
+
+}

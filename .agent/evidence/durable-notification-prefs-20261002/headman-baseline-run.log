@@ -1,0 +1,238 @@
+_resolve_notification_context unchanged= True sha256= 5308559877cd601d8c4140f34cbd29636c692be35d763e8c7364d9817ec208aa
+_build_excuse_text unchanged= True sha256= 596b7440b87deafbe7201ddd9481af3ca558508d0b28fbb97b6a37deb4b8872d
+_build_late_checkin_text unchanged= True sha256= 1865b20be3181924c9e7e524321ff1beeb8eb0301337759874f5beb292d64e73
+FFFFFF.                                                                  [100%]
+================================== FAILURES ===================================
+_________________ test_excuse_requested_sends_only_to_headman _________________
+
+    @pytest.mark.asyncio
+    async def test_excuse_requested_sends_only_to_headman():
+        """excuse.requested is sent only to headman (is_headman=True), not to regular students."""
+        members = [
+            _make_member(user_id=1, telegram_id=111, is_headman=False, display_name="Обычный студент"),
+            _make_member(user_id=2, telegram_id=222, is_headman=True, display_name="Староста"),
+        ]
+    
+        bot = MagicMock()
+        bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+    
+        academic_client = MagicMock()
+        academic_client.get_group_members = AsyncMock(return_value=members)
+    
+        captured_tasks = []
+        send_queue = MagicMock()
+    
+        async def capture_put(task):
+            captured_tasks.append(task)
+    
+        send_queue.put = capture_put
+    
+        await handle_headman_alert(
+            _make_excuse_event(user_id=1, excuse_type="illness"),
+            bot=bot,
+            academic_client=academic_client,
+            send_queue=send_queue,
+        )
+    
+        # Only 1 headman should receive the message
+>       assert len(captured_tasks) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests\test_headman_alerts.py:107: AssertionError
+______ test_excuse_requested_text_contains_student_name_and_excuse_type _______
+
+    @pytest.mark.asyncio
+    async def test_excuse_requested_text_contains_student_name_and_excuse_type():
+        """excuse.requested message text contains student name and excuse type."""
+        members = [
+            _make_member(user_id=1, telegram_id=111, is_headman=False, display_name="Иван Иванов"),
+            _make_member(user_id=2, telegram_id=222, is_headman=True, display_name="Пётр Петров"),
+        ]
+    
+        bot = MagicMock()
+        bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+    
+        academic_client = MagicMock()
+        academic_client.get_group_members = AsyncMock(return_value=members)
+    
+        captured_tasks = []
+        send_queue = MagicMock()
+    
+        async def capture_put(task):
+            captured_tasks.append(task)
+    
+        send_queue.put = capture_put
+    
+        await handle_headman_alert(
+            _make_excuse_event(user_id=1, group_id=5, excuse_type="illness", student_name="Иван Иванов"),
+            bot=bot,
+            academic_client=academic_client,
+            send_queue=send_queue,
+        )
+    
+>       assert len(captured_tasks) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests\test_headman_alerts.py:139: AssertionError
+______________ test_late_checkin_requested_sends_only_to_headman ______________
+
+    @pytest.mark.asyncio
+    async def test_late_checkin_requested_sends_only_to_headman():
+        """late_checkin.requested is sent only to headman."""
+        members = [
+            _make_member(user_id=1, telegram_id=111, is_headman=False),
+            _make_member(user_id=2, telegram_id=222, is_headman=True, display_name="Алексей Старостин"),
+        ]
+    
+        bot = MagicMock()
+        bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+    
+        academic_client = MagicMock()
+        academic_client.get_group_members = AsyncMock(return_value=members)
+    
+        captured_tasks = []
+        send_queue = MagicMock()
+    
+        async def capture_put(task):
+            captured_tasks.append(task)
+    
+        send_queue.put = capture_put
+    
+        await handle_headman_alert(
+            _make_late_checkin_event(user_id=1, student_name="Василий Васильев"),
+            bot=bot,
+            academic_client=academic_client,
+            send_queue=send_queue,
+        )
+    
+>       assert len(captured_tasks) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests\test_headman_alerts.py:178: AssertionError
+__________ test_late_checkin_text_contains_student_name_from_payload __________
+
+    @pytest.mark.asyncio
+    async def test_late_checkin_text_contains_student_name_from_payload():
+        """late_checkin.requested uses student_name from payload when present."""
+        members = [
+            _make_member(user_id=1, telegram_id=111, is_headman=False, display_name="Другое имя"),
+            _make_member(user_id=2, telegram_id=222, is_headman=True, display_name="Старостин"),
+        ]
+    
+        bot = MagicMock()
+        bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+    
+        academic_client = MagicMock()
+        academic_client.get_group_members = AsyncMock(return_value=members)
+    
+        captured_tasks = []
+        send_queue = MagicMock()
+    
+        async def capture_put(task):
+            captured_tasks.append(task)
+    
+        send_queue.put = capture_put
+    
+        await handle_headman_alert(
+            _make_late_checkin_event(user_id=1, student_name="Василий Васильев", lesson_date="2024-03-15"),
+            bot=bot,
+            academic_client=academic_client,
+            send_queue=send_queue,
+        )
+    
+>       assert len(captured_tasks) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests\test_headman_alerts.py:210: AssertionError
+__________ test_late_checkin_text_contains_subject_and_lesson_number __________
+
+    @pytest.mark.asyncio
+    async def test_late_checkin_text_contains_subject_and_lesson_number():
+        """late_checkin.requested shows subject_name and lesson_number when payload provides them."""
+        members = [
+            _make_member(user_id=1, telegram_id=111, is_headman=False),
+            _make_member(user_id=2, telegram_id=222, is_headman=True, display_name="Старостин"),
+        ]
+    
+        bot = MagicMock()
+        bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+    
+        academic_client = MagicMock()
+        academic_client.get_group_members = AsyncMock(return_value=members)
+    
+        captured_tasks = []
+        send_queue = MagicMock()
+    
+        async def capture_put(task):
+            captured_tasks.append(task)
+    
+        send_queue.put = capture_put
+    
+        await handle_headman_alert(
+            _make_late_checkin_event(
+                user_id=1,
+                student_name="Василий Васильев",
+                lesson_date="2024-03-15",
+                subject_name="Математический анализ",
+                lesson_number=3,
+            ),
+            bot=bot,
+            academic_client=academic_client,
+            send_queue=send_queue,
+        )
+    
+>       assert len(captured_tasks) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests\test_headman_alerts.py:255: AssertionError
+____________ test_headman_alert_student_name_fallback_from_members ____________
+
+    @pytest.mark.asyncio
+    async def test_headman_alert_student_name_fallback_from_members():
+        """When payload has no student_name, resolves name from group members by user_id."""
+        members = [
+            _make_member(user_id=10, telegram_id=111, is_headman=False, display_name="Известный Студент"),
+            _make_member(user_id=2, telegram_id=222, is_headman=True, display_name="Старостин"),
+        ]
+    
+        bot = MagicMock()
+        bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+    
+        academic_client = MagicMock()
+        academic_client.get_group_members = AsyncMock(return_value=members)
+    
+        captured_tasks = []
+        send_queue = MagicMock()
+    
+        async def capture_put(task):
+            captured_tasks.append(task)
+    
+        send_queue.put = capture_put
+    
+        # user_id=10 matches the member with display_name "Известный Студент"
+        # No student_name in payload
+        await handle_headman_alert(
+            _make_late_checkin_event(user_id=10),  # no student_name
+            bot=bot,
+            academic_client=academic_client,
+            send_queue=send_queue,
+        )
+    
+>       assert len(captured_tasks) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests\test_headman_alerts.py:294: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_headman_alerts.py::test_excuse_requested_sends_only_to_headman
+FAILED tests/test_headman_alerts.py::test_excuse_requested_text_contains_student_name_and_excuse_type
+FAILED tests/test_headman_alerts.py::test_late_checkin_requested_sends_only_to_headman
+FAILED tests/test_headman_alerts.py::test_late_checkin_text_contains_student_name_from_payload
+FAILED tests/test_headman_alerts.py::test_late_checkin_text_contains_subject_and_lesson_number
+FAILED tests/test_headman_alerts.py::test_headman_alert_student_name_fallback_from_members
+6 failed, 1 passed in 0.74s

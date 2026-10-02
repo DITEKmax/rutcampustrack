@@ -241,6 +241,65 @@ class NotificationHistoryConsumerIT extends ContainerTestBase {
     }
 
     @Test
+    void oneOffCancellationKeepsDatedRecipientHistoryAndReadStateOnReplay() {
+        String eventId = UUID.randomUUID().toString();
+        LocalDate eventDate = LocalDate.of(2026, 4, 25);
+        Map<String, Object> envelope = event("lesson.one_off.cancelled", eventId,
+                Map.of("group_id", 7, "subject_id", 9, "date", "2026-05-01",
+                        "lesson_number", 4, "semester_id", 2, "private_detail", "not retained"),
+                "2026-04-24T21:30:00Z");
+        doReturn(List.of(42L, 43L)).when(academicGroupMemberClient).getMemberUserIds(7L, eventDate);
+        // User 44 joins before the lesson date, but after this cancellation was published.
+        doReturn(List.of(42L, 43L, 44L)).when(academicGroupMemberClient)
+                .getMemberUserIds(7L, LocalDate.of(2026, 5, 1));
+
+        rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
+
+        await().atMost(ofSeconds(10)).untilAsserted(() -> {
+            List<NotificationHistoryDocument> all = repository.findAll();
+            assertThat(all).hasSize(2).extracting(NotificationHistoryDocument::getUserId)
+                    .containsExactlyInAnyOrder(42L, 43L);
+            assertThat(all).allSatisfy(document -> {
+                assertThat(document.getEventId()).isEqualTo(eventId);
+                assertThat(document.getType()).isEqualTo(NotificationType.LESSON_CANCELLED);
+                assertThat(document.getPayload()).isEqualTo(Map.of(
+                        "group_id", 7L, "subject_id", 9L, "date", "2026-05-01", "lesson_number", 4));
+                assertThat(document.getReadAt()).isNull();
+            });
+        });
+        verify(academicGroupMemberClient).getMemberUserIds(7L, eventDate);
+        NotificationHistoryDocument recipient42 = repository.findByEventIdAndUserIdIn(eventId, List.of(42L))
+                .getFirst();
+        Instant readAt = Instant.parse("2026-04-25T01:00:00Z");
+        assertThat(repository.markRead(recipient42.getId(), 42L, readAt)).isEqualTo(1L);
+
+        // Later membership cannot add a recipient or reset an existing row during replay.
+        doReturn(List.of(42L, 43L, 44L)).when(academicGroupMemberClient).getMemberUserIds(7L, eventDate);
+        clearInvocations(mongoTemplate, idempotencyGuard, academicGroupMemberClient);
+        rabbitTemplate.convertAndSend("rut-uit.events", "", envelope);
+        await().pollDelay(ofSeconds(2)).atMost(ofSeconds(5)).untilAsserted(() -> {
+            verify(mongoTemplate).exists(ArgumentMatchers.argThat(query -> {
+                org.bson.Document queryDocument = query.getQueryObject();
+                return eventId.equals(queryDocument.getString("event_id"))
+                        && NotificationHistoryConsumer.CONSUMER_ID
+                                .equals(queryDocument.getString("consumer_id"));
+            }), eq(MongoIdempotencyStore.DEFAULT_COLLECTION));
+            assertThat(repository.findAll()).hasSize(2).extracting(NotificationHistoryDocument::getUserId)
+                    .containsExactlyInAnyOrder(42L, 43L);
+            NotificationHistoryDocument retained = repository.findByEventIdAndUserIdIn(eventId, List.of(42L))
+                    .getFirst();
+            assertThat(retained.getId()).isEqualTo(recipient42.getId());
+            assertThat(retained.getReadAt()).isEqualTo(readAt);
+            assertThat(retained.getPayload()).isEqualTo(recipient42.getPayload());
+            Query claimQuery = Query.query(Criteria.where("consumer_id")
+                    .is(NotificationHistoryConsumer.CONSUMER_ID).and("event_id").is(eventId));
+            assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isEqualTo(1L);
+        });
+        verify(idempotencyGuard, never()).tryClaim(eq(NotificationHistoryConsumer.CONSUMER_ID), any());
+        verify(academicGroupMemberClient, never()).getMemberUserIds(anyLong(), any(LocalDate.class));
+    }
+
+    @Test
     void groupBroadcastIsPersistedForAcademicMembers() {
         String eventId = UUID.randomUUID().toString();
         LocalDate eventDate = LocalDate.of(2026, 4, 24);

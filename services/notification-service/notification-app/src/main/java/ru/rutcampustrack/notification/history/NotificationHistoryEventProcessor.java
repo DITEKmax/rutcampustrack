@@ -36,7 +36,8 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
     private static final Set<String> HEADMAN_EVENT_TYPES = Set.of("lesson.closed");
     private static final Set<String> REQUEST_EVENT_TYPES = Set.of("excuse.requested", "late_checkin.requested");
     private static final Set<String> GROUP_EVENT_TYPES = Set.of(
-            "lesson.started", "lesson.cancelled", "homework.published", "homework.updated");
+            "lesson.started", "lesson.cancelled", "lesson.one_off.cancelled",
+            "homework.published", "homework.updated");
     private static final Set<String> GROUP_ID_FIELDS = Set.of(
             "lesson_id", "group_id", "subject_id", "homework_id");
 
@@ -218,6 +219,7 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
             case "lesson.cancelled" -> List.of(
                     "lesson_id", "group_id", "subject_id", "date", "start_time", "end_time",
                     "lesson_number", "cancelled_at");
+            case "lesson.one_off.cancelled" -> List.of("group_id", "subject_id", "date", "lesson_number");
             case "homework.published", "homework.updated" -> List.of(
                     "homework_id", "group_id", "subject_id", "lesson_date", "lesson_number", "title");
             default -> throw new IllegalArgumentException("Unsupported group notification type: " + eventType);
@@ -307,7 +309,7 @@ public class NotificationHistoryEventProcessor extends AbstractEventConsumer {
             case "homework.due_reminder" -> Optional.of(NotificationType.HOMEWORK_DUE_REMINDER);
             case "lesson.started" -> Optional.of(NotificationType.LESSON_STARTED);
             case "lesson.closed" -> Optional.of(NotificationType.LESSON_CLOSED);
-            case "lesson.cancelled" -> Optional.of(NotificationType.LESSON_CANCELLED);
+            case "lesson.cancelled", "lesson.one_off.cancelled" -> Optional.of(NotificationType.LESSON_CANCELLED);
             case "homework.published" -> Optional.of(NotificationType.HOMEWORK_PUBLISHED);
             case "homework.updated" -> Optional.of(NotificationType.HOMEWORK_UPDATED);
             default -> Optional.empty();

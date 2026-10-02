@@ -18,3 +18,5 @@ KnownGradle JDK21 C:/Users/maksd/.jdks/ms-21.0.10; --system-prop=org.gradle.java
 
 
 Решение владельца: внешнее backupхранилище/S3 и RPO/RTO оставить до подготовки deploy; не блокировать функциональный backend, не подключать сейчас. Документ docs/product/decisions/2026-10-02-offsite-backup-deferred-to-deploy.md.
+
+Г: bounded roster source/evidence сверка завершена: единственный ПК-116 текущийсостав уже принят; отдельного требования 'иныебольшиеrostercontexts' нет. Искусственный blocker снят в BACKEND-STAGE без новых тестов/кода; root открыл ownerdecision и acceptedsummary. Не объявлять multipageвсеобъёмы проверенными.

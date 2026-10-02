@@ -1,0 +1,14 @@
+{
+  "bundle_manifest_sha256": "2f2aa22be56b8238b09352f675cd68d6b341041d8a290f49f5a2eaf76a5fe11a",
+  "checks": [
+    "exact PG data/schema/sequences",
+    "both Mongo documents/indexes/options",
+    "all file bytes/paths",
+    "overwrite/corruption/project/nonempty refusal"
+  ],
+  "projects": [
+    "rct-recovery-zh1002-src",
+    "rct-recovery-zh1002-dst"
+  ],
+  "result": "PASS"
+}

@@ -1,0 +1,7 @@
+PASS backup: complete immutable PG/Mongo/files bundle
+PASS refusal: existing backup cannot be overwritten
+PASS refusal: corrupt archive before any target write
+PASS refusal: project label mismatch
+PASS restore: PostgreSQL data/schema/sequences, Mongo documents/indexes/options, files match source
+PASS refusal: nonempty database target
+PASS synthetic recovery; target retained isolated; cleanup requires separate explicit command

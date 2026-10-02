@@ -54,7 +54,7 @@ async def test_lesson_blocked_sends_to_students_with_telegram_id():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
 
     captured_tasks = []
@@ -88,7 +88,7 @@ async def test_lesson_blocked_message_contains_subject_date_and_reason():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Теормех"))
 
     captured_tasks = []

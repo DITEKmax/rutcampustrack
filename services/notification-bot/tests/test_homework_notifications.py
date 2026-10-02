@@ -89,7 +89,7 @@ async def test_homework_published_sends_to_students_with_telegram_id():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Алгебра"))
 
     captured_tasks = []
@@ -120,7 +120,7 @@ async def test_homework_published_text_contains_subject_and_title():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
 
     captured_tasks = []
@@ -167,7 +167,7 @@ async def test_homework_updated_sends_to_all_students_with_telegram_id():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
 
     captured_tasks = []
@@ -199,7 +199,7 @@ async def test_homework_updated_text_contains_subject_and_title():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Математика"))
 
     captured_tasks = []
@@ -248,7 +248,7 @@ async def test_homework_updated_subject_fallback_on_grpc_error():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC down"))
 
     captured_tasks = []
@@ -284,7 +284,7 @@ async def test_homework_published_subject_fallback_on_grpc_error():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC down"))
 
     captured_tasks = []
@@ -318,7 +318,7 @@ async def test_homework_due_reminder_sends_direct_to_target_user():
 
     academic_client = MagicMock()
     academic_client.get_user_by_id = AsyncMock(return_value=_make_student(user_id=7, telegram_id=777))
-    academic_client.get_group_members = AsyncMock()
+    academic_client.get_current_group_members = AsyncMock()
 
     captured_tasks = []
     send_queue = MagicMock()
@@ -352,7 +352,7 @@ async def test_homework_due_reminder_sends_direct_to_target_user():
     )
 
     academic_client.get_user_by_id.assert_awaited_once_with(7)
-    academic_client.get_group_members.assert_not_called()
+    academic_client.get_current_group_members.assert_not_called()
     assert len(captured_tasks) == 1
     assert captured_tasks[0].user_id == 7
     assert captured_tasks[0].chat_id == 777

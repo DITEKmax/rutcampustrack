@@ -40,7 +40,7 @@ async def test_group_renamed_sends_to_students_with_telegram_id():
 
     academic_client = MagicMock()
     academic_client.get_group = AsyncMock(return_value=_make_group("УИТ-311"))
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
 
     captured = []
 
@@ -74,7 +74,7 @@ async def test_group_renamed_message_contains_new_name():
 
     academic_client = MagicMock()
     academic_client.get_group = AsyncMock(return_value=_make_group("УИТ-211"))
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
 
     captured = []
 
@@ -102,7 +102,7 @@ async def test_group_renamed_missing_group_id_returns_early():
     """Handler returns without sending when payload lacks group_id."""
     academic_client = MagicMock()
     academic_client.get_group = AsyncMock()
-    academic_client.get_group_members = AsyncMock()
+    academic_client.get_current_group_members = AsyncMock()
 
     send_queue = MagicMock()
     send_queue.put = AsyncMock()
@@ -117,7 +117,7 @@ async def test_group_renamed_missing_group_id_returns_early():
     )
 
     academic_client.get_group.assert_not_called()
-    academic_client.get_group_members.assert_not_called()
+    academic_client.get_current_group_members.assert_not_called()
     send_queue.put.assert_not_called()
 
 
@@ -131,7 +131,7 @@ async def test_group_renamed_grpc_failure_still_notifies_with_fallback():
 
     academic_client = MagicMock()
     academic_client.get_group = AsyncMock(side_effect=Exception("gRPC down"))
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
 
     captured = []
 

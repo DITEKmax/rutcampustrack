@@ -44,9 +44,9 @@ async def handle_group_renamed(
         text = "📝 <b>Группа переименована</b>"
 
     try:
-        members = await academic_client.get_group_members(group_id)
+        members = await academic_client.get_current_group_members(group_id)
     except Exception:
-        logger.exception("get_group_members failed for group_id=%s (group.renamed)", group_id)
+        logger.exception("get_current_group_members failed for group_id=%s (group.renamed)", group_id)
         raise NotificationPreferencesUnavailable("Current group audience is unavailable")
 
     for student in members:

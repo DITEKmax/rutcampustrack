@@ -35,7 +35,7 @@ async def handle_lesson_blocked(
 
     text = _build_message(payload, subject_name)
 
-    members = await academic_client.get_group_members(group_id)
+    members = await academic_client.get_current_group_members(group_id)
     for student in members:
         if not student.telegram_id:
             continue

@@ -317,3 +317,35 @@ async def test_tracked_reply_rechecks_authorization_after_edit():
         tracker.delete_entry.assert_not_awaited()
     finally:
         await queue.shutdown()
+
+
+async def test_warmed_roster_replay_materializes_current_binding_before_ack(monkeypatch):
+    from bot.notifications.homework import handle_homework
+    messages, _ = broker(monkeypatch)
+    event = {"event_id": "rebind-1", "event_type": "homework.updated",
+             "payload": {"group_id": 7, "title": "Задание"}}
+    messages[0].body = json.dumps(event).encode()
+    old = SimpleNamespace(user_id=11, telegram_id=111, is_headman=False)
+    current = SimpleNamespace(user_id=11, telegram_id=222, is_headman=False)
+    academic = SimpleNamespace(get_group_members=AsyncMock(return_value=[old]),
+        get_current_group_members=AsyncMock(return_value=[current]))
+    assert (await academic.get_group_members(7))[0].telegram_id == 111
+    async def enabled(telegram_id, category, *, user_id):
+        return user_id == 11 and telegram_id == 222
+    bot = SimpleNamespace(send_message=AsyncMock())
+    queue = TelegramSendQueue(SimpleNamespace(is_enabled=enabled))
+    queue.start()
+    guard = lease()
+    async def dispatch(body):
+        async with queue.staged() as batch:
+            await handle_homework(body, bot, academic, queue)
+        return batch
+    try:
+        await asyncio.wait_for(start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard), 2)
+        bot.send_message.assert_awaited_once()
+        assert bot.send_message.call_args.kwargs["chat_id"] == 222
+        assert messages[0].acked and not messages[0].dlq
+        guard.complete.assert_awaited_once()
+        assert academic.get_group_members.await_count == 1
+    finally:
+        await queue.shutdown()

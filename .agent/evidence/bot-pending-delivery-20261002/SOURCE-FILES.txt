@@ -2,6 +2,7 @@ services/notification-bot/bot/__main__.py
 services/notification-bot/bot/consumers/event_consumer.py
 services/notification-bot/bot/consumers/event_dispatcher.py
 services/notification-bot/bot/grpc_client/academic_client.py
+services/notification-bot/bot/notifications/attendance_marked.py
 services/notification-bot/bot/notifications/group_archived.py
 services/notification-bot/bot/notifications/group_renamed.py
 services/notification-bot/bot/notifications/headman_alerts.py
@@ -14,7 +15,17 @@ services/notification-bot/bot/notifications/lesson_reminder.py
 services/notification-bot/bot/notifications/lesson_started.py
 services/notification-bot/bot/services/idempotency_guard.py
 services/notification-bot/bot/services/send_queue.py
+services/notification-bot/tests/test_attendance_marked.py
 services/notification-bot/tests/test_durable_preferences_delivery.py
 services/notification-bot/tests/test_event_dispatcher.py
+services/notification-bot/tests/test_group_archived.py
+services/notification-bot/tests/test_group_renamed.py
 services/notification-bot/tests/test_headman_alerts.py
+services/notification-bot/tests/test_homework_notifications.py
+services/notification-bot/tests/test_lesson_blocked.py
+services/notification-bot/tests/test_lesson_cancelled.py
+services/notification-bot/tests/test_lesson_reminder.py
+services/notification-bot/tests/test_lesson_started.py
+services/notification-bot/tests/test_one_off_cancelled_handler.py
+services/notification-bot/tests/test_one_off_created_handler.py
 services/notification-bot/tests/test_pending_delivery.py

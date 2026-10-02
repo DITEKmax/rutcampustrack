@@ -53,7 +53,7 @@ async def test_sends_to_all_group_students():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Теормех"))
 
     send_queue = MagicMock()
@@ -91,7 +91,7 @@ async def test_empty_group_no_error():
     """Empty students list does not raise and does not enqueue tasks."""
     bot = MagicMock()
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=[])
+    academic_client.get_current_group_members = AsyncMock(return_value=[])
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
 
     send_queue = MagicMock()
@@ -118,7 +118,7 @@ async def test_skips_students_without_telegram_id():
 
     bot = MagicMock()
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
 
     send_queue = MagicMock()

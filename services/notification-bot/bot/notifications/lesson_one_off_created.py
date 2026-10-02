@@ -56,7 +56,7 @@ async def handle_lesson_one_off_created(
         f"Аудитория: {classroom}"
     )
 
-    members = await academic_client.get_group_members(group_id)
+    members = await academic_client.get_current_group_members(group_id)
     for student in members:
         if not student.telegram_id:
             continue

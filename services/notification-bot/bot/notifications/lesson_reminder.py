@@ -36,7 +36,7 @@ async def handle_lesson_reminder(
         else "⏰ Напоминание\n\nОтметьтесь на паре, если ещё не сделали этого."
     )
 
-    members = await academic_client.get_group_members(group_id)
+    members = await academic_client.get_current_group_members(group_id)
     queued = 0
     for student in members:
         if not student.telegram_id:

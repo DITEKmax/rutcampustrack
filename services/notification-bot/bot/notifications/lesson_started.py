@@ -70,7 +70,7 @@ async def handle_lesson_started(
     reply_markup = InlineKeyboardMarkup(inline_keyboard=[[mini_app_button]]) if mini_app_button is not None else None
 
     # Fetch group members — T-24-03: each student only receives their own message
-    members = await academic_client.get_group_members(group_id)
+    members = await academic_client.get_current_group_members(group_id)
     for student in members:
         # T-24-03: skip students without a linked Telegram account
         if not student.telegram_id:

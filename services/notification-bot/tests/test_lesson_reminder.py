@@ -34,7 +34,7 @@ async def test_lesson_reminder_sends_to_unmarked_students_even_without_start_mes
     bot = MagicMock()
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=777))
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
 
     send_queue = MagicMock()
     captured_tasks = []
@@ -77,7 +77,7 @@ async def test_lesson_reminder_skips_marked_students():
     bot = MagicMock()
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=888))
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
 
     captured_tasks = []
     send_queue = MagicMock()
@@ -113,7 +113,7 @@ async def test_lesson_reminder_skips_marked_students():
 async def test_lesson_reminder_returns_early_on_missing_required_fields():
     bot = MagicMock()
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=[])
+    academic_client.get_current_group_members = AsyncMock(return_value=[])
     send_queue = MagicMock()
     send_queue.put = AsyncMock()
     redis_client = MagicMock()

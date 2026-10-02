@@ -47,7 +47,7 @@ def _make_deps(students=None, message_ids=None):
     bot.delete_message = AsyncMock()
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students or [])
+    academic_client.get_current_group_members = AsyncMock(return_value=students or [])
 
     redis_client = MagicMock()
     redis_client.get_message_ids = AsyncMock(return_value=message_ids or [])
@@ -175,7 +175,7 @@ async def test_attendance_marked_present_silently_ignores_telegram_bad_request()
     )
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
 
     redis_client = MagicMock()
     redis_client.get_message_ids = AsyncMock(return_value=[77])

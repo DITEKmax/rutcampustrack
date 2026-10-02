@@ -45,7 +45,7 @@ async def handle_lesson_cancelled(
     if cancel_reason:
         text += f"\nПричина: {cancel_reason}"
 
-    members = await academic_client.get_group_members(group_id)
+    members = await academic_client.get_current_group_members(group_id)
     for student in members:
         # Skip students without a linked Telegram account
         if not student.telegram_id:

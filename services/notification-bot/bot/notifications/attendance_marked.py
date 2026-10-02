@@ -15,7 +15,7 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 
 from bot.services.redis_client import ReminderRedisClient
-from bot.services.send_queue import SendTask, TelegramSendQueue
+from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ async def handle_attendance_marked(
     if status in _CLEANUP_STATUSES:
         await redis_client.mark_student_marked(lesson_id, user_id, status)
 
-    members = await academic_client.get_group_members(group_id)
+    members = await academic_client.get_current_group_members(group_id)
     student = next((m for m in members if m.user_id == user_id), None)
     if student is None or not student.telegram_id:
         return
@@ -89,6 +89,7 @@ async def handle_attendance_marked(
         await send_queue.put(SendTask(
             coroutine_factory=lambda: bot.send_message(chat_id=student.telegram_id, text=text),
             user_id=user_id, chat_id=student.telegram_id, category="tickets",
+            audience_check=group_audience(academic_client, group_id, user_id, student.telegram_id),
         ))
 
     # 2. Cleanup активных ремайндеров (только для «отметка получена» статусов).

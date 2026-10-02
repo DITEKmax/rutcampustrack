@@ -38,7 +38,7 @@ async def test_group_archived_sends_to_students_with_telegram_id():
 
     academic_client = MagicMock()
     academic_client.get_group = AsyncMock(return_value=_make_group())
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
 
     captured = []
 
@@ -69,7 +69,7 @@ async def test_group_archived_message_contains_graduation_text_and_name():
 
     academic_client = MagicMock()
     academic_client.get_group = AsyncMock(return_value=_make_group("УИТ-411 (выпуск 2026)"))
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
 
     captured = []
 
@@ -97,7 +97,7 @@ async def test_group_archived_message_contains_graduation_text_and_name():
 async def test_group_archived_missing_group_id_returns_early():
     academic_client = MagicMock()
     academic_client.get_group = AsyncMock()
-    academic_client.get_group_members = AsyncMock()
+    academic_client.get_current_group_members = AsyncMock()
 
     send_queue = MagicMock()
     send_queue.put = AsyncMock()

@@ -55,7 +55,7 @@ async def test_lesson_started_sends_to_students_with_telegram_id():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=999))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Математика"))
 
     send_queue = MagicMock()
@@ -102,7 +102,7 @@ async def test_lesson_started_sends_plain_chat_message_without_web_app():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=42))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
 
     send_queue = MagicMock()
@@ -147,7 +147,7 @@ async def test_lesson_started_adds_mini_app_checkin_web_app_url():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=42))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
 
     send_queue = MagicMock()
@@ -193,7 +193,7 @@ async def test_lesson_started_stores_message_id_in_redis():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=555))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
 
     send_queue = MagicMock()
@@ -236,7 +236,7 @@ async def test_lesson_started_resolves_subject_name():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Линейная алгебра"))
 
     send_queue = MagicMock()
@@ -278,7 +278,7 @@ async def test_lesson_started_fallback_subject_name_on_grpc_error():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC down"))
 
     send_queue = MagicMock()

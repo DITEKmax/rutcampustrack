@@ -49,7 +49,7 @@ async def test_sends_cancellation_to_all():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
 
     send_queue = MagicMock()
@@ -83,7 +83,7 @@ async def test_message_contains_date_and_subject():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Дискретная математика"))
 
     send_queue = MagicMock()
@@ -118,7 +118,7 @@ async def test_fallback_subject_on_grpc_error():
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_current_group_members = AsyncMock(return_value=students)
     academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC timeout"))
 
     send_queue = MagicMock()

@@ -1,0 +1,126 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:mobile-bff:mobile-bff-api-contract:compileJava
+> Task :services:mobile-bff:mobile-bff-api-contract:processResources NO-SOURCE
+> Task :services:mobile-bff:mobile-bff-api-contract:classes
+> Task :services:mobile-bff:mobile-bff-api-contract:jar
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-security:processResources NO-SOURCE
+> Task :services:mobile-bff:mobile-bff-app:extractIncludeProto UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-app:extractProto UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-app:generateProto
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-security:compileJava UP-TO-DATE
+> Task :services:shared:shared-security:classes UP-TO-DATE
+> Task :services:shared:shared-security:jar UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-app:compileJava
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:attendance-service:attendance-api-contract:compileJava
+> Task :services:attendance-service:attendance-api-contract:processResources NO-SOURCE
+> Task :services:attendance-service:attendance-api-contract:classes
+> Task :services:attendance-service:attendance-api-contract:jar
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:attendance-service:attendance-app:extractIncludeProto
+> Task :services:attendance-service:attendance-app:extractProto
+> Task :services:attendance-service:attendance-app:generateProto
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-outbox:compileJava UP-TO-DATE
+> Task :services:shared:shared-outbox:classes UP-TO-DATE
+> Task :services:shared:shared-outbox:jar UP-TO-DATE
+> Task :services:shared:shared-web:compileJava UP-TO-DATE
+> Task :services:shared:shared-web:classes UP-TO-DATE
+> Task :services:shared:shared-web:jar UP-TO-DATE
+
+> Task :services:attendance-service:attendance-app:compileJava
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\AttendanceIndexInitializer.java:97: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps(AttendanceDocument.class).ensureIndex(
+                                                        ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:70: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:77: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:84: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:91: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:99: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        cancellationOps.ensureIndex(new Index()
+                       ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:109: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:114: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:118: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:123: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:133: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        excuseOps.ensureIndex(new Index()
+                 ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:139: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        requestReceiptOps.ensureIndex(new Index()
+                         ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:147: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        budgetOps.ensureIndex(new Index()
+                 ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:154: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        attachmentOps.ensureIndex(new Index()
+                     ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:159: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        attachmentOps.ensureIndex(new Index()
+                     ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:165: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        receiptOps.ensureIndex(new Index()
+                  ^
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\checkin\CheckinController.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+16 warnings
+
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:attendance-service:attendance-app:processResources
+> Task :services:attendance-service:attendance-app:classes
+> Task :services:attendance-service:attendance-app:jar
+> Task :services:mobile-bff:mobile-bff-app:processResources
+> Task :services:mobile-bff:mobile-bff-app:classes
+> Task :services:shared:shared-security:processTestFixturesResources NO-SOURCE
+> Task :services:mobile-bff:mobile-bff-app:extractIncludeTestProto
+> Task :services:mobile-bff:mobile-bff-app:extractTestProto
+> Task :services:mobile-bff:mobile-bff-app:generateTestProto NO-SOURCE
+> Task :services:shared:shared-security:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesJar UP-TO-DATE
+> Task :services:mobile-bff:mobile-bff-app:compileTestJava
+> Task :services:mobile-bff:mobile-bff-app:processTestResources NO-SOURCE
+> Task :services:mobile-bff:mobile-bff-app:testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :services:mobile-bff:mobile-bff-app:test
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+{"ts":"2026-10-02T17:10:10.185+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.server.serverfactory.GrpcServerLifecycle","thread":"SpringApplicationShutdownHook","msg":"Completed gRPC server shutdown","service":"unknown-service"}
+{"ts":"2026-10-02T17:10:10.187+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"SpringApplicationShutdownHook","msg":"Commencing graceful shutdown. Waiting for active requests to complete","service":"unknown-service"}
+{"ts":"2026-10-02T17:10:10.194+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"tomcat-shutdown","msg":"Graceful shutdown complete","service":"unknown-service"}
+> Task :services:mobile-bff:mobile-bff-app:integrationTest
+
+BUILD SUCCESSFUL in 1m 24s
+40 actionable tasks: 18 executed, 22 up-to-date
+exit=0 end=2026-10-02T14:10:10.9360264Z

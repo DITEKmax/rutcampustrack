@@ -1,0 +1,39 @@
+# Student DATE homework BFF — PASS, integrated
+
+Consumer commit: 17fc01b7, parent f7aeaa5ebe3ef0a81dc8ef15064329c8afd38787. Student GET homework returns DATE with chosen lessonDate, lessonNumber:null, bindingMode:DATE and upstream archived state; completed timestamp/subject/link survive. Legacy/explicit LESSON remains numeric. Root opened actual product diff and accepted bounded mapping; separate independent reviewer is not required for this consumer risk.
+
+Root integration: additive Academic-owned proto092e5006 → main dcadcb6f; consumer17fc01b7 → main25efc61f, scoped integration clean/no conflicts. No repeated checks after unchanged integration.
+
+## Compact contract
+- Goal: GET /api/v1/student/homework returns chosen DATE homework without fictitious lesson 0, preserving LESSON semantics.
+- Context/evidence: root frozen packet; canonical RULES SHA A208AA4380B64376A4EAD645AA0731C9F574077107DC9C44356F5C04D80F28FA. academic.proto SHA C5DD6E8F35250A74C44AC8EFFFB165D0A06EC32B1CACF3CF90B2E992BF8D68B7; binding_mode field16 and unchanged field8. Producer may return DATE number0. Original mapper exposed primitive number; HomeworkItem primitive int had no binding mode.
+- Relevant scope: sole BFF writer /root/v_homework_bff_1002, reused pwa-install-delivery-20260923 worktree HEAD f7aeaa5ebe3ef0a81dc8ef15064329c8afd38787. Only StudentQueryService.java, StudentApiModels.java homework contract, existing StudentHomeworkHttpGrpcIT.java. Root integrates consumer separately from Academic-owned proto. Risk S1/S2.
+- Required behavior: bindingMode DATE|LESSON; nullable lessonNumber (explicit JSON null for DATE); legacy blank mode means LESSON; unknown nonblank mode returns503 DEPENDENCY_UNAVAILABLE. Preserve date/subject/link/completion. Preserve date→completion→number→id order, null number after numbered homework for matching date/completion keys. Root scope delta2026-10-02: expose archived:boolean from existing proto field15 for effective DATE read-only projection; no new role/UI behavior or proto changes.
+- Constraints: no children/Terra; preserve foreign .agent instructions, monitoring/cache changes. Scope starts clean. Gradle/Docker only after root heavy lease. No product/scope decisions needed.
+- Existing patterns: enum public contract types; nullable @Schema fields serialized as JSON null by existing homework policy; existing MobileBffException503 dependency pattern; existing actual servlet HTTP and local Academic gRPC seam.
+- Acceptance criteria: DATE chosen date + explicit null lessonNumber + bindingMode appear in actual GET JSON; subject/link and completed timestamp survive; legacy and explicit LESSON retain numeric value; existing list keys preserved; unknown mode fails closed. archived true/false are forwarded unchanged while preserving completion.
+- Verification: git diff --check; single sequential scoped api-contract/app compile + existing StudentQueryHomeworkTest + StudentHomeworkHttpGrpcIT after lease. Existing HTTP test extended rather than new suite. BFF boundary proof uses local fake Academic gRPC; actual Academic/Schedule persistence belongs to root's combined homework package.
+- Do not: edit proto/frontends/generated clients, role/routing/cache logic, refactor, deploy/push/main, global/protected config, production/external Telegram; no warning-driven unrelated code changes.
+
+## Inventory / behavior
+Modified product:
+- services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java — HomeworkBindingMode enum, required additive bindingMode/archived, nullable Integer lessonNumber and schema description.
+- services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java — mode mapping, established dependency error, DATE number null, null-last number sort with existing remaining keys unchanged, archived projection.
+Modified existing runtime test:
+- services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java — existing GET/PUT flow checks legacy/explicit LESSON, DATE uncompleted/completed JSON, order/date/subject/link/archived; existing dependency-status flow checks unknown mode503. No new test classes/methods.
+Created evidence: this SUMMARY.md, scoped.diff, check-r1.log, check-r2.log, verbatim StudentQueryHomeworkTest.xml and StudentHomeworkHttpGrpcIT.xml, cleanup-r2.json.
+Deleted: none.
+
+## Checks / evidence
+- Git baseline/status read exit0, HEAD f7aeaa5e. Foreign tracked changes only .agent/orchestration-v2/LEAF-PACKET.md and RULES.md at start; preserved. Git emits environment ignore permission warning; unrelated to requested behavior, no code change.
+- RULES/proto hash reads exit0 and match frozen packet.
+- git diff --check -- services/mobile-bff: exit0, source-ready. Diff: scoped.diff.
+- Compile/unit/HTTP runtime command, both runs under JDK C:/Users/maksd/.jdks/ms-21.0.10 and exclusive root heavy lease: .\gradlew.bat :services:mobile-bff:mobile-bff-api-contract:compileJava :services:mobile-bff:mobile-bff-app:compileJava :services:mobile-bff:mobile-bff-app:compileTestJava :services:mobile-bff:mobile-bff-app:test --tests '*StudentQueryHomeworkTest' :services:mobile-bff:mobile-bff-app:integrationTest --tests '*StudentHomeworkHttpGrpcIT' --no-daemon --no-parallel --max-workers=1 --no-problems-report --system-prop=org.gradle.java.compile-classpath-packaging=true
+- R1 sandbox session13292: start2026-10-02T14:06:49Z, terminal exit1 at14:07:22Z (32s build). API-contract compile could not find unchanged StudentRequestApiModels; source tracked/present/readable and git diff --exit-code for this file0. No tests ran, no product code correction. Raw failure retained check-r1.log.
+- R2 root-authorized scoped escalation session2483: start14:08:46Z, terminal exit0 at14:10:10Z; BUILD SUCCESSFUL in1m24s. Same command, same source; no incremental policy/init script/output invalidation. API-contract compileJava, app compileJava/compileTestJava PASS. Existing StudentQueryHomeworkTest9/9, StudentHomeworkHttpGrpcIT22/22, zero failures/errors/skips; two verbatim suite XML reports alongside this summary. Repeated only because known worktree sandbox access issue, not coverage expansion; two heavy invocations total. Existing warnings in Attendance ensureIndex deprecation and JVM class sharing unrelated to DATE request, no code changes.
+- Runtime evidence: actual BFF servlet GET/PUT and signed-identity local Academic gRPC scenario in existing HTTP test verifies legacy blank/explicit LESSON number, DATE chosen date/null number/link/subject/completedAt/archived, ordering, unknown binding mode503. Fake upstream does not prove Academic persistence/lifecycle. Raw check-r2.log includes gRPC shutdown and Tomcat graceful shutdown completion.
+- Cleanup: terminal session2483 exit0, final elevated CIM inventory at14:10:59Z shows zero Java processes; no containers started. Initial sandbox CIM denied and escalated wrapper PID selector found zero while live, so no exact PID attribution claimed. cleanup-r2.json preserves limitation and final process evidence. Lease released to root after scoped commit17fc01b7.
+- git diff --check -- services/mobile-bff after runtime: exit0. Scoped commit exit0; only three owned BFF files committed, no proto or foreign instructions. No code corrections between successful checks and commit.
+
+## Limitations / next step
+Consumer implementation/checks accepted and integrated by root; no actual Academic DB/Schedule lifecycle or frontend claim. Author retains correction ownership and is idle; heavy lease released. Runtime actual model/effort is not separately exposed by tool; root requested gpt-6.1-sol high. Consumer commit does not include seeded proto; root integrated Academic-owned frozen proto once. No product or scope decision remains open.

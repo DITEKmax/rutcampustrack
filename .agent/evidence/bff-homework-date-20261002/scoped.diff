@@ -1,0 +1,221 @@
+diff --git a/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java b/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java
+index 3f844a37..9ffc0124 100644
+--- a/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java
++++ b/services/mobile-bff/mobile-bff-api-contract/src/main/java/ru/rutcampustrack/mobilebff/contract/model/StudentApiModels.java
+@@ -432,11 +432,13 @@ public final class StudentApiModels {
+     public record HomeworkSubject(String id, String name) {
+     }
+ 
++    public enum HomeworkBindingMode { LESSON, DATE }
++
+     @Schema(
+             name = "StudentHomeworkItem",
+             requiredProperties = {
+-                    "id", "subject", "title", "description", "link", "lessonDate", "lessonNumber", "completed",
+-                    "completedAt"
++                    "id", "subject", "title", "description", "link", "lessonDate", "lessonNumber", "bindingMode",
++                    "completed", "completedAt", "archived"
+             }
+     )
+     public record HomeworkItem(
+@@ -446,9 +448,11 @@ public final class StudentApiModels {
+             String description,
+             @Schema(nullable = true) String link,
+             LocalDate lessonDate,
+-            int lessonNumber,
++            @Schema(nullable = true, description = "Номер пары для LESSON; null для DATE") Integer lessonNumber,
++            HomeworkBindingMode bindingMode,
+             boolean completed,
+-            @Schema(nullable = true) Instant completedAt
++            @Schema(nullable = true) Instant completedAt,
++            boolean archived
+     ) {
+     }
+ 
+diff --git a/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java b/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java
+index 4da6cd3c..df02e246 100644
+--- a/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java
++++ b/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java
+@@ -206,7 +206,9 @@ public class StudentQueryService {
+         List<HomeworkItem> items = response.getHomeworksList().stream()
+                 .sorted(Comparator.comparing((HomeworkInfo item) -> LocalDate.parse(item.getLessonDate()))
+                         .thenComparingInt(item -> item.getCompleted() ? 1 : 0)
+-                        .thenComparingInt(HomeworkInfo::getLessonNumber)
++                        .thenComparing(item -> homeworkBindingMode(item.getBindingMode()) == HomeworkBindingMode.DATE
++                                        ? null : Integer.valueOf(item.getLessonNumber()),
++                                Comparator.nullsLast(Comparator.naturalOrder()))
+                         .thenComparingLong(HomeworkInfo::getHomeworkId))
+                 .map(StudentQueryService::homeworkItem)
+                 .toList();
+@@ -300,13 +302,28 @@ public class StudentQueryService {
+     }
+ 
+     private static HomeworkItem homeworkItem(HomeworkInfo item) {
++        HomeworkBindingMode bindingMode = homeworkBindingMode(item.getBindingMode());
+         String link = item.getLink().isBlank() ? null : item.getLink();
+         Instant completedAt = completionAt(item.getCompleted(), item.hasCompletedAt(), item.getCompletedAt());
+         return new HomeworkItem(
+                 Long.toString(item.getHomeworkId()),
+                 new HomeworkSubject(Long.toString(item.getSubjectId()), item.getSubjectName()),
+                 item.getTitle(), item.getDescription(), link,
+-                LocalDate.parse(item.getLessonDate()), item.getLessonNumber(), item.getCompleted(), completedAt);
++                LocalDate.parse(item.getLessonDate()),
++                bindingMode == HomeworkBindingMode.DATE ? null : item.getLessonNumber(),
++                bindingMode, item.getCompleted(), completedAt, item.getArchived());
++    }
++
++    private static HomeworkBindingMode homeworkBindingMode(String value) {
++        if (value.isBlank()) {
++            return HomeworkBindingMode.LESSON;
++        }
++        try {
++            return HomeworkBindingMode.valueOf(value);
++        } catch (IllegalArgumentException error) {
++            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
++                    "Academic Service вернул неизвестный режим привязки ДЗ");
++        }
+     }
+ 
+     private static Instant completionAt(boolean completed, boolean hasCompletedAt, String rawCompletedAt) {
+diff --git a/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java b/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java
+index becf3bda..05266146 100644
+--- a/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java
++++ b/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/runtime/StudentHomeworkHttpGrpcIT.java
+@@ -1,5 +1,7 @@
+ package ru.rutcampustrack.mobilebff.runtime;
+ 
++import com.fasterxml.jackson.databind.JsonNode;
++import com.fasterxml.jackson.databind.ObjectMapper;
+ import io.grpc.Context;
+ import io.grpc.Contexts;
+ import io.grpc.Metadata;
+@@ -81,6 +83,8 @@ class StudentHomeworkHttpGrpcIT {
+     private static final long SEMESTER_ID = 9L;
+     private static final long HOMEWORK_ID = 9001L;
+     private static final long OLD_HOMEWORK_ID = 9002L;
++    private static final long DATE_HOMEWORK_ID = 9003L;
++    private static final long COMPLETED_DATE_HOMEWORK_ID = 9004L;
+     private static final long SUBJECT_ID = 501L;
+     private static final Instant SERVER_NOW = Instant.parse("2026-03-05T10:00:00Z");
+     private static final String TOKEN_HEADER = "X-Internal-Token";
+@@ -99,6 +103,7 @@ class StudentHomeworkHttpGrpcIT {
+     private static final AtomicReference<Status> FORCED_HOMEWORK_STATUS = new AtomicReference<>();
+     private static final AtomicReference<Status> FORCED_COMPLETION_STATUS = new AtomicReference<>();
+     private static final AtomicReference<Status> FORCED_ACTIVE_SEMESTER_STATUS = new AtomicReference<>();
++    private static final AtomicReference<String> HOMEWORK_BINDING_MODE = new AtomicReference<>("");
+     private static final AtomicInteger RPC_CALLS = new AtomicInteger();
+     private static Server grpcServer;
+ 
+@@ -108,6 +113,9 @@ class StudentHomeworkHttpGrpcIT {
+     @Autowired
+     private TestRestTemplate http;
+ 
++    @Autowired
++    private ObjectMapper objectMapper;
++
+     @MockitoBean
+     private PublicKeyProvider bffPublicKeyProvider;
+ 
+@@ -135,6 +143,7 @@ class StudentHomeworkHttpGrpcIT {
+         FORCED_HOMEWORK_STATUS.set(null);
+         FORCED_COMPLETION_STATUS.set(null);
+         FORCED_ACTIVE_SEMESTER_STATUS.set(null);
++        HOMEWORK_BINDING_MODE.set("");
+         RPC_CALLS.set(0);
+         when(bffPublicKeyProvider.getPublicKey()).thenReturn(JWT.publicKey());
+         when(bffClock.instant()).thenReturn(SERVER_NOW);
+@@ -151,7 +160,7 @@ class StudentHomeworkHttpGrpcIT {
+     }
+ 
+     @Test
+-    void signedStudentJwtTraversesGetAndPutAndSpoofedHeadersAreIgnored() {
++    void signedStudentJwtTraversesGetAndPutAndSpoofedHeadersAreIgnored() throws Exception {
+         String token = validToken(STUDENT_ID, "STUDENT", "ACTIVE", GROUP_ID, false);
+ 
+         ResponseEntity<String> feed = http.exchange(
+@@ -169,6 +178,32 @@ class StudentHomeworkHttpGrpcIT {
+                 .contains("\"id\":\"9002\"")
+                 .contains("\"completedAt\":\"2026-03-05T08:00:00Z\"")
+                 .contains("\"serverNow\":\"2026-03-05T10:00:00Z\"");
++        JsonNode items = objectMapper.readTree(feed.getBody()).get("items");
++        assertThat(items.size()).isEqualTo(4);
++        assertThat(items.get(0).get("id").asText()).isEqualTo("9002");
++        assertThat(items.get(1).get("id").asText()).isEqualTo("9001");
++        assertThat(items.get(2).get("id").asText()).isEqualTo("9003");
++        assertThat(items.get(3).get("id").asText()).isEqualTo("9004");
++        assertThat(items.get(0).get("bindingMode").asText()).isEqualTo("LESSON");
++        assertThat(items.get(0).get("lessonNumber").asInt()).isEqualTo(2);
++        assertThat(items.get(1).get("bindingMode").asText()).isEqualTo("LESSON");
++        assertThat(items.get(1).get("lessonNumber").asInt()).isEqualTo(1);
++        assertThat(items.get(1).get("archived").asBoolean()).isFalse();
++        JsonNode dateHomework = items.get(2);
++        assertThat(dateHomework.get("bindingMode").asText()).isEqualTo("DATE");
++        assertThat(dateHomework.get("lessonNumber").isNull()).isTrue();
++        assertThat(dateHomework.get("lessonDate").asText()).isEqualTo("2026-03-02");
++        assertThat(dateHomework.get("subject").get("name").asText()).isEqualTo("Алгоритмы");
++        assertThat(dateHomework.get("link").asText()).isEqualTo("https://example.test/date-homework");
++        assertThat(dateHomework.get("completed").asBoolean()).isFalse();
++        assertThat(dateHomework.get("completedAt").isNull()).isTrue();
++        assertThat(dateHomework.get("archived").asBoolean()).isFalse();
++        JsonNode completedDateHomework = items.get(3);
++        assertThat(completedDateHomework.get("bindingMode").asText()).isEqualTo("DATE");
++        assertThat(completedDateHomework.get("lessonNumber").isNull()).isTrue();
++        assertThat(completedDateHomework.get("completed").asBoolean()).isTrue();
++        assertThat(completedDateHomework.get("completedAt").asText()).isEqualTo("2026-03-05T08:00:00Z");
++        assertThat(completedDateHomework.get("archived").asBoolean()).isTrue();
+         assertThat(LAST_HOMEWORK_REQUEST).hasValueSatisfying(request -> {
+             assertThat(request.getGroupId()).isEqualTo(GROUP_ID);
+             assertThat(request.getSemesterId()).isEqualTo(SEMESTER_ID);
+@@ -469,6 +504,13 @@ class StudentHomeworkHttpGrpcIT {
+                 url("/api/v1/student/homework/9001/completion"), HttpMethod.PUT,
+                 new HttpEntity<>("{\"completed\":true}", headers(token, false)), String.class);
+         assertProblem(unavailable, HttpStatus.SERVICE_UNAVAILABLE, "DEPENDENCY_UNAVAILABLE");
++
++        FORCED_HOMEWORK_STATUS.set(null);
++        HOMEWORK_BINDING_MODE.set("UNKNOWN");
++        ResponseEntity<String> unknownBindingMode = http.exchange(
++                url("/api/v1/student/homework?from=2026-03-01&to=2026-03-31"), HttpMethod.GET,
++                new HttpEntity<>(headers(token, false)), String.class);
++        assertProblem(unknownBindingMode, HttpStatus.SERVICE_UNAVAILABLE, "DEPENDENCY_UNAVAILABLE");
+     }
+ 
+     @Test
+@@ -625,6 +667,18 @@ class StudentHomeworkHttpGrpcIT {
+                             .setDescription("Конкурентная проверка")
+                             .setLessonDate("2026-03-02")
+                             .setLessonNumber(1)
++                            .setBindingMode(HOMEWORK_BINDING_MODE.get())
++                            .setCompleted(false)
++                            .build())
++                    .addHomeworks(HomeworkInfo.newBuilder()
++                            .setHomeworkId(DATE_HOMEWORK_ID)
++                            .setSubjectId(SUBJECT_ID)
++                            .setSubjectName("Алгоритмы")
++                            .setTitle("Задание на дату")
++                            .setDescription("Выбранная дата без пары")
++                            .setLink("https://example.test/date-homework")
++                            .setLessonDate("2026-03-02")
++                            .setBindingMode("DATE")
+                             .setCompleted(false)
+                             .build());
+             if (request.getIncludeCompletedToday()) {
+@@ -636,6 +690,19 @@ class StudentHomeworkHttpGrpcIT {
+                         .setDescription("Завершено сегодня")
+                         .setLessonDate("2026-02-20")
+                         .setLessonNumber(2)
++                        .setBindingMode("LESSON")
++                        .setCompleted(true)
++                        .setCompletedAt("2026-03-05T08:00:00Z")
++                        .build());
++                response.addHomeworks(HomeworkInfo.newBuilder()
++                        .setHomeworkId(COMPLETED_DATE_HOMEWORK_ID)
++                        .setSubjectId(SUBJECT_ID)
++                        .setSubjectName("Алгоритмы")
++                        .setTitle("Завершённое задание на дату")
++                        .setDescription("Сохраняет completion")
++                        .setLessonDate("2026-03-02")
++                        .setBindingMode("DATE")
++                        .setArchived(true)
+                         .setCompleted(true)
+                         .setCompletedAt("2026-03-05T08:00:00Z")
+                         .build());

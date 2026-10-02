@@ -1,0 +1,215 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Task :services:mobile-bff:mobile-bff-api-contract:compileJava FAILED
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:43: error: cannot find symbol
+import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels;
+                                                 ^
+  symbol:   class StudentRequestApiModels
+  location: package ru.rutcampustrack.mobilebff.contract.model
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:44: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Bucket;
+                                                                         ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:45: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Detail;
+                                                                         ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:46: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.ExcuseRequest;
+                                                                         ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:47: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.LateCheckinRequest;
+                                                                         ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:48: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Options;
+                                                                         ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:49: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Page;
+                                                                         ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:362: error: cannot find symbol
+            @RequestParam(name = "bucket", defaultValue = "OPEN") Bucket bucket,
+                                                                  ^
+  symbol:   class Bucket
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:361: error: cannot find symbol
+    ResponseEntity<Page> listRequests(
+                   ^
+  symbol:   class Page
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:373: error: cannot find symbol
+    ResponseEntity<Options> requestOptions();
+                   ^
+  symbol:   class Options
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:389: error: cannot find symbol
+    ResponseEntity<Detail> getRequest(@PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String id);
+                   ^
+  symbol:   class Detail
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:418: error: cannot find symbol
+            @Valid @RequestPart("request") ExcuseRequest request,
+                                           ^
+  symbol:   class ExcuseRequest
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:414: error: cannot find symbol
+    ResponseEntity<Detail> submitExcuse(
+                   ^
+  symbol:   class Detail
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:443: error: cannot find symbol
+            @Valid @RequestBody LateCheckinRequest request
+                                ^
+  symbol:   class LateCheckinRequest
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:439: error: cannot find symbol
+    ResponseEntity<Detail> submitLateCheckin(
+                   ^
+  symbol:   class Detail
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:460: error: cannot find symbol
+    ResponseEntity<Detail> cancelRequest(@PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String id);
+                   ^
+  symbol:   class Detail
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:345: error: cannot find symbol
+                            schema = @Schema(implementation = Page.class)),
+                                                              ^
+  symbol:   class Page
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:370: error: cannot find symbol
+                    schema = @Schema(implementation = Options.class)),
+                                                      ^
+  symbol:   class Options
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:379: error: cannot find symbol
+                            schema = @Schema(implementation = Detail.class)),
+                                                              ^
+  symbol:   class Detail
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:398: error: cannot find symbol
+                            schema = @Schema(implementation = Detail.class)),
+                                                              ^
+  symbol:   class Detail
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:426: error: cannot find symbol
+                            schema = @Schema(implementation = Detail.class)),
+                                                              ^
+  symbol:   class Detail
+  location: interface StudentApi
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:450: error: cannot find symbol
+                            schema = @Schema(implementation = Detail.class)),
+                                                              ^
+  symbol:   class Detail
+  location: interface StudentApi
+22 errors
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':services:mobile-bff:mobile-bff-api-contract:compileJava'.
+> Compilation failed; see the compiler output below.
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:44: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+  import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Bucket;
+                                                                           ^
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:45: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+  import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Detail;
+                                                                           ^
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:46: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+  import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.ExcuseRequest;
+                                                                           ^
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:47: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+  import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.LateCheckinRequest;
+                                                                           ^
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:48: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+  import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Options;
+                                                                           ^
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:49: error: package ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels does not exist
+  import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Page;
+                                                                           ^C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:43: error: cannot find symbol
+  import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels;
+                                                   ^
+    symbol:   class StudentRequestApiModels
+    location: package ru.rutcampustrack.mobilebff.contract.model
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:362: error: cannot find symbol
+              @RequestParam(name = "bucket", defaultValue = "OPEN") Bucket bucket,
+                                                                    ^
+    symbol:   class Bucket
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:361: error: cannot find symbol
+      ResponseEntity<Page> listRequests(
+                     ^
+    symbol:   class Page
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:373: error: cannot find symbol
+      ResponseEntity<Options> requestOptions();
+                     ^
+    symbol:   class Options
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:389: error: cannot find symbol
+      ResponseEntity<Detail> getRequest(@PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String id);
+                     ^
+    symbol:   class Detail
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:418: error: cannot find symbol
+              @Valid @RequestPart("request") ExcuseRequest request,
+                                             ^
+    symbol:   class ExcuseRequest
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:414: error: cannot find symbol
+      ResponseEntity<Detail> submitExcuse(
+                     ^
+    symbol:   class Detail
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:443: error: cannot find symbol
+              @Valid @RequestBody LateCheckinRequest request
+                                  ^
+    symbol:   class LateCheckinRequest
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:439: error: cannot find symbol
+      ResponseEntity<Detail> submitLateCheckin(
+                     ^
+    symbol:   class Detail
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:460: error: cannot find symbol
+      ResponseEntity<Detail> cancelRequest(@PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String id);
+                     ^
+    symbol:   class Detail
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:345: error: cannot find symbol
+                              schema = @Schema(implementation = Page.class)),
+                                                                ^
+    symbol:   class Page
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:370: error: cannot find symbol
+                      schema = @Schema(implementation = Options.class)),
+                                                        ^
+    symbol:   class Options
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:379: error: cannot find symbol
+                              schema = @Schema(implementation = Detail.class)),
+                                                                ^
+    symbol:   class Detail
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:398: error: cannot find symbol
+                              schema = @Schema(implementation = Detail.class)),
+                                                                ^
+    symbol:   class Detail
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:426: error: cannot find symbol
+                              schema = @Schema(implementation = Detail.class)),
+                                                                ^
+    symbol:   class Detail
+    location: interface StudentApi
+  C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\pwa-install-delivery-20260923\services\mobile-bff\mobile-bff-api-contract\src\main\java\ru\rutcampustrack\mobilebff\contract\api\StudentApi.java:450: error: cannot find symbol
+                              schema = @Schema(implementation = Detail.class)),
+                                                                ^
+    symbol:   class Detail
+    location: interface StudentApi
+  22 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights.
+
+BUILD FAILED in 32s
+1 actionable task: 1 executed
+exit=1 end=2026-10-02T14:07:22.1975775Z

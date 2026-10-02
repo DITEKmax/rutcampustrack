@@ -1,0 +1,10 @@
+{
+  "session": 2483,
+  "terminalExit": 0,
+  "capturedAt": "2026-10-02T14:10:59.0489483Z",
+  "javaProcessCount": 0,
+  "remainingJava": [],
+  "taskContainers": "None started; HTTP and local gRPC only",
+  "taskShutdown": "BUILD SUCCESSFUL, gRPC shutdown and Tomcat graceful shutdown complete; single-use daemon stopped at task completion",
+  "pidCaptureLimitation": "Sandbox CIM denied; escalated wrapper selector found zero, no PID attribution claim"
+}

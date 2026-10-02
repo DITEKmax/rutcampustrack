@@ -169,6 +169,11 @@ class HomeworkEditLifecycleIT {
     }
 
     @Test void legacyAcceptedReplayFreezesBeforeEditAndEffectiveDateCutoffKeepsHistoryReadable() {
+        var legacyIntent = new HomeworkCreateIntent(group, subject, semester, "legacy", null, null,
+                HomeworkBindingMode.LESSON, day, 1);
+        assertThat(new org.hibernate.type.format.jackson.JacksonJsonFormatMapper()
+                .toString(legacyIntent, HomeworkCreateIntent.class))
+                .contains("\"lessonDate\":\"" + day + "\"");
         Long id = jdbc.queryForObject("""
                 INSERT INTO homeworks(group_id,subject_id,semester_id,title,published_by,lesson_date,lesson_number,
                     binding_id,actor_id,request_key,payload_hash,publication_state,created_at,updated_at)

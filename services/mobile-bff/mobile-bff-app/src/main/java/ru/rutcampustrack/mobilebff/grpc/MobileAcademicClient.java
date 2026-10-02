@@ -2,6 +2,8 @@ package ru.rutcampustrack.mobilebff.grpc;
 
 import io.grpc.StatusRuntimeException;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.grpc.*;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class MobileAcademicClient {
+    private static final Logger log = LoggerFactory.getLogger(MobileAcademicClient.class);
+
     @GrpcClient("academic-service")
     private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
     @GrpcClient("academic-service")
@@ -29,28 +33,28 @@ public class MobileAcademicClient {
     public MobileAcademicClient(MobileGrpcAuth auth) { this.auth = auth; }
 
     public UserResponse user(long id) {
-        return call(() -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+        return call("user", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getUserById(UserRequest.newBuilder().setUserId(id).build()));
     }
 
     public GroupResponse group(long id) {
-        return call(() -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+        return call("group", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getGroup(GroupRequest.newBuilder().setGroupId(id).build()));
     }
 
     public SemesterResponse activeSemester() {
-        return call(() -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+        return call("activeSemester", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getActiveSemester(Empty.getDefaultInstance()));
     }
 
     public SemesterResponse activeSemesterForHomework() {
-        return call(() -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+        return call("activeSemesterForHomework", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getActiveSemester(Empty.getDefaultInstance()),
                 HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
     public TeacherSemesterResponse teacherActiveSemester() {
-        return call(() -> auth.attach(teacherStub).withDeadlineAfter(3, TimeUnit.SECONDS)
+        return call("teacherActiveSemester", () -> auth.attach(teacherStub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getTeacherActiveSemester(TeacherActiveSemesterRequest.getDefaultInstance()),
                 HttpStatus.NOT_FOUND, ProblemCode.OUT_OF_SCOPE);
     }
@@ -58,7 +62,7 @@ public class MobileAcademicClient {
     public TeacherAssignmentsResponse teacherAssignments(long semesterId,
                                                          String dateFrom,
                                                          String dateTo) {
-        return call(() -> auth.attach(teacherStub).withDeadlineAfter(3, TimeUnit.SECONDS)
+        return call("teacherAssignments", () -> auth.attach(teacherStub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .listTeacherAssignments(TeacherAssignmentsRequest.newBuilder()
                         .setSemesterId(semesterId)
                         .setDateFrom(dateFrom)
@@ -67,7 +71,7 @@ public class MobileAcademicClient {
     }
 
     public TeacherAssignmentsResponse teacherAssignmentsForSemester(long semesterId) {
-        return call(() -> auth.attach(teacherStub).withDeadlineAfter(3, TimeUnit.SECONDS)
+        return call("teacherAssignmentsForSemester", () -> auth.attach(teacherStub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .listTeacherAssignments(TeacherAssignmentsRequest.newBuilder()
                         .setSemesterId(semesterId)
                         .setFullSemester(true)
@@ -76,7 +80,7 @@ public class MobileAcademicClient {
 
     public Map<Long, SubjectInfo> subjects(List<Long> ids) {
         if (ids.isEmpty()) return Map.of();
-        SubjectsByIdsResponse response = call(() -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+        SubjectsByIdsResponse response = call("subjects", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getSubjectsByIds(SubjectsByIdsRequest.newBuilder().addAllSubjectIds(ids).build()));
         return response.getSubjectsList().stream().collect(Collectors.toMap(
                 SubjectInfo::getSubjectId, value -> value, (left, right) -> left));
@@ -104,13 +108,13 @@ public class MobileAcademicClient {
             request.setCompletedTodayFrom(completedTodayFrom)
                     .setCompletedTodayTo(completedTodayTo);
         }
-        return call(() -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+        return call("homeworks", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .getHomeworksForWeek(request.build()), HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE);
     }
 
     public SetHomeworkCompletionResponse setHomeworkCompletion(long homeworkId, long semesterId,
                                                                 boolean completed) {
-        return call(() -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
+        return call("setHomeworkCompletion", () -> auth.attach(stub).withDeadlineAfter(3, TimeUnit.SECONDS)
                 .setHomeworkCompletion(SetHomeworkCompletionRequest.newBuilder()
                         .setHomeworkId(homeworkId)
                         .setSemesterId(semesterId)
@@ -118,16 +122,17 @@ public class MobileAcademicClient {
                         .build()), HttpStatus.NOT_FOUND, ProblemCode.HOMEWORK_NOT_FOUND);
     }
 
-    private static <T> T call(java.util.concurrent.Callable<T> action) {
-        return call(action, HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE);
+    private static <T> T call(String operation, java.util.concurrent.Callable<T> action) {
+        return call(operation, action, HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE);
     }
 
-    private static <T> T call(java.util.concurrent.Callable<T> action,
+    private static <T> T call(String operation, java.util.concurrent.Callable<T> action,
                               HttpStatus notFoundStatus,
                               ProblemCode notFoundCode) {
         try {
             return action.call();
         } catch (StatusRuntimeException error) {
+            log.warn("Academic gRPC request failed: operation={}, code={}", operation, error.getStatus().getCode());
             if (error.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
                 throw new MobileBffException(notFoundStatus, notFoundCode,
                         "Запрошенные данные недоступны в текущем scope");
@@ -145,6 +150,7 @@ public class MobileAcademicClient {
         } catch (MobileBffException error) {
             throw error;
         } catch (Exception error) {
+            log.warn("Academic request failed: operation={}, failure=NON_GRPC", operation);
             throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
                     "Academic Service временно недоступен");
         }

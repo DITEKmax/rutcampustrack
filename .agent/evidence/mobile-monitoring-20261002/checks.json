@@ -1,0 +1,14 @@
+{
+  "baselineRevision": "83f3472f1b3e17672fe352f880683d00203af61d",
+  "mainBaseline": "50f6eabb",
+  "checkedState": "baseline plus source.diff, 3 scoped files",
+  "environment": {"os": "Windows", "shell": "PowerShell 7.6.5 -NoProfile", "python": "3.12.10", "PyYAML": "6.0.3"},
+  "checks": [
+    {"criterion": "config/source agreement", "command": "python .agent/evidence/mobile-monitoring-20261002/check_config.py", "exitCode": 0, "result": "PASS", "log": "config-check.log"},
+    {"criterion": "scoped whitespace", "command": "git diff --check -- infra/prometheus/prometheus.yml docs/operations/monitoring/alerts.md services/mobile-bff/mobile-bff-app/build.gradle.kts", "exitCode": 0, "result": "PASS", "log": "diff-check.log"},
+    {"criterion": "frozen artifact lacks registry", "command": "python zipfile/hashlib inspection, exact command in artifact.log", "exitCode": 0, "result": "missing Prometheus runtime registry confirmed on frozen artifact", "log": "artifact.log"}
+  ],
+  "finalExpandedDiffCheck": {"command": "git diff --check 83f3472f..HEAD -- <3 inventory paths> .agent/evidence/mobile-monitoring-20261002", "exitCode": 2, "finding": "Only raw source.diff lines6/12/27: context-empty lines in nested unified patch have required one-space prefix; raw patch preserved. Product check remains exit0."},
+  "runtime": {"result": "NOT RUN", "reason": "No heavy lease; frozen runtime 2948e60e unchanged. Root schedules one metrics runtime after current stand. No scrape/alert/deploy/external-delivery PASS claimed."},
+  "limitations": ["No local promtool; PyYAML/source check does not replace Prometheus-specific config validation.", "Gradle resolved runtimeClasspath/new bootJar and HTTP endpoint not checked yet.", "Prometheus alert evaluation/Alertmanager/provider delivery not performed."]
+}

@@ -1,0 +1,47 @@
+diff --git a/docs/operations/monitoring/alerts.md b/docs/operations/monitoring/alerts.md
+index 8deb6487..737e43dd 100644
+--- a/docs/operations/monitoring/alerts.md
++++ b/docs/operations/monitoring/alerts.md
+@@ -28,9 +28,13 @@ target ≥ 1 минуту.
+ 
+ #### Meaning
+ Сервис либо упал (process exit), либо сеть/Docker сломаны. `up == 0`
+-включает все scrape jobs: backend services, alertmanager,
++включает все scrape jobs: backend services (в том числе `mobile-bff`), alertmanager,
+ node-exporter, cadvisor, rabbitmq.
+ 
++`mobile-bff` scrape'ится только внутри `private_net` по
++`http://mobile-bff:9080/actuator/prometheus`; порт BFF не опубликован наружу.
++Проверка этого target использует тот же `ServiceDown` (`up == 0`, `for: 1m`).
++
+ #### Runbook
+ 1. `docker compose ps` — статус контейнера. Если `Restarting (XX)` —
+    crashloop, см. `docker logs rct-<job> --tail 100`.
+diff --git a/infra/prometheus/prometheus.yml b/infra/prometheus/prometheus.yml
+index acdd52b0..7f6b3b38 100644
+--- a/infra/prometheus/prometheus.yml
++++ b/infra/prometheus/prometheus.yml
+@@ -53,6 +53,11 @@ scrape_configs:
+     static_configs:
+       - targets: ['notification-web:9094']
+ 
++  - job_name: 'mobile-bff'
++    metrics_path: '/actuator/prometheus'
++    static_configs:
++      - targets: ['mobile-bff:9080']
++
+   # M13 G19 — RabbitMQ Prometheus plugin (rabbitmq_prometheus, port 15692).
+   # Включается через image rabbitmq:3.13-management-alpine. Покрывает
+   # alert'ы DLQBacklog / RabbitMQQueueBacklog / RabbitMQConnectionLost.
+diff --git a/services/mobile-bff/mobile-bff-app/build.gradle.kts b/services/mobile-bff/mobile-bff-app/build.gradle.kts
+index e66a657b..00cd89d3 100644
+--- a/services/mobile-bff/mobile-bff-app/build.gradle.kts
++++ b/services/mobile-bff/mobile-bff-app/build.gradle.kts
+@@ -22,6 +22,7 @@ dependencies {
+     implementation("org.springframework.boot:spring-boot-starter-web")
+     implementation("org.springframework.boot:spring-boot-starter-validation")
+     implementation("org.springframework.boot:spring-boot-starter-actuator")
++    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
+         exclude(group = "io.grpc", module = "grpc-netty-shaded")

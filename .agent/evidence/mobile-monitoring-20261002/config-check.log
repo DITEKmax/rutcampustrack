@@ -1,0 +1,2 @@
+PASS YAML/config/source consistency; 11 unique jobs; mobile-bff:9080/actuator/prometheus; private_net; ServiceDown up == 0 for 1m
+NOT RUN: Prometheus-specific promtool validation, resolved dependency/build, HTTP scrape, evaluated alert, external delivery

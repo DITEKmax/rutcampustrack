@@ -1,0 +1,7 @@
+Observed read-only artifact inspection, exit code 0.
+Command: python -c 'import hashlib,zipfile; from pathlib import Path; p=Path("C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r3/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar"); print("artifact="+str(p)); print("sha256="+hashlib.sha256(p.read_bytes()).hexdigest()); z=zipfile.ZipFile(p); print("registry_entries="+str([n for n in z.namelist() if n.startswith("BOOT-INF/lib/") and ("prometheus" in n or "micrometer" in n)]))'
+artifact=C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r3\services\mobile-bff\mobile-bff-app\build\libs\mobile-bff-app-0.1.0.jar
+sha256=2cac823da8937cc3818e0f513eb3443f531cd8b94fe666f2b5e955c03a42bc84
+registry_entries=['BOOT-INF/lib/micrometer-jakarta9-1.15.12.jar', 'BOOT-INF/lib/micrometer-core-1.15.12.jar', 'BOOT-INF/lib/micrometer-observation-1.15.12.jar', 'BOOT-INF/lib/micrometer-commons-1.15.12.jar']
+Matches root manifest .agent/evidence/backend-acceptance-20261002-next/combined-build-manifest-2948e60e.json, source revision 2948e60eb0097741b9feb95b66d086c9a84a9190.
+This is artifact evidence of the missing registry before correction, NOT HTTP runtime evidence. Artifact/frozen runtime unchanged.

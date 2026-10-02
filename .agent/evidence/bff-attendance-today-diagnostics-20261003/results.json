@@ -1,0 +1,17 @@
+{
+  "product_commit": "1ba5601c",
+  "author_base": "69cff905",
+  "critical_source_compared_to": "a93f4265",
+  "critical_baseline_diff_exit": 0,
+  "critical_baseline_diff": "empty",
+  "scoped_diff_check_exit": 0,
+  "product_index_paths": 2,
+  "product_add_commit_exit": 0,
+  "proven_defect": "raw domain error message incorrectly reported dependency unavailable",
+  "empty_snapshot_source": "valid identity-checked empty response; call preserved",
+  "http_status_problem_code_auth": "unchanged",
+  "focused_tests": "pending_root_lease_MobileAttendanceClientErrorTest",
+  "compile": "pending_root_lease",
+  "runtime": "not_run_by_author",
+  "r2_today_rootcause": "unknown_without_http_problem_or_raw_status"
+}

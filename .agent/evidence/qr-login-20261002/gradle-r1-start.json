@@ -1,0 +1,8 @@
+{
+  "revision": "9ffad58e1a918e707dbadb1346642e304400a82a",
+  "startedAt": "2026-10-02T16:47:45.3321796Z",
+  "javaHome": "C:/Users/maksd/.jdks/ms-21.0.10",
+  "testcontainersReuse": false,
+  "scope": "Auth/Gateway compile first, QR HTTP+PG/Redis, one Gateway POST allowlist matrix",
+  "heavyLease": "root authorized exclusive; source review PASS 9ffad58e"
+}

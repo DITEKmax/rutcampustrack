@@ -127,7 +127,7 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
         var limited=post("/auth/qr/status",expired.proof(),null);
         assertThat(limited.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
         assertThat(limited.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isNotNull();
-        assertThat(limited.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertNoStore(limited);
         // A wrong Redis type reproduces a real Lua/backend failure; it must not authorize polling or exchange.
         redis.delete(key); redis.opsForList().leftPush(key,"owned-wrong-type"); redis.expire(key,java.time.Duration.ofSeconds(60));
         assertThat(post("/auth/qr/status",expired.proof(),null).getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
@@ -238,7 +238,7 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
                 : new QrLoginIssueRequest(QrLoginPurpose.LOGIN,previous.proof().issuerId(),previous.proof().issuerSecret());
         var response=post("/auth/qr/challenges",request,null);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertNoStore(response);
         QrLoginIssueResponse issue=json.readValue(response.getBody(),QrLoginIssueResponse.class);
         JsonNode payload=json.readTree(issue.qrPayload());
         var approval=new QrLoginApprovalRequest(QrLoginPurpose.LOGIN,issue.challengeId(),payload.path("approvalToken").asText());
@@ -283,6 +283,12 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
     }
     private static void assertSamePair(TokenResponse a,TokenResponse b){
         assertThat(Objects.equals(a.accessToken(),b.accessToken()) && Objects.equals(a.refreshToken(),b.refreshToken()) && a.expiresIn()==b.expiresIn()).isTrue();
+    }
+    private static void assertNoStore(ResponseEntity<?> response) {
+        String cacheControl=response.getHeaders().getCacheControl();
+        assertThat(cacheControl).isNotNull();
+        assertThat(Arrays.stream(cacheControl.split(",")).map(String::trim).toList())
+                .isNotEmpty().allMatch("no-store"::equals);
     }
     private record Challenge(QrLoginIssueResponse issue,QrLoginApprovalRequest approval,QrLoginProofRequest proof) {}
     private record Session(String accessToken,String refreshToken,UUID sid){@Override public String toString(){return "Session[sid="+sid+", tokens=<redacted>]";}}

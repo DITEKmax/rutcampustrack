@@ -1,0 +1,107 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:auth-service:auth-api-contract:compileJava
+> Task :services:auth-service:auth-api-contract:processResources NO-SOURCE
+> Task :services:auth-service:auth-api-contract:classes
+> Task :services:auth-service:auth-api-contract:jar
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:auth-service:auth-app:extractIncludeProto UP-TO-DATE
+> Task :services:auth-service:auth-app:extractProto UP-TO-DATE
+> Task :services:auth-service:auth-app:generateProto
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-outbox:compileJava UP-TO-DATE
+> Task :services:shared:shared-outbox:classes UP-TO-DATE
+> Task :services:shared:shared-outbox:jar UP-TO-DATE
+> Task :services:shared:shared-web:compileJava UP-TO-DATE
+> Task :services:shared:shared-web:classes UP-TO-DATE
+> Task :services:shared:shared-web:jar UP-TO-DATE
+> Task :services:auth-service:auth-app:compileJava
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:auth-service:auth-app:processResources
+> Task :services:auth-service:auth-app:classes
+> Task :services:shared:shared-test-containers:processResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processTestFixturesResources NO-SOURCE
+> Task :services:auth-service:auth-app:extractIncludeTestProto UP-TO-DATE
+> Task :services:auth-service:auth-app:extractTestProto UP-TO-DATE
+> Task :services:auth-service:auth-app:generateTestProto NO-SOURCE
+> Task :services:shared:shared-test-containers:compileJava NO-SOURCE
+> Task :services:shared:shared-test-containers:classes UP-TO-DATE
+> Task :services:shared:shared-test-containers:jar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesJar UP-TO-DATE
+
+> Task :services:auth-service:auth-app:compileTestJava
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\map-usage-delivery-20260922\services\auth-service\auth-app\src\test\java\ru\rutcampustrack\auth\service\OtpServiceTest.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :services:api-gateway:compileJava
+> Task :services:api-gateway:processResources
+> Task :services:api-gateway:classes
+
+> Task :services:api-gateway:compileTestJava
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\map-usage-delivery-20260922\services\api-gateway\src\test\java\ru\rutcampustrack\gateway\security\ReportDownloadTicketDownloadFilterTest.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :services:auth-service:auth-app:processTestResources UP-TO-DATE
+> Task :services:auth-service:auth-app:testClasses
+> Task :services:auth-service:auth-app:integrationTest
+
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :services:auth-service:auth-app:integrationTest
+
+QrLoginFlowIT > sourceRevocationAndSourceOrTargetAuthorityDriftFenceExchangeAndRecovery() FAILED
+    org.opentest4j.AssertionFailedError at QrLoginFlowIT.java:241
+
+QrLoginFlowIT > receiptFailureRollsBackSessionAuditAndCleanupOnlyDeletesOwnedExpiredQrMetadata() FAILED
+    org.opentest4j.AssertionFailedError at QrLoginFlowIT.java:241
+
+QrLoginFlowIT > rejectedExpiredAndSupersededChallengesCannotIssueAndRedisLimitsAreAuthoritative() FAILED
+    org.opentest4j.AssertionFailedError at QrLoginFlowIT.java:241
+
+QrLoginFlowIT > browserBoundSingleWinnerExchangeAndLostResponseReplaySurviveQrExpiry() FAILED
+    org.opentest4j.AssertionFailedError at QrLoginFlowIT.java:241
+
+AuthApiContractTest > restControllersMustImplementContractInterface FAILED
+    java.lang.AssertionError at ArchRule.java:94
+
+{"ts":"2026-10-02T19:49:19.040+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"SpringApplicationShutdownHook","msg":"Commencing graceful shutdown. Waiting for active requests to complete","service":"auth-service"}
+{"ts":"2026-10-02T19:49:19.059+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"tomcat-shutdown","msg":"Graceful shutdown complete","service":"auth-service"}
+{"ts":"2026-10-02T19:49:19.586+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"SpringApplicationShutdownHook","msg":"Closing JPA EntityManagerFactory for persistence unit 'default'","service":"auth-service"}
+{"ts":"2026-10-02T19:49:19.589+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"SpringApplicationShutdownHook","msg":"HikariPool-1 - Shutdown initiated...","service":"auth-service"}
+{"ts":"2026-10-02T19:49:19.592+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"SpringApplicationShutdownHook","msg":"HikariPool-1 - Shutdown completed.","service":"auth-service"}
+
+> Task :services:auth-service:auth-app:integrationTest
+
+8 tests completed, 5 failed
+
+> Task :services:auth-service:auth-app:integrationTest FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':services:auth-service:auth-app:integrationTest'.
+> There were failing tests. See the report at: file:///C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/map-usage-delivery-20260922/services/auth-service/auth-app/build/reports/integrationTest/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1m 34s
+34 actionable tasks: 10 executed, 24 up-to-date

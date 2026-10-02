@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.arch.IntegrationTestNamingConventionIT" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-02T16:49:16" hostname="DITEK-PK" time="2.69">
+  <properties/>
+  <testcase name="integrationTestsMustEndWithIT" classname="ru.rutcampustrack.auth.arch.IntegrationTestNamingConventionIT" time="2.69"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

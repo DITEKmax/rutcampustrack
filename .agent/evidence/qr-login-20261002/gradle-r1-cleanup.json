@@ -1,0 +1,8 @@
+{
+  "sessionId": 97859,
+  "sessionExitCode": 1,
+  "verifiedAt": "2026-10-02T16:51:27.6545668Z",
+  "containers": [],
+  "javaProcessIds": [],
+  "cleanup": "Testcontainers/Ryuk normal teardown; Docker/java EMPTY, no foreign deletion"
+}

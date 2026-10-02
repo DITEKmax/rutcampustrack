@@ -59,6 +59,7 @@ class AuthApiContractTest {
                     .and().resideInAPackage("..controller..")
                     .should().implement(ru.rutcampustrack.auth.api.AuthApi.class)
                     .orShould().implement(ru.rutcampustrack.auth.api.AuthSessionApi.class)
+                    .orShould().implement(ru.rutcampustrack.auth.api.QrLoginApi.class)
                     .orShould().implement(ru.rutcampustrack.auth.api.WsTicketApi.class)
                     .orShould().implement(ru.rutcampustrack.auth.api.InternalSessionAdmissionApi.class)
                     .orShould().implement(ru.rutcampustrack.auth.api.InternalWsTicketApi.class)

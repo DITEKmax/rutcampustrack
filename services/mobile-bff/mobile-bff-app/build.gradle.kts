@@ -18,6 +18,7 @@ dependencyManagement {
 dependencies {
     implementation(project(":services:mobile-bff:mobile-bff-api-contract"))
     implementation(project(":services:shared:shared-security"))
+    implementation(project(":services:shared:shared-logback"))
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")

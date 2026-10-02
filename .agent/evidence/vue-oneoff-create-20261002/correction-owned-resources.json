@@ -1,0 +1,14 @@
+[
+  {
+    "ID": "ca843735c67a",
+    "Image": "postgres:16",
+    "Names": "practical_bose",
+    "Labels": "desktop.docker.io/ports.scheme=v2,desktop.docker.io/ports/5432/tcp=:,org.testcontainers.lang=java,org.testcontainers.sessionId=f0b53d5d-3a8c-43b8-a9fb-4dcc5831c3cf,org.testcontainers.version=1.20.4,org.testcontainers=true"
+  },
+  {
+    "ID": "705484c34192",
+    "Image": "testcontainers/ryuk:0.11.0",
+    "Names": "testcontainers-ryuk-f0b53d5d-3a8c-43b8-a9fb-4dcc5831c3cf",
+    "Labels": "desktop.docker.io/binds/0/Source=//var/run/docker.sock,desktop.docker.io/binds/0/SourceKind=dockerSocketProxied,desktop.docker.io/binds/0/Target=/var/run/docker.sock,desktop.docker.io/ports.scheme=v2,desktop.docker.io/ports/8080/tcp=:,org.testcontainers.lang=java,org.testcontainers.ryuk=true,org.testcontainers.version=1.20.4,org.testcontainers=true"
+  }
+]

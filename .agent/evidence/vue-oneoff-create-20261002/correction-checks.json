@@ -1,0 +1,61 @@
+{
+  "revision": "f032d026ef0c5cc92c3466abe6516b36082d2cc9",
+  "frontend": {
+    "chunk": "ee41ed",
+    "lintDiffCheckExitCode": 0,
+    "terminalChunk": "3ad159",
+    "sessionId": 33024,
+    "startChunk": "e1b478",
+    "vitestExitCode": 0,
+    "targetedNewTests": 2,
+    "vueTypecheckExitCode": 0,
+    "oldTestsSkipped": 3
+  },
+  "typedContract": {
+    "classification": "Coordinator refusal before writer.create; not replay, writer, lifecycle or SQL conflict",
+    "freshFirstAttemptOnly": true,
+    "status": 409,
+    "detailDependent": false,
+    "instance": "/schedule/one-off-lessons",
+    "type": "https://api.rutcampustrack.ru/problems/one-off-create-rejected"
+  },
+  "backend": {
+    "sessionId": 38187,
+    "compileJava": "PASS",
+    "testTimeSeconds": 2.161,
+    "status": "PASS",
+    "terminalChunk": "ba3269",
+    "compileTestJava": "PASS",
+    "tests": 1,
+    "rawXml": "correction-TEST-OneOffLessonControllerIT.xml",
+    "method": "create_rejectsForeignAuthorityAndHeadmanScope_atomically",
+    "exitCode": 0,
+    "errors": 0,
+    "failures": 0,
+    "durationSeconds": 72
+  },
+  "browser": "PENDING",
+  "independentReview": {
+    "status": "PASS",
+    "scope": "F1/F2 plus typed handler, no new findings",
+    "source": "root confirmation",
+    "revision": "f032d026"
+  },
+  "cleanup": {
+    "exitCode": 0,
+    "chunk": "0b2ffe",
+    "exactOwnedContainersAbsent": 2,
+    "heavyReleased": true,
+    "javaProcesses": [],
+    "runningDocker": []
+  },
+  "rawEvidenceWhitespace": {
+    "reason": "Original Testcontainers stdout XML and native Gradle log contain three trailing-space lines; raw bytes retained",
+    "sourceDocsCheckExitCode": 0,
+    "fullCachedCheckExitCode": 2,
+    "excludedOnly": [
+      "correction-TEST-OneOffLessonControllerIT.xml",
+      "correction-gradle.log"
+    ]
+  }
+}

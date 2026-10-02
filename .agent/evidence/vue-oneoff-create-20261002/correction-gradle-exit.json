@@ -1,0 +1,7 @@
+{
+  "revision": "f032d026ef0c5cc92c3466abe6516b36082d2cc9",
+  "command": "./gradlew.bat :services:schedule-service:schedule-app:compileJava :services:schedule-service:schedule-app:compileTestJava :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT.create_rejectsForeignAuthorityAndHeadmanScope_atomically --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --no-parallel --max-workers=1 --console=plain",
+  "finishedAt": "2026-10-02T23:14:37.6654238+03:00",
+  "startedAt": "2026-10-02T23:13:24.8774469+03:00",
+  "exitCode": 0
+}

@@ -1,0 +1,19 @@
+{
+  "revision": "f032d026ef0c5cc92c3466abe6516b36082d2cc9",
+  "session_id": 38187,
+  "chunk_id": "4950e2",
+  "wall_time_seconds": 10.0135837,
+  "status": "RUNNING",
+  "log": "correction-gradle.log",
+  "preflight": {
+    "runningJava": [],
+    "virtualFreeKiB": 6648272,
+    "runningDocker": [],
+    "chunk": "d7beef",
+    "exitCode": 0,
+    "hostTotalKiB": 16154384,
+    "hostFreeKiB": 2760380
+  },
+  "resources": "One isolated PostgreSQL16 and Testcontainers Ryuk; reuse disabled",
+  "sourceFrozen": true
+}

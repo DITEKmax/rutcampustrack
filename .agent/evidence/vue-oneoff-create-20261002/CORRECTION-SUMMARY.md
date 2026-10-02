@@ -1,4 +1,4 @@
-# F1/F2 corrected; source frozen for scoped verification
+# F1/F2 corrected: source review and scoped PG PASS
 
 F1/P2: new OneOffCreateRejectedException/handler type separates coordinator refusal before writer.create from durable replay/lifecycle/writer/DB conflicts. Frontend uses machine type/status/instance and fresh first-attempt condition, never Russian wording. Proven refusal clears storage before unlocking fields/new key; failed storage clear retains frozen request. Recovered intent or any prior unknown request remains immutable even if retry receives typed refusal, since a delayed original might still apply. Stale session handling unchanged.
 
@@ -6,4 +6,8 @@ F2/P2: selected date may equal semester.dateTo; validation rejects only greater 
 
 Exact changed product inventory: frontend ScheduleScreen/client; backend OneOffLessonCoordinator/GlobalExceptionHandler plus new OneOffCreateRejectedException. Tests: existing frontend client test file adds two regression cases; existing OneOffLessonControllerIT.create_rejectsForeignAuthorityAndHeadmanScope_atomically extended. No migration/generated/proto/shared/event files changed. Original CONTRACT/SUMMARY describe0df5 baseline; this delta supersedes prior all-errors-locked limitation and frontend-only scope with root-authorized typed API addition.
 
-Frontend new tests2PASS/3skipped (exec33024/chunke1b478); same invocation Vue/PWA typecheck terminal0/chunk3ad159. Scoped lint+product diffcheck exit0/chunkee41ed. Backend scoped compile/one-method runtime pending in correction-run records; no passed old three or full suite repeats. Build/browser/Figma visual remain pending integrated acceptance. r2 runtime holder untouched; unrelated evidence/cache preserved.
+Frontend new tests2PASS/3skipped (exec33024/chunke1b478); same invocation Vue/PWA typecheck terminal0/chunk3ad159. Scoped lint+product diffcheck exit0/chunkee41ed. Source frozen f032d026ef0c5cc92c3466abe6516b36082d2cc9; root reported independent affected review PASS for both P2 with no new findings.
+
+One root-granted Schedule invocation38187 terminal0/chunkba3269, 72seconds, compileJava/compileTestJava and existing targeted integration method PASS. Raw XML correction-TEST-OneOffLessonControllerIT.xml:1test/0failures/0errors,2.161seconds. Exact command/revision/time captured correction-gradle-exit.json, full log correction-gradle.log. No old three frontend tests or full suite repeated. Unchanged shared Mongo ensureIndex deprecation and JVM class-sharing warnings were unrelated to requested behavior; no source edits made for them.
+
+Automatic exact cleanup independently observed0b2ffe exit0: own PGca843735c67a/Ryuk705484c34192 absent, runningDocker empty and Java0, foreign resources untouched. Lease released to root before evidence commit. r2 runtime holder untouched (E-owned). Browser/build/Figma visual remain pending integrated user acceptance; this run is actual isolated PG/HTTP component verification, not a public Vue browser flow. Evidence final additions include raw XML/log, exact process start/terminal and owned resources/cleanup, checks and correction source diff. Unrelated evidence/cache preserved.

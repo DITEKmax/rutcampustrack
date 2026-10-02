@@ -1,0 +1,174 @@
+diff --git a/frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue b/frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue
+index 91eafefd..cfd536c6 100644
+--- a/frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue
++++ b/frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue
+@@ -46,0 +47,2 @@ import {
++  canCorrectRejectedOneOff,
++  isOneOffDateWithinSemester,
+@@ -553,3 +555 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
+-    if (!/^\d{4}-\d{2}-\d{2}$/.test(oneOffDate.value) || oneOffDate.value < moscowToday()
+-      || (currentSemester.dateFrom && oneOffDate.value < currentSemester.dateFrom)
+-      || (currentSemester.dateTo && oneOffDate.value >= currentSemester.dateTo)) {
++    if (!isOneOffDateWithinSemester(oneOffDate.value, moscowToday(), currentSemester.dateFrom, currentSemester.dateTo)) {
+@@ -589,0 +590 @@ async function save(): Promise<void> {
++  const firstOneOffAttempt = mode === 'ONE_OFF' && oneOffIntent.value === null
+@@ -624,0 +626,15 @@ async function save(): Promise<void> {
++    if (scope && canCorrectRejectedOneOff(cause, firstOneOffAttempt)) {
++      try {
++        // Only this completed first response proves no acceptance. A retry/reloaded
++        // intent may still have a delayed original request, even with the same refusal.
++        sessionStorage.removeItem(scope)
++        oneOffIntent.value = null
++        commandKey.value = newCommandKey()
++        commandFingerprint.value = null
++        formError.value = `${cause instanceof Error ? cause.message : 'Пара не создана.'} Исправь данные и сохрани ещё раз.`
++      } catch {
++        formError.value = 'Пара не создана, но не удалось обновить сохранённый запрос. Восстанови доступ к хранилищу и повтори.'
++      }
++      emit('error', cause)
++      return
++    }
+diff --git a/frontends/mobile-core/src/features/schedule/headman-schedule-client.test.ts b/frontends/mobile-core/src/features/schedule/headman-schedule-client.test.ts
+index 81233ded..110fa658 100644
+--- a/frontends/mobile-core/src/features/schedule/headman-schedule-client.test.ts
++++ b/frontends/mobile-core/src/features/schedule/headman-schedule-client.test.ts
+@@ -4,0 +5,3 @@ import {
++  HeadmanScheduleApiError,
++  canCorrectRejectedOneOff,
++  isOneOffDateWithinSemester,
+@@ -19,0 +23,32 @@ describe('ONE_OFF durable creation', () => {
++  it('corrects only a proven first refusal; unknown/recovered/replay/stale errors retain the original intent', () => {
++    const problem = { status: 409, type: 'https://api.rutcampustrack.ru/problems/one-off-create-rejected',
++      instance: '/schedule/one-off-lessons', detail: 'Серверное описание может меняться' }
++    const rejected = new HeadmanScheduleApiError(new Response('{}', { status: 409 }), problem)
++    expect(canCorrectRejectedOneOff(rejected, true)).toBe(true)
++    expect(canCorrectRejectedOneOff(rejected, false)).toBe(false)
++    for (const type of ['conflict', 'lifecycle-not-ready', 'recurring-protocol-conflict']) {
++      expect(canCorrectRejectedOneOff(new HeadmanScheduleApiError(new Response('{}', { status: 409 }),
++        { ...problem, type: `https://api.rutcampustrack.ru/problems/${type}` }), true)).toBe(false)
++    }
++    expect(canCorrectRejectedOneOff(new TypeError('response lost'), true)).toBe(false)
++    expect(canCorrectRejectedOneOff(new StaleSessionGenerationError(), true)).toBe(false)
++    const values = new Map<string, string>()
++    const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
++    persistOneOffIntent(storage, 'scope', { key, input })
++    // Refusal after refresh cannot prove the earlier request was not accepted.
++    if (canCorrectRejectedOneOff(rejected, false)) values.delete('scope')
++    expect(readOneOffIntent(storage, 'scope')).toEqual({ key, input })
++    // Fresh refusal unlocks correction, then a new immutable intent gets a new key.
++    if (canCorrectRejectedOneOff(rejected, true)) values.delete('scope')
++    const correctedKey = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
++    const correctedInput = { ...input, date: '2026-10-13' }
++    persistOneOffIntent(storage, 'scope', { key: correctedKey, input: correctedInput })
++    expect(readOneOffIntent(storage, 'scope')).toEqual({ key: correctedKey, input: correctedInput })
++  })
++
++  it('permits the inclusive final semester day but rejects the following day and dates before today', () => {
++    expect(isOneOffDateWithinSemester('2027-01-31', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(true)
++    expect(isOneOffDateWithinSemester('2027-02-01', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(false)
++    expect(isOneOffDateWithinSemester('2026-09-30', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(false)
++  })
++
+diff --git a/frontends/mobile-core/src/features/schedule/headman-schedule-client.ts b/frontends/mobile-core/src/features/schedule/headman-schedule-client.ts
+index 4eb5c4e1..51eb3bb4 100644
+--- a/frontends/mobile-core/src/features/schedule/headman-schedule-client.ts
++++ b/frontends/mobile-core/src/features/schedule/headman-schedule-client.ts
+@@ -67,0 +68,13 @@ export function persistOneOffIntent(storage: Pick<Storage, 'setItem'>, scope: st
++export function isOneOffDateWithinSemester(date: string, today: string, from?: string, to?: string): boolean {
++  // Academic/OneOffLessonCoordinator include the semester's final date.
++  return /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= today
++    && (from === undefined || date >= from) && (to === undefined || date <= to)
++}
++
++export function canCorrectRejectedOneOff(cause: unknown, firstAttempt: boolean): boolean {
++  if (!firstAttempt || !(cause instanceof HeadmanScheduleApiError) || cause.response.status !== 409 || !isRecord(cause.problem)) return false
++  const problem = cause.problem
++  return problem.status === 409 && problem.type === 'https://api.rutcampustrack.ru/problems/one-off-create-rejected'
++    && problem.instance === '/schedule/one-off-lessons'
++}
++
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/GlobalExceptionHandler.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/GlobalExceptionHandler.java
+index 30dfdd3b..5f1f5065 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/GlobalExceptionHandler.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/GlobalExceptionHandler.java
+@@ -85,0 +86,7 @@ public class GlobalExceptionHandler {
++    @ExceptionHandler(OneOffCreateRejectedException.class)
++    public ResponseEntity<ErrorResponse> handleOneOffCreateRejected(OneOffCreateRejectedException ex,
++                                                                  HttpServletRequest request) {
++        return problem(HttpStatus.CONFLICT, "one-off-create-rejected",
++                "Conflict", ex.getMessage(), request);
++    }
++
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/OneOffCreateRejectedException.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/OneOffCreateRejectedException.java
+new file mode 100644
+index 00000000..822a720e
+--- /dev/null
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/OneOffCreateRejectedException.java
+@@ -0,0 +1,8 @@
++package ru.rutcampustrack.schedule.exception;
++
++/** A completed coordinator validation refused this attempt before one-off creation. */
++public class OneOffCreateRejectedException extends ConflictException {
++    public OneOffCreateRejectedException(String message) {
++        super(message);
++    }
++}
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonCoordinator.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonCoordinator.java
+index b04b1fe0..9428c416 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonCoordinator.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonCoordinator.java
+@@ -10,0 +11 @@ import ru.rutcampustrack.schedule.exception.ConflictException;
++import ru.rutcampustrack.schedule.exception.OneOffCreateRejectedException;
+@@ -42 +43 @@ public class OneOffLessonCoordinator {
+-            throw new ConflictException("Группа неактивна или ответ Academic не соответствует запросу");
++            throw new OneOffCreateRejectedException("Группа неактивна или ответ Academic не соответствует запросу");
+@@ -46 +47 @@ public class OneOffLessonCoordinator {
+-            throw new ConflictException("Нет активного семестра для разовой пары");
++            throw new OneOffCreateRejectedException("Нет активного семестра для разовой пары");
+@@ -51 +52 @@ public class OneOffLessonCoordinator {
+-            throw new ConflictException("Academic не вернул точное назначение преподавателя");
++            throw new OneOffCreateRejectedException("Academic не вернул точное назначение преподавателя");
+@@ -60 +61 @@ public class OneOffLessonCoordinator {
+-            throw new ConflictException("Назначение преподавателя содержит некорректные данные");
++            throw new OneOffCreateRejectedException("Назначение преподавателя содержит некорректные данные");
+@@ -69 +70 @@ public class OneOffLessonCoordinator {
+-            throw new ConflictException("Группа, предмет, семестр или дата не входят в назначение преподавателя");
++            throw new OneOffCreateRejectedException("Группа, предмет, семестр или дата не входят в назначение преподавателя");
+@@ -127 +128 @@ public class OneOffLessonCoordinator {
+-            throw new ConflictException("Для разовой пары нужны request key, назначение, дата, номер и корректное время");
++            throw new OneOffCreateRejectedException("Для разовой пары нужны request key, назначение, дата, номер и корректное время");
+@@ -135 +136 @@ public class OneOffLessonCoordinator {
+-            throw new ConflictException("Academic вернул некорректные границы семестра");
++            throw new OneOffCreateRejectedException("Academic вернул некорректные границы семестра");
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java
+index b7b8f293..9d6fa00b 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java
+@@ -133 +133,2 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
+-                .contentType(MediaType.APPLICATION_JSON).content(body((short)1, null))).andExpect(status().isConflict());
++                .contentType(MediaType.APPLICATION_JSON).content(body((short)1, null))).andExpect(status().isConflict())
++                .andExpect(jsonPath("$.type").value("https://api.rutcampustrack.ru/problems/one-off-create-rejected"));
+@@ -137,0 +139,23 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
++        when(academic.isHeadman(ACTOR, GROUP)).thenReturn(true);
++        mockAssignment(ASSIGNMENT, TEACHER, DATE.plusDays(1), UNTIL);
++        UUID rejectedKey = UUID.randomUUID();
++        mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", rejectedKey)
++                .contentType(MediaType.APPLICATION_JSON).content(body((short)1, null))).andExpect(status().isConflict())
++                .andExpect(jsonPath("$.type").value("https://api.rutcampustrack.ru/problems/one-off-create-rejected"));
++        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_create_replay", Long.class)).isZero();
++        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_lessons", Long.class)).isZero();
++        assertThat(outboxStorage.findPending(20)).isEmpty();
++        LocalDate finalSemesterDay = UNTIL.minusDays(1);
++        String corrected = json.writeValueAsString(new CreateOneOffLessonRequest(GROUP, SUBJECT, ASSIGNMENT,
++                finalSemesterDay, (short)1, LocalTime.of(8,30), LocalTime.of(10,0), null));
++        UUID correctedKey = UUID.randomUUID();
++        mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", correctedKey)
++                .contentType(MediaType.APPLICATION_JSON).content(corrected)).andExpect(status().isCreated())
++                .andExpect(jsonPath("$.date").value(finalSemesterDay.toString()))
++                .andExpect(jsonPath("$.physicalLessonId").isNumber());
++        // A conflicting replay has durable acceptance and must not carry the refusal proof type.
++        mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", correctedKey)
++                .contentType(MediaType.APPLICATION_JSON).content(body((short)1, null))).andExpect(status().isConflict())
++                .andExpect(jsonPath("$.type").value("https://api.rutcampustrack.ru/problems/conflict"));
++        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_lessons", Long.class)).isEqualTo(1);
++        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_create_replay", Long.class)).isEqualTo(1);

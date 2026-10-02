@@ -1,0 +1,15 @@
+{
+  "ownIds": [
+    "ca843735c67a",
+    "705484c34192"
+  ],
+  "ownRemaining": [],
+  "runningDocker": [],
+  "javaProcesses": [],
+  "automaticCleanup": true,
+  "foreignResources": "untouched",
+  "heavyReleased": true,
+  "status": "PASS",
+  "observationChunk": "0b2ffe",
+  "observationExitCode": 0
+}

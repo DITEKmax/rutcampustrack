@@ -113,7 +113,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String authorization = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authorization == null || !authorization.startsWith("Bearer ")
                 || authorization.substring("Bearer ".length()).isBlank()) {
-            if (isPublicRoute(path)) {
+            if (isPublicRoute(exchange.getRequest().getMethod(), path)) {
                 return chain.filter(exchange);
             }
             return problem(exchange, HttpStatus.UNAUTHORIZED, "Unauthorized",
@@ -121,7 +121,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         }
 
         String token = authorization.substring("Bearer ".length());
-        if (isPublicRoute(path)) {
+        if (isPublicRoute(exchange.getRequest().getMethod(), path)) {
             return handlePublicBearer(exchange, chain, path, token);
         }
 
@@ -384,7 +384,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 expectations.accessExpiry());
     }
 
-    private static boolean isPublicRoute(String path) {
+    private static boolean isPublicRoute(HttpMethod method, String path) {
+        if (HttpMethod.POST.equals(method) && Set.of("/api/auth/qr/challenges", "/api/auth/qr/status", "/api/auth/qr/exchange").contains(path)) return true;
         if (PUBLIC_PATHS.contains(path)) {
             return true;
         }

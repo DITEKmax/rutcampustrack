@@ -88,6 +88,28 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
+    void qrGuestAdmissionIsLimitedToThreeExactPostRoutes() {
+        for (String path : java.util.List.of("challenges", "status", "exchange")) {
+            var post = exchange(MockServerHttpRequest.post("/api/auth/qr/" + path).build());
+            var allowed = acceptingChain();
+            filter.filter(post, allowed).block();
+            verify(allowed).filter(any());
+            var get = exchange(MockServerHttpRequest.get("/api/auth/qr/" + path).build());
+            var denied = mock(GatewayFilterChain.class);
+            filter.filter(get, denied).block();
+            assertThat(get.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+            verify(denied, never()).filter(any());
+        }
+        for (String path : java.util.List.of("preview", "decision", "exchange/extra", "unknown")) {
+            var post = exchange(MockServerHttpRequest.post("/api/auth/qr/" + path).build());
+            var denied = mock(GatewayFilterChain.class);
+            filter.filter(post, denied).block();
+            assertThat(post.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+            verify(denied, never()).filter(any());
+        }
+    }
+
+    @Test
     void authHeaderWithoutBearerPrefix_returns401() {
         var exchange = exchange(MockServerHttpRequest.get("/api/academic/groups")
                 .header(HttpHeaders.AUTHORIZATION, "Basic sometoken")

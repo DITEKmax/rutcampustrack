@@ -146,6 +146,43 @@ public class AuthService {
             String clientLabel,
             String locationLabel
     ) {
+        Instant createdAt = clock.instant();
+        UUID sessionId = UUID.randomUUID();
+        UUID refreshJti = UUID.randomUUID();
+        SessionSnapshot snapshot = createSession(user, authMethod, expectedCredentialHash,
+                clientLabel, locationLabel, sessionId, refreshJti, createdAt);
+        return issueTokenPair(snapshot, refreshJti, createdAt);
+    }
+
+    /** Trusted QR transaction seam: the caller stores its receipt in the same REQUIRED transaction. */
+    public SessionSnapshot createQrSession(long userId, UUID sessionId, UUID refreshJti,
+                                            Instant issuedAt, String browserLabel) {
+        User user = userRepositoryFacade.findById(userId)
+                .orElseThrow(() -> new AuthSessionException(AuthSessionException.Code.INVALID_SESSION));
+        return createSession(user, AuthMethod.QR, null, browserLabel, null, sessionId, refreshJti, issuedAt);
+    }
+
+    /** Signs only an already committed, re-admitted QR receipt; no session or refresh rotation is performed. */
+    public TokenResponse signQrSession(SessionSnapshot snapshot, UUID originalRefreshJti, Instant originalIssuedAt,
+                                       Instant originalAccessExpiry, String signingFingerprint) {
+        if (snapshot.authMethod() != AuthMethod.QR || !qrSigningFingerprint().equals(signingFingerprint)
+                || !clock.instant().isBefore(originalAccessExpiry)) {
+            throw new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
+        }
+        return issueTokenPair(snapshot, originalRefreshJti, originalIssuedAt, originalAccessExpiry);
+    }
+
+    public String qrSigningFingerprint() {
+        return java.util.HexFormat.of().formatHex(ru.rutcampustrack.auth.qr.QrLoginCrypto.hash(
+                jwtService.getPublicKeyPem() + ":" + jwtService.getSigningKeyId()));
+    }
+
+    public Instant qrAccessExpiry(SessionSnapshot snapshot, Instant issuedAt) {
+        return accessExpiry(snapshot, issuedAt.truncatedTo(ChronoUnit.SECONDS));
+    }
+
+    private SessionSnapshot createSession(User user, AuthMethod authMethod, String expectedCredentialHash,
+            String clientLabel, String locationLabel, UUID sessionId, UUID refreshJti, Instant createdAt) {
         Objects.requireNonNull(user, "user");
         Objects.requireNonNull(authMethod, "authMethod");
         long userId = requirePositiveUserId(user);
@@ -159,7 +196,6 @@ public class AuthService {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
 
-        Instant createdAt = clock.instant();
         Instant refreshExpiresAt;
         try {
             refreshExpiresAt = createdAt.plusSeconds(jwtProperties.refreshTokenExpiration());
@@ -167,8 +203,6 @@ public class AuthService {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
 
-        UUID sessionId = UUID.randomUUID();
-        UUID refreshJti = UUID.randomUUID();
         SessionStatePort.CreateSessionResult result;
         try {
             result = sessionLifecycle.createSession(new SessionLifecycleService.CreateSessionRequest(
@@ -201,7 +235,7 @@ public class AuthService {
         businessMetrics.loginCounter(snapshot.activeRole() == null
                 ? "bootstrap"
                 : snapshot.activeRole().role().name().toLowerCase(java.util.Locale.ROOT)).increment();
-        return issueTokenPair(snapshot, refreshJti, createdAt);
+        return snapshot;
     }
 
     /** Cookie-only public refresh entry point. */
@@ -575,17 +609,24 @@ public class AuthService {
     }
 
     private TokenResponse issueTokenPair(SessionSnapshot snapshot, UUID refreshJti, Instant now) {
-        Instant issuedAt = now.truncatedTo(ChronoUnit.SECONDS);
-        Instant absoluteRefreshExpiry = snapshot.refreshExpiresAt().truncatedTo(ChronoUnit.SECONDS);
-        Instant accessExpiry;
+        return issueTokenPair(snapshot, refreshJti, now, null);
+    }
+
+    private Instant accessExpiry(SessionSnapshot snapshot, Instant issuedAt) {
         try {
-            Instant accessDeadline = issuedAt.plusSeconds(jwtProperties.accessTokenExpiration());
-            accessExpiry = accessDeadline.isBefore(absoluteRefreshExpiry)
-                    ? accessDeadline : absoluteRefreshExpiry;
+            Instant deadline = issuedAt.plusSeconds(jwtProperties.accessTokenExpiration());
+            Instant refreshExpiry = snapshot.refreshExpiresAt().truncatedTo(ChronoUnit.SECONDS);
+            return deadline.isBefore(refreshExpiry) ? deadline : refreshExpiry;
         } catch (RuntimeException exception) {
             throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
         }
-        if (!issuedAt.isBefore(accessExpiry) || !issuedAt.isBefore(absoluteRefreshExpiry)) {
+    }
+
+    private TokenResponse issueTokenPair(SessionSnapshot snapshot, UUID refreshJti, Instant now, Instant originalAccessExpiry) {
+        Instant issuedAt = now.truncatedTo(ChronoUnit.SECONDS);
+        Instant absoluteRefreshExpiry = snapshot.refreshExpiresAt().truncatedTo(ChronoUnit.SECONDS);
+        Instant accessExpiry = originalAccessExpiry == null ? accessExpiry(snapshot, issuedAt) : originalAccessExpiry;
+        if (!issuedAt.isBefore(accessExpiry) || !issuedAt.isBefore(absoluteRefreshExpiry) || accessExpiry.isAfter(absoluteRefreshExpiry)) {
             throw new AuthSessionException(AuthSessionException.Code.SESSION_REVOKED);
         }
 

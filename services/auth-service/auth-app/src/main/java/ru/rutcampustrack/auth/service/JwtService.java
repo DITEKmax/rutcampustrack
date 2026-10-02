@@ -358,6 +358,8 @@ public class JwtService {
         return parseRefreshToken(token).getPayload().getId();
     }
 
+    public String getSigningKeyId() { return keyId; }
+
     public String getPublicKeyPem() {
         return publicKeyPem;
     }

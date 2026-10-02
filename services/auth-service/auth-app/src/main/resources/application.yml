@@ -84,6 +84,18 @@ rutcampustrack:
       # Internal JWT TTL — Gateway cache is 4 мин, so 300 даёт safe margin.
       token-ttl-seconds: 300
 
+auth:
+  qr-login:
+    ttl-seconds: ${QR_LOGIN_TTL_SECONDS:120}
+    replay-seconds: ${QR_LOGIN_REPLAY_SECONDS:30}
+    poll-after-seconds: ${QR_LOGIN_POLL_AFTER_SECONDS:1}
+    # Empty by default. Deployment must explicitly list the actual Gateway peer literal IPs.
+    # Never trust arbitrary X-Forwarded-For or automatically trust loopback.
+    trusted-proxy-addresses: ${QR_LOGIN_TRUSTED_PROXY_ADDRESSES:}
+    cleanup-enabled: ${QR_LOGIN_CLEANUP_ENABLED:true}
+    cleanup-batch-size: ${QR_LOGIN_CLEANUP_BATCH_SIZE:100}
+    cleanup-delay-millis: ${QR_LOGIN_CLEANUP_DELAY_MILLIS:3600000}
+
 otp:
   code-length: 6
   ttl-seconds: 120

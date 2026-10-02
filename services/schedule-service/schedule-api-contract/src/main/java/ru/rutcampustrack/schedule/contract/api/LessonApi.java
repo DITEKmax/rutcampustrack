@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
+import ru.rutcampustrack.schedule.contract.dto.lesson.NextHomeworkLessonResponse;
+import ru.rutcampustrack.schedule.contract.enums.LessonType;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
@@ -38,6 +41,24 @@ import java.util.UUID;
 @Tag(name = "Lessons", description = "Управление уроками и расписание")
 @RequestMapping("/schedule")
 public interface LessonApi {
+
+    @Operation(summary = "Ближайшая подходящая пара для ДЗ начиная с fromDate включительно",
+            description = "Возвращает текущую физическую пару предмета и типа без ограничения горизонта. "
+                    + "Сегодняшняя пара доступна до конца пары + 5 минут по Москве. "
+                    + "Результат — снимок выбора; запись ДЗ повторно проверяет occurrenceRevision.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Ближайшая подходящая пара"),
+            @ApiResponse(responseCode = "204", description = "Подходящих пар нет"),
+            @ApiResponse(responseCode = "400", description = "Некорректные параметры"),
+            @ApiResponse(responseCode = "403", description = "Нет права управлять ДЗ этой группы")
+    })
+    @GetMapping("/lessons/next")
+    ResponseEntity<NextHomeworkLessonResponse> getNextHomeworkLesson(
+            @RequestParam @Positive Long groupId,
+            @RequestParam @Positive Long semesterId,
+            @RequestParam @Positive Long subjectId,
+            @RequestParam LessonType lessonType,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate);
 
     @Operation(summary = "Перенести будущую пару с сохранением её логической истории")
     @ApiResponses({

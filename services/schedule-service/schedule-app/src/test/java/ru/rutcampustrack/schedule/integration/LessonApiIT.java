@@ -19,6 +19,10 @@ import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
+import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
+import ru.rutcampustrack.schedule.lesson.LessonTransferWriter;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -45,6 +49,9 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
 
     @MockitoBean
     AcademicGrpcClient academicGrpcClient;
+
+    @Autowired
+    LessonTransferWriter transferWriter;
 
     @Autowired
     MockMvc mockMvc;
@@ -76,13 +83,16 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
     }
 
     private ScheduleItem createScheduleItem() {
+        return createScheduleItem(LocalDate.of(2026, 1, 1), LocalDate.of(2027, 1, 1));
+    }
+
+    private ScheduleItem createScheduleItem(LocalDate from, LocalDate untilExclusive) {
         jdbcTemplate.update("""
                 INSERT INTO schedule_assignment_fences
                     (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
                      lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive)
-                VALUES (?, ?, 100, 10, 700, 'lecture', DATE '2026-01-01',
-                        DATE '2027-01-01', DATE '2027-01-01')
-                """, testGroupId, testGroupId);
+                VALUES (?, ?, 100, 10, 700, 'lecture', ?, ?, ?)
+                """, testGroupId, testGroupId, from, untilExclusive, untilExclusive);
         Long itemId = jdbcTemplate.queryForObject("""
                 INSERT INTO schedule_items
                     (assignment_id, group_id, subject_id, semester_id, day_of_week,
@@ -146,6 +156,102 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         return request
                 .header("X-User-Id", "999")
                 .header("X-User-Role", "ADMIN");
+    }
+
+    @Test
+    void nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope() throws Exception {
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Moscow"));
+        ScheduleItem item = createScheduleItem(today.minusYears(1), today.plusYears(1));
+        createLesson(item.getId(), LessonStatus.PLANNED, today.minusDays(1)); // elapsed despite stale status
+        createLesson(item.getId(), LessonStatus.CLOSED, today.plusDays(2));
+        createLesson(item.getId(), LessonStatus.CANCELLED, today.plusDays(3));
+        Lesson source = createLesson(item.getId(), LessonStatus.PLANNED, today.plusDays(4));
+        LocalDate transferDate = today.plusDays(5);
+        if (transferDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) transferDate = transferDate.plusDays(1);
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(10L).build());
+        transferWriter.transfer(source.getId(), USER_ID,
+                new TransferLessonRequest(transferDate, 3, null, null, null, "1", UUID.randomUUID()));
+        Lesson nearest = createLesson(item.getId(), LessonStatus.PLANNED, today.plusDays(30));
+
+        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.minusDays(1))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lessonId").value(nearest.getId()))
+                .andExpect(jsonPath("$.occurrenceId").value(nearest.getOccurrenceId()))
+                .andExpect(jsonPath("$.occurrenceRevision", is(1)))
+                .andExpect(jsonPath("$.date", is(today.plusDays(30).toString())));
+        // A one-off uses the same physical snapshot contract; at equal date/time the lower ID wins.
+        long oneOff = insertOneOffChoice(today.plusDays(29), (short) 2);
+        insertOneOffChoice(today.plusDays(29), (short) 4);
+        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.minusDays(1))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lessonId").value(oneOff))
+                .andExpect(jsonPath("$.groupId", is(testGroupId)))
+                .andExpect(jsonPath("$.semesterId", is(10)))
+                .andExpect(jsonPath("$.subjectId", is(100)))
+                .andExpect(jsonPath("$.lessonType", is("lecture")));
+        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.plusDays(30))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.lessonId").value(nearest.getId()));
+        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today.plusDays(31))))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, 11L, "LECTURE", today)))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, 10L, "LAB", today)))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId + 1, today)))
+                .andExpect(status().isForbidden());
+        when(academicGrpcClient.isHeadman(USER_ID, testGroupId)).thenReturn(false);
+        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, today)))
+                .andExpect(status().isForbidden());
+        when(academicGrpcClient.hasAssistantPermission(testGroupId, "MANAGE_HOMEWORK")).thenReturn(true);
+        mockMvc.perform(withAssistantHeaders(nextChoice(testGroupId, today)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.lessonId").value(oneOff));
+        when(academicGrpcClient.hasAssistantPermission(testGroupId, "MANAGE_HOMEWORK")).thenReturn(false);
+        mockMvc.perform(withAssistantHeaders(nextChoice(testGroupId, today)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(withHeadmanHeaders(nextChoice(0L, today))).andExpect(status().isBadRequest());
+        mockMvc.perform(withHeadmanHeaders(nextChoice(testGroupId, 10L, "UNKNOWN", today)))
+                .andExpect(status().isBadRequest());
+    }
+
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder nextChoice(
+            Long groupId, LocalDate fromDate) {
+        return nextChoice(groupId, 10L, "LECTURE", fromDate);
+    }
+
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder nextChoice(
+            Long groupId, Long semesterId, String lessonType, LocalDate fromDate) {
+        return get("/schedule/lessons/next").param("groupId", groupId.toString())
+                .param("semesterId", semesterId.toString()).param("subjectId", "100")
+                .param("lessonType", lessonType).param("fromDate", fromDate.toString());
+    }
+
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder withAssistantHeaders(
+            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request) {
+        return request.header("X-User-Id", USER_ID.toString()).header("X-User-Role", "STUDENT")
+                .header("X-Group-Id", testGroupId.toString()).header("X-Is-Headman", "false");
+    }
+
+    private long insertOneOffChoice(LocalDate date, short lessonNumber) {
+        long oneOffId = jdbcTemplate.queryForObject("""
+                INSERT INTO schedule_one_off_lessons (group_id, subject_id, semester_id, date,
+                    lesson_number, created_by) VALUES (?, 100, 10, ?, ?, ?) RETURNING id
+                """, Long.class, testGroupId, date, lessonNumber, USER_ID);
+        long occurrenceId = jdbcTemplate.queryForObject("""
+                INSERT INTO lesson_occurrences (one_off_lesson_id, occurrence_date, assignment_id,
+                    group_id, subject_id, semester_id, assigned_teacher_id, lesson_type)
+                VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture') RETURNING id
+                """, Long.class, oneOffId, date, testGroupId, testGroupId);
+        long lessonId = jdbcTemplate.queryForObject("""
+                INSERT INTO lessons (one_off_lesson_id, occurrence_id, assignment_id, group_id,
+                    subject_id, semester_id, assigned_teacher_id, lesson_type, date, lesson_number,
+                    start_time, end_time, status, generation, revision)
+                VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture', ?, ?, '08:30'::time,
+                    '10:00'::time, 'planned', 1, 1) RETURNING id
+                """, Long.class, oneOffId, occurrenceId, testGroupId, testGroupId, date, lessonNumber);
+        jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?", lessonId, occurrenceId);
+        jdbcTemplate.update("UPDATE schedule_one_off_lessons SET physical_lesson_id = ? WHERE id = ?", lessonId, oneOffId);
+        return lessonId;
     }
 
     // --- LSSN-04: Cancel ---

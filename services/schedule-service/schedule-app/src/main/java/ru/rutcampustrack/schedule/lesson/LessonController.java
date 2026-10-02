@@ -8,6 +8,8 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.schedule.contract.api.LessonApi;
+import ru.rutcampustrack.schedule.contract.dto.lesson.NextHomeworkLessonResponse;
+import ru.rutcampustrack.schedule.contract.enums.LessonType;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
@@ -40,6 +42,15 @@ public class LessonController implements LessonApi {
         this.lessonService = lessonService;
         this.lessonTransferService = lessonTransferService;
         this.lessonAssembler = lessonAssembler;
+    }
+
+    @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<NextHomeworkLessonResponse> getNextHomeworkLesson(
+            Long groupId, Long semesterId, Long subjectId, LessonType lessonType, LocalDate fromDate) {
+        return lessonService.getNextHomeworkLesson(groupId, semesterId, subjectId, lessonType, fromDate)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     @Override

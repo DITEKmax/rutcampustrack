@@ -1,0 +1,9 @@
+{
+  "source_diff_check": {
+    "command": "git diff --check -- services/schedule-service",
+    "exit_code": 0
+  },
+  "heavy": "not launched; review and root lease required",
+  "runtime": "not verified yet",
+  "foreign_work": "preserved .agent/transfer-attendance-evidence.md and unrelated untracked evidence"
+}

@@ -26,6 +26,14 @@ import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.ZoneId;
+import java.util.Optional;
+import java.util.Objects;
+import java.util.Locale;
+import ru.rutcampustrack.schedule.contract.enums.LessonType;
+import ru.rutcampustrack.schedule.contract.dto.lesson.NextHomeworkLessonResponse;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +56,8 @@ public class LessonService {
     private final EntityManager entityManager;
     private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
-    @Autowired
+    private final Clock clock;
+
     public LessonService(LessonRepository lessonRepository,
                          ScheduleItemRepository scheduleItemRepository,
                          AcademicGrpcClient academicGrpcClient,
@@ -57,6 +66,21 @@ public class LessonService {
                          RecurringLessonLifecycleWriter recurringLifecycleWriter,
                          EntityManager entityManager,
                          ScheduleSemesterArchiveWriteFence archiveWriteFence) {
+        this(lessonRepository, scheduleItemRepository, academicGrpcClient, requestContext,
+                eventPublisher, recurringLifecycleWriter, entityManager, archiveWriteFence, Clock.systemUTC());
+    }
+
+    @Autowired
+    public LessonService(LessonRepository lessonRepository,
+                         ScheduleItemRepository scheduleItemRepository,
+                         AcademicGrpcClient academicGrpcClient,
+                         RequestContext requestContext,
+                         ApplicationEventPublisher eventPublisher,
+                         RecurringLessonLifecycleWriter recurringLifecycleWriter,
+                         EntityManager entityManager,
+                         ScheduleSemesterArchiveWriteFence archiveWriteFence,
+                         Clock clock) {
+        this.clock = clock;
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.academicGrpcClient = academicGrpcClient;
@@ -65,6 +89,27 @@ public class LessonService {
         this.recurringLifecycleWriter = recurringLifecycleWriter;
         this.entityManager = entityManager;
         this.archiveWriteFence = archiveWriteFence;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<NextHomeworkLessonResponse> getNextHomeworkLesson(
+            Long groupId, Long semesterId, Long subjectId, LessonType lessonType, LocalDate fromDate) {
+        if (groupId == null || groupId <= 0 || semesterId == null || semesterId <= 0
+                || subjectId == null || subjectId <= 0 || lessonType == null || fromDate == null) {
+            throw new IllegalArgumentException("Параметры выбора пары должны содержать положительные ID, тип и дату");
+        }
+        if (requestContext.getRole() != UserRole.STUDENT
+                || !Objects.equals(requestContext.getGroupId(), groupId)) {
+            throw new AccessDeniedException("ДЗ принадлежит другой группе");
+        }
+        requireHeadmanForGroup(groupId, "MANAGE_HOMEWORK");
+        return lessonRepository.findNextHomeworkLesson(groupId, semesterId, subjectId,
+                        lessonType.name().toLowerCase(Locale.ROOT), fromDate,
+                        LocalDateTime.now(clock.withZone(ZoneId.of("Europe/Moscow"))))
+                .map(choice -> new NextHomeworkLessonResponse(choice.getLessonId(), choice.getOccurrenceId(),
+                        choice.getOccurrenceRevision(), choice.getGroupId(), choice.getSubjectId(),
+                        choice.getSemesterId(), choice.getLessonType(), choice.getDate(),
+                        choice.getLessonNumber(), choice.getStartTime(), choice.getEndTime()));
     }
 
     /**

@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.projection.LessonDetailsProjection;
+import ru.rutcampustrack.schedule.lesson.projection.NextHomeworkLessonProjection;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,6 +17,30 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
+
+    /** One MVCC snapshot: never resolve through a mutable template or old transfer side. */
+    @Query(value = """
+            SELECT l.id AS lessonId, o.id AS occurrenceId, o.revision AS occurrenceRevision,
+                   l.group_id AS groupId, l.subject_id AS subjectId, l.semester_id AS semesterId,
+                   l.lesson_type AS lessonType, l.date AS date, l.lesson_number AS lessonNumber,
+                   l.start_time AS startTime, l.end_time AS endTime
+              FROM lesson_occurrences o
+              JOIN lessons l ON l.id = o.current_lesson_id AND l.occurrence_id = o.id
+             WHERE l.group_id = :groupId AND l.semester_id = :semesterId
+               AND l.subject_id = :subjectId AND l.lesson_type = :lessonType
+               AND l.date >= :fromDate AND l.status::text IN ('planned', 'active')
+               AND l.date + l.end_time + INTERVAL '5 minutes' > :moscowNow
+               AND NOT EXISTS (
+                   SELECT 1 FROM lesson_transfer_operations transfer
+                    WHERE transfer.occurrence_id = o.id AND transfer.state <> 'COMPLETED')
+             ORDER BY l.date, l.start_time, l.id
+             LIMIT 1
+            """, nativeQuery = true)
+    Optional<NextHomeworkLessonProjection> findNextHomeworkLesson(
+            @Param("groupId") Long groupId, @Param("semesterId") Long semesterId,
+            @Param("subjectId") Long subjectId, @Param("lessonType") String lessonType,
+            @Param("fromDate") LocalDate fromDate, @Param("moscowNow") LocalDateTime moscowNow);
+
 
     /**
      * M05 Группа 2 — reference-pattern для NEW-143 (Spring Data projection).

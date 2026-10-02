@@ -328,8 +328,48 @@ class InternalSessionAdmissionIT {
     @org.junit.jupiter.params.ParameterizedTest
     @org.junit.jupiter.params.provider.ValueSource(strings = {"SEMESTER", "FLOOR", "BUILDING"})
     void deletionConfirmationRequiresLiveAdminAndCurrentPasswordWithoutCreatingSessions(String targetType) throws Exception {
-        String route = "SEMESTER".equals(targetType)
-                ? "/internal/auth/confirm-semester-deletion" : "/internal/auth/confirm-map-deletion";
+        exercisePasswordConfirmation(targetType);
+    }
+
+    @Test
+    void userArchiveConfirmationRequiresLiveAdminAndSharesCredentialAttemptBudget() throws Exception {
+        exercisePasswordConfirmation("USER_ARCHIVE");
+    }
+
+    @Test
+    void restoredVisibleAccountWithRetainedArchivedGrantsHasNoRoleUntilExplicitAssignment() throws Exception {
+        Instant now=Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+        UserFixture user=seedUser(GrantSeed.active(AuthRole.STUDENT,1L),GrantSeed.active(AuthRole.TEACHER,null));
+        CreatedSession session=createSession(user,now,AuthRole.STUDENT);
+        String previousAccess=accessToken(session.snapshot(),now);
+        jdbc.update("UPDATE user_role_grants SET status='archived' WHERE user_id=?",user.userId());
+        jdbc.update("UPDATE auth_sessions SET active_role_grant_id=NULL,session_version=session_version+1 WHERE sid=?",session.sessionId());
+        jdbc.update("UPDATE users SET status='active',group_id=NULL,is_headman=FALSE WHERE id=?",user.userId());
+        assertThatThrownBy(() -> admissionService(now).admit(previousAccess)).isInstanceOf(SessionAdmissionException.class);
+        var snapshot=authorityHolder.authority().snapshot(new SessionStatePort.SnapshotCommand(user.userId(),session.sessionId(),now.plusSeconds(1)));
+        assertThat(snapshot.succeeded()).isTrue();
+        assertThat(snapshot.snapshot().activeRole()).isNull();
+        for (AuthRole role:List.of(AuthRole.STUDENT,AuthRole.TEACHER)) {
+            var selected=authorityHolder.authority().selectRole(new SessionStatePort.SelectRoleCommand(
+                    user.userId(),session.sessionId(),role,snapshot.snapshot().sessionVersion(),now.plusSeconds(2),
+                    event(user.userId(),session.sessionId(),SecurityEvent.Type.ROLE_CHANGED,now.plusSeconds(2))));
+            assertThat(selected.succeeded()).isFalse();
+            assertThat(selected.failureCode()).isEqualTo(SessionStatePort.FailureCode.ROLE_NOT_SELECTABLE);
+        }
+        updateGrantStatus(user,AuthRole.TEACHER,RoleStatus.ACTIVE);
+        var assigned=authorityHolder.authority().selectRole(new SessionStatePort.SelectRoleCommand(
+                user.userId(),session.sessionId(),AuthRole.TEACHER,snapshot.snapshot().sessionVersion(),now.plusSeconds(3),
+                event(user.userId(),session.sessionId(),SecurityEvent.Type.ROLE_CHANGED,now.plusSeconds(3))));
+        assertThat(assigned.succeeded()).isTrue();
+        assertThat(assigned.snapshot().activeRole().role()).isEqualTo(AuthRole.TEACHER);
+    }
+
+    private void exercisePasswordConfirmation(String targetType) throws Exception {
+        String route = switch (targetType) {
+            case "SEMESTER" -> "/internal/auth/confirm-semester-deletion";
+            case "USER_ARCHIVE" -> "/internal/auth/confirm-user-archive";
+            default -> "/internal/auth/confirm-map-deletion";
+        };
         Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         InternalIssuerProperties properties = issuerProperties();
         UserRepository users = mock(UserRepository.class);
@@ -355,7 +395,8 @@ class InternalSessionAdmissionIT {
                 new BcryptConcurrencyGuard(2, 0));
         MockMvc mvc = MockMvcBuilders.standaloneSetup(
                         new InternalSemesterDeletionConfirmationController(confirmationService),
-                        new ru.rutcampustrack.auth.controller.InternalMapDeletionConfirmationController(confirmationService))
+                        new ru.rutcampustrack.auth.controller.InternalMapDeletionConfirmationController(confirmationService),
+                        new ru.rutcampustrack.auth.controller.InternalUserArchiveConfirmationController(confirmationService))
                 // Register the global handler first so equal priorities cannot hide route-specific denials.
                 .setControllerAdvice(new GlobalExceptionHandler(), new SemesterDeletionConfirmationExceptionHandler())
                 .addFilters(new InternalIssuerSecretFilter(properties))
@@ -491,7 +532,7 @@ class InternalSessionAdmissionIT {
         assertThat(limited.getResponse().getContentAsString()).doesNotContain("rate-limit-message-sentinel");
         assertThat(sessionCount(admin.userId())).isEqualTo(sessionsBefore);
 
-        if (!"SEMESTER".equals(targetType)) {
+        if (!"SEMESTER".equals(targetType) && !"USER_ARCHIVE".equals(targetType)) {
             String invalidBody = new ObjectMapper().writeValueAsString(
                     new ru.rutcampustrack.auth.dto.ConfirmMapDeletionRequest(
                             adminInternal, currentPassword,
@@ -592,6 +633,11 @@ class InternalSessionAdmissionIT {
     }
 
     private String confirmationBody(String token, String password, long targetId, String targetType) throws Exception {
+        if ("USER_ARCHIVE".equals(targetType)) {
+            return new ObjectMapper().writeValueAsString(new ru.rutcampustrack.auth.dto.ConfirmUserArchiveRequest(
+                    token,password,ru.rutcampustrack.auth.dto.ConfirmUserArchiveRequest.Purpose.USER_ARCHIVE,
+                    targetId,UUID.randomUUID(),"a".repeat(64)));
+        }
         if (!"SEMESTER".equals(targetType)) {
             return new ObjectMapper().writeValueAsString(new ru.rutcampustrack.auth.dto.ConfirmMapDeletionRequest(
                     token, password, ru.rutcampustrack.auth.dto.ConfirmMapDeletionRequest.TargetType.valueOf(targetType),

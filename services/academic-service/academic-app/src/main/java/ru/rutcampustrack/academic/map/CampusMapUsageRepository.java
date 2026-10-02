@@ -69,6 +69,11 @@ public class CampusMapUsageRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    public boolean lockFloorForOpen(long floorId) {
+        return !jdbcTemplate.query("SELECT id FROM campus_map_floor WHERE id = ? AND is_active = TRUE FOR KEY SHARE",
+                (rs, row) -> rs.getLong("id"), floorId).isEmpty();
+    }
+
     public int insertOpenIntent(byte[] ownerHmac,
                                 UUID intentId,
                                 long buildingId,

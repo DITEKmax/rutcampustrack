@@ -111,6 +111,34 @@ class CampusMapAdminServiceTest {
         return content;
     }
 
+    @Test
+    void deletionRequiresAdminAndLivePasswordEvenForACompletedReplay() {
+        var tx = org.mockito.Mockito.mock(CampusMapDeletionTransaction.class);
+        var auth = org.mockito.Mockito.mock(AuthMapDeletionClient.class);
+        var context = new ru.rutcampustrack.academic.security.RequestContext();
+        var deletion = new CampusMapDeletionService(tx, auth, context);
+        var request = new CampusMapAdminModels.DeleteRequest(java.util.UUID.randomUUID(), "a".repeat(64), "password");
+        context.setUserId(10L);
+        context.setRole(ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER);
+        assertThatThrownBy(() -> deletion.delete(CampusMapAdminModels.DeletionTarget.FLOOR, "200", request))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.AccessDeniedException.class);
+        verifyNoInteractions(auth, tx);
+        context.setRole(ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN);
+        org.mockito.Mockito.doThrow(new ru.rutcampustrack.academic.exception.AccessDeniedException("password"))
+                .when(auth).confirm(CampusMapAdminModels.DeletionTarget.FLOOR, 200L,
+                        request.operationId(), request.previewDigest(), request.password());
+        assertThatThrownBy(() -> deletion.delete(CampusMapAdminModels.DeletionTarget.FLOOR, "200", request))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.AccessDeniedException.class);
+        verifyNoInteractions(tx);
+        org.mockito.Mockito.doNothing().when(auth).confirm(CampusMapAdminModels.DeletionTarget.FLOOR, 200L,
+                request.operationId(), request.previewDigest(), request.password());
+        deletion.delete(CampusMapAdminModels.DeletionTarget.FLOOR, "200", request);
+        deletion.delete(CampusMapAdminModels.DeletionTarget.FLOOR, "200", request);
+        verify(auth, org.mockito.Mockito.times(3)).confirm(CampusMapAdminModels.DeletionTarget.FLOOR, 200L,
+                request.operationId(), request.previewDigest(), request.password());
+        verify(tx, org.mockito.Mockito.times(2)).delete(CampusMapAdminModels.DeletionTarget.FLOOR, 200L, 10L, request);
+    }
+
     private static byte[] sha256(byte[] content) {
         try {
             return java.security.MessageDigest.getInstance("SHA-256").digest(content);

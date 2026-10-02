@@ -3,11 +3,13 @@ package ru.rutcampustrack.academic.contract.dto.map;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /** Wire models for the small, admin-owned campus map catalog API. */
 public final class CampusMapAdminModels {
@@ -25,6 +27,21 @@ public final class CampusMapAdminModels {
         ready,
         failed
     }
+
+    public enum DeletionTarget { FLOOR, BUILDING }
+
+    public record DeletionPreview(DeletionTarget targetType, String targetId, String buildingId,
+            String label, long versions, long assets, long bytes, long openCount,
+            long remainingFloors, String previewDigest) { }
+
+    public record DeleteRequest(@NotNull UUID operationId,
+            @NotBlank @Pattern(regexp = "[0-9a-f]{64}") String previewDigest,
+            @NotBlank @Size(max = 256) String password) {
+        @Override public String toString() { return "CampusMapDeleteRequest[redacted]"; }
+    }
+
+    public record DeletionResult(UUID operationId, DeletionTarget targetType, String targetId,
+            String status) { }
 
     @Schema(name = "CampusMapCreateBuildingRequest")
     public record CreateBuildingRequest(
@@ -48,6 +65,17 @@ public final class CampusMapAdminModels {
             String code,
             @Schema(description = "Human-readable label; defaults to the code")
             @Size(max = 255, message = "Название этажа не должно превышать 255 символов")
+            String label
+    ) {
+    }
+
+    @Schema(name = "CampusMapUpdateInventoryRequest")
+    public record UpdateInventoryRequest(
+            @NotBlank(message = "Код обязателен")
+            @Pattern(regexp = "[1-9][0-9]*", message = "Код должен быть положительным числом")
+            @Size(max = 64, message = "Код не должен превышать 64 символа")
+            String code,
+            @Size(max = 255, message = "Название не должно превышать 255 символов")
             String label
     ) {
     }

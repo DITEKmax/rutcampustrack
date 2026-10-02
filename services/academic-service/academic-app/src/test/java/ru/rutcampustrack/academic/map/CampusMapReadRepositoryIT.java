@@ -207,6 +207,165 @@ class CampusMapReadRepositoryIT {
     }
 
     @Test
+    void adminLifecycleDeletesAllVersionsAndUsageWithBoundReplayAndPreservesAnotherFloor() {
+        String schema = newSchema();
+        migrateDeletion(schema);
+        var admin = adminHarness(schema);
+        var building = admin.createBuilding(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBuildingRequest("20", "Корпус"));
+        var floor = admin.createFloor(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest(building.id(), "1", "Первый"));
+        var other = admin.createFloor(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest(building.id(), "2", "Второй"));
+        var png = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", uploadPng());
+        var svg = new org.springframework.mock.web.MockMultipartFile("svg", "map.svg", "image/svg+xml", "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\"/>".getBytes(StandardCharsets.UTF_8));
+        admin.uploadVersion(floor.id(), null, png, svg);
+        var second = admin.uploadVersion(floor.id(), "Вторая", png, null);
+        var retained = admin.uploadVersion(other.id(), null, png, svg);
+        assertThat(second.version()).isEqualTo("2");
+        assertThat(second.svg().state()).isEqualTo(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FormatState.ready);
+        admin.updateBuilding(building.id(), new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest("21", "Новый корпус"));
+        var updated = admin.updateFloor(floor.id(), new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest("3", "Новый этаж"));
+        assertThat(updated.id()).isEqualTo(floor.id());
+        assertThat(updated.currentPlan().version()).isEqualTo("2");
+        assertThatThrownBy(() -> admin.updateFloor(floor.id(), new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest("2", "Занят")))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+
+        long floorId = Long.parseLong(floor.id());
+        long buildingId = Long.parseLong(building.id());
+        var usage = new CampusMapUsageRepository(jdbc(schema));
+        UUID intent = UUID.randomUUID();
+        usage.insertOpenIntent(new byte[32], intent, buildingId, floorId, new byte[32]);
+        var open = usage.findOpenIntentForUpdate(new byte[32], intent).orElseThrow();
+        usage.insertDemandDedupe(new byte[32], floorId, open.acceptedUtcDay(), intent, open.acceptedAt());
+        var deletion = deletionHarness(schema, CampusMapDeletionRepository::new);
+        var preview = deletion.preview(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget.FLOOR, floorId);
+        assertThat(preview.versions()).isEqualTo(2);
+        assertThat(preview.assets()).isEqualTo(4);
+        assertThat(preview.openCount()).isEqualTo(1);
+        assertThat(preview.remainingFloors()).isEqualTo(1);
+        var request = new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(UUID.randomUUID(), preview.previewDigest(), "password");
+        assertThat(deletion.delete(preview.targetType(), floorId, USER_ID, request).status()).isEqualTo("COMPLETED");
+        assertThat(deletion.delete(preview.targetType(), floorId, USER_ID, request).status()).isEqualTo("COMPLETED");
+        assertThatThrownBy(() -> deletion.delete(preview.targetType(), floorId, USER_ID + 1, request))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+        for (String table : List.of("campus_map_floor", "campus_map_plan_version", "campus_map_asset",
+                "campus_map_plan_format", "campus_map_open_intent", "campus_map_floor_demand_dedupe", "campus_map_floor_daily_demand")) {
+            String scope = switch (table) {
+                case "campus_map_floor" -> "id = " + floorId;
+                case "campus_map_asset", "campus_map_plan_format" -> "plan_version_id NOT IN (SELECT id FROM campus_map_plan_version)";
+                default -> "floor_id = " + floorId;
+            };
+            assertThat(jdbc(schema).queryForObject("SELECT COUNT(*) FROM " + table + " WHERE " + scope, Long.class)).isZero();
+        }
+        assertThat(admin.getVersion(other.id(), retained.version()).png().id()).isEqualTo(retained.png().id());
+        assertThat(admin.downloadAsset(other.id(), retained.version(), "png", retained.png().id()).content()).containsExactly(uploadPng());
+        assertThatThrownBy(() -> deletion.preview(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget.BUILDING, buildingId))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+        var otherPreview = deletion.preview(preview.targetType(), Long.parseLong(other.id()));
+        deletion.delete(otherPreview.targetType(), Long.parseLong(other.id()), USER_ID,
+                new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(UUID.randomUUID(), otherPreview.previewDigest(), "password"));
+        var empty = deletion.preview(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget.BUILDING, buildingId);
+        deletion.delete(empty.targetType(), buildingId, USER_ID,
+                new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(UUID.randomUUID(), empty.previewDigest(), "password"));
+        assertThat(admin.listBuildings()).isEmpty();
+    }
+
+    @Test
+    void stalePreviewAndMidDeleteFailureLeavePublishedPlanAndBytesIntact() {
+        String schema = newSchema(); migrateDeletion(schema);
+        var admin = adminHarness(schema);
+        var building = admin.createBuilding(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBuildingRequest("20", null));
+        var floor = admin.createFloor(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest(building.id(), "1", null));
+        var png = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", uploadPng());
+        var plan = admin.uploadVersion(floor.id(), null, png, null);
+        long floorId = Long.parseLong(floor.id());
+        var deletion = deletionHarness(schema, CampusMapDeletionRepository::new);
+        var preview = deletion.preview(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget.FLOOR, floorId);
+        admin.uploadVersion(floor.id(), null, png, null);
+        assertThatThrownBy(() -> deletion.delete(preview.targetType(), floorId, USER_ID,
+                new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(UUID.randomUUID(), preview.previewDigest(), "password")))
+                .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+        var refreshed = deletion.preview(preview.targetType(), floorId);
+        UUID operation = UUID.randomUUID();
+        var fault = deletionHarness(schema, jdbc -> new CampusMapDeletionRepository(jdbc) {
+            @Override public void insertReceipt(UUID op, long owner, ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget type, long target, String digest) {
+                throw new IllegalStateException("injected receipt failure after cleanup");
+            }
+        });
+        var request = new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(operation, refreshed.previewDigest(), "password");
+        assertThatThrownBy(() -> fault.delete(preview.targetType(), floorId, USER_ID, request)).isInstanceOf(IllegalStateException.class);
+        assertThat(admin.listFloors(building.id()).get(0).currentPlan().version()).isEqualTo("2");
+        assertThat(admin.downloadAsset(floor.id(), "1", "png", plan.png().id()).content()).containsExactly(uploadPng());
+        assertThat(jdbc(schema).queryForObject("SELECT COUNT(*) FROM campus_map_deletion_receipt", Long.class)).isZero();
+        assertThatThrownBy(() -> jdbc(schema).update("DELETE FROM campus_map_asset WHERE id = ?", Long.parseLong(plan.png().id())))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class);
+        assertThat(deletion.delete(preview.targetType(), floorId, USER_ID, request).status()).isEqualTo("COMPLETED");
+    }
+
+    @Test
+    void concurrentReplacementSerializesBeforeFinalDeletionAndCannotResurrectFloor() throws Exception {
+        String schema = newSchema(); migrateDeletion(schema);
+        var admin = adminHarness(schema);
+        var building = admin.createBuilding(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBuildingRequest("20", null));
+        var floor = admin.createFloor(new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest(building.id(), "1", null));
+        var png = new org.springframework.mock.web.MockMultipartFile("png", "map.png", "image/png", uploadPng());
+        admin.uploadVersion(floor.id(), null, png, null);
+        long floorId = Long.parseLong(floor.id());
+        CountDownLatch deleting = new CountDownLatch(1), resume = new CountDownLatch(1);
+        var deletion = deletionHarness(schema, jdbc -> new CampusMapDeletionRepository(jdbc) {
+            @Override public void deleteFloor(long id) {
+                deleting.countDown();
+                try { if (!resume.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("delete gate timeout"); }
+                catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException(e); }
+                super.deleteFloor(id);
+            }
+        });
+        var preview = deletion.preview(ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget.FLOOR, floorId);
+        var request = new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(UUID.randomUUID(), preview.previewDigest(), "password");
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            var removed = pool.submit(() -> deletion.delete(preview.targetType(), floorId, USER_ID, request));
+            assertThat(deleting.await(10, TimeUnit.SECONDS)).isTrue();
+            var replacement = pool.submit(() -> admin.uploadVersion(floor.id(), null, png, null));
+            resume.countDown();
+            assertThat(removed.get(10, TimeUnit.SECONDS).status()).isEqualTo("COMPLETED");
+            assertThatThrownBy(() -> replacement.get(10, TimeUnit.SECONDS))
+                    .hasCauseInstanceOf(ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException.class);
+            assertThat(admin.listFloors(building.id())).isEmpty();
+        } finally { resume.countDown(); pool.shutdownNow(); }
+    }
+
+    private void migrateDeletion(String schema) {
+        Flyway.configure().dataSource(dataSourceForSchema(schema)).locations("classpath:db/migration")
+                .schemas(schema).defaultSchema(schema).cleanDisabled(true).target("43").load().migrate();
+    }
+
+    private CampusMapAdminService adminHarness(String schema) {
+        var source = dataSourceForSchema(schema);
+        return transactionProxy(new CampusMapAdminService(new CampusMapAdminRepository(new JdbcTemplate(source))), source);
+    }
+
+    private CampusMapDeletionTransaction deletionHarness(String schema,
+            java.util.function.Function<JdbcTemplate, CampusMapDeletionRepository> factory) {
+        var source = dataSourceForSchema(schema);
+        var jdbc = new JdbcTemplate(source);
+        return transactionProxy(new CampusMapDeletionTransaction(new CampusMapAdminRepository(jdbc), factory.apply(jdbc)), source);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T transactionProxy(T target, DataSource source) {
+        var advice = new TransactionInterceptor();
+        advice.setTransactionManager(new DataSourceTransactionManager(source));
+        advice.setTransactionAttributeSource(new AnnotationTransactionAttributeSource());
+        ProxyFactory factory = new ProxyFactory(target); factory.setProxyTargetClass(true); factory.addAdvice(advice);
+        return (T) factory.getProxy();
+    }
+
+    private static byte[] uploadPng() {
+        byte[] png = new byte[24];
+        System.arraycopy(new byte[]{(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A}, 0, png, 0, 8);
+        java.nio.ByteBuffer.wrap(png).putInt(16, 640).putInt(20, 480); return png;
+    }
+
+    @Test
     void realJdbcNegativeReadsReturnTypedBoundariesWithoutContentMaterialization() {
         String schema = newSchema();
         migrate(schema);

@@ -50,6 +50,10 @@ public class CampusMapUsageService {
 
         long buildingKey = parseCanonicalId(buildingId, "building id");
         long floorKey = parseCanonicalId(floorId, "floor id");
+        if (!repository.lockFloorForOpen(floorKey)) {
+            throw CampusMapReadException.of(CampusMapReadException.Code.NOT_FOUND,
+                    "campus map floor was not found");
+        }
         byte[] ownerHmac = ownerHmacProvider.forUser(claims.userId());
         byte[] payloadHash = payloadHash(buildingKey, floorKey, intentId);
 

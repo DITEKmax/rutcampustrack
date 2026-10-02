@@ -12,6 +12,7 @@ import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFl
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FormatState;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
@@ -104,6 +105,7 @@ public class CampusMapAdminService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public BuildingResponse createBuilding(CreateBuildingRequest request) {
         String code = requireNumericCode(request.code(), "code");
+        repository.lockCatalogForWrite();
         if (repository.existsBuildingCode(code)) {
             throw new ConflictException("code", code, "Корпус с таким кодом уже существует");
         }
@@ -116,6 +118,7 @@ public class CampusMapAdminService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public FloorResponse createFloor(CreateFloorRequest request) {
         long buildingId = parsePositiveId(request.buildingId(), "buildingId");
+        repository.lockCatalogForWrite();
         CampusMapAdminRepository.BuildingRow building = repository.findActiveBuilding(buildingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Корпус", "id", buildingId));
         String code = requireNumericCode(request.code(), "code");
@@ -128,7 +131,7 @@ public class CampusMapAdminService {
         return new FloorResponse(decimal(id), decimal(building.id()), code, label, null);
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public PlanResponse uploadVersion(String floorId,
                                       String label,
                                       MultipartFile png,
@@ -140,6 +143,7 @@ public class CampusMapAdminService {
         ValidatedAsset pngAsset = isEmpty(png) ? null : validate(png, CampusMapFormat.PNG);
         ValidatedAsset svgAsset = isEmpty(svg) ? null : validate(svg, CampusMapFormat.SVG);
 
+        repository.lockCatalogForWrite();
         CampusMapAdminRepository.FloorRow floor = repository.findFloorForUpdate(floorKey)
                 .filter(CampusMapAdminRepository.FloorRow::active)
                 .orElseThrow(() -> new ResourceNotFoundException("Этаж", "id", floorKey));
@@ -170,6 +174,48 @@ public class CampusMapAdminService {
         return toPlan(repository.findPlan(floor.id(), version)
                         .orElseThrow(() -> new IllegalStateException("published map version disappeared")),
                 revision.revision(), repository.findSlots(planId), floor.buildingId());
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public BuildingResponse updateBuilding(String buildingId, UpdateInventoryRequest request) {
+        long id = parsePositiveId(buildingId, "buildingId");
+        String code = requireNumericCode(request.code(), "code");
+        String label = defaultLabel(request.label(), "Корпус " + code);
+        repository.lockCatalogForWrite();
+        CampusMapAdminRepository.BuildingRow building = repository.findActiveBuilding(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Корпус", "id", id));
+        if (!building.code().equals(code) && repository.existsBuildingCode(code)) {
+            throw new ConflictException("code", code, "Корпус с таким кодом уже существует");
+        }
+        if (!building.code().equals(code) || !building.label().equals(label)) {
+            repository.updateBuilding(id, code, label);
+            repository.advanceCatalogRevision();
+        }
+        List<FloorResponse> floors = listFloors(decimal(id));
+        return new BuildingResponse(decimal(id), code, label, floors);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public FloorResponse updateFloor(String floorId, UpdateInventoryRequest request) {
+        long id = parsePositiveId(floorId, "floorId");
+        String code = requireNumericCode(request.code(), "code");
+        String label = defaultLabel(request.label(), "Этаж " + code);
+        repository.lockCatalogForWrite();
+        CampusMapAdminRepository.FloorRow floor = repository.findFloorForUpdate(id)
+                .filter(CampusMapAdminRepository.FloorRow::active)
+                .orElseThrow(() -> new ResourceNotFoundException("Этаж", "id", id));
+        repository.findActiveBuilding(floor.buildingId())
+                .orElseThrow(() -> new ResourceNotFoundException("Корпус", "id", floor.buildingId()));
+        if (!floor.code().equals(code) && repository.existsFloorCode(floor.buildingId(), code)) {
+            throw new ConflictException("code", code, "Этаж с таким кодом уже существует в корпусе");
+        }
+        if (!floor.code().equals(code) || !floor.label().equals(label)) {
+            repository.updateFloor(id, code, label);
+            repository.advanceCatalogRevision();
+        }
+        return listFloors(decimal(floor.buildingId())).stream()
+                .filter(row -> row.id().equals(decimal(id))).findFirst()
+                .orElseThrow(() -> new IllegalStateException("updated campus map floor disappeared"));
     }
 
     @Transactional(readOnly = true)

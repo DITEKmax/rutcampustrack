@@ -13,6 +13,11 @@ import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBu
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionPreview;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionResult;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget;
 import ru.rutcampustrack.academic.security.RequireRole;
 
 import java.util.List;
@@ -23,9 +28,11 @@ import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
 @RestController
 public class CampusMapAdminController implements CampusMapAdminApi {
     private final CampusMapAdminService service;
+    private final CampusMapDeletionService deletion;
 
-    public CampusMapAdminController(CampusMapAdminService service) {
+    public CampusMapAdminController(CampusMapAdminService service, CampusMapDeletionService deletion) {
         this.service = service;
+        this.deletion = deletion;
     }
 
     @Override
@@ -50,6 +57,46 @@ public class CampusMapAdminController implements CampusMapAdminApi {
     @RequireRole({ADMIN})
     public ResponseEntity<FloorResponse> createFloor(CreateFloorRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createFloor(request));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<BuildingResponse> updateBuilding(String buildingId, UpdateInventoryRequest request) {
+        return ResponseEntity.ok(service.updateBuilding(buildingId, request));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<FloorResponse> updateFloor(String floorId, UpdateInventoryRequest request) {
+        return ResponseEntity.ok(service.updateFloor(floorId, request));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<DeletionPreview> previewFloorDeletion(String floorId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(deletion.preview(DeletionTarget.FLOOR, floorId));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<DeletionPreview> previewBuildingDeletion(String buildingId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(deletion.preview(DeletionTarget.BUILDING, buildingId));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<DeletionResult> deleteFloor(String floorId, DeleteRequest request) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(deletion.delete(DeletionTarget.FLOOR, floorId, request));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<DeletionResult> deleteBuilding(String buildingId, DeleteRequest request) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(deletion.delete(DeletionTarget.BUILDING, buildingId, request));
     }
 
     @Override

@@ -116,7 +116,7 @@ public class CampusMapReadService {
     }
 
     /** Reads the current plan for one canonical building/floor pair. */
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public PlanResult readFloorPlan(String buildingId,
                                     String floorId,
                                     InternalJwtClaims claims) {
@@ -152,7 +152,7 @@ public class CampusMapReadService {
      * Reads an immutable published asset.  An empty result means that the
      * stream was cancelled before completion; all other failures are typed.
      */
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Optional<Asset> readAsset(String buildingId,
                                      String floorId,
                                      long version,

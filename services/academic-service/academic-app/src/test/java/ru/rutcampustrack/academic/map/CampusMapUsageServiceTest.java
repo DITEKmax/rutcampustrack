@@ -109,6 +109,7 @@ class CampusMapUsageServiceTest {
     }
 
     private void givenPublishedFloor() {
+        when(repository.lockFloorForOpen(200L)).thenReturn(true);
         when(mapReadService.readFloorPlan("20", "200", claims()))
                 .thenReturn(new CampusMapReadModels.PlanResult(
                         new CampusMapReadModels.ManifestPlan(20L, 200L, 1L, "floor", null, null)));

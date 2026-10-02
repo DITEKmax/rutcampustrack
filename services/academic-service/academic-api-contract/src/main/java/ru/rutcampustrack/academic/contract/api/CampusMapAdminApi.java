@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +22,10 @@ import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateBu
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFloorRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionPreview;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionResult;
 
 import java.util.List;
 
@@ -58,6 +63,32 @@ public interface CampusMapAdminApi {
     })
     @PostMapping("/floors")
     ResponseEntity<FloorResponse> createFloor(@Valid @RequestBody CreateFloorRequest request);
+
+    @Operation(summary = "Изменить код и название корпуса")
+    @PutMapping("/buildings/{buildingId}")
+    ResponseEntity<BuildingResponse> updateBuilding(@PathVariable String buildingId,
+            @Valid @RequestBody UpdateInventoryRequest request);
+
+    @Operation(summary = "Изменить код и название этажа в его корпусе")
+    @PutMapping("/floors/{floorId}")
+    ResponseEntity<FloorResponse> updateFloor(@PathVariable String floorId,
+            @Valid @RequestBody UpdateInventoryRequest request);
+
+    @GetMapping("/floors/{floorId}/deletion-preview")
+    ResponseEntity<DeletionPreview> previewFloorDeletion(@PathVariable String floorId);
+
+    @GetMapping("/buildings/{buildingId}/deletion-preview")
+    ResponseEntity<DeletionPreview> previewBuildingDeletion(@PathVariable String buildingId);
+
+    @Operation(summary = "Окончательно удалить этаж и все версии его схемы после подтверждения паролем")
+    @PostMapping("/floors/{floorId}/deletion")
+    ResponseEntity<DeletionResult> deleteFloor(@PathVariable String floorId,
+            @Valid @RequestBody DeleteRequest request);
+
+    @Operation(summary = "Окончательно удалить пустой корпус после подтверждения паролем")
+    @PostMapping("/buildings/{buildingId}/deletion")
+    ResponseEntity<DeletionResult> deleteBuilding(@PathVariable String buildingId,
+            @Valid @RequestBody DeleteRequest request);
 
     @Operation(summary = "Загрузить новую версию схемы этажа")
     @ApiResponses({

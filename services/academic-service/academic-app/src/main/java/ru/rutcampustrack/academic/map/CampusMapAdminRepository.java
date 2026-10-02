@@ -115,6 +115,19 @@ public class CampusMapAdminRepository {
                 .stream().findFirst();
     }
 
+    /** One transaction-scoped lock for the small admin catalog, including its first revision. */
+    public void lockCatalogForWrite() {
+        jdbcTemplate.query("SELECT pg_advisory_xact_lock(1381253965, 1)", rs -> null);
+    }
+
+    public void updateBuilding(long id, String code, String label) {
+        jdbcTemplate.update("UPDATE campus_map_building SET code = ?, label = ? WHERE id = ?", code, label, id);
+    }
+
+    public void updateFloor(long id, String code, String label) {
+        jdbcTemplate.update("UPDATE campus_map_floor SET code = ?, label = ? WHERE id = ?", code, label, id);
+    }
+
     public Optional<FloorRow> findFloorForUpdate(long id) {
         return jdbcTemplate.query(FLOOR_BY_ID_FOR_UPDATE_SQL, (rs, rowNum) -> floor(rs), id)
                 .stream().findFirst();

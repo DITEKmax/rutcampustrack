@@ -1,0 +1,15 @@
+{
+  "sourceCommits": ["37b5f15c93a68886ffd7bb6712e6ecc5dd348797", "39b8dc1dc9d356d7a47b08c692291534cbf5a86f"],
+  "baseline": "aa4128886f61c0b0a301a06282d891311cf1e0dc",
+  "review": {"initial": "FAIL P1 preferences fail-open", "correction": "PASS affected recheck; P1 closed", "reportedBy": "root"},
+  "run": {"session": 19026, "exitCode": 0, "duration": "1m46s", "attempts": 1, "log": "r1-gradle.log", "compileJava": "PASS", "compileTestJava": "PASS"},
+  "xml": [
+    {"class": "EventConsumerTest", "tests": 2, "failures": 0, "errors": 0, "skipped": 0, "timestamp": "2026-10-02T10:56:32", "lastWriteUtc": "2026-10-02T10:56:38"},
+    {"class": "WebPushDeliveryServiceTest", "tests": 8, "failures": 0, "errors": 0, "skipped": 0, "timestamp": "2026-10-02T10:56:35", "lastWriteUtc": "2026-10-02T10:56:38"},
+    {"class": "EventIdempotentIT", "tests": 4, "failures": 0, "errors": 0, "skipped": 0, "timestamp": "2026-10-02T10:57:34", "lastWriteUtc": "2026-10-02T10:57:40"}
+  ],
+  "ownedCleanup": {"testcontainersBaseline": "EMPTY", "testcontainersTerminal": "EMPTY", "javaTerminal": "EMPTY", "heavyLease": "RELEASED"},
+  "externalProviderProof": false,
+  "browserUiProof": false,
+  "reminderHistoryAdded": false
+}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-02T10:56:35" hostname="DITEK-PK" time="2.357">
+  <properties/>
+  <testcase name="sendToGroup_lessonReminder_buildsTitleAndBody()" classname="ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest" time="2.169"/>
+  <testcase name="reminderAudienceFailsClosedWhenPreferencesResolverIsMissing()" classname="ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest" time="0.009"/>
+  <testcase name="[1] malformed=missing" classname="ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest" time="0.031"/>
+  <testcase name="[2] malformed=fractional" classname="ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest" time="0.01"/>
+  <testcase name="[3] malformed=nonpositive" classname="ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest" time="0.008"/>
+  <testcase name="reminderAudienceFiltersMarksPreferencesAndMembershipBeforeAsyncSnapshot()" classname="ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest" time="0.038"/>
+  <testcase name="reminderAudienceLookupFailureNeverBecomesUnmarkedAndSchedulesNoProvider()" classname="ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest" time="0.007"/>
+  <testcase name="sendToGroup_lessonReminder_skipsAlreadyMarkedStudents()" classname="ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest" time="0.013"/>
+  <system-out><![CDATA[Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+{"ts":"2026-10-02T13:56:37.674+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.notification.push.WebPushDeliveryService","thread":"Test worker","msg":"Push delivery finished event=lesson.reminder group=7 subscriptions=1 targets=1 sent=1 failed=0 expired=0","service":"notification-web"}
+{"ts":"2026-10-02T13:56:37.861+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.notification.push.WebPushDeliveryService","thread":"Test worker","msg":"Push delivery finished event=lesson.reminder group=7 subscriptions=4 targets=1 sent=1 failed=0 expired=0","service":"notification-web"}
+{"ts":"2026-10-02T13:56:37.886+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.notification.push.WebPushDeliveryService","thread":"Test worker","msg":"Push delivery finished event=lesson.reminder group=7 subscriptions=2 targets=1 sent=1 failed=0 expired=0","service":"notification-web"}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

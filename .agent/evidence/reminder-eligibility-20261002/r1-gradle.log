@@ -1,0 +1,75 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:auth-service:auth-api-contract:compileJava UP-TO-DATE
+> Task :services:auth-service:auth-api-contract:processResources NO-SOURCE
+> Task :services:auth-service:auth-api-contract:classes UP-TO-DATE
+> Task :services:auth-service:auth-api-contract:jar UP-TO-DATE
+> Task :services:notification-service:notification-api-contract:compileJava UP-TO-DATE
+> Task :services:notification-service:notification-api-contract:processResources NO-SOURCE
+> Task :services:notification-service:notification-api-contract:classes UP-TO-DATE
+> Task :services:notification-service:notification-api-contract:jar UP-TO-DATE
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-security:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:notification-service:notification-app:extractIncludeProto UP-TO-DATE
+> Task :services:notification-service:notification-app:extractProto UP-TO-DATE
+> Task :services:notification-service:notification-app:generateProto UP-TO-DATE
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-outbox:compileJava UP-TO-DATE
+> Task :services:shared:shared-outbox:classes UP-TO-DATE
+> Task :services:shared:shared-outbox:jar UP-TO-DATE
+> Task :services:shared:shared-security:compileJava UP-TO-DATE
+> Task :services:shared:shared-security:classes UP-TO-DATE
+> Task :services:shared:shared-security:jar UP-TO-DATE
+> Task :services:shared:shared-web:compileJava UP-TO-DATE
+> Task :services:shared:shared-web:classes UP-TO-DATE
+> Task :services:shared:shared-web:jar UP-TO-DATE
+> Task :services:notification-service:notification-app:compileJava
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:notification-service:notification-app:processResources UP-TO-DATE
+> Task :services:notification-service:notification-app:classes
+> Task :services:shared:shared-security:processTestFixturesResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processTestFixturesResources NO-SOURCE
+> Task :services:notification-service:notification-app:extractIncludeTestProto UP-TO-DATE
+> Task :services:notification-service:notification-app:extractTestProto UP-TO-DATE
+> Task :services:notification-service:notification-app:generateTestProto NO-SOURCE
+> Task :services:shared:shared-security:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesJar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileJava NO-SOURCE
+> Task :services:shared:shared-test-containers:classes UP-TO-DATE
+> Task :services:shared:shared-test-containers:jar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesJar UP-TO-DATE
+
+> Task :services:notification-service:notification-app:compileTestJava
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :services:notification-service:notification-app:processTestResources UP-TO-DATE
+> Task :services:notification-service:notification-app:testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :services:notification-service:notification-app:test
+> Task :services:notification-service:notification-app:integrationTest
+
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+BUILD SUCCESSFUL in 1m 46s
+38 actionable tasks: 4 executed, 34 up-to-date

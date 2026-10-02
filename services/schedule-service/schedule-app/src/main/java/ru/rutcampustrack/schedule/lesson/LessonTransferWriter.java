@@ -815,7 +815,7 @@ public class LessonTransferWriter {
         catch (JsonProcessingException error) { throw new IllegalStateException("Unable to hash transfer snapshot", error); }
     }
 
-    private Object readObject(String json) {
+    private Map<String, Object> readObject(String json) {
         try { return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {}); }
         catch (JsonProcessingException error) { throw new IllegalStateException("Stored transfer batch is invalid", error); }
     }

@@ -1,7 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.homework;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -63,7 +62,6 @@ public record CreateHomeworkRequest(
         @Schema(description = "Дата пары (не в прошлом)", example = "2026-04-24",
                 requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "Дата пары обязательна")
-        @FutureOrPresent(message = "Дата пары должна быть не в прошлом")
         LocalDate lessonDate,
 
         @Schema(description = "Номер пары (1..8)", example = "3",

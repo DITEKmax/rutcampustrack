@@ -72,6 +72,7 @@ class HomeworkEditLifecycleIT {
     @Autowired HomeworkBindingArchivedEventConsumer archiveConsumer;
     @Autowired SemesterArchiveCommandTransaction archiveCommands;
     @Autowired HomeworkAssembler assembler;
+    @Autowired jakarta.validation.Validator validator;
     long actor, publisher, group, subject, semester, binding;
     LocalDate day;
     UUID createKey;
@@ -150,6 +151,35 @@ class HomeworkEditLifecycleIT {
         Homework replay = service.createHomework(new CreateHomeworkRequest("legacy", null, null, subject, group, semester, day, 1, createKey));
         assertThat(replay.getId()).isEqualTo(id);
         assertThat(replay.getTitle()).isEqualTo("new");
+
+        LocalDate yesterday = LocalDate.now(ZoneId.of("Europe/Moscow")).minusDays(1);
+        UUID movedKey = UUID.randomUUID(), expiredKey = UUID.randomUUID();
+        Homework moved = new TransactionTemplate(transactions).execute(status -> {
+            Homework homework = new Homework(group, subject, semester, "moved", null, null, actor,
+                    yesterday, 1, binding + 3, actor, movedKey, createHash);
+            homework.activatePublication();
+            homework.applyEdit(new HomeworkSnapshot("current", null, null, HomeworkBindingMode.LESSON, day, 1), java.time.OffsetDateTime.now());
+            return repository.saveAndFlush(homework);
+        });
+        var movedOriginal = new CreateHomeworkRequest("moved", null, null, subject, group, semester, yesterday, 1, movedKey);
+        assertThat(validator.validate(movedOriginal)).isEmpty();
+        Homework movedReplay = service.createHomework(movedOriginal);
+        assertThat(movedReplay.getId()).isEqualTo(moved.getId());
+        assertThat(movedReplay.getLessonDate()).isEqualTo(day);
+        Homework expiredCurrent = new TransactionTemplate(transactions).execute(status -> {
+            Homework homework = new Homework(group, subject, semester, "future-original", null, null, actor,
+                    day, null, binding + 4, actor, expiredKey, createHash, HomeworkBindingMode.DATE);
+            homework.activatePublication();
+            homework.applyEdit(new HomeworkSnapshot("past-current", null, null, HomeworkBindingMode.DATE, yesterday, null), java.time.OffsetDateTime.now());
+            return repository.saveAndFlush(homework);
+        });
+        long countBefore = jdbc.queryForObject("SELECT count(*) FROM homeworks WHERE semester_id = ?", Long.class, semester);
+        assertThatThrownBy(() -> service.createHomework(new CreateHomeworkRequest("future-original", null, null, subject, group,
+                semester, day, null, expiredKey, HomeworkBindingMode.DATE))).isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> service.createHomework(new CreateHomeworkRequest("new-past", null, null, subject, group,
+                semester, yesterday, 1, UUID.randomUUID()))).isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM homeworks WHERE semester_id = ?", Long.class, semester)).isEqualTo(countBefore);
+        assertThat(repository.findById(expiredCurrent.getId()).orElseThrow().getTitle()).isEqualTo("past-current");
 
         LocalDate cutoffDay = LocalDate.of(2026,10,2);
         Homework cutoff = new Homework(group, subject, semester, "date", null, null, publisher, cutoffDay, null,

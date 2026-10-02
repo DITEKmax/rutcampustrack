@@ -383,7 +383,7 @@ public class HomeworkService {
         if (!sameRequest(current, request)) {
             throw new ConflictException("idempotency key resolves to another homework payload");
         }
-        if (current.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
+        if (new HomeworkLifecycle(clock).archived(current)) {
             throw new ConflictException("archived homework cannot be recreated");
         }
         if (current.getPublicationState() == HomeworkPublicationState.ACTIVE) {
@@ -404,8 +404,8 @@ public class HomeworkService {
                 current.getBindingId(), current.getPayloadHash()));
     }
 
-    private static Homework requireNotArchived(Homework homework) {
-        if (homework.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
+    private Homework requireNotArchived(Homework homework) {
+        if (new HomeworkLifecycle(clock).archived(homework)) {
             throw new ConflictException("archived homework cannot be activated");
         }
         return homework;

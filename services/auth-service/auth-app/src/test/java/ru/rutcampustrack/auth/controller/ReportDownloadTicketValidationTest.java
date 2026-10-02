@@ -28,6 +28,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ReportDownloadTicketValidationTest {
 
     @Test
+    void rosterSelectorIsClosedFormatOnlyAndBindsKindAndFormat() {
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+                .enable(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        for (ReportDownloadFormat format : ReportDownloadFormat.values()) {
+            var roster = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
+                    null, null, null, null, null, null,
+                    new IssueReportDownloadTicketRequest.HeadmanGroupCompositionParameters(format));
+            org.junit.jupiter.api.Assertions.assertTrue(roster.isParametersConsistent());
+            org.junit.jupiter.api.Assertions.assertEquals(format.mediaType(), roster.expectedMediaType());
+            org.junit.jupiter.api.Assertions.assertEquals("headman-group-composition." + format.filenameExtension(),
+                    roster.suggestedFilename());
+            var another = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
+                    null, null, null, null, null, null,
+                    new IssueReportDownloadTicketRequest.HeadmanGroupCompositionParameters(
+                            format == ReportDownloadFormat.PDF ? ReportDownloadFormat.HTML : ReportDownloadFormat.PDF));
+            org.junit.jupiter.api.Assertions.assertNotEquals(roster.bindingHash(), another.bindingHash());
+        }
+        org.junit.jupiter.api.Assertions.assertThrows(com.fasterxml.jackson.databind.JsonMappingException.class,
+                () -> mapper.readValue("{\"format\":\"pdf\",\"groupId\":99}",
+                        IssueReportDownloadTicketRequest.HeadmanGroupCompositionParameters.class));
+        var conflicting = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_STATS,
+                null, null, null, null,
+                new IssueReportDownloadTicketRequest.HeadmanStatsParameters(null, null, null, null, ReportDownloadFormat.PDF),
+                null, new IssueReportDownloadTicketRequest.HeadmanGroupCompositionParameters(ReportDownloadFormat.PDF));
+        org.junit.jupiter.api.Assertions.assertFalse(conflicting.isParametersConsistent());
+    }
+
+    @Test
     void trendTicketBindsItsSelectorAndUsesActualPngWithoutChangingLegacyPngZip() {
         var selector = new IssueReportDownloadTicketRequest.HeadmanStatsTrendParameters(
                 IssueReportDownloadTicketRequest.HeadmanStatsTrendMode.WEEK,

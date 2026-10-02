@@ -1,0 +1,11 @@
+# ПК116 report ticket — S3
+
+1. Goal: существующий безопасный TMA/PWA ticket выдаёт файл состава своей группы текущему старосте.
+2. Context/evidence: root frozen packet, baseline996f590c; existing ReportDownloadTicket flow and accepted Attendance roster exporter. RULES SHA A208AA4380B64376A4EAD645AA0731C9F574077107DC9C44356F5C04D80F28FA.
+3. Relevant scope: Auth ReportDownloadKind/IssueReportDownloadTicketRequest/ReportDownloadTicketService and existing validation/service tests; Gateway ReportDownloadTicketDownloadFilter and its test; own evidence only. Foreign tracked/untracked evidence preserved.
+4. Required behavior: kind HEADMAN_GROUP_COMPOSITION, selector headmanGroupComposition:{format:ReportDownloadFormat}; no client group selector. Auth current selectable HEADMAN and positive own group checked at issue/redeem through existing canonical admission. Gateway fixed Attendance GET /attendance/reports/headman/group-composition/export?format=storedformat with verified internal token. Hash binds kind+format; server filename headman-group-composition.extension; five existing formats, PNG is ZIP.
+5. Constraints: retain current session/version/role admission, capability TTL/reuse/rates, signed bindingHash, override rejection, no-store/referrer protection. No VIEW_STATS delegation for roster. No runtime before root lease.
+6. Existing patterns: HEADMAN_STATS/HEADMAN_STATS_TREND, canonical AuthService.admit and existing Gateway redemption token verifier; Attendance validates own authoritative current group/headman again.
+7. Acceptance: own HEADMAN issue→redeem→fixed export dispatch across five formats; helper cannot issue; revoked session cannot redeem; changed selector hash cannot reach backend; no arbitrary links/group override.
+8. Verification: compile Auth/Gateway main and affected tests before targeted existing ticket service/validation/download filter tests, one invocation; independent stable source review. No Docker/PG/renderer/fullstand or repeated report generation. Component HTTP dispatch tested with existing WireMock pattern, not UI/TMA readiness.
+9. Do not: shared docs/main/frontend/config/secrets/general report audit or new framework. Owner/root integrates; no push.

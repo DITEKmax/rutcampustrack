@@ -1,6 +1,8 @@
 package ru.rutcampustrack.gateway.security;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -50,6 +52,67 @@ class ReportDownloadTicketDownloadFilterTest {
 
     private static final String TICKET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopq";
     private static final String INTERNAL_TOKEN = "signed-short-lived-internal-token";
+
+    @ParameterizedTest
+    @EnumSource(ReportDownloadFormat.class)
+    void rosterUsesOwnGroupAttendanceRouteAndBoundAttachmentForEveryFormat(ReportDownloadFormat format) {
+        WireMockServer attendance = server();
+        attendance.start();
+        try {
+            byte[] file = {7, 8, 9};
+            String target = "/attendance/reports/headman/group-composition/export?format=" + format.code();
+            attendance.stubFor(com.github.tomakehurst.wiremock.client.WireMock.get(urlEqualTo(target))
+                    .withHeader("X-Internal-Token", equalTo(INTERNAL_TOKEN))
+                    .withHeader(HttpHeaders.AUTHORIZATION, absent())
+                    .withHeader("X-Group-Id", absent())
+                    .withHeader("X-Is-Headman", absent())
+                    .willReturn(aResponse().withStatus(200)
+                            .withHeader(HttpHeaders.CONTENT_TYPE, format.mediaType()).withBody(file)));
+            var auth = mock(InternalJwtIssuerClient.class);
+            var verifier = mock(InternalJwtIssuerFilter.class);
+            var redeemed = redemption(rosterReport(format));
+            when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.of(redeemed)));
+            var filter = new ReportDownloadTicketDownloadFilter(auth, verifier,
+                    properties(attendance.baseUrl()), allowedAttemptRateLimiter(),
+                    WebClient.builder().baseUrl("http://127.0.0.1:1").build(),
+                    WebClient.builder().baseUrl(attendance.baseUrl()).build());
+            var exchange = exchange(HttpMethod.GET, "/api/report-download/" + TICKET, true, null);
+
+            assertStatus(filter, exchange, HttpStatus.OK);
+            assertArrayEquals(file, responseBytes(exchange));
+            assertEquals(format.mediaType(), exchange.getResponse().getHeaders().getContentType().toString());
+            assertTrue(exchange.getResponse().getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION)
+                    .contains("headman-group-composition." + format.filenameExtension()));
+            verify(verifier).verifyInternalReportDownloadToken(redeemed.admission(),
+                    redeemed.ticketExpiresAt(), redeemed.reportBindingHash());
+            attendance.verify(com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor(urlEqualTo(target)));
+        } finally {
+            attendance.stop();
+        }
+    }
+
+    @Test
+    void alteredRosterFormatCannotUseOriginalBindingOrReachBackend() {
+        var auth = mock(InternalJwtIssuerClient.class);
+        var verifier = mock(InternalJwtIssuerFilter.class);
+        var backend = mock(WebClient.class);
+        var original = redemption(rosterReport(ReportDownloadFormat.PDF));
+        var altered = new ReportDownloadTicketRedemptionResponse(original.admission(),
+                original.ticketExpiresAt(), original.reportBindingHash(), rosterReport(ReportDownloadFormat.HTML));
+        when(auth.redeemReportTicket(TICKET)).thenReturn(Mono.just(Optional.of(altered)));
+        var filter = new ReportDownloadTicketDownloadFilter(auth, verifier,
+                properties("http://127.0.0.1:1"), allowedAttemptRateLimiter(), backend, backend);
+
+        assertStatus(filter, exchange(HttpMethod.GET, "/api/report-download/" + TICKET, false, null),
+                HttpStatus.SERVICE_UNAVAILABLE);
+        verifyNoInteractions(verifier, backend);
+    }
+
+    private static IssueReportDownloadTicketRequest rosterReport(ReportDownloadFormat format) {
+        return new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
+                null, null, null, null, null, null,
+                new IssueReportDownloadTicketRequest.HeadmanGroupCompositionParameters(format));
+    }
 
     @Test
     void headmanStatsUsesFixedAttendanceRouteAndReturnsBoundAttachmentWithTelegramCors() {

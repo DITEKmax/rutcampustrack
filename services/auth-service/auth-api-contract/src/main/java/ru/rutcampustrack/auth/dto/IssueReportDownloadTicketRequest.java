@@ -28,7 +28,8 @@ public record IssueReportDownloadTicketRequest(
         @Valid HeadmanWeeklyCurrentParameters headmanWeeklyCurrent,
         @Valid HeadmanWeeklySelectedParameters headmanWeeklySelected,
         @Valid HeadmanStatsParameters headmanStats,
-        @Valid HeadmanStatsTrendParameters headmanStatsTrend
+        @Valid HeadmanStatsTrendParameters headmanStatsTrend,
+        @Valid HeadmanGroupCompositionParameters headmanGroupComposition
 ) {
     private static final int MAX_PARAMETER_VALUES = 20;
     private static final int MAX_PARAMETER_LENGTH = 128;
@@ -37,6 +38,9 @@ public record IssueReportDownloadTicketRequest(
     @JsonIgnore
     public boolean isParametersConsistent() {
         if (kind == null) {
+            return false;
+        }
+        if (kind != ReportDownloadKind.HEADMAN_GROUP_COMPOSITION && headmanGroupComposition != null) {
             return false;
         }
         return switch (kind) {
@@ -58,7 +62,25 @@ public record IssueReportDownloadTicketRequest(
             case HEADMAN_STATS_TREND -> headmanStatsTrend != null && teacherJournal == null
                     && teacherStats == null && headmanWeeklyCurrent == null && headmanWeeklySelected == null
                     && headmanStats == null && headmanStatsTrend.isConsistent();
+            case HEADMAN_GROUP_COMPOSITION -> headmanGroupComposition != null
+                    && headmanGroupComposition.format() != null && teacherJournal == null && teacherStats == null
+                    && headmanWeeklyCurrent == null && headmanWeeklySelected == null
+                    && headmanStats == null && headmanStatsTrend == null;
         };
+    }
+
+    /** Retains source compatibility for callers constructing existing ticket kinds. */
+    public IssueReportDownloadTicketRequest(
+            ReportDownloadKind kind,
+            TeacherJournalParameters teacherJournal,
+            TeacherStatsParameters teacherStats,
+            HeadmanWeeklyCurrentParameters headmanWeeklyCurrent,
+            HeadmanWeeklySelectedParameters headmanWeeklySelected,
+            HeadmanStatsParameters headmanStats,
+            HeadmanStatsTrendParameters headmanStatsTrend
+    ) {
+        this(kind, teacherJournal, teacherStats, headmanWeeklyCurrent, headmanWeeklySelected,
+                headmanStats, headmanStatsTrend, null);
     }
 
     /** Retains source compatibility for callers constructing existing ticket kinds. */
@@ -140,6 +162,7 @@ public record IssueReportDownloadTicketRequest(
                 appendList(canonical, headmanStatsTrend.lessonTypes());
                 append(canonical, headmanStatsTrend.format().code());
             }
+            case HEADMAN_GROUP_COMPOSITION -> append(canonical, headmanGroupComposition.format().code());
         }
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
@@ -162,6 +185,7 @@ public record IssueReportDownloadTicketRequest(
             case HEADMAN_WEEKLY_SELECTED -> "headman-weekly-selected";
             case HEADMAN_STATS -> "headman-stats";
             case HEADMAN_STATS_TREND -> "headman-stats-trend";
+            case HEADMAN_GROUP_COMPOSITION -> "headman-group-composition";
         };
         String extension = kind == ReportDownloadKind.HEADMAN_STATS_TREND
                 ? headmanStatsTrend.format().code()
@@ -184,6 +208,7 @@ public record IssueReportDownloadTicketRequest(
             case HEADMAN_WEEKLY_SELECTED -> headmanWeeklySelected.format();
             case HEADMAN_STATS -> headmanStats.format();
             case HEADMAN_STATS_TREND -> headmanStatsTrend.format();
+            case HEADMAN_GROUP_COMPOSITION -> headmanGroupComposition.format();
         };
     }
 
@@ -291,6 +316,10 @@ public record IssueReportDownloadTicketRequest(
             sorts = immutable(sorts);
             filters = immutable(filters);
         }
+    }
+
+    @Schema(description = "Current headman's own group roster export; group is selected by the server")
+    public record HeadmanGroupCompositionParameters(@NotNull ReportDownloadFormat format) {
     }
 
     @Schema(description = "Current-group headman trend chart export parameters")

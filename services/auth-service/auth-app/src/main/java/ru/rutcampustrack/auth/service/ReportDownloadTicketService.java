@@ -106,6 +106,9 @@ public final class ReportDownloadTicketService {
         if (report.kind() == ReportDownloadKind.HEADMAN_STATS_TREND) {
             requireCurrentViewStats(snapshot, selectedRole);
         }
+        if (report.kind() == ReportDownloadKind.HEADMAN_GROUP_COMPOSITION) {
+            requireCurrentHeadman(selectedRole);
+        }
 
         String sessionDigest = digest(principal.userId() + ":" + principal.sessionId());
         if (!storeCall(() -> ticketStore.allowIssue(sessionDigest,
@@ -129,6 +132,13 @@ public final class ReportDownloadTicketService {
             }
         }
         throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+    }
+
+    private static void requireCurrentHeadman(RoleGrant selectedRole) {
+        if (selectedRole == null || selectedRole.role() != AuthRole.HEADMAN || !selectedRole.isSelectable()
+                || selectedRole.groupId() == null || selectedRole.groupId() <= 0) {
+            throw new SessionAdmissionException(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+        }
     }
 
     private void requireCurrentViewStats(SessionSnapshot snapshot, RoleGrant selectedRole) {
@@ -172,6 +182,9 @@ public final class ReportDownloadTicketService {
 
         // AuthService.admit performs the same selected-identity and version checks used by live auth routes.
         SessionSnapshot snapshot = authService.admit(stored.principal());
+        if (stored.report().kind() == ReportDownloadKind.HEADMAN_GROUP_COMPOSITION) {
+            requireCurrentHeadman(snapshot.activeRole());
+        }
         Instant freshNow = clock.instant();
         if (!freshNow.isBefore(stored.expiresAt())) {
             return Optional.empty();

@@ -141,6 +141,61 @@ class ReportDownloadTicketServiceTest {
     }
 
     @Test
+    void rosterTicketsBindOwnHeadmanSessionAcrossFormatsAndRefuseRevokedRedemption() {
+        for (ReportDownloadFormat format : ReportDownloadFormat.values()) {
+            MemoryStore store = new MemoryStore();
+            AuthService auth = mock(AuthService.class);
+            JwtService jwt = mock(JwtService.class);
+            var role = new RoleGrant(7L, USER_ID, AuthRole.HEADMAN, RoleStatus.ACTIVE, 31L,
+                    NOW.minusSeconds(10), NOW.minusSeconds(2));
+            var snapshot = new SessionSnapshot(SESSION_ID, USER_ID, 2L, 3L, role, List.of(role),
+                    NOW.plusSeconds(900), NOW.minusSeconds(10), NOW.minusSeconds(1), null, null,
+                    AuthMethod.PASSWORD, null, null);
+            var principal = new SessionPrincipal(USER_ID, SESSION_ID, 2L, 3L,
+                    AuthRole.HEADMAN, RoleStatus.ACTIVE, 31L, true, false);
+            var report = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
+                    null, null, null, null, null, null,
+                    new IssueReportDownloadTicketRequest.HeadmanGroupCompositionParameters(format));
+            when(auth.admit(principal)).thenReturn(snapshot, snapshot)
+                    .thenThrow(new AuthSessionException(AuthSessionException.Code.SESSION_STATE_STALE));
+            when(jwt.generateInternalReportDownloadToken(eq(snapshot), any(), any(), anyString(), any()))
+                    .thenReturn("fresh-roster-authority");
+            var service = service(store, auth, jwt, new InternalIssuerProperties(), new MutableClock(NOW));
+
+            var issued = service.issue(principal, report);
+            var ticket = issued.downloadPath().substring("/api/report-download/".length());
+            var redeemed = service.redeem(ticket).orElseThrow();
+            assertEquals(report, redeemed.report());
+            assertEquals(report.bindingHash(), redeemed.reportBindingHash());
+            assertEquals("31", redeemed.admission().groupId());
+            assertEquals("HEADMAN", redeemed.admission().role());
+            assertEquals("headman-group-composition." + format.filenameExtension(), issued.suggestedFilename());
+            assertThrows(AuthSessionException.class, () -> service.redeem(ticket));
+            assertEquals(1, store.redemptions);
+            verify(jwt).generateInternalReportDownloadToken(eq(snapshot), eq(NOW), any(),
+                    eq(report.bindingHash()), eq(NOW.plusSeconds(60)));
+        }
+    }
+
+    @Test
+    void viewStatsAssistantCannotIssueRosterTicketOrConsumeIssueBudget() {
+        var store = mock(ReportDownloadTicketStore.class);
+        var auth = mock(AuthService.class);
+        var jwt = mock(JwtService.class);
+        var academic = mock(AcademicAssistantPermissionClient.class);
+        when(auth.admit(assistantPrincipal())).thenReturn(assistantSnapshot(NOW));
+        var service = service(store, auth, jwt, new InternalIssuerProperties(), new MutableClock(NOW), academic);
+        var report = new IssueReportDownloadTicketRequest(ReportDownloadKind.HEADMAN_GROUP_COMPOSITION,
+                null, null, null, null, null, null,
+                new IssueReportDownloadTicketRequest.HeadmanGroupCompositionParameters(ReportDownloadFormat.PDF));
+
+        var denied = assertThrows(SessionAdmissionException.class,
+                () -> service.issue(assistantPrincipal(), report));
+        assertEquals(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED, denied.code());
+        verifyNoInteractions(store, jwt, academic);
+    }
+
+    @Test
     void malformedSelectorHasExplicitBadRequestFailureInsteadOfGenericIllegalArgumentException() {
         AuthService auth = mock(AuthService.class);
         IssueReportDownloadTicketRequest malformed = new IssueReportDownloadTicketRequest(

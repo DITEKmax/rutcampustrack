@@ -311,6 +311,12 @@ public final class ReportDownloadTicketDownloadFilter implements GlobalFilter, O
                         "/attendance/reports/headman/stats/trend/export", query, body,
                         expectedMediaType, filename);
             }
+            case HEADMAN_GROUP_COMPOSITION -> {
+                query.put("format", values(report.headmanGroupComposition().format().code()));
+                yield new Dispatch(Backend.ATTENDANCE, HttpMethod.GET,
+                        "/attendance/reports/headman/group-composition/export", query, null,
+                        expectedMediaType, filename);
+            }
         };
     }
 

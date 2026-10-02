@@ -1,11 +1,15 @@
 package ru.rutcampustrack.academic.homework;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
@@ -37,6 +41,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -45,9 +50,20 @@ import static org.mockito.Mockito.*;
 /** One owned PostgreSQL boundary: committed edit/history/outbox and durable RPC recovery. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@Import(InternalJwtTestConfig.class)
+@Import({InternalJwtTestConfig.class, HomeworkEditLifecycleIT.ClockConfiguration.class})
 @Testcontainers
 class HomeworkEditLifecycleIT {
+    private static final AtomicInteger FIXTURE_YEAR = new AtomicInteger(2200);
+    @TestConfiguration static class ClockConfiguration {
+        @Bean @Primary MutableClock homeworkBoundaryClock() { return new MutableClock(); }
+    }
+    static class MutableClock extends Clock {
+        private volatile Instant current = Instant.now();
+        void set(Instant instant) { current = instant; }
+        @Override public ZoneId getZone() { return ZoneId.of("Europe/Moscow"); }
+        @Override public Clock withZone(ZoneId zone) { return Clock.fixed(current, zone); }
+        @Override public Instant instant() { return current; }
+    }
     @Container static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16")
             .withDatabaseName("homework_lifecycle").withUsername("rct_user").withPassword("rct_dev_pass");
     @DynamicPropertySource static void properties(DynamicPropertyRegistry registry) {
@@ -73,13 +89,16 @@ class HomeworkEditLifecycleIT {
     @Autowired SemesterArchiveCommandTransaction archiveCommands;
     @Autowired HomeworkAssembler assembler;
     @Autowired jakarta.validation.Validator validator;
+    @Autowired MutableClock boundaryClock;
     long actor, publisher, group, subject, semester, binding;
     LocalDate day;
     UUID createKey;
     byte[] createHash = new byte[32];
 
     @BeforeEach void fixture() {
-        day = LocalDate.now(ZoneId.of("Europe/Moscow")).plusDays(3);
+        boundaryClock.set(LocalDate.of(FIXTURE_YEAR.incrementAndGet(),5,10).atTime(12,0)
+                .atZone(ZoneId.of("Europe/Moscow")).toInstant());
+        day = LocalDate.now(boundaryClock).plusDays(3);
         actor = jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
         publisher = jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
         group = jdbc.queryForObject("SELECT group_id FROM user_role_grants WHERE user_id = ? AND role = 'student'", Long.class, actor);
@@ -97,6 +116,11 @@ class HomeworkEditLifecycleIT {
         when(context.getUserId()).thenReturn(actor);
         when(context.getGroupId()).thenReturn(group);
         when(context.getRole()).thenReturn(UserRole.STUDENT);
+    }
+
+    @AfterEach void restoreSharedAuthorityAndClock() {
+        if (actor > 0) jdbc.update("UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role = 'headman'", actor);
+        boundaryClock.set(Instant.now());
     }
 
     @Test void nonAuthorEditsKeepCompletionReplayHistoryAndDurableUpdatedOutbox() {
@@ -156,7 +180,7 @@ class HomeworkEditLifecycleIT {
         assertThat(replay.getId()).isEqualTo(id);
         assertThat(replay.getTitle()).isEqualTo("new");
 
-        LocalDate yesterday = LocalDate.now(ZoneId.of("Europe/Moscow")).minusDays(1);
+        LocalDate yesterday = LocalDate.now(boundaryClock).minusDays(1);
         UUID movedKey = UUID.randomUUID(), expiredKey = UUID.randomUUID();
         Homework moved = new TransactionTemplate(transactions).execute(status -> {
             Homework homework = new Homework(group, subject, semester, "moved", null, null, actor,
@@ -193,7 +217,7 @@ class HomeworkEditLifecycleIT {
         assertThat(new HomeworkLifecycle(Clock.fixed(Instant.parse("2026-10-02T21:00:00Z"), ZoneId.of("UTC"))).archived(cutoff)).isTrue();
         Homework expired = new TransactionTemplate(transactions).execute(status -> {
             Homework homework = new Homework(group, subject, semester, "expired", null, null, publisher,
-                    LocalDate.now(ZoneId.of("Europe/Moscow")).minusDays(1), null, binding + 2, publisher, UUID.randomUUID(), createHash, HomeworkBindingMode.DATE);
+                    LocalDate.now(boundaryClock).minusDays(1), null, binding + 2, publisher, UUID.randomUUID(), createHash, HomeworkBindingMode.DATE);
             homework.activatePublication(); return repository.saveAndFlush(homework);
         });
         completion(expired);

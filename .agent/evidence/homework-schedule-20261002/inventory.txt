@@ -1,0 +1,12 @@
+services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptor.java
+services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingActorInterceptor.java
+services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java
+services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveBarrierTransaction.java
+services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterDeletionSnapshotReader.java
+services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkBindingService.java
+services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java
+services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java
+services/schedule-service/schedule-app/src/main/resources/db/migration/V24__homework_edit_placement.sql
+services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java
+services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java
+services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkDateDeadlineJob.java

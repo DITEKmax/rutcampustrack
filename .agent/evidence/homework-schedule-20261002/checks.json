@@ -1,0 +1,151 @@
+{
+  "revision": "2e805649",
+  "baseline": "7ee3db1f",
+  "risk": "S3",
+  "scope": "services/schedule-service",
+  "checks": [
+    {
+      "command": "git diff --check -- services/schedule-service",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "Get-FileHash proto/schedule.proto",
+      "exit_code": 0,
+      "result": "UNCHANGED",
+      "sha256": "1945B5F8AEDDDB20CC2771E12C3B7678245474C7CFAF6E98D657ADA6D3B10A3C"
+    },
+    {
+      "command": "scoped git add + git commit",
+      "exit_code": 0,
+      "result": "SOURCE_FROZEN",
+      "note": "initial sandbox index write exit1; scoped auto-review approved escalation"
+    },
+    {
+      "command": "./gradlew.bat :services:schedule-service:schedule-app:compileJava :services:schedule-service:schedule-app:compileTestJava :services:schedule-service:schedule-app:test --tests ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest :services:schedule-service:schedule-app:integrationTest --tests ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT --continue --max-workers=1 --no-daemon --no-parallel --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true",
+      "exit_code": 1,
+      "result": "FAIL",
+      "session_id": 2972,
+      "log": "gradle-r1.log",
+      "environment": {
+        "JDK": "C:/Users/maksd/.jdks/ms-21.0.10",
+        "TESTCONTAINERS_REUSE_ENABLE": "false"
+      },
+      "revision": "736d1675"
+    },
+    {
+      "command": "git diff --check -- services/schedule-service",
+      "exit_code": 0,
+      "result": "PASS",
+      "revision": "2e805649"
+    },
+    {
+      "command": "Schedule compileJava/compileTestJava + integrationTest --tests HomeworkBindingServiceIT.dateBindingDeletionIncludesInventoryAndRetainsImmutablePublicationIdentity --tests HomeworkBindingServiceIT.archiveCancellationCommitsBindingLedgerAndOutbox_andReplayReturnsOriginalEvent --tests HomeworkBindingServiceIT.batchReadAndMoveWithReversedOriginIdsCompleteUnderConcurrentLocks (same one-worker/JDK21 flags, full exact command in SUMMARY)",
+      "exit_code": 0,
+      "result": "PASS3",
+      "revision": "2e805649",
+      "log": "gradle-r2.log",
+      "session_id": 15995
+    },
+    {
+      "command": "git diff --check -- services/schedule-service; scoped git status; proto hash",
+      "exit_code": 0,
+      "result": "PASS_CLEAN_UNCHANGED_PROTO",
+      "revision": "2e805649"
+    }
+  ],
+  "runtime_evidence": {
+    "status": "PASS_COMPONENT",
+    "session_id": 2972,
+    "terminal_exit_code": 1,
+    "terminal_chunk": "52d982",
+    "initial_exec": "r1/exec-start.json",
+    "log": "gradle-r1.log",
+    "cleanup": {
+      "command": "docker ps --format '{{.ID}} {{.Names}} {{.Image}} {{.Labels}}'",
+      "exit_code": 0,
+      "remaining_containers": []
+    },
+    "results": [
+      {
+        "class": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "xml": "r1\\TEST-ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest.xml",
+        "failed_methods": []
+      },
+      {
+        "class": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+        "tests": 12,
+        "failures": 3,
+        "errors": 0,
+        "xml": "r1\\TEST-ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT.xml",
+        "failed_methods": [
+          "dateBindingDeletionIncludesInventoryAndRetainsImmutablePublicationIdentity()",
+          "archiveCancellationCommitsBindingLedgerAndOutbox_andReplayReturnsOriginalEvent()",
+          "batchReadAndMoveWithReversedOriginIdsCompleteUnderConcurrentLocks()"
+        ]
+      }
+    ],
+    "r1": {
+      "status": "R1_FAILED_CORRECTED_RECHECK_PENDING",
+      "session_id": 2972,
+      "terminal_exit_code": 1,
+      "terminal_chunk": "52d982",
+      "initial_exec": "r1/exec-start.json",
+      "log": "gradle-r1.log",
+      "cleanup": {
+        "command": "docker ps --format '{{.ID}} {{.Names}} {{.Image}} {{.Labels}}'",
+        "exit_code": 0,
+        "remaining_containers": []
+      },
+      "results": [
+        {
+          "class": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "xml": "r1\\TEST-ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest.xml",
+          "failed_methods": []
+        },
+        {
+          "class": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+          "tests": 12,
+          "failures": 3,
+          "errors": 0,
+          "xml": "r1\\TEST-ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT.xml",
+          "failed_methods": [
+            "dateBindingDeletionIncludesInventoryAndRetainsImmutablePublicationIdentity()",
+            "archiveCancellationCommitsBindingLedgerAndOutbox_andReplayReturnsOriginalEvent()",
+            "batchReadAndMoveWithReversedOriginIdsCompleteUnderConcurrentLocks()"
+          ]
+        }
+      ]
+    },
+    "final_session_id": 15995,
+    "final_exit_code": 0,
+    "final_terminal_chunk": "fb63de",
+    "final_initial_exec": "r2/exec-start.json",
+    "final_log": "gradle-r2.log",
+    "r2": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "methods": [
+        "dateBindingDeletionIncludesInventoryAndRetainsImmutablePublicationIdentity()",
+        "archiveCancellationCommitsBindingLedgerAndOutbox_andReplayReturnsOriginalEvent()",
+        "batchReadAndMoveWithReversedOriginIdsCompleteUnderConcurrentLocks()"
+      ],
+      "duration": "1m2s"
+    }
+  },
+  "foreign_work": "preserved",
+  "review": {
+    "initial": "FAIL5e6482a5:terminalLesson/starvation/batchlock",
+    "correction": "9f75add0",
+    "fixture": "736d1675",
+    "affected_recheck": "PASS per root, 2026-10-02",
+    "final_affected_recheck": "PASS2e805649 per root"
+  }
+}

@@ -1,0 +1,1266 @@
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptor.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptor.java
+index b287dce3..7ada9515 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptor.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptor.java
+@@ -42,14 +42,19 @@ public final class AssignmentCloseServiceIdentityInterceptor implements ServerIn
+                 .orElseGet(List::of);
+         this.delegate = new ServiceIdentityServerInterceptor(
+                 ServicePrincipal.SCHEDULE_SERVICE,
+-                Map.of(
+-                        PROTECTED_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+-                        COMMIT_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+-                        RESERVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+-                        CONFIRM_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+-                        ARCHIVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+-                        GET_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE,
+-                        SEMESTER_ARCHIVE_BARRIER_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
++                Map.ofEntries(
++                        Map.entry(PROTECTED_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
++                        Map.entry(COMMIT_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
++                        Map.entry(RESERVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
++                        Map.entry(CONFIRM_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
++                        Map.entry(ARCHIVE_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
++                        Map.entry(GET_HOMEWORK_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
++                        Map.entry(SEMESTER_ARCHIVE_BARRIER_METHOD, ServicePrincipal.ACADEMIC_SERVICE),
++                        Map.entry(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/GetHomeworkBinding", ServicePrincipal.ACADEMIC_SERVICE),
++                        Map.entry(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/MoveHomeworkBinding", ServicePrincipal.ACADEMIC_SERVICE),
++                        Map.entry(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/ContinueHomeworkEdit", ServicePrincipal.ACADEMIC_SERVICE),
++                        Map.entry(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/AbortUnacceptedHomeworkEdit", ServicePrincipal.ACADEMIC_SERVICE),
++                        Map.entry(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/AcknowledgeHomeworkEdit", ServicePrincipal.ACADEMIC_SERVICE)),
+                 credentials);
+     }
+ 
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingActorInterceptor.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingActorInterceptor.java
+index f6f30297..e82d01de 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingActorInterceptor.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingActorInterceptor.java
+@@ -48,7 +48,9 @@ public class HomeworkBindingActorInterceptor implements ServerInterceptor {
+         if (!RESERVE_METHOD_NAME.equals(method)
+                 && !CONFIRM_METHOD_NAME.equals(method)
+                 && !ARCHIVE_METHOD_NAME.equals(method)
+-                && !GET_METHOD_NAME.equals(method)) {
++                && !GET_METHOD_NAME.equals(method)
++                && !(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/GetHomeworkBinding").equals(method)
++                && !(ScheduleGrpcServiceGrpc.SERVICE_NAME + "/MoveHomeworkBinding").equals(method)) {
+             return next.startCall(call, headers);
+         }
+ 
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java
+index 17da7d65..780a8f0e 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java
+@@ -33,6 +33,9 @@ import java.util.stream.Collectors;
+ @GrpcService
+ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrpcServiceImplBase {
+ 
++    @Autowired
++    private ru.rutcampustrack.schedule.homework.HomeworkPlacementService homeworkPlacementService;
++
+     private final LessonRepository lessonRepository;
+     private final ScheduleItemRepository scheduleItemRepository;
+     private final OneOffLessonRepository oneOffLessonRepository;
+@@ -314,6 +317,31 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
+         responseObserver.onCompleted();
+     }
+ 
++    @Override
++    public void getHomeworkBinding(HomeworkBindingLookupRequest request, StreamObserver<HomeworkBindingResponse> observer) {
++        observer.onNext(homeworkPlacementService.get(request.getBindingId())); observer.onCompleted();
++    }
++
++    @Override
++    public void moveHomeworkBinding(MoveHomeworkBindingRequest request, StreamObserver<HomeworkEditReceipt> observer) {
++        observer.onNext(homeworkPlacementService.move(request)); observer.onCompleted();
++    }
++
++    @Override
++    public void continueHomeworkEdit(HomeworkEditIdentity request, StreamObserver<HomeworkEditReceipt> observer) {
++        observer.onNext(homeworkPlacementService.continuation(request)); observer.onCompleted();
++    }
++
++    @Override
++    public void abortUnacceptedHomeworkEdit(HomeworkEditIdentity request, StreamObserver<HomeworkEditReceipt> observer) {
++        observer.onNext(homeworkPlacementService.abortUnaccepted(request)); observer.onCompleted();
++    }
++
++    @Override
++    public void acknowledgeHomeworkEdit(HomeworkEditIdentity request, StreamObserver<HomeworkEditReceipt> observer) {
++        observer.onNext(homeworkPlacementService.acknowledge(request)); observer.onCompleted();
++    }
++
+     private HomeworkBindingService requireHomeworkBindingService() {
+         if (homeworkBindingService == null) {
+             throw new IllegalStateException("homework binding store is not configured");
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveBarrierTransaction.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveBarrierTransaction.java
+index a088b92d..88234617 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveBarrierTransaction.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveBarrierTransaction.java
+@@ -46,6 +46,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
+         SemesterArchiveBarrierCommand command = request.getCommand();
+         if (command == SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE) {
+             prepareArchive(operationId, semesterId, stateVersion, current);
++            capturePlacementAdmissions(operationId, semesterId, stateVersion);
+             BlockingStatus blocking = blockingStatus(semesterId);
+             String reason = blocking.reason();
+             String state = reason == null ? "READY" : "PENDING";
+@@ -68,6 +69,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
+             String expectedDigest = requiredDigest(request.getExpectedParticipantDigest());
+             ScheduleSemesterDeletionSnapshotReader.Snapshot snapshot = deletionSnapshots.read(semesterId);
+             prepareDelete(operationId, semesterId, stateVersion, expectedDigest, snapshot, current);
++            capturePlacementAdmissions(operationId, semesterId, stateVersion);
+             BlockingStatus blocking = blockingStatus(semesterId);
+             SetSemesterArchiveBarrierResponse prepared = deletionResponse(operationId, semesterId, stateVersion,
+                     blocking.reason() == null ? "READY" : "PENDING", blocking.reason(), snapshot);
+@@ -215,8 +217,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
+         jdbc.update("""
+                 UPDATE lesson_homework_bindings binding
+                    SET state = 'ARCHIVED', homework_id = NULL, revision = binding.revision + 1, updated_at = now()
+-                  FROM lesson_occurrences occurrence
+-                 WHERE occurrence.id = binding.occurrence_id AND occurrence.semester_id = ?
++                 WHERE binding.semester_id = ?
+                    AND (binding.state <> 'ARCHIVED' OR binding.homework_id IS NOT NULL)
+                 """, semesterId);
+         jdbc.update("""
+@@ -293,16 +294,34 @@ public class ScheduleSemesterArchiveBarrierTransaction {
+                     "Ожидается подтверждение принятой публикации домашнего задания в расписании",
+                     pendingBinding);
+         }
++        if (Boolean.TRUE.equals(jdbc.queryForObject("""
++                SELECT EXISTS (SELECT 1 FROM lesson_homework_bindings
++                    WHERE semester_id = ? AND pending_edit_operation_id IS NOT NULL)
++                """, Boolean.class, semesterId))) {
++            return new BlockingStatus("Ожидается подтверждение принятого изменения домашнего задания", null);
++        }
+         return new BlockingStatus(effectLedger.firstUnprovenEffectReason(semesterId), null);
+     }
+ 
++    private void capturePlacementAdmissions(UUID operationId, long semesterId, long version) {
++        jdbc.update("""
++                INSERT INTO homework_placement_archive_admissions
++                    (archive_operation_id, state_version, semester_id, edit_operation_id, command_hash)
++                SELECT ?, ?, ?, edit.operation_id, edit.command_hash
++                  FROM homework_placement_operations edit
++                  JOIN lesson_homework_bindings binding
++                    ON binding.binding_id = edit.binding_id AND binding.pending_edit_operation_id = edit.operation_id
++                 WHERE binding.semester_id = ? AND edit.state = 'APPLIED_AWAITING_ACK'
++                ON CONFLICT (archive_operation_id, edit_operation_id) DO NOTHING
++                """, operationId, version, semesterId, semesterId);
++    }
++
+     private PendingBinding firstPendingBinding(long semesterId) {
+         return jdbc.query("""
+                 SELECT binding.binding_id, binding.occurrence_id, binding.actor_id,
+                        binding.request_key, binding.payload_hash, binding.revision
+                   FROM lesson_homework_bindings binding
+-                  JOIN lesson_occurrences occurrence ON occurrence.id = binding.occurrence_id
+-                 WHERE occurrence.semester_id = ? AND binding.state = 'PENDING'
++                 WHERE binding.semester_id = ? AND binding.state = 'PENDING'
+                  ORDER BY binding.binding_id
+                  LIMIT 1
+                 """, resultSet -> resultSet.next() ? new PendingBinding(
+@@ -334,7 +353,7 @@ public class ScheduleSemesterArchiveBarrierTransaction {
+             throw new IllegalArgumentException("Schedule archive binding reconciliation identity is invalid");
+         }
+         if (requestedResolution == SemesterArchiveHomeworkBindingResolution.SEMESTER_ARCHIVE_HOMEWORK_BINDING_CANCEL_UNPUBLISHED
+-                && (!pending || identity.getOccurrenceId() <= 0 || identity.getRevision() <= 0)) {
++                && (!pending || identity.getRevision() <= 0)) {
+             throw new ConflictException("Schedule cancellation requires the exact pending reservation epoch");
+         }
+         UUID requestKey = uuid(identity.getRequestKey());
+@@ -394,17 +413,17 @@ public class ScheduleSemesterArchiveBarrierTransaction {
+                     int updated = jdbc.update("""
+                             UPDATE lesson_homework_bindings
+                                SET state = 'ARCHIVED', revision = revision + 1, updated_at = NOW()
+-                             WHERE binding_id = ? AND occurrence_id = ? AND actor_id = ?
++                             WHERE binding_id = ? AND occurrence_id IS NOT DISTINCT FROM ? AND actor_id = ?
+                                AND request_key = ? AND payload_hash = ? AND revision = ?
+                                AND state = 'PENDING' AND homework_id IS NULL
+-                            """, binding.bindingId(), binding.occurrenceId(), binding.actorId(),
++                            """, binding.bindingId(), binding.occurrenceId() == 0 ? null : binding.occurrenceId(), binding.actorId(),
+                             requestKey, binding.payloadHash(), binding.revision());
+                     if (updated != 1) {
+                         throw new ConflictException("Schedule reservation changed before terminal cancellation");
+                     }
+                     HomeworkBindingArchivedEvent event = new HomeworkBindingArchivedEvent(this,
+-                            binding.bindingId(), binding.actorId(), requestKey, binding.occurrenceId(),
+-                            binding.currentLessonId(), null, binding.revision() + 1, semesterId);
++                            binding.bindingId(), binding.actorId(), requestKey, binding.occurrenceId() == 0 ? null : binding.occurrenceId(),
++                            binding.currentLessonId() == 0 ? null : binding.currentLessonId(), null, binding.revision() + 1, semesterId);
+                     eventPublisher.publishEvent(event);
+                     terminalEventId = event.getEventId().toString();
+                 } else {
+@@ -420,11 +439,10 @@ public class ScheduleSemesterArchiveBarrierTransaction {
+ 
+     private BindingSnapshot readBinding(long bindingId) {
+         return jdbc.query("""
+-                SELECT binding.binding_id, binding.occurrence_id, occurrence.semester_id,
++                SELECT binding.binding_id, binding.occurrence_id, binding.semester_id,
+                        binding.current_lesson_id, binding.homework_id, binding.actor_id,
+                        binding.request_key, binding.payload_hash, binding.state, binding.revision
+                   FROM lesson_homework_bindings binding
+-                  JOIN lesson_occurrences occurrence ON occurrence.id = binding.occurrence_id
+                  WHERE binding.binding_id = ? FOR UPDATE OF binding
+                 """, resultSet -> resultSet.next() ? new BindingSnapshot(
+                 resultSet.getLong("binding_id"), resultSet.getLong("occurrence_id"),
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterDeletionSnapshotReader.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterDeletionSnapshotReader.java
+index 1d18e27c..53abd5a1 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterDeletionSnapshotReader.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterDeletionSnapshotReader.java
+@@ -16,22 +16,31 @@ public class ScheduleSemesterDeletionSnapshotReader {
+     public Snapshot read(long semesterId) {
+         return jdbc.query("""
+                 WITH domain_rows AS (
+-                    SELECT 'schedule_item' AS kind, item.id AS row_id, to_jsonb(item)::TEXT AS value
++                    SELECT 'schedule_item' AS kind, item.id::TEXT AS row_id, to_jsonb(item)::TEXT AS value
+                       FROM schedule_items item WHERE item.semester_id = ?
+                     UNION ALL
+-                    SELECT 'one_off_lesson', item.id, to_jsonb(item)::TEXT
++                    SELECT 'one_off_lesson', item.id::TEXT, to_jsonb(item)::TEXT
+                       FROM schedule_one_off_lessons item WHERE item.semester_id = ?
+                     UNION ALL
+-                    SELECT 'occurrence', occurrence.id, to_jsonb(occurrence)::TEXT
++                    SELECT 'occurrence', occurrence.id::TEXT, to_jsonb(occurrence)::TEXT
+                       FROM lesson_occurrences occurrence WHERE occurrence.semester_id = ?
+                     UNION ALL
+-                    SELECT 'lesson', lesson.id, to_jsonb(lesson)::TEXT
++                    SELECT 'lesson', lesson.id::TEXT, to_jsonb(lesson)::TEXT
+                       FROM lessons lesson WHERE lesson.semester_id = ?
+                     UNION ALL
+-                    SELECT 'lesson_lifecycle', entry.id, to_jsonb(entry)::TEXT
++                    SELECT 'lesson_lifecycle', entry.id::TEXT, to_jsonb(entry)::TEXT
+                       FROM lesson_lifecycle_entries entry
+                       JOIN lesson_occurrences occurrence ON occurrence.id = entry.occurrence_id
+                      WHERE occurrence.semester_id = ?
++                    UNION ALL
++                    SELECT 'homework_binding', binding.binding_id::TEXT,
++                           (to_jsonb(binding) - 'pending_edit_operation_id')::TEXT
++                      FROM lesson_homework_bindings binding WHERE binding.semester_id = ?
++                    UNION ALL
++                    SELECT 'homework_edit', edit.operation_id::TEXT,
++                           (to_jsonb(edit) - 'state' - 'acknowledged_at')::TEXT
++                      FROM homework_placement_operations edit
++                     WHERE edit.semester_id = ? AND edit.state <> 'NOT_ACCEPTED'
+                 )
+                 SELECT count(*) FILTER (WHERE kind = 'schedule_item') AS schedule_templates,
+                        count(*) FILTER (WHERE kind = 'one_off_lesson') AS one_off_lessons,
+@@ -48,7 +57,7 @@ public class ScheduleSemesterDeletionSnapshotReader {
+             return new Snapshot(rs.getLong("schedule_templates"), rs.getLong("one_off_lessons"),
+                     rs.getLong("lessons"), rs.getString("participant_digest"),
+                     rs.getLong("observed_fence_version"));
+-        }, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId);
++        }, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId);
+     }
+ 
+     public record Snapshot(long scheduleTemplates, long oneOffLessons, long lessons,
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkBindingService.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkBindingService.java
+index a1fb2d96..65cd061a 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkBindingService.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkBindingService.java
+@@ -50,16 +50,32 @@ public class HomeworkBindingService {
+             """;
+ 
+     private final JdbcTemplate jdbcTemplate;
++    private final HomeworkPlacementService placement;
+     private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
+ 
++    public HomeworkBindingService(JdbcTemplate jdbcTemplate, ScheduleSemesterArchiveWriteFence archiveWriteFence) {
++        this(jdbcTemplate, archiveWriteFence, null);
++    }
++
++    @org.springframework.beans.factory.annotation.Autowired
+     public HomeworkBindingService(JdbcTemplate jdbcTemplate,
+-                                  ScheduleSemesterArchiveWriteFence archiveWriteFence) {
++                                  ScheduleSemesterArchiveWriteFence archiveWriteFence,
++                                  HomeworkPlacementService placement) {
++        this.placement = placement;
+         this.jdbcTemplate = jdbcTemplate;
+         this.archiveWriteFence = archiveWriteFence;
+     }
+ 
+     @Transactional
+     public HomeworkBindingResponse reserve(ReserveHomeworkBindingRequest request) {
++        if (placement != null) {
++            HomeworkBindingResponse replay = placement.replayReservation(request);
++            if (replay != null) return replay;
++            if ("DATE".equals(request.getBindingMode())) return placement.reserveDate(request);
++        }
++        if (!request.getBindingMode().isEmpty() && !"LESSON".equals(request.getBindingMode())) {
++            throw new IllegalArgumentException("invalid binding mode");
++        }
+         InternalJwtClaims claims = HomeworkBindingActorContext.requireClaims();
+         long actorId = claims.userId();
+         long occurrenceId = positive(request.getOccurrenceId(), "occurrence_id");
+@@ -144,6 +160,7 @@ public class HomeworkBindingService {
+ 
+     @Transactional
+     public HomeworkBindingResponse confirm(ConfirmHomeworkBindingRequest request) {
++        if (placement != null && placement.isDate(request.getBindingId())) return placement.confirmDate(request);
+         InternalJwtClaims claims = HomeworkBindingActorContext.requireClaims();
+         long actorId = claims.userId();
+         long bindingId = positive(request.getBindingId(), "binding_id");
+@@ -210,6 +227,7 @@ public class HomeworkBindingService {
+      */
+     @Transactional
+     public HomeworkBindingResponse archive(ArchiveHomeworkBindingRequest request) {
++        if (placement != null && placement.isDate(request.getBindingId())) return placement.archiveDate(request);
+         InternalJwtClaims claims = HomeworkBindingActorContext.requireClaims();
+         long actorId = claims.userId();
+         long bindingId = positive(request.getBindingId(), "binding_id");
+@@ -280,7 +298,8 @@ public class HomeworkBindingService {
+             return List.of();
+         }
+ 
+-        // Lock all occurrence/current rows first, in deterministic order.
++        // Batch readers share Move's all-origins -> all-physical -> bindings graph.
++        lockBatchOrigins(occurrenceIds);
+         List<OccurrenceSnapshot> snapshots = new ArrayList<>();
+         for (Long occurrenceId : occurrenceIds) {
+             snapshots.add(lockCurrentOccurrence(occurrenceId));
+@@ -371,6 +390,23 @@ public class HomeworkBindingService {
+         return toLessonResponse(rows.get(0));
+     }
+ 
++    private void lockBatchOrigins(List<Long> occurrenceIds) {
++        List<OriginRef> origins = new ArrayList<>();
++        for (Long id : occurrenceIds) {
++            origins.add(queryOne("SELECT schedule_item_id, one_off_lesson_id FROM lesson_occurrences WHERE id = ?",
++                    HomeworkBindingService::mapOrigin, id,
++                    () -> new ResourceNotFoundException("LessonOccurrence", "id", id)));
++        }
++        for (Long id : origins.stream().map(OriginRef::scheduleItemId).filter(Objects::nonNull).distinct().sorted().toList()) {
++            queryOne("SELECT id FROM schedule_items WHERE id = ? FOR UPDATE", (rs, rowNum) -> rs.getLong(1), id,
++                    () -> new ResourceNotFoundException("ScheduleItem", "id", id));
++        }
++        for (Long id : origins.stream().map(OriginRef::oneOffLessonId).filter(Objects::nonNull).distinct().sorted().toList()) {
++            queryOne("SELECT id FROM schedule_one_off_lessons WHERE id = ? FOR UPDATE", (rs, rowNum) -> rs.getLong(1), id,
++                    () -> new ResourceNotFoundException("OneOffLesson", "id", id));
++        }
++    }
++
+     private OccurrenceSnapshot lockCurrentOccurrence(long occurrenceId) {
+         OriginRef origin = queryOne("""
+                 SELECT schedule_item_id, one_off_lesson_id
+@@ -462,6 +498,7 @@ public class HomeworkBindingService {
+             default -> throw new IllegalStateException("unknown homework binding state: " + binding.state());
+         };
+         HomeworkBindingResponse.Builder response = HomeworkBindingResponse.newBuilder()
++                .setBindingMode("LESSON")
+                 .setBindingId(binding.bindingId())
+                 .setOccurrenceId(binding.occurrenceId())
+                 .setCurrentLesson(toLessonInfo(current))
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkDateDeadlineJob.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkDateDeadlineJob.java
+new file mode 100644
+index 00000000..6e138194
+--- /dev/null
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkDateDeadlineJob.java
+@@ -0,0 +1,18 @@
++package ru.rutcampustrack.schedule.homework;
++
++import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
++import org.springframework.context.annotation.Profile;
++import org.springframework.scheduling.annotation.Scheduled;
++import org.springframework.stereotype.Component;
++
++/** Terminal DATE cutoff is the start of the following Moscow day. */
++@Component
++@Profile("!test")
++public class HomeworkDateDeadlineJob {
++    private final HomeworkPlacementService placement;
++    public HomeworkDateDeadlineJob(HomeworkPlacementService placement) { this.placement = placement; }
++
++    @Scheduled(fixedDelay = 30_000)
++    @SchedulerLock(name = "homework-date-deadline", lockAtMostFor = "PT2M", lockAtLeastFor = "PT5S")
++    public void archiveDueDates() { placement.archiveExpiredDates(); }
++}
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java
+index a607ca7e..3b6cc333 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java
+@@ -15,6 +15,8 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
+ 
+ import java.time.Clock;
+ import java.time.LocalDate;
++import java.time.LocalDateTime;
++import java.time.LocalTime;
+ import java.time.ZoneId;
+ import java.util.*;
+ 
+@@ -40,25 +42,16 @@ public class HomeworkPlacementService {
+         requireWrite(claims, request.getGroupId());
+         UUID key = UUID.fromString(request.getRequestKey());
+         LocalDate date = LocalDate.parse(request.getDate());
+-        if (date.isBefore(today()) || request.getPayloadHash().size() != 32 || request.getOccurrenceId() != 0) {
+-            throw new IllegalArgumentException("DATE requires a non-past date and no lesson occurrence");
++        HomeworkBindingResponse replay = replayReservation(request);
++        if (replay != null) return replay;
++        if (request.getGroupId() <= 0 || request.getSubjectId() <= 0 || request.getSemesterId() <= 0
++                || date.isBefore(today()) || request.getPayloadHash().size() != 32 || request.getOccurrenceId() != 0) {
++            throw new IllegalArgumentException("DATE requires positive scope, non-past date and no lesson occurrence");
+         }
+         fence.lockForBusinessWrite(request.getSemesterId());
+         lockKey(claims.userId(), key);
+-        List<Map<String, Object>> existing = jdbc.queryForList(
+-                "SELECT * FROM lesson_homework_bindings WHERE actor_id = ? AND request_key = ? FOR UPDATE", claims.userId(), key);
+-        if (!existing.isEmpty()) {
+-            Map<String, Object> row = existing.getFirst();
+-            if (!"DATE".equals(row.get("original_binding_mode"))
+-                    || !Arrays.equals((byte[]) row.get("payload_hash"), request.getPayloadHash().toByteArray())
+-                    || !date.equals(date(row.get("original_date")))
+-                    || number(row, "group_id") != request.getGroupId()
+-                    || number(row, "subject_id") != request.getSubjectId()
+-                    || number(row, "semester_id") != request.getSemesterId()) {
+-                throw new ConflictException("request_key resolves to another DATE create intent");
+-            }
+-            return response(row);
+-        }
++        replay = replayReservation(request);
++        if (replay != null) return replay;
+         Long id = jdbc.queryForObject("""
+                 INSERT INTO lesson_homework_bindings
+                     (binding_mode, group_id, subject_id, semester_id, placement_date,
+@@ -69,8 +62,53 @@ public class HomeworkPlacementService {
+         return response(binding(id, false));
+     }
+ 
++    public boolean isDate(long bindingId) {
++        return "DATE".equals(binding(bindingId, false).get("binding_mode"));
++    }
++
++    /** Create replay compares immutable admission intent and returns current placement. */
++    @Transactional
++    public HomeworkBindingResponse replayReservation(ReserveHomeworkBindingRequest request) {
++        InternalJwtClaims claims = HomeworkBindingActorContext.requireClaims();
++        UUID key = UUID.fromString(request.getRequestKey());
++        List<Map<String, Object>> rows = jdbc.queryForList(
++                "SELECT * FROM lesson_homework_bindings WHERE actor_id = ? AND request_key = ?", claims.userId(), key);
++        if (rows.isEmpty()) return null;
++        Map<String, Object> routed = rows.getFirst();
++        // Scope/create identity is immutable. Reject mismatched routing before acquiring
++        // a second semester lock when reserveDate already holds its requested scope.
++        String requestedMode = request.getBindingMode().isEmpty() ? "LESSON" : request.getBindingMode();
++        if (!requestedMode.equals(routed.get("original_binding_mode"))
++                || ("DATE".equals(requestedMode) && number(routed, "semester_id") != request.getSemesterId())
++                || ("LESSON".equals(requestedMode) && !Objects.equals(nullableNumber(routed, "original_occurrence_id"), request.getOccurrenceId()))) {
++            throw new ConflictException("request_key resolves to another immutable create scope");
++        }
++        ScheduleSemesterArchiveWriteFence.lockSemester(jdbc, number(routed, "semester_id"));
++        lockKey(claims.userId(), key);
++        lockOriginsAndOccurrences(routed.get("occurrence_id") == null ? List.of() : List.of(number(routed, "occurrence_id")));
++        Map<String, Object> row = binding(number(routed, "binding_id"), true);
++        requireWrite(claims, number(row, "group_id"));
++        String mode = request.getBindingMode().isEmpty() ? "LESSON" : request.getBindingMode();
++        if (!mode.equals(row.get("original_binding_mode"))
++                || !Arrays.equals((byte[]) row.get("payload_hash"), request.getPayloadHash().toByteArray())
++                || ("LESSON".equals(mode) && !Objects.equals(nullableNumber(row, "original_occurrence_id"), request.getOccurrenceId()))
++                || ("DATE".equals(mode) && (request.getOccurrenceId() != 0
++                    || !LocalDate.parse(request.getDate()).equals(date(row.get("original_date")))
++                    || number(row, "group_id") != request.getGroupId()
++                    || number(row, "subject_id") != request.getSubjectId()
++                    || number(row, "semester_id") != request.getSemesterId()))) {
++            throw new ConflictException("request_key resolves to another immutable create intent");
++        }
++        if ("ARCHIVED".equals(row.get("state")) || expired(row)) {
++            throw new ConflictException("terminal binding cannot be reserved again");
++        }
++        return response(row);
++    }
++
+     @Transactional
+     public HomeworkBindingResponse confirmDate(ConfirmHomeworkBindingRequest request) {
++        if (request.getBindingId() <= 0 || request.getHomeworkId() <= 0) throw new IllegalArgumentException("positive binding/homework identity required");
++        UUID.fromString(request.getRequestKey());
+         Map<String, Object> routed = binding(request.getBindingId(), false);
+         fence.lockForPendingBindingConfirmation(number(routed, "semester_id"));
+         Map<String, Object> row = binding(request.getBindingId(), true);
+@@ -93,6 +131,8 @@ public class HomeworkPlacementService {
+ 
+     @Transactional
+     public HomeworkBindingResponse archiveDate(ArchiveHomeworkBindingRequest request) {
++        if (request.getBindingId() <= 0 || request.getHomeworkId() <= 0) throw new IllegalArgumentException("positive binding/homework identity required");
++        UUID.fromString(request.getRequestKey());
+         Map<String, Object> routed = binding(request.getBindingId(), false);
+         if (!"ARCHIVED".equals(routed.get("state"))) fence.lockForBusinessWrite(number(routed, "semester_id"));
+         Map<String, Object> row = binding(request.getBindingId(), true);
+@@ -127,15 +167,24 @@ public class HomeworkPlacementService {
+         // The operation key lock is shared with NOT_ACCEPTED tombstone creation.
+         lockKey(identity.getActorId(), UUID.fromString(identity.getRequestKey()));
+         Map<String, Object> prior = operation(identity, false);
+-        if (prior != null) return receipt(prior, identity);
+         Map<String, Object> routed = binding(identity.getBindingId(), false);
++        requireIdentity(routed, identity);
++        if (!"ACTIVE".equals(routed.get("state")) || expired(routed)) throw new ConflictException("terminal homework cannot move");
+         List<Long> occurrenceIds = new ArrayList<>();
+         if (routed.get("occurrence_id") != null) occurrenceIds.add(number(routed, "occurrence_id"));
+         if ("LESSON".equals(request.getBindingMode())) occurrenceIds.add(request.getTargetOccurrenceId());
+         lockOriginsAndOccurrences(occurrenceIds);
+         Map<String, Object> row = binding(identity.getBindingId(), true);
+         requireIdentity(row, identity);
+-        if (!"ACTIVE".equals(row.get("state")) || expire(row)) throw new ConflictException("terminal homework cannot move");
++        if (row.get("occurrence_id") != null) {
++            requireLiveLesson(number(row, "occurrence_id"));
++        }
++        if (prior != null) {
++            HomeworkEditReceipt result = receipt(prior, identity);
++            if ("NOT_ACCEPTED".equals(result.getState())) throw new ConflictException("edit was durably cancelled before acceptance");
++            return result;
++        }
++        if (!"ACTIVE".equals(row.get("state")) || expired(row)) throw new ConflictException("terminal homework cannot move");
+         if (row.get("pending_edit_operation_id") != null) throw new ConflictException("another edit awaits Academic acknowledgement");
+         if (number(row, "revision") != request.getExpectedBindingRevision()) throw new ConflictException("binding revision changed");
+         LocalDate targetDate = LocalDate.parse(request.getDate());
+@@ -143,11 +192,13 @@ public class HomeworkPlacementService {
+         Long targetOccurrence = null, targetLesson = null;
+         Integer targetNumber = null;
+         if ("LESSON".equals(request.getBindingMode())) {
+-            Map<String, Object> target = jdbc.queryForMap("""
++            List<Map<String, Object>> targets = jdbc.queryForList("""
+                     SELECT lesson.* FROM lesson_occurrences occurrence
+                      JOIN lessons lesson ON lesson.id = occurrence.current_lesson_id AND lesson.occurrence_id = occurrence.id
+                      WHERE occurrence.id = ?
+                     """, request.getTargetOccurrenceId());
++            if (targets.isEmpty()) throw new ConflictException("target lesson is no longer current");
++            Map<String, Object> target = targets.getFirst();
+             if (number(target, "group_id") != identity.getGroupId()
+                     || number(target, "subject_id") != identity.getSubjectId()
+                     || number(target, "semester_id") != identity.getSemesterId()
+@@ -157,6 +208,7 @@ public class HomeworkPlacementService {
+                     || !List.of("planned", "active", "closed").contains(target.get("status").toString())) {
+                 throw new ConflictException("target lesson identity/revision changed");
+             }
++            requireLiveLesson(request.getTargetOccurrenceId());
+             rejectTransfer(request.getTargetOccurrenceId());
+             targetOccurrence = request.getTargetOccurrenceId(); targetLesson = number(target, "id");
+             targetNumber = request.getLessonNumber();
+@@ -222,11 +274,11 @@ public class HomeworkPlacementService {
+         validate(identity);
+         ScheduleSemesterArchiveWriteFence.lockSemester(jdbc, identity.getSemesterId());
+         lockKey(identity.getActorId(), UUID.fromString(identity.getRequestKey()));
++        Map<String, Object> row = binding(identity.getBindingId(), true);
+         Map<String, Object> prior = operation(identity, true);
+         if (prior == null) throw new ResourceNotFoundException("HomeworkEdit", "operation_id", identity.getOperationId());
+         HomeworkEditReceipt result = receipt(prior, identity);
+         if (!"APPLIED_AWAITING_ACK".equals(result.getState())) return result;
+-        Map<String, Object> row = binding(identity.getBindingId(), true);
+         requireIdentity(row, identity);
+         if (!UUID.fromString(identity.getOperationId()).equals(row.get("pending_edit_operation_id"))) {
+             throw new ConflictException("acknowledgement does not own the pending placement gate");
+@@ -239,12 +291,23 @@ public class HomeworkPlacementService {
+ 
+     @Transactional
+     public int archiveExpiredDates() {
++        List<Long> dueSemesters = jdbc.queryForList("""
++                SELECT DISTINCT semester_id FROM lesson_homework_bindings
++                 WHERE binding_mode = 'DATE' AND state <> 'ARCHIVED' AND placement_date < ?
++                 ORDER BY semester_id
++                """, Long.class, today());
++        Set<Long> writable = fence.lockWritableSemesters(dueSemesters);
++        if (writable.isEmpty()) return 0;
++        List<Object> parameters = new ArrayList<>(); parameters.add(today());
++        parameters.addAll(writable.stream().sorted().toList());
++        String slots = String.join(",", Collections.nCopies(writable.size(), "?"));
++        // Only eligible, fenced semesters participate in the bounded mutation batch.
+         List<Map<String, Object>> due = jdbc.queryForList("""
+                 SELECT binding_id, semester_id FROM lesson_homework_bindings
+                  WHERE binding_mode = 'DATE' AND state <> 'ARCHIVED' AND placement_date < ?
++                   AND semester_id IN (%s)
+                  ORDER BY semester_id, binding_id LIMIT 256
+-                """, today());
+-        Set<Long> writable = fence.lockWritableSemesters(due.stream().map(row -> number(row, "semester_id")).toList());
++                """.formatted(slots), parameters.toArray());
+         int count = 0;
+         for (Map<String, Object> candidate : due) {
+             if (writable.contains(number(candidate, "semester_id")) && expire(binding(number(candidate, "binding_id"), true))) count++;
+@@ -252,6 +315,10 @@ public class HomeworkPlacementService {
+         return count;
+     }
+ 
++    private boolean expired(Map<String, Object> row) {
++        return "DATE".equals(row.get("binding_mode")) && date(row.get("placement_date")).isBefore(today());
++    }
++
+     private boolean expire(Map<String, Object> row) {
+         if (!"DATE".equals(row.get("binding_mode")) || "ARCHIVED".equals(row.get("state"))
+                 || !date(row.get("placement_date")).isBefore(today())) return false;
+@@ -270,13 +337,13 @@ public class HomeworkPlacementService {
+     }
+ 
+     private Map<String, Object> operation(HomeworkEditIdentity identity, boolean lock) {
+-        List<Map<String, Object>> rows = jdbc.queryForList("SELECT * FROM homework_placement_operations WHERE operation_id = ?" + (lock ? " FOR UPDATE" : ""),
+-                UUID.fromString(identity.getOperationId()));
++        List<Map<String, Object>> rows = jdbc.queryForList("SELECT * FROM homework_placement_operations WHERE operation_id = ? OR (binding_id = ? AND actor_id = ? AND request_key = ?)" + (lock ? " FOR UPDATE" : ""),
++                UUID.fromString(identity.getOperationId()), identity.getBindingId(), identity.getActorId(), UUID.fromString(identity.getRequestKey()));
+         return rows.isEmpty() ? null : rows.getFirst();
+     }
+ 
+     private HomeworkEditReceipt receipt(Map<String, Object> row, HomeworkEditIdentity identity) {
+-        if (number(row, "binding_id") != identity.getBindingId() || number(row, "homework_id") != identity.getHomeworkId()
++        if (!row.get("operation_id").toString().equals(identity.getOperationId()) || number(row, "binding_id") != identity.getBindingId() || number(row, "homework_id") != identity.getHomeworkId()
+                 || number(row, "actor_id") != identity.getActorId() || !row.get("request_key").toString().equals(identity.getRequestKey())
+                 || !Arrays.equals((byte[]) row.get("command_hash"), identity.getCommandHash().toByteArray())
+                 || number(row, "group_id") != identity.getGroupId() || number(row, "subject_id") != identity.getSubjectId()
+@@ -304,7 +371,11 @@ public class HomeworkPlacementService {
+     private void lockOriginsAndOccurrences(List<Long> ids) {
+         List<Long> ordered = ids.stream().filter(id -> id != null && id > 0).distinct().sorted().toList();
+         List<Map<String, Object>> origins = new ArrayList<>();
+-        for (Long id : ordered) origins.add(jdbc.queryForMap("SELECT schedule_item_id, one_off_lesson_id FROM lesson_occurrences WHERE id = ?", id));
++        for (Long id : ordered) {
++            List<Map<String, Object>> rows = jdbc.queryForList("SELECT schedule_item_id, one_off_lesson_id FROM lesson_occurrences WHERE id = ?", id);
++            if (rows.isEmpty()) throw new ConflictException("lesson occurrence is no longer available");
++            origins.add(rows.getFirst());
++        }
+         for (String column : List.of("schedule_item_id", "one_off_lesson_id")) {
+             for (Long origin : origins.stream().map(row -> nullableNumber(row, column)).filter(Objects::nonNull).distinct().sorted().toList()) {
+                 String table = column.equals("schedule_item_id") ? "schedule_items" : "schedule_one_off_lessons";
+@@ -318,6 +389,23 @@ public class HomeworkPlacementService {
+                 """, id);
+     }
+ 
++    private void requireLiveLesson(long occurrenceId) {
++        List<Map<String, Object>> rows = jdbc.queryForList("""
++                SELECT lesson.date, lesson.end_time, lesson.status::TEXT AS status
++                  FROM lesson_occurrences occurrence
++                  JOIN lessons lesson ON lesson.id = occurrence.current_lesson_id AND lesson.occurrence_id = occurrence.id
++                 WHERE occurrence.id = ?
++                """, occurrenceId);
++        if (rows.isEmpty()) throw new ConflictException("lesson no longer has a current physical generation");
++        Map<String, Object> lesson = rows.getFirst();
++        LocalTime end = lesson.get("end_time") instanceof LocalTime time ? time : LocalTime.parse(lesson.get("end_time").toString());
++        LocalDateTime cutoff = date(lesson.get("date")).atTime(end).plusMinutes(5);
++        if (!List.of("planned", "active").contains(lesson.get("status").toString())
++                || !LocalDateTime.now(clock.withZone(MOSCOW)).isBefore(cutoff)) {
++            throw new ConflictException("terminal lesson homework placement cannot be changed");
++        }
++    }
++
+     private void rejectTransfer(long occurrence) {
+         Boolean pending = jdbc.queryForObject("SELECT EXISTS (SELECT 1 FROM lesson_transfer_operations WHERE occurrence_id = ? AND state <> 'COMPLETED')",
+                 Boolean.class, occurrence);
+diff --git a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java
+index e47f91ff..4c9e4134 100644
+--- a/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java
++++ b/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java
+@@ -92,6 +92,12 @@ public class LessonTransferWriter {
+             requireCurrent(sourceLessonId, source, current, request.expectedRevision());
+             lockBindingsForTransfer(occurrenceId, sourceLessonId);
+             rejectPendingTransfer(occurrenceId);
++            if (Boolean.TRUE.equals(jdbc.queryForObject("""
++                    SELECT EXISTS (SELECT 1 FROM lesson_homework_bindings
++                        WHERE occurrence_id = ? AND pending_edit_operation_id IS NOT NULL)
++                    """, Boolean.class, occurrenceId))) {
++                throw new ConflictException("Домашнее задание ожидает подтверждения изменения; повтори перенос позже");
++            }
+ 
+             LocalDate today = LocalDate.now(clock.withZone(MOSCOW));
+             LocalDate sourceDate = localDate(source.get("date"));
+diff --git a/services/schedule-service/schedule-app/src/main/resources/db/migration/V24__homework_edit_placement.sql b/services/schedule-service/schedule-app/src/main/resources/db/migration/V24__homework_edit_placement.sql
+index 7d8a06cf..7e15d1df 100644
+--- a/services/schedule-service/schedule-app/src/main/resources/db/migration/V24__homework_edit_placement.sql
++++ b/services/schedule-service/schedule-app/src/main/resources/db/migration/V24__homework_edit_placement.sql
+@@ -160,13 +160,24 @@ BEGIN
+         RAISE EXCEPTION 'archived homework placement cannot be changed';
+     END IF;
+     IF NEW.revision < OLD.revision THEN RAISE EXCEPTION 'binding revision cannot move backwards'; END IF;
++    IF OLD.pending_edit_operation_id IS NOT NULL
++       AND (NEW.occurrence_id IS DISTINCT FROM OLD.occurrence_id
++         OR NEW.current_lesson_id IS DISTINCT FROM OLD.current_lesson_id
++         OR NEW.binding_mode IS DISTINCT FROM OLD.binding_mode
++         OR NEW.placement_date IS DISTINCT FROM OLD.placement_date
++         OR NEW.placement_lesson_number IS DISTINCT FROM OLD.placement_lesson_number
++         OR (NEW.pending_edit_operation_id IS NOT NULL AND NEW.pending_edit_operation_id IS DISTINCT FROM OLD.pending_edit_operation_id)) THEN
++        RAISE EXCEPTION 'pending placement edit must be acknowledged before another placement mutation';
++    END IF;
+     IF NEW.occurrence_id IS DISTINCT FROM OLD.occurrence_id
+        OR NEW.binding_mode IS DISTINCT FROM OLD.binding_mode
++       OR (NEW.pending_edit_operation_id IS NOT NULL AND NEW.pending_edit_operation_id IS DISTINCT FROM OLD.pending_edit_operation_id)
+        OR (NEW.binding_mode = 'DATE' AND NEW.placement_date IS DISTINCT FROM OLD.placement_date) THEN
+         edit_id := nullif(current_setting('rutcampustrack.homework_edit_operation_id', TRUE), '')::UUID;
+         SELECT * INTO receipt FROM homework_placement_operations WHERE operation_id = edit_id;
+         IF receipt.operation_id IS NULL OR receipt.binding_id <> OLD.binding_id
+-           OR receipt.homework_id <> OLD.homework_id OR receipt.state <> 'APPLIED_AWAITING_ACK'
++           OR receipt.homework_id IS DISTINCT FROM OLD.homework_id OR receipt.state <> 'APPLIED_AWAITING_ACK'
++           OR receipt.group_id <> OLD.group_id OR receipt.subject_id <> OLD.subject_id OR receipt.semester_id <> OLD.semester_id
+            OR receipt.accepted_revision <> NEW.revision
+            OR receipt.target_mode IS DISTINCT FROM NEW.binding_mode
+            OR receipt.target_occurrence_id IS DISTINCT FROM NEW.occurrence_id
+@@ -179,7 +190,7 @@ BEGIN
+     END IF;
+     IF OLD.pending_edit_operation_id IS NOT NULL AND NEW.pending_edit_operation_id IS NULL THEN
+         SELECT * INTO receipt FROM homework_placement_operations WHERE operation_id = OLD.pending_edit_operation_id;
+-        IF receipt.state <> 'ACKNOWLEDGED' THEN RAISE EXCEPTION 'placement gate requires exact acknowledgement'; END IF;
++        IF receipt.operation_id IS NULL OR receipt.state <> 'ACKNOWLEDGED' OR receipt.binding_id <> OLD.binding_id THEN RAISE EXCEPTION 'placement gate requires exact acknowledgement'; END IF;
+     END IF;
+     RETURN NEW;
+ END $$;
+@@ -196,10 +207,14 @@ BEGIN
+     IF updated = fn THEN RAISE EXCEPTION 'V24 schedule deletion guard anchor changed'; END IF;
+     updated := replace(updated, 'OLD.occurrence_id = NEW.occurrence_id', 'OLD.occurrence_id IS NOT DISTINCT FROM NEW.occurrence_id');
+     updated := replace(updated, 'OLD.current_lesson_id = NEW.current_lesson_id', 'OLD.current_lesson_id IS NOT DISTINCT FROM NEW.current_lesson_id');
++    updated := replace(updated, 'NEW.occurrence_id = OLD.occurrence_id', 'NEW.occurrence_id IS NOT DISTINCT FROM OLD.occurrence_id');
++    updated := replace(updated, 'NEW.current_lesson_id = OLD.current_lesson_id', 'NEW.current_lesson_id IS NOT DISTINCT FROM OLD.current_lesson_id');
+     updated := replace(updated, 'IF barrier_state IS NULL OR NOT deleting THEN CONTINUE; END IF;',
+         'IF barrier_state IS NULL OR NOT deleting THEN CONTINUE; END IF;
+          IF TG_TABLE_NAME = ''lesson_homework_bindings'' AND TG_OP = ''UPDATE''
+             AND schedule_homework_edit_ack_admitted(old_row, new_row, affected_semester_id) THEN CONTINUE; END IF;');
++    updated := replace(updated, 'context_occurrence_id = OLD.occurrence_id', 'context_occurrence_id = coalesce(OLD.occurrence_id, 0)');
++    updated := replace(updated, 'context_occurrence_id = NEW.occurrence_id', 'context_occurrence_id = coalesce(NEW.occurrence_id, 0)');
+     EXECUTE updated;
+     SELECT pg_get_functiondef('guard_semester_archive_business_write()'::regprocedure) INTO fn;
+     updated := replace(fn,
+@@ -219,6 +234,10 @@ BEGIN
+         'IF TG_TABLE_NAME = ''lesson_homework_bindings'' AND TG_OP = ''UPDATE''
+             AND schedule_homework_edit_ack_admitted(old_row, new_row, target_semester_id) THEN CONTINUE; END IF;
+          IF barrier_state IN (''PENDING'', ''READY'', ''PREPARED_RESTORE'') THEN');
++    updated := replace(updated, 'cancel_occurrence_id = (old_row ->> ''occurrence_id'')::BIGINT',
++        'cancel_occurrence_id = coalesce((old_row ->> ''occurrence_id'')::BIGINT, 0)');
++    updated := replace(updated, 'cancel_occurrence_id = (new_row ->> ''occurrence_id'')::BIGINT',
++        'cancel_occurrence_id = coalesce((new_row ->> ''occurrence_id'')::BIGINT, 0)');
+     EXECUTE updated;
+     SELECT pg_get_functiondef('protect_lesson_homework_binding_transfer()'::regprocedure) INTO fn;
+     updated := replace(fn, 'IF NEW.current_lesson_id IS NOT DISTINCT FROM OLD.current_lesson_id THEN RETURN NEW; END IF;',
+@@ -234,3 +253,62 @@ BEGIN
+     IF updated = fn THEN RAISE EXCEPTION 'V24 schedule transfer guard anchor changed'; END IF;
+     EXECUTE updated;
+ END $$;
++
++-- Receipt acceptance is a business write; only exact admitted ACK drains an open barrier.
++CREATE OR REPLACE FUNCTION guard_homework_placement_receipt_semester()
++RETURNS TRIGGER LANGUAGE plpgsql AS $$
++DECLARE barrier schedule_semester_archive_barriers%ROWTYPE;
++BEGIN
++    PERFORM pg_advisory_xact_lock(5452097, (NEW.semester_id % 2147483647)::INTEGER);
++    SELECT * INTO barrier FROM schedule_semester_archive_barriers WHERE semester_id = NEW.semester_id;
++    IF TG_OP = 'INSERT' THEN
++        IF NOT EXISTS (SELECT 1 FROM lesson_homework_bindings binding
++             WHERE binding.binding_id = NEW.binding_id AND binding.homework_id = NEW.homework_id
++               AND binding.group_id = NEW.group_id AND binding.subject_id = NEW.subject_id
++               AND binding.semester_id = NEW.semester_id) THEN
++            RAISE EXCEPTION 'placement receipt does not match publication scope';
++        END IF;
++        -- NOT_ACCEPTED is a fence, never a placement mutation or effect.
++        IF NEW.state = 'NOT_ACCEPTED' THEN RETURN NEW; END IF;
++        IF NEW.state <> 'APPLIED_AWAITING_ACK' THEN RAISE EXCEPTION 'new placement receipt must await acknowledgement'; END IF;
++        IF barrier.participant_state IS NOT NULL AND barrier.participant_state <> 'RELEASED' THEN
++            RAISE EXCEPTION 'new placement edit is fenced by semester transition' USING ERRCODE = '55000';
++        END IF;
++    ELSIF barrier.participant_state IS NOT NULL AND barrier.participant_state <> 'RELEASED' THEN
++        IF barrier.participant_state NOT IN ('PENDING', 'DELETE_PREPARING')
++            OR NOT EXISTS (SELECT 1 FROM homework_placement_archive_admissions admitted
++                WHERE admitted.archive_operation_id = barrier.operation_id
++                  AND admitted.state_version = barrier.state_version AND admitted.semester_id = NEW.semester_id
++                  AND admitted.edit_operation_id = NEW.operation_id AND admitted.command_hash = NEW.command_hash) THEN
++            RAISE EXCEPTION 'placement ACK is not admitted in this semester epoch' USING ERRCODE = '55000';
++        END IF;
++    END IF;
++    RETURN NEW;
++END $$;
++CREATE TRIGGER homework_placement_receipt_semester_fence BEFORE INSERT OR UPDATE
++    ON homework_placement_operations FOR EACH ROW EXECUTE FUNCTION guard_homework_placement_receipt_semester();
++
++CREATE OR REPLACE FUNCTION guard_homework_placement_archive_admission()
++RETURNS TRIGGER LANGUAGE plpgsql AS $$
++BEGIN
++    IF TG_OP <> 'INSERT' THEN RAISE EXCEPTION 'placement archive admission is immutable'; END IF;
++    PERFORM pg_advisory_xact_lock(5452097, (NEW.semester_id % 2147483647)::INTEGER);
++    IF NOT EXISTS (SELECT 1 FROM homework_placement_operations edit
++        JOIN lesson_homework_bindings binding ON binding.binding_id = edit.binding_id
++            AND binding.pending_edit_operation_id = edit.operation_id
++        JOIN schedule_semester_archive_barriers barrier ON barrier.semester_id = binding.semester_id
++        WHERE edit.operation_id = NEW.edit_operation_id AND edit.command_hash = NEW.command_hash
++          AND edit.state = 'APPLIED_AWAITING_ACK' AND edit.semester_id = NEW.semester_id
++          AND barrier.operation_id = NEW.archive_operation_id AND barrier.state_version = NEW.state_version
++          AND barrier.participant_state IN ('PENDING', 'DELETE_PREPARING')) THEN
++        RAISE EXCEPTION 'placement admission requires the exact pending edit and open epoch';
++    END IF;
++    RETURN NEW;
++END $$;
++CREATE TRIGGER homework_placement_archive_admission_guard BEFORE INSERT OR UPDATE OR DELETE
++    ON homework_placement_archive_admissions FOR EACH ROW EXECUTE FUNCTION guard_homework_placement_archive_admission();
++
++CREATE INDEX homework_binding_semester_pending_idx ON lesson_homework_bindings(semester_id, binding_id)
++    WHERE state = 'PENDING' OR pending_edit_operation_id IS NOT NULL;
++CREATE INDEX homework_binding_date_deadline_idx ON lesson_homework_bindings(placement_date, semester_id, binding_id)
++    WHERE binding_mode = 'DATE' AND state <> 'ARCHIVED';
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java
+index 4c8a17f8..58b5c7bf 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java
+@@ -69,6 +69,32 @@ class AssignmentCloseServiceIdentityInterceptorTest {
+         assertThat(seen).hasValue(ServicePrincipal.ACADEMIC_SERVICE);
+     }
+ 
++    @Test
++    void homeworkRecoveryMethodsRequireDirectedAcademicIdentityAndTls() {
++        var interceptor = new AssignmentCloseServiceIdentityInterceptor(TOKEN);
++        for (String method : java.util.List.of("GetHomeworkBinding", "MoveHomeworkBinding", "ContinueHomeworkEdit",
++                "AbortUnacceptedHomeworkEdit", "AcknowledgeHomeworkEdit")) {
++            String full = ScheduleGrpcServiceGrpc.SERVICE_NAME + "/" + method;
++            AtomicBoolean allowed = new AtomicBoolean();
++            interceptor.interceptCall(call(full, tlsAttributes()), headers(TOKEN), (nextCall, metadata) -> {
++                allowed.set(ServicePrincipal.CONTEXT_KEY.get() == ServicePrincipal.ACADEMIC_SERVICE);
++                return new Listener<>() { };
++            });
++            assertThat(allowed.get()).as(method).isTrue();
++            var missing = call(full, tlsAttributes());
++            AtomicBoolean bypass = new AtomicBoolean();
++            interceptor.interceptCall(missing, new Metadata(), (nextCall, metadata) -> {
++                bypass.set(true); return new Listener<>() { };
++            });
++            assertThat(bypass.get()).as(method).isFalse(); verify(missing).close(any(Status.class), any(Metadata.class));
++            var plain = call(full, Attributes.EMPTY);
++            interceptor.interceptCall(plain, headers(TOKEN), (nextCall, metadata) -> {
++                bypass.set(true); return new Listener<>() { };
++            });
++            assertThat(bypass.get()).as(method).isFalse(); verify(plain).close(any(Status.class), any(Metadata.class));
++        }
++    }
++
+     @Test
+     void missingConfigurationDeniesOnlyReservedMethod() {
+         AssignmentCloseServiceIdentityInterceptor interceptor =
+diff --git a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java
+index 6c5b3051..216b576c 100644
+--- a/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java
++++ b/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java
+@@ -3,6 +3,7 @@ package ru.rutcampustrack.schedule.grpc;
+ import com.google.protobuf.ByteString;
+ import io.grpc.Context;
+ import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.dao.DataAccessException;
+@@ -16,6 +17,9 @@ import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
+ import ru.rutcampustrack.shared.security.InternalJwtClaims;
+ 
+ import java.time.LocalDate;
++import java.time.Clock;
++import java.time.Instant;
++import java.time.ZoneId;
+ import java.util.ArrayList;
+ import java.util.List;
+ import java.util.UUID;
+@@ -25,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
+ import static org.assertj.core.api.Assertions.assertThat;
+ import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ import static org.mockito.Mockito.when;
++import static org.mockito.ArgumentMatchers.any;
+ 
+ /**
+  * One real PostgreSQL protocol cycle for the V17 homework binding contract.
+@@ -59,10 +64,29 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
+     @MockitoBean
+     private AcademicGrpcClient academicGrpcClient;
+ 
++    @Autowired
++    private ru.rutcampustrack.schedule.homework.HomeworkPlacementService placement;
++    @Autowired
++    private ru.rutcampustrack.schedule.lesson.LessonTransferWriter transfers;
++    @Autowired
++    private ScheduleSemesterArchiveWriteFence writeFence;
++    @Autowired
++    private org.springframework.transaction.PlatformTransactionManager transactions;
++    @MockitoBean
++    private Clock clock;
++    private final AtomicReference<Instant> instant = new AtomicReference<>();
++
++    @BeforeEach
++    void fixedClock() {
++        instant.set(Instant.parse("2026-10-02T12:00:00Z"));
++        when(clock.withZone(any(ZoneId.class))).thenAnswer(invocation -> Clock.fixed(instant.get(), invocation.getArgument(0)));
++    }
++
+     private final List<Long> scheduleItemIds = new ArrayList<>();
+     private final List<Long> occurrenceIds = new ArrayList<>();
+     private final List<Long> lessonIds = new ArrayList<>();
+     private final List<Long> archiveBarrierSemesterIds = new ArrayList<>();
++    private final java.util.Set<Long> dateFixtureSemesters = new java.util.HashSet<>();
+ 
+     @AfterEach
+     void cleanup() {
+@@ -76,6 +100,12 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
+                    SET state = 'ARCHIVED', revision = revision + 1, updated_at = NOW()
+                  WHERE occurrence_id = ? AND state <> 'ARCHIVED'
+                 """, id));
++        dateFixtureSemesters.forEach(id -> jdbcTemplate.update("""
++                UPDATE lesson_homework_bindings
++                   SET state = 'ARCHIVED', revision = revision + 1, updated_at = NOW()
++                 WHERE semester_id = ? AND state <> 'ARCHIVED'
++                """, id));
++        dateFixtureSemesters.clear();
+         drainOutbox();
+         scheduleItemIds.clear();
+         occurrenceIds.clear();
+@@ -212,6 +242,8 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
+                 .setExpectedRevision(1L)
+                 .setPayloadHash(ByteString.copyFrom(payloadHash))
+                 .build();
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(semesterId)).thenReturn(
++                SemesterStateResponse.newBuilder().setId(semesterId).setActive(true).build());
+         AtomicReference<HomeworkBindingResponse> reservation = new AtomicReference<>();
+         Context.current().withValue(HomeworkBindingActorContext.CLAIMS, signedHeadman)
+                 .run(() -> reservation.set(homeworkBindingService.reserve(reserve)));
+@@ -400,6 +432,342 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
+                 .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+     }
+ 
++    @Test
++    void datePlacementReceiptGatesTransferAndKeepsCreateIntentAcrossManualMove() {
++        long semester = FIXTURE_SEQUENCE.incrementAndGet();
++        Fixture target = insertFixture(AUTHORIZED_GROUP_ID, semester);
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenReturn(
++                SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
++        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
++            ReserveHomeworkBindingRequest create = dateCreate(semester, "2090-01-01");
++            HomeworkBindingResponse active = createDate(create);
++            String targetDate = jdbcTemplate.queryForObject("SELECT date::TEXT FROM lessons WHERE id = ?", String.class, target.lessonId());
++            HomeworkEditIdentity identity = editIdentity(active, semester);
++            MoveHomeworkBindingRequest move = MoveHomeworkBindingRequest.newBuilder().setIdentity(identity)
++                    .setBindingMode("LESSON").setDate(targetDate).setLessonNumber(1)
++                    .setTargetOccurrenceId(target.occurrenceId()).setExpectedLessonRevision(1)
++                    .setExpectedBindingRevision(active.getRevision()).build();
++            HomeworkEditReceipt receipt = placement.move(move);
++            assertThat(receipt.getState()).isEqualTo("APPLIED_AWAITING_ACK");
++            assertThat(receipt.getAcceptedBinding().getOccurrenceId()).isEqualTo(target.occurrenceId());
++            assertThat(placement.move(move)).isEqualTo(receipt);
++            assertThat(placement.continuation(identity)).isEqualTo(receipt);
++            assertThat(homeworkBindingService.reserve(create).getBindingId()).isEqualTo(active.getBindingId());
++            LocalDate next = LocalDate.parse(targetDate).plusDays(1);
++            if (next.getDayOfWeek().getValue() == 7) next = next.plusDays(1);
++            var transfer = new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
++                    next, 2, null, null, null, "1", UUID.randomUUID());
++            assertThatThrownBy(() -> transfers.transfer(target.lessonId(), ACTOR_ID, transfer))
++                    .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
++            assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_operations WHERE occurrence_id = ?",
++                    Long.class, target.occurrenceId())).isZero();
++            assertThatThrownBy(() -> placement.acknowledge(identity.toBuilder().setActorId(ACTOR_ID + 1).build()))
++                    .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
++            assertThat(placement.acknowledge(identity).getState()).isEqualTo("ACKNOWLEDGED");
++            assertThat(placement.acknowledge(identity).getState()).isEqualTo("ACKNOWLEDGED");
++            assertThat(transfers.transfer(target.lessonId(), ACTOR_ID, transfer).state()).isEqualTo("PENDING");
++            assertThat(placement.get(active.getBindingId()).getDate()).isEqualTo(next.toString());
++            assertThat(placement.continuation(identity).getAcceptedBinding().getDate()).isEqualTo(targetDate);
++        });
++    }
++
++    @Test
++    void abortTombstoneFencesDelayedMoveAndAppliedResultWinsAbort() {
++        long semester = FIXTURE_SEQUENCE.incrementAndGet();
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenReturn(
++                SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
++        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
++            HomeworkBindingResponse active = createDate(dateCreate(semester, "2090-01-01"));
++            HomeworkEditIdentity cancelled = editIdentity(active, semester);
++            assertThatThrownBy(() -> placement.continuation(cancelled))
++                    .isInstanceOf(ru.rutcampustrack.schedule.exception.ResourceNotFoundException.class);
++            assertThat(placement.abortUnaccepted(cancelled).getState()).isEqualTo("NOT_ACCEPTED");
++            var move = dateMove(active, cancelled, "2090-01-02");
++            assertThatThrownBy(() -> placement.move(move)).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
++            assertThat(placement.get(active.getBindingId()).getDate()).isEqualTo("2090-01-01");
++            HomeworkEditIdentity admitted = editIdentity(active, semester);
++            HomeworkEditReceipt accepted = placement.move(dateMove(active, admitted, "2090-01-02"));
++            assertThat(placement.abortUnaccepted(admitted)).isEqualTo(accepted);
++            assertThatThrownBy(() -> placement.continuation(admitted.toBuilder().setCommandHash(ByteString.copyFrom(new byte[32])).build()))
++                    .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
++            assertThatThrownBy(() -> jdbcTemplate.update("UPDATE homework_placement_operations SET target_date = '2090-01-03' WHERE operation_id = ?",
++                    UUID.fromString(admitted.getOperationId()))).isInstanceOf(DataAccessException.class);
++            assertThatThrownBy(() -> jdbcTemplate.update("UPDATE lesson_homework_bindings SET pending_edit_operation_id = NULL WHERE binding_id = ?",
++                    active.getBindingId())).isInstanceOf(DataAccessException.class);
++            placement.acknowledge(admitted);
++        });
++    }
++
++    @Test
++    void datePendingPublicationAndAdmittedEditDrainArchiveWithoutOccurrence() {
++        long semester = FIXTURE_SEQUENCE.incrementAndGet();
++        AtomicReference<SemesterStateResponse> authority = new AtomicReference<>(SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenAnswer(invocation -> authority.get());
++        archiveBarrierSemesterIds.add(semester);
++        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
++            var create = dateCreate(semester, "2090-01-01");
++            var pending = homeworkBindingService.reserve(create);
++            UUID archive = UUID.randomUUID();
++            authority.set(SemesterStateResponse.newBuilder().setId(semester).setStateVersion(94).setTransition(SemesterTransition.ARCHIVING).setWriteBlocked(true).build());
++            var prepare = SetSemesterArchiveBarrierRequest.newBuilder().setOperationId(archive.toString())
++                    .setSemesterId(semester).setStateVersion(94).setCommand(SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE).build();
++            var blocked = archiveBarrierService.set(prepare);
++            assertThat(blocked.getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PENDING);
++            assertThat(blocked.getPendingBinding().getBindingId()).isEqualTo(pending.getBindingId());
++            assertThat(blocked.getPendingBinding().getOccurrenceId()).isZero();
++            var cancel = prepare.toBuilder().setCommand(SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RECONCILE_HOMEWORK_BINDING)
++                    .setBinding(blocked.getPendingBinding()).setBindingResolution(SemesterArchiveHomeworkBindingResolution.SEMESTER_ARCHIVE_HOMEWORK_BINDING_CANCEL_UNPUBLISHED).build();
++            assertThat(archiveBarrierService.set(cancel).getTerminalEventId()).isNotBlank();
++            assertThat(archiveBarrierService.set(cancel).getTerminalEventId()).isNotBlank();
++            assertThat(archiveBarrierService.set(prepare).getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PENDING);
++            // Cancellation effect remains pending until Academic acknowledges its durable outbox effect.
++        });
++        long editSemester = FIXTURE_SEQUENCE.incrementAndGet();
++        AtomicReference<SemesterStateResponse> editAuthority = new AtomicReference<>(SemesterStateResponse.newBuilder().setId(editSemester).setActive(true).build());
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(editSemester)).thenAnswer(invocation -> editAuthority.get());
++        archiveBarrierSemesterIds.add(editSemester);
++        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
++            var active = createDate(dateCreate(editSemester, "2090-01-01"));
++            var identity = editIdentity(active, editSemester);
++            placement.move(dateMove(active, identity, "2090-01-02"));
++            var beforeAck = deletionSnapshots.read(editSemester).participantDigest();
++            UUID archive = UUID.randomUUID();
++            editAuthority.set(SemesterStateResponse.newBuilder().setId(editSemester).setStateVersion(95).setTransition(SemesterTransition.ARCHIVING).setWriteBlocked(true).build());
++            var prepare = SetSemesterArchiveBarrierRequest.newBuilder().setOperationId(archive.toString())
++                    .setSemesterId(editSemester).setStateVersion(95).setCommand(SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE).build();
++            assertThat(archiveBarrierService.set(prepare).getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PENDING);
++            assertThat(placement.continuation(identity).getState()).isEqualTo("APPLIED_AWAITING_ACK");
++            assertThat(placement.acknowledge(identity).getState()).isEqualTo("ACKNOWLEDGED");
++            assertThat(deletionSnapshots.read(editSemester).participantDigest()).isEqualTo(beforeAck);
++            assertThat(archiveBarrierService.set(prepare).getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY);
++        });
++    }
++
++    @Test
++    void dateCutoffIsNextMidnightInMoscowAndTerminalReplayIsDenied() {
++        long semester = FIXTURE_SEQUENCE.incrementAndGet();
++        AtomicReference<SemesterStateResponse> authority = new AtomicReference<>(SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenAnswer(invocation -> authority.get());
++        archiveBarrierSemesterIds.add(semester);
++        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
++            var create = dateCreate(semester, "2026-10-02");
++            var active = createDate(create);
++            instant.set(Instant.parse("2026-10-02T20:59:59Z"));
++            assertThat(placement.archiveExpiredDates()).isZero();
++            instant.set(Instant.parse("2026-10-02T21:00:00Z"));
++            assertThat(placement.archiveExpiredDates()).isEqualTo(1);
++            assertThat(placement.get(active.getBindingId()).getState()).isEqualTo(HomeworkBindingState.HOMEWORK_BINDING_STATE_ARCHIVED);
++            assertThatThrownBy(() -> homeworkBindingService.reserve(create)).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
++            assertThat(placement.get(active.getBindingId()).getHomeworkId()).isEqualTo(active.getHomeworkId());
++        });
++    }
++
++    @Test
++    void dateBindingDeletionIncludesInventoryAndRetainsImmutablePublicationIdentity() {
++        long semester = FIXTURE_SEQUENCE.incrementAndGet();
++        AtomicReference<SemesterStateResponse> authority = new AtomicReference<>(SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenAnswer(invocation -> authority.get());
++        archiveBarrierSemesterIds.add(semester);
++        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
++            String emptyDigest = deletionSnapshots.read(semester).participantDigest();
++            var create = dateCreate(semester, "2090-01-01");
++            var active = createDate(create);
++            var before = deletionSnapshots.read(semester);
++            assertThat(before.participantDigest()).isNotEqualTo(emptyDigest);
++            UUID operation = UUID.randomUUID();
++            authority.set(deletionAuthority(semester, 96, operation, "PREPARING"));
++            assertThat(archiveBarrierService.set(deleteBarrierRequest(operation, semester, 96,
++                    SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE, before.participantDigest())).getState())
++                    .isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY);
++            archiveBarrierService.set(deleteBarrierRequest(operation, semester, 96,
++                    SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE, before.participantDigest()));
++            authority.set(deletionAuthority(semester, 96, operation, "DELETING").toBuilder().setArchived(true).build());
++            var commit = deleteBarrierRequest(operation, semester, 96,
++                    SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_COMMIT_DELETE, before.participantDigest());
++            assertThat(archiveBarrierService.set(commit).getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_DELETED);
++            assertThat(archiveBarrierService.set(commit).getState()).isEqualTo(SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_DELETED);
++            var row = jdbcTemplate.queryForMap("SELECT * FROM lesson_homework_bindings WHERE binding_id = ?", active.getBindingId());
++            assertThat(row.get("state")).isEqualTo("ARCHIVED"); assertThat(row.get("homework_id")).isNull();
++            assertThat(row.get("request_key").toString()).isEqualTo(create.getRequestKey());
++            assertThat(row.get("original_binding_mode")).isEqualTo("DATE");
++            assertThat(row.get("semester_id")).isEqualTo(semester);
++            assertThat(row.get("occurrence_id")).isNull();
++            assertThatThrownBy(() -> homeworkBindingService.reserve(create)).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
++        });
++    }
++
++    @Test
++    void closedTargetAndElapsedLinkedSourceRejectWithoutPlacementReceiptOrRevision() {
++        long semester = FIXTURE_SEQUENCE.incrementAndGet();
++        Fixture lesson = insertFixture(AUTHORIZED_GROUP_ID, semester);
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenReturn(
++                SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
++        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
++            String date = jdbcTemplate.queryForObject("SELECT date::TEXT FROM lessons WHERE id = ?", String.class, lesson.lessonId());
++            var active = createDate(dateCreate(semester, date));
++            var targetIdentity = editIdentity(active, semester);
++            var targetMove = MoveHomeworkBindingRequest.newBuilder().setIdentity(targetIdentity).setBindingMode("LESSON")
++                    .setDate(date).setLessonNumber(1).setTargetOccurrenceId(lesson.occurrenceId())
++                    .setExpectedBindingRevision(active.getRevision()).setExpectedLessonRevision(1).build();
++            jdbcTemplate.update("UPDATE lessons SET status = 'closed'::lesson_status WHERE id = ?", lesson.lessonId());
++            assertThatThrownBy(() -> placement.move(targetMove)).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
++            assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM homework_placement_operations WHERE binding_id = ?", Long.class, active.getBindingId())).isZero();
++            assertThat(placement.get(active.getBindingId()).getRevision()).isEqualTo(active.getRevision());
++            assertThat(placement.get(active.getBindingId()).getBindingMode()).isEqualTo("DATE");
++            jdbcTemplate.update("UPDATE lessons SET status = 'planned'::lesson_status WHERE id = ?", lesson.lessonId());
++            var accepted = placement.move(targetMove); // unchanged future target is allowed
++            placement.acknowledge(targetIdentity);
++            var linked = accepted.getAcceptedBinding();
++            instant.set(LocalDate.parse(date).atTime(10, 6).atZone(ZoneId.of("Europe/Moscow")).toInstant());
++            var sourceIdentity = editIdentity(linked, semester);
++            assertThatThrownBy(() -> placement.move(dateMove(linked, sourceIdentity, LocalDate.parse(date).plusDays(1).toString())))
++                    .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
++            assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM homework_placement_operations WHERE binding_id = ?", Long.class, active.getBindingId())).isEqualTo(1);
++            assertThat(placement.get(active.getBindingId()).getRevision()).isEqualTo(linked.getRevision());
++            assertThat(placement.get(active.getBindingId()).getOccurrenceId()).isEqualTo(lesson.occurrenceId());
++            // The same elapsed physical target must also be refused while status still says planned.
++            var second = createDate(dateCreate(semester, date));
++            assertThatThrownBy(() -> placement.move(targetMove.toBuilder().setIdentity(editIdentity(second, semester))
++                    .setExpectedBindingRevision(second.getRevision()).build())).isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
++        });
++    }
++
++    @Test
++    void blockedExpiredBatchDoesNotStarveWritableSemester() {
++        long blocked = FIXTURE_SEQUENCE.incrementAndGet(), writable = FIXTURE_SEQUENCE.incrementAndGet();
++        dateFixtureSemesters.add(blocked);
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(writable)).thenReturn(
++                SemesterStateResponse.newBuilder().setId(writable).setActive(true).build());
++        jdbcTemplate.update("""
++                INSERT INTO lesson_homework_bindings
++                    (binding_mode, group_id, subject_id, semester_id, placement_date, actor_id, request_key, payload_hash, state, revision)
++                SELECT 'DATE', ?, ?, ?, '2026-10-02'::date, ?, gen_random_uuid(), decode(repeat('11', 32), 'hex'), 'PENDING', 1
++                  FROM generate_series(1, 256)
++                """, AUTHORIZED_GROUP_ID, SUBJECT_ID, blocked, ACTOR_ID);
++        jdbcTemplate.update("""
++                INSERT INTO schedule_semester_archive_barriers(semester_id, operation_id, state_version, participant_state)
++                VALUES (?, ?, 97, 'READY')
++                """, blocked, UUID.randomUUID());
++        archiveBarrierSemesterIds.add(blocked);
++        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> createDate(dateCreate(writable, "2026-10-02")));
++        instant.set(Instant.parse("2026-10-02T21:00:00Z"));
++        assertThat(placement.archiveExpiredDates()).isEqualTo(1);
++        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_homework_bindings WHERE semester_id = ? AND state = 'PENDING'", Long.class, blocked)).isEqualTo(256);
++        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_homework_bindings WHERE semester_id = ? AND state = 'ARCHIVED'", Long.class, writable)).isEqualTo(1);
++    }
++
++    @Test
++    void batchReadAndMoveWithReversedOriginIdsCompleteUnderConcurrentLocks() throws Exception {
++        long semester = FIXTURE_SEQUENCE.incrementAndGet();
++        Fixture first = insertFixture(AUTHORIZED_GROUP_ID, semester, 1), second = insertFixture(AUTHORIZED_GROUP_ID, semester, 2);
++        Fixture source = cloneFixture(second), target = cloneFixture(first);
++        long highOrigin = jdbcTemplate.queryForObject("SELECT schedule_item_id FROM lesson_occurrences WHERE id = ?", Long.class, source.occurrenceId());
++        long lowOrigin = jdbcTemplate.queryForObject("SELECT schedule_item_id FROM lesson_occurrences WHERE id = ?", Long.class, target.occurrenceId());
++        assertThat(source.occurrenceId()).isLessThan(target.occurrenceId()); assertThat(highOrigin).isGreaterThan(lowOrigin);
++        when(academicGrpcClient.getSemesterArchiveAuthorityState(semester)).thenReturn(
++                SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
++        var sourceDate = jdbcTemplate.queryForObject("SELECT date::TEXT FROM lessons WHERE id = ?", String.class, source.lessonId());
++        var targetDate = jdbcTemplate.queryForObject("SELECT date::TEXT FROM lessons WHERE id = ?", String.class, target.lessonId());
++        AtomicReference<HomeworkBindingResponse> linked = new AtomicReference<>();
++        Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).run(() -> {
++            var active = createDate(dateCreate(semester, sourceDate)); var identity = editIdentity(active, semester);
++            linked.set(placement.move(MoveHomeworkBindingRequest.newBuilder().setIdentity(identity).setBindingMode("LESSON")
++                    .setDate(sourceDate).setLessonNumber(2).setTargetOccurrenceId(source.occurrenceId())
++                    .setExpectedBindingRevision(active.getRevision()).setExpectedLessonRevision(1).build()).getAcceptedBinding());
++            placement.acknowledge(identity);
++        });
++        var highLocked = new java.util.concurrent.CountDownLatch(1);
++        var resumeReader = new java.util.concurrent.CountDownLatch(1);
++        var paused = new java.util.concurrent.atomic.AtomicBoolean();
++        JdbcTemplate readerJdbc = new JdbcTemplate(jdbcTemplate.getDataSource()) {
++            @Override public <T> List<T> query(String sql, org.springframework.jdbc.core.RowMapper<T> mapper, Object... args) {
++                List<T> result = super.query(sql, mapper, args);
++                if (sql.equals("SELECT id FROM schedule_items WHERE id = ? FOR UPDATE") && args[0].equals(highOrigin) && paused.compareAndSet(false, true)) {
++                    highLocked.countDown();
++                    try { if (!resumeReader.await(10, java.util.concurrent.TimeUnit.SECONDS)) throw new IllegalStateException("reader coordination timeout"); }
++                    catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); throw new IllegalStateException(interrupted); }
++                }
++                return result;
++            }
++        };
++        var reader = new HomeworkBindingService(readerJdbc, writeFence, placement);
++        var executor = java.util.concurrent.Executors.newFixedThreadPool(2);
++        var tx = new org.springframework.transaction.support.TransactionTemplate(transactions);
++        var writerName = "homework-move-" + UUID.randomUUID();
++        var identity = editIdentity(linked.get(), semester);
++        try {
++            var read = executor.submit(() -> Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).call(() ->
++                    tx.execute(status -> reader.getBindings(HomeworkBindingsRequest.newBuilder().addOccurrenceIds(source.occurrenceId()).addOccurrenceIds(target.occurrenceId()).build()))));
++            assertThat(highLocked.await(10, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
++            var write = executor.submit(() -> Context.current().withValue(HomeworkBindingActorContext.CLAIMS, headman()).call(() -> tx.execute(status -> {
++                jdbcTemplate.queryForObject("SELECT set_config('application_name', ?, true)", String.class, writerName);
++                return placement.move(MoveHomeworkBindingRequest.newBuilder().setIdentity(identity).setBindingMode("LESSON").setDate(targetDate)
++                        .setLessonNumber(1).setTargetOccurrenceId(target.occurrenceId()).setExpectedBindingRevision(linked.get().getRevision())
++                        .setExpectedLessonRevision(1).build());
++            })));
++            boolean waiting = false; long until = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(10);
++            while (!waiting && System.nanoTime() < until) {
++                waiting = Boolean.TRUE.equals(jdbcTemplate.queryForObject("SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE application_name = ? AND wait_event_type = 'Lock')", Boolean.class, writerName));
++                if (!waiting) Thread.sleep(10);
++            }
++            assertThat(waiting).isTrue(); resumeReader.countDown();
++            assertThat(read.get(10, java.util.concurrent.TimeUnit.SECONDS)).hasSize(1);
++            assertThat(write.get(10, java.util.concurrent.TimeUnit.SECONDS).getState()).isEqualTo("APPLIED_AWAITING_ACK");
++            placement.acknowledge(identity);
++            assertThat(jdbcTemplate.queryForObject("SELECT occurrence_id FROM lesson_homework_bindings WHERE binding_id = ?", Long.class, linked.get().getBindingId())).isEqualTo(target.occurrenceId());
++        } finally { resumeReader.countDown(); executor.shutdownNow(); }
++    }
++
++    private Fixture cloneFixture(Fixture original) {
++        Long occurrence = jdbcTemplate.queryForObject("""
++                INSERT INTO lesson_occurrences(schedule_item_id, occurrence_date, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type)
++                SELECT schedule_item_id, occurrence_date + 7, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type
++                  FROM lesson_occurrences WHERE id = ? RETURNING id
++                """, Long.class, original.occurrenceId());
++        occurrenceIds.add(occurrence);
++        Long lesson = jdbcTemplate.queryForObject("""
++                INSERT INTO lessons(schedule_item_id, occurrence_id, assignment_id, group_id, subject_id, semester_id,
++                    assigned_teacher_id, lesson_type, lesson_number, day_of_week, start_time, end_time, room_snapshot, week_type_snapshot,
++                    generation, revision, date, status, is_geo_blocked)
++                SELECT schedule_item_id, ?, assignment_id, group_id, subject_id, semester_id, assigned_teacher_id, lesson_type,
++                    lesson_number, day_of_week, start_time, end_time, room_snapshot, week_type_snapshot, 1, 1, date + 7, 'planned'::lesson_status, false
++                  FROM lessons WHERE id = ? RETURNING id
++                """, Long.class, occurrence, original.lessonId());
++        lessonIds.add(lesson); jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?", lesson, occurrence);
++        return new Fixture(occurrence, lesson);
++    }
++
++    private InternalJwtClaims headman() {
++        return new InternalJwtClaims(ACTOR_ID, UUID.randomUUID(), 1L, 1L, "HEADMAN", "ACTIVE", AUTHORIZED_GROUP_ID, true, false);
++    }
++
++    private ReserveHomeworkBindingRequest dateCreate(long semester, String date) {
++        dateFixtureSemesters.add(semester);
++        byte[] hash = new byte[32]; hash[0] = 17;
++        return ReserveHomeworkBindingRequest.newBuilder().setBindingMode("DATE").setDate(date)
++                .setGroupId(AUTHORIZED_GROUP_ID).setSubjectId(SUBJECT_ID).setSemesterId(semester)
++                .setRequestKey(UUID.randomUUID().toString()).setPayloadHash(ByteString.copyFrom(hash)).build();
++    }
++
++    private HomeworkBindingResponse createDate(ReserveHomeworkBindingRequest request) {
++        var pending = homeworkBindingService.reserve(request);
++        assertThat(pending.getOccurrenceId()).isZero(); assertThat(pending.hasCurrentLesson()).isFalse();
++        return homeworkBindingService.confirm(ConfirmHomeworkBindingRequest.newBuilder().setBindingId(pending.getBindingId())
++                .setHomeworkId(FIXTURE_SEQUENCE.incrementAndGet()).setRequestKey(request.getRequestKey()).build());
++    }
++
++    private HomeworkEditIdentity editIdentity(HomeworkBindingResponse active, long semester) {
++        byte[] hash = new byte[32]; hash[0] = 29;
++        return HomeworkEditIdentity.newBuilder().setOperationId(UUID.randomUUID().toString()).setBindingId(active.getBindingId())
++                .setHomeworkId(active.getHomeworkId()).setActorId(ACTOR_ID).setRequestKey(UUID.randomUUID().toString())
++                .setCommandHash(ByteString.copyFrom(hash)).setGroupId(AUTHORIZED_GROUP_ID).setSubjectId(SUBJECT_ID).setSemesterId(semester).build();
++    }
++
++    private MoveHomeworkBindingRequest dateMove(HomeworkBindingResponse active, HomeworkEditIdentity identity, String date) {
++        return MoveHomeworkBindingRequest.newBuilder().setIdentity(identity).setBindingMode("DATE").setDate(date)
++                .setExpectedBindingRevision(active.getRevision()).build();
++    }
++
+     private static SetSemesterArchiveBarrierRequest deleteBarrierRequest(
+             UUID operationId, long semesterId, long stateVersion,
+             SemesterArchiveBarrierCommand command, String expectedDigest) {
+@@ -429,16 +797,19 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
+     }
+ 
+     private Fixture insertFixture(long groupId, long semesterId) {
++        return insertFixture(groupId, semesterId, groupId == AUTHORIZED_GROUP_ID ? 1 : 2);
++    }
++
++    private Fixture insertFixture(long groupId, long semesterId, int lessonNumber) {
+         long assignmentId = FIXTURE_SEQUENCE.incrementAndGet();
+         LocalDate date = LocalDate.of(2090, 1, 1).plusDays(assignmentId % 10000);
+-        int lessonNumber = groupId == AUTHORIZED_GROUP_ID ? 1 : 2;
+         jdbcTemplate.update("""
+                 INSERT INTO schedule_assignment_fences
+                     (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
+                      lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive)
+                 VALUES (?, ?, ?, ?, 884001, 'lecture', ?, ?, ?)
+                 """, assignmentId, groupId, SUBJECT_ID, semesterId,
+-                date, date.plusDays(1), date.plusDays(1));
++                date, date.plusDays(45), date.plusDays(45));
+         Long scheduleItemId = jdbcTemplate.queryForObject("""
+                 INSERT INTO schedule_items
+                     (assignment_id, group_id, subject_id, semester_id, day_of_week,

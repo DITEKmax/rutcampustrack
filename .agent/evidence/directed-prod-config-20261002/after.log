@@ -1,0 +1,16 @@
+PASS valid separate: actual_exit=0 expected_exit=0 diagnostic_safe=True
+PASS missing academic: actual_exit=2 expected_exit=2 diagnostic_safe=True
+✗ FAIL: ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN is not set
+PASS missing schedule: actual_exit=2 expected_exit=2 diagnostic_safe=True
+✗ FAIL: SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN is not set
+PASS placeholder: actual_exit=2 expected_exit=2 diagnostic_safe=True
+✗ FAIL: ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN contains 'CHANGE_ME' placeholder — заполните реальным значением
+PASS padded: actual_exit=3 expected_exit=3 diagnostic_safe=True
+✗ FAIL: ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN must be canonical unpadded base64url for exactly 32 bytes (43 ASCII chars)
+PASS noncanonical pad bits: actual_exit=3 expected_exit=3 diagnostic_safe=True
+✗ FAIL: SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN must be canonical unpadded base64url for exactly 32 bytes (43 ASCII chars)
+PASS wrong alphabet: actual_exit=3 expected_exit=3 diagnostic_safe=True
+✗ FAIL: ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN must be canonical unpadded base64url for exactly 32 bytes (43 ASCII chars)
+PASS wrong length: actual_exit=3 expected_exit=3 diagnostic_safe=True
+✗ FAIL: SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN must be canonical unpadded base64url for exactly 32 bytes (43 ASCII chars)
+Cases=8 failures=0; synthetic fixtures removed; no real env read

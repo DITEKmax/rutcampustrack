@@ -1,0 +1,49 @@
+{
+  "baseline": "56f3dc52e0cb2d66241611f739ccd0a37e96ca74",
+  "source_revision": "baseline plus scoped product.diff, frozen in this local commit",
+  "environment": "Windows PowerShell, Git Bash5.3.15, Python3.12; deterministic public synthetic fixtures only",
+  "checks": [
+    {
+      "command": "git status --short --untracked-files=no",
+      "exit_code": 0,
+      "result": "tracked worktree clean before switch; foreign untracked evidence preserved"
+    },
+    {
+      "command": "git switch -c codex/directed-prod-config-1002 56f3dc52",
+      "exit_code": 0,
+      "result": "ordinary switch, no reset/stash/clean; scoped Git metadata escalation accepted"
+    },
+    {
+      "command": "python -X utf8 .agent/evidence/directed-prod-config-20261002/probe.py --before",
+      "exit_code": 1,
+      "log": "before.log",
+      "result": "both missing directed tokens incorrectly admitted by baseline validator with exit0"
+    },
+    {
+      "command": "python -X utf8 .agent/evidence/directed-prod-config-20261002/probe.py",
+      "exit_code": 0,
+      "log": "after.log",
+      "result": "8/8 synthetic scenarios PASS; valid separate exit0, missing each/placeholder exit2, padded/noncanonical43/wrong alphabet/length exit3; diagnostics show name without token value"
+    },
+    {
+      "command": "& 'C:/Program Files/Git/bin/bash.exe' -n scripts/validate-env-prod.sh",
+      "exit_code": 0,
+      "log": "syntax.log",
+      "result": "syntax PASS"
+    },
+    {
+      "command": "git diff --check -- .env.prod.example scripts/validate-env-prod.sh",
+      "exit_code": 0,
+      "result": "scoped whitespace PASS"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0,
+      "result": "all scoped product/evidence whitespace PASS"
+    }
+  ],
+  "runtime": "actual full validator invoked with synthetic env files; each temporary fixture removed; no real .env read or secrets generated/output",
+  "limits": "No server/service build, production startup, containers, network, deploy, rotation, installs or independent review here. Root owns acceptance/integration and shared runbook edits.",
+  "runs": "One baseline reproduction (2 cases) and one post-fix invocation (8 cases); no repeated PASS or product fixture corrections; final comment-only duplicate label removed without repeating behavior tests. Canonical original personally inspected.",
+  "canonical_equivalence": "32 bytes =256 data bits. 43 base64 sextets =258 positions, so last two low bits must be zero. Allowed final alphabet indices are multiples of4: AEIMQUYcgkosw048;42 preceding alphabet characters unrestricted. In LC_ALL=C this matches exactly Java ASCII alphabet,32byte decode and no-padding reencode equality. No decoder/binary secret/subprocess required."
+}

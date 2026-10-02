@@ -7,6 +7,8 @@
 #      (либо substring "CHANGE_ME" в значении — частая ошибка copy-paste).
 #   3. Формат каждой соответствует ожиданиям:
 #      - GRPC_SECRET / INTERNAL_ISSUER_SECRET — base64 ≥ 32 bytes.
+#      - ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN / SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
+#        — canonical unpadded base64url ровно 32 bytes (43 ASCII chars).
 #      - MONGODB_REPLICA_SET_KEY — base64 ровно 1024 chars (756 raw bytes).
 #      - BOT_TOKEN / TMA_BOT_TOKEN / BOT_ALERT_TOKEN — Telegram regex.
 #      - VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY — base64url, нужная длина.
@@ -109,6 +111,7 @@ REQUIRED_VARS=(
     GATEWAY_PRIVATE_SUBNET GATEWAY_NETWORK_GATEWAY GATEWAY_NGINX_IPV4
     GATEWAY_DYNAMIC_IP_RANGE
     GRPC_SECRET INTERNAL_ISSUER_SECRET
+    ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
     ALERT_WEBHOOK_SECRET GRAFANA_PASSWORD
     SWAGGER_HTPASSWD
 )
@@ -328,6 +331,23 @@ check_regex() {
         err "$var_name не соответствует формату ($description). Got: ${val:0:20}..."
     fi
 }
+
+# Equivalent to DirectedServiceCredential.decodeCanonical: 43 base64url sextets
+# encode 256 bits with two unused low bits, which MUST be zero in the last char.
+# Restricting that last char rejects noncanonical aliases accepted by decoders.
+# Pure Bash avoids storing decoded binary credentials or printing their values.
+check_directed_service_token() {
+    local var_name="$1"
+    local val
+    local LC_ALL=C
+    val=$(env_get "$var_name")
+    if ! [[ "$val" =~ ^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$ ]]; then
+        err "$var_name must be canonical unpadded base64url for exactly 32 bytes (43 ASCII chars)"
+    fi
+}
+
+check_directed_service_token ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN
+check_directed_service_token SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
 
 # Passwords — minimum 8 chars (production hardening).
 check_min_length POSTGRES_ACADEMIC_PASSWORD 8

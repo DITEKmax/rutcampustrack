@@ -1,0 +1,41 @@
+diff --git a/.env.prod.example b/.env.prod.example
+index 746875fd..f14acfba 100644
+--- a/.env.prod.example
++++ b/.env.prod.example
+@@ -127,0 +128,9 @@ GRPC_SECRET=CHANGE_ME
++# Directed credentials для Academic ↔ Schedule, отдельно от GRPC_SECRET.
++# Generate independently for EACH direction (32 bytes, unpadded base64url):
++#   openssl rand -base64 32 | tr '/+' '_-' | tr -d '=\n'
++# Academic → Schedule: одно значение у Academic sender и Schedule receiver.
++ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN=CHANGE_ME
++# Schedule → Academic: другое значение у Schedule sender и Academic receiver.
++# Сгенерируй независимо; не меняй местами направления.
++SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN=CHANGE_ME
++
+diff --git a/scripts/validate-env-prod.sh b/scripts/validate-env-prod.sh
+index e255d63a..fc68f679 100644
+--- a/scripts/validate-env-prod.sh
++++ b/scripts/validate-env-prod.sh
+@@ -9,0 +10,2 @@
++#      - ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN / SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
++#        — canonical unpadded base64url ровно 32 bytes (43 ASCII chars).
+@@ -111,0 +114 @@ REQUIRED_VARS=(
++    ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
+@@ -331,0 +335,17 @@ check_regex() {
++# Equivalent to DirectedServiceCredential.decodeCanonical: 43 base64url sextets
++# encode 256 bits with two unused low bits, which MUST be zero in the last char.
++# Restricting that last char rejects noncanonical aliases accepted by decoders.
++# Pure Bash avoids storing decoded binary credentials or printing their values.
++check_directed_service_token() {
++    local var_name="$1"
++    local val
++    local LC_ALL=C
++    val=$(env_get "$var_name")
++    if ! [[ "$val" =~ ^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$ ]]; then
++        err "$var_name must be canonical unpadded base64url for exactly 32 bytes (43 ASCII chars)"
++    fi
++}
++
++check_directed_service_token ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN
++check_directed_service_token SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
++

@@ -342,8 +342,8 @@ class HomeworkStudentCompletionConcurrencyIT {
                         + "VALUES (?, NULL, 'HomeworkDb', ?, 'student'::user_role, 'active'::account_status, "
                         + "false, ?, false, NOW(), NOW()) RETURNING id",
                 Long.class, login, firstName, group);
-        jdbc.update("INSERT INTO user_role_grants (user_id, role, status, group_id) "
-                + "VALUES (?, 'student'::user_role, 'active'::account_status, ?)", id, group);
+        jdbc.update("INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
+                + "VALUES (?, 'student'::user_role, 'active'::account_status, ?, NOW(), NOW())", id, group);
         return id;
     }
 

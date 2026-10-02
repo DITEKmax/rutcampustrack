@@ -1,0 +1,1033 @@
+diff --git a/docs/openapi/mobile-bff.json b/docs/openapi/mobile-bff.json
+index 2f482db7..4cbde337 100644
+--- a/docs/openapi/mobile-bff.json
++++ b/docs/openapi/mobile-bff.json
+@@ -3593,7 +3593,7 @@
+         }
+       },
+       "StudentHomeworkItem" : {
+-        "required" : [ "completed", "completedAt", "description", "id", "lessonDate", "lessonNumber", "link", "subject", "title" ],
++        "required" : [ "archived", "bindingMode", "completed", "completedAt", "description", "id", "lessonDate", "lessonNumber", "link", "subject", "title" ],
+         "type" : "object",
+         "properties" : {
+           "id" : {
+@@ -3618,7 +3618,15 @@
+           },
+           "lessonNumber" : {
+             "type" : "integer",
+-            "format" : "int32"
++            "format" : "int32",
++            "nullable" : true
++          },
++          "bindingMode" : {
++            "type" : "string",
++            "enum" : [ "LESSON", "DATE" ]
++          },
++          "archived" : {
++            "type" : "boolean"
+           },
+           "completed" : {
+             "type" : "boolean"
+diff --git a/frontends/mobile-core/fixtures/homework-feed.json b/frontends/mobile-core/fixtures/homework-feed.json
+index d67280ed..da6f58ee 100644
+--- a/frontends/mobile-core/fixtures/homework-feed.json
++++ b/frontends/mobile-core/fixtures/homework-feed.json
+@@ -20,6 +20,8 @@
+       "link": "https://ruttrack.example/homework/142",
+       "lessonDate": "2026-09-01",
+       "lessonNumber": 1,
++      "bindingMode": "LESSON",
++      "archived": false,
+       "completed": true,
+       "completedAt": "2026-09-07T09:30:00Z"
+     },
+@@ -34,6 +36,8 @@
+       "link": null,
+       "lessonDate": "2026-09-02",
+       "lessonNumber": 2,
++      "bindingMode": "LESSON",
++      "archived": false,
+       "completed": false,
+       "completedAt": null
+     }
+diff --git a/frontends/mobile-core/src/api/generated/mobile-bff.ts b/frontends/mobile-core/src/api/generated/mobile-bff.ts
+index 82686ed1..163cb7cb 100644
+--- a/frontends/mobile-core/src/api/generated/mobile-bff.ts
++++ b/frontends/mobile-core/src/api/generated/mobile-bff.ts
+@@ -1,6 +1,6 @@
+ /* eslint-disable */
+ // Generated from docs/openapi/mobile-bff.json. Do not edit.
+-// Contract: JS-STUDENT-01-r1; SHA-256: d4f97e0476cd681a9460247d9f904c7901241269b73221a097ec6be45132cda0
++// Contract: JS-STUDENT-01-r1; SHA-256: 79c93ba46cbbfa0a6bff2b764e95e30e48ca3ba254aa3101f5005f3f566cd45e
+ 
+ export interface paths {
+     "/api/v1/student/homework": {
+@@ -372,6 +372,9 @@ export interface components {
+             completed: boolean;
+         };
+         StudentHomeworkItem: {
++            archived: boolean;
++            /** @enum {string} */
++            bindingMode: "LESSON" | "DATE";
+             completed: boolean;
+             /** Format: date-time */
+             completedAt: string | null;
+@@ -380,7 +383,7 @@ export interface components {
+             /** Format: date */
+             lessonDate: string;
+             /** Format: int32 */
+-            lessonNumber: number;
++            lessonNumber: number | null;
+             link: string | null;
+             subject: components["schemas"]["StudentHomeworkSubject"];
+             title: string;
+diff --git a/frontends/mobile-core/src/domain/homework.test.ts b/frontends/mobile-core/src/domain/homework.test.ts
+index 59b4374b..d7a1d114 100644
+--- a/frontends/mobile-core/src/domain/homework.test.ts
++++ b/frontends/mobile-core/src/domain/homework.test.ts
+@@ -18,6 +18,8 @@ function item(overrides: Partial<StudentHomeworkItem> = {}): StudentHomeworkItem
+     link: null,
+     lessonDate: '2026-09-01',
+     lessonNumber: 1,
++    bindingMode: 'LESSON',
++    archived: false,
+     completed: false,
+     completedAt: null,
+     ...overrides,
+diff --git a/frontends/mobile-core/src/domain/homework.ts b/frontends/mobile-core/src/domain/homework.ts
+index cb88ae80..cc39a687 100644
+--- a/frontends/mobile-core/src/domain/homework.ts
++++ b/frontends/mobile-core/src/domain/homework.ts
+@@ -94,7 +94,7 @@ function itemOrder(left: StudentHomeworkItem, right: StudentHomeworkItem): numbe
+   if (dateOrder !== 0) return dateOrder
+   const completionOrder = Number(left.completed) - Number(right.completed)
+   if (completionOrder !== 0) return completionOrder
+-  if (left.lessonNumber !== right.lessonNumber) return left.lessonNumber - right.lessonNumber
++  if (left.lessonNumber !== right.lessonNumber) return (left.lessonNumber ?? Number.MAX_SAFE_INTEGER) - (right.lessonNumber ?? Number.MAX_SAFE_INTEGER)
+   const subjectOrder = left.subject.name.localeCompare(right.subject.name, 'ru')
+   if (subjectOrder !== 0) return subjectOrder
+   return left.id.localeCompare(right.id)
+diff --git a/frontends/mobile-core/src/features/homework/AssistantHomeworkScreen.vue b/frontends/mobile-core/src/features/homework/AssistantHomeworkScreen.vue
+index 5cce8529..0e8d8374 100644
+--- a/frontends/mobile-core/src/features/homework/AssistantHomeworkScreen.vue
++++ b/frontends/mobile-core/src/features/homework/AssistantHomeworkScreen.vue
+@@ -8,13 +8,18 @@ import {
+   type HeadmanHomeworkApi,
+   type HeadmanHomeworkSemester,
+   type HeadmanManagedHomework,
++  type HeadmanHomeworkSubject,
++  type HeadmanHomeworkHistory,
++  type HomeworkBindingMode,
+ } from './headman-homework-client'
+ import {
+   intentAfterHomeworkCreateFailure,
+   reuseOrCreateAssistantHomeworkIntent,
++  reuseOrCreateAssistantHomeworkEditIntent,
+   sameAssistantHomeworkDraftContext,
+   type AssistantHomeworkCreateIntent,
+   type AssistantHomeworkDraftContext,
++  type AssistantHomeworkEditIntent,
+ } from './assistant-homework-create-intent'
+ import './assistant-homework-screen.pcss'
+ 
+@@ -45,6 +50,9 @@ const semester = ref<HeadmanHomeworkSemester | null>(null)
+ const lessons = ref<readonly HeadmanJournalLesson[]>([])
+ const homeworks = ref<readonly HeadmanManagedHomework[]>([])
+ const selectedLessonId = ref<number | null>(null)
++const bindingMode = ref<HomeworkBindingMode>('LESSON')
++const subjects = ref<readonly HeadmanHomeworkSubject[]>([])
++const selectedSubjectId = ref<number | null>(null)
+ const loading = ref(false)
+ const error = ref<string | null>(null)
+ const notice = ref<string | null>(null)
+@@ -55,6 +63,14 @@ const link = ref('')
+ const draftContext = shallowRef<AssistantHomeworkDraftContext | null>(null)
+ const createIntent = shallowRef<AssistantHomeworkCreateIntent | null>(null)
+ const createConflict = ref(false)
++const createPending = ref(false)
++const editIntent = shallowRef<AssistantHomeworkEditIntent | null>(null)
++const editRevision = ref<number | null>(null)
++const editConflict = ref(false)
++const historyId = ref<number | null>(null)
++const historyEntries = ref<readonly HeadmanHomeworkHistory[]>([])
++const historyLoading = ref(false)
++let historyRevision = 0
+ const mutationBusy = ref(false)
+ const mutationId = ref<number | null>(null)
+ let draftApi: HeadmanHomeworkApi | null = null
+@@ -65,20 +81,29 @@ let disposed = false
+ const selectedLesson = computed(() => lessons.value.find((lesson) => lesson.id === selectedLessonId.value) ?? null)
+ const selectedHomeworks = computed(() => {
+   const lesson = selectedLesson.value
+-  if (!lesson) return []
+   return homeworks.value
+-    .filter((item) => item.lessonDate === lesson.date && item.lessonNumber === lesson.lessonNumber)
++    .filter((item) => bindingMode.value === 'DATE'
++      ? item.bindingMode === 'DATE' && item.lessonDate === selectedDate.value
++      : lesson !== null && item.bindingMode === 'LESSON' && item.lessonDate === lesson?.date && item.lessonNumber === lesson?.lessonNumber)
+     .slice()
+     .sort((left, right) => left.id - right.id)
+ })
+ const canCreate = computed(() => Boolean(
+-  !props.offline && !props.readOnly && semester.value && selectedLesson.value
+-    && selectedLesson.value.subjectId && selectedLesson.value.lessonNumber
+-    && selectedLesson.value.status !== 'CANCELLED',
++  !props.offline && !props.readOnly && semester.value
++    && (bindingMode.value === 'DATE' ? selectedSubjectId.value !== null
++      : selectedLesson.value?.current && selectedLesson.value.subjectId && selectedLesson.value.lessonNumber
++        && selectedLesson.value.status !== 'CANCELLED' && selectedLesson.value.status !== 'TRANSFERRED'),
+ ))
+-const retryLocked = computed(() => formId.value === 'new'
+-  && createIntent.value !== null && !mutationBusy.value)
+-const uncertainCreate = computed(() => retryLocked.value && !createConflict.value)
++const retryLocked = computed(() => (createIntent.value !== null || editIntent.value !== null) && !mutationBusy.value)
++const uncertainCreate = computed(() => retryLocked.value && !createConflict.value && !editConflict.value && !createPending.value)
++
++function canEdit(item: HeadmanManagedHomework): boolean {
++  return props.userId !== null && !props.offline && !props.readOnly && !item.archived && item.revision !== null
++}
++
++function subjectLabel(item: HeadmanManagedHomework): string {
++  return subjects.value.find((subject) => subject.id === item.subjectId)?.name ?? 'Предмет недоступен'
++}
+ 
+ function formatDate(value: string): string {
+   const date = new Date(`${value}T12:00:00Z`)
+@@ -99,8 +124,14 @@ function lessonLabel(lesson: HeadmanJournalLesson): string {
+ 
+ function currentDraftContext(): AssistantHomeworkDraftContext | null {
+   const lesson = selectedLesson.value
+-  if (!lesson || props.userId === null || props.groupId === null || semester.value === null
+-    || lesson.subjectId === null || lesson.lessonNumber === null) return null
++  if (props.userId === null || props.groupId === null || semester.value === null) return null
++  if (bindingMode.value === 'DATE') {
++    if (selectedSubjectId.value === null) return null
++    return { userId: props.userId, groupId: props.groupId, semesterId: semester.value.id,
++      selectedDate: selectedDate.value, lessonId: null, lessonDate: selectedDate.value,
++      subjectId: selectedSubjectId.value, lessonNumber: null, bindingMode: 'DATE' }
++  }
++  if (!lesson || lesson.subjectId === null || lesson.lessonNumber === null) return null
+   return {
+     userId: props.userId,
+     groupId: props.groupId,
+@@ -110,6 +141,7 @@ function currentDraftContext(): AssistantHomeworkDraftContext | null {
+     lessonDate: lesson.date,
+     subjectId: lesson.subjectId,
+     lessonNumber: lesson.lessonNumber,
++    bindingMode: 'LESSON',
+   }
+ }
+ 
+@@ -121,6 +153,10 @@ function clearDraft(): void {
+   draftContext.value = null
+   createIntent.value = null
+   createConflict.value = false
++  createPending.value = false
++  editIntent.value = null
++  editRevision.value = null
++  editConflict.value = false
+   draftApi = null
+ }
+ 
+@@ -138,6 +174,12 @@ function resetContextData(): void {
+   lessons.value = []
+   homeworks.value = []
+   selectedLessonId.value = null
++  subjects.value = []
++  selectedSubjectId.value = null
++  historyRevision += 1
++  historyId.value = null
++  historyEntries.value = []
++  historyLoading.value = false
+   loading.value = false
+   error.value = null
+   notice.value = null
+@@ -163,13 +205,16 @@ function openCreate(): void {
+ }
+ 
+ function openEdit(item: HeadmanManagedHomework): void {
+-  if (props.userId === null || item.publishedBy !== props.userId || props.offline || props.readOnly
++  if (!canEdit(item)
+     || formId.value !== null || createIntent.value !== null || !props.api) return
++  bindingMode.value = item.bindingMode
++  if (item.bindingMode === 'DATE') selectedSubjectId.value = item.subjectId
+   const context = currentDraftContext()
+   if (!context) return
+   formId.value = item.id
+   draftContext.value = context
+   draftApi = props.api
++  editRevision.value = item.revision
+   title.value = item.title
+   description.value = item.description ?? ''
+   link.value = item.link ?? ''
+@@ -181,8 +226,7 @@ function closeForm(): void {
+ }
+ 
+ function requestKey(): string {
+-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+-  return `homework-${Date.now()}-${Math.random().toString(36).slice(2)}`
++  return crypto.randomUUID()
+ }
+ 
+ function validForm(): boolean {
+@@ -212,15 +256,26 @@ async function save(): Promise<void> {
+       if (!intent) return
+       createIntent.value = intent
+       createConflict.value = false
+-      await api.createHomework(intent.input)
++      createPending.value = false
++      const created = await api.createHomework(intent.input)
++      if (disposed || revision !== mutationRevision) return
++      if (created === null) {
++        createPending.value = true
++        notice.value = 'Сервер принял публикацию. Повтори запрос с тем же ключом, чтобы проверить завершение.'
++        return
++      }
+     } else if (typeof currentForm === 'number') {
+       const existing = selectedHomeworks.value.find((item) => item.id === currentForm)
+-      if (!existing || props.userId === null || existing.publishedBy !== props.userId) return
+-      await api.updateHomework(currentForm, {
++      if (!existing || !canEdit(existing) || editRevision.value === null) return
++      const intent = reuseOrCreateAssistantHomeworkEditIntent(editIntent.value, context, currentForm, editRevision.value, {
+         title: title.value,
+         description: description.value,
+         link: link.value,
+-      })
++      }, requestKey)
++      if (!intent) return
++      editIntent.value = intent
++      editConflict.value = false
++      await api.updateHomework(currentForm, intent.input)
+     } else {
+       return
+     }
+@@ -238,12 +293,17 @@ async function save(): Promise<void> {
+       return
+     }
+     if (currentForm === 'new') {
++      createPending.value = false
+       const status = cause instanceof HeadmanHomeworkApiError ? cause.response.status : null
+       createIntent.value = intentAfterHomeworkCreateFailure(
+         createIntent.value,
+         status,
+       )
+       createConflict.value = status === 409 && createIntent.value !== null
++    } else {
++      const status = cause instanceof HeadmanHomeworkApiError ? cause.response.status : null
++      if (status === 400 || status === 422) editIntent.value = null
++      editConflict.value = status === 409
+     }
+     error.value = cause instanceof Error ? cause.message : 'Не удалось сохранить ДЗ.'
+     emit('error', cause)
+@@ -255,7 +315,7 @@ async function save(): Promise<void> {
+ async function remove(item: HeadmanManagedHomework): Promise<void> {
+   const api = props.api
+   if (mutationBusy.value || retryLocked.value || !api || props.offline || props.readOnly || props.userId === null
+-    || item.publishedBy !== props.userId) return
++    || item.archived) return
+   if (typeof window !== 'undefined' && !window.confirm(`Удалить задание «${item.title}»?`)) return
+   const revision = ++mutationRevision
+   mutationBusy.value = true
+@@ -310,13 +370,17 @@ async function load(): Promise<void> {
+       selectedLessonId.value = null
+       return
+     }
+-    const [nextLessons, nextHomeworks] = await Promise.all([
++    const [nextLessons, nextHomeworks, nextSubjects] = await Promise.all([
+       journalApi.listLessons(groupId, selectedDate.value, selectedDate.value),
+       api.listHomeworks(groupId, currentSemester.id),
++      api.listSubjects(),
+     ])
+     if (disposed || revision !== loadRevision) return
+     lessons.value = nextLessons
+     homeworks.value = nextHomeworks
++    subjects.value = nextSubjects
++    selectedSubjectId.value = nextSubjects.some((subject) => subject.id === selectedSubjectId.value)
++      ? selectedSubjectId.value : nextSubjects[0]?.id ?? null
+     selectedLessonId.value = nextLessons.some((lesson) => lesson.id === selectedLessonId.value)
+       ? selectedLessonId.value
+       : nextLessons[0]?.id ?? null
+@@ -341,10 +405,9 @@ watch(
+ )
+ 
+ watch(
+-  () => {
+-    const lesson = selectedLesson.value
+-    return lesson ? [lesson.id, lesson.date, lesson.subjectId, lesson.lessonNumber] as const : null
+-  },
++  () => { const lesson = selectedLesson.value
++    return bindingMode.value === 'DATE' ? `DATE:${selectedSubjectId.value}`
++      : `LESSON:${lesson?.id}:${lesson?.date}:${lesson?.subjectId}:${lesson?.lessonNumber}` },
+   () => {
+     invalidateDraft()
+     error.value = null
+@@ -353,10 +416,38 @@ watch(
+   { flush: 'sync' },
+ )
+ 
++async function refreshConflictingEdit(): Promise<void> {
++  if (mutationBusy.value) return
++  clearDraft()
++  await load()
++  notice.value = 'Список обновлён. Открой задание заново, чтобы редактировать текущую версию.'
++}
++
++async function showHistory(item: HeadmanManagedHomework): Promise<void> {
++  const api = props.api
++  if (!api || props.offline) return
++  const revision = ++historyRevision
++  historyId.value = item.id
++  historyEntries.value = []
++  historyLoading.value = true
++  try {
++    const entries = await api.history(item.id)
++    if (!disposed && revision === historyRevision && props.api === api) historyEntries.value = entries
++  } catch (cause) {
++    if (!disposed && revision === historyRevision && !(cause instanceof StaleSessionGenerationError)) {
++      error.value = cause instanceof Error ? cause.message : 'Не удалось загрузить историю ДЗ.'
++      emit('error', cause)
++    }
++  } finally {
++    if (!disposed && revision === historyRevision) historyLoading.value = false
++  }
++}
++
+ onBeforeUnmount(() => {
+   disposed = true
+   loadRevision += 1
+   mutationRevision += 1
++  historyRevision += 1
+ })
+ </script>
+ 
+@@ -385,7 +476,16 @@ onBeforeUnmount(() => {
+ 
+     <section v-if="loading" class="assistant-homework__state" role="status">Загружаем пары и ДЗ…</section>
+     <template v-else-if="semester">
+-      <section class="assistant-homework__lessons" aria-labelledby="assistant-homework-lessons-title">
++      <section class="assistant-homework__form" aria-label="Привязка домашнего задания">
++        <label><span>Дата</span><input v-model="selectedDate" type="date" :min="semester.dateFrom ?? undefined" :max="semester.dateTo ?? undefined" :disabled="mutationBusy || formId !== null"></label>
++        <label><span>Привязка</span><select v-model="bindingMode" :disabled="mutationBusy || formId !== null">
++          <option value="LESSON">К паре</option><option value="DATE">На дату</option>
++        </select></label>
++        <label v-if="bindingMode === 'DATE'"><span>Предмет</span><select v-model="selectedSubjectId" :disabled="mutationBusy || formId !== null">
++          <option v-for="subject in subjects" :key="subject.id" :value="subject.id">{{ subject.name }}</option>
++        </select></label>
++      </section>
++      <section v-if="bindingMode === 'LESSON'" class="assistant-homework__lessons" aria-labelledby="assistant-homework-lessons-title">
+         <h2 id="assistant-homework-lessons-title">Пары за день</h2>
+         <p v-if="lessons.length === 0" class="assistant-homework__empty">На эту дату пар нет.</p>
+         <div v-else class="assistant-homework__lesson-list" role="list">
+@@ -395,6 +495,7 @@ onBeforeUnmount(() => {
+             class="assistant-homework__lesson"
+             :data-selected="selectedLessonId === lesson.id"
+             type="button"
++            :disabled="mutationBusy || formId !== null"
+             @click="selectedLessonId = lesson.id"
+           >
+             {{ lessonLabel(lesson) }}
+@@ -402,11 +503,11 @@ onBeforeUnmount(() => {
+         </div>
+       </section>
+ 
+-      <section v-if="selectedLesson" class="assistant-homework__items" aria-labelledby="assistant-homework-items-title">
++      <section v-if="bindingMode === 'DATE' || selectedLesson" class="assistant-homework__items" aria-labelledby="assistant-homework-items-title">
+         <header class="assistant-homework__section-header">
+           <div>
+-            <h2 id="assistant-homework-items-title">ДЗ на выбранную пару</h2>
+-            <p>{{ lessonLabel(selectedLesson) }}</p>
++            <h2 id="assistant-homework-items-title">{{ bindingMode === 'DATE' ? 'ДЗ на выбранную дату' : 'ДЗ на выбранную пару' }}</h2>
++            <p>{{ bindingMode === 'DATE' ? formatDate(selectedDate) : selectedLesson ? lessonLabel(selectedLesson) : '' }}</p>
+           </div>
+           <button
+             v-if="canCreate"
+@@ -422,15 +523,29 @@ onBeforeUnmount(() => {
+         <article v-for="item in selectedHomeworks" :key="item.id" class="assistant-homework__item">
+           <div>
+             <strong>{{ item.title }}</strong>
++            <p>{{ subjectLabel(item) }}</p>
++            <p v-if="item.archived">Архив · только чтение</p>
+             <p v-if="item.description">{{ item.description }}</p>
+             <a v-if="item.link" :href="item.link" target="_blank" rel="noopener noreferrer">Открыть материал</a>
+           </div>
+-          <div v-if="userId !== null && item.publishedBy === userId" class="assistant-homework__item-actions">
+-            <button type="button" :disabled="mutationBusy || formId !== null" @click="openEdit(item)">Изменить</button>
+-            <button type="button" :disabled="mutationBusy || formId !== null" @click="remove(item)">
++          <div class="assistant-homework__item-actions">
++            <button v-if="canEdit(item)" type="button" :disabled="mutationBusy || formId !== null" @click="openEdit(item)">Изменить</button>
++            <button v-if="canEdit(item)" type="button" :disabled="mutationBusy || formId !== null" @click="remove(item)">
+               {{ mutationId === item.id ? 'Удаляем…' : 'Удалить' }}
+             </button>
++            <button type="button" :disabled="offline || historyLoading" @click="showHistory(item)">История</button>
+           </div>
++          <section v-if="historyId === item.id" aria-label="История домашнего задания">
++            <p v-if="historyLoading" role="status">Загружаем историю…</p>
++            <p v-else-if="historyEntries.length === 0">История изменений пуста.</p>
++            <ol v-else>
++              <li v-for="entry in historyEntries" :key="entry.id">
++                Версия {{ entry.revision }} · {{ entry.action === 'LESSON_TRANSFERRED' ? 'Пара перенесена' : 'ДЗ изменено' }}
++                · {{ new Date(entry.occurredAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) }}
++                <span v-if="entry.actorId !== null"> · Пользователь #{{ entry.actorId }}</span>
++              </li>
++            </ol>
++          </section>
+         </article>
+ 
+         <form v-if="formId !== null" class="assistant-homework__form" @submit.prevent="save">
+@@ -438,6 +553,13 @@ onBeforeUnmount(() => {
+           <p v-if="createConflict" class="assistant-homework__state assistant-homework__state--error" role="alert">
+             Сервер вернул конфликт. Повтор отправит тот же запрос с тем же ключом.
+           </p>
++          <div v-else-if="editConflict" class="assistant-homework__state assistant-homework__state--error" role="alert">
++            Задание уже изменилось или ключ запроса конфликтует. Твой вариант не перезаписал серверную версию.
++            <button type="button" :disabled="mutationBusy" @click="refreshConflictingEdit">Обновить задание и закрыть черновик</button>
++          </div>
++          <p v-else-if="createPending" class="assistant-homework__state" role="status">
++            Публикация ещё выполняется. Повтор проверит тот же запрос, без нового задания.
++          </p>
+           <p v-else-if="uncertainCreate" class="assistant-homework__state" role="status">
+             Результат отправки неизвестен. Повтори сохранение, чтобы отправить тот же запрос.
+           </p>
+@@ -447,7 +569,7 @@ onBeforeUnmount(() => {
+           <p v-if="title.trim() === '' || !validForm()" class="assistant-homework__form-error">Проверь название и длину полей.</p>
+           <div class="assistant-homework__form-actions">
+             <button type="button" :disabled="mutationBusy || retryLocked" @click="closeForm">Отмена</button>
+-            <button type="submit" :disabled="mutationBusy || !validForm()">
++            <button type="submit" :disabled="mutationBusy || !validForm() || editConflict">
+               {{ mutationBusy ? 'Сохраняем…' : retryLocked ? 'Повторить запрос' : 'Сохранить' }}
+             </button>
+           </div>
+diff --git a/frontends/mobile-core/src/features/homework/HomeworkScreen.vue b/frontends/mobile-core/src/features/homework/HomeworkScreen.vue
+index 48086b80..f118fb94 100644
+--- a/frontends/mobile-core/src/features/homework/HomeworkScreen.vue
++++ b/frontends/mobile-core/src/features/homework/HomeworkScreen.vue
+@@ -140,6 +140,7 @@ function openMaterial(item: StudentHomeworkItem): void {
+ 
+ function completionLabel(item: StudentHomeworkItem): string {
+   if (itemPending(item.id)) return 'Сохраняем…'
++  if (item.archived) return item.completed ? 'Выполнено · архив' : 'Архив · только чтение'
+   if (item.completed) return 'Выполнено'
+   if (isReadOnly.value) return 'Доступно только онлайн'
+   return 'Проведи, чтобы выполнить'
+@@ -147,6 +148,7 @@ function completionLabel(item: StudentHomeworkItem): string {
+ 
+ function completionAriaLabel(item: StudentHomeworkItem): string {
+   if (itemPending(item.id)) return `Сохраняем состояние задания «${item.subject.name}»`
++  if (item.archived) return `Задание «${item.subject.name}» в архиве. Только чтение`
+   if (isReadOnly.value) return `Задание «${item.subject.name}». Изменение доступно только онлайн`
+   return item.completed
+     ? `Снять отметку «Выполнено» с задания «${item.subject.name}»`
+@@ -154,13 +156,13 @@ function completionAriaLabel(item: StudentHomeworkItem): string {
+ }
+ 
+ function requestCompletion(item: StudentHomeworkItem): void {
+-  if (isReadOnly.value || itemPending(item.id)) return
++  if (isReadOnly.value || item.archived || itemPending(item.id)) return
+   rememberCompletionFocus(item, !item.completed)
+   emit('complete', item, !item.completed)
+ }
+ 
+ function retryItem(item: StudentHomeworkItem): void {
+-  if (!isReadOnly.value && !itemPending(item.id)) {
++  if (!isReadOnly.value && !item.archived && !itemPending(item.id)) {
+     rememberCompletionFocus(item, !item.completed)
+     emit('retry', item)
+   }
+@@ -195,7 +197,7 @@ function rememberCompletionFocus(item: StudentHomeworkItem, expectedCompleted: b
+ }
+ 
+ function beginDrag(item: StudentHomeworkItem, event: PointerEvent): void {
+-  if (isReadOnly.value || itemPending(item.id)) return
++  if (isReadOnly.value || item.archived || itemPending(item.id)) return
+   const target = event.currentTarget
+   if (!(target instanceof HTMLElement)) return
+   const width = target.getBoundingClientRect().width
+@@ -530,9 +532,9 @@ onBeforeUnmount(() => {
+                 <button
+                   :ref="(element) => setTrackRef(item.id, element)"
+                   class="homework-completion"
+-                  :class="{ 'homework-completion--completed': item.completed, 'homework-completion--readonly': isReadOnly }"
++                  :class="{ 'homework-completion--completed': item.completed, 'homework-completion--readonly': isReadOnly || item.archived }"
+                   type="button"
+-                  :disabled="isReadOnly || itemPending(item.id)"
++                  :disabled="isReadOnly || item.archived || itemPending(item.id)"
+                   :aria-label="completionAriaLabel(item)"
+                   :aria-pressed="item.completed"
+                   :data-state="itemPending(item.id) ? 'pending' : item.completed ? 'completed' : 'open'"
+diff --git a/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.test.ts b/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.test.ts
+index 1cacf996..7beb9a9d 100644
+--- a/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.test.ts
++++ b/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.test.ts
+@@ -4,6 +4,7 @@ import {
+   reuseOrCreateAssistantHomeworkIntent,
+   sameAssistantHomeworkDraftContext,
+   type AssistantHomeworkDraftContext,
++  reuseOrCreateAssistantHomeworkEditIntent,
+ } from './assistant-homework-create-intent'
+ 
+ const context: AssistantHomeworkDraftContext = {
+@@ -15,6 +16,7 @@ const context: AssistantHomeworkDraftContext = {
+   lessonDate: '2026-09-29',
+   subjectId: 88,
+   lessonNumber: 2,
++  bindingMode: 'LESSON',
+ }
+ 
+ describe('assistant homework create intent', () => {
+@@ -62,4 +64,17 @@ describe('assistant homework create intent', () => {
+     expect(intentAfterHomeworkCreateFailure(intent, 409)).toBe(intent)
+     expect(intentAfterHomeworkCreateFailure(intent, 422)).toBeNull()
+   })
++
++  it('freezes DATE placement without a fictitious lesson, and freezes edit revision across retries', () => {
++    const dateContext: AssistantHomeworkDraftContext = { ...context, lessonId: null, lessonNumber: null, bindingMode: 'DATE' }
++    const values = { title: 'На дату', description: 'Материалы', link: 'https://example.test/material' }
++    const created = reuseOrCreateAssistantHomeworkIntent(null, dateContext, values, () => 'create-key')!
++    expect(created.input).toMatchObject({ bindingMode: 'DATE', lessonNumber: null, lessonDate: context.selectedDate })
++    const edit = reuseOrCreateAssistantHomeworkEditIntent(null, dateContext, 91, 4, values, () => 'edit-key')!
++    const retry = reuseOrCreateAssistantHomeworkEditIntent(edit, dateContext, 91, 5, { ...values, title: 'Другой вариант' }, () => 'other-key')
++    expect(retry).toBe(edit)
++    expect(retry!.input).toEqual({ ...values, expectedRevision: 4, requestKey: 'edit-key' })
++    expect(Object.isFrozen(retry!.input)).toBe(true)
++    expect(reuseOrCreateAssistantHomeworkEditIntent(edit, { ...dateContext, userId: 42 }, 91, 4, values, () => 'another-key')).toBeNull()
++  })
+ })
+diff --git a/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.ts b/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.ts
+index 6be357c3..1726433a 100644
+--- a/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.ts
++++ b/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.ts
+@@ -1,14 +1,15 @@
+-import type { HeadmanHomeworkCreateInput } from './headman-homework-client'
++import type { HeadmanHomeworkCreateInput, HeadmanHomeworkUpdateInput, HomeworkBindingMode } from './headman-homework-client'
+ 
+ export interface AssistantHomeworkDraftContext {
+   readonly userId: number
+   readonly groupId: number
+   readonly semesterId: number
+   readonly selectedDate: string
+-  readonly lessonId: number
++  readonly lessonId: number | null
+   readonly lessonDate: string
+   readonly subjectId: number
+-  readonly lessonNumber: number
++  readonly lessonNumber: number | null
++  readonly bindingMode: HomeworkBindingMode
+ }
+ 
+ export interface AssistantHomeworkCreateValues {
+@@ -37,6 +38,7 @@ export function createAssistantHomeworkCreateIntent(
+     semesterId: frozenContext.semesterId,
+     lessonDate: frozenContext.lessonDate,
+     lessonNumber: frozenContext.lessonNumber,
++    bindingMode: frozenContext.bindingMode,
+     requestKey,
+   })
+   return Object.freeze({ context: frozenContext, input })
+@@ -55,6 +57,7 @@ export function sameAssistantHomeworkDraftContext(
+     && left.lessonDate === right.lessonDate
+     && left.subjectId === right.subjectId
+     && left.lessonNumber === right.lessonNumber
++    && left.bindingMode === right.bindingMode
+ }
+ 
+ export function isDefinitiveHomeworkCreateRejection(status: number | null): boolean {
+@@ -80,3 +83,29 @@ export function intentAfterHomeworkCreateFailure(
+ ): AssistantHomeworkCreateIntent | null {
+   return isDefinitiveHomeworkCreateRejection(status) ? null : intent
+ }
++
++export interface AssistantHomeworkEditIntent {
++  readonly context: AssistantHomeworkDraftContext
++  readonly homeworkId: number
++  readonly input: Readonly<HeadmanHomeworkUpdateInput>
++}
++
++/** A lost response must replay the exact revision/payload/key, never a fresh edit. */
++export function reuseOrCreateAssistantHomeworkEditIntent(
++  existing: AssistantHomeworkEditIntent | null,
++  context: AssistantHomeworkDraftContext,
++  homeworkId: number,
++  revision: number,
++  values: AssistantHomeworkCreateValues,
++  requestKey: () => string,
++): AssistantHomeworkEditIntent | null {
++  if (existing) {
++    return existing.homeworkId === homeworkId && sameAssistantHomeworkDraftContext(existing.context, context)
++      ? existing : null
++  }
++  return Object.freeze({
++    context: Object.freeze({ ...context }),
++    homeworkId,
++    input: Object.freeze({ ...values, expectedRevision: revision, requestKey: requestKey() }),
++  })
++}
+diff --git a/frontends/mobile-core/src/features/homework/assistant-homework-screen.pcss b/frontends/mobile-core/src/features/homework/assistant-homework-screen.pcss
+index d9bd5567..8a2d5ec8 100644
+--- a/frontends/mobile-core/src/features/homework/assistant-homework-screen.pcss
++++ b/frontends/mobile-core/src/features/homework/assistant-homework-screen.pcss
+@@ -91,6 +91,7 @@
+ .assistant-homework__item-actions button:disabled,
+ .assistant-homework__form-actions button:disabled,
+ .assistant-homework__form input:disabled,
++.assistant-homework__form select:disabled,
+ .assistant-homework__form textarea:disabled {
+   color: var(--rct-color-disabled-text);
+   background: var(--rct-color-disabled-surface);
+@@ -181,6 +182,7 @@
+ }
+ 
+ .assistant-homework__form input,
++.assistant-homework__form select,
+ .assistant-homework__form textarea {
+   min-block-size: var(--rct-control-min-touch);
+   border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+diff --git a/frontends/mobile-core/src/features/homework/headman-homework-client.test.ts b/frontends/mobile-core/src/features/homework/headman-homework-client.test.ts
+new file mode 100644
+index 00000000..d4c6175f
+--- /dev/null
++++ b/frontends/mobile-core/src/features/homework/headman-homework-client.test.ts
+@@ -0,0 +1,58 @@
++import { describe, expect, it, vi } from 'vitest'
++import { HeadmanHomeworkApi, HeadmanHomeworkApiError } from './headman-homework-client'
++
++const key = '97eb9070-a49d-45f9-9e72-b9d8fe06eab9'
++const homework = { id: 91, title: 'На дату', description: 'Материалы', link: 'https://example.test/material',
++  subjectId: 88, groupId: 7, semesterId: 12, publishedBy: 41, lessonDate: '2026-09-29',
++  lessonNumber: null, bindingMode: 'DATE', revision: 4, archived: false }
++
++describe('homework DATE and edit wire contract', () => {
++  it('retains DATE/null placement, revision and archive while paging homework and history', async () => {
++    const fetcher = vi.fn(async (path: RequestInfo | URL) => {
++      if (String(path).includes('/history')) return Response.json({ content: [
++        { id: 31, revision: 4, actorId: 42, occurredAt: '2026-09-27T12:00:00+03:00', action: 'EDITED', before: {}, after: homework },
++      ], totalPages: 1 })
++      return Response.json({ _embedded: { homeworkResponseList: [{ ...homework, archived: true }] }, page: { totalPages: 1 } })
++    })
++    const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
++    expect(await api.listHomeworks(7, 12)).toEqual([{ ...homework, archived: true }])
++    expect(await api.history(91)).toMatchObject([{ revision: 4, actorId: 42, action: 'EDITED' }])
++    expect(fetcher).toHaveBeenCalledTimes(2)
++  })
++
++  it('sends exact keyed DATE creation and edit revision, preserves the request after loss and surfaces a stale conflict', async () => {
++    const requests: { path: string; body: unknown }[] = []
++    let putCount = 0
++    const fetcher = vi.fn(async (path: RequestInfo | URL, init?: RequestInit) => {
++      requests.push({ path: String(path), body: JSON.parse(String(init?.body)) })
++      if (init?.method === 'POST') return Response.json(homework, { status: 201 })
++      putCount += 1
++      if (putCount === 1) throw new TypeError('response lost after server accepted edit')
++      if (putCount === 2) return Response.json({ ...homework, title: 'Новое название', revision: 5 })
++      return Response.json({ detail: 'revision conflict' }, { status: 409 })
++    })
++    const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
++    await api.createHomework({ title: homework.title, description: homework.description, link: homework.link,
++      subjectId: 88, groupId: 7, semesterId: 12, lessonDate: homework.lessonDate, lessonNumber: null, bindingMode: 'DATE', requestKey: key })
++    expect(requests[0]?.body).toMatchObject({ bindingMode: 'DATE', lessonNumber: null, requestKey: key })
++    const intent = Object.freeze({ title: 'Новое название', description: homework.description, link: homework.link,
++      requestKey: key, expectedRevision: 4 })
++    await expect(api.updateHomework(91, intent)).rejects.toThrow('response lost')
++    await expect(api.updateHomework(91, intent)).resolves.toMatchObject({ id: 91, revision: 5 })
++    expect(requests[1]?.body).toEqual(requests[2]?.body)
++    expect(requests[2]?.body).toMatchObject({ expectedRevision: 4, requestKey: key, link: homework.link })
++    await expect(api.updateHomework(91, intent)).rejects.toBeInstanceOf(HeadmanHomeworkApiError)
++    expect(requests[3]?.body).toEqual(requests[2]?.body)
++  })
++
++  it('keeps a LESSON publication pending only for the same accepted intent and never invents success from another receipt', async () => {
++    const fetcher = vi.fn()
++      .mockResolvedValueOnce(Response.json({ homeworkId: '91', bindingId: '501', requestKey: key, state: 'PENDING' }, { status: 202 }))
++      .mockResolvedValueOnce(Response.json({ homeworkId: '91', bindingId: '501', requestKey: '3bbe4b81-42e1-4bcf-a963-41da6f379c02', state: 'PENDING' }, { status: 202 }))
++    const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
++    const input = { title: homework.title, subjectId: 88, groupId: 7, semesterId: 12, lessonDate: homework.lessonDate,
++      lessonNumber: 2, bindingMode: 'LESSON' as const, requestKey: key }
++    await expect(api.createHomework(input)).resolves.toBeNull()
++    await expect(api.createHomework(input)).rejects.toThrow('некорректное подтверждение')
++  })
++})
+diff --git a/frontends/mobile-core/src/features/homework/headman-homework-client.ts b/frontends/mobile-core/src/features/homework/headman-homework-client.ts
+index 4834576f..ef2eb5f8 100644
+--- a/frontends/mobile-core/src/features/homework/headman-homework-client.ts
++++ b/frontends/mobile-core/src/features/homework/headman-homework-client.ts
+@@ -1,5 +1,17 @@
+ import { StaleSessionGenerationError } from '../../shared/session-owner'
+ 
++export type HomeworkBindingMode = 'LESSON' | 'DATE'
++export interface HeadmanHomeworkSubject { readonly id: number; readonly name: string }
++export interface HeadmanHomeworkHistory {
++  readonly id: number
++  readonly revision: number
++  readonly actorId: number | null
++  readonly occurredAt: string
++  readonly action: string
++  readonly before: unknown
++  readonly after: unknown
++}
++
+ export interface HeadmanHomeworkSemester {
+   readonly id: number
+   readonly name: string
+@@ -18,7 +30,10 @@ export interface HeadmanManagedHomework {
+   readonly semesterId: number
+   readonly publishedBy: number | null
+   readonly lessonDate: string
+-  readonly lessonNumber: number
++  readonly lessonNumber: number | null
++  readonly bindingMode: HomeworkBindingMode
++  readonly revision: number | null
++  readonly archived: boolean
+ }
+ 
+ export interface HeadmanHomeworkCreateInput {
+@@ -29,14 +44,17 @@ export interface HeadmanHomeworkCreateInput {
+   readonly groupId: number
+   readonly semesterId: number
+   readonly lessonDate: string
+-  readonly lessonNumber: number
+-  readonly requestKey?: string
++  readonly lessonNumber: number | null
++  readonly bindingMode: HomeworkBindingMode
++  readonly requestKey: string
+ }
+ 
+ export interface HeadmanHomeworkUpdateInput {
+   readonly title: string
+   readonly description?: string | null
+   readonly link?: string | null
++  readonly requestKey: string
++  readonly expectedRevision: number
+ }
+ 
+ export interface HeadmanHomeworkApiOptions {
+@@ -80,9 +98,42 @@ export class HeadmanHomeworkApi {
+     )
+   }
+ 
++  listSubjects(): Promise<readonly HeadmanHomeworkSubject[]> {
++    return this.requestPaged(
++      (page) => `/api/academic/subjects?page=${page}&size=100`,
++      (value) => embeddedItems(value, ['subjectResponseList']).flatMap((entry) => {
++        const subject = unwrapEntity(entry)
++        const id = positiveNumber(subject.id)
++        const name = textValue(subject.name)
++        return id !== null && name !== null ? [{ id, name }] : []
++      }),
++    )
++  }
++
++  history(id: number): Promise<readonly HeadmanHomeworkHistory[]> {
++    assertPositiveInteger(id, 'id')
++    return this.requestPaged(
++      (page) => `/api/academic/homeworks/${id}/history?page=${page}&size=100`,
++      (value) => {
++        if (!isRecord(value) || !Array.isArray(value.content)) throw new Error('Некорректная история ДЗ')
++        return value.content.map((entry: unknown) => {
++          const row = unwrapEntity(entry)
++          const historyId = positiveNumber(row.id)
++          const revision = positiveNumber(row.revision)
++          const occurredAt = textValue(row.occurredAt)
++          const action = textValue(row.action)
++          if (historyId === null || revision === null || occurredAt === null || action === null) {
++            throw new Error('Некорректная запись истории ДЗ')
++          }
++          return { id: historyId, revision, occurredAt, action, actorId: positiveNumber(row.actorId), before: row.before, after: row.after }
++        })
++      },
++    )
++  }
++
+   async createHomework(input: HeadmanHomeworkCreateInput): Promise<HeadmanManagedHomework | null> {
+     validateCreateInput(input)
+-    return normalizeHomework(await this.request<unknown>('/api/academic/homeworks', {
++    const response = await this.response('/api/academic/homeworks', {
+       method: 'POST',
+       body: JSON.stringify({
+         title: input.title.trim(),
+@@ -93,9 +144,28 @@ export class HeadmanHomeworkApi {
+         semesterId: input.semesterId,
+         lessonDate: input.lessonDate,
+         lessonNumber: input.lessonNumber,
+-        ...(input.requestKey ? { requestKey: input.requestKey } : {}),
++        bindingMode: input.bindingMode,
++        requestKey: input.requestKey,
+       }),
+-    }))
++    })
++    if (!response.ok) throw await this.apiError(response)
++    const value: unknown = await response.json()
++    this.options.assertCurrent?.()
++    if (response.status === 202) {
++      if (!isRecord(value) || value.state !== 'PENDING'
++        || textValue(value.requestKey)?.toLowerCase() !== input.requestKey.toLowerCase()
++        || !/^[1-9][0-9]*$/.test(String(value.homeworkId)) || !/^[1-9][0-9]*$/.test(String(value.bindingId))) {
++        throw new Error('Сервер вернул некорректное подтверждение публикации ДЗ')
++      }
++      return null
++    }
++    const created = normalizeHomework(value)
++    if (created === null || created.groupId !== input.groupId || created.subjectId !== input.subjectId
++      || created.semesterId !== input.semesterId || created.bindingMode !== input.bindingMode
++      || created.lessonDate !== input.lessonDate || created.lessonNumber !== input.lessonNumber) {
++      throw new Error('Сервер вернул ДЗ для другой привязки')
++    }
++    return created
+   }
+ 
+   async updateHomework(id: number, input: HeadmanHomeworkUpdateInput): Promise<HeadmanManagedHomework | null> {
+@@ -103,14 +173,20 @@ export class HeadmanHomeworkApi {
+     validateTextInput(input.title, 'title', 255)
+     validateOptionalText(input.description, 'description', 4000)
+     validateOptionalText(input.link, 'link', 2048)
+-    return normalizeHomework(await this.request<unknown>(`/api/academic/homeworks/${id}`, {
++    validateRequestKey(input.requestKey)
++    assertPositiveInteger(input.expectedRevision, 'expectedRevision')
++    const updated = normalizeHomework(await this.request<unknown>(`/api/academic/homeworks/${id}`, {
+       method: 'PUT',
+       body: JSON.stringify({
+         title: input.title.trim(),
+         description: optionalText(input.description),
+         link: optionalText(input.link),
++        requestKey: input.requestKey,
++        expectedRevision: input.expectedRevision,
+       }),
+     }))
++    if (updated === null || updated.id !== id || updated.revision === null) throw new Error('Сервер вернул некорректную версию ДЗ')
++    return updated
+   }
+ 
+   async deleteHomework(id: number): Promise<void> {
+@@ -225,12 +301,22 @@ function validateCreateInput(input: HeadmanHomeworkCreateInput): void {
+   assertPositiveInteger(input.subjectId, 'subjectId')
+   assertPositiveInteger(input.groupId, 'groupId')
+   assertPositiveInteger(input.semesterId, 'semesterId')
++  validateRequestKey(input.requestKey)
+   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.lessonDate)) throw new RangeError('lessonDate должен быть ISO date')
+-  if (!Number.isSafeInteger(input.lessonNumber) || input.lessonNumber < 1 || input.lessonNumber > 8) {
++  if (input.bindingMode === 'DATE') {
++    if (input.lessonNumber !== null) throw new RangeError('Для ДЗ на дату номер пары должен быть null')
++  } else if (input.bindingMode !== 'LESSON' || input.lessonNumber === null
++    || !Number.isSafeInteger(input.lessonNumber) || input.lessonNumber < 1 || input.lessonNumber > 8) {
+     throw new RangeError('lessonNumber должен быть от 1 до 8')
+   }
+ }
+ 
++function validateRequestKey(value: string): void {
++  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
++    throw new RangeError('Ключ запроса должен быть UUID')
++  }
++}
++
+ function assertPositiveInteger(value: number, name: string): void {
+   if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${name} должен быть положительным целым числом`)
+ }
+@@ -272,7 +358,10 @@ function normalizeHomework(value: unknown): HeadmanManagedHomework | null {
+   const semesterId = positiveNumber(source.semesterId)
+   const lessonDate = textValue(source.lessonDate)
+   const lessonNumber = positiveNumber(source.lessonNumber)
+-  if (id === null || subjectId === null || groupId === null || semesterId === null || lessonDate === null || lessonNumber === null) {
++  const bindingMode = source.bindingMode ?? 'LESSON'
++  if (id === null || subjectId === null || groupId === null || semesterId === null || lessonDate === null
++    || (bindingMode !== 'LESSON' && bindingMode !== 'DATE')
++    || (bindingMode === 'LESSON' ? lessonNumber === null : source.lessonNumber !== null)) {
+     return null
+   }
+   return {
+@@ -286,6 +375,9 @@ function normalizeHomework(value: unknown): HeadmanManagedHomework | null {
+     publishedBy: positiveNumber(source.publishedBy),
+     lessonDate,
+     lessonNumber,
++    bindingMode,
++    revision: positiveNumber(source.revision),
++    archived: source.archived === true,
+   }
+ }
+ 
+@@ -300,8 +392,8 @@ function embeddedItems(value: unknown, keys: readonly string[]): Record<string,
+ }
+ 
+ function pageMetadata(value: unknown): { totalPages: number } | null {
+-  if (!isRecord(value) || !isRecord(value.page)) return null
+-  const totalPages = value.page.totalPages
++  if (!isRecord(value)) return null
++  const totalPages = isRecord(value.page) ? value.page.totalPages : value.totalPages
+   return typeof totalPages === 'number' && Number.isSafeInteger(totalPages) && totalPages >= 0
+     ? { totalPages }
+     : null
+diff --git a/frontends/mobile-core/src/features/homework/use-homework.test.ts b/frontends/mobile-core/src/features/homework/use-homework.test.ts
+index a8996ad4..ac547503 100644
+--- a/frontends/mobile-core/src/features/homework/use-homework.test.ts
++++ b/frontends/mobile-core/src/features/homework/use-homework.test.ts
+@@ -61,6 +61,8 @@ const fallbackFeed: StudentHomework = {
+     description: 'Материалы к следующему занятию',
+     lessonDate: '2026-09-07',
+     lessonNumber: 1,
++    bindingMode: 'LESSON',
++    archived: false,
+     link: null,
+     subject: { id: 'subject-a', name: 'Математический анализ' },
+     completed: false,
+@@ -180,6 +182,17 @@ describe('useHomework scope and completion boundaries', () => {
+     expect(api.setHomeworkCompletion).not.toHaveBeenCalled()
+   })
+ 
++  it('keeps completed DATE archive data readable and rejects completion even in writable scope', async () => {
++    const archived: StudentHomework = { ...fallbackFeed, items: [{ ...fallbackFeed.items[0]!, bindingMode: 'DATE', lessonNumber: null,
++      archived: true, completed: true, completedAt: '2026-09-07T09:30:00Z' }] }
++    const api = { getHomework: vi.fn(() => Promise.resolve(archived)), setHomeworkCompletion: vi.fn() } as unknown as StudentApi
++    const state = mountHomework(api, ref(scopeA), { fallback: archived })
++    await expect(state.submitCompletion('same-id', false)).rejects.toBeInstanceOf(HomeworkReadOnlyError)
++    expect(api.setHomeworkCompletion).not.toHaveBeenCalled()
++    await nextTick()
++    expect(state.query.data.value?.items[0]).toMatchObject({ bindingMode: 'DATE', lessonNumber: null, completed: true, archived: true })
++  })
++
+   it('loads only the selected lesson date and discards an older overlapping date intent', async () => {
+     let resolveFirst!: (value: StudentHomework) => void
+     let resolveSecond!: (value: StudentHomework) => void
+diff --git a/frontends/mobile-core/src/features/homework/use-homework.ts b/frontends/mobile-core/src/features/homework/use-homework.ts
+index 9c0ad554..9f30c756 100644
+--- a/frontends/mobile-core/src/features/homework/use-homework.ts
++++ b/frontends/mobile-core/src/features/homework/use-homework.ts
+@@ -261,7 +261,7 @@ export function useHomework(
+ 
+   const mutation = useMutation<StudentHomeworkCompletion, unknown, HomeworkCompletionInput>({
+     mutationFn: async (input) => {
+-      if (readOnly.value) throw new HomeworkReadOnlyError()
++      if (readOnly.value || isArchived(input.id)) throw new HomeworkReadOnlyError()
+       if (!isHomeworkScopeReady(input.scope) || homeworkScopeIdentity(scope.value) !== homeworkScopeIdentity(input.scope)) {
+         throw new HomeworkStaleResponseError()
+       }
+@@ -290,8 +290,12 @@ export function useHomework(
+     return ensureItemState(id).error?.message ?? null
+   }
+ 
++  function isArchived(id: string): boolean {
++    return (query.data.value ?? fallback.value)?.items.some((item) => item.id === id && item.archived) ?? false
++  }
++
+   function submitCompletion(id: string, completed: boolean): Promise<StudentHomeworkCompletion> {
+-    if (readOnly.value) return Promise.reject(new HomeworkReadOnlyError())
++    if (readOnly.value || isArchived(id)) return Promise.reject(new HomeworkReadOnlyError())
+     if (offline.value) return Promise.reject(new HomeworkScopeError())
+     const requestScope = scope.value
+     if (!isHomeworkScopeReady(requestScope)) return Promise.reject(new HomeworkScopeError())
+diff --git a/frontends/mobile-core/src/test-adapter/homework-fixtures.ts b/frontends/mobile-core/src/test-adapter/homework-fixtures.ts
+index 68e84fed..4b1c9b4b 100644
+--- a/frontends/mobile-core/src/test-adapter/homework-fixtures.ts
++++ b/frontends/mobile-core/src/test-adapter/homework-fixtures.ts
+@@ -3,6 +3,14 @@ import homeworkFeed from '../../fixtures/homework-feed.json'
+ import undoneHomework from '../../fixtures/homework-completion-undone.json'
+ import type { StudentHomework, StudentHomeworkCompletion } from '../api/types'
+ 
+-export const fixtureHomeworkFeed = homeworkFeed satisfies StudentHomework
++export const fixtureHomeworkFeed = {
++  ...homeworkFeed,
++  items: homeworkFeed.items.map((item) => ({ ...item, bindingMode: bindingMode(item.bindingMode) })),
++} satisfies StudentHomework
+ export const fixtureCompletedHomework = completedHomework satisfies StudentHomeworkCompletion
+ export const fixtureUndoneHomework = undoneHomework satisfies StudentHomeworkCompletion
++
++function bindingMode(value: string): 'LESSON' | 'DATE' {
++  if (value !== 'LESSON' && value !== 'DATE') throw new Error('Invalid homework fixture binding mode')
++  return value
++}

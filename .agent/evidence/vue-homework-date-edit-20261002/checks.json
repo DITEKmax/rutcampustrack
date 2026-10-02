@@ -1,0 +1,25 @@
+{
+  "base": "996f590c",
+  "branch": "codex/vue-homework-date-edit-1002",
+  "ordinary_switch_exit": 0,
+  "tests_r1": {
+    "exit": 0,
+    "methods": 19,
+    "duration_seconds": 3.19
+  },
+  "client_tests_r2": {
+    "exit": 0,
+    "methods": 3,
+    "duration_seconds": 0.515,
+    "reason": "actual LESSON202 pending receipt and fail-closed identity correction"
+  },
+  "distinct_test_methods": 20,
+  "scoped_vue_ts_final_exit": 0,
+  "scoped_diff_check_exit": 0,
+  "homework_schema_hash_exit": 0,
+  "full_mobile_core_tsc_exit": 1,
+  "full_tsc_limitation": "foreign Response mock/missingStompSockJS/request raw compiler types; no scope errors",
+  "backend_browser_runtime": "not_run_no_resources",
+  "independent_review": "pending",
+  "product_commit": "1562c8d5"
+}

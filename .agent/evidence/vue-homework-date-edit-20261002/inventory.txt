@@ -1,0 +1,15 @@
+docs/openapi/mobile-bff.json
+frontends/mobile-core/fixtures/homework-feed.json
+frontends/mobile-core/src/api/generated/mobile-bff.ts
+frontends/mobile-core/src/domain/homework.test.ts
+frontends/mobile-core/src/domain/homework.ts
+frontends/mobile-core/src/features/homework/assistant-homework-create-intent.test.ts
+frontends/mobile-core/src/features/homework/assistant-homework-create-intent.ts
+frontends/mobile-core/src/features/homework/assistant-homework-screen.pcss
+frontends/mobile-core/src/features/homework/AssistantHomeworkScreen.vue
+frontends/mobile-core/src/features/homework/headman-homework-client.test.ts
+frontends/mobile-core/src/features/homework/headman-homework-client.ts
+frontends/mobile-core/src/features/homework/HomeworkScreen.vue
+frontends/mobile-core/src/features/homework/use-homework.test.ts
+frontends/mobile-core/src/features/homework/use-homework.ts
+frontends/mobile-core/src/test-adapter/homework-fixtures.ts

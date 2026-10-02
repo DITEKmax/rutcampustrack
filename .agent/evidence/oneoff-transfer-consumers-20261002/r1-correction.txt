@@ -1,0 +1,6 @@
+R1 combined run author: Schedule admin-group-promotion WT, terminal session22375 exit1.
+Consumer compileJava/compileTestJava PASS per runner report. Mongo new method1/1 PASS, do not repeat.
+Academic XML: .agent/worktrees/admin-group-promotion-20260927/.agent/evidence/oneoff-transfer-20261002/r1/academic/TEST-ru.rutcampustrack.academic.homework.HomeworkBindingTransferIT.xml
+Parsed failure count1; only @AfterEach cleanFixture line126 DELETE homeworks -> V45 retained edit history; no suppressed/earlier assertion failure in raw XML. Still NOT Academic acceptance until clean terminal recheck.
+Root accepted existing HomeworkEditLifecycleIT owned disposable PG pattern: unique subject/semester fixture with actual edit history retained whole, shared active-semester flags restored, physical database removed by container teardown. No production guard bypass/authority spoof/change. Existing no-history cleanup unchanged.
+Correction scope exactly HomeworkBindingTransferIT.java 14 added lines. Diff-check exit0. No local heavy run/resources.

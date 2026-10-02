@@ -89,6 +89,20 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
     void cleanFixture() {
         if (groupId == 0) return;
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            boolean retainedEditEvidence = Boolean.TRUE.equals(jdbcTemplate.queryForObject("""
+                    SELECT EXISTS (SELECT 1 FROM homework_edit_history history
+                        JOIN homeworks homework ON homework.id = history.homework_id
+                        WHERE homework.subject_id = ? AND homework.semester_id = ?)
+                    """, Boolean.class, subjectId, semesterId));
+            if (retainedEditEvidence) {
+                // Like HomeworkEditLifecycleIT, keep append-only evidence in this owned
+                // disposable PostgreSQL; container teardown removes the isolated database.
+                jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE id = ?", semesterId);
+                for (Long activeSemesterId : activeSemesterIds) {
+                    jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", activeSemesterId);
+                }
+                return;
+            }
             for (UUID eventId : eventIds) {
                 jdbcTemplate.update("DELETE FROM event_consumer_processed WHERE consumer_id = ? AND event_id = ?",
                         CONSUMER_ID, eventId);

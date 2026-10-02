@@ -1,0 +1,15 @@
+{
+  "criteria": [
+    "credential+notification rollback",
+    "password/reset committed intent",
+    "broker retry with stable event_id",
+    "pending retention",
+    "live ADMIN current password confirmation FLOOR/BUILDING",
+    "auth contract and naming gates"
+  ],
+  "command": ".\\gradlew.bat :services:auth-service:auth-app:compileTestJava :services:auth-service:auth-app:test --tests *.AuthApiContractTest --tests *.PasswordChangedContractTest :services:auth-service:auth-app:integrationTest --tests *.JdbcSessionAuthorityIT.passwordChangeRechecksHashUpdatesFlagsRevokesAllAndAuditsAtomically --tests *.JdbcSessionAuthorityIT.notificationIntentRollsBackWithPasswordSessionsAndOneUseResetTicket --tests *.AuthOtpFlowIT.passwordResetIsPurposeBoundAtomicAndRevokesEverySession --tests *.AuthOtpFlowIT.passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart --tests *.InternalSessionAdmissionIT.deletionConfirmationRequiresLiveAdminAndCurrentPasswordWithoutCreatingSessions --tests *.IntegrationTestNamingConventionIT --no-daemon --no-parallel --max-workers=1 --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true",
+  "environment": "Java 21; assigned worktree; fresh non-reusable PostgreSQL/Redis/Rabbit Testcontainers; Academic V1..V42 migrations; heavy lease from root",
+  "exit_code": 1,
+  "revision": "13aa44b7170d262cf48dbc1199a1992d1aa081f8",
+  "log_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\map-usage-delivery-20260922\\.agent\\evidence\\auth-durable-delivery-20261002\\auth-checks-20261002-121813-866.log"
+}

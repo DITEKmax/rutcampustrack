@@ -1,0 +1,8 @@
+{
+  "exit_code": 0,
+  "reason": "R1 fixture port override did not disconnect transport; only failed case repeated after 0e105911 correction",
+  "revision": "0e1059115146c6081b53dd7a7d0d6220cbaf1f13",
+  "command": ".\\gradlew.bat :services:auth-service:auth-app:integrationTest --tests '*.AuthOtpFlowIT.passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart' --no-daemon --no-parallel --max-workers=1 --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true",
+  "environment": "Java21; fresh own PostgreSQL/Redis/Rabbit Testcontainers; root heavy lease after independent fixture recheck PASS",
+  "log_path": ".agent\\evidence\\auth-durable-delivery-20261002\\auth-retry-20261002-123140-714.log"
+}

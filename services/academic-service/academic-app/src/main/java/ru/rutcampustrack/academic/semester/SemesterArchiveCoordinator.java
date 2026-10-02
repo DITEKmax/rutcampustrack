@@ -263,6 +263,7 @@ public class SemesterArchiveCoordinator {
             SetSemesterArchiveBarrierResponse response = scheduleClient.setSemesterArchiveBarrier(
                     operationId, operation.getSemesterId(), operation.getStateVersion(),
                     SemesterArchiveParticipantCommand.PREPARE_ARCHIVE);
+            requireArchiveReceipt(operation, response, SemesterArchiveParticipantCommand.PREPARE_ARCHIVE);
             commands.recordParticipant(operationId, SemesterArchiveCommandTransaction.Participant.SCHEDULE,
                     fromWire(response.getState()), response.getBlockingReason());
             if (response.hasPendingBinding()) {
@@ -411,6 +412,7 @@ public class SemesterArchiveCoordinator {
                 SetSemesterArchiveBarrierResponse response = scheduleClient.setSemesterArchiveBarrier(
                         operationId, operation.getSemesterId(), operation.getStateVersion(),
                         SemesterArchiveParticipantCommand.PREPARE_RESTORE);
+                requireArchiveReceipt(operation, response, SemesterArchiveParticipantCommand.PREPARE_RESTORE);
                 commands.recordParticipant(operationId,
                         SemesterArchiveCommandTransaction.Participant.SCHEDULE,
                         fromWire(response.getState()), response.getBlockingReason());
@@ -429,6 +431,7 @@ public class SemesterArchiveCoordinator {
                 SetSemesterArchiveBarrierResponse response = scheduleClient.setSemesterArchiveBarrier(
                         operationId, operation.getSemesterId(), operation.getStateVersion(),
                         SemesterArchiveParticipantCommand.RELEASE_RESTORE);
+                requireArchiveReceipt(operation, response, SemesterArchiveParticipantCommand.RELEASE_RESTORE);
                 commands.recordParticipant(operationId,
                         SemesterArchiveCommandTransaction.Participant.SCHEDULE,
                         fromWire(response.getState()), response.getBlockingReason());
@@ -451,7 +454,23 @@ public class SemesterArchiveCoordinator {
         return SemesterArchiveService.toResponse(operation);
     }
 
-    private static SemesterArchiveParticipantStatus fromWire(SemesterArchiveParticipantState state) {
+    private static void requireArchiveReceipt(SemesterArchiveOperation operation,
+                                              SetSemesterArchiveBarrierResponse response,
+                                              SemesterArchiveParticipantCommand command) {
+        requireSameOperation(operation, response);
+        SemesterArchiveParticipantState expected = switch (command) {
+            case PREPARE_ARCHIVE -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY;
+            case PREPARE_RESTORE -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PREPARED_RESTORE;
+            case RELEASE_RESTORE -> SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_RELEASED;
+            default -> throw new IllegalArgumentException("Not an archive or restore command");
+        };
+        if (response.getState() != SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PENDING
+                && response.getState() != expected) {
+            throw new IllegalStateException("Schedule returned a receipt for a different archive command phase");
+        }
+    }
+
+    private static SemesterArchiveParticipantStatus fromWire(SemsterArchiveParticipantState state) {
         return switch (state) {
             case SEMESTER_ARCHIVE_PARTICIPANT_PENDING -> SemesterArchiveParticipantStatus.PENDING;
             case SEMESTER_ARCHIVE_PARTICIPANT_READY -> SemesterArchiveParticipantStatus.READY;

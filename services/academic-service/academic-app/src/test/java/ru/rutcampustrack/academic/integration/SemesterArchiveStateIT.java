@@ -90,6 +90,7 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
     @Autowired private HomeworkBindingArchivedEventConsumer archiveConsumer;
     @Autowired private SemesterArchiveParticipantAcknowledgementConsumer participantAckConsumer;
     @Autowired private HomeworkBindingTransferCoordinator transferCoordinator;
+    @Autowired private ru.rutcampustrack.academic.homework.HomeworkPublicationPersistence publicationPersistence;
     @MockitoBean private ScheduleGrpcClient scheduleClient;
     @MockitoBean private SemesterDeletionPreviewService deletionPreviews;
 
@@ -272,6 +273,103 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
             pool.shutdownNow();
             assertThat(pool.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
         }
+    }
+
+    @Test
+    void archiveRestoreRecoveryRejectsMismatchedScheduleReceipts() {
+        var archive = deletionCommands.startOrReplay(semesterId, adminId(), UUID.randomUUID(),
+                SemesterArchiveAction.ARCHIVE);
+        UUID archiveId = archive.getOperationId();
+        for (String mismatch : List.of("operation", "semester", "version", "phase")) {
+            stubScheduleArchiveParticipant(mismatch);
+            recoveredCoordinator().advance(archiveId);
+            var persisted = deletionCommands.find(archiveId);
+            assertThat(persisted.getOperationState()).isEqualTo(SemesterArchiveOperationState.ERROR);
+            assertThat(persisted.getSchedule()).isEqualTo(SemesterArchiveParticipantStatus.PENDING);
+            assertThat(deletionCommands.retryableOperationIds()).contains(archiveId);
+            assertThat(state(semesterId).getTransition().name()).isEqualTo("ARCHIVING");
+            assertThat(state(semesterId).getActive()).isFalse();
+            assertThat(state(semesterId).getWriteBlocked()).isTrue();
+        }
+        stubScheduleArchiveParticipant(null);
+        recoveredCoordinator().advance(archiveId);
+        deletionCommands.recordAttendanceAcknowledgement(archiveId, semesterId, archive.getStateVersion(),
+                SemesterArchiveParticipantCommand.SEAL_ARCHIVE, SemesterArchiveParticipantStatus.READY, null);
+        recoveredCoordinator().advance(archiveId);
+        assertThat(deletionCommands.find(archiveId).getOperationState())
+                .isEqualTo(SemesterArchiveOperationState.COMPLETED);
+        assertThat(state(semesterId).getArchived()).isTrue();
+        assertThat(state(semesterId).getActive()).isFalse();
+
+        var restore = deletionCommands.startOrReplay(semesterId, adminId(), UUID.randomUUID(),
+                SemesterArchiveAction.RESTORE);
+        UUID restoreId = restore.getOperationId();
+        for (String mismatch : List.of("version", "phase")) {
+            stubScheduleArchiveParticipant(mismatch);
+            recoveredCoordinator().advance(restoreId);
+            assertThat(deletionCommands.find(restoreId).getOperationState()).isEqualTo(SemesterArchiveOperationState.ERROR);
+            assertThat(deletionCommands.find(restoreId).getSchedule()).isEqualTo(SemesterArchiveParticipantStatus.PENDING);
+            assertThat(state(semesterId).getArchived()).isTrue();
+            assertThat(state(semesterId).getWriteBlocked()).isTrue();
+        }
+
+        stubScheduleArchiveParticipant(null);
+        recoveredCoordinator().advance(restoreId);
+        deletionCommands.recordAttendanceAcknowledgement(restoreId, semesterId, restore.getStateVersion(),
+                SemesterArchiveParticipantCommand.PREPARE_RESTORE,
+                SemesterArchiveParticipantStatus.PREPARED_RESTORE, null);
+        stubScheduleArchiveParticipant("operation");
+        recoveredCoordinator().advance(restoreId);
+        var awaitingRelease = deletionCommands.find(restoreId);
+        assertThat(awaitingRelease.getOperationState()).isEqualTo(SemesterArchiveOperationState.ERROR);
+        assertThat(awaitingRelease.isReleasePending()).isTrue();
+        assertThat(awaitingRelease.getSchedule()).isEqualTo(SemesterArchiveParticipantStatus.RELEASE_PENDING);
+        assertThat(awaitingRelease.getAcademic()).isEqualTo(SemesterArchiveParticipantStatus.RELEASE_PENDING);
+        assertThat(state(semesterId).getWriteBlocked()).isTrue();
+        assertThatThrownBy(() -> semesterService.activateSemester(semesterId)).isInstanceOf(ConflictException.class);
+        stubScheduleArchiveParticipant("phase");
+        recoveredCoordinator().advance(restoreId);
+        assertThat(deletionCommands.find(restoreId).getSchedule()).isEqualTo(SemesterArchiveParticipantStatus.RELEASE_PENDING);
+        assertThat(deletionCommands.find(restoreId).getOperationState()).isEqualTo(SemesterArchiveOperationState.ERROR);
+        assertThat(state(semesterId).getWriteBlocked()).isTrue();
+
+        stubScheduleArchiveParticipant(null);
+        deletionCommands.recordAttendanceAcknowledgement(restoreId, semesterId, restore.getStateVersion(),
+                SemesterArchiveParticipantCommand.RELEASE_RESTORE, SemesterArchiveParticipantStatus.RELEASED, null);
+        recoveredCoordinator().advance(restoreId);
+        assertThat(deletionCommands.find(restoreId).getOperationState())
+                .isEqualTo(SemesterArchiveOperationState.COMPLETED);
+        assertThat(state(semesterId).getReleasePending()).isFalse();
+        assertThat(state(semesterId).getWriteBlocked()).isFalse();
+        assertThat(state(semesterId).getActive()).isFalse();
+        assertThat(state(semesterId).getArchived()).isFalse();
+    }
+
+    private SemesterArchiveCoordinator recoveredCoordinator() {
+        // New coordinator instance reads only committed SQL state; remote participants stay simulated.
+        return new SemesterArchiveCoordinator(deletionCommands, deletionBarrier, scheduleClient,
+                publicationPersistence, deletionPreviews);
+    }
+
+    private void stubScheduleArchiveParticipant(String mismatch) {
+        when(scheduleClient.setSemesterArchiveBarrier(any(UUID.class), anyLong(), anyLong(),
+                any(SemesterArchiveParticipantCommand.class))).thenAnswer(invocation -> {
+            SemesterArchiveParticipantCommand command = invocation.getArgument(3);
+            return SetSemesterArchiveBarrierResponse.newBuilder()
+                    .setOperationId("operation".equals(mismatch) ? UUID.randomUUID().toString()
+                            : invocation.<UUID>getArgument(0).toString())
+                    .setSemesterId(invocation.<Long>getArgument(1) + ("semester".equals(mismatch) ? 1 : 0))
+                    .setStateVersion(invocation.<Long>getArgument(2) + ("version".equals(mismatch) ? 1 : 0))
+                    .setState("phase".equals(mismatch)
+                            ? command == SemesterArchiveParticipantCommand.PREPARE_RESTORE
+                                ? SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_RELEASED
+                                : SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PREPARED_RESTORE
+                            : command == SemesterArchiveParticipantCommand.PREPARE_RESTORE
+                            ? SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_PREPARED_RESTORE
+                            : command == SemesterArchiveParticipantCommand.RELEASE_RESTORE
+                            ? SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_RELEASED
+                            : SemesterArchiveParticipantState.SEMESTER_ARCHIVE_PARTICIPANT_READY).build();
+        });
     }
 
     @Test

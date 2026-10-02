@@ -17,6 +17,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.HashOperations;
 import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateDocument;
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
@@ -51,6 +53,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.eq;
 
 /**
@@ -95,15 +98,20 @@ class EventIdempotentIT extends ContainerTestBase {
     @Autowired private RabbitAdmin rabbitAdmin;
     @MockitoBean private AcademicGroupMemberClient academicGroupMemberClient;
     @MockitoBean private WebPushDeliveryService webPushDeliveryService;
-    @MockitoBean private NotificationPreferencesService preferencesService;
     @MockitoBean private SimpMessagingTemplate messagingTemplate;
     @Autowired private ReminderAttendanceStateService reminderAttendanceStateService;
+    private StringRedisTemplate reminderRedis;
+    private HashOperations<String, Object, Object> reminderPreferences;
 
     @MockitoBean
     private nl.martijndwars.webpush.PushService pushService;
 
     @BeforeEach
     void clean() {
+        reminderRedis = mock(StringRedisTemplate.class);
+        reminderPreferences = mock(HashOperations.class);
+        when(reminderRedis.opsForHash()).thenReturn(reminderPreferences);
+        when(reminderPreferences.entries(anyString())).thenReturn(Map.of());
         repository.deleteAll();
         mongoTemplate.remove(new Query(), COLLECTION);
         mongoTemplate.remove(new Query(), ReminderAttendanceStateDocument.class);
@@ -141,8 +149,9 @@ class EventIdempotentIT extends ContainerTestBase {
                 COLLECTION);
     }
 
-    @Test
-    void reminderMarkLookupFailureRetriesBeforePersonalWsAndCommitsEligibleSnapshotOnce() {
+    @ParameterizedTest
+    @ValueSource(strings = {"marks", "preferences"})
+    void reminderDependencyFailureRetriesBeforePersonalWsAndCommitsEligibleSnapshotOnce(String dependency) {
         UUID eventId = UUID.randomUUID();
         Map<String, Object> payload = Map.of("group_id", 7, "lesson_id", 101);
         Map<String, Object> envelope = envelope(eventId);
@@ -151,11 +160,16 @@ class EventIdempotentIT extends ContainerTestBase {
         mongoTemplate.insert(ReminderAttendanceStateDocument.builder()
                 .lessonId(101L).userId(42L).status("present").markedAt(Instant.now()).build());
         when(academicGroupMemberClient.getCurrentMemberUserIds(7L)).thenReturn(List.of(42L, 43L, 44L));
-        when(preferencesService.isEnabledForUser(43L, "lesson.reminder")).thenReturn(false);
-        when(preferencesService.isEnabledForUser(44L, "lesson.reminder")).thenReturn(true);
+        when(reminderPreferences.entries("notif:prefs:user:43")).thenReturn(Map.of("reminders", "off"));
         stubRealReminderResolver(payload);
-        doThrow(new org.springframework.dao.TransientDataAccessResourceException("test mark lookup unavailable"))
-                .doCallRealMethod().when(mongoTemplate).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
+        if ("marks".equals(dependency)) {
+            doThrow(new org.springframework.dao.TransientDataAccessResourceException("test mark lookup unavailable"))
+                    .doCallRealMethod().when(mongoTemplate).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
+        } else {
+            when(reminderPreferences.entries("notif:prefs:user:43"))
+                    .thenThrow(new org.springframework.data.redis.RedisConnectionFailureException("test Redis unavailable"))
+                    .thenReturn(Map.of("reminders", "off"));
+        }
         var pendingProvider = new CompletableFuture<Void>();
         when(webPushDeliveryService.sendToGroup(7L, "lesson.reminder", payload, Set.of(44L)))
                 .thenReturn(pendingProvider);
@@ -185,8 +199,9 @@ class EventIdempotentIT extends ContainerTestBase {
         }
     }
 
-    @Test
-    void reminderPersistentMarkLookupFailureRollsBackClaimAndRetainsEventInDlq() {
+    @ParameterizedTest
+    @ValueSource(strings = {"marks", "preferences"})
+    void reminderPersistentDependencyFailureRollsBackClaimAndRetainsEventInDlq(String dependency) {
         UUID eventId = UUID.randomUUID();
         Map<String, Object> payload = Map.of("group_id", 7, "lesson_id", 101);
         Map<String, Object> envelope = envelope(eventId);
@@ -194,8 +209,13 @@ class EventIdempotentIT extends ContainerTestBase {
         envelope.put("payload", payload);
         when(academicGroupMemberClient.getCurrentMemberUserIds(7L)).thenReturn(List.of(42L));
         stubRealReminderResolver(payload);
-        doThrow(new org.springframework.dao.TransientDataAccessResourceException("test mark lookup unavailable"))
-                .when(mongoTemplate).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
+        if ("marks".equals(dependency)) {
+            doThrow(new org.springframework.dao.TransientDataAccessResourceException("test mark lookup unavailable"))
+                    .when(mongoTemplate).find(any(Query.class), eq(ReminderAttendanceStateDocument.class));
+        } else {
+            when(reminderPreferences.entries("notif:prefs:user:42"))
+                    .thenThrow(new org.springframework.data.redis.RedisConnectionFailureException("test Redis unavailable"));
+        }
 
         publish(envelope);
 
@@ -215,7 +235,8 @@ class EventIdempotentIT extends ContainerTestBase {
         // and its real Mongo read inside the listener's claim transaction.
         WebPushDeliveryService resolver = new WebPushDeliveryService(null, pushService,
                 new com.fasterxml.jackson.databind.ObjectMapper(), mongoTemplate, Clock.systemUTC(),
-                preferencesService, reminderAttendanceStateService, academicGroupMemberClient);
+                new NotificationPreferencesService(reminderRedis, Clock.systemUTC()),
+                reminderAttendanceStateService, academicGroupMemberClient);
         when(webPushDeliveryService.resolveReminderAudience(7L, payload))
                 .thenAnswer(invocation -> resolver.resolveReminderAudience(7L, payload));
     }

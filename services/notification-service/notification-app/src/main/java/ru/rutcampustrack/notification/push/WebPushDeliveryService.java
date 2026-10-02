@@ -188,10 +188,12 @@ public class WebPushDeliveryService {
         if (reminderAttendanceStateService == null) {
             throw new IllegalStateException("Reminder attendance resolver is unavailable");
         }
+        if (preferencesService == null) {
+            throw new IllegalStateException("Reminder preferences resolver is unavailable");
+        }
         Set<Long> currentUserIds = resolveCurrentAudience(groupId, "lesson.reminder");
         return Set.copyOf(reminderAttendanceStateService.getUnmarkedUserIds(lessonId, currentUserIds).stream()
-                .filter(userId -> preferencesService == null
-                        || preferencesService.isEnabledForUser(userId, "lesson.reminder"))
+                .filter(preferencesService::isReminderEnabledForUser)
                 .collect(Collectors.toSet()));
     }
 

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.notification.contract.dto.preferences.NotificationPreferencesDto;
 import ru.rutcampustrack.notification.contract.dto.preferences.UpdateNotificationPreferencesRequest;
@@ -99,6 +100,25 @@ public class NotificationPreferencesService {
             return false;
         }
         return !DISABLED_VALUE.equals(asString(values.get(category)));
+    }
+
+    /** Reminder eligibility must be known before delivery; Redis failure is retried with the event claim. */
+    public boolean isReminderEnabledForUser(long userId) {
+        if (userId <= 0) {
+            throw new IllegalArgumentException("Reminder recipient must be a positive integer");
+        }
+        Map<Object, Object> values;
+        try {
+            values = redis.opsForHash().entries(key(userId));
+        } catch (RuntimeException ex) {
+            if (isRedisUnavailable(ex)) {
+                throw new TransientDataAccessResourceException("Reminder preferences are unavailable", ex);
+            }
+            throw ex;
+        }
+        Instant mutedUntil = parseInstant(asString(values.get(MUTE_UNTIL_FIELD)));
+        return (mutedUntil == null || !mutedUntil.isAfter(Instant.now(clock)))
+                && !DISABLED_VALUE.equals(asString(values.get("reminders")));
     }
 
     public String categoryForEvent(String eventType) {

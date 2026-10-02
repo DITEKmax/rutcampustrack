@@ -65,6 +65,7 @@ class WebPushDeliveryServiceTest {
     @BeforeEach
     void setUp() throws Exception {
         lenient().when(preferencesService.isEnabledForUser(any(), anyString())).thenReturn(true);
+        lenient().when(preferencesService.isReminderEnabledForUser(anyLong())).thenReturn(true);
         lenient().when(academicGroupMemberClient.getCurrentMemberUserIds(anyLong()))
                 .thenReturn(List.of(1L, 2L, 3L));
         lenient().when(reminderAttendanceStateService.getUnmarkedUserIds(anyLong(), any()))
@@ -596,7 +597,7 @@ class WebPushDeliveryServiceTest {
         when(repository.findAllByGroupId(7L)).thenReturn(List.of(marked, muted, allowed, former));
         when(reminderAttendanceStateService.getUnmarkedUserIds(101L, Set.of(1L, 2L, 3L)))
                 .thenReturn(Set.of(2L, 3L));
-        when(preferencesService.isEnabledForUser(2L, "lesson.reminder")).thenReturn(false);
+        when(preferencesService.isReminderEnabledForUser(2L)).thenReturn(false);
         Map<String, Object> payload = Map.of("group_id", 7, "lesson_id", 101);
         Set<Long> audience = service.resolveReminderAudience(7L, payload);
         assertThat(audience).containsExactly(3L);
@@ -619,6 +620,16 @@ class WebPushDeliveryServiceTest {
                 Map.of("group_id", 7, "lesson_id", 101)).join())
                 .hasCauseInstanceOf(org.springframework.dao.TransientDataAccessResourceException.class);
         verifyNoInteractions(repository, webPushService);
+    }
+
+    @Test
+    void reminderAudienceFailsClosedWhenPreferencesResolverIsMissing() {
+        WebPushDeliveryService missingPreferences = new WebPushDeliveryService(repository, webPushService,
+                new ObjectMapper(), mongoTemplate, Clock.systemUTC(), null,
+                reminderAttendanceStateService, academicGroupMemberClient);
+        assertThatThrownBy(() -> missingPreferences.resolveReminderAudience(7L, Map.of("lesson_id", 101)))
+                .isInstanceOf(IllegalStateException.class);
+        verifyNoInteractions(repository, webPushService, academicGroupMemberClient, reminderAttendanceStateService);
     }
 
     @ParameterizedTest

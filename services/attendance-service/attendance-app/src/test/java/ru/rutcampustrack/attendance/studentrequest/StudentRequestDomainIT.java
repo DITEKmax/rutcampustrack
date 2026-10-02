@@ -1026,6 +1026,110 @@ class StudentRequestDomainIT {
     }
 
     @Test
+    void excuseApprovalAfterTransferUsesCurrentLessonAndPreservesOriginalRequestEvidence() {
+        for (boolean targetMarkExists : List.of(false, true)) {
+            long sourceId = targetMarkExists ? 88L : 87L;
+            long targetId = sourceId + 100L;
+            seedAbsent(sourceId);
+            RequestDetail detail = service.submitExcuse(STUDENT,
+                    excuse(List.of(sourceId), "transferred-excuse-" + sourceId, List.of()));
+            ExcuseTicket ticket = excuseRepository.findById(detail.summary().id()).orElseThrow();
+            List<StudentLessonSnapshotDocument> originalSnapshots = ticket.getLessonSnapshots();
+            ticket.setLessonIds(List.of(targetId));
+            excuseRepository.save(ticket);
+            if (targetMarkExists) {
+                seedAbsent(targetId);
+            }
+            when(scheduleGrpcClient.requireAttendanceMutationReady(targetId, GROUP_ID))
+                    .thenReturn(fullLesson(targetId).toBuilder().setDate("2026-09-09")
+                            .setLessonNumber(3).setSubjectId(4321L).build());
+
+            service.decideExcuse(HEADMAN, ticket.getId(), true, null);
+
+            assertThat(attendanceRepository.findByLessonIdAndUserId(targetId, STUDENT_ID))
+                    .hasValueSatisfying(mark -> {
+                        assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
+                        assertThat(mark.getLessonDate()).isEqualTo(LocalDate.of(2026, 9, 9));
+                        assertThat(mark.getLessonNumber()).isEqualTo(3);
+                        assertThat(mark.getSubjectId()).isEqualTo(4321L);
+                        assertThat(mark.getSemesterId()).isEqualTo(SEMESTER_ID);
+                    });
+            assertThat(attendanceRepository.findByLessonIdAndUserId(sourceId, STUDENT_ID).orElseThrow()
+                    .getStatus()).isEqualTo(AttendanceStatus.ABSENT);
+            assertThat(excuseRepository.findById(ticket.getId()).orElseThrow().getLessonSnapshots())
+                    .usingRecursiveComparison().isEqualTo(originalSnapshots);
+            assertThat(mongoTemplate.count(Query.query(Criteria.where("lesson_id").is(null)),
+                    AttendanceDocument.class)).isZero();
+        }
+    }
+
+    @Test
+    void exactDecisionRepeatsKeepAttendanceTimestampBudgetAndSingleEvent() {
+        for (boolean approved : List.of(true, false)) {
+            long excuseLesson = approved ? 89L : 90L;
+            long lateLesson = approved ? 91L : 92L;
+            seedAbsent(excuseLesson);
+            seedAbsent(lateLesson);
+            RequestDetail ticket = service.submitExcuse(STUDENT,
+                    excuse(List.of(excuseLesson), "repeat-excuse-" + excuseLesson, List.of()));
+            RequestDetail late = service.submitLateCheckin(STUDENT,
+                    new LateCheckinSubmission(lateLesson, "repeat-late-key-" + lateLesson));
+            clearOutbox();
+            RequestDetail firstExcuse = service.decideExcuse(HEADMAN, ticket.summary().id(), approved, " decided ");
+            RequestDetail firstLate = service.decideLateCheckin(HEADMAN, late.summary().id(), approved, " decided ");
+            AttendanceDocument excuseMark = attendanceRepository
+                    .findByLessonIdAndUserId(excuseLesson, STUDENT_ID).orElseThrow();
+            AttendanceDocument lateMark = attendanceRepository
+                    .findByLessonIdAndUserId(lateLesson, STUDENT_ID).orElseThrow();
+            StudentLateCheckinBudgetDocument budget = budgetRepository
+                    .findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID).orElseThrow();
+            clock.set(clock.instant().plusSeconds(30));
+
+            assertThat(service.decideExcuse(HEADMAN, ticket.summary().id(), approved, "decided"))
+                    .isEqualTo(firstExcuse);
+            assertThat(service.decideLateCheckin(HEADMAN, late.summary().id(), approved, "decided"))
+                    .isEqualTo(firstLate);
+            assertThat(attendanceRepository.findByLessonIdAndUserId(excuseLesson, STUDENT_ID).orElseThrow())
+                    .usingRecursiveComparison().isEqualTo(excuseMark);
+            assertThat(attendanceRepository.findByLessonIdAndUserId(lateLesson, STUDENT_ID).orElseThrow())
+                    .usingRecursiveComparison().isEqualTo(lateMark);
+            assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID).orElseThrow())
+                    .usingRecursiveComparison().isEqualTo(budget);
+            assertThat(actualOutboxEvents("excuse.decided")).hasSize(1);
+            assertThat(actualOutboxEvents("late_checkin.decided")).hasSize(1);
+        }
+    }
+
+    @Test
+    void decisionRepeatStillRequiresCurrentAuthorityAndWritableSemester() {
+        seedAbsent(93L);
+        seedAbsent(94L);
+        RequestDetail ticket = service.submitExcuse(STUDENT,
+                excuse(List.of(93L), "repeat-fenced-excuse", List.of()));
+        RequestDetail late = service.submitLateCheckin(STUDENT,
+                new LateCheckinSubmission(94L, "repeat-fenced-late"));
+        service.decideExcuse(HEADMAN, ticket.summary().id(), true, null);
+        service.decideLateCheckin(HEADMAN, late.summary().id(), true);
+        clearOutbox();
+        when(academicGrpcClient.isHeadman(777L, GROUP_ID)).thenReturn(
+                HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
+        assertThatThrownBy(() -> service.decideExcuse(HEADMAN, ticket.summary().id(), true, null))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
+        assertThatThrownBy(() -> service.decideLateCheckin(HEADMAN, late.summary().id(), true))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.AccessDeniedException.class);
+        when(academicGrpcClient.isHeadman(777L, GROUP_ID)).thenReturn(
+                HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
+        mongoTemplate.save(ru.rutcampustrack.attendance.event.SemesterArchiveFenceDocument.builder()
+                .id(Long.toString(SEMESTER_ID)).semesterId(SEMESTER_ID).barrierState("ARCHIVED").build());
+        assertThatThrownBy(() -> service.decideExcuse(HEADMAN, ticket.summary().id(), true, null))
+                .isInstanceOf(ConflictException.class);
+        assertThatThrownBy(() -> service.decideLateCheckin(HEADMAN, late.summary().id(), true))
+                .isInstanceOf(ConflictException.class);
+        assertThat(actualOutboxEvents("excuse.decided")).isEmpty();
+        assertThat(actualOutboxEvents("late_checkin.decided")).isEmpty();
+    }
+
+    @Test
     void terminalDecisionDoesNotReplayForAnotherActorOutcomeOrComment() {
         seedAbsent(85L);
         RequestDetail ticket = service.submitExcuse(STUDENT,

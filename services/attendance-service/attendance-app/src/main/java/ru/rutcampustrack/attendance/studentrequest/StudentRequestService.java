@@ -1403,6 +1403,7 @@ public class StudentRequestService {
      */
     public RequestDetail decideExcuse(Identity identity, String ticketId, boolean approved,
                                       String decisionComment) {
+        String normalizedComment = validateDecisionComment(decisionComment);
         return executeDecisionWithRetry(() -> transactionTemplate.execute(status -> {
             ExcuseTicket ticket = excuseRepository.findById(ticketId).orElseThrow(
                     () -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
@@ -1410,19 +1411,21 @@ public class StudentRequestService {
             if (Objects.equals(ticket.getStudentId(), actor)) {
                 throw new AccessDeniedException("Нельзя принимать решение по собственной заявке");
             }
-            lockPairs(ticket.getSemesterId(), ticket.getStudentId(), ticket.getGroupId(),
+            Map<Long, LessonResponse> writeLessons = lockPairs(ticket.getSemesterId(), ticket.getStudentId(), ticket.getGroupId(),
                     sortedLessonIds(ticket.getLessonIds()));
             ExcuseTicket current = excuseRepository.findById(ticketId).orElseThrow(
                     () -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
             if (current.getStatus() == ExcuseTicketStatus.CANCELLED
                     || current.getStatus() == ExcuseTicketStatus.APPROVED
                     || current.getStatus() == ExcuseTicketStatus.REJECTED) {
+                if (matchesExcuseDecision(current, actor, approved, normalizedComment)) {
+                    return toDetail(current);
+                }
                 throw new ConflictException("Решение по тикету уже принято");
             }
             Instant now = clock.instant();
             if (approved) {
                 List<Long> ids = sortedLessonIds(current.getLessonIds());
-                Map<Long, StudentLessonSnapshotDocument> snapshots = snapshotMap(current.getLessonSnapshots());
                 for (Long lessonId : ids) {
                     AttendanceDocument attendance = attendanceRepository
                             .findByLessonIdAndUserId(lessonId, current.getStudentId()).orElse(null);
@@ -1430,20 +1433,24 @@ public class StudentRequestService {
                         continue;
                     }
                     if (attendance == null || attendance.getStatus() != AttendanceStatus.CANCELLED) {
-                        StudentLessonSnapshotDocument snapshot = snapshots.get(lessonId);
+                        // A transfer moves mutable lessonIds while keeping the original
+                        // request snapshots as evidence. Attendance belongs to the
+                        // current physical lesson validated before acquiring its fence.
+                        StudentLessonSnapshotDocument snapshot = toDocument(
+                                toSnapshot(writeLessons.get(lessonId), current.getSemesterId()));
                         saveExcusedAttendance(current, snapshot, attendance, now);
                     }
                 }
             }
             current.setStatus(approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED);
             current.setDecisionBy(actor);
-            current.setDecisionComment(normalizeComment(decisionComment));
+            current.setDecisionComment(normalizedComment);
             current.setDecisionAt(now);
             current.setUpdatedAt(now);
             ExcuseTicket saved = excuseRepository.save(current);
             excuseEventPublisher.publishDecided(saved);
             return toDetail(saved);
-        }), () -> recoverExcuseDecision(identity, ticketId, approved, decisionComment));
+        }), () -> recoverExcuseDecision(identity, ticketId, approved, normalizedComment));
     }
 
     /** Compatibility overload for bot and legacy callers without a rejection comment. */
@@ -1467,6 +1474,9 @@ public class StudentRequestService {
             LateCheckinRequest current = lateCheckinRepository.findById(requestId).orElseThrow(
                     () -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
             if (current.getStatus() != LateCheckinRequestStatus.PENDING) {
+                if (matchesLateCheckinDecision(current, actor, approved, normalizedComment)) {
+                    return toDetail(current);
+                }
                 throw new ConflictException("Решение по запросу уже принято");
             }
             Instant now = clock.instant();
@@ -1515,10 +1525,7 @@ public class StudentRequestService {
         if (Objects.equals(ticket.getStudentId(), actor)) {
             throw new AccessDeniedException("Нельзя принимать решение по собственной заявке");
         }
-        ExcuseTicketStatus expected = approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED;
-        if (ticket.getStatus() != expected
-                || !Objects.equals(ticket.getDecisionBy(), actor)
-                || !Objects.equals(ticket.getDecisionComment(), normalizeComment(decisionComment))) {
+        if (!matchesExcuseDecision(ticket, actor, approved, decisionComment)) {
             return null;
         }
         return toDetail(ticket);
@@ -1534,14 +1541,24 @@ public class StudentRequestService {
         if (Objects.equals(request.getStudentId(), actor)) {
             throw new AccessDeniedException("Нельзя принимать решение по собственной заявке");
         }
-        LateCheckinRequestStatus expected = approved
-                ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED;
-        if (request.getStatus() != expected
-                || !Objects.equals(request.getDecisionBy(), actor)
-                || !Objects.equals(request.getDecisionComment(), decisionComment)) {
+        if (!matchesLateCheckinDecision(request, actor, approved, decisionComment)) {
             return null;
         }
         return toDetail(request);
+    }
+
+    private static boolean matchesExcuseDecision(ExcuseTicket ticket, long actor,
+                                                  boolean approved, String comment) {
+        return ticket.getStatus() == (approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED)
+                && Objects.equals(ticket.getDecisionBy(), actor)
+                && Objects.equals(ticket.getDecisionComment(), comment);
+    }
+
+    private static boolean matchesLateCheckinDecision(LateCheckinRequest request, long actor,
+                                                       boolean approved, String comment) {
+        return request.getStatus() == (approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED)
+                && Objects.equals(request.getDecisionBy(), actor)
+                && Objects.equals(request.getDecisionComment(), comment);
     }
 
     private void saveExcusedAttendance(ExcuseTicket ticket,
@@ -1682,22 +1699,25 @@ public class StudentRequestService {
         return identity.userId();
     }
 
-    private void lockPairs(Long semesterId, long studentId, long groupId, List<Long> lessonIds) {
+    private Map<Long, LessonResponse> lockPairs(Long semesterId, long studentId, long groupId, List<Long> lessonIds) {
         if (semesterId == null || semesterId <= 0) {
             throw new ConflictException("В запросе отсутствует подтверждённый семестр");
         }
         List<Long> orderedIds = sortedLessonIds(lessonIds);
+        Map<Long, LessonResponse> lessons = new HashMap<>();
         for (Long lessonId : orderedIds) {
             LessonResponse lesson = scheduleGrpcClient.requireAttendanceMutationReady(lessonId, groupId);
             if (lesson.getSemesterId() != semesterId) {
                 throw new ConflictException("Урок изменил семестр; обнови данные и повтори действие");
             }
+            lessons.put(lessonId, lesson);
         }
         Instant now = clock.instant();
         pairWriteCoordinator.lockLessons(semesterId, orderedIds, groupId, now);
         for (Long lessonId : orderedIds) {
             pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, now);
         }
+        return lessons;
     }
 
     private static long requireAttachmentSemester(ExcuseTicket ticket) {
@@ -1719,19 +1739,6 @@ public class StudentRequestService {
             return List.of();
         }
         return lessonIds.stream().filter(Objects::nonNull).distinct().sorted().toList();
-    }
-
-    private static Map<Long, StudentLessonSnapshotDocument> snapshotMap(
-            List<StudentLessonSnapshotDocument> snapshots) {
-        Map<Long, StudentLessonSnapshotDocument> map = new HashMap<>();
-        if (snapshots != null) {
-            for (StudentLessonSnapshotDocument snapshot : snapshots) {
-                if (snapshot.getLessonId() != null) {
-                    map.put(snapshot.getLessonId(), snapshot);
-                }
-            }
-        }
-        return map;
     }
 
     private long requireStudentIdentity(Identity identity) {

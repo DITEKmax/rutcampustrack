@@ -1,0 +1,741 @@
+{
+  "status": "PASS",
+  "revision": "7e1190a0fddfd95ae272075ab1b0589f6afcb5e2",
+  "runId": "20261002-185653754-si6eh-ja",
+  "startedAt": "2026-10-02T19:02:30.150Z",
+  "steps": [
+    {
+      "name": "oneoff.public.create",
+      "status": 201,
+      "body": {
+        "id": 1,
+        "physicalLessonId": 12,
+        "groupId": 2,
+        "subjectId": 1,
+        "semesterId": 2,
+        "date": "2026-10-03",
+        "lessonNumber": 2,
+        "classroom": "BUS-ONEOFF",
+        "createdBy": 4,
+        "createdAt": "2026-10-02T19:02:43.601568Z",
+        "_links": {
+          "self": {
+            "href": "http://schedule-service:9092/schedule/one-off-lessons/1"
+          }
+        }
+      }
+    },
+    {
+      "name": "source.snapshot",
+      "status": 200,
+      "body": {
+        "_embedded": {
+          "lessonResponseList": [
+            {
+              "id": 12,
+              "scheduleItemId": null,
+              "groupId": 2,
+              "subjectId": 1,
+              "date": "2026-10-03",
+              "status": "PLANNED",
+              "dayOfWeek": 6,
+              "lessonNumber": 2,
+              "startTime": "12:00:00",
+              "endTime": "13:30:00",
+              "weekType": "ALL",
+              "room": "BUS-ONEOFF",
+              "geoBlocked": false,
+              "blockedByHeadman": false,
+              "blockedByUserId": null,
+              "blockedAt": null,
+              "cancelReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "createdAt": "2026-10-02T19:02:43.601568Z",
+              "occurrenceId": 12,
+              "assignmentId": 1,
+              "semesterId": 2,
+              "assignedTeacherId": 2,
+              "lessonType": "lecture",
+              "generation": 1,
+              "revision": 1,
+              "occurrenceRevision": 1,
+              "current": true,
+              "transferOperationId": null,
+              "transferState": null
+            }
+          ]
+        },
+        "_links": {
+          "self": {
+            "href": "http://schedule-service:9092/schedule/groups/2/lessons?dateFrom=2026-10-03&dateTo=2026-10-03&status=PLANNED&status=ACTIVE&status=CLOSED&status=CANCELLED&status=TRANSFERRED&page=0&size=100"
+          }
+        },
+        "page": {
+          "size": 100,
+          "totalElements": 1,
+          "totalPages": 1,
+          "number": 0
+        }
+      }
+    },
+    {
+      "name": "homework.public.publish",
+      "status": 201,
+      "body": {
+        "id": 2,
+        "title": "Owned ONE_OFF bus homework",
+        "description": "Synthetic actual Rabbit acceptance",
+        "link": null,
+        "subjectId": 1,
+        "groupId": 2,
+        "semesterId": 2,
+        "publishedBy": 4,
+        "bindingId": 2,
+        "requestKey": "938dcc91-e552-472e-b99b-b3c6b0241721",
+        "completed": false,
+        "createdAt": "2026-10-02T19:02:44.015295Z",
+        "lessonDate": "2026-10-03",
+        "lessonNumber": 2,
+        "bindingMode": "LESSON",
+        "revision": 1,
+        "archived": false,
+        "_links": {
+          "self": {
+            "href": "http://academic-service:9091/academic/homeworks/2"
+          }
+        }
+      }
+    },
+    {
+      "name": "completion.public",
+      "status": 200,
+      "body": {
+        "id": "2",
+        "completed": true,
+        "completedAt": "2026-10-02T19:02:45.818604Z"
+      }
+    },
+    {
+      "name": "transfer.accept",
+      "status": 202,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "PENDING",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": true,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200,
+      "body": {
+        "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+        "state": "COMPLETED",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "revision": "2",
+        "retryable": false,
+        "errorCode": null,
+        "targetDate": "2026-10-05"
+      }
+    },
+    {
+      "name": "target.fresh",
+      "status": 200,
+      "body": {
+        "_embedded": {
+          "lessonResponseList": [
+            {
+              "id": 13,
+              "scheduleItemId": null,
+              "groupId": 2,
+              "subjectId": 1,
+              "date": "2026-10-05",
+              "status": "PLANNED",
+              "dayOfWeek": 1,
+              "lessonNumber": 3,
+              "startTime": "14:00:00",
+              "endTime": "15:30:00",
+              "weekType": "ALL",
+              "room": "BUS-MOVED",
+              "geoBlocked": false,
+              "blockedByHeadman": false,
+              "blockedByUserId": null,
+              "blockedAt": null,
+              "cancelReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "createdAt": "2026-10-02T19:02:46.024815Z",
+              "occurrenceId": 12,
+              "assignmentId": 1,
+              "semesterId": 2,
+              "assignedTeacherId": 2,
+              "lessonType": "lecture",
+              "generation": 2,
+              "revision": 1,
+              "occurrenceRevision": 2,
+              "current": true,
+              "transferOperationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+              "transferState": "COMPLETED"
+            }
+          ]
+        },
+        "_links": {
+          "self": {
+            "href": "http://schedule-service:9092/schedule/groups/2/lessons?dateFrom=2026-10-05&dateTo=2026-10-05&status=PLANNED&status=ACTIVE&status=CLOSED&status=CANCELLED&status=TRANSFERRED&page=0&size=100"
+          }
+        },
+        "page": {
+          "size": 100,
+          "totalElements": 1,
+          "totalPages": 1,
+          "number": 0
+        }
+      }
+    },
+    {
+      "name": "source.history.fresh",
+      "status": 200,
+      "body": {
+        "_embedded": {
+          "lessonResponseList": [
+            {
+              "id": 12,
+              "scheduleItemId": null,
+              "groupId": 2,
+              "subjectId": 1,
+              "date": "2026-10-03",
+              "status": "TRANSFERRED",
+              "dayOfWeek": 6,
+              "lessonNumber": 2,
+              "startTime": "12:00:00",
+              "endTime": "13:30:00",
+              "weekType": "ALL",
+              "room": "BUS-ONEOFF",
+              "geoBlocked": false,
+              "blockedByHeadman": false,
+              "blockedByUserId": null,
+              "blockedAt": null,
+              "cancelReason": null,
+              "cancelledBy": null,
+              "cancelledAt": null,
+              "createdAt": "2026-10-02T19:02:43.601568Z",
+              "occurrenceId": 12,
+              "assignmentId": 1,
+              "semesterId": 2,
+              "assignedTeacherId": 2,
+              "lessonType": "lecture",
+              "generation": 1,
+              "revision": 2,
+              "occurrenceRevision": 2,
+              "current": false,
+              "transferOperationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+              "transferState": "COMPLETED"
+            }
+          ]
+        },
+        "_links": {
+          "self": {
+            "href": "http://schedule-service:9092/schedule/groups/2/lessons?dateFrom=2026-10-03&dateTo=2026-10-03&status=PLANNED&status=ACTIVE&status=CLOSED&status=CANCELLED&status=TRANSFERRED&page=0&size=100"
+          }
+        },
+        "page": {
+          "size": 100,
+          "totalElements": 1,
+          "totalPages": 1,
+          "number": 0
+        }
+      }
+    },
+    {
+      "name": "homework.fresh",
+      "status": 200,
+      "body": {
+        "id": 2,
+        "title": "Owned ONE_OFF bus homework",
+        "description": "Synthetic actual Rabbit acceptance",
+        "link": null,
+        "subjectId": 1,
+        "groupId": 2,
+        "semesterId": 2,
+        "publishedBy": 4,
+        "bindingId": 2,
+        "requestKey": "938dcc91-e552-472e-b99b-b3c6b0241721",
+        "completed": false,
+        "createdAt": "2026-10-02T19:02:44.015295Z",
+        "lessonDate": "2026-10-05",
+        "lessonNumber": 3,
+        "bindingMode": "LESSON",
+        "revision": 2,
+        "archived": false,
+        "_links": {
+          "self": {
+            "href": "http://academic-service:9091/academic/homeworks/2"
+          }
+        }
+      }
+    },
+    {
+      "name": "completion.feed.fresh",
+      "status": 200,
+      "body": {
+        "semester": {
+          "id": "2",
+          "name": "Transfer UI fixture 707310",
+          "dateFrom": "2026-09-18",
+          "dateTo": "2026-11-27"
+        },
+        "from": "2026-10-03",
+        "to": "2026-10-05",
+        "serverNow": "2026-10-02T19:02:53.544083656Z",
+        "items": [
+          {
+            "id": "2",
+            "subject": {
+              "id": "1",
+              "name": "Transfer UI 707310"
+            },
+            "title": "Owned ONE_OFF bus homework",
+            "description": "Synthetic actual Rabbit acceptance",
+            "link": null,
+            "lessonDate": "2026-10-05",
+            "lessonNumber": 3,
+            "bindingMode": "LESSON",
+            "completed": true,
+            "completedAt": "2026-10-02T19:02:45.818604Z",
+            "archived": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "attendance.fresh.report",
+      "status": 200,
+      "body": {
+        "lessonId": 13,
+        "groupId": 2,
+        "subjectId": 1,
+        "lessonDate": "2026-10-05",
+        "semesterId": 2,
+        "lessonStatus": "PLANNED",
+        "editable": false,
+        "entries": [
+          {
+            "userId": 4,
+            "displayName": "Runtime707310 TransferHeadman",
+            "status": null,
+            "symbol": null,
+            "source": null,
+            "excuseReason": null,
+            "excuseType": null,
+            "comment": null,
+            "attachmentId": null,
+            "attachmentName": null,
+            "attachmentContentType": null,
+            "attachmentSize": null,
+            "editable": false,
+            "editBlockedReason": "Пара ещё не началась"
+          },
+          {
+            "userId": 5,
+            "displayName": "Runtime707310 GeoStudent",
+            "status": null,
+            "symbol": null,
+            "source": null,
+            "excuseReason": null,
+            "excuseType": null,
+            "comment": null,
+            "attachmentId": null,
+            "attachmentName": null,
+            "attachmentContentType": null,
+            "attachmentSize": null,
+            "editable": false,
+            "editBlockedReason": "Пара ещё не началась"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "http://attendance-service:9093/attendance/reports/lesson/13"
+          }
+        }
+      }
+    },
+    {
+      "name": "oneoff.current.list",
+      "status": 200,
+      "body": {
+        "_embedded": {
+          "oneOffLessonResponseList": [
+            {
+              "id": 1,
+              "physicalLessonId": 13,
+              "groupId": 2,
+              "subjectId": 1,
+              "semesterId": 2,
+              "date": "2026-10-05",
+              "lessonNumber": 3,
+              "classroom": "BUS-MOVED",
+              "createdBy": 4,
+              "createdAt": "2026-10-02T19:02:43.601568Z",
+              "_links": {
+                "self": {
+                  "href": "http://schedule-service:9092/schedule/one-off-lessons/1"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "checks": [
+    "Fresh Academic GET retains homework identity at target date",
+    "Fresh BFF feed retains exact completion at target without historical duplicate",
+    "Fresh Attendance GET resolves moved future physical lesson without fabricated mark",
+    "Fresh ONE_OFF list returns exactly one current origin at target date"
+  ],
+  "fixture": {
+    "groupId": 2,
+    "semesterId": 2,
+    "studentId": 5
+  },
+  "limitations": [
+    "Future manual marks are prohibited; no marks seeded. Nonempty marks preservation is separately accepted realMongo component proof.",
+    "No fake ACK/participant writes; all DB access is read-only."
+  ],
+  "created": {
+    "id": 1,
+    "physicalLessonId": 12,
+    "groupId": 2,
+    "subjectId": 1,
+    "semesterId": 2,
+    "date": "2026-10-03",
+    "lessonNumber": 2,
+    "classroom": "BUS-ONEOFF",
+    "createdBy": 4,
+    "createdAt": "2026-10-02T19:02:43.601568Z",
+    "_links": {
+      "self": {
+        "href": "http://schedule-service:9092/schedule/one-off-lessons/1"
+      }
+    }
+  },
+  "physicalSnapshots": {
+    "source.snapshot": {
+      "id": 12,
+      "scheduleItemId": null,
+      "groupId": 2,
+      "subjectId": 1,
+      "date": "2026-10-03",
+      "status": "PLANNED",
+      "dayOfWeek": 6,
+      "lessonNumber": 2,
+      "startTime": "12:00:00",
+      "endTime": "13:30:00",
+      "weekType": "ALL",
+      "room": "BUS-ONEOFF",
+      "geoBlocked": false,
+      "blockedByHeadman": false,
+      "blockedByUserId": null,
+      "blockedAt": null,
+      "cancelReason": null,
+      "cancelledBy": null,
+      "cancelledAt": null,
+      "createdAt": "2026-10-02T19:02:43.601568Z",
+      "occurrenceId": 12,
+      "assignmentId": 1,
+      "semesterId": 2,
+      "assignedTeacherId": 2,
+      "lessonType": "lecture",
+      "generation": 1,
+      "revision": 1,
+      "occurrenceRevision": 1,
+      "current": true,
+      "transferOperationId": null,
+      "transferState": null
+    },
+    "target.fresh": {
+      "id": 13,
+      "scheduleItemId": null,
+      "groupId": 2,
+      "subjectId": 1,
+      "date": "2026-10-05",
+      "status": "PLANNED",
+      "dayOfWeek": 1,
+      "lessonNumber": 3,
+      "startTime": "14:00:00",
+      "endTime": "15:30:00",
+      "weekType": "ALL",
+      "room": "BUS-MOVED",
+      "geoBlocked": false,
+      "blockedByHeadman": false,
+      "blockedByUserId": null,
+      "blockedAt": null,
+      "cancelReason": null,
+      "cancelledBy": null,
+      "cancelledAt": null,
+      "createdAt": "2026-10-02T19:02:46.024815Z",
+      "occurrenceId": 12,
+      "assignmentId": 1,
+      "semesterId": 2,
+      "assignedTeacherId": 2,
+      "lessonType": "lecture",
+      "generation": 2,
+      "revision": 1,
+      "occurrenceRevision": 2,
+      "current": true,
+      "transferOperationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+      "transferState": "COMPLETED"
+    },
+    "source.history.fresh": {
+      "id": 12,
+      "scheduleItemId": null,
+      "groupId": 2,
+      "subjectId": 1,
+      "date": "2026-10-03",
+      "status": "TRANSFERRED",
+      "dayOfWeek": 6,
+      "lessonNumber": 2,
+      "startTime": "12:00:00",
+      "endTime": "13:30:00",
+      "weekType": "ALL",
+      "room": "BUS-ONEOFF",
+      "geoBlocked": false,
+      "blockedByHeadman": false,
+      "blockedByUserId": null,
+      "blockedAt": null,
+      "cancelReason": null,
+      "cancelledBy": null,
+      "cancelledAt": null,
+      "createdAt": "2026-10-02T19:02:43.601568Z",
+      "occurrenceId": 12,
+      "assignmentId": 1,
+      "semesterId": 2,
+      "assignedTeacherId": 2,
+      "lessonType": "lecture",
+      "generation": 1,
+      "revision": 2,
+      "occurrenceRevision": 2,
+      "current": false,
+      "transferOperationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+      "transferState": "COMPLETED"
+    }
+  },
+  "operation": {
+    "operationId": "cb262e7b-eddf-4340-9415-cc0b243ec4ce",
+    "state": "COMPLETED",
+    "occurrenceId": "12",
+    "sourceLessonId": "12",
+    "targetLessonId": "13",
+    "revision": "2",
+    "retryable": false,
+    "errorCode": null,
+    "targetDate": "2026-10-05"
+  },
+  "criteria": [
+    {
+      "name": "Fresh Academic GET retains homework identity at target date",
+      "passed": true
+    },
+    {
+      "name": "Fresh BFF feed retains exact completion at target without historical duplicate",
+      "passed": true
+    },
+    {
+      "name": "Fresh Attendance GET resolves moved future physical lesson without fabricated mark",
+      "passed": true
+    },
+    {
+      "name": "Fresh ONE_OFF list returns exactly one current origin at target date",
+      "passed": true
+    }
+  ],
+  "finishedAt": "2026-10-02T19:02:54.609Z"
+}

@@ -7,5 +7,33 @@
   "secretValues": "not recorded",
   "nodeCheck": 0,
   "artifactClosureVerification": 0,
-  "productRebuildAfterFailure": false
+  "productRebuildAfterFailure": false,
+  "build": {
+    "reusedPwaAssets": 10,
+    "exitCode": 0,
+    "durationSeconds": 66,
+    "reusedJars": 3,
+    "bootJars": 5,
+    "sessionId": 34171
+  },
+  "r1": {
+    "exitCode": 1,
+    "runnerSessionId": 40595,
+    "cleanupChunk": "1fc07a",
+    "cleanupExitCode": 0,
+    "probeStarted": false,
+    "failure": "Notification required env missing; Auth health PASS"
+  },
+  "r2": {
+    "cleanupExitCode": 0,
+    "passedCriteria": 4,
+    "httpSteps": 24,
+    "cleanupChunk": "13183f",
+    "runnerSessionId": 20713,
+    "sameArtifactBytes": true,
+    "probeExitCode": 0,
+    "runnerExitCode": 0,
+    "probeSessionId": 80399
+  },
+  "scopedDiffCheckExit": 0
 }

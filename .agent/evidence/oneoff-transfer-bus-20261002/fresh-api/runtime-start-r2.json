@@ -1,0 +1,14 @@
+{
+  "source": "7e1190a0fddfd95ae272075ab1b0589f6afcb5e2",
+  "manifest": "f3f238f09d8cd4e428cab15a701283e2062759926202c5beb7cdec500100d61c",
+  "runnerSha256": "81473fb04c72e792e12508018bd7ee69c44f9d80220ce19dc2d8e4e30219b95f",
+  "runId": "20261002-185653754-si6eh-ja",
+  "session_id": 20713,
+  "chunk": "6d055a",
+  "status": "RUNNING",
+  "hostFreeKiB": 1812572,
+  "virtualFreeKiB": 6044944,
+  "dockerVmMemAvailableKiB": 11338632,
+  "javaBefore": 0,
+  "runningDockerBefore": []
+}

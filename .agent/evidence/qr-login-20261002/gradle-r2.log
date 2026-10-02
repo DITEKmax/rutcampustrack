@@ -1,0 +1,75 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:auth-service:auth-api-contract:compileJava UP-TO-DATE
+> Task :services:auth-service:auth-api-contract:processResources NO-SOURCE
+> Task :services:auth-service:auth-api-contract:classes UP-TO-DATE
+> Task :services:auth-service:auth-api-contract:jar UP-TO-DATE
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:auth-service:auth-app:extractIncludeProto UP-TO-DATE
+> Task :services:auth-service:auth-app:extractProto UP-TO-DATE
+> Task :services:auth-service:auth-app:generateProto UP-TO-DATE
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-outbox:compileJava UP-TO-DATE
+> Task :services:shared:shared-outbox:classes UP-TO-DATE
+> Task :services:shared:shared-outbox:jar UP-TO-DATE
+> Task :services:shared:shared-web:compileJava UP-TO-DATE
+> Task :services:shared:shared-web:classes UP-TO-DATE
+> Task :services:shared:shared-web:jar UP-TO-DATE
+> Task :services:auth-service:auth-app:compileJava UP-TO-DATE
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:auth-service:auth-app:processResources UP-TO-DATE
+> Task :services:auth-service:auth-app:classes UP-TO-DATE
+> Task :services:shared:shared-test-containers:processResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processTestFixturesResources NO-SOURCE
+> Task :services:auth-service:auth-app:extractIncludeTestProto UP-TO-DATE
+> Task :services:auth-service:auth-app:extractTestProto UP-TO-DATE
+> Task :services:auth-service:auth-app:generateTestProto NO-SOURCE
+> Task :services:shared:shared-test-containers:compileJava NO-SOURCE
+> Task :services:shared:shared-test-containers:classes UP-TO-DATE
+> Task :services:shared:shared-test-containers:jar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesJar UP-TO-DATE
+
+> Task :services:auth-service:auth-app:compileTestJava
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\map-usage-delivery-20260922\services\auth-service\auth-app\src\test\java\ru\rutcampustrack\auth\service\OtpServiceTest.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :services:api-gateway:compileJava UP-TO-DATE
+> Task :services:api-gateway:processResources UP-TO-DATE
+> Task :services:api-gateway:classes UP-TO-DATE
+> Task :services:api-gateway:compileTestJava UP-TO-DATE
+> Task :services:auth-service:auth-app:processTestResources UP-TO-DATE
+> Task :services:auth-service:auth-app:testClasses
+> Task :services:auth-service:auth-app:integrationTest
+
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+{"ts":"2026-10-02T19:56:10.845+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"SpringApplicationShutdownHook","msg":"Commencing graceful shutdown. Waiting for active requests to complete","service":"auth-service"}
+{"ts":"2026-10-02T19:56:10.863+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"tomcat-shutdown","msg":"Graceful shutdown complete","service":"auth-service"}
+{"ts":"2026-10-02T19:56:11.635+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"SpringApplicationShutdownHook","msg":"Closing JPA EntityManagerFactory for persistence unit 'default'","service":"auth-service"}
+{"ts":"2026-10-02T19:56:11.641+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"SpringApplicationShutdownHook","msg":"HikariPool-1 - Shutdown initiated...","service":"auth-service"}
+{"ts":"2026-10-02T19:56:11.645+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"SpringApplicationShutdownHook","msg":"HikariPool-1 - Shutdown completed.","service":"auth-service"}
+
+> Task :services:api-gateway:processTestResources NO-SOURCE
+> Task :services:api-gateway:testClasses UP-TO-DATE
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :services:api-gateway:test
+
+BUILD SUCCESSFUL in 1m 44s
+35 actionable tasks: 3 executed, 32 up-to-date

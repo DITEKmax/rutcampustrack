@@ -1,0 +1,23 @@
+{
+  "scope": "Server QR LOGIN; Auth contract/app/new V46; narrow Gateway exact guest POST guard",
+  "risk": "S3",
+  "baseline": "5b1faabbd08ae65e9e9028eeef3d9a3efd85de4a",
+  "source": "9ffad58e1a918e707dbadb1346642e304400a82a",
+  "acceptedRuntimeRevision": "30fa192e18aa089cdf44ab28908c1635d84fd7dd",
+  "reviews": {
+    "protocol": "Independent PASS B498BF2528C8AA0E3D31686461E5F9E4AD2CCC55EE34A27AA17D5A5FDB2A526A, root reported",
+    "wholeSource": "Independent PASS baseline..9ffad58e, root reported",
+    "fixtureCorrection": "Root opened and accepted 30fa192e; product source unchanged"
+  },
+  "r1": {"sessionId":97859,"exitCode":1,"durationSeconds":94,"productionAndTestCompilation":"Auth/Gateway PASS","plannedQrCriteriaEntered":0,"failures":"4 shared cache fixture assertions + explicit ArchUnit contract catalog missing QrLoginApi","gatewayMatrix":"not entered"},
+  "r2": {"sessionId":27664,"exitCode":0,"durationSeconds":104,"qrHttpPostgresRedisCriteria":4,"qrFailures":0,"gatewayMatrix":1,"gatewayFailures":0,"changedArchCatalog":"PASS","automaticUnchangedChecks":3,"cleanup":"Docker/java EMPTY; normal owned Testcontainers/Ryuk teardown"},
+  "criteria": [
+    "Browser-only canonical session/default grants/password flag; concurrent exchange and post-original-TTL exact pair replay single session/LOGIN; rotation rejects",
+    "Wrong browser/approval-only/purpose/anonymous/bootstrap denied; reject/natural expiry/reissue invalidate; Redis limits/failure closed; literal trusted-IP scope proven by real rate keys",
+    "Source revoke and role/account grant drift; target revoke deny issuance/recovery",
+    "Receipt-fault atomic session/audit rollback; immutable receipt; metadata-only bounded 24h cleanup; receipt window exhaustion",
+    "Gateway permits only three exact guest POST paths; GET/protected/unknown/nested paths denied"
+  ],
+  "staticDiffCheckExitCode":0,
+  "limits":["Server-only LOGIN; mobile/browser UI deferred","No TMA/device binding/production migration/deploy/push","Explicit literal Gateway peer trust required on deployment; default no proxies","Foreign headman/auth/user-archive evidence preserved","No additional suite/run after accepted R2"]
+}

@@ -1,0 +1,81 @@
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\AttendanceIndexInitializer.java:97: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps(AttendanceDocument.class).ensureIndex(
+                                                        ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:70: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:77: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:84: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:91: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:99: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        cancellationOps.ensureIndex(new Index()
+                       ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:109: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:114: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:118: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:123: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:133: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        excuseOps.ensureIndex(new Index()
+                 ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:139: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        requestReceiptOps.ensureIndex(new Index()
+                         ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:147: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        budgetOps.ensureIndex(new Index()
+                 ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:154: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        attachmentOps.ensureIndex(new Index()
+                     ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:159: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        attachmentOps.ensureIndex(new Index()
+                     ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:165: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        receiptOps.ensureIndex(new Index()
+                  ^
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\checkin\CheckinController.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+16 warnings
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\student\StudentCheckinTransactionIT.java:205: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps(AttendanceDocument.class).ensureIndex(new Index()
+                                                        ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\student\StudentCheckinTransactionIT.java:208: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("late_checkin_requests").ensureIndex(new Index()
+                                                       ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\student\StudentCheckinTransactionIT.java:213: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("student_checkin_receipts").ensureIndex(new Index()
+                                                          ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1531: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("attendances").ensureIndex(new Index()
+                                             ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1534: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("late_checkin_requests").ensureIndex(new Index()
+                                                       ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1539: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("student_request_receipts").ensureIndex(new Index()
+                                                          ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1543: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("student_late_checkin_budgets").ensureIndex(new Index()
+                                                              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1546: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("request_attachments").ensureIndex(new Index()
+                                                     ^
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\checkin\CheckinServiceTest.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+8 warnings
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended

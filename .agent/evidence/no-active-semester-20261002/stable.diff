@@ -1,0 +1,121 @@
+commit 87f3108d5188c73b46c057a216128ffeb4bbdf10
+Author:     maksd <maksditkovskiy71@gmail.com>
+AuthorDate: Fri Oct 2 15:33:18 2026 +0300
+Commit:     maksd <maksditkovskiy71@gmail.com>
+CommitDate: Fri Oct 2 15:33:18 2026 +0300
+
+    fix(attendance): clear semester cache on authoritative absence
+
+diff --git a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/semester/SemesterCacheService.java b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/semester/SemesterCacheService.java
+index 221c8d2d..a614c86c 100644
+--- a/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/semester/SemesterCacheService.java
++++ b/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/semester/SemesterCacheService.java
+@@ -5,6 +5,7 @@ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ import org.springframework.stereotype.Service;
+ import ru.rutcampustrack.academic.grpc.SemesterResponse;
++import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
+ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+ 
+ /**
+@@ -48,8 +49,14 @@ public class SemesterCacheService {
+     }
+ 
+     public void refresh() {
+-        SemesterResponse response = academicGrpcClient.getActiveSemester();
+-        this.activeSemesterId = response.getId();
+-        log.info("Refreshed active semester: id={}", activeSemesterId);
++        try {
++            SemesterResponse response = academicGrpcClient.getActiveSemester();
++            this.activeSemesterId = response.getId();
++            log.info("Refreshed active semester: id={}", activeSemesterId);
++        } catch (ResourceNotFoundException e) {
++            // Authoritative absence after archive; a later read retries for the next activation.
++            this.activeSemesterId = null;
++            log.info("Refreshed semester cache: no active semester");
++        }
+     }
+ }
+diff --git a/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheServiceTest.java b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheServiceTest.java
+new file mode 100644
+index 00000000..01f19404
+--- /dev/null
++++ b/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheServiceTest.java
+@@ -0,0 +1,77 @@
++package ru.rutcampustrack.attendance.semester;
++
++import io.grpc.Status;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.api.extension.ExtendWith;
++import org.mockito.Mock;
++import org.mockito.junit.jupiter.MockitoExtension;
++import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
++import ru.rutcampustrack.academic.grpc.SemesterResponse;
++import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
++import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
++
++import java.lang.reflect.Field;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
++import static org.junit.jupiter.api.Assertions.assertThrows;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyLong;
++import static org.mockito.Mockito.when;
++
++@ExtendWith(MockitoExtension.class)
++class SemesterCacheServiceTest {
++
++    @Mock
++    private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
++
++    private SemesterCacheService cache;
++
++    @BeforeEach
++    void setUp() throws Exception {
++        AcademicGrpcClient client = new AcademicGrpcClient();
++        Field stubField = AcademicGrpcClient.class.getDeclaredField("stub");
++        stubField.setAccessible(true);
++        stubField.set(client, stub);
++        when(stub.withDeadlineAfter(anyLong(), any())).thenReturn(stub);
++        cache = new SemesterCacheService(client);
++    }
++
++    @Test
++    void archiveLastActiveSemesterClearsOldIdAndNextReadFindsNewActivation() {
++        when(stub.getActiveSemester(any()))
++                .thenReturn(semester(11L))
++                .thenThrow(Status.NOT_FOUND.asRuntimeException())
++                .thenThrow(Status.NOT_FOUND.asRuntimeException())
++                .thenReturn(semester(12L));
++
++        cache.refresh();
++        assertThat(cache.getActiveSemesterId()).isEqualTo(11L);
++
++        // The archive-event refresh can complete successfully while Academic has no active semester.
++        assertDoesNotThrow(cache::refresh);
++        assertThat(cache.getActiveSemesterId()).isNull();
++
++        // Activation from no active semester needs no archive event: a lazy read discovers it.
++        assertThat(cache.getActiveSemesterId()).isEqualTo(12L);
++    }
++
++    @Test
++    void transportFailurePropagatesOnRefreshAndKeepsExistingCachePolicy() {
++        when(stub.getActiveSemester(any()))
++                .thenThrow(Status.UNAVAILABLE.asRuntimeException())
++                .thenReturn(semester(11L))
++                .thenThrow(Status.UNAVAILABLE.asRuntimeException());
++
++        assertThat(cache.getActiveSemesterId()).isNull();
++        assertThat(cache.getActiveSemesterId()).isEqualTo(11L);
++
++        assertThrows(AcademicServiceUnavailableException.class, cache::refresh);
++        assertThat(cache.getActiveSemesterId()).isEqualTo(11L);
++    }
++
++    private static SemesterResponse semester(long id) {
++        return SemesterResponse.newBuilder().setId(id).build();
++    }
++}

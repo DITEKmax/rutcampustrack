@@ -1,0 +1,12 @@
+{
+  "revision": "87f3108d5188c73b46c057a216128ffeb4bbdf10",
+  "command": "./gradlew.bat :services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest --no-daemon --no-parallel --max-workers=1 --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true",
+  "exitCode": 0,
+  "started": "2026-10-02T15:43:54.8101674+03:00",
+  "ended": "2026-10-02T15:46:08.5654474+03:00",
+  "elapsedSeconds": 133.75528,
+  "jdkHome": "C:\\Users\\maksd\\.jdks\\ms-21.0.10",
+  "freshXml": true,
+  "containers": "none; local unit test only",
+  "heavyLease": "root grant after G7205 cleanup PASS"
+}

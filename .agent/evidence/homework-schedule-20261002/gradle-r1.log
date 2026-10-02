@@ -1,0 +1,104 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:schedule-service:schedule-api-contract:compileJava
+> Task :services:schedule-service:schedule-api-contract:processResources NO-SOURCE
+> Task :services:schedule-service:schedule-api-contract:classes
+> Task :services:schedule-service:schedule-api-contract:jar
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-security:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:schedule-service:schedule-app:extractIncludeProto
+> Task :services:schedule-service:schedule-app:extractProto
+> Task :services:schedule-service:schedule-app:generateProto
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-outbox:compileJava UP-TO-DATE
+> Task :services:shared:shared-outbox:classes UP-TO-DATE
+> Task :services:shared:shared-outbox:jar UP-TO-DATE
+> Task :services:shared:shared-security:compileJava UP-TO-DATE
+> Task :services:shared:shared-security:classes UP-TO-DATE
+> Task :services:shared:shared-security:jar UP-TO-DATE
+> Task :services:shared:shared-web:compileJava UP-TO-DATE
+> Task :services:shared:shared-web:classes UP-TO-DATE
+> Task :services:shared:shared-web:jar UP-TO-DATE
+> Task :services:schedule-service:schedule-app:compileJava
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:schedule-service:schedule-app:processResources
+> Task :services:schedule-service:schedule-app:classes
+> Task :services:shared:shared-observability:processTestFixturesResources NO-SOURCE
+> Task :services:shared:shared-security:processTestFixturesResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processTestFixturesResources NO-SOURCE
+> Task :services:schedule-service:schedule-app:extractIncludeTestProto
+> Task :services:schedule-service:schedule-app:extractTestProto
+> Task :services:schedule-service:schedule-app:generateTestProto NO-SOURCE
+> Task :services:shared:shared-observability:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-observability:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-observability:testFixturesJar UP-TO-DATE
+> Task :services:shared:shared-security:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesJar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileJava NO-SOURCE
+> Task :services:shared:shared-test-containers:classes UP-TO-DATE
+> Task :services:shared:shared-test-containers:jar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesJar UP-TO-DATE
+
+> Task :services:schedule-service:schedule-app:compileTestJava
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\schedule-service\schedule-app\src\test\java\ru\rutcampustrack\schedule\grpc\AssignmentCloseServiceIdentityInterceptorTest.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :services:schedule-service:schedule-app:processTestResources
+> Task :services:schedule-service:schedule-app:testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :services:schedule-service:schedule-app:test
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :services:schedule-service:schedule-app:integrationTest
+
+HomeworkBindingServiceIT > dateBindingDeletionIncludesInventoryAndRetainsImmutablePublicationIdentity() FAILED
+    org.springframework.jdbc.UncategorizedSQLException at HomeworkBindingServiceIT.java:585
+        Caused by: org.postgresql.util.PSQLException at HomeworkBindingServiceIT.java:585
+
+HomeworkBindingServiceIT > archiveCancellationCommitsBindingLedgerAndOutbox_andReplayReturnsOriginalEvent() FAILED
+    java.lang.NullPointerException at HomeworkBindingServiceIT.java:247
+
+HomeworkBindingServiceIT > batchReadAndMoveWithReversedOriginIdsCompleteUnderConcurrentLocks() FAILED
+    org.springframework.dao.DuplicateKeyException at HomeworkBindingServiceIT.java:808
+        Caused by: org.postgresql.util.PSQLException at HomeworkBindingServiceIT.java:808
+
+{"ts":"2026-10-02T16:54:56.328+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"SpringApplicationShutdownHook","msg":"Commencing graceful shutdown. Waiting for active requests to complete","service":"schedule-service"}
+{"ts":"2026-10-02T16:54:56.336+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.GracefulShutdown","thread":"tomcat-shutdown","msg":"Graceful shutdown complete","service":"schedule-service"}
+{"ts":"2026-10-02T16:54:56.668+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"SpringApplicationShutdownHook","msg":"Closing JPA EntityManagerFactory for persistence unit 'default'","service":"schedule-service"}
+{"ts":"2026-10-02T16:54:56.672+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"SpringApplicationShutdownHook","msg":"HikariPool-1 - Shutdown initiated...","service":"schedule-service"}
+{"ts":"2026-10-02T16:54:56.674+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"SpringApplicationShutdownHook","msg":"HikariPool-1 - Shutdown completed.","service":"schedule-service"}
+
+> Task :services:schedule-service:schedule-app:integrationTest FAILED
+
+12 tests completed, 3 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':services:schedule-service:schedule-app:integrationTest'.
+> There were failing tests. See the report at: file:///C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/admin-group-promotion-20260927/services/schedule-service/schedule-app/build/reports/integrationTest/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1m 27s
+38 actionable tasks: 13 executed, 25 up-to-date

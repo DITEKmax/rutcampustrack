@@ -20,6 +20,6 @@
     "--console=plain",
     "--system-prop=org.gradle.java.compile-classpath-packaging=true"
   ],
-  "status": "QUEUED awaiting root lease; no wholebus or accepted component repeats",
+  "status": "PASS exact one-method invocation exec27794/exit0/66s; owned cleanup absent",
   "resources": "one disposable Testcontainers PostgreSQL16; exact owned cleanup"
 }

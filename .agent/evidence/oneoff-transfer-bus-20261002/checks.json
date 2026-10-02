@@ -51,7 +51,37 @@
     "scope": "4 Schedule files, canonical batch pointer + read-only REPEATABLE_READ",
     "diff_check": 0,
     "planned_exact_IT": "LessonApiIT.getLessons_transferredOneOffHistoryUsesCanonicalCurrentPointer",
-    "runtime": "QUEUED single method, Notification soleheavy",
+    "runtime": {
+      "source": "1efa2b08af14a659c743f10d6829eceb5793fb33",
+      "head": "5074e8f6c7275dd7027c56f92f47af06b72c9e0d",
+      "session_id": 27794,
+      "terminal_chunk": "907dea",
+      "exit_code": 0,
+      "seconds": 66,
+      "compileJava": "PASS",
+      "compileTestJava": "PASS",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "method": "LessonApiIT.getLessons_transferredOneOffHistoryUsesCanonicalCurrentPointer",
+      "xml": "current-flag-r1-TEST-LessonApiIT.xml",
+      "log": "current-flag-r1.log",
+      "cleanup": {
+        "chunk": "add241",
+        "exit_code": 0,
+        "pg": "a8bca773dd7e2b23fb01ac4c6b722d310d3093581d53f7bbb0255abf6f856fc6",
+        "ryuk": "0a26401d29c89e79a340582d74950d5e02633bc770ceecedf0ad2ace9c739875",
+        "ownedContainersAbsent": true,
+        "runningDocker": [],
+        "javaCount": 0,
+        "ownPidsAbsent": [
+          11740,
+          28744,
+          40832
+        ]
+      },
+      "no_old_component_or_bus_repeats": true
+    },
     "independent_review": "PASS per root"
   }
 }

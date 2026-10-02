@@ -1,0 +1,13 @@
+{
+  "session_id": 27794,
+  "observedAt": "2026-10-02T20:59:53.3768149+03:00",
+  "containers": [
+    "a8bca773dd7e2b23fb01ac4c6b722d310d3093581d53f7bbb0255abf6f856fc6|/magical_antonelli|cb0a53e0-0d76-4b23-a8c7-0da2be40d5fe|true|false",
+    "0a26401d29c89e79a340582d74950d5e02633bc770ceecedf0ad2ace9c739875|/testcontainers-ryuk-cb0a53e0-0d76-4b23-a8c7-0da2be40d5fe|<no value>|true|false"
+  ],
+  "javaPids": [
+    11740,
+    28744,
+    40832
+  ]
+}

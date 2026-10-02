@@ -1,0 +1,13 @@
+{
+  "session_id": 27794,
+  "chunk_id": "85710c",
+  "source": "1efa2b08af14a659c743f10d6829eceb5793fb33",
+  "head": "5074e8f6c7275dd7027c56f92f47af06b72c9e0d",
+  "log": "current-flag-r1.log",
+  "hostFreeKiB": 2752360,
+  "virtualFreeKiB": 6886936,
+  "javaBefore": 0,
+  "runningDockerBefore": [],
+  "startedAt": "2026-10-02T20:58:30+03:00",
+  "status": "RUNNING"
+}

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.auth.integration.AuthOtpFlowIT" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-10-02T15:23:06" hostname="DITEK-PK" time="1.283">
+  <properties/>
+  <testcase name="passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation()" classname="ru.rutcampustrack.auth.integration.AuthOtpFlowIT" time="1.283">
+    <failure message="org.springframework.jdbc.BadSqlGrammarException: PreparedStatementCallback; bad SQL grammar [SELECT * FROM auth_sessions WHERE user_id = ? ORDER BY id]" type="org.springframework.jdbc.BadSqlGrammarException">org.springframework.jdbc.BadSqlGrammarException: PreparedStatementCallback; bad SQL grammar [SELECT * FROM auth_sessions WHERE user_id = ? ORDER BY id]
+	at app//org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:134)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at app//org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at app//org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1556)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:754)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:767)
+	at app//org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:820)
+	at app//org.springframework.jdbc.core.JdbcTemplate.queryForList(JdbcTemplate.java:954)
+	at app//ru.rutcampustrack.auth.integration.AuthOtpFlowIT.lambda$passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation$7(AuthOtpFlowIT.java:453)
+	at app//ru.rutcampustrack.auth.integration.AuthOtpFlowIT.passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation(AuthOtpFlowIT.java:456)
+	at java.base@21.0.10/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.10/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.postgresql.util.PSQLException: ERROR: column &quot;id&quot; does not exist
+  Подсказка: Perhaps you meant to reference the column &quot;auth_sessions.sid&quot;.
+  Позиция: 57
+	at app//org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589)
+	at app//org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431)
+	at app//org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534)
+	at app//org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:196)
+	at app//org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:139)
+	at app//com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+	at app//com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java)
+	at app//org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732)
+	at app//org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658)
+	... 10 more
+</failure>
+  </testcase>
+  <system-out><![CDATA[18:22:19.409 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.rutcampustrack.auth.integration.AuthOtpFlowIT]: AuthOtpFlowIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+18:22:19.968 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.rutcampustrack.auth.AuthApplication for test class ru.rutcampustrack.auth.integration.AuthOtpFlowIT
+18:22:20.387 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+18:22:20.401 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+18:22:20.431 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.20.4
+18:22:21.282 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+18:22:22.194 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+18:22:22.202 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+18:22:22.245 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 28.5.2
+  API Version: 1.51
+  Operating System: Docker Desktop
+  Total Memory: 11963 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+18:22:23.686 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Creating container for image: testcontainers/ryuk:0.11.0
+18:22:23.885 [Test worker] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+18:22:24.129 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 is starting: e80e74da85470731fa2c40e097c969d64401cd30cccf1f6f1d96f34674567998
+18:22:24.771 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 started in PT1.0842583S
+18:22:24.781 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+18:22:24.782 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+18:22:24.783 [Test worker] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+18:22:24.785 [Test worker] INFO tc.postgres:16 -- Creating container for image: postgres:16
+18:22:24.920 [Test worker] INFO tc.postgres:16 -- Container postgres:16 is starting: 9e9d38ab835a17f94e7dfa4f1f6ac8e45a16748e6bab121ab534d729ee9c7b96
+18:22:27.291 [Test worker] INFO tc.postgres:16 -- Container postgres:16 started in PT2.5057302S
+18:22:27.292 [Test worker] INFO tc.postgres:16 -- Container is started (JDBC URL: jdbc:postgresql://localhost:61548/academic_db?loggerLevel=OFF)
+18:22:27.294 [Test worker] INFO tc.redis:7-alpine -- Creating container for image: redis:7-alpine
+18:22:27.435 [Test worker] INFO tc.redis:7-alpine -- Container redis:7-alpine is starting: 125f029557d64cdbf2868304bb41776dd18f84986dd16d98fc3827dd865db2c7
+18:22:28.377 [Test worker] INFO tc.redis:7-alpine -- Container redis:7-alpine started in PT1.083436S
+18:22:28.383 [Test worker] INFO tc.rabbitmq:3.13-management-alpine -- Creating container for image: rabbitmq:3.13-management-alpine
+18:22:28.512 [Test worker] INFO tc.rabbitmq:3.13-management-alpine -- Container rabbitmq:3.13-management-alpine is starting: 61d703cc61f41d40649b28fa91d1450ebd898904f806c5e9867993c7e57d3158
+18:22:42.623 [Test worker] INFO tc.rabbitmq:3.13-management-alpine -- Container rabbitmq:3.13-management-alpine started in PT14.2400755S
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+{"ts":"2026-10-02T18:22:44.141+03:00","v":"1","level":"INFO","logger":"org.hibernate.validator.internal.util.Version","thread":"background-preinit","msg":"HV000001: Hibernate Validator 8.0.3.Final","service":"auth-service"}
+{"ts":"2026-10-02T18:22:44.272+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.auth.integration.AuthOtpFlowIT","thread":"Test worker","msg":"Starting AuthOtpFlowIT using Java 21.0.10 with PID 8800 (started by maksd in C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\services\\auth-service\\auth-app)","service":"auth-service"}
+{"ts":"2026-10-02T18:22:44.273+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.auth.integration.AuthOtpFlowIT","thread":"Test worker","msg":"Running with Spring Boot v3.5.16, Spring v6.2.19","service":"auth-service"}
+{"ts":"2026-10-02T18:22:44.275+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.auth.integration.AuthOtpFlowIT","thread":"Test worker","msg":"The following 1 profile is active: \"test\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:47.981+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Multiple Spring Data modules found, entering strict repository configuration mode","service":"auth-service"}
+{"ts":"2026-10-02T18:22:48.000+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Bootstrapping Spring Data JPA repositories in DEFAULT mode.","service":"auth-service"}
+{"ts":"2026-10-02T18:22:48.465+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Finished Spring Data repository scanning in 438 ms. Found 1 JPA repository interface.","service":"auth-service"}
+{"ts":"2026-10-02T18:22:48.507+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Multiple Spring Data modules found, entering strict repository configuration mode","service":"auth-service"}
+{"ts":"2026-10-02T18:22:48.510+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Bootstrapping Spring Data Redis repositories in DEFAULT mode.","service":"auth-service"}
+{"ts":"2026-10-02T18:22:48.568+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport","thread":"Test worker","msg":"Spring Data Redis - Could not safely identify store assignment for repository candidate interface ru.rutcampustrack.auth.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository","service":"auth-service"}
+{"ts":"2026-10-02T18:22:48.568+03:00","v":"1","level":"INFO","logger":"org.springframework.data.repository.config.RepositoryConfigurationDelegate","thread":"Test worker","msg":"Finished Spring Data repository scanning in 24 ms. Found 0 Redis repository interfaces.","service":"auth-service"}
+{"ts":"2026-10-02T18:22:50.757+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat initialized with port 0 (http)","service":"auth-service"}
+{"ts":"2026-10-02T18:22:51.208+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Initializing ProtocolHandler [\"http-nio-auto-1\"]","service":"auth-service"}
+{"ts":"2026-10-02T18:22:51.236+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardService","thread":"Test worker","msg":"Starting service [Tomcat]","service":"auth-service"}
+{"ts":"2026-10-02T18:22:51.237+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.StandardEngine","thread":"Test worker","msg":"Starting Servlet engine: [Apache Tomcat/10.1.59]","service":"auth-service"}
+{"ts":"2026-10-02T18:22:51.527+03:00","v":"1","level":"INFO","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","thread":"Test worker","msg":"Initializing Spring embedded WebApplicationContext","service":"auth-service"}
+{"ts":"2026-10-02T18:22:51.528+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","thread":"Test worker","msg":"Root WebApplicationContext: initialization completed in 7200 ms","service":"auth-service"}
+{"ts":"2026-10-02T18:22:52.928+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.auth.service.JwtService","thread":"Test worker","msg":"Loading RSA keys from filesystem: C:\\Users\\maksd\\AppData\\Local\\Temp\\rct-test-keys","service":"auth-service"}
+{"ts":"2026-10-02T18:22:52.937+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.auth.service.JwtService","thread":"Test worker","msg":"RSA private key parsed (PKCS#8, 1793 bytes)","service":"auth-service"}
+{"ts":"2026-10-02T18:22:52.942+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.auth.service.JwtService","thread":"Test worker","msg":"RSA public key parsed (X.509, 422 bytes)","service":"auth-service"}
+{"ts":"2026-10-02T18:22:52.944+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.auth.service.JwtService","thread":"Test worker","msg":"RSA kid resolved: 3ea2c84a","service":"auth-service"}
+{"ts":"2026-10-02T18:22:52.945+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.auth.service.JwtService","thread":"Test worker","msg":"RSA key pair ready (kid=3ea2c84a), public key PEM serialized (Redis cache scheduled to ApplicationReadyEvent)","service":"auth-service"}
+{"ts":"2026-10-02T18:22:53.462+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Starting...","service":"auth-service"}
+{"ts":"2026-10-02T18:22:53.910+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.pool.HikariPool","thread":"Test worker","msg":"HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7cd296da","service":"auth-service"}
+{"ts":"2026-10-02T18:22:53.916+03:00","v":"1","level":"INFO","logger":"com.zaxxer.hikari.HikariDataSource","thread":"Test worker","msg":"HikariPool-1 - Start completed.","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.012+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.FlywayExecutor","thread":"Test worker","msg":"Database: jdbc:postgresql://localhost:61548/academic_db?loggerLevel=OFF (PostgreSQL 16.13)","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.184+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Schema history table \"public\".\"flyway_schema_history\" does not exist yet","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.198+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbValidate","thread":"Test worker","msg":"Successfully validated 45 migrations (execution time 00:00.106s)","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.246+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory","thread":"Test worker","msg":"Creating Schema History table \"public\".\"flyway_schema_history\" ...","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.336+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Current version of schema \"public\": << Empty Schema >>","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.376+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"1 - baseline\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.533+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"2 - seed test data\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.582+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"3 - login sequences\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.618+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"4 - campus settings bigserial\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.666+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"5 - add enum casts\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.708+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"6 - add semester first week type\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.741+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"7 - add user avatar\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.774+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"8 - group unify name\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.823+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"9 - groups archived at\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.856+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"10 - semesters no overlap\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.928+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"11 - enum equality operators\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.969+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"12 - subjects group id\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:54.976+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.014+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"13 - homework lesson binding\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.062+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"14 - update campus coordinates\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.096+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"15 - shedlock table\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.143+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"16 - academic outbox\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.199+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"17 - add performance indexes\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.233+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"18 - event consumer processed\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.276+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"19 - audit log\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.318+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"20 - audit log indexes\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.351+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"21 - user name icu collation\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.388+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"22 - user name sort index\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.428+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"23 - homework notifications\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.478+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"24 - auth session authority\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.589+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"25 - student subject homework foundation\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.603+03:00","v":"1","level":"WARN","logger":"org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor","thread":"Test worker","msg":"DB: extension \"btree_gist\" already exists, skipping (SQL State: 42710 - Error Code: 0)","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.691+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"26 - campus map\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.799+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"27 - historical membership coverage\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.835+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"28 - homework terminal archive\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.867+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"29 - admin role statuses\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.899+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"30 - campus map distinct openings\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.925+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"31 - admin group registry\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.962+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"32 - headman assistant active history\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:55.987+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"33 - unique active headman per group\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.023+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"34 - assignment replacement operation\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.079+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"35 - semester type\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.108+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"36 - group promotion cycle record\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.143+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"37 - homework binding terminal archive\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.175+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"38 - durable lesson transfer participant\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.218+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"39 - semester archive state\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.261+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"40 - semester archive operations\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.352+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"41 - final semester deletion\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.405+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"42 - auth password changed outbox\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.437+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"43 - campus map final deletion\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.474+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"44 - user archive receipts\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.511+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Migrating schema \"public\" to version \"45 - homework edit history\"","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.587+03:00","v":"1","level":"INFO","logger":"org.flywaydb.core.internal.command.DbMigrate","thread":"Test worker","msg":"Successfully applied 45 migrations to schema \"public\", now at version v45 (execution time 00:01.204s)","service":"auth-service"}
+{"ts":"2026-10-02T18:22:56.929+03:00","v":"1","level":"INFO","logger":"org.hibernate.jpa.internal.util.LogHelper","thread":"Test worker","msg":"HHH000204: Processing PersistenceUnitInfo [name: default]","service":"auth-service"}
+{"ts":"2026-10-02T18:22:57.120+03:00","v":"1","level":"INFO","logger":"org.hibernate.Version","thread":"Test worker","msg":"HHH000412: Hibernate ORM core version 6.6.53.Final","service":"auth-service"}
+{"ts":"2026-10-02T18:22:57.260+03:00","v":"1","level":"INFO","logger":"org.hibernate.cache.internal.RegionFactoryInitiator","thread":"Test worker","msg":"HHH000026: Second-level cache disabled","service":"auth-service"}
+{"ts":"2026-10-02T18:22:58.188+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo","thread":"Test worker","msg":"No LoadTimeWeaver setup: ignoring JPA class transformer","service":"auth-service"}
+{"ts":"2026-10-02T18:22:58.358+03:00","v":"1","level":"WARN","logger":"org.hibernate.orm.deprecation","thread":"Test worker","msg":"HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)","service":"auth-service"}
+{"ts":"2026-10-02T18:22:58.413+03:00","v":"1","level":"INFO","logger":"org.hibernate.orm.connections.pooling","thread":"Test worker","msg":"HHH10001005: Database info:\n\tDatabase JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']\n\tDatabase driver: undefined/unknown\n\tDatabase version: 16.13\n\tAutocommit mode: undefined/unknown\n\tIsolation level: undefined/unknown\n\tMinimum pool size: undefined/unknown\n\tMaximum pool size: undefined/unknown","service":"auth-service"}
+{"ts":"2026-10-02T18:23:00.874+03:00","v":"1","level":"INFO","logger":"org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator","thread":"Test worker","msg":"HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)","service":"auth-service"}
+{"ts":"2026-10-02T18:23:00.975+03:00","v":"1","level":"INFO","logger":"org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean","thread":"Test worker","msg":"Initialized JPA EntityManagerFactory for persistence unit 'default'","service":"auth-service"}
+{"ts":"2026-10-02T18:23:01.337+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.auth.config.JwtAuthenticationFilter","thread":"Test worker","msg":"Filter 'jwtAuthenticationFilter' configured for use","service":"auth-service"}
+{"ts":"2026-10-02T18:23:01.338+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.auth.security.InternalIssuerSecretFilter","thread":"Test worker","msg":"Filter 'internalIssuerSecretFilter' configured for use","service":"auth-service"}
+{"ts":"2026-10-02T18:23:01.341+03:00","v":"1","level":"DEBUG","logger":"ru.rutcampustrack.auth.config.PasswordResetNoStoreFilter","thread":"Test worker","msg":"Filter 'passwordResetNoStoreFilter' configured for use","service":"auth-service"}
+{"ts":"2026-10-02T18:23:02.081+03:00","v":"1","level":"INFO","logger":"org.springframework.data.jpa.repository.query.QueryEnhancerFactory","thread":"Test worker","msg":"Hibernate is in classpath; If applicable, HQL parser will be used.","service":"auth-service"}
+{"ts":"2026-10-02T18:23:02.430+03:00","v":"1","level":"INFO","logger":"net.devh.boot.grpc.client.autoconfigure.GrpcClientAutoConfiguration","thread":"Test worker","msg":"Detected grpc-netty: Creating NettyChannelFactory + InProcessChannelFactory","service":"auth-service"}
+{"ts":"2026-10-02T18:23:04.210+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.actuate.endpoint.web.EndpointLinksResolver","thread":"Test worker","msg":"Exposing 2 endpoints beneath base path '/actuator'","service":"auth-service"}
+{"ts":"2026-10-02T18:23:04.280+03:00","v":"1","level":"WARN","logger":"org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration","thread":"Test worker","msg":"\r\n\r\nUsing generated security password: 2932a3ad-26cb-4f5a-afba-b71b056696ce\r\n\r\nThis generated password is for development use only. Your security configuration must be updated before running your application in production.\r\n","service":"auth-service"}
+{"ts":"2026-10-02T18:23:04.303+03:00","v":"1","level":"INFO","logger":"org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer","thread":"Test worker","msg":"Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager","service":"auth-service"}
+{"ts":"2026-10-02T18:23:05.849+03:00","v":"1","level":"INFO","logger":"org.apache.coyote.http11.Http11NioProtocol","thread":"Test worker","msg":"Starting ProtocolHandler [\"http-nio-auto-1\"]","service":"auth-service"}
+{"ts":"2026-10-02T18:23:05.876+03:00","v":"1","level":"INFO","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","thread":"Test worker","msg":"Tomcat started on port 61573 (http) with context path '/'","service":"auth-service"}
+{"ts":"2026-10-02T18:23:05.906+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.auth.integration.AuthOtpFlowIT","thread":"Test worker","msg":"Started AuthOtpFlowIT in 23.196 seconds (process running for 49.831)","service":"auth-service"}
+{"ts":"2026-10-02T18:23:05.929+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.auth.service.JwtService","thread":"Test worker","msg":"Caching public key in Redis (post-startup)...","service":"auth-service"}
+{"ts":"2026-10-02T18:23:06.686+03:00","v":"1","level":"INFO","logger":"ru.rutcampustrack.auth.service.JwtService","thread":"Test worker","msg":"Public key cached in Redis successfully","service":"auth-service"}
+{"ts":"2026-10-02T18:23:07.611+03:00","v":"1","level":"INFO","logger":"org.springframework.amqp.rabbit.connection.CachingConnectionFactory","thread":"Test worker","msg":"Attempting to connect to: [localhost:61557]","service":"auth-service"}
+{"ts":"2026-10-02T18:23:07.754+03:00","v":"1","level":"INFO","logger":"org.springframework.amqp.rabbit.connection.CachingConnectionFactory","thread":"Test worker","msg":"Created new connection: rabbitConnectionFactory#247a9491:0/SimpleConnection@7c21c7b4 [delegate=amqp://guest@127.0.0.1:61557/, localPort=52548]","service":"auth-service"}
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.8\f09415827a71be7ed621c7bd02550678f28bc81c\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

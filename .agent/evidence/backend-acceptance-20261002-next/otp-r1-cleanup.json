@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-02T18:26:29.0468179+03:00",
+  "execSessionId": 61442,
+  "terminalExit": 1,
+  "testcontainers": [],
+  "java": [],
+  "testcontainersAbsent": true,
+  "javaAbsent": true,
+  "limits": "Four owned IDs recovered from raw R1 XML startup markers; each absent via elevated exact Docker inspect. No explicit rm or foreign changes.",
+  "exactOwnedContainers": [
+    {
+      "id": "e80e74da85470731fa2c40e097c969d64401cd30cccf1f6f1d96f34674567998",
+      "nativeExit": 1,
+      "absent": true,
+      "reason": "No such object"
+    },
+    {
+      "id": "9e9d38ab835a17f94e7dfa4f1f6ac8e45a16748e6bab121ab534d729ee9c7b96",
+      "nativeExit": 1,
+      "absent": true,
+      "reason": "No such object"
+    },
+    {
+      "id": "125f029557d64cdbf2868304bb41776dd18f84986dd16d98fc3827dd865db2c7",
+      "nativeExit": 1,
+      "absent": true,
+      "reason": "No such object"
+    },
+    {
+      "id": "61d703cc61f41d40649b28fa91d1450ebd898904f806c5e9867993c7e57d3158",
+      "nativeExit": 1,
+      "absent": true,
+      "reason": "No such object"
+    }
+  ],
+  "exactOwnedAbsentCount": 4
+}

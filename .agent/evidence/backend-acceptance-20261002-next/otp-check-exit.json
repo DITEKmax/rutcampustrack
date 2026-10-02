@@ -1,0 +1,16 @@
+{
+  "revision": "2ca6fc7e4301b6547a323b58155135d932080003",
+  "testFile": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+  "testSourceSha256": "6fa4fe424412f3da04c3ddced16577a92a9d16deb9486801c6c7789acd15c7d1",
+  "command": "./gradlew.bat :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.AuthOtpFlowIT.passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation --no-daemon --no-parallel --max-workers=1 --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true",
+  "exitCode": 1,
+  "startedAt": "2026-10-02T18:21:16.4497672+03:00",
+  "finishedAt": "2026-10-02T18:23:09.7250028+03:00",
+  "environment": "Existing AuthOtpFlowIT real Spring random-port HTTP; fresh nonreuse PG/Redis/Rabbit + owned Testcontainers cleanup; OTP TTL120 unchanged",
+  "criteria": [
+    "public challenge natural Redis expiry410/OTP_EXPIRED without ticket/session/credential mutation",
+    "public consumed challenge reverify410/OTP_EXPIRED without another ticket/session/credential mutation"
+  ],
+  "log": "otp-check.log",
+  "xml": "otp-AuthOtpFlowIT.xml"
+}

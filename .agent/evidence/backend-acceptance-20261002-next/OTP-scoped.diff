@@ -1,0 +1,97 @@
+diff --git a/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java b/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java
+index 7d4354f6..06f24a7b 100644
+--- a/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java
++++ b/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java
+@@ -443,6 +443,92 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
+         assertThat(activeSessionCount()).isZero();
+     }
+ 
++    @Test
++    @Timeout(value = 180, unit = TimeUnit.SECONDS)
++    void passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation() throws Exception {
++        long userId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
++        // Sensitive snapshots remain in memory; assertion failures expose booleans only.
++        java.util.function.Supplier<List<Object>> protectedState = () -> List.of(
++                jdbc.queryForList("SELECT password_hash, password_changed, initial_password FROM users WHERE id = ?", userId),
++                jdbc.queryForList("SELECT * FROM auth_sessions WHERE user_id = ? ORDER BY sid", userId));
++        java.util.function.Supplier<List<Map<String, Object>>> tickets = () ->
++                jdbc.queryForList("SELECT * FROM password_reset_tokens WHERE user_id = ? ORDER BY id", userId);
++        JsonNode originalState = objectMapper.valueToTree(protectedState.get());
++        JsonNode originalTickets = objectMapper.valueToTree(tickets.get());
++
++        long requestedAt = System.nanoTime();
++        ResponseEntity<JsonNode> requested = restTemplate.postForEntity("/auth/password-reset/request",
++                Map.of("login", "student"), JsonNode.class);
++        assertThat(requested.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
++        assertThat(requested.getBody() != null).isTrue();
++        int ttlSeconds = requested.getBody().path("ttlSeconds").asInt();
++        assertThat(ttlSeconds).isEqualTo(120); // Same existing policy in main and test profile.
++        String challenge = requested.getBody().path("challengeId").asText();
++        String challengeHash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
++                .digest(challenge.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
++        List<String> keys = List.of("password_reset:challenge:" + challengeHash + ":account",
++                "password_reset:challenge:" + challengeHash + ":user", "password_reset:challenge:" + challengeHash + ":code");
++        String code = redisTemplate.opsForValue().get(keys.get(2));
++        assertThat(code != null && code.matches("\\d{6}")).isTrue();
++        for (String key : keys) {
++            Long remaining = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
++            assertThat(remaining != null && remaining > 0 && remaining <= ttlSeconds * 1000L).isTrue();
++        }
++        long deadline = requestedAt + TimeUnit.SECONDS.toNanos(ttlSeconds + 10L);
++        // Observe real Redis wall-clock expiration; never DEL/EXPIRE or override TTL/Clock.
++        while (keys.stream().anyMatch(key -> Boolean.TRUE.equals(redisTemplate.hasKey(key)))
++                && System.nanoTime() < deadline) {
++            Thread.sleep(200);
++        }
++        assertThat(keys.stream().allMatch(key -> Long.valueOf(-2).equals(redisTemplate.getExpire(key)))).isTrue();
++        ResponseEntity<JsonNode> expired = restTemplate.postForEntity("/auth/password-reset/verify",
++                Map.of("challengeId", challenge, "code", code), JsonNode.class);
++        assertThat(expired.getStatusCode()).isEqualTo(HttpStatus.GONE);
++        assertThat(expired.getBody() != null).isTrue();
++        assertThat(expired.getBody().path("extras").path("code").asText()).isEqualTo("OTP_EXPIRED");
++        assertThat(expired.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
++        assertThat(expired.getBody().has("resetTicket") || expired.getBody().has("accessToken")
++                || expired.getBody().has("refreshToken") || expired.getBody().has("session")).isFalse();
++        assertThat(objectMapper.valueToTree(protectedState.get()).equals(originalState)).isTrue();
++        assertThat(objectMapper.valueToTree(tickets.get()).equals(originalTickets)).isTrue();
++        System.out.printf("OTP_CHALLENGE_EXPIRY ttlSeconds=%d elapsedMs=%d keysAbsent=true httpStatus=410 code=OTP_EXPIRED stateUnchanged=true ticketDelta=0%n",
++                ttlSeconds, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - requestedAt));
++
++        // Cooldown has naturally elapsed. A fresh valid verify is only the consume precondition.
++        ResponseEntity<JsonNode> fresh = restTemplate.postForEntity("/auth/password-reset/request",
++                Map.of("login", "student"), JsonNode.class);
++        assertThat(fresh.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
++        assertThat(fresh.getBody() != null).isTrue();
++        String freshChallenge = fresh.getBody().path("challengeId").asText();
++        String freshHash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
++                .digest(freshChallenge.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
++        String freshPrefix = "password_reset:challenge:" + freshHash;
++        String freshCode = redisTemplate.opsForValue().get(freshPrefix + ":code");
++        assertThat(freshCode != null && freshCode.matches("\\d{6}")).isTrue();
++        Map<String, String> proof = Map.of("challengeId", freshChallenge, "code", freshCode);
++        ResponseEntity<JsonNode> consumed = restTemplate.postForEntity("/auth/password-reset/verify", proof, JsonNode.class);
++        assertThat(consumed.getStatusCode()).isEqualTo(HttpStatus.OK);
++        assertThat(consumed.getBody() != null && consumed.getBody().path("resetTicket").isTextual()
++                && !consumed.getBody().path("resetTicket").asText().isBlank()).isTrue();
++        assertThat(Long.valueOf(-2).equals(redisTemplate.getExpire(freshPrefix + ":code"))).isTrue();
++        assertThat(redisTemplate.getExpire(freshPrefix + ":account") > 0
++                && redisTemplate.getExpire(freshPrefix + ":user") > 0).isTrue();
++        JsonNode consumedTickets = objectMapper.valueToTree(tickets.get());
++        assertThat(consumedTickets.size()).isEqualTo(originalTickets.size() + 1);
++        assertThat(objectMapper.valueToTree(protectedState.get()).equals(originalState)).isTrue();
++
++        ResponseEntity<JsonNode> reused = restTemplate.postForEntity("/auth/password-reset/verify", proof, JsonNode.class);
++        assertThat(reused.getStatusCode()).isEqualTo(HttpStatus.GONE);
++        assertThat(reused.getBody() != null).isTrue();
++        assertThat(reused.getBody().path("extras").path("code").asText()).isEqualTo("OTP_EXPIRED");
++        assertThat(reused.getHeaders().getCacheControl().split("\\s*,\\s*")).containsOnly("no-store");
++        assertThat(reused.getBody().has("resetTicket") || reused.getBody().has("accessToken")
++                || reused.getBody().has("refreshToken") || reused.getBody().has("session")).isFalse();
++        assertThat(objectMapper.valueToTree(protectedState.get()).equals(originalState)).isTrue();
++        assertThat(objectMapper.valueToTree(tickets.get()).equals(consumedTickets)).isTrue();
++        System.out.println("OTP_CHALLENGE_REUSE codeConsumed=true ownerAndUserLive=true httpStatus=410 code=OTP_EXPIRED stateUnchanged=true ticketDelta=0");
++    }
++
+     @Test
+     @Timeout(value = 25, unit = TimeUnit.SECONDS)
+     void passwordResetCompletesWhenTheAccountHasNoActiveSessions() throws Exception {

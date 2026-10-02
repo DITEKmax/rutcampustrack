@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-02T18:35:14.7123528+03:00",
+  "execSessionId": 78789,
+  "dockerExit": 0,
+  "resources": [
+    "1d27f676f37f eager_curran Up 19 seconds",
+    "2bd8c13bf516 priceless_golick Up 20 seconds",
+    "fa6cfe914043 admiring_kowalevski Up 23 seconds",
+    "648e7ecc1fb6 testcontainers-ryuk-fb53ed88-644e-4dee-817c-287261994e64 Up 24 seconds"
+  ],
+  "ownership": "Fresh exclusive OTP R2 after Dockerempty preflight; TC labels/own names only, no env/secrets"
+}

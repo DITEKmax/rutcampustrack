@@ -1,0 +1,32 @@
+# Public reset challenge expiry/reuse — R2 PASS; R1 fixture failure preserved
+
+Security scope S3. Root authorizes one test method in existing AuthOtpFlowIT.java in owned v2-runtime-build-r3; all Auth product/config/DTO/exception source read-only, no new class/suite/harness. R1 terminal1 before either OTP criterion; cleanup exact4/4 owned containers absent, lease released. R2 terminal0, both criteria PASS; exact4/4 own containers absent, lease released. See OTP-R2-SUMMARY.md. Goal is Redis CHALLENGE expiry/consume rejection, not reset-ticket expiry or repeat purpose/attempts/concurrent-complete proofs. RULES A208AA4380B64376A4EAD645AA0731C9F574077107DC9C44356F5C04D80F28FA.
+
+Initial requested reused v2-requests-harness HEAD1b81fe80 gate failed vs main2ca6: PasswordResetService/PasswordResetException absent, GlobalExceptionHandler/AuthOtpFlowIT differ. No stale harness write/merge. Root explicitly moved sole writer to existing runtime WT exact2ca6fc7e4301b6547a323b58155135d932080003. Before edit, test class/Auth source/DTO/exception diff against2ca6 empty; target tracked clean. Previous artifacts remain.
+
+One new method passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation, @Timeout180s:
+- Public /auth/password-reset/request for existing own fresh seeded student202. Read its synthetic code only in process memory; verify positive TTL on all three hashed challenge keys. Same main/test policy120s; no Clock/TTL/key mutation. Bounded polling waits real Redis expiration (all TTL-2) up to130s, then public verify with original correct code must410/extras.code OTP_EXPIRED/no-store and no ticket/token/session response. Compare credential fields/full session rows and all reset-ticket rows to original in-memory snapshots, booleans only.
+- Fresh second request after natural cooldown; one valid verify200 is solely consume precondition. Confirm code key absent while owner/user keys still live, one legitimately issued ticket, unchanged credential/session state. Reverify identical proof immediately must410/OTP_EXPIRED and no token/ticket/session response; full protected state and ticket snapshots unchanged from after first verify. No complete/password mutation call and no purpose/attempt/race suite repeat.
+
+Snapshots are JsonNode memory-only to compare JDBC byte[] values by content; assertions print booleans, never credential hashes/OTP/challenge/reset ticket. Two sanitized stdout markers contain typed error code, TTL/elapsed and state/ticket delta only. Actual GlobalExceptionHandler87–112 exposes nested extras.code on direct Auth public HTTP, mapped to410; no guessed top-level parser. PasswordResetService238–284 checks absent proof then consumes Lua code/active keys before issuing ticket. Existing DomainEventListener logs event type/id, not OTP body. XML/log must retain only these existing safe logs/assertions; no raw body/payload dump.
+
+Minimal existing environment: AbstractIntegrationTest random-port real Spring HTTP, fresh nonreuse postgres:16/academic_db + redis:7-alpine; AuthOtpFlowIT adds fresh nonreuse rabbitmq:3.13-management-alpine and unique per-JVM queue; existing Ryuk owns cleanup (typically3 domain containers + Ryuk). No Academic/Schedule/Gateway/BFF app and no14-container stand. Existing canonical Flyway/seed fixture and existing dependency caches; standalone auth.jar is not rebuilt or replaced, while normal Gradle main/test compile dependencies may run if stale. No production data/provider. Existing BeforeEach key cleanup is confined to this fresh dedicated Redis, not any foreign/shared cache.
+
+READY corrected test diff: OTP-scoped.diff; one file86 lines added, git diff --check exit0. Full test-file SHA e0d9b710c88d2e8532078e2cf109588f040a0cf3ceb58c201f666c45c081425f. Runtime tracked status contains only this assigned test file. Own run-otp-check.ps1 pins exact baseline/test hash, refuses unrelated tracked diff/prior R2 evidence and invokes ONLY this method. Script SHA f5fe11f8f5ce5f1af2c6f220c03fb2736a3bbc39a456f1c12d47c6b201fd9e28; PowerShell parser errors0. R2 corrected source compiled and one-method execution PASS; no further run authorized or required.
+
+R1 SQL audit: at AuthOtpFlowIT.java453, ORDER BY id failed because canonical V24__auth_session_authority.sql122–143 defines auth_sessions.sid UUID PK and user_id BIGINT. Corrected only ORDER BY to sid. Every other new-method SQL field was opened: V1__baseline.sql18–38 defines users.id/login/password_hash/password_changed/initial_password; V1 lines60–68 defines password_reset_tokens.id BIGSERIAL PK and user_id. SELECT * snapshots use actual table columns; only filters and ordering reference named columns. AbstractIntegrationTest43/48–58 loads this canonical migration directory. Directory-wide search found no later alteration/removal of these names. No product change.
+
+Raw R1 otp-check.log/otp-check-exit.json/otp-AuthOtpFlowIT.xml remain unchanged; executed script/diff preserved as run-otp-check-r1.ps1/OTP-scoped-r1.diff. XML: one selected testcase, one failure, zero errors; both OTP criteria NOT_COVERED. This is fixture failure, not Auth product evidence. See OTP-R1-SUMMARY.md and otp-r1-cleanup.json.
+
+After explicit root HEAVY:
+```powershell
+pwsh -NoProfile -File C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/evidence/backend-acceptance-20261002-next/run-otp-check.ps1
+```
+Underlying command from runtime WT:
+```powershell
+.\gradlew.bat :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.AuthOtpFlowIT.passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation --no-daemon --no-parallel --max-workers=1 --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true
+```
+
+One lease/job; likely2–4min including natural120s plus startup, not an ETA guarantee. Save full exec handle immediately, owned Testcontainers IDs/session label then exact cleanup; only new method XML1 testcase qualifies, no automatic retry/broadening. Evidence outputs otp-r2-check.log/otp-r2-check-exit.json/otp-r2-AuthOtpFlowIT.xml; collect sanitized TTL/typed result and actual owned cleanup separately. No reset-ticket expiry claim or product-readiness increment from testcase count.
+
+Changed: runtime AuthOtpFlowIT.java only. Created own OTP-scoped.diff/run-otp-check.ps1/OTP-PREPARE.md; deleted none. Root integrates only this scoped test/evidence when accepted; no main/Git write by child.

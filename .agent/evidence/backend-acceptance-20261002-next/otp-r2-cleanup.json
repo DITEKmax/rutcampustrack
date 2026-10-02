@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-02T18:38:16.7704521+03:00",
+  "execSessionId": 78789,
+  "terminalExit": 0,
+  "source": "Own R2 XML startup markers plus exact elevated inspect",
+  "exactOwnedContainers": [
+    {
+      "id": "648e7ecc1fb6f8b4b57ba7007ee60eeb516ff921b573eef666752d82bec2d680",
+      "nativeExit": 1,
+      "absent": true
+    },
+    {
+      "id": "fa6cfe9140433b10b29a5ffbf7bd376e1417b731f733f8586bf4092d70c00d18",
+      "nativeExit": 1,
+      "absent": true
+    },
+    {
+      "id": "2bd8c13bf516f0224a3be0eb0eaaaa0916db9759ee088301efa932b90f951722",
+      "nativeExit": 1,
+      "absent": true
+    },
+    {
+      "id": "1d27f676f37f2ab707d623eac7ec68dbb3be05fafcdf5718ba71d301e6867e99",
+      "nativeExit": 1,
+      "absent": true
+    }
+  ],
+  "exactOwnedAbsentCount": 4,
+  "testcontainers": [],
+  "dockerExit": 0,
+  "java": [],
+  "tests": "1",
+  "failures": "0",
+  "errors": "0",
+  "durationSeconds": "122.988",
+  "markers": [
+    "OTP_CHALLENGE_EXPIRY ttlSeconds=120 elapsedMs=121571 keysAbsent=true httpStatus=410 code=OTP_EXPIRED stateUnchanged=true ticketDelta=0",
+    "OTP_CHALLENGE_REUSE codeConsumed=true ownerAndUserLive=true httpStatus=410 code=OTP_EXPIRED stateUnchanged=true ticketDelta=0"
+  ],
+  "foreignChanges": "none; natural Testcontainers/Ryuk shutdown, no explicit rm",
+  "cleanupPass": true
+}

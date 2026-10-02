@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import ru.rutcampustrack.auth.event.PasswordChangedOutbox;
 import ru.rutcampustrack.auth.session.model.AuthMethod;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleGrant;
@@ -177,13 +178,15 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
     private final FailureInjector failureInjector;
+    private final PasswordChangedOutbox passwordChangedOutbox;
 
     @Autowired
     public JdbcSessionAuthority(
             JdbcTemplate jdbcTemplate,
-            PlatformTransactionManager transactionManager
+            PlatformTransactionManager transactionManager,
+            PasswordChangedOutbox passwordChangedOutbox
     ) {
-        this(jdbcTemplate, transactionManager, operation -> {
+        this(jdbcTemplate, transactionManager, passwordChangedOutbox, operation -> {
         });
     }
 
@@ -195,6 +198,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
     JdbcSessionAuthority(
             JdbcTemplate jdbcTemplate,
             PlatformTransactionManager transactionManager,
+            PasswordChangedOutbox passwordChangedOutbox,
             FailureInjector failureInjector
     ) {
         this.jdbcTemplate = Objects.requireNonNull(jdbcTemplate, "jdbcTemplate");
@@ -202,6 +206,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
                 Objects.requireNonNull(transactionManager, "transactionManager")
         );
         this.failureInjector = Objects.requireNonNull(failureInjector, "failureInjector");
+        this.passwordChangedOutbox = Objects.requireNonNull(passwordChangedOutbox, "passwordChangedOutbox");
     }
 
     @Override
@@ -602,6 +607,8 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         failureInjector.after("password.sessions");
         insertEvent(command.passwordChangedEvent());
         failureInjector.after("password.event");
+        passwordChangedOutbox.append(command.userId(), command.now());
+        failureInjector.after("password.outbox");
         return ChangePasswordResult.success(revoked);
     }
 
@@ -657,6 +664,8 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         insertEvent(new SecurityEvent(
                 userId, null, SecurityEvent.Type.PASSWORD_CHANGED, command.now(), null, null, null));
         failureInjector.after("password-reset.event");
+        passwordChangedOutbox.append(userId, command.now());
+        failureInjector.after("password-reset.outbox");
         return PasswordResetResult.success(userId, revoked);
     }
 

@@ -14,7 +14,6 @@ import ru.rutcampustrack.auth.dto.PasswordResetRequestResponse;
 import ru.rutcampustrack.auth.dto.PasswordResetVerifyRequest;
 import ru.rutcampustrack.auth.dto.PasswordResetVerifyResponse;
 import ru.rutcampustrack.auth.entity.User;
-import ru.rutcampustrack.auth.event.PasswordChangedEvent;
 import ru.rutcampustrack.auth.event.OtpRequestedEvent;
 import ru.rutcampustrack.auth.exception.PasswordResetException;
 import ru.rutcampustrack.auth.session.AuthSessionException;
@@ -296,21 +295,9 @@ public final class PasswordResetService {
             throw new PasswordResetException(
                     PasswordResetException.Code.RESET_TICKET_INVALID, null, null);
         }
-        long userId = authService.completePasswordReset(
+        authService.completePasswordReset(
                 new CredentialSessionTransactionPort.CredentialHash(sha256(resetTicket)),
                 newPassword);
-        // The credential transaction has committed before this lookup/publication.
-        // Notification trouble must never turn a consumed ticket into an apparent reset failure.
-        try {
-            User user = findUserById(userId);
-            Long telegramId = user == null ? null : user.getTelegramId();
-            if (telegramId != null && telegramId > 0) {
-                eventPublisher.publishEvent(new PasswordChangedEvent(this, telegramId));
-            }
-        } catch (RuntimeException exception) {
-            log.warn("Password-change notification could not be published ({})",
-                    exception.getClass().getSimpleName());
-        }
     }
 
     private User findUserForReset(PasswordResetRequest request) {

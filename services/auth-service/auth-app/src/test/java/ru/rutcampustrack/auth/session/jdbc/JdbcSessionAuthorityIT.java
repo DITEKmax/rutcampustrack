@@ -1,5 +1,6 @@
 package ru.rutcampustrack.auth.session.jdbc;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -10,6 +11,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
+import ru.rutcampustrack.auth.event.PasswordChangedOutbox;
 import ru.rutcampustrack.auth.session.model.AuthMethod;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleGrant;
@@ -65,6 +67,7 @@ class JdbcSessionAuthorityIT {
     private DataSource dataSource;
     private DataSourceTransactionManager transactionManager;
     private JdbcSessionAuthority authority;
+    private PasswordChangedOutbox passwordChangedOutbox;
     private int userSequence;
 
     @BeforeAll
@@ -84,7 +87,8 @@ class JdbcSessionAuthorityIT {
         dataSource = source;
         jdbc = new JdbcTemplate(dataSource);
         transactionManager = new DataSourceTransactionManager(dataSource);
-        authority = new JdbcSessionAuthority(jdbc, transactionManager);
+        passwordChangedOutbox = new PasswordChangedOutbox(jdbc, new ObjectMapper().findAndRegisterModules());
+        authority = new JdbcSessionAuthority(jdbc, transactionManager, passwordChangedOutbox);
     }
 
     @AfterAll
@@ -465,6 +469,7 @@ class JdbcSessionAuthorityIT {
     @Test
     void passwordChangeRechecksHashUpdatesFlagsRevokesAllAndAuditsAtomically() {
         UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        jdbc.update("UPDATE users SET telegram_id = ? WHERE id = ?", 700000000L + user.userId(), user.userId());
         CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
         CreatedSession other = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
         String replacementHash = "replacement-hash-" + user.userId();
@@ -492,6 +497,7 @@ class JdbcSessionAuthorityIT {
         )).isNull();
         assertThat(revokedSessionCount(user.userId())).isEqualTo(2L);
         assertThat(eventCount(user.userId(), SecurityEvent.Type.PASSWORD_CHANGED)).isEqualTo(1L);
+        assertThat(notificationCount(user.userId())).isEqualTo(1L);
         assertThat(authority.snapshot(new SessionStatePort.SnapshotCommand(
                 user.userId(), other.sessionId(), SESSION_TIME.plusSeconds(61)
         )).failureCode()).isEqualTo(SessionStatePort.FailureCode.SESSION_REVOKED);
@@ -577,6 +583,7 @@ class JdbcSessionAuthorityIT {
         JdbcSessionAuthority failingAuthority = new JdbcSessionAuthority(
                 jdbc,
                 transactionManager,
+                passwordChangedOutbox,
                 operation -> {
                     if (operation.equals("password.credential")) {
                         throw new IllegalStateException("intentional transaction failure");
@@ -607,12 +614,51 @@ class JdbcSessionAuthorityIT {
         return new JdbcSessionAuthority(
                 jdbc,
                 transactionManager,
+                passwordChangedOutbox,
                 operation -> {
                     if (failedOperation.equals(operation)) {
                         throw new IllegalStateException("intentional transaction failure");
                     }
                 }
         );
+    }
+
+    @Test
+    void notificationIntentRollsBackWithPasswordSessionsAndOneUseResetTicket() {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        jdbc.update("UPDATE users SET telegram_id = ? WHERE id = ?", 700000000L + user.userId(), user.userId());
+        CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
+
+        var failedChange = failingAuthority("password.outbox").changePassword(
+                passwordCommand(user, current, "replacement-hash"));
+        assertThat(failedChange.failureCode()).isEqualTo(
+                CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE);
+        assertPasswordStateUnchanged(user);
+        assertSessionLive(user, current);
+        assertThat(notificationCount(user.userId())).isZero();
+        assertThat(eventCount(user.userId(), SecurityEvent.Type.PASSWORD_CHANGED)).isZero();
+
+        String ticketHash = "reset-ticket-hash-" + user.userId();
+        jdbc.update("INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)",
+                user.userId(), ticketHash, Timestamp.from(SESSION_TIME.plusSeconds(300)));
+        var failedReset = failingAuthority("password-reset.outbox").completePasswordReset(
+                new CredentialSessionTransactionPort.PasswordResetCommand(
+                        new CredentialSessionTransactionPort.CredentialHash(ticketHash),
+                        new CredentialSessionTransactionPort.CredentialHash("reset-replacement-hash"),
+                        SESSION_TIME.plusSeconds(60)));
+        assertThat(failedReset.failureCode()).isEqualTo(
+                CredentialSessionTransactionPort.PasswordResetFailureCode.AUTHORITY_UNAVAILABLE);
+        assertPasswordStateUnchanged(user);
+        assertSessionLive(user, current);
+        assertThat(notificationCount(user.userId())).isZero();
+        assertThat(eventCount(user.userId(), SecurityEvent.Type.PASSWORD_CHANGED)).isZero();
+        assertThat(jdbc.queryForObject("SELECT used_at FROM password_reset_tokens WHERE token_hash = ?",
+                Timestamp.class, ticketHash)).isNull();
+    }
+
+    private long notificationCount(long userId) {
+        return count("SELECT count(*) FROM auth_outbox WHERE payload -> 'payload' ->> 'telegram_id' = ?",
+                Long.toString(700000000L + userId));
     }
 
     private CredentialSessionTransactionPort.ChangePasswordCommand passwordCommand(

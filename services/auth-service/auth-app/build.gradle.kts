@@ -31,6 +31,9 @@ dependencies {
     // M04 — shared-observability (MdcKeys + BusinessMetrics + HealthIndicators) + shared-events (D5(a))
     implementation(project(":services:shared:shared-observability"))
     implementation(project(":services:shared:shared-events"))
+    implementation(project(":services:shared:shared-outbox"))
+    implementation(libs.shedlock.spring)
+    implementation(libs.shedlock.provider.jdbc.template)
 
     // M11 G0.7: shared-web Spring Boot starter (catch-all Spring MVC handler
     // через @AutoConfiguration). Auth-domain handler с

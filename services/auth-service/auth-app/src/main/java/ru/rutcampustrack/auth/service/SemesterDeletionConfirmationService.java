@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jws;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.auth.dto.ConfirmSemesterDeletionRequest;
+import ru.rutcampustrack.auth.dto.ConfirmMapDeletionRequest;
 import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 import ru.rutcampustrack.auth.repository.UserRepository;
@@ -55,7 +56,18 @@ public final class SemesterDeletionConfirmationService {
      */
     public void confirm(ConfirmSemesterDeletionRequest request) {
         Objects.requireNonNull(request, "request");
-        SessionPrincipal principal = parsePrincipal(request.internalToken());
+        confirmPassword(request.internalToken(), request.password());
+    }
+
+    public void confirmMapDeletion(ConfirmMapDeletionRequest request) {
+        Objects.requireNonNull(request, "request");
+        // Share the credential attempt budget with semester deletion so another
+        // destructive-operation route cannot bypass a blocked ADMIN account.
+        confirmPassword(request.internalToken(), request.password());
+    }
+
+    private void confirmPassword(String internalToken, String password) {
+        SessionPrincipal principal = parsePrincipal(internalToken);
         SessionSnapshot current = authService.admit(principal);
         if (current.activeRole() == null || current.activeRole().role() != AuthRole.ADMIN) {
             throw new AuthSessionException(AuthSessionException.Code.ROLE_NOT_GRANTED);
@@ -67,7 +79,7 @@ public final class SemesterDeletionConfirmationService {
         User user = loadCurrentUser(current.userId());
         String currentPasswordHash = user.getPasswordHash();
         if (currentPasswordHash == null || currentPasswordHash.isBlank()
-                || !matchesPassword(request.password(), currentPasswordHash)) {
+                || !matchesPassword(password, currentPasswordHash)) {
             recordFailure(rateKey);
             throw new AuthSessionException(AuthSessionException.Code.CURRENT_PASSWORD_INVALID);
         }

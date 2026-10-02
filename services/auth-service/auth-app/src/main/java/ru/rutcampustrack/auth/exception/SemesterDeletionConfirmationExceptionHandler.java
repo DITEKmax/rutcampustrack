@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import ru.rutcampustrack.auth.controller.InternalSemesterDeletionConfirmationController;
+import ru.rutcampustrack.auth.controller.InternalMapDeletionConfirmationController;
 import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
@@ -23,7 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 /** Keeps request secrets out of validation and denial responses for this internal route. */
-@RestControllerAdvice(assignableTypes = InternalSemesterDeletionConfirmationController.class)
+@RestControllerAdvice(assignableTypes = {InternalSemesterDeletionConfirmationController.class,
+        InternalMapDeletionConfirmationController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public final class SemesterDeletionConfirmationExceptionHandler {
 

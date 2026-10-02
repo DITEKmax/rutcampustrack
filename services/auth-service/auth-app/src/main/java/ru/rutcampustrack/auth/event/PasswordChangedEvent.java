@@ -2,7 +2,7 @@ package ru.rutcampustrack.auth.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/** Notification metadata emitted only after the password-reset transaction commits. */
+/** Metadata persisted atomically with a password change/reset, then delivered by outbox. */
 public final class PasswordChangedEvent extends DomainEvent {
 
     public record Payload(@JsonProperty("telegram_id") long telegramId) {

@@ -114,7 +114,9 @@ class InternalSessionAdmissionIT {
         jdbc = new JdbcTemplate(dataSource);
         transactionManager = new DataSourceTransactionManager(dataSource);
         authorityHolder = new JdbcSessionAuthorityHolder(
-                new ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthority(jdbc, transactionManager));
+                new ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthority(jdbc, transactionManager,
+                        new ru.rutcampustrack.auth.event.PasswordChangedOutbox(
+                                jdbc, new ObjectMapper().findAndRegisterModules())));
         signingService = createJwtService();
     }
 
@@ -323,8 +325,11 @@ class InternalSessionAdmissionIT {
                 assertProblem(mvc, unavailableAccess, 503, "AUTHORITY_UNAVAILABLE", properties));
     }
 
-    @Test
-    void semesterDeletionConfirmationRequiresLiveAdminAndCurrentPasswordWithoutCreatingSessions() throws Exception {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"SEMESTER", "FLOOR", "BUILDING"})
+    void deletionConfirmationRequiresLiveAdminAndCurrentPasswordWithoutCreatingSessions(String targetType) throws Exception {
+        String route = "SEMESTER".equals(targetType)
+                ? "/internal/auth/confirm-semester-deletion" : "/internal/auth/confirm-map-deletion";
         Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         InternalIssuerProperties properties = issuerProperties();
         UserRepository users = mock(UserRepository.class);
@@ -349,7 +354,8 @@ class InternalSessionAdmissionIT {
                 signingService, authService, users, passwordEncoder, rateLimiter,
                 new BcryptConcurrencyGuard(2, 0));
         MockMvc mvc = MockMvcBuilders.standaloneSetup(
-                        new InternalSemesterDeletionConfirmationController(confirmationService))
+                        new InternalSemesterDeletionConfirmationController(confirmationService),
+                        new ru.rutcampustrack.auth.controller.InternalMapDeletionConfirmationController(confirmationService))
                 // Register the global handler first so equal priorities cannot hide route-specific denials.
                 .setControllerAdvice(new GlobalExceptionHandler(), new SemesterDeletionConfirmationExceptionHandler())
                 .addFilters(new InternalIssuerSecretFilter(properties))
@@ -357,18 +363,18 @@ class InternalSessionAdmissionIT {
 
         int sessionsBefore = sessionCount(admin.userId());
         String adminInternal = internalToken(adminSession.snapshot(), now);
-        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(confirmationBody(adminInternal, currentPassword, 41L)))
+                        .content(confirmationBody(adminInternal, currentPassword, 41L, targetType)))
                 .andExpect(status().isNoContent())
                 .andExpect(header().string("Cache-Control", "no-store"));
         assertThat(sessionCount(admin.userId())).isEqualTo(sessionsBefore);
 
-        MvcResult wrongPassword = mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        MvcResult wrongPassword = mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(confirmationBody(adminInternal, "wrong-password-sentinel", 41L)))
+                        .content(confirmationBody(adminInternal, "wrong-password-sentinel", 41L, targetType)))
                 .andExpect(status().isForbidden())
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andReturn();
@@ -381,10 +387,10 @@ class InternalSessionAdmissionIT {
         UserFixture teacher = seedUser(GrantSeed.active(AuthRole.TEACHER, null));
         CreatedSession teacherSession = createSession(teacher, now, AuthRole.TEACHER);
         String teacherInternal = internalToken(teacherSession.snapshot(), now);
-        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(confirmationBody(teacherInternal, currentPassword, 41L)))
+                        .content(confirmationBody(teacherInternal, currentPassword, 41L, targetType)))
                 .andExpect(status().isForbidden())
                 .andExpect(header().string("Cache-Control", "no-store"));
         verify(users, org.mockito.Mockito.never()).findById(teacher.userId());
@@ -397,10 +403,10 @@ class InternalSessionAdmissionIT {
                 revokedAdmin.userId(), revokedSession.sessionId(), now.plusSeconds(1),
                 event(revokedAdmin.userId(), revokedSession.sessionId(),
                         SecurityEvent.Type.CURRENT_LOGOUT, now.plusSeconds(1)))).succeeded()).isTrue();
-        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(confirmationBody(revokedInternal, currentPassword, 41L)))
+                        .content(confirmationBody(revokedInternal, currentPassword, 41L, targetType)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("Cache-Control", "no-store"));
         assertThat(sessionCount(revokedAdmin.userId())).isEqualTo(1);
@@ -409,26 +415,26 @@ class InternalSessionAdmissionIT {
         CreatedSession staleSession = createSession(staleAdmin, now, AuthRole.ADMIN);
         String staleInternal = internalToken(staleSession.snapshot(), now);
         updateGrantStatus(staleAdmin, AuthRole.ADMIN, RoleStatus.GRADUATED);
-        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(confirmationBody(staleInternal, currentPassword, 41L)))
+                        .content(confirmationBody(staleInternal, currentPassword, 41L, targetType)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("Cache-Control", "no-store"));
         assertThat(sessionCount(staleAdmin.userId())).isEqualTo(1);
 
-        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(confirmationBody("forged-internal-token", currentPassword, 41L)))
+                        .content(confirmationBody("forged-internal-token", currentPassword, 41L, targetType)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("Cache-Control", "no-store"));
 
         String accessToken = accessToken(adminSession.snapshot(), now);
-        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(confirmationBody(accessToken, currentPassword, 41L)))
+                        .content(confirmationBody(accessToken, currentPassword, 41L, targetType)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("Cache-Control", "no-store"));
 
@@ -437,16 +443,16 @@ class InternalSessionAdmissionIT {
         User hashlessRecord = mock(User.class);
         when(hashlessRecord.getPasswordHash()).thenReturn(null);
         when(users.findById(hashlessAdmin.userId())).thenReturn(Optional.of(hashlessRecord));
-        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(confirmationBody(internalToken(hashlessSession.snapshot(), now),
-                                currentPassword, 41L)))
+                                currentPassword, 41L, targetType)))
                 .andExpect(status().isForbidden())
                 .andExpect(header().string("Cache-Control", "no-store"));
         assertThat(sessionCount(hashlessAdmin.userId())).isEqualTo(1);
 
-        MvcResult invalidRequest = mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        MvcResult invalidRequest = mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"internalToken\":\"request-token-sentinel\","
@@ -458,16 +464,16 @@ class InternalSessionAdmissionIT {
         assertThat(invalidRequest.getResponse().getContentAsString())
                 .doesNotContain("request-token-sentinel", "request-password-sentinel", "digest-sentinel");
 
-        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        mvc.perform(post(route)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(confirmationBody(adminInternal, currentPassword, 41L)))
+                        .content(confirmationBody(adminInternal, currentPassword, 41L, targetType)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("Cache-Control", "no-store"));
 
-        mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, "wrong-internal-issuer-secret")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(confirmationBody(adminInternal, currentPassword, 41L)))
+                        .content(confirmationBody(adminInternal, currentPassword, 41L, targetType)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("Cache-Control", "no-store"));
 
@@ -475,14 +481,42 @@ class InternalSessionAdmissionIT {
                 .when(rateLimiter).checkBlocked(
                         eq("internal-semester-deletion"),
                         eq("__semester_delete_confirmation__:" + admin.userId()));
-        MvcResult limited = mvc.perform(post("/internal/auth/confirm-semester-deletion")
+        MvcResult limited = mvc.perform(post(route)
                         .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(confirmationBody(adminInternal, currentPassword, 41L)))
+                        .content(confirmationBody(adminInternal, currentPassword, 41L, targetType)))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andReturn();
         assertThat(limited.getResponse().getContentAsString()).doesNotContain("rate-limit-message-sentinel");
+        assertThat(sessionCount(admin.userId())).isEqualTo(sessionsBefore);
+
+        if (!"SEMESTER".equals(targetType)) {
+            String invalidBody = new ObjectMapper().writeValueAsString(
+                    new ru.rutcampustrack.auth.dto.ConfirmMapDeletionRequest(
+                            adminInternal, currentPassword,
+                            ru.rutcampustrack.auth.dto.ConfirmMapDeletionRequest.TargetType.valueOf(targetType),
+                            0, UUID.randomUUID(), "invalid-digest-sentinel"));
+            MvcResult invalidMapPreview = mvc.perform(post(route)
+                            .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                            .contentType(MediaType.APPLICATION_JSON).content(invalidBody))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string("Cache-Control", "no-store")).andReturn();
+            assertThat(invalidMapPreview.getResponse().getContentAsString())
+                    .doesNotContain(adminInternal, currentPassword, "invalid-digest-sentinel");
+        }
+
+        org.mockito.Mockito.reset(rateLimiter);
+        doThrow(new IllegalStateException("authority-failure-sentinel"))
+                .when(users).findById(admin.userId());
+        MvcResult unavailable = mvc.perform(post(route)
+                        .header(InternalIssuerSecretFilter.HEADER, properties.getSecret())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(confirmationBody(adminInternal, currentPassword, 41L, targetType)))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(header().string("Cache-Control", "no-store")).andReturn();
+        assertThat(unavailable.getResponse().getContentAsString())
+                .doesNotContain("authority-failure-sentinel", adminInternal, currentPassword);
         assertThat(sessionCount(admin.userId())).isEqualTo(sessionsBefore);
     }
 
@@ -557,9 +591,14 @@ class InternalSessionAdmissionIT {
         return signingService.generateInternalToken(snapshot, now, now.plusSeconds(300));
     }
 
-    private String confirmationBody(String token, String password, long semesterId) throws Exception {
+    private String confirmationBody(String token, String password, long targetId, String targetType) throws Exception {
+        if (!"SEMESTER".equals(targetType)) {
+            return new ObjectMapper().writeValueAsString(new ru.rutcampustrack.auth.dto.ConfirmMapDeletionRequest(
+                    token, password, ru.rutcampustrack.auth.dto.ConfirmMapDeletionRequest.TargetType.valueOf(targetType),
+                    targetId, UUID.randomUUID(), "a".repeat(64)));
+        }
         return new ObjectMapper().writeValueAsString(new ConfirmSemesterDeletionRequest(
-                token, password, semesterId, UUID.randomUUID(), "preview-digest-test-value"));
+                token, password, targetId, UUID.randomUUID(), "preview-digest-test-value"));
     }
 
     private int sessionCount(long userId) {

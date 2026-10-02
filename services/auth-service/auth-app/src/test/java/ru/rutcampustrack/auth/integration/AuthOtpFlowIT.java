@@ -13,6 +13,7 @@ import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -23,6 +24,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
@@ -32,6 +35,12 @@ import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.events.EventSchemaValidator;
+import ru.rutcampustrack.auth.event.AuthOutboxPublisherJob;
+import ru.rutcampustrack.auth.event.AuthOutboxCleanupJob;
+import ru.rutcampustrack.shared.outbox.OutboxEventSender;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
+
+import java.time.Clock;
 
 import java.util.List;
 import java.util.Map;
@@ -43,6 +52,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * M09 G2 (08 P0-2) — AuthOtpFlowIT.
@@ -97,6 +107,12 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbc;
+    @Autowired
+    private OutboxStorage outboxStorage;
+    @Autowired
+    private OutboxEventSender outboxSender;
+    @Autowired
+    private PlatformTransactionManager transactionManager;
     private long passwordChangedEventCountBeforeTest;
 
     @BeforeEach
@@ -107,6 +123,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         if (keys != null && !keys.isEmpty()) redisTemplate.delete(keys);
 
         Long userId = jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
+        jdbc.update("DELETE FROM auth_outbox WHERE payload -> 'payload' ->> 'telegram_id' = ?",
+                Long.toString(TELEGRAM_ID));
         jdbc.update("UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' "
                 + "WHERE user_id = ? AND revoked_at IS NULL", userId);
         jdbc.update("DELETE FROM password_reset_tokens WHERE user_id = ?", userId);
@@ -268,6 +286,9 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             executor.shutdownNow();
         }
 
+        assertThat(outboxStorage.countPending()).isEqualTo(1);
+        assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
+        assertThat(publishAuthOutbox(outboxSender)).isEqualTo(1);
         Message passwordChangedMessage = receiveWithRetry(TEST_QUEUE);
         assertThat(passwordChangedMessage)
                 .as("после committed reset отправляется password.changed")
@@ -295,6 +316,75 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(bearerSessionStatus(secondSession.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(refreshStatus(firstSession.refreshToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(loginStudent("NewStrongPassword42!").accessToken()).isNotBlank();
+    }
+
+    @Test
+    @Timeout(value = 30, unit = TimeUnit.SECONDS)
+    void passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart() throws Exception {
+        TokenResponse oldSession = loginStudent("password");
+        CachingConnectionFactory connections = (CachingConnectionFactory) rabbitTemplate.getConnectionFactory();
+        int brokerPort = connections.getPort();
+        try {
+            // Use a refused local port on this test's own connection factory: the
+            // credential request runs while its transport really cannot connect.
+            connections.setPort(1);
+            connections.resetConnection();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(oldSession.accessToken());
+            ResponseEntity<Void> changed = restTemplate.exchange("/auth/change-password", HttpMethod.POST,
+                    new HttpEntity<>(Map.of("currentPassword", "password",
+                            "newPassword", "OutboxNewPassword42!"), headers), Void.class);
+            assertThat(changed.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            assertThat(bearerSessionStatus(oldSession.accessToken())).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(loginStudent("OutboxNewPassword42!").accessToken()).isNotBlank();
+            assertThat(outboxStorage.countPending()).isEqualTo(1);
+            assertThatThrownBy(() -> publishAuthOutbox(outboxSender)).isInstanceOf(IllegalStateException.class);
+            assertThat(outboxStorage.countPending()).isEqualTo(1);
+        } finally {
+            connections.setPort(brokerPort);
+            connections.resetConnection();
+        }
+
+        String storedJson = jdbc.queryForObject("SELECT payload::text FROM auth_outbox WHERE status = 'pending'",
+                String.class);
+        JsonNode storedEvent = objectMapper.readTree(storedJson);
+        assertThat(EventSchemaValidator.validate("password.changed.json", storedJson)).isEmpty();
+        assertThat(storedEvent.path("payload").size()).isEqualTo(1);
+        assertThat(storedEvent.path("payload").path("telegram_id").asLong()).isEqualTo(TELEGRAM_ID);
+        assertThat(storedJson).doesNotContain("OutboxNewPassword42!", "password_hash", "reset_ticket", "code");
+
+        // Age must not expire an undelivered intent.
+        jdbc.update("UPDATE auth_outbox SET created_at = NOW() - INTERVAL '8 days' WHERE status = 'pending'");
+        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
+                assertThat(new AuthOutboxCleanupJob(outboxStorage, Clock.systemUTC(), 7).runCleanup()).isZero());
+        assertThat(outboxStorage.countPending()).isEqualTo(1);
+
+        // Broker accepts the event, then the publisher loses its result before
+        // marking sent. A restarted publisher retries the same logical event.
+        assertThatThrownBy(() -> publishAuthOutbox((type, payload) -> {
+            outboxSender.send(type, payload);
+            throw new IllegalStateException("simulated process loss after broker confirmation");
+        })).isInstanceOf(IllegalStateException.class);
+        assertThat(outboxStorage.countPending()).isEqualTo(1);
+        Message firstDelivery = receiveWithRetry(TEST_QUEUE);
+        assertThat(firstDelivery).isNotNull();
+        assertThat(objectMapper.readTree(firstDelivery.getBody())).isEqualTo(storedEvent);
+
+        assertThat(publishAuthOutbox(outboxSender)).isEqualTo(1);
+        Message retryDelivery = receiveWithRetry(TEST_QUEUE);
+        assertThat(retryDelivery).isNotNull();
+        assertThat(objectMapper.readTree(retryDelivery.getBody())).isEqualTo(storedEvent);
+        assertThat(outboxStorage.countPending()).isZero();
+        assertThat(publishAuthOutbox(outboxSender)).isZero();
+        assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM auth_outbox", Long.class)).isEqualTo(1L);
+    }
+
+    private int publishAuthOutbox(OutboxEventSender sender) {
+        // Recreate the stateless publisher on every invocation, retaining only
+        // database state, as after an Auth process restart.
+        return new TransactionTemplate(transactionManager).execute(status ->
+                new AuthOutboxPublisherJob(outboxStorage, sender, null).publishBatch());
     }
 
     @Test

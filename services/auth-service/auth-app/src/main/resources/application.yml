@@ -15,6 +15,7 @@ spring:
       password: ${REDIS_PASSWORD:rct_dev_pass}
 
   rabbitmq:
+    publisher-confirm-type: simple
     host: ${SPRING_RABBITMQ_HOST:rabbitmq}
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:rct_user}

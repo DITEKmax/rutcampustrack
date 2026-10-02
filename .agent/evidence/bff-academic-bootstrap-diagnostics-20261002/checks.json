@@ -1,0 +1,13 @@
+{
+  "product_commit": "3ec63094",
+  "author_base": "d560540e",
+  "critical_source_compared_to": "d1745515",
+  "critical_baseline_diff_exit": 0,
+  "critical_baseline_diff": "empty",
+  "scoped_diff_check_exit": 0,
+  "product_index_paths": 1,
+  "product_add_commit_exit": 0,
+  "compile": "pending_root_mobile_bff_bootJar",
+  "runtime": "not_run_by_author",
+  "underlying_503_cause": "not_identified"
+}

@@ -1,0 +1,9 @@
+# F1/F2 corrected; source frozen for scoped verification
+
+F1/P2: new OneOffCreateRejectedException/handler type separates coordinator refusal before writer.create from durable replay/lifecycle/writer/DB conflicts. Frontend uses machine type/status/instance and fresh first-attempt condition, never Russian wording. Proven refusal clears storage before unlocking fields/new key; failed storage clear retains frozen request. Recovered intent or any prior unknown request remains immutable even if retry receives typed refusal, since a delayed original might still apply. Stale session handling unchanged.
+
+F2/P2: selected date may equal semester.dateTo; validation rejects only greater dates. Existing real PG method now rejects date before assignment.validFrom with typed409 and no origin/replay/outbox; corrects date to exact final semester day and gets canonical201; changed-payload replay remains generic409 with one durable origin/receipt.
+
+Exact changed product inventory: frontend ScheduleScreen/client; backend OneOffLessonCoordinator/GlobalExceptionHandler plus new OneOffCreateRejectedException. Tests: existing frontend client test file adds two regression cases; existing OneOffLessonControllerIT.create_rejectsForeignAuthorityAndHeadmanScope_atomically extended. No migration/generated/proto/shared/event files changed. Original CONTRACT/SUMMARY describe0df5 baseline; this delta supersedes prior all-errors-locked limitation and frontend-only scope with root-authorized typed API addition.
+
+Frontend new tests2PASS/3skipped (exec33024/chunke1b478); same invocation Vue/PWA typecheck terminal0/chunk3ad159. Scoped lint+product diffcheck exit0/chunkee41ed. Backend scoped compile/one-method runtime pending in correction-run records; no passed old three or full suite repeats. Build/browser/Figma visual remain pending integrated acceptance. r2 runtime holder untouched; unrelated evidence/cache preserved.

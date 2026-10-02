@@ -65,6 +65,19 @@ export function persistOneOffIntent(storage: Pick<Storage, 'setItem'>, scope: st
   storage.setItem(scope, JSON.stringify(intent))
 }
 
+export function isOneOffDateWithinSemester(date: string, today: string, from?: string, to?: string): boolean {
+  // Academic/OneOffLessonCoordinator include the semester's final date.
+  return /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= today
+    && (from === undefined || date >= from) && (to === undefined || date <= to)
+}
+
+export function canCorrectRejectedOneOff(cause: unknown, firstAttempt: boolean): boolean {
+  if (!firstAttempt || !(cause instanceof HeadmanScheduleApiError) || cause.response.status !== 409 || !isRecord(cause.problem)) return false
+  const problem = cause.problem
+  return problem.status === 409 && problem.type === 'https://api.rutcampustrack.ru/problems/one-off-create-rejected'
+    && problem.instance === '/schedule/one-off-lessons'
+}
+
 export interface HeadmanScheduleApiOptions {
   accessToken: () => string | null
   onUnauthorized?: () => Promise<void>

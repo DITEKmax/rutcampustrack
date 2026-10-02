@@ -130,11 +130,35 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
                 .setId(ASSIGNMENT).setTeacherId(TEACHER).setGroupId(2).setSubjectId(SUBJECT).setSemesterId(SEMESTER)
                 .setLessonType("lecture").setValidFrom(FROM.toString()).setValidUntilExclusive(UNTIL.toString()).build()));
         mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", UUID.randomUUID())
-                .contentType(MediaType.APPLICATION_JSON).content(body((short)1, null))).andExpect(status().isConflict());
+                .contentType(MediaType.APPLICATION_JSON).content(body((short)1, null))).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value("https://api.rutcampustrack.ru/problems/one-off-create-rejected"));
         when(academic.isHeadman(ACTOR, GROUP)).thenReturn(false);
         mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON).content(body((short)1, null))).andExpect(status().isForbidden());
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_lessons", Long.class)).isZero();
+        when(academic.isHeadman(ACTOR, GROUP)).thenReturn(true);
+        mockAssignment(ASSIGNMENT, TEACHER, DATE.plusDays(1), UNTIL);
+        UUID rejectedKey = UUID.randomUUID();
+        mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", rejectedKey)
+                .contentType(MediaType.APPLICATION_JSON).content(body((short)1, null))).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value("https://api.rutcampustrack.ru/problems/one-off-create-rejected"));
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_create_replay", Long.class)).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_lessons", Long.class)).isZero();
+        assertThat(outboxStorage.findPending(20)).isEmpty();
+        LocalDate finalSemesterDay = UNTIL.minusDays(1);
+        String corrected = json.writeValueAsString(new CreateOneOffLessonRequest(GROUP, SUBJECT, ASSIGNMENT,
+                finalSemesterDay, (short)1, LocalTime.of(8,30), LocalTime.of(10,0), null));
+        UUID correctedKey = UUID.randomUUID();
+        mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", correctedKey)
+                .contentType(MediaType.APPLICATION_JSON).content(corrected)).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.date").value(finalSemesterDay.toString()))
+                .andExpect(jsonPath("$.physicalLessonId").isNumber());
+        // A conflicting replay has durable acceptance and must not carry the refusal proof type.
+        mvc.perform(actor(post("/schedule/one-off-lessons")).header("Idempotency-Key", correctedKey)
+                .contentType(MediaType.APPLICATION_JSON).content(body((short)1, null))).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value("https://api.rutcampustrack.ru/problems/conflict"));
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_lessons", Long.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_create_replay", Long.class)).isEqualTo(1);
     }
 
     @Test void cancelledRecurringPhysical_releasesSlotAndRetainsBothHistories() throws Exception {

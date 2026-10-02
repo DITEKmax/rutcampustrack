@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import {
   HeadmanScheduleApi,
+  HeadmanScheduleApiError,
+  canCorrectRejectedOneOff,
+  isOneOffDateWithinSemester,
   createGenerationBoundHeadmanScheduleApi,
   persistOneOffIntent,
   readOneOffIntent,
@@ -17,6 +20,38 @@ const canonical = { id: 31, physicalLessonId: 42, groupId: 7, subjectId: 9, seme
 const json = (body: unknown): Response => new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } })
 
 describe('ONE_OFF durable creation', () => {
+  it('corrects only a proven first refusal; unknown/recovered/replay/stale errors retain the original intent', () => {
+    const problem = { status: 409, type: 'https://api.rutcampustrack.ru/problems/one-off-create-rejected',
+      instance: '/schedule/one-off-lessons', detail: 'Серверное описание может меняться' }
+    const rejected = new HeadmanScheduleApiError(new Response('{}', { status: 409 }), problem)
+    expect(canCorrectRejectedOneOff(rejected, true)).toBe(true)
+    expect(canCorrectRejectedOneOff(rejected, false)).toBe(false)
+    for (const type of ['conflict', 'lifecycle-not-ready', 'recurring-protocol-conflict']) {
+      expect(canCorrectRejectedOneOff(new HeadmanScheduleApiError(new Response('{}', { status: 409 }),
+        { ...problem, type: `https://api.rutcampustrack.ru/problems/${type}` }), true)).toBe(false)
+    }
+    expect(canCorrectRejectedOneOff(new TypeError('response lost'), true)).toBe(false)
+    expect(canCorrectRejectedOneOff(new StaleSessionGenerationError(), true)).toBe(false)
+    const values = new Map<string, string>()
+    const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
+    persistOneOffIntent(storage, 'scope', { key, input })
+    // Refusal after refresh cannot prove the earlier request was not accepted.
+    if (canCorrectRejectedOneOff(rejected, false)) values.delete('scope')
+    expect(readOneOffIntent(storage, 'scope')).toEqual({ key, input })
+    // Fresh refusal unlocks correction, then a new immutable intent gets a new key.
+    if (canCorrectRejectedOneOff(rejected, true)) values.delete('scope')
+    const correctedKey = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+    const correctedInput = { ...input, date: '2026-10-13' }
+    persistOneOffIntent(storage, 'scope', { key: correctedKey, input: correctedInput })
+    expect(readOneOffIntent(storage, 'scope')).toEqual({ key: correctedKey, input: correctedInput })
+  })
+
+  it('permits the inclusive final semester day but rejects the following day and dates before today', () => {
+    expect(isOneOffDateWithinSemester('2027-01-31', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(true)
+    expect(isOneOffDateWithinSemester('2027-02-01', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(false)
+    expect(isOneOffDateWithinSemester('2026-09-30', '2026-10-01', '2026-09-01', '2027-01-31')).toBe(false)
+  })
+
   it('recovers the exact request/key after an unknown outcome and refresh, then reads canonical physical identity', async () => {
     const values = new Map<string, string>()
     const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }

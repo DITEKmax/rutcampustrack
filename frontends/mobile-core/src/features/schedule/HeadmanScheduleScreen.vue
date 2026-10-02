@@ -44,6 +44,8 @@ import { profileOwnerStaleMessage } from '../../shared/profile-owner-status'
 import { createProfileViewPublication } from '../../shared/components/profile-view-publication'
 import {
   HeadmanScheduleApiError,
+  canCorrectRejectedOneOff,
+  isOneOffDateWithinSemester,
   persistOneOffIntent,
   readOneOffIntent,
   type HeadmanOneOffCreateInput,
@@ -550,9 +552,7 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
     return null
   }
   if (createMode.value === 'ONE_OFF') {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(oneOffDate.value) || oneOffDate.value < moscowToday()
-      || (currentSemester.dateFrom && oneOffDate.value < currentSemester.dateFrom)
-      || (currentSemester.dateTo && oneOffDate.value >= currentSemester.dateTo)) {
+    if (!isOneOffDateWithinSemester(oneOffDate.value, moscowToday(), currentSemester.dateFrom, currentSemester.dateTo)) {
       formError.value = 'Выбери дату в текущем семестре, не раньше сегодня.'
       return null
     }
@@ -587,6 +587,7 @@ async function save(): Promise<void> {
   const api = props.api
   const revision = commandRevision
   const mode = createMode.value
+  const firstOneOffAttempt = mode === 'ONE_OFF' && oneOffIntent.value === null
   const scope = oneOffScope()
   const isCurrent = (): boolean => !disposed && revision === commandRevision && api === props.api
   const input = mode === 'ONE_OFF' && oneOffIntent.value ? oneOffIntent.value.input : buildInput()
@@ -622,6 +623,21 @@ async function save(): Promise<void> {
     await load()
   } catch (cause) {
     if (!isCurrent()) return
+    if (scope && canCorrectRejectedOneOff(cause, firstOneOffAttempt)) {
+      try {
+        // Only this completed first response proves no acceptance. A retry/reloaded
+        // intent may still have a delayed original request, even with the same refusal.
+        sessionStorage.removeItem(scope)
+        oneOffIntent.value = null
+        commandKey.value = newCommandKey()
+        commandFingerprint.value = null
+        formError.value = `${cause instanceof Error ? cause.message : 'Пара не создана.'} Исправь данные и сохрани ещё раз.`
+      } catch {
+        formError.value = 'Пара не создана, но не удалось обновить сохранённый запрос. Восстанови доступ к хранилищу и повтори.'
+      }
+      emit('error', cause)
+      return
+    }
     formError.value = cause instanceof Error ? cause.message : 'Не удалось сохранить слот.'
     emit('error', cause)
   } finally {

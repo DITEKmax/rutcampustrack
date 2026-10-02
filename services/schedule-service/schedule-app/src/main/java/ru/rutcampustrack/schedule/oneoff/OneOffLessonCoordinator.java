@@ -8,6 +8,7 @@ import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 import ru.rutcampustrack.schedule.exception.ConflictException;
+import ru.rutcampustrack.schedule.exception.OneOffCreateRejectedException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.recurring.RecurringAssignmentAuthority;
 import ru.rutcampustrack.schedule.security.RequestContext;
@@ -39,16 +40,16 @@ public class OneOffLessonCoordinator {
 
         GroupResponse group = academic.validateGroup(request.groupId());
         if (group == null || group.getId() != request.groupId() || !group.getIsActive()) {
-            throw new ConflictException("Группа неактивна или ответ Academic не соответствует запросу");
+            throw new OneOffCreateRejectedException("Группа неактивна или ответ Academic не соответствует запросу");
         }
         SemesterResponse semester = academic.getActiveSemester();
         if (semester == null || semester.getId() <= 0) {
-            throw new ConflictException("Нет активного семестра для разовой пары");
+            throw new OneOffCreateRejectedException("Нет активного семестра для разовой пары");
         }
         List<AssignmentInfo> assignments = academic.getAssignmentsByIds(List.of(request.assignmentId()));
         if (assignments == null || assignments.size() != 1 || assignments.get(0) == null
                 || assignments.get(0).getId() != request.assignmentId()) {
-            throw new ConflictException("Academic не вернул точное назначение преподавателя");
+            throw new OneOffCreateRejectedException("Academic не вернул точное назначение преподавателя");
         }
         AssignmentInfo raw = assignments.get(0);
         RecurringAssignmentAuthority authority;
@@ -57,7 +58,7 @@ public class OneOffLessonCoordinator {
                     raw.getGroupId(), raw.getSemesterId(), raw.getLessonType(),
                     LocalDate.parse(raw.getValidFrom()), LocalDate.parse(raw.getValidUntilExclusive()));
         } catch (RuntimeException error) {
-            throw new ConflictException("Назначение преподавателя содержит некорректные данные");
+            throw new OneOffCreateRejectedException("Назначение преподавателя содержит некорректные данные");
         }
         LocalDate from = parseDate(semester.getDateFrom());
         LocalDate to = parseDate(semester.getDateTo());
@@ -66,7 +67,7 @@ public class OneOffLessonCoordinator {
                 || request.date().isBefore(from) || request.date().isAfter(to)
                 || request.date().isBefore(authority.validFrom())
                 || !request.date().isBefore(authority.validUntilExclusive())) {
-            throw new ConflictException("Группа, предмет, семестр или дата не входят в назначение преподавателя");
+            throw new OneOffCreateRejectedException("Группа, предмет, семестр или дата не входят в назначение преподавателя");
         }
         return writer.create(request, requestKey, actor, authority).oneOffLessonId();
     }
@@ -124,7 +125,7 @@ public class OneOffLessonCoordinator {
                 || request.startTime() == null || request.endTime() == null
                 || !request.endTime().isAfter(request.startTime())
                 || request.classroom() != null && request.classroom().length() > 64) {
-            throw new ConflictException("Для разовой пары нужны request key, назначение, дата, номер и корректное время");
+            throw new OneOffCreateRejectedException("Для разовой пары нужны request key, назначение, дата, номер и корректное время");
         }
     }
 
@@ -132,7 +133,7 @@ public class OneOffLessonCoordinator {
         try {
             return LocalDate.parse(value);
         } catch (RuntimeException error) {
-            throw new ConflictException("Academic вернул некорректные границы семестра");
+            throw new OneOffCreateRejectedException("Academic вернул некорректные границы семестра");
         }
     }
 }

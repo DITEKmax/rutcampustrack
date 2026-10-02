@@ -83,6 +83,13 @@ public class GlobalExceptionHandler {
                 "Conflict", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(OneOffCreateRejectedException.class)
+    public ResponseEntity<ErrorResponse> handleOneOffCreateRejected(OneOffCreateRejectedException ex,
+                                                                  HttpServletRequest request) {
+        return problem(HttpStatus.CONFLICT, "one-off-create-rejected",
+                "Conflict", ex.getMessage(), request);
+    }
+
     @ExceptionHandler(RecurringLifecycleNotReadyException.class)
     public ResponseEntity<ErrorResponse> handleRecurringLifecycleNotReady(
             RecurringLifecycleNotReadyException ex,

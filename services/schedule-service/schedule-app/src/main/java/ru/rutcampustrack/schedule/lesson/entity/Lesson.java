@@ -104,6 +104,7 @@ public class Lesson {
     private Long revision = 1L;
 
     /** Filled by snapshot readers; V17's current pointer is the durable source. */
+    @Setter
     @Transient
     private boolean current = true;
 

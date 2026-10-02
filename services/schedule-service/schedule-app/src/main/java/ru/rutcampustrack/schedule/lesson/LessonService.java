@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 import jakarta.persistence.EntityManager;
 import ru.rutcampustrack.schedule.event.LessonBlockedEvent;
 import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
@@ -349,7 +350,7 @@ public class LessonService {
      * загрузки всего дата-range, что создавало OOM-risk на 2000+ lessons/
      * semester. Теперь PostgreSQL применяет LIMIT/OFFSET в плане запроса.
      */
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Page<LessonWithItem> getLessonsForGroup(Long groupId,
                                                     LocalDate from,
                                                     LocalDate to,
@@ -367,6 +368,17 @@ public class LessonService {
                 .pageByGroupIdAndDateBetweenAndStatusIn(
                         groupId, from, to,
                         effectiveStatuses, pageable);
+
+        // Entity page and durable pointer flags share one MVCC snapshot. A
+        // transferred historical row remains visible with current=false.
+        if (!lessonPage.isEmpty()) {
+            Map<Long, Boolean> currentPointers = lessonRepository.currentPointersForLessons(
+                    lessonPage.getContent().stream().map(Lesson::getId).toList()).stream()
+                    .collect(Collectors.toMap(LessonRepository.CurrentLessonPointer::getLessonId,
+                            LessonRepository.CurrentLessonPointer::getCurrent));
+            lessonPage.forEach(lesson -> lesson.setCurrent(
+                    currentPointers.getOrDefault(lesson.getId(), false)));
+        }
 
         List<ScheduleItem> items = scheduleItemRepository.findByGroupId(groupId);
 

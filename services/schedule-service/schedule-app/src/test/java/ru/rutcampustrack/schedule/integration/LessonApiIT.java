@@ -160,6 +160,49 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
+    void getLessons_transferredOneOffHistoryUsesCanonicalCurrentPointer() throws Exception {
+        LocalDate sourceDate = LocalDate.now(ZoneId.of("Europe/Moscow")).plusDays(10);
+        if (sourceDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) sourceDate = sourceDate.plusDays(1);
+        LocalDate targetDate = sourceDate.plusDays(1);
+        if (targetDate.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) targetDate = targetDate.plusDays(1);
+        createScheduleItem(sourceDate.minusDays(1), targetDate.plusDays(2));
+        long sourceId = insertOneOffChoice(sourceDate, (short) 2);
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(10L))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(10L).build());
+        var transfer = transferWriter.transfer(sourceId, USER_ID,
+                new TransferLessonRequest(targetDate, 3, null, null, "moved", "1", UUID.randomUUID()));
+        long targetId = Long.parseLong(transfer.targetLessonId());
+
+        JsonNode response = objectMapper.readTree(mockMvc.perform(withHeadmanHeaders(
+                get("/schedule/groups/{groupId}/lessons", testGroupId)
+                        .param("dateFrom", sourceDate.toString()).param("dateTo", targetDate.toString())
+                        .param("status", "PLANNED", "TRANSFERRED").param("size", "100")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        var collections = response.path("_embedded").elements();
+        assertThat(collections.hasNext()).isTrue();
+        JsonNode rows = collections.next();
+        assertThat(collections.hasNext()).isFalse();
+        assertThat(rows.isArray()).isTrue();
+        assertThat(rows.size()).isEqualTo(2);
+        JsonNode old = null, current = null;
+        for (JsonNode row : rows) {
+            if (row.path("id").asLong() == sourceId) old = row;
+            if (row.path("id").asLong() == targetId) current = row;
+        }
+        assertThat(old).isNotNull();
+        assertThat(current).isNotNull();
+        assertThat(old.path("status").asText()).isEqualTo("TRANSFERRED");
+        assertThat(old.path("current").asBoolean()).isFalse();
+        assertThat(current.path("status").asText()).isEqualTo("PLANNED");
+        assertThat(current.path("current").asBoolean()).isTrue();
+        assertThat(current.path("occurrenceId").asLong()).isEqualTo(old.path("occurrenceId").asLong());
+        assertThat(current.path("generation").asLong()).isEqualTo(old.path("generation").asLong() + 1);
+        assertThat(current.path("date").asText()).isEqualTo(targetDate.toString());
+        assertThat(jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_occurrences WHERE id = ?",
+                Long.class, current.path("occurrenceId").asLong())).isEqualTo(targetId);
+    }
+
+    @Test
     void nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope() throws Exception {
         LocalDate today = LocalDate.now(ZoneId.of("Europe/Moscow"));
         ScheduleItem item = createScheduleItem(today.minusYears(1), today.plusYears(1));

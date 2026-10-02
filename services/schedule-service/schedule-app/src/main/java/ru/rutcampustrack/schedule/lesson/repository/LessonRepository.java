@@ -18,6 +18,22 @@ import java.util.Optional;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
+    /** Resolve page flags from canonical pointers, including retained transferred history. */
+    @Query(value = """
+            SELECT l.id AS lessonId,
+                   CASE WHEN l.occurrence_id IS NULL THEN true
+                        ELSE COALESCE(o.current_lesson_id = l.id, false) END AS current
+              FROM lessons l
+              LEFT JOIN lesson_occurrences o ON o.id = l.occurrence_id
+             WHERE l.id IN (:lessonIds)
+            """, nativeQuery = true)
+    List<CurrentLessonPointer> currentPointersForLessons(@Param("lessonIds") List<Long> lessonIds);
+
+    interface CurrentLessonPointer {
+        Long getLessonId();
+        boolean getCurrent();
+    }
+
     /** One MVCC snapshot: never resolve through a mutable template or old transfer side. */
     @Query(value = """
             SELECT l.id AS lessonId, o.id AS occurrenceId, o.revision AS occurrenceRevision,

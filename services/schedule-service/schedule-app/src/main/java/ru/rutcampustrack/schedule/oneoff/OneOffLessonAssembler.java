@@ -1,5 +1,7 @@
 package ru.rutcampustrack.schedule.oneoff;
 
+import java.time.ZoneOffset;
+
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.OneOffLessonResponse;
@@ -25,7 +27,7 @@ public class OneOffLessonAssembler {
                 entity.getLessonNumber(),
                 entity.getClassroom(),
                 entity.getCreatedBy(),
-                entity.getCreatedAt()
+                entity.getCreatedAt().atOffset(ZoneOffset.UTC)
         );
         return EntityModel.of(body,
                 linkTo(methodOn(OneOffLessonController.class)

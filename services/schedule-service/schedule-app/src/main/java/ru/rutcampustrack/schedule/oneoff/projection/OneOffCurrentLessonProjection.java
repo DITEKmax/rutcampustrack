@@ -1,7 +1,7 @@
 package ru.rutcampustrack.schedule.oneoff.projection;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 /** Public placement and origin identity from one current physical snapshot. */
 public interface OneOffCurrentLessonProjection {
@@ -14,5 +14,5 @@ public interface OneOffCurrentLessonProjection {
     Short getLessonNumber();
     String getClassroom();
     Long getCreatedBy();
-    OffsetDateTime getCreatedAt();
+    Instant getCreatedAt();
 }

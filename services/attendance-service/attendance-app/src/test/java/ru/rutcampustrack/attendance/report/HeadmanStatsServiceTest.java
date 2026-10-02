@@ -119,6 +119,8 @@ class HeadmanStatsServiceTest {
         String html = new String(exported.content(), StandardCharsets.UTF_8);
         assertThat(html).contains("Alpha", "Gamma", "3</td><td>4</td><td>75.0%")
                 .doesNotContain("Beta");
+        assertThat(html).contains("<dt>Фильтры</dt><dd>Процент «+»: от 50 (включительно)</dd>",
+                "<dt>Сортировка</dt><dd>1. Процент «+»: по убыванию</dd>");
         assertThat(exported.fileName()).endsWith("_математика.html");
         assertThat(exported.contentType()).isEqualTo("text/html; charset=UTF-8");
 

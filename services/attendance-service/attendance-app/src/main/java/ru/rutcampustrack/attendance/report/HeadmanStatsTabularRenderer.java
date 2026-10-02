@@ -41,6 +41,8 @@ public final class HeadmanStatsTabularRenderer {
                         ? "Все" : String.join(", ", context.lessonTypes())))
                 .append(contextItem("Завершённых занятий учтено", Integer.toString(context.lessonsCount())))
                 .append(contextItem("Студентов после фильтра", Integer.toString(model.filteredStudents())))
+                .append(contextItem("Фильтры", model.filters()))
+                .append(contextItem("Сортировка", model.sorts()))
                 .append(contextItem("Сформировано", GENERATED_AT.format(context.generatedAt())))
                 .append("</dl><h2>Итоги по выбранному набору студентов</h2>")
                 .append(summaryHtml(model.summary()))
@@ -51,7 +53,7 @@ public final class HeadmanStatsTabularRenderer {
     }
 
     public byte[] renderXlsx(HeadmanStatsExportModel model) {
-        int headerRow = 17;
+        int headerRow = 19;
         int firstDataRow = headerRow + 1;
         int lastRow = Math.max(headerRow, firstDataRow + model.rows().size() - 1);
         Map<String, String> entries = new LinkedHashMap<>();
@@ -153,11 +155,13 @@ public final class HeadmanStatsTabularRenderer {
         appendContextRow(xml, 6, "Завершённых занятий учтено", Integer.toString(context.lessonsCount()));
         appendContextRow(xml, 7, "Студентов после фильтра", Integer.toString(model.filteredStudents()));
         appendContextRow(xml, 8, "Сформировано", GENERATED_AT.format(context.generatedAt()));
-        appendInlineRow(xml, 10, List.of("Итоги по выбранному набору студентов"), true);
-        appendInlineRow(xml, 11, List.of("Показатель", "Количество", "Знаменатель", "Процент"), true);
+        appendContextRow(xml, 9, "Фильтры", model.filters());
+        appendContextRow(xml, 10, "Сортировка", model.sorts());
+        appendInlineRow(xml, 12, List.of("Итоги по выбранному набору студентов"), true);
+        appendInlineRow(xml, 13, List.of("Показатель", "Количество", "Знаменатель", "Процент"), true);
         for (int index = 0; index < METRIC_LABELS.size(); index++) {
             Metric metric = metricAt(model.summary(), index);
-            int row = 12 + index;
+            int row = 14 + index;
             xml.append("<row r=\"").append(row).append("\">");
             inlineCell(xml, "A" + row, METRIC_LABELS.get(index), 0);
             numberCell(xml, "B" + row, metric.numerator(), 0);
@@ -166,7 +170,7 @@ public final class HeadmanStatsTabularRenderer {
             else numberCell(xml, "D" + row, Double.toString(metric.percent() / 100.0), 2);
             xml.append("</row>");
         }
-        appendInlineRow(xml, 16, List.of("Данные по студентам"), true);
+        appendInlineRow(xml, 18, List.of("Данные по студентам"), true);
         appendInlineRow(xml, headerRow, headers(), true);
         if (model.rows().isEmpty()) {
             appendInlineRow(xml, firstDataRow, List.of("По заданным условиям данных нет."), false);

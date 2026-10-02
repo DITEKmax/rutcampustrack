@@ -67,6 +67,8 @@ public final class HeadmanStatsDocxRenderer {
                         ? "все" : String.join(", ", context.lessonTypes())), false, 18))
                 .append(paragraph("Завершённых занятий учтено: " + context.lessonsCount(), false, 18))
                 .append(paragraph("Студентов после фильтра: " + model.filteredStudents(), false, 18))
+                .append(paragraph("Фильтры: " + model.filters(), false, 18))
+                .append(paragraph("Сортировка: " + model.sorts(), false, 18))
                 .append(paragraph("Сформировано: " + GENERATED_AT.format(context.generatedAt()), false, 16))
                 .append(paragraph("Итоги по выбранному набору студентов", true, 20))
                 .append(summaryTable(model.summary()))

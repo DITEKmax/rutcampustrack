@@ -165,7 +165,8 @@ public class HeadmanStatsService {
             throw new ReportExportTooLargeException("Выгрузка включает больше 5000 студентов. Уточни фильтры таблицы.");
         }
         HeadmanStatsExportModel model = new HeadmanStatsExportModel(
-                data.context(), data.summary(), data.rows().size(), data.rows());
+                data.context(), data.summary(), data.rows().size(), data.rows(),
+                describeExportFilters(filters), describeExportSorts(sorts));
         byte[] content;
         switch (format) {
             case DOCX -> content = docxRenderer.render(model);
@@ -1021,6 +1022,31 @@ public class HeadmanStatsService {
             throw new BadRequestException("Список типов занятий содержит пустое или повторное значение");
         }
         return List.copyOf(normalized);
+    }
+
+    private static String describeExportFilters(List<HeadmanStatsFilter> filters) {
+        if (filters.isEmpty()) return "Нет";
+        return filters.stream().map(filter -> {
+            String label = COLUMNS_BY_FIELD.get(filter.field()).label();
+            if (filter.contains() != null) return label + ": содержит «" + filter.contains().trim() + "»";
+            String bounds = filter.minimum() == null ? "" : "от " + filter.minimum().toPlainString();
+            if (filter.maximum() != null) {
+                bounds += (bounds.isEmpty() ? "" : " ") + "до " + filter.maximum().toPlainString();
+            }
+            return label + ": " + (bounds.isEmpty() ? "без ограничения" : bounds + " (включительно)");
+        }).collect(java.util.stream.Collectors.joining("; "));
+    }
+
+    private static String describeExportSorts(List<HeadmanStatsSort> sorts) {
+        if (sorts.isEmpty()) return COLUMNS_BY_FIELD.get("presentPercent").label()
+                + ": по убыванию (по умолчанию)";
+        List<String> labels = new ArrayList<>();
+        for (int index = 0; index < sorts.size(); index++) {
+            HeadmanStatsSort sort = sorts.get(index);
+            labels.add((index + 1) + ". " + COLUMNS_BY_FIELD.get(sort.field()).label()
+                    + (sort.descending() ? ": по убыванию" : ": по возрастанию"));
+        }
+        return String.join("; ", labels);
     }
 
     private static List<HeadmanStatsSort> validateSorts(List<HeadmanStatsSort> sorts) {

@@ -18,18 +18,26 @@ public class UserArchiveRepository {
 
     public void lock(long owner, long target, UUID operation) {
         jdbc.queryForList("SELECT pg_advisory_xact_lock(hashtextextended(?, 0))", operation.toString());
-        // Serialize removal of administrators and recheck the actor under these locks.
-        jdbc.queryForList("""
-                SELECT u.id FROM users u WHERE EXISTS (SELECT 1 FROM user_role_grants g
+        // Global user -> group order matches transfer/headman mutations. NO KEY
+        // UPDATE still serializes user changes but permits helper INSERT's FK
+        // KEY SHARE while that writer owns the group. Archive upgrades the target
+        // lock only after the group is ours, avoiding a user-FK/group lock cycle.
+        List<Long> lockedUsers = jdbc.queryForList("""
+                SELECT u.id FROM users u WHERE u.id=? OR EXISTS (SELECT 1 FROM user_role_grants g
                   WHERE g.user_id=u.id AND g.role='admin' AND g.status='active')
-                ORDER BY u.id FOR UPDATE
-                """);
+                ORDER BY u.id FOR NO KEY UPDATE
+                """, Long.class, target);
         if (!Boolean.TRUE.equals(jdbc.queryForObject("""
                 SELECT EXISTS(SELECT 1 FROM users u JOIN user_role_grants g ON g.user_id=u.id
                   WHERE u.id=? AND u.status<>'archived' AND g.role='admin' AND g.status='active')
                 """, Boolean.class, owner))) denied();
-        List<Long> users = jdbc.queryForList("SELECT id FROM users WHERE id=? FOR UPDATE", Long.class, target);
-        if (users.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден");
+        if (!lockedUsers.contains(target)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден");
+        jdbc.queryForList("""
+                SELECT id FROM groups WHERE id IN (
+                  SELECT group_id FROM user_role_grants WHERE user_id=? AND group_id IS NOT NULL
+                  UNION SELECT group_id FROM headman_assistants WHERE student_id=?
+                ) ORDER BY id FOR UPDATE
+                """,Long.class,target,target);
     }
 
     public Local observe(long target) {
@@ -72,7 +80,8 @@ public class UserArchiveRepository {
                       AND other.valid_from <= (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date
                       AND COALESCE(other.valid_until_exclusive,s.date_to+1) > (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date)
                 """, Long.class, target);
-        return new Local(target, digest(state), status, groups, headman, sole, dangerous, Instant.now());
+        String fingerprint = digest("academic-user-impact-v2:"+state+":"+groups+":"+headman+":"+sole+":"+dangerous);
+        return new Local(target, fingerprint, status, groups, headman, sole, dangerous, Instant.now());
     }
 
     public void savePreview(long owner, Local local, String digest, Instant expiry) {

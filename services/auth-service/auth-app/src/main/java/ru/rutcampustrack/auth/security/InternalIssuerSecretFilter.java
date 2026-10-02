@@ -28,6 +28,8 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
     private static final String INTERNAL_PREFIX = "/internal/";
     private static final String SEMESTER_DELETE_CONFIRMATION_PATH =
             "/internal/auth/confirm-semester-deletion";
+    private static final String MAP_DELETE_CONFIRMATION_PATH =
+            "/internal/auth/confirm-map-deletion";
 
     private static final Logger log = LoggerFactory.getLogger(InternalIssuerSecretFilter.class);
 
@@ -46,7 +48,7 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
-        if (isSemesterDeletionConfirmationRequest(request)) {
+        if (isPasswordConfirmationRequest(request)) {
             response.setHeader("Cache-Control", "no-store");
         }
         String provided = request.getHeader(HEADER);
@@ -64,14 +66,15 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    private static boolean isSemesterDeletionConfirmationRequest(HttpServletRequest request) {
-        if (SEMESTER_DELETE_CONFIRMATION_PATH.equals(request.getServletPath())) {
+    private static boolean isPasswordConfirmationRequest(HttpServletRequest request) {
+        if (SEMESTER_DELETE_CONFIRMATION_PATH.equals(request.getServletPath())
+                || MAP_DELETE_CONFIRMATION_PATH.equals(request.getServletPath())) {
             return true;
         }
         String contextPath = request.getContextPath();
-        String expectedRequestUri = (contextPath == null ? "" : contextPath)
-                + SEMESTER_DELETE_CONFIRMATION_PATH;
-        return expectedRequestUri.equals(request.getRequestURI());
+        String prefix = contextPath == null ? "" : contextPath;
+        return (prefix + SEMESTER_DELETE_CONFIRMATION_PATH).equals(request.getRequestURI())
+                || (prefix + MAP_DELETE_CONFIRMATION_PATH).equals(request.getRequestURI());
     }
 
     private static void writeUnauthorized(HttpServletResponse response, String message) throws IOException {

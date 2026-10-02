@@ -1,0 +1,23 @@
+[
+  {
+    "file": "r1-HeadmanStatsServiceTest.xml",
+    "tests": "1",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0"
+  },
+  {
+    "file": "r1-HeadmanStatsRendererTest.xml",
+    "tests": "1",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0"
+  },
+  {
+    "file": "r2-HeadmanStatsRendererTest.xml",
+    "tests": "1",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0"
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "source": "4b35683bde9d595af22904c53ec933b10a9ec3a1",
+  "pdfPages": 9,
+  "students": 120,
+  "rowOccurrencesPerStudent": 2,
+  "totalStudentRowsInPdf": 240,
+  "selectedContextPresent": true,
+  "suppliedPercentagePreserved": true,
+  "noDataDashPresent": true,
+  "pngPages": 9,
+  "archiveEntryCount": 9,
+  "crcPass": true,
+  "archiveMatchesEveryOriginalPng": true,
+  "archiveEvidence": "Offline derivative of actual Poppler pages; unchanged service ZIP behavior inherited, no new HTTP claim",
+  "files": [
+    {
+      "path": "large-selected-stats-r2.docx",
+      "bytes": 6925,
+      "sha256": "79584cd7517cdd85926bec1fbcdb605f0f4538c85fe87571c3f5ab58863b78aa"
+    },
+    {
+      "path": "large-selected-stats-r2.html",
+      "bytes": 86075,
+      "sha256": "33cec2c79597421c9e93306f3628c70747b3596cc1a6f6b7d039d5b0a32747c7"
+    },
+    {
+      "path": "large-selected-stats-r2.xlsx",
+      "bytes": 13082,
+      "sha256": "7eb4a2ccda646eacb6fbb165de4c6cd5d677428433fd164ea009aef9d1b057a2"
+    },
+    {
+      "path": "render-r2\\large-selected-stats.pdf",
+      "bytes": 54414,
+      "sha256": "0d13caf39c7a3a44fdfba7a7b884b3da861ab1c61b04a1241722464af78ce107"
+    },
+    {
+      "path": "large-selected-stats-r2-pages.zip",
+      "bytes": 2524794,
+      "sha256": "750614cd2686b07dede6e69f1ef5cf118db73eea276a94e79401772858f290ef"
+    }
+  ]
+}

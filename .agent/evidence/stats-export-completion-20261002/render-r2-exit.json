@@ -1,0 +1,11 @@
+{
+  "source": "4b35683bde9d595af22904c53ec933b10a9ec3a1",
+  "containerName": "rct-stats-export-20261002-r2",
+  "image": "sha256:2064a6a89efabc0356fd7d9d3d4a703bdba7ff834a444df42d29b84be27eacc2",
+  "startedAt": "2026-10-02T20:31:14.8857419+03:00",
+  "finishedAt": "2026-10-02T20:31:22.5651956+03:00",
+  "exitCode": 0,
+  "command": "set -e\nsoffice -env:UserInstallation=file:///tmp/lo-stats --headless --convert-to pdf --outdir /out /input/large-selected-stats.docx\npdftoppm -r 150 -png /out/large-selected-stats.pdf /out/page\npdftotext -layout /out/large-selected-stats.pdf /out/layout.txt\npdfinfo /out/large-selected-stats.pdf > /out/pdfinfo.txt",
+  "limits": "--rm/no-network/read-only/512MiB/1CPU/tmpfs256MiB; syntheticinput readonly; no service/commonstand",
+  "reason": "AffectedDOCXcantSplit only; same120rows; R1rawpreserved"
+}

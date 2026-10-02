@@ -1,0 +1,5 @@
+
+(process:37): dconf-CRITICAL **: 17:31:16.701: unable to create directory '/app/.cache/dconf': Read-only file system.  dconf will not work properly.
+
+(process:42): dconf-CRITICAL **: 17:31:16.921: unable to create directory '/app/.cache/dconf': Read-only file system.  dconf will not work properly.
+convert /input/large-selected-stats.docx -> /out/large-selected-stats.pdf using filter : writer_pdf_Export

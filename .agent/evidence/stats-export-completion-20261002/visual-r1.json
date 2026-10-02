@@ -1,0 +1,44 @@
+{
+  "source": "b01836fd89f66fb5d62f28796903a32b2a093d67",
+  "render": "render-r1",
+  "pages": 9,
+  "allPagesInspected": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "contextVisible": true,
+  "allRowsVisuallyPresent": true,
+  "clippingOrMissingGlyphs": false,
+  "overlap": false,
+  "layoutAccepted": false,
+  "findings": [
+    {
+      "table": "requests",
+      "row": "Студент-053",
+      "splitBetweenPages": [
+        6,
+        7
+      ],
+      "effect": "Surname continuation on next page with blank metrics"
+    },
+    {
+      "table": "requests",
+      "row": "Студент-114",
+      "splitBetweenPages": [
+        8,
+        9
+      ],
+      "effect": "Surname continuation on next page with blank metrics"
+    }
+  ],
+  "correction": "4b35683bde9d595af22904c53ec933b10a9ec3a1",
+  "next": "Root-approved R2 only exact renderer method +same sample conversion, queued after bus; no heavy parallel",
+  "limits": "Rows taller than one complete page remain Office natural constraint, no new truncation/height policy"
+}

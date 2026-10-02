@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-02T20:31:44.1135371+03:00",
+  "GradleExec": 79504,
+  "GradleTerminalExit": 0,
+  "renderTerminalExit": 0,
+  "containerName": "rct-stats-export-20261002-r2",
+  "inspectExit": 1,
+  "exactNameAbsent": true,
+  "ownedScopeResources": [],
+  "dockerPsExit": 0,
+  "java": [],
+  "cleanupPass": true,
+  "foreignChanges": "none",
+  "network": "none; no created network"
+}

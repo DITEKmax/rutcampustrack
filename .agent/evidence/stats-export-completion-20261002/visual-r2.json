@@ -1,0 +1,35 @@
+{
+  "source": "4b35683bde9d595af22904c53ec933b10a9ec3a1",
+  "render": "render-r2",
+  "pages": 9,
+  "allPagesInspected": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "contextVisible": true,
+  "allRowsVisuallyPresent": true,
+  "clippingOrMissingGlyphs": false,
+  "overlap": false,
+  "bodyRowsSplitAcrossPages": false,
+  "layoutAccepted": true,
+  "correctedBoundaries": [
+    {
+      "table": "requests",
+      "row": "Студент-053",
+      "nowEntirelyOnPage": 7
+    },
+    {
+      "table": "requests",
+      "row": "Студент-114",
+      "nowEntirelyOnPage": 9
+    }
+  ],
+  "limits": "Synthetic120row/28lessoncontext sample; row taller than wholepage may still split by Office rules; no genericheight/truncationpolicy"
+}

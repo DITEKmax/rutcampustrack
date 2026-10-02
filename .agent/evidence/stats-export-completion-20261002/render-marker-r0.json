@@ -1,0 +1,7 @@
+{
+  "stage": "Before Dockerlaunch",
+  "wrapperExit": 1,
+  "markerNativeExit": 2,
+  "reason": "Wrong marker package: documents helper accepts docx only; resolved exact pdf skill helper source",
+  "DockerStarted": false
+}

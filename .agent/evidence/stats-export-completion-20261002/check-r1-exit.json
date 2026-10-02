@@ -1,0 +1,9 @@
+{
+  "source": "b01836fd89f66fb5d62f28796903a32b2a093d67",
+  "command": "./gradlew.bat :services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.report.HeadmanStatsServiceTest.currentViewStatsAssistantGetsFilteredCanonicalMetricsAndUnpagedExportUntilRevoked --tests ru.rutcampustrack.attendance.report.HeadmanStatsRendererTest.largeSelectedStatisticsKeepsContextEveryRowAndSuppliedMetrics --no-daemon --no-parallel --max-workers=1 --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true",
+  "startedAt": "2026-10-02T20:03:45.4833271+03:00",
+  "finishedAt": "2026-10-02T20:04:46.0965879+03:00",
+  "exitCode": 0,
+  "environment": "Two exact unit methods; no Docker/commonstand; existing caches, maxworkers1",
+  "log": "check-r1.log"
+}

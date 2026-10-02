@@ -1,0 +1,10 @@
+{
+  "source": "4b35683bde9d595af22904c53ec933b10a9ec3a1",
+  "command": "./gradlew.bat :services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.report.HeadmanStatsRendererTest.largeSelectedStatisticsKeepsContextEveryRowAndSuppliedMetrics --no-daemon --no-parallel --max-workers=1 --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true",
+  "startedAt": "2026-10-02T20:29:47.5187932+03:00",
+  "finishedAt": "2026-10-02T20:30:28.6804759+03:00",
+  "exitCode": 0,
+  "environment": "Only affected renderer method; same120row sample; no Docker/commonstand; maxworkers1",
+  "log": "check-r2.log",
+  "reason": "R1 realPDF row053/114 split, samepacket cantSplit correction; acceptedService/ACL not repeated"
+}

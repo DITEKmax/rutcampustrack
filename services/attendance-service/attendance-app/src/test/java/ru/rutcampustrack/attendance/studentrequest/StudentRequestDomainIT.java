@@ -82,6 +82,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -231,7 +232,6 @@ class StudentRequestDomainIT {
 
     static final class BarrierPairWriteCoordinator extends PairWriteCoordinator {
         private volatile CyclicBarrier barrier;
-        private volatile long studentId;
         private volatile long lessonId;
 
         BarrierPairWriteCoordinator(MongoTemplate mongoTemplate) {
@@ -239,7 +239,6 @@ class StudentRequestDomainIT {
         }
 
         void arm(long studentId, long lessonId) {
-            this.studentId = studentId;
             this.lessonId = lessonId;
             this.barrier = new CyclicBarrier(2);
         }
@@ -249,10 +248,12 @@ class StudentRequestDomainIT {
         }
 
         @Override
-        public ru.rutcampustrack.attendance.student.CheckinPairStateDocument lock(
-                long semesterId, long studentId, long lessonId, long groupId, Instant now) {
+        public void lockLessons(Collection<Long> semesterIds, Collection<Long> lessonIds,
+                                Long groupId, Instant now) {
             CyclicBarrier active = barrier;
-            if (active != null && this.studentId == studentId && this.lessonId == lessonId) {
+            // Synchronize first attempts before either writer holds the shared
+            // semester fence; waiting at lock(pair) would deadlock the fixture.
+            if (active != null && lessonIds.contains(this.lessonId)) {
                 try {
                     active.await(30, TimeUnit.SECONDS);
                     if (barrier == active) {
@@ -262,7 +263,7 @@ class StudentRequestDomainIT {
                     throw new IllegalStateException("Pair-race barrier failed", error);
                 }
             }
-            return super.lock(semesterId, studentId, lessonId, groupId, now);
+            super.lockLessons(semesterIds, lessonIds, groupId, now);
         }
     }
 

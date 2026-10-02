@@ -140,6 +140,7 @@ function openMaterial(item: StudentHomeworkItem): void {
 
 function completionLabel(item: StudentHomeworkItem): string {
   if (itemPending(item.id)) return 'Сохраняем…'
+  if (item.archived) return item.completed ? 'Выполнено · архив' : 'Архив · только чтение'
   if (item.completed) return 'Выполнено'
   if (isReadOnly.value) return 'Доступно только онлайн'
   return 'Проведи, чтобы выполнить'
@@ -147,6 +148,7 @@ function completionLabel(item: StudentHomeworkItem): string {
 
 function completionAriaLabel(item: StudentHomeworkItem): string {
   if (itemPending(item.id)) return `Сохраняем состояние задания «${item.subject.name}»`
+  if (item.archived) return `Задание «${item.subject.name}» в архиве. Только чтение`
   if (isReadOnly.value) return `Задание «${item.subject.name}». Изменение доступно только онлайн`
   return item.completed
     ? `Снять отметку «Выполнено» с задания «${item.subject.name}»`
@@ -154,13 +156,13 @@ function completionAriaLabel(item: StudentHomeworkItem): string {
 }
 
 function requestCompletion(item: StudentHomeworkItem): void {
-  if (isReadOnly.value || itemPending(item.id)) return
+  if (isReadOnly.value || item.archived || itemPending(item.id)) return
   rememberCompletionFocus(item, !item.completed)
   emit('complete', item, !item.completed)
 }
 
 function retryItem(item: StudentHomeworkItem): void {
-  if (!isReadOnly.value && !itemPending(item.id)) {
+  if (!isReadOnly.value && !item.archived && !itemPending(item.id)) {
     rememberCompletionFocus(item, !item.completed)
     emit('retry', item)
   }
@@ -195,7 +197,7 @@ function rememberCompletionFocus(item: StudentHomeworkItem, expectedCompleted: b
 }
 
 function beginDrag(item: StudentHomeworkItem, event: PointerEvent): void {
-  if (isReadOnly.value || itemPending(item.id)) return
+  if (isReadOnly.value || item.archived || itemPending(item.id)) return
   const target = event.currentTarget
   if (!(target instanceof HTMLElement)) return
   const width = target.getBoundingClientRect().width
@@ -530,9 +532,9 @@ onBeforeUnmount(() => {
                 <button
                   :ref="(element) => setTrackRef(item.id, element)"
                   class="homework-completion"
-                  :class="{ 'homework-completion--completed': item.completed, 'homework-completion--readonly': isReadOnly }"
+                  :class="{ 'homework-completion--completed': item.completed, 'homework-completion--readonly': isReadOnly || item.archived }"
                   type="button"
-                  :disabled="isReadOnly || itemPending(item.id)"
+                  :disabled="isReadOnly || item.archived || itemPending(item.id)"
                   :aria-label="completionAriaLabel(item)"
                   :aria-pressed="item.completed"
                   :data-state="itemPending(item.id) ? 'pending' : item.completed ? 'completed' : 'open'"

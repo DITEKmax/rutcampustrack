@@ -20,6 +20,8 @@
       "link": "https://ruttrack.example/homework/142",
       "lessonDate": "2026-09-01",
       "lessonNumber": 1,
+      "bindingMode": "LESSON",
+      "archived": false,
       "completed": true,
       "completedAt": "2026-09-07T09:30:00Z"
     },
@@ -34,6 +36,8 @@
       "link": null,
       "lessonDate": "2026-09-02",
       "lessonNumber": 2,
+      "bindingMode": "LESSON",
+      "archived": false,
       "completed": false,
       "completedAt": null
     }

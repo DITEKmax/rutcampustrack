@@ -8,13 +8,18 @@ import {
   type HeadmanHomeworkApi,
   type HeadmanHomeworkSemester,
   type HeadmanManagedHomework,
+  type HeadmanHomeworkSubject,
+  type HeadmanHomeworkHistory,
+  type HomeworkBindingMode,
 } from './headman-homework-client'
 import {
   intentAfterHomeworkCreateFailure,
   reuseOrCreateAssistantHomeworkIntent,
+  reuseOrCreateAssistantHomeworkEditIntent,
   sameAssistantHomeworkDraftContext,
   type AssistantHomeworkCreateIntent,
   type AssistantHomeworkDraftContext,
+  type AssistantHomeworkEditIntent,
 } from './assistant-homework-create-intent'
 import './assistant-homework-screen.pcss'
 
@@ -45,6 +50,9 @@ const semester = ref<HeadmanHomeworkSemester | null>(null)
 const lessons = ref<readonly HeadmanJournalLesson[]>([])
 const homeworks = ref<readonly HeadmanManagedHomework[]>([])
 const selectedLessonId = ref<number | null>(null)
+const bindingMode = ref<HomeworkBindingMode>('LESSON')
+const subjects = ref<readonly HeadmanHomeworkSubject[]>([])
+const selectedSubjectId = ref<number | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const notice = ref<string | null>(null)
@@ -55,6 +63,14 @@ const link = ref('')
 const draftContext = shallowRef<AssistantHomeworkDraftContext | null>(null)
 const createIntent = shallowRef<AssistantHomeworkCreateIntent | null>(null)
 const createConflict = ref(false)
+const createPending = ref(false)
+const editIntent = shallowRef<AssistantHomeworkEditIntent | null>(null)
+const editRevision = ref<number | null>(null)
+const editConflict = ref(false)
+const historyId = ref<number | null>(null)
+const historyEntries = ref<readonly HeadmanHomeworkHistory[]>([])
+const historyLoading = ref(false)
+let historyRevision = 0
 const mutationBusy = ref(false)
 const mutationId = ref<number | null>(null)
 let draftApi: HeadmanHomeworkApi | null = null
@@ -65,20 +81,29 @@ let disposed = false
 const selectedLesson = computed(() => lessons.value.find((lesson) => lesson.id === selectedLessonId.value) ?? null)
 const selectedHomeworks = computed(() => {
   const lesson = selectedLesson.value
-  if (!lesson) return []
   return homeworks.value
-    .filter((item) => item.lessonDate === lesson.date && item.lessonNumber === lesson.lessonNumber)
+    .filter((item) => bindingMode.value === 'DATE'
+      ? item.bindingMode === 'DATE' && item.lessonDate === selectedDate.value
+      : lesson !== null && item.bindingMode === 'LESSON' && item.lessonDate === lesson?.date && item.lessonNumber === lesson?.lessonNumber)
     .slice()
     .sort((left, right) => left.id - right.id)
 })
 const canCreate = computed(() => Boolean(
-  !props.offline && !props.readOnly && semester.value && selectedLesson.value
-    && selectedLesson.value.subjectId && selectedLesson.value.lessonNumber
-    && selectedLesson.value.status !== 'CANCELLED',
+  !props.offline && !props.readOnly && semester.value
+    && (bindingMode.value === 'DATE' ? selectedSubjectId.value !== null
+      : selectedLesson.value?.current && selectedLesson.value.subjectId && selectedLesson.value.lessonNumber
+        && selectedLesson.value.status !== 'CANCELLED' && selectedLesson.value.status !== 'TRANSFERRED'),
 ))
-const retryLocked = computed(() => formId.value === 'new'
-  && createIntent.value !== null && !mutationBusy.value)
-const uncertainCreate = computed(() => retryLocked.value && !createConflict.value)
+const retryLocked = computed(() => (createIntent.value !== null || editIntent.value !== null) && !mutationBusy.value)
+const uncertainCreate = computed(() => retryLocked.value && !createConflict.value && !editConflict.value && !createPending.value)
+
+function canEdit(item: HeadmanManagedHomework): boolean {
+  return props.userId !== null && !props.offline && !props.readOnly && !item.archived && item.revision !== null
+}
+
+function subjectLabel(item: HeadmanManagedHomework): string {
+  return subjects.value.find((subject) => subject.id === item.subjectId)?.name ?? 'Предмет недоступен'
+}
 
 function formatDate(value: string): string {
   const date = new Date(`${value}T12:00:00Z`)
@@ -99,8 +124,14 @@ function lessonLabel(lesson: HeadmanJournalLesson): string {
 
 function currentDraftContext(): AssistantHomeworkDraftContext | null {
   const lesson = selectedLesson.value
-  if (!lesson || props.userId === null || props.groupId === null || semester.value === null
-    || lesson.subjectId === null || lesson.lessonNumber === null) return null
+  if (props.userId === null || props.groupId === null || semester.value === null) return null
+  if (bindingMode.value === 'DATE') {
+    if (selectedSubjectId.value === null) return null
+    return { userId: props.userId, groupId: props.groupId, semesterId: semester.value.id,
+      selectedDate: selectedDate.value, lessonId: null, lessonDate: selectedDate.value,
+      subjectId: selectedSubjectId.value, lessonNumber: null, bindingMode: 'DATE' }
+  }
+  if (!lesson || lesson.subjectId === null || lesson.lessonNumber === null) return null
   return {
     userId: props.userId,
     groupId: props.groupId,
@@ -110,6 +141,7 @@ function currentDraftContext(): AssistantHomeworkDraftContext | null {
     lessonDate: lesson.date,
     subjectId: lesson.subjectId,
     lessonNumber: lesson.lessonNumber,
+    bindingMode: 'LESSON',
   }
 }
 
@@ -121,6 +153,10 @@ function clearDraft(): void {
   draftContext.value = null
   createIntent.value = null
   createConflict.value = false
+  createPending.value = false
+  editIntent.value = null
+  editRevision.value = null
+  editConflict.value = false
   draftApi = null
 }
 
@@ -138,6 +174,12 @@ function resetContextData(): void {
   lessons.value = []
   homeworks.value = []
   selectedLessonId.value = null
+  subjects.value = []
+  selectedSubjectId.value = null
+  historyRevision += 1
+  historyId.value = null
+  historyEntries.value = []
+  historyLoading.value = false
   loading.value = false
   error.value = null
   notice.value = null
@@ -163,13 +205,16 @@ function openCreate(): void {
 }
 
 function openEdit(item: HeadmanManagedHomework): void {
-  if (props.userId === null || item.publishedBy !== props.userId || props.offline || props.readOnly
+  if (!canEdit(item)
     || formId.value !== null || createIntent.value !== null || !props.api) return
+  bindingMode.value = item.bindingMode
+  if (item.bindingMode === 'DATE') selectedSubjectId.value = item.subjectId
   const context = currentDraftContext()
   if (!context) return
   formId.value = item.id
   draftContext.value = context
   draftApi = props.api
+  editRevision.value = item.revision
   title.value = item.title
   description.value = item.description ?? ''
   link.value = item.link ?? ''
@@ -181,8 +226,7 @@ function closeForm(): void {
 }
 
 function requestKey(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID()
-  return `homework-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  return crypto.randomUUID()
 }
 
 function validForm(): boolean {
@@ -212,15 +256,26 @@ async function save(): Promise<void> {
       if (!intent) return
       createIntent.value = intent
       createConflict.value = false
-      await api.createHomework(intent.input)
+      createPending.value = false
+      const created = await api.createHomework(intent.input)
+      if (disposed || revision !== mutationRevision) return
+      if (created === null) {
+        createPending.value = true
+        notice.value = 'Сервер принял публикацию. Повтори запрос с тем же ключом, чтобы проверить завершение.'
+        return
+      }
     } else if (typeof currentForm === 'number') {
       const existing = selectedHomeworks.value.find((item) => item.id === currentForm)
-      if (!existing || props.userId === null || existing.publishedBy !== props.userId) return
-      await api.updateHomework(currentForm, {
+      if (!existing || !canEdit(existing) || editRevision.value === null) return
+      const intent = reuseOrCreateAssistantHomeworkEditIntent(editIntent.value, context, currentForm, editRevision.value, {
         title: title.value,
         description: description.value,
         link: link.value,
-      })
+      }, requestKey)
+      if (!intent) return
+      editIntent.value = intent
+      editConflict.value = false
+      await api.updateHomework(currentForm, intent.input)
     } else {
       return
     }
@@ -238,12 +293,17 @@ async function save(): Promise<void> {
       return
     }
     if (currentForm === 'new') {
+      createPending.value = false
       const status = cause instanceof HeadmanHomeworkApiError ? cause.response.status : null
       createIntent.value = intentAfterHomeworkCreateFailure(
         createIntent.value,
         status,
       )
       createConflict.value = status === 409 && createIntent.value !== null
+    } else {
+      const status = cause instanceof HeadmanHomeworkApiError ? cause.response.status : null
+      if (status === 400 || status === 422) editIntent.value = null
+      editConflict.value = status === 409
     }
     error.value = cause instanceof Error ? cause.message : 'Не удалось сохранить ДЗ.'
     emit('error', cause)
@@ -255,7 +315,7 @@ async function save(): Promise<void> {
 async function remove(item: HeadmanManagedHomework): Promise<void> {
   const api = props.api
   if (mutationBusy.value || retryLocked.value || !api || props.offline || props.readOnly || props.userId === null
-    || item.publishedBy !== props.userId) return
+    || item.archived) return
   if (typeof window !== 'undefined' && !window.confirm(`Удалить задание «${item.title}»?`)) return
   const revision = ++mutationRevision
   mutationBusy.value = true
@@ -310,13 +370,17 @@ async function load(): Promise<void> {
       selectedLessonId.value = null
       return
     }
-    const [nextLessons, nextHomeworks] = await Promise.all([
+    const [nextLessons, nextHomeworks, nextSubjects] = await Promise.all([
       journalApi.listLessons(groupId, selectedDate.value, selectedDate.value),
       api.listHomeworks(groupId, currentSemester.id),
+      api.listSubjects(),
     ])
     if (disposed || revision !== loadRevision) return
     lessons.value = nextLessons
     homeworks.value = nextHomeworks
+    subjects.value = nextSubjects
+    selectedSubjectId.value = nextSubjects.some((subject) => subject.id === selectedSubjectId.value)
+      ? selectedSubjectId.value : nextSubjects[0]?.id ?? null
     selectedLessonId.value = nextLessons.some((lesson) => lesson.id === selectedLessonId.value)
       ? selectedLessonId.value
       : nextLessons[0]?.id ?? null
@@ -341,10 +405,9 @@ watch(
 )
 
 watch(
-  () => {
-    const lesson = selectedLesson.value
-    return lesson ? [lesson.id, lesson.date, lesson.subjectId, lesson.lessonNumber] as const : null
-  },
+  () => { const lesson = selectedLesson.value
+    return bindingMode.value === 'DATE' ? `DATE:${selectedSubjectId.value}`
+      : `LESSON:${lesson?.id}:${lesson?.date}:${lesson?.subjectId}:${lesson?.lessonNumber}` },
   () => {
     invalidateDraft()
     error.value = null
@@ -353,10 +416,38 @@ watch(
   { flush: 'sync' },
 )
 
+async function refreshConflictingEdit(): Promise<void> {
+  if (mutationBusy.value) return
+  clearDraft()
+  await load()
+  notice.value = 'Список обновлён. Открой задание заново, чтобы редактировать текущую версию.'
+}
+
+async function showHistory(item: HeadmanManagedHomework): Promise<void> {
+  const api = props.api
+  if (!api || props.offline) return
+  const revision = ++historyRevision
+  historyId.value = item.id
+  historyEntries.value = []
+  historyLoading.value = true
+  try {
+    const entries = await api.history(item.id)
+    if (!disposed && revision === historyRevision && props.api === api) historyEntries.value = entries
+  } catch (cause) {
+    if (!disposed && revision === historyRevision && !(cause instanceof StaleSessionGenerationError)) {
+      error.value = cause instanceof Error ? cause.message : 'Не удалось загрузить историю ДЗ.'
+      emit('error', cause)
+    }
+  } finally {
+    if (!disposed && revision === historyRevision) historyLoading.value = false
+  }
+}
+
 onBeforeUnmount(() => {
   disposed = true
   loadRevision += 1
   mutationRevision += 1
+  historyRevision += 1
 })
 </script>
 
@@ -385,7 +476,16 @@ onBeforeUnmount(() => {
 
     <section v-if="loading" class="assistant-homework__state" role="status">Загружаем пары и ДЗ…</section>
     <template v-else-if="semester">
-      <section class="assistant-homework__lessons" aria-labelledby="assistant-homework-lessons-title">
+      <section class="assistant-homework__form" aria-label="Привязка домашнего задания">
+        <label><span>Дата</span><input v-model="selectedDate" type="date" :min="semester.dateFrom ?? undefined" :max="semester.dateTo ?? undefined" :disabled="mutationBusy || formId !== null"></label>
+        <label><span>Привязка</span><select v-model="bindingMode" :disabled="mutationBusy || formId !== null">
+          <option value="LESSON">К паре</option><option value="DATE">На дату</option>
+        </select></label>
+        <label v-if="bindingMode === 'DATE'"><span>Предмет</span><select v-model="selectedSubjectId" :disabled="mutationBusy || formId !== null">
+          <option v-for="subject in subjects" :key="subject.id" :value="subject.id">{{ subject.name }}</option>
+        </select></label>
+      </section>
+      <section v-if="bindingMode === 'LESSON'" class="assistant-homework__lessons" aria-labelledby="assistant-homework-lessons-title">
         <h2 id="assistant-homework-lessons-title">Пары за день</h2>
         <p v-if="lessons.length === 0" class="assistant-homework__empty">На эту дату пар нет.</p>
         <div v-else class="assistant-homework__lesson-list" role="list">
@@ -395,6 +495,7 @@ onBeforeUnmount(() => {
             class="assistant-homework__lesson"
             :data-selected="selectedLessonId === lesson.id"
             type="button"
+            :disabled="mutationBusy || formId !== null"
             @click="selectedLessonId = lesson.id"
           >
             {{ lessonLabel(lesson) }}
@@ -402,11 +503,11 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <section v-if="selectedLesson" class="assistant-homework__items" aria-labelledby="assistant-homework-items-title">
+      <section v-if="bindingMode === 'DATE' || selectedLesson" class="assistant-homework__items" aria-labelledby="assistant-homework-items-title">
         <header class="assistant-homework__section-header">
           <div>
-            <h2 id="assistant-homework-items-title">ДЗ на выбранную пару</h2>
-            <p>{{ lessonLabel(selectedLesson) }}</p>
+            <h2 id="assistant-homework-items-title">{{ bindingMode === 'DATE' ? 'ДЗ на выбранную дату' : 'ДЗ на выбранную пару' }}</h2>
+            <p>{{ bindingMode === 'DATE' ? formatDate(selectedDate) : selectedLesson ? lessonLabel(selectedLesson) : '' }}</p>
           </div>
           <button
             v-if="canCreate"
@@ -422,21 +523,42 @@ onBeforeUnmount(() => {
         <article v-for="item in selectedHomeworks" :key="item.id" class="assistant-homework__item">
           <div>
             <strong>{{ item.title }}</strong>
+            <p>{{ subjectLabel(item) }}</p>
+            <p v-if="item.archived">Архив · только чтение</p>
             <p v-if="item.description">{{ item.description }}</p>
             <a v-if="item.link" :href="item.link" target="_blank" rel="noopener noreferrer">Открыть материал</a>
           </div>
-          <div v-if="userId !== null && item.publishedBy === userId" class="assistant-homework__item-actions">
-            <button type="button" :disabled="mutationBusy || formId !== null" @click="openEdit(item)">Изменить</button>
-            <button type="button" :disabled="mutationBusy || formId !== null" @click="remove(item)">
+          <div class="assistant-homework__item-actions">
+            <button v-if="canEdit(item)" type="button" :disabled="mutationBusy || formId !== null" @click="openEdit(item)">Изменить</button>
+            <button v-if="canEdit(item)" type="button" :disabled="mutationBusy || formId !== null" @click="remove(item)">
               {{ mutationId === item.id ? 'Удаляем…' : 'Удалить' }}
             </button>
+            <button type="button" :disabled="offline || historyLoading" @click="showHistory(item)">История</button>
           </div>
+          <section v-if="historyId === item.id" aria-label="История домашнего задания">
+            <p v-if="historyLoading" role="status">Загружаем историю…</p>
+            <p v-else-if="historyEntries.length === 0">История изменений пуста.</p>
+            <ol v-else>
+              <li v-for="entry in historyEntries" :key="entry.id">
+                Версия {{ entry.revision }} · {{ entry.action === 'LESSON_TRANSFERRED' ? 'Пара перенесена' : 'ДЗ изменено' }}
+                · {{ new Date(entry.occurredAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) }}
+                <span v-if="entry.actorId !== null"> · Пользователь #{{ entry.actorId }}</span>
+              </li>
+            </ol>
+          </section>
         </article>
 
         <form v-if="formId !== null" class="assistant-homework__form" @submit.prevent="save">
           <h3>{{ formId === 'new' ? 'Новое ДЗ' : 'Изменить ДЗ' }}</h3>
           <p v-if="createConflict" class="assistant-homework__state assistant-homework__state--error" role="alert">
             Сервер вернул конфликт. Повтор отправит тот же запрос с тем же ключом.
+          </p>
+          <div v-else-if="editConflict" class="assistant-homework__state assistant-homework__state--error" role="alert">
+            Задание уже изменилось или ключ запроса конфликтует. Твой вариант не перезаписал серверную версию.
+            <button type="button" :disabled="mutationBusy" @click="refreshConflictingEdit">Обновить задание и закрыть черновик</button>
+          </div>
+          <p v-else-if="createPending" class="assistant-homework__state" role="status">
+            Публикация ещё выполняется. Повтор проверит тот же запрос, без нового задания.
           </p>
           <p v-else-if="uncertainCreate" class="assistant-homework__state" role="status">
             Результат отправки неизвестен. Повтори сохранение, чтобы отправить тот же запрос.
@@ -447,7 +569,7 @@ onBeforeUnmount(() => {
           <p v-if="title.trim() === '' || !validForm()" class="assistant-homework__form-error">Проверь название и длину полей.</p>
           <div class="assistant-homework__form-actions">
             <button type="button" :disabled="mutationBusy || retryLocked" @click="closeForm">Отмена</button>
-            <button type="submit" :disabled="mutationBusy || !validForm()">
+            <button type="submit" :disabled="mutationBusy || !validForm() || editConflict">
               {{ mutationBusy ? 'Сохраняем…' : retryLocked ? 'Повторить запрос' : 'Сохранить' }}
             </button>
           </div>

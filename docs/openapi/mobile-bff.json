@@ -3593,7 +3593,7 @@
         }
       },
       "StudentHomeworkItem" : {
-        "required" : [ "completed", "completedAt", "description", "id", "lessonDate", "lessonNumber", "link", "subject", "title" ],
+        "required" : [ "archived", "bindingMode", "completed", "completedAt", "description", "id", "lessonDate", "lessonNumber", "link", "subject", "title" ],
         "type" : "object",
         "properties" : {
           "id" : {
@@ -3618,7 +3618,15 @@
           },
           "lessonNumber" : {
             "type" : "integer",
-            "format" : "int32"
+            "format" : "int32",
+            "nullable" : true
+          },
+          "bindingMode" : {
+            "type" : "string",
+            "enum" : [ "LESSON", "DATE" ]
+          },
+          "archived" : {
+            "type" : "boolean"
           },
           "completed" : {
             "type" : "boolean"

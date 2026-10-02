@@ -1,14 +1,15 @@
-import type { HeadmanHomeworkCreateInput } from './headman-homework-client'
+import type { HeadmanHomeworkCreateInput, HeadmanHomeworkUpdateInput, HomeworkBindingMode } from './headman-homework-client'
 
 export interface AssistantHomeworkDraftContext {
   readonly userId: number
   readonly groupId: number
   readonly semesterId: number
   readonly selectedDate: string
-  readonly lessonId: number
+  readonly lessonId: number | null
   readonly lessonDate: string
   readonly subjectId: number
-  readonly lessonNumber: number
+  readonly lessonNumber: number | null
+  readonly bindingMode: HomeworkBindingMode
 }
 
 export interface AssistantHomeworkCreateValues {
@@ -37,6 +38,7 @@ export function createAssistantHomeworkCreateIntent(
     semesterId: frozenContext.semesterId,
     lessonDate: frozenContext.lessonDate,
     lessonNumber: frozenContext.lessonNumber,
+    bindingMode: frozenContext.bindingMode,
     requestKey,
   })
   return Object.freeze({ context: frozenContext, input })
@@ -55,6 +57,7 @@ export function sameAssistantHomeworkDraftContext(
     && left.lessonDate === right.lessonDate
     && left.subjectId === right.subjectId
     && left.lessonNumber === right.lessonNumber
+    && left.bindingMode === right.bindingMode
 }
 
 export function isDefinitiveHomeworkCreateRejection(status: number | null): boolean {
@@ -79,4 +82,30 @@ export function intentAfterHomeworkCreateFailure(
   status: number | null,
 ): AssistantHomeworkCreateIntent | null {
   return isDefinitiveHomeworkCreateRejection(status) ? null : intent
+}
+
+export interface AssistantHomeworkEditIntent {
+  readonly context: AssistantHomeworkDraftContext
+  readonly homeworkId: number
+  readonly input: Readonly<HeadmanHomeworkUpdateInput>
+}
+
+/** A lost response must replay the exact revision/payload/key, never a fresh edit. */
+export function reuseOrCreateAssistantHomeworkEditIntent(
+  existing: AssistantHomeworkEditIntent | null,
+  context: AssistantHomeworkDraftContext,
+  homeworkId: number,
+  revision: number,
+  values: AssistantHomeworkCreateValues,
+  requestKey: () => string,
+): AssistantHomeworkEditIntent | null {
+  if (existing) {
+    return existing.homeworkId === homeworkId && sameAssistantHomeworkDraftContext(existing.context, context)
+      ? existing : null
+  }
+  return Object.freeze({
+    context: Object.freeze({ ...context }),
+    homeworkId,
+    input: Object.freeze({ ...values, expectedRevision: revision, requestKey: requestKey() }),
+  })
 }

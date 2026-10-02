@@ -18,6 +18,8 @@ function item(overrides: Partial<StudentHomeworkItem> = {}): StudentHomeworkItem
     link: null,
     lessonDate: '2026-09-01',
     lessonNumber: 1,
+    bindingMode: 'LESSON',
+    archived: false,
     completed: false,
     completedAt: null,
     ...overrides,

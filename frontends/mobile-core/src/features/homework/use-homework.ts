@@ -261,7 +261,7 @@ export function useHomework(
 
   const mutation = useMutation<StudentHomeworkCompletion, unknown, HomeworkCompletionInput>({
     mutationFn: async (input) => {
-      if (readOnly.value) throw new HomeworkReadOnlyError()
+      if (readOnly.value || isArchived(input.id)) throw new HomeworkReadOnlyError()
       if (!isHomeworkScopeReady(input.scope) || homeworkScopeIdentity(scope.value) !== homeworkScopeIdentity(input.scope)) {
         throw new HomeworkStaleResponseError()
       }
@@ -290,8 +290,12 @@ export function useHomework(
     return ensureItemState(id).error?.message ?? null
   }
 
+  function isArchived(id: string): boolean {
+    return (query.data.value ?? fallback.value)?.items.some((item) => item.id === id && item.archived) ?? false
+  }
+
   function submitCompletion(id: string, completed: boolean): Promise<StudentHomeworkCompletion> {
-    if (readOnly.value) return Promise.reject(new HomeworkReadOnlyError())
+    if (readOnly.value || isArchived(id)) return Promise.reject(new HomeworkReadOnlyError())
     if (offline.value) return Promise.reject(new HomeworkScopeError())
     const requestScope = scope.value
     if (!isHomeworkScopeReady(requestScope)) return Promise.reject(new HomeworkScopeError())

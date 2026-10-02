@@ -61,6 +61,8 @@ const fallbackFeed: StudentHomework = {
     description: 'Материалы к следующему занятию',
     lessonDate: '2026-09-07',
     lessonNumber: 1,
+    bindingMode: 'LESSON',
+    archived: false,
     link: null,
     subject: { id: 'subject-a', name: 'Математический анализ' },
     completed: false,
@@ -178,6 +180,17 @@ describe('useHomework scope and completion boundaries', () => {
     expect(readonlyState.readOnly.value).toBe(true)
     await expect(readonlyState.submitCompletion('same-id', true)).rejects.toBeInstanceOf(HomeworkReadOnlyError)
     expect(api.setHomeworkCompletion).not.toHaveBeenCalled()
+  })
+
+  it('keeps completed DATE archive data readable and rejects completion even in writable scope', async () => {
+    const archived: StudentHomework = { ...fallbackFeed, items: [{ ...fallbackFeed.items[0]!, bindingMode: 'DATE', lessonNumber: null,
+      archived: true, completed: true, completedAt: '2026-09-07T09:30:00Z' }] }
+    const api = { getHomework: vi.fn(() => Promise.resolve(archived)), setHomeworkCompletion: vi.fn() } as unknown as StudentApi
+    const state = mountHomework(api, ref(scopeA), { fallback: archived })
+    await expect(state.submitCompletion('same-id', false)).rejects.toBeInstanceOf(HomeworkReadOnlyError)
+    expect(api.setHomeworkCompletion).not.toHaveBeenCalled()
+    await nextTick()
+    expect(state.query.data.value?.items[0]).toMatchObject({ bindingMode: 'DATE', lessonNumber: null, completed: true, archived: true })
   })
 
   it('loads only the selected lesson date and discards an older overlapping date intent', async () => {

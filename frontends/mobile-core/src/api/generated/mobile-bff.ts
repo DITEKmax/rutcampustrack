@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: d4f97e0476cd681a9460247d9f904c7901241269b73221a097ec6be45132cda0
+// Contract: JS-STUDENT-01-r1; SHA-256: 79c93ba46cbbfa0a6bff2b764e95e30e48ca3ba254aa3101f5005f3f566cd45e
 
 export interface paths {
     "/api/v1/student/homework": {
@@ -372,6 +372,9 @@ export interface components {
             completed: boolean;
         };
         StudentHomeworkItem: {
+            archived: boolean;
+            /** @enum {string} */
+            bindingMode: "LESSON" | "DATE";
             completed: boolean;
             /** Format: date-time */
             completedAt: string | null;
@@ -380,7 +383,7 @@ export interface components {
             /** Format: date */
             lessonDate: string;
             /** Format: int32 */
-            lessonNumber: number;
+            lessonNumber: number | null;
             link: string | null;
             subject: components["schemas"]["StudentHomeworkSubject"];
             title: string;

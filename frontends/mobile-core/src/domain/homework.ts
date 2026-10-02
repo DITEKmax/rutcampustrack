@@ -94,7 +94,7 @@ function itemOrder(left: StudentHomeworkItem, right: StudentHomeworkItem): numbe
   if (dateOrder !== 0) return dateOrder
   const completionOrder = Number(left.completed) - Number(right.completed)
   if (completionOrder !== 0) return completionOrder
-  if (left.lessonNumber !== right.lessonNumber) return left.lessonNumber - right.lessonNumber
+  if (left.lessonNumber !== right.lessonNumber) return (left.lessonNumber ?? Number.MAX_SAFE_INTEGER) - (right.lessonNumber ?? Number.MAX_SAFE_INTEGER)
   const subjectOrder = left.subject.name.localeCompare(right.subject.name, 'ru')
   if (subjectOrder !== 0) return subjectOrder
   return left.id.localeCompare(right.id)

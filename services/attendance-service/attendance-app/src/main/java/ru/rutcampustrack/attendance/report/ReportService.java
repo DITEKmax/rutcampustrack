@@ -108,8 +108,8 @@ public class ReportService {
     /**
      * Reads one concrete lesson for a teacher identity supplied by the
      * dedicated teacher gRPC boundary. The schedule snapshot remains the
-     * historical lesson authority; this method reuses the existing exact
-     * assignment and historical fallback gate below.
+     * historical lesson authority; current active group assignments authorize
+     * reading attendance recorded before the teacher's assignment.
      */
     public LessonAttendanceResponse getTeacherLessonAttendance(Long lessonId, long teacherId) {
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
@@ -1250,71 +1250,6 @@ public class ReportService {
         if (response == null || response.getSubjectsList().stream()
                 .noneMatch(info -> info != null && info.getGroupId() == groupId)) {
             throw new AccessDeniedException("Teacher is not active in this group");
-        }
-    }
-
-    /**
-     * Own-lesson gate retained for excuse/ticket and attachment reads. Those
-     * operations continue to require the immutable lesson assignment itself.
-     */
-    public void authorizeTeacherOwnLesson(LessonResponse lesson, Long teacherId) {
-        JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
-        long semesterId = lesson.getSemesterId();
-        long assignmentId = lesson.getAssignmentId();
-        long assignedTeacherId = lesson.getAssignedTeacherId();
-        String lessonType = lesson.getLessonType();
-        if (assignmentId <= 0 || assignedTeacherId <= 0 || teacherId == null
-                || !Objects.equals(teacherId, assignedTeacherId)
-                || lessonType == null || lessonType.isBlank()) {
-            throw new AccessDeniedException("Teacher is not assigned to this lesson");
-        }
-
-        TeacherSubjectsResponse response = academicGrpcClient.getTeacherSubjects(teacherId, semesterId);
-        if (response == null) {
-            throw new AccessDeniedException("Teacher assignment authority is unavailable");
-        }
-        boolean exactAssignment = response != null && response.getSubjectsList().stream()
-                .anyMatch(info -> matchesAssignment(info, lesson, timing.date()));
-        if (exactAssignment) {
-            return;
-        }
-
-        // The immutable Schedule snapshot is the authority for this concrete
-        // historical pair. A current unrelated assignment must not revoke the
-        // teacher's right to read the old pair. If Academic still exposes the
-        // same assignment id, however, a mismatch is a fail-closed conflict.
-        boolean conflictingSameAssignment = response.getSubjectsList().stream()
-                .anyMatch(info -> info != null && info.getAssignmentId() == assignmentId);
-        boolean malformedProjection = response.getSubjectsList().stream()
-                .anyMatch(info -> info == null || info.getAssignmentId() <= 0);
-        if (conflictingSameAssignment || malformedProjection) {
-            throw new AccessDeniedException("Teacher is not assigned to this lesson");
-        }
-        return;
-    }
-
-    private static boolean matchesAssignment(TeacherSubjectInfo info,
-                                             LessonResponse lesson,
-                                             LocalDate lessonDate) {
-        if (info == null || info.getAssignmentId() <= 0
-                || info.getAssignmentId() != lesson.getAssignmentId()
-                || info.getSemesterId() != lesson.getSemesterId()
-                || info.getSubjectId() != lesson.getSubjectId()
-                || info.getGroupId() != lesson.getGroupId()) {
-            return false;
-        }
-        String actualType = lesson.getLessonType();
-        String assignedType = info.getLessonType();
-        if (actualType == null || actualType.isBlank() || assignedType == null
-                || assignedType.isBlank() || !actualType.equalsIgnoreCase(assignedType)) {
-            return false;
-        }
-        try {
-            LocalDate validFrom = LocalDate.parse(info.getValidFrom());
-            LocalDate validUntilExclusive = LocalDate.parse(info.getValidUntilExclusive());
-            return !lessonDate.isBefore(validFrom) && lessonDate.isBefore(validUntilExclusive);
-        } catch (RuntimeException ex) {
-            return false;
         }
     }
 

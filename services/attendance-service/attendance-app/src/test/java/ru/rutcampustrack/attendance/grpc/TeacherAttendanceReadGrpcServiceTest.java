@@ -45,8 +45,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/** A mixed student ticket is projected only over the teacher's concrete lessons. */
-class TeacherAttendanceReadGrpcServiceTest {
+/** A mixed student ticket is projected only over the teacher's active groups. */
+public class TeacherAttendanceReadGrpcServiceTest {
+
+    /** Shared test identity fixture; production context keys stay package-private. */
+    public static Context teacherContext(long teacherId) {
+        InternalJwtClaims claims = new InternalJwtClaims(
+                teacherId, UUID.randomUUID(), 1L, 1L, "TEACHER", "ACTIVE", null, false, false);
+        return Context.current().withValue(TeacherAttendanceGrpcIdentity.CLAIMS, claims);
+    }
 
     @Test
     void teacherStatsMapsScheduleDependencyFailureToUnavailable() {
@@ -90,9 +97,9 @@ class TeacherAttendanceReadGrpcServiceTest {
         LessonResponse foreign = lesson(202L, 99L, 88L);
         when(schedule.getLessonById(101L)).thenReturn(own);
         when(schedule.getLessonById(202L)).thenReturn(foreign);
-        doNothing().when(report).authorizeTeacherOwnLesson(own, 71L);
+        doNothing().when(report).authorizeTeacherLesson(own, 71L);
         doThrow(new AccessDeniedException("foreign lesson"))
-                .when(report).authorizeTeacherOwnLesson(foreign, 71L);
+                .when(report).authorizeTeacherLesson(foreign, 71L);
         when(academic.getGroup(33L)).thenReturn(GroupResponse.newBuilder().setId(33L).setName("УИТ-311").build());
         when(academic.getSubjectDetailsByIds(List.of(22L)))
                 .thenReturn(Map.of(22L, new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));

@@ -3,6 +3,8 @@ package ru.rutcampustrack.attendance.studentrequest;
 import com.mongodb.client.model.Filters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
+import io.grpc.Status;
+import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.bson.types.Binary;
 import org.bson.types.ObjectId;
@@ -31,6 +33,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.rutcampustrack.attendance.config.MongoConvertersConfig;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
+import ru.rutcampustrack.attendance.checkin.AttendanceReadPortImpl;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
@@ -49,10 +52,13 @@ import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.grpc.TeacherAttendanceReadGrpcService;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
+import ru.rutcampustrack.attendance.report.ReportService;
+import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.attendance.events.EventSchemaValidator;
@@ -71,6 +77,17 @@ import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
+import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.GroupResponse;
+import ru.rutcampustrack.academic.grpc.StudentInfo;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectInfo;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherAttachmentDownload;
+import ru.rutcampustrack.teacher.grpc.TeacherExcuseAttachmentRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherExcuseRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherExcuseResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherLessonRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.mongo.MongoOutboxStorage;
 
@@ -102,6 +119,7 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static ru.rutcampustrack.attendance.grpc.TeacherAttendanceReadGrpcServiceTest.teacherContext;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -1061,6 +1079,99 @@ class StudentRequestDomainIT {
         assertThat(lateCheckinRepository.findById(request.summary().id()).orElseThrow().getDecisionComment())
                 .isEqualTo("Не подтверждено старостой");
         assertThat(actualOutboxEvents("late_checkin.decided")).hasSize(1);
+    }
+
+    @Test
+    void activeGroupTeacherReadsHistoricalTicketAndBytesWhileFormerTeacherIsDenied() {
+        long lessonId = 94L;
+        long foreignLessonId = 95L;
+        long formerTeacher = 71L;
+        long activeTeacher = 72L;
+        byte[] proof = pdfBytes(64);
+        seedAbsent(lessonId);
+        RequestDetail submitted = service.submitExcuse(STUDENT,
+                excuse(List.of(lessonId), "teacher-group-historical-read",
+                        List.of(new AttachmentInput("proof.pdf", "application/pdf", proof))));
+        ExcuseTicket ticket = excuseRepository.findById(submitted.summary().id()).orElseThrow();
+        // A retained mixed ticket must expose only lessons in currently authorized groups.
+        ticket.setLessonIds(List.of(lessonId, foreignLessonId));
+        excuseRepository.save(ticket);
+        RequestAttachmentDocument attachment = attachmentRepository
+                .findByRequestIdAndOwnerStudentIdOrderByPositionAsc(ticket.getId(), STUDENT_ID)
+                .getFirst();
+
+        LessonResponse historical = fullLesson(lessonId).toBuilder().setAssignmentId(501L)
+                .setAssignedTeacherId(formerTeacher).setLessonType("LECTURE").build();
+        when(scheduleGrpcClient.getLessonById(lessonId)).thenReturn(historical);
+        when(scheduleGrpcClient.getLessonById(foreignLessonId)).thenReturn(
+                fullLesson(foreignLessonId).toBuilder().setGroupId(GROUP_ID + 1)
+                        .setAssignmentId(502L).setAssignedTeacherId(activeTeacher)
+                        .setLessonType("LECTURE").build());
+        when(academicGrpcClient.getCurrentTeacherSubjects(activeTeacher)).thenReturn(
+                TeacherSubjectsResponse.newBuilder().addSubjects(TeacherSubjectInfo.newBuilder()
+                        .setGroupId(GROUP_ID).setAssignmentId(503L).setSubjectId(2000L)
+                        .setSemesterId(SEMESTER_ID).setLessonType("PRACTICE")
+                        .setValidFrom("2026-09-08").setValidUntilExclusive("2026-12-31")).build());
+        when(academicGrpcClient.getCurrentTeacherSubjects(formerTeacher))
+                .thenReturn(TeacherSubjectsResponse.getDefaultInstance());
+        when(academicGrpcClient.getGroup(GROUP_ID)).thenReturn(
+                GroupResponse.newBuilder().setId(GROUP_ID).setName("УИТ-311").build());
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 9, 7), SEMESTER_ID))
+                .thenReturn(GroupMembersResponse.newBuilder().setAsOfDate("2026-09-07")
+                        .setSemesterId(SEMESTER_ID).addStudents(StudentInfo.newBuilder()
+                                .setUserId(STUDENT_ID).setDisplayName("Student 100")).build());
+        clock.set(START.plusSeconds(3 * 86400));
+        AttendanceAttachmentService journalAttachments = new AttendanceAttachmentService(attachmentRepository, clock);
+        ReportService report = new ReportService(new AttendanceReadPortImpl(mongoTemplate), academicGrpcClient,
+                scheduleGrpcClient, semesterCacheService, new RequestContext(), clock, journalAttachments);
+        TeacherAttendanceReadGrpcService reader = new TeacherAttendanceReadGrpcService(
+                report, scheduleGrpcClient, academicGrpcClient, excuseRepository, attachmentRepository, clock);
+        TeacherExcuseRequest cardRequest = TeacherExcuseRequest.newBuilder().setRequestId(ticket.getId()).build();
+        TeacherExcuseAttachmentRequest fileRequest = TeacherExcuseAttachmentRequest.newBuilder()
+                .setRequestId(ticket.getId()).setAttachmentId(attachment.getId()).build();
+
+        RecordingTeacherObserver<TeacherLessonResponse> lesson = new RecordingTeacherObserver<>();
+        teacherContext(activeTeacher).run(() -> reader.getTeacherLesson(
+                TeacherLessonRequest.newBuilder().setLessonId(lessonId).build(), lesson));
+        assertThat(lesson.error).isNull();
+        assertThat(lesson.value.getRosterList()).singleElement()
+                .satisfies(row -> assertThat(row.getTicketId()).isEqualTo(ticket.getId()));
+        RecordingTeacherObserver<TeacherExcuseResponse> card = new RecordingTeacherObserver<>();
+        teacherContext(activeTeacher).run(() -> reader.getTeacherExcuse(cardRequest, card));
+        assertThat(card.error).isNull();
+        assertThat(card.value.getLessonsList()).singleElement()
+                .satisfies(value -> assertThat(value.getLessonId()).isEqualTo(lessonId));
+        assertThat(card.value.getAttachmentsList()).singleElement()
+                .satisfies(value -> assertThat(value.getAttachmentId()).isEqualTo(attachment.getId()));
+        RecordingTeacherObserver<TeacherAttachmentDownload> download = new RecordingTeacherObserver<>();
+        teacherContext(activeTeacher).run(() -> reader.downloadTeacherExcuseAttachment(fileRequest, download));
+        assertThat(download.error).isNull();
+        assertThat(download.value.getData().toByteArray()).isEqualTo(proof);
+
+        RecordingTeacherObserver<TeacherExcuseResponse> deniedCard = new RecordingTeacherObserver<>();
+        teacherContext(formerTeacher).run(() -> reader.getTeacherExcuse(cardRequest, deniedCard));
+        assertThat(deniedCard.value).isNull();
+        assertThat(Status.fromThrowable(deniedCard.error).getCode()).isEqualTo(Status.Code.NOT_FOUND);
+        RecordingTeacherObserver<TeacherAttachmentDownload> deniedDownload = new RecordingTeacherObserver<>();
+        teacherContext(formerTeacher).run(() -> reader.downloadTeacherExcuseAttachment(fileRequest, deniedDownload));
+        assertThat(deniedDownload.value).isNull();
+        assertThat(Status.fromThrowable(deniedDownload.error).getCode()).isEqualTo(Status.Code.NOT_FOUND);
+        assertThat(attachmentRepository.findById(attachment.getId())).hasValueSatisfying(stored ->
+                assertThat(stored).usingRecursiveComparison().isEqualTo(attachment));
+    }
+
+    private static final class RecordingTeacherObserver<T> implements StreamObserver<T> {
+        private T value;
+        private Throwable error;
+
+        @Override
+        public void onNext(T value) { this.value = value; }
+
+        @Override
+        public void onError(Throwable error) { this.error = error; }
+
+        @Override
+        public void onCompleted() { }
     }
 
     @Test

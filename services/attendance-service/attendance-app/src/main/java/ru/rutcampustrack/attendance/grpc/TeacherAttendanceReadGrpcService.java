@@ -517,10 +517,10 @@ public final class TeacherAttendanceReadGrpcService
         for (Long lessonId : lessonIds.stream().filter(Objects::nonNull).distinct().toList()) {
             try {
                 LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
-                reportService.authorizeTeacherOwnLesson(lesson, teacherId);
+                reportService.authorizeTeacherLesson(lesson, teacherId);
                 result.add(lesson);
             } catch (AccessDeniedException | ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException ignored) {
-                // A mixed ticket is projected only over the teacher's concrete lessons.
+                // Project a mixed ticket only over the teacher's current active groups.
             }
         }
         return result;

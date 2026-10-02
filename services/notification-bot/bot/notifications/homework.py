@@ -1,11 +1,13 @@
 """Handlers for homework notification events."""
 
 import logging
+import grpc
 from collections import defaultdict
 
 from aiogram import Bot
 
-from bot.services.send_queue import SendTask, TelegramSendQueue
+from bot.services.notification_prefs import NotificationPreferencesUnavailable
+from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +96,7 @@ async def handle_homework(
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
                 category="homework",
+                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
             )
         )
 
@@ -144,9 +147,12 @@ async def _handle_due_reminder(payload: dict, bot: Bot, academic_client, send_qu
 async def _resolve_user(user_id, academic_client):
     try:
         return await academic_client.get_user_by_id(int(user_id))
-    except Exception:
+    except Exception as error:
+        # A known removed user is a terminal denial; transport failure is unknown.
+        if isinstance(error, grpc.aio.AioRpcError) and error.code() == grpc.StatusCode.NOT_FOUND:
+            return None
         logger.warning("Could not resolve user_id=%s for homework notification", user_id, exc_info=True)
-        return None
+        raise NotificationPreferencesUnavailable("Current user identity is unavailable")
 
 
 def _build_due_reminder_text(payload: dict, homework: dict) -> str:

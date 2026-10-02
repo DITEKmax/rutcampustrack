@@ -282,6 +282,8 @@ async def main() -> None:
         for task in [_consumer_task, _bot_task, _keyboard_sync_task]:
             if task and not task.done():
                 task.cancel()
+        await asyncio.gather(*(task for task in [_consumer_task, _bot_task, _keyboard_sync_task]
+                               if task is not None), return_exceptions=True)
         await send_queue.shutdown()
         await redis_client.close()
         await request_tracker.close()

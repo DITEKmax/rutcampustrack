@@ -3,6 +3,7 @@ import json
 import logging
 
 import aio_pika
+import grpc
 
 from bot.observability import bind_trace_context
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
@@ -78,91 +79,135 @@ async def start_consumer(
 
     logger.info("Consumer bound to queue '%s' on exchange '%s'", QUEUE_NAME, EXCHANGE_NAME)
 
-    async with queue.iterator() as queue_iter:
-        async for message in queue_iter:
-            # M13 G24-fix-2: requeue=False — после handler exception
-            # message идёт в DLQ (через x-dead-letter-exchange arguments),
-            # а не возвращается в основную очередь (иначе hot-loop).
-            async with message.process(requeue=False, ignore_processed=True):
+    processors = set()
+    slots = asyncio.Semaphore(2)
+    configured_budget = getattr(idempotency_guard, "_ttl", 300)
+    budget = configured_budget if type(configured_budget) is int and configured_budget > 0 else 300
+
+    async def requeue(message, *, delay=True):
+        if delay:
+            await asyncio.sleep(1)
+        if not message.processed:
+            try:
+                await message.nack(requeue=True)
+            except aio_pika.exceptions.ChannelInvalidStateError:
+                # Closed transport returns the original UNACKED message to Rabbit.
+                logger.info("Channel closed while deferring original event")
+
+    async def process(message):
+        event_id = claim_token = batch = heartbeat = None
+        lease_lost = False
+        owner = asyncio.current_task()
+
+        async def release():
+            if claim_token is not None:
                 try:
+                    # Existing HTTP authority timeout also bounds best-effort cleanup;
+                    # on failure the existing processing lease expiry enables replay.
+                    async with asyncio.timeout(min(8, budget)):
+                        await idempotency_guard.release(event_id, claim_token)
+                except Exception:
+                    logger.warning("Processing lease retained until expiry event_id=%s", event_id)
+
+        async def renew():
+            nonlocal lease_lost
+            try:
+                while True:
+                    await asyncio.sleep(budget / 3)
+                    if not await idempotency_guard.renew(event_id, claim_token):
+                        raise RuntimeError("Lost processing lease")
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                lease_lost = True
+                logger.warning("Lease loss defers original event_id=%s", event_id)
+                owner.cancel()
+
+        async with message.process(requeue=False, ignore_processed=True):
+            try:
+                # Deadline includes authority, queue/rate/backoff/429 and provider waits.
+                # A permanently unavailable recipient cannot occupy an event slot forever.
+                async with asyncio.timeout(budget):
                     body = json.loads(message.body)
-                except json.JSONDecodeError:
-                    # Bad payload — нет шанса на retry, ack + DLQ через
-                    # re-raise чтобы попасть на manual triage.
-                    logger.error(
-                        "Failed to decode message body: %s — sending to DLQ",
-                        message.body[:200],
-                    )
-                    raise
-                event_type = body.get("event_type", "unknown")
-                event_id = body.get("event_id")
-                # M04 Группа 7: trace_id приходит в envelope от Java-сервисов
-                # (shared-events AbstractEventPublisher.fillDefaults).
-                # Биндим его в structlog contextvars чтобы все логи
-                # handler'а несли один trace_id.
-                with bind_trace_context(
-                    body.get("trace_id"),
-                    event_type=event_type,
-                    event_id=event_id,
-                ):
-                    # M13 G8 — consumer-side dedup. Redis SET NX guard
-                    # отсекает повторную доставку того же event_id.
-                    # G24-fix-2: try_claim теперь fail-closed — Redis
-                    # exception пробрасывается → message NACK → DLQ.
-                    claim_token = None
-                    if idempotency_guard is not None:
-                        # Two-phase Redis dedup: a short processing lease is
-                        # released on handler failure; only successful
-                        # handling receives the seven-day completion TTL.
-                        claim = getattr(idempotency_guard, "claim", None)
-                        if claim is None:
-                            # Keep compatibility with injected legacy guards,
-                            # while the production guard always exposes the
-                            # two-phase API above.
-                            if not await idempotency_guard.try_claim(event_id):
-                                continue
-                        else:
-                            claim_token = await claim(event_id)
-                            if claim_token is None:
-                                if not await idempotency_guard.is_completed(event_id):
-                                    await asyncio.sleep(1)
-                                    await message.nack(requeue=True)
-                                continue
-                    logger.info("[notification-bot] Received event: %s", event_type)
-                    try:
+                    event_id = body.get("event_id")
+                    event_type = body.get("event_type", "unknown")
+                    with bind_trace_context(body.get("trace_id"), event_type=event_type, event_id=event_id):
+                        if idempotency_guard is not None:
+                            claim = getattr(idempotency_guard, "claim", None)
+                            if claim is None:
+                                if not await idempotency_guard.try_claim(event_id):
+                                    return
+                            else:
+                                claim_token = await claim(event_id)
+                                if claim_token is None:
+                                    if not await idempotency_guard.is_completed(event_id):
+                                        await requeue(message)
+                                    return
+                                if getattr(idempotency_guard, "renew", None) is not None:
+                                    heartbeat = asyncio.create_task(renew())
+                        logger.info("[notification-bot] Received event: %s", event_type)
                         if dispatcher:
-                            # Handler exceptions are deliberately propagated
-                            # so aio-pika NACKs the message into the DLQ.
-                            await dispatcher.dispatch(body)
-                    except NotificationPreferencesUnavailable:
+                            batch = await dispatcher.dispatch(body)
+                            if batch is not None:
+                                await batch.wait()
+                        if lease_lost:
+                            raise NotificationPreferencesUnavailable("Event lease lost")
                         if claim_token is not None:
-                            try:
-                                await idempotency_guard.release(event_id, claim_token)
-                            except Exception:
-                                logger.warning("Preference retry retains processing lease event_id=%s", event_id)
-                        # Keep the original broker message. Delay prevents an authority-outage hot loop.
-                        await asyncio.sleep(1)
-                        await message.nack(requeue=True)
-                        continue
-                    except BaseException:
-                        if claim_token is not None:
-                            try:
-                                await idempotency_guard.release(event_id, claim_token)
-                            except Exception:
-                                # Preserve the original handler failure; the
-                                # lease expiry remains a safe retry fallback.
-                                logger.warning(
-                                    "Failed to release processing lease for event_id=%s",
-                                    event_id,
-                                    exc_info=True,
-                                )
-                        raise
-                    else:
-                        if claim_token is not None:
-                            completed = await idempotency_guard.complete(event_id, claim_token)
-                            if not completed:
-                                raise RuntimeError(
-                                    f"Lost ownership while completing event_id={event_id}"
-                                )
+                            if not await idempotency_guard.complete(event_id, claim_token):
+                                raise NotificationPreferencesUnavailable("Event lease lost at completion")
+            except (NotificationPreferencesUnavailable, TimeoutError):
+                if batch is not None:
+                    batch.cancel()
+                await release()
+                await requeue(message)
+            except asyncio.CancelledError:
+                if batch is not None:
+                    batch.cancel()
+                # Graceful shutdown/channel replacement behaves like a process crash.
+                # Do not wait for Redis while stopping the owner; its TTL is the fallback.
+                await requeue(message, delay=False)
+                if not lease_lost:
+                    raise
+            except grpc.aio.AioRpcError as error:
+                if batch is not None:
+                    batch.cancel()
+                await release()
+                if error.code() in {grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.DEADLINE_EXCEEDED,
+                                    grpc.StatusCode.UNKNOWN, grpc.StatusCode.INTERNAL,
+                                    grpc.StatusCode.RESOURCE_EXHAUSTED, grpc.StatusCode.ABORTED}:
+                    await requeue(message)
+                else:
+                    raise
+            except BaseException:
+                if batch is not None:
+                    batch.cancel()
+                await release()
+                # Provider exhaustion / malformed handler uses the existing durable DLQ.
+                raise
+            finally:
+                if heartbeat is not None:
+                    heartbeat.cancel()
+                    await asyncio.gather(heartbeat, return_exceptions=True)
+
+    def finished(task):
+        processors.discard(task)
+        slots.release()
+        if not task.cancelled() and task.exception() is not None:
+            logger.error("Event processing failed; original retained by DLQ", exc_info=task.exception())
+
+    try:
+        async with queue.iterator() as queue_iter:
+            async for message in queue_iter:
+                await slots.acquire()
+                task = asyncio.create_task(process(message))
+                processors.add(task)
+                task.add_done_callback(finished)
+    finally:
+        for task in list(processors):
+            task.cancel()
+        # Close broker transport before awaiting owner cleanup: pending messages
+        # return to the durable queue even if a processor was inside provider I/O.
+        await connection.close()
+        await asyncio.gather(*list(processors), return_exceptions=True)
 
     return connection

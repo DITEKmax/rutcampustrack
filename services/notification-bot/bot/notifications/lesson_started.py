@@ -7,7 +7,7 @@ from aiogram.types import InlineKeyboardMarkup
 
 from bot.config import Settings
 from bot.services.mini_app_links import build_mini_app_button
-from bot.services.send_queue import SendTask, TelegramSendQueue
+from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
 logger = logging.getLogger(__name__)
 
@@ -90,5 +90,6 @@ async def handle_lesson_started(
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
                 category="reminders",
+                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
             )
         )

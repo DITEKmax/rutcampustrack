@@ -8,7 +8,8 @@ from aiogram import Bot
 from aiogram.types import BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.grpc_client import attendance_pb2
-from bot.services.send_queue import SendTask, TelegramSendQueue
+from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
+from bot.services.notification_prefs import NotificationPreferencesUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,29 @@ _EXCUSE_REASON_LABELS = {
 _ACTIVE_ATTACHMENT_STATE = attendance_pb2.STUDENT_REQUEST_ATTACHMENT_STATE_ACTIVE
 _PENDING_STATUS = attendance_pb2.STUDENT_REQUEST_STATUS_PENDING
 _TERMINAL_LOOKUP_CODES = frozenset({grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT})
+
+
+def request_audience(academic, attendance, kind, request_id, group_id, user_id, chat_id, *, pending=True):
+    """Current canonical request group plus current headman grant, before each send."""
+    async def authorized():
+        if attendance is None:
+            raise NotificationPreferencesUnavailable("Canonical request authority is unavailable")
+        try:
+            result = await attendance.resolve_request_notification(kind, request_id)
+        except grpc.aio.AioRpcError as error:
+            if error.code() in _TERMINAL_LOOKUP_CODES:
+                return False
+            raise NotificationPreferencesUnavailable("Canonical request authority is unavailable") from error
+        except Exception as error:
+            raise NotificationPreferencesUnavailable("Canonical request authority is unavailable") from error
+        summary = getattr(getattr(result, "detail", None), "summary", None)
+        if result is None or summary is None or summary.id != request_id or summary.kind != kind \
+                or _positive_int(result.group_id) is None:
+            raise NotificationPreferencesUnavailable("Canonical request context is incomplete")
+        if result.group_id != group_id or (pending and summary.status != _PENDING_STATUS):
+            return False
+        return await group_audience(academic, group_id, user_id, chat_id, headman=True)()
+    return authorized
 
 
 async def handle_headman_alert(
@@ -164,6 +188,8 @@ async def handle_headman_alert(
                         chat_id=telegram_id,
                         on_sent=_build_on_sent(telegram_id, actor_id),
                         category="tickets",
+                        audience_check=request_audience(academic_client, attendance_client, detail.summary.kind,
+                            request_id, result.group_id, actor_id, telegram_id),
                     )
                 )
         else:
@@ -178,6 +204,8 @@ async def handle_headman_alert(
                     chat_id=telegram_id,
                     on_sent=_build_on_sent(telegram_id, actor_id),
                     category="tickets",
+                    audience_check=request_audience(academic_client, attendance_client, detail.summary.kind,
+                        request_id, result.group_id, actor_id, telegram_id),
                 )
             )
 
@@ -242,7 +270,7 @@ async def _resolve_notification_context(
         invalidate = getattr(academic_client, "invalidate", None)
         if callable(invalidate):
             invalidate(group_id)
-        members = await academic_client.get_group_members(group_id)
+        members = await academic_client.get_current_group_members(group_id)
     except grpc.aio.AioRpcError as error:
         if error.code() in _TERMINAL_LOOKUP_CODES:
             return None

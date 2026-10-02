@@ -10,7 +10,8 @@ import logging
 
 from aiogram import Bot
 
-from bot.services.send_queue import SendTask, TelegramSendQueue
+from bot.services.notification_prefs import NotificationPreferencesUnavailable
+from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ async def handle_group_archived(
         members = await academic_client.get_group_members(group_id)
     except Exception:
         logger.exception("get_group_members failed for group_id=%s (group.archived)", group_id)
-        return
+        raise NotificationPreferencesUnavailable("Current group audience is unavailable")
 
     for student in members:
         if not getattr(student, "telegram_id", 0):
@@ -57,5 +58,6 @@ async def handle_group_archived(
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
                 category="group",
+                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
             )
         )

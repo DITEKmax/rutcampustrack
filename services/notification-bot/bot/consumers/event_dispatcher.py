@@ -1,6 +1,7 @@
 """EventDispatcher — routes incoming RabbitMQ events to the correct handler."""
 
 import logging
+import grpc
 from typing import Awaitable, Callable
 
 from aiogram import Bot
@@ -11,7 +12,7 @@ from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
 from bot.services.otp_message_tracker import OtpMessageTracker
 from bot.services.redis_client import ReminderRedisClient
 from bot.services.request_message_tracker import RequestMessageTracker
-from bot.services.send_queue import SendTask, TelegramSendQueue
+from bot.services.send_queue import SendTask, TelegramSendQueue, RecipientSuppressed
 
 logger = logging.getLogger(__name__)
 
@@ -266,6 +267,13 @@ class EventDispatcher:
 
     async def _close_tracked_messages(self, kind: str, request_id: str, verdict_line: str) -> None:
         entries = await self._request_tracker.get_all(kind, request_id)
+        from bot.grpc_client import attendance_pb2
+        from bot.notifications.headman_alerts import request_audience
+        from bot.services.notification_prefs import NotificationPreferencesUnavailable
+
+        canonical_group = None
+        request_kind = (attendance_pb2.STUDENT_REQUEST_KIND_EXCUSE if kind == "excuse"
+                        else attendance_pb2.STUDENT_REQUEST_KIND_LATE_CHECKIN)
         unresolved = 0
         for entry in entries:
             chat_id, message_id, user_id = (entry.get(key) for key in ("chat_id", "message_id", "user_id"))
@@ -274,9 +282,32 @@ class EventDispatcher:
                 # never attribute this old message to whoever owns the Telegram ID today.
                 unresolved += 1
                 continue
+            if canonical_group is None:
+                if self._attendance_client is None:
+                    raise NotificationPreferencesUnavailable("Canonical tracked request authority is unavailable")
+                try:
+                    context = await self._attendance_client.resolve_request_notification(request_kind, request_id)
+                    canonical_group = context.group_id
+                    if type(canonical_group) is not int or canonical_group <= 0 \
+                            or context.detail.summary.id != request_id or context.detail.summary.kind != request_kind:
+                        raise ValueError("Canonical request group is incomplete")
+                except grpc.aio.AioRpcError as error:
+                    if error.code() in {grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT}:
+                        return
+                    raise NotificationPreferencesUnavailable("Canonical tracked request authority is unavailable") from error
+                except Exception as error:
+                    raise NotificationPreferencesUnavailable("Canonical tracked request authority is unavailable") from error
 
-            async def close_message(chat=chat_id, message=message_id):
+            audience = request_audience(self._academic_client, self._attendance_client, request_kind,
+                                       request_id, canonical_group, user_id, chat_id, pending=False)
+
+            async def close_message(chat=chat_id, message=message_id, recipient=user_id, authorization=audience):
                 await self._bot.edit_message_reply_markup(chat_id=chat, message_id=message, reply_markup=None)
+                # Editing and replying are distinct provider calls; revocation can
+                # occur while the first call is pending.
+                if not await self._send_queue._eligible(SendTask(close_message, user_id=recipient,
+                        chat_id=chat, category="tickets", audience_check=authorization)):
+                    raise RecipientSuppressed
                 return await self._bot.send_message(chat_id=chat, text=f"Решение: {verdict_line}",
                                                     reply_to_message_id=message)
 
@@ -284,12 +315,13 @@ class EventDispatcher:
                 await self._request_tracker.delete_entry(kind, request_id, saved)
 
             await self._send_queue.put(SendTask(close_message, user_id=user_id, chat_id=chat_id,
-                                               category="tickets", on_sent=cleanup))
+                category="tickets", on_sent=cleanup,
+                audience_check=audience))
         if unresolved:
             logger.warning("Deferred tracked replies with unknown original owner kind=%s id=%s count=%s",
                            kind, request_id, unresolved)
 
-    async def dispatch(self, event: dict) -> None:
+    async def dispatch(self, event: dict):
         """Dispatch an event dict to the appropriate handler.
 
         Unknown event types are logged at DEBUG and silently ignored
@@ -313,5 +345,6 @@ class EventDispatcher:
             logger.debug("Unhandled event type: %s", event_type)
             return
 
-        async with self._send_queue.staged():
+        async with self._send_queue.staged() as batch:
             await handler(event)
+        return batch

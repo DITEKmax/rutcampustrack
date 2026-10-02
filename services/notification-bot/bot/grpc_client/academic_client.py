@@ -62,6 +62,13 @@ class AcademicGrpcClient:
     def invalidate(self, group_id: int) -> None:
         self._cache.pop(group_id, None)
 
+    async def get_current_group_members(self, group_id: int) -> list[Any]:
+        """Authorization read: existing grant roster RPC, bypass ordinary reminder cache."""
+        response = await self._stub.GetGroupMembers(
+            academic_pb2.GroupMembersRequest(group_id=group_id), metadata=self._metadata, timeout=3.0,
+        )
+        return list(response.students)
+
     async def get_user_by_id(self, user_id: int):
         """Look up user by internal user_id. Returns UserResponse proto.
 

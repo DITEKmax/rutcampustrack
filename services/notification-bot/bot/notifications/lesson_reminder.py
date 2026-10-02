@@ -10,7 +10,7 @@ import logging
 from aiogram import Bot
 
 from bot.services.redis_client import ReminderRedisClient
-from bot.services.send_queue import SendTask, TelegramSendQueue
+from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +57,7 @@ async def handle_lesson_reminder(
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
                 category="reminders",
+                audience_check=group_audience(academic_client, group_id, student.user_id, student.telegram_id),
             )
         )
         queued += 1

@@ -177,6 +177,13 @@ async def test_cancelled_late_checkin_closes_actions_without_false_rejection():
     tracker.get_all = AsyncMock(return_value=[{"chat_id": 10, "message_id": 20, "user_id": 101}])
     tracker.delete_entry = AsyncMock()
     dispatcher._request_tracker = tracker
+    from bot.grpc_client import attendance_pb2 as pb
+    dispatcher._attendance_client = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=
+        pb.ResolveRequestNotificationResponse(group_id=7, student_id=100, student_name="Студент",
+            detail=pb.StudentRequestDetail(summary=pb.StudentRequestSummary(id="req-1",
+                kind=pb.STUDENT_REQUEST_KIND_LATE_CHECKIN, status=pb.STUDENT_REQUEST_STATUS_CANCELLED)))))
+    dispatcher._academic_client.get_current_group_members = AsyncMock(return_value=[
+        SimpleNamespace(user_id=101, telegram_id=10, is_headman=True)])
     dispatcher._bot.edit_message_reply_markup = AsyncMock()
     dispatcher._bot.send_message = AsyncMock()
 
@@ -190,7 +197,7 @@ async def test_cancelled_late_checkin_closes_actions_without_false_rejection():
         },
     })
 
-    task = dispatcher._send_queue._queue.get_nowait()
+    task = dispatcher._send_queue._queue.get_nowait()[0]
     assert (task.user_id, task.chat_id, task.category) == (101, 10, "tickets")
     result = await task.coroutine_factory()
     await task.on_sent(result)

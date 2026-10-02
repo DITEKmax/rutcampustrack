@@ -13,6 +13,7 @@ async def handle_headman_alert(event, **kwargs):
     payload = event["payload"]
     excuse = event["event_type"] == "excuse.requested"
     members = kwargs["academic_client"].get_group_members.return_value
+    kwargs["academic_client"].get_current_group_members = AsyncMock(return_value=members)
     name = payload.get("student_name") or next(
         (member.display_name for member in members if member.user_id == payload["user_id"]), "Студент"
     )

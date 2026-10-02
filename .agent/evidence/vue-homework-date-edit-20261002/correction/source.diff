@@ -1,0 +1,259 @@
+diff --git a/frontends/mobile-core/src/features/homework/AssistantHomeworkScreen.vue b/frontends/mobile-core/src/features/homework/AssistantHomeworkScreen.vue
+index 0e8d8374..76300b25 100644
+--- a/frontends/mobile-core/src/features/homework/AssistantHomeworkScreen.vue
++++ b/frontends/mobile-core/src/features/homework/AssistantHomeworkScreen.vue
+@@ -15,6 +15,7 @@ import {
+ import {
+   intentAfterHomeworkCreateFailure,
+   reuseOrCreateAssistantHomeworkIntent,
++  withAssistantHomeworkPublicationReceipt,
+   reuseOrCreateAssistantHomeworkEditIntent,
+   sameAssistantHomeworkDraftContext,
+   type AssistantHomeworkCreateIntent,
+@@ -257,9 +258,10 @@ async function save(): Promise<void> {
+       createIntent.value = intent
+       createConflict.value = false
+       createPending.value = false
+-      const created = await api.createHomework(intent.input)
++      const created = await api.createHomework(intent.input, intent.receipt)
+       if (disposed || revision !== mutationRevision) return
+-      if (created === null) {
++      if (created.state === 'PENDING') {
++        createIntent.value = withAssistantHomeworkPublicationReceipt(intent, created.receipt)
+         createPending.value = true
+         notice.value = 'Сервер принял публикацию. Повтори запрос с тем же ключом, чтобы проверить завершение.'
+         return
+diff --git a/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.ts b/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.ts
+index 1726433a..f312df8b 100644
+--- a/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.ts
++++ b/frontends/mobile-core/src/features/homework/assistant-homework-create-intent.ts
+@@ -1,4 +1,4 @@
+-import type { HeadmanHomeworkCreateInput, HeadmanHomeworkUpdateInput, HomeworkBindingMode } from './headman-homework-client'
++import type { HeadmanHomeworkCreateInput, HeadmanHomeworkPublicationReceipt, HeadmanHomeworkUpdateInput, HomeworkBindingMode } from './headman-homework-client'
+ 
+ export interface AssistantHomeworkDraftContext {
+   readonly userId: number
+@@ -21,6 +21,7 @@ export interface AssistantHomeworkCreateValues {
+ export interface AssistantHomeworkCreateIntent {
+   readonly context: AssistantHomeworkDraftContext
+   readonly input: Readonly<HeadmanHomeworkCreateInput>
++  readonly receipt: HeadmanHomeworkPublicationReceipt | null
+ }
+ 
+ export function createAssistantHomeworkCreateIntent(
+@@ -41,7 +42,15 @@ export function createAssistantHomeworkCreateIntent(
+     bindingMode: frozenContext.bindingMode,
+     requestKey,
+   })
+-  return Object.freeze({ context: frozenContext, input })
++  return Object.freeze({ context: frozenContext, input, receipt: null })
++}
++
++/** Retain accepted identity alongside the original payload for every later replay. */
++export function withAssistantHomeworkPublicationReceipt(
++  intent: AssistantHomeworkCreateIntent,
++  receipt: HeadmanHomeworkPublicationReceipt,
++): AssistantHomeworkCreateIntent {
++  return Object.freeze({ ...intent, receipt: Object.freeze({ ...receipt }) })
+ }
+ 
+ export function sameAssistantHomeworkDraftContext(
+diff --git a/frontends/mobile-core/src/features/homework/headman-homework-client.test.ts b/frontends/mobile-core/src/features/homework/headman-homework-client.test.ts
+index d4c6175f..b0412cbe 100644
+--- a/frontends/mobile-core/src/features/homework/headman-homework-client.test.ts
++++ b/frontends/mobile-core/src/features/homework/headman-homework-client.test.ts
+@@ -1,8 +1,9 @@
+ import { describe, expect, it, vi } from 'vitest'
+ import { HeadmanHomeworkApi, HeadmanHomeworkApiError } from './headman-homework-client'
++import { reuseOrCreateAssistantHomeworkIntent, withAssistantHomeworkPublicationReceipt } from './assistant-homework-create-intent'
+ 
+ const key = '97eb9070-a49d-45f9-9e72-b9d8fe06eab9'
+-const homework = { id: 91, title: 'На дату', description: 'Материалы', link: 'https://example.test/material',
++const homework = { id: 91, bindingId: 501, requestKey: key, title: 'На дату', description: 'Материалы', link: 'https://example.test/material',
+   subjectId: 88, groupId: 7, semesterId: 12, publishedBy: 41, lessonDate: '2026-09-29',
+   lessonNumber: null, bindingMode: 'DATE', revision: 4, archived: false }
+ 
+@@ -32,8 +33,9 @@ describe('homework DATE and edit wire contract', () => {
+       return Response.json({ detail: 'revision conflict' }, { status: 409 })
+     })
+     const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
+-    await api.createHomework({ title: homework.title, description: homework.description, link: homework.link,
+-      subjectId: 88, groupId: 7, semesterId: 12, lessonDate: homework.lessonDate, lessonNumber: null, bindingMode: 'DATE', requestKey: key })
++    await expect(api.createHomework({ title: homework.title, description: homework.description, link: homework.link,
++      subjectId: 88, groupId: 7, semesterId: 12, lessonDate: homework.lessonDate, lessonNumber: null, bindingMode: 'DATE', requestKey: key }))
++      .resolves.toMatchObject({ state: 'ACTIVE', homework: { id: 91 } })
+     expect(requests[0]?.body).toMatchObject({ bindingMode: 'DATE', lessonNumber: null, requestKey: key })
+     const intent = Object.freeze({ title: 'Новое название', description: homework.description, link: homework.link,
+       requestKey: key, expectedRevision: 4 })
+@@ -45,14 +47,58 @@ describe('homework DATE and edit wire contract', () => {
+     expect(requests[3]?.body).toEqual(requests[2]?.body)
+   })
+ 
+-  it('keeps a LESSON publication pending only for the same accepted intent and never invents success from another receipt', async () => {
++  it('finishes a lost creation response after transfer using the same request and current placement', async () => {
++    const moved = { ...homework, lessonDate: '2026-10-02', lessonNumber: 5, bindingMode: 'LESSON' }
+     const fetcher = vi.fn()
+-      .mockResolvedValueOnce(Response.json({ homeworkId: '91', bindingId: '501', requestKey: key, state: 'PENDING' }, { status: 202 }))
+-      .mockResolvedValueOnce(Response.json({ homeworkId: '91', bindingId: '501', requestKey: '3bbe4b81-42e1-4bcf-a963-41da6f379c02', state: 'PENDING' }, { status: 202 }))
++      .mockRejectedValueOnce(new TypeError('response lost after creation'))
++      .mockResolvedValueOnce(Response.json(moved))
+     const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
+     const input = { title: homework.title, subjectId: 88, groupId: 7, semesterId: 12, lessonDate: homework.lessonDate,
+       lessonNumber: 2, bindingMode: 'LESSON' as const, requestKey: key }
+-    await expect(api.createHomework(input)).resolves.toBeNull()
+-    await expect(api.createHomework(input)).rejects.toThrow('некорректное подтверждение')
++    await expect(api.createHomework(input)).rejects.toThrow('response lost')
++    await expect(api.createHomework(input)).resolves.toMatchObject({ state: 'ACTIVE', homework: moved })
++    expect(fetcher.mock.calls[0]?.[1]?.body).toEqual(fetcher.mock.calls[1]?.[1]?.body)
++  })
++
++  it('retains PENDING identity in the intent and completes its same-key replay after transfer', async () => {
++    const receipt = { homeworkId: '91', bindingId: '501', requestKey: key }
++    const moved = { ...homework, lessonDate: '2026-10-02', lessonNumber: 5, bindingMode: 'LESSON' }
++    const fetcher = vi.fn()
++      .mockResolvedValueOnce(Response.json({ ...receipt, state: 'PENDING' }, { status: 202 }))
++      .mockResolvedValueOnce(Response.json(moved))
++    const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
++    const context = { userId: 41, groupId: 7, semesterId: 12, subjectId: 88, selectedDate: homework.lessonDate,
++      lessonId: 300, lessonDate: homework.lessonDate, lessonNumber: 2, bindingMode: 'LESSON' as const }
++    const values = { title: homework.title, description: '', link: '' }
++    const original = reuseOrCreateAssistantHomeworkIntent(null, context, values, () => key)!
++    const pending = await api.createHomework(original.input, original.receipt)
++    expect(pending.state).toBe('PENDING')
++    if (pending.state !== 'PENDING') throw new Error('expected pending publication')
++    const accepted = withAssistantHomeworkPublicationReceipt(original, pending.receipt)
++    const retry = reuseOrCreateAssistantHomeworkIntent(accepted, context, { ...values, title: 'Changed' }, () => 'another-key')!
++    expect(retry).toBe(accepted)
++    expect(retry.input).toBe(original.input)
++    expect(retry.receipt).toEqual(receipt)
++    expect(Object.isFrozen(retry.receipt)).toBe(true)
++    await expect(api.createHomework(retry.input, retry.receipt)).resolves.toMatchObject({ state: 'ACTIVE', homework: moved })
++    expect(fetcher.mock.calls[0]?.[1]?.body).toEqual(fetcher.mock.calls[1]?.[1]?.body)
++  })
++
++  it('rejects a different key, accepted identity or immutable scope in pending and active responses', async () => {
++    const receipt = { homeworkId: '91', bindingId: '501', requestKey: key }
++    const input = { title: homework.title, subjectId: 88, groupId: 7, semesterId: 12, lessonDate: homework.lessonDate,
++      lessonNumber: 2, bindingMode: 'LESSON' as const, requestKey: key }
++    const otherKey = '3bbe4b81-42e1-4bcf-a963-41da6f379c02'
++    for (const wrong of [{ ...receipt, requestKey: otherKey }, { ...receipt, homeworkId: '92' }, { ...receipt, bindingId: '502' }]) {
++      const fetcher = vi.fn().mockResolvedValue(Response.json({ ...wrong, state: 'PENDING' }, { status: 202 }))
++      const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
++      await expect(api.createHomework(input, receipt)).rejects.toThrow('некорректное подтверждение')
++    }
++    for (const wrong of [{ ...homework, requestKey: otherKey }, { ...homework, id: 92 }, { ...homework, bindingId: 502 },
++      { ...homework, groupId: 8 }, { ...homework, subjectId: 89 }, { ...homework, semesterId: 13 }]) {
++      const fetcher = vi.fn().mockResolvedValue(Response.json(wrong))
++      const api = new HeadmanHomeworkApi({ accessToken: () => 'token', fetcher: fetcher as typeof fetch })
++      await expect(api.createHomework(input, receipt)).rejects.toThrow()
++    }
+   })
+ })
+diff --git a/frontends/mobile-core/src/features/homework/headman-homework-client.ts b/frontends/mobile-core/src/features/homework/headman-homework-client.ts
+index ef2eb5f8..5156e121 100644
+--- a/frontends/mobile-core/src/features/homework/headman-homework-client.ts
++++ b/frontends/mobile-core/src/features/homework/headman-homework-client.ts
+@@ -22,6 +22,8 @@ export interface HeadmanHomeworkSemester {
+ 
+ export interface HeadmanManagedHomework {
+   readonly id: number
++  readonly bindingId: number | null
++  readonly requestKey: string | null
+   readonly title: string
+   readonly description: string | null
+   readonly link: string | null
+@@ -36,6 +38,16 @@ export interface HeadmanManagedHomework {
+   readonly archived: boolean
+ }
+ 
++export interface HeadmanHomeworkPublicationReceipt {
++  readonly homeworkId: string
++  readonly bindingId: string
++  readonly requestKey: string
++}
++
++export type HeadmanHomeworkCreateResult =
++  | { readonly state: 'PENDING'; readonly receipt: HeadmanHomeworkPublicationReceipt }
++  | { readonly state: 'ACTIVE'; readonly homework: HeadmanManagedHomework }
++
+ export interface HeadmanHomeworkCreateInput {
+   readonly title: string
+   readonly description?: string | null
+@@ -131,8 +143,12 @@ export class HeadmanHomeworkApi {
+     )
+   }
+ 
+-  async createHomework(input: HeadmanHomeworkCreateInput): Promise<HeadmanManagedHomework | null> {
++  async createHomework(
++    input: HeadmanHomeworkCreateInput,
++    acceptedReceipt: HeadmanHomeworkPublicationReceipt | null = null,
++  ): Promise<HeadmanHomeworkCreateResult> {
+     validateCreateInput(input)
++    if (acceptedReceipt !== null) validatePublicationReceipt(acceptedReceipt, input.requestKey)
+     const response = await this.response('/api/academic/homeworks', {
+       method: 'POST',
+       body: JSON.stringify({
+@@ -152,20 +168,27 @@ export class HeadmanHomeworkApi {
+     const value: unknown = await response.json()
+     this.options.assertCurrent?.()
+     if (response.status === 202) {
+-      if (!isRecord(value) || value.state !== 'PENDING'
+-        || textValue(value.requestKey)?.toLowerCase() !== input.requestKey.toLowerCase()
+-        || !/^[1-9][0-9]*$/.test(String(value.homeworkId)) || !/^[1-9][0-9]*$/.test(String(value.bindingId))) {
++      if (!isRecord(value) || value.state !== 'PENDING') {
+         throw new Error('Сервер вернул некорректное подтверждение публикации ДЗ')
+       }
+-      return null
++      const receipt = {
++        homeworkId: typeof value.homeworkId === 'string' ? value.homeworkId : '',
++        bindingId: typeof value.bindingId === 'string' ? value.bindingId : '',
++        requestKey: textValue(value.requestKey) ?? '',
++      }
++      validatePublicationReceipt(receipt, input.requestKey, acceptedReceipt)
++      return { state: 'PENDING', receipt: Object.freeze(receipt) }
+     }
+     const created = normalizeHomework(value)
+     if (created === null || created.groupId !== input.groupId || created.subjectId !== input.subjectId
+-      || created.semesterId !== input.semesterId || created.bindingMode !== input.bindingMode
+-      || created.lessonDate !== input.lessonDate || created.lessonNumber !== input.lessonNumber) {
+-      throw new Error('Сервер вернул ДЗ для другой привязки')
++      || created.semesterId !== input.semesterId || created.bindingId === null || created.requestKey === null) {
++      throw new Error('Сервер вернул ДЗ для другого запроса')
+     }
+-    return created
++    // A replay returns the current placement, which may have moved after creation.
++    validatePublicationReceipt({
++      homeworkId: String(created.id), bindingId: String(created.bindingId), requestKey: created.requestKey,
++    }, input.requestKey, acceptedReceipt)
++    return { state: 'ACTIVE', homework: created }
+   }
+ 
+   async updateHomework(id: number, input: HeadmanHomeworkUpdateInput): Promise<HeadmanManagedHomework | null> {
+@@ -317,6 +340,18 @@ function validateRequestKey(value: string): void {
+   }
+ }
+ 
++function validatePublicationReceipt(
++  receipt: HeadmanHomeworkPublicationReceipt,
++  requestKey: string,
++  accepted: HeadmanHomeworkPublicationReceipt | null = null,
++): void {
++  if (!/^[1-9][0-9]*$/.test(receipt.homeworkId) || !/^[1-9][0-9]*$/.test(receipt.bindingId)
++    || receipt.requestKey.toLowerCase() !== requestKey.toLowerCase()
++    || (accepted !== null && (receipt.homeworkId !== accepted.homeworkId || receipt.bindingId !== accepted.bindingId))) {
++    throw new Error('Сервер вернул некорректное подтверждение публикации ДЗ')
++  }
++}
++
+ function assertPositiveInteger(value: number, name: string): void {
+   if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${name} должен быть положительным целым числом`)
+ }
+@@ -366,6 +401,8 @@ function normalizeHomework(value: unknown): HeadmanManagedHomework | null {
+   }
+   return {
+     id,
++    bindingId: positiveNumber(source.bindingId),
++    requestKey: textValue(source.requestKey),
+     title: textValue(source.title) ?? `Задание #${id}`,
+     description: textValue(source.description),
+     link: textValue(source.link),

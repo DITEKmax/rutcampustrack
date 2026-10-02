@@ -1,0 +1,15 @@
+{
+  "product_commit": "a3960240",
+  "base_product_commit": "1562c8d5",
+  "base_evidence_commit": "7ced5ac3",
+  "defect": "P2 successful same-key create replay incorrectly compared original placement",
+  "targeted_test_exit": 0,
+  "targeted_tests": 8,
+  "scoped_vue_ts_exit": 0,
+  "scoped_vue_ts_stdout": "empty",
+  "scoped_diff_check_exit": 0,
+  "product_add_commit_exit": 0,
+  "product_paths": 4,
+  "runtime": "not_run_no_resources",
+  "independent_affected_recheck": "pending"
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "sha256": "fcc00743d46738dd8f02516a8f14f6d50bc84dfde64477a7a128b487f3353049",
+    "reuse": true,
+    "relativePath": "services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+    "name": "academic",
+    "bytes": 99139601
+  },
+  {
+    "sha256": "38d112ddf60083318598838baea778c1e73d8afa536d8c12ebb174f46379af8c",
+    "reuse": true,
+    "relativePath": "services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+    "name": "gateway",
+    "bytes": 62059187
+  },
+  {
+    "sha256": "16e035df437be710391aa225ff1bfcc5c30a705f8badbae77469cf581f381f72",
+    "reuse": true,
+    "relativePath": "services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+    "name": "attendance",
+    "bytes": 95466207
+  },
+  {
+    "sha256": "c40e6a8237cf1811c813abd684b928b1f4c08b6c089013f737fbaaa760ebfecc",
+    "reuse": true,
+    "relativePath": "services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+    "name": "auth",
+    "bytes": 99710950
+  },
+  {
+    "sha256": "b21891315efd3496719d1215f6512a1586e48cc64ee40ee1b9ef563083d623cf",
+    "reuse": true,
+    "relativePath": "services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+    "name": "documentRenderer",
+    "bytes": 48259456
+  },
+  {
+    "sha256": "0e4d46d212f86092e15d867e1d5cfc1c27d20d2d8983203531759a87d8255532",
+    "reuse": false,
+    "relativePath": "services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+    "name": "mobileBff",
+    "bytes": 49745060
+  },
+  {
+    "sha256": "7100f5e52fa8864595460daae6742c639250f27a426e7b959187bed8ea62f4ec",
+    "reuse": true,
+    "relativePath": "services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+    "name": "notification",
+    "bytes": 86196082
+  },
+  {
+    "sha256": "d8afee130c6c10457f2a37829c2c7f029bec15cce21160c0495dd431ead3e8b2",
+    "reuse": true,
+    "relativePath": "services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+    "name": "schedule",
+    "bytes": 92679713
+  }
+]

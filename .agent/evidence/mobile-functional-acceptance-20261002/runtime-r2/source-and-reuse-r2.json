@@ -1,0 +1,14 @@
+{
+  "fullStatus": [],
+  "exitCode": 0,
+  "tmaFilesMatch": 6,
+  "noResetOrClean": true,
+  "pwaFilesMatch": 10,
+  "priorSourceRevision": "d17455153cd26af8a30b969cf85cad210eb8543d",
+  "jarsBeforeMatch": 8,
+  "sourceRevision": "a93f4265a2ad397d60d3758ea57116b8616916d0",
+  "javaDelta": [
+    "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/grpc/MobileAcademicClient.java"
+  ],
+  "jarsToReuse": 7
+}

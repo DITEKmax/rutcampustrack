@@ -1,0 +1,29 @@
+{
+  "exitCode": 0,
+  "sourceRevision": "a93f4265a2ad397d60d3758ea57116b8616916d0",
+  "fullStatus": [],
+  "javaProcessIds": [],
+  "manifestSha256": "43d733ce63b444ef9674e643e081928adf563a31d8ed0514367ff235f2d4013d",
+  "priorManifestSha256": "67ccdaf75fe9629ce853e3eac30a2ca160f065642bb422b0692b9faa8663eb47",
+  "runnerSha256": "81473fb04c72e792e12508018bd7ee69c44f9d80220ce19dc2d8e4e30219b95f",
+  "bffArtifact": {
+    "bytes": 49745373,
+    "name": "mobileBff",
+    "relativePath": "services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+    "sha256": "1e1f5774fbbb2429e673d1c48bc4b60e39a40f1ddd4e252c5c72e71ce126b008"
+  },
+  "reusedJarMatches": 7,
+  "pwaFileMatches": 10,
+  "tmaFileMatches": 6,
+  "canonicalRoundtrip": true,
+  "cleanBeforeBuild": true,
+  "cleanAfterBuild": true,
+  "manifestChangedFields": [
+    "source.revision",
+    "artifacts.jars[mobileBff].bytes",
+    "artifacts.jars[mobileBff].sha256"
+  ],
+  "currentBuildCommandProvenance": "bff-build-invocation-r2.json + bff-build-result-r2.json; original manifest producer retained",
+  "lease": "released",
+  "runtime": "not launched"
+}

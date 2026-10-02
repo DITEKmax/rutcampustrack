@@ -1,0 +1,9 @@
+{
+  "occupiedPorts": [],
+  "freePhysicalGiB": 2.22,
+  "exitCode": 0,
+  "freeVirtualGiB": 5.59,
+  "runningDockerNames": [],
+  "at": "2026-10-02T23:55:37.3235964+03:00",
+  "javaProcessIds": []
+}

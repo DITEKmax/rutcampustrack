@@ -1,0 +1,11 @@
+bff-build-invocation-r2.json
+bff-build-r2.log
+bff-build-result-r2.json
+build-manifest.json
+checks.json
+CONTRACT.md
+FILES.txt
+manifest-proof-r2.json
+prior-artifact-pins.json
+source-and-reuse-r2.json
+SUMMARY.md

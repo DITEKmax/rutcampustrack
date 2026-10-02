@@ -1,19 +1,15 @@
-# SLOTS — GO 2026-10-02
-Main/product freeze d1745515; root sole main/shared-docs writer. Все текущие задачи Sol6.1 high по исходным назначениям, отдельная runtime metadata недоступна. Build завершён. Heavy e_homework_date_bot_1002: один ManualAcceptance stand, handle34823, runId20261002-203457516-sgjgvbyb; R1 завершён bootstrap503/UNACCEPTED, cleanupPASS; heavy E: только BFF bootJar sourcea93f4265 + runtime-r2 manifest. Root принимает три UI flows через CUA.
+# SLOTS — GO 2026-10-03
+Root sole main/shareddocs writer. Model assignments Sol6.1 high; runtime metadata unavailable. Productfreeze a93f4265, R2 accepted two bounded PWA flows; externalTMA/design/deploy separate. Heavy lease FREE after18540exit0/cleanupPASS. No active runtime.
 
-| Agent | State / ownership |
+| Agent | State |
 |---|---|
-| g_backend_acceptance_1002 | Roster UI принят source-review/checks и интегрирован; r3 WT, idle |
-| v_homework_lifecycle_1002 | Auth/Gateway roster ticket принят и интегрирован; map-usage WT, idle; Java EMPTY |
-| v_homework_schedule_1002 | ONE_OFF correctionf032 PASS review/IT, source интегрирован; final evidence4fe996f0 интегрирован, idle |
-| v_homework_bff_1002 | Homework интегрирован; safe operation/status logging интегрирован9450d6fe, idle |
-| review_academic_homework_1002 | ONE_OFF affected recheck PASS, idle |
-| review_homework_schedule_code_1002 | Homework affected recheck PASS, idle |
-| e_homework_date_bot_1002 | R1 cleanupPASS; sole r2 holder + main/runtime-r2 evidence writer, BFF buildlease |
+| e_homework_date_bot_1002 | R2 runtime evidence finalsummary, then idle; allownedresourcesabsent |
+| v_homework_bff_1002 | Homework + safeBFFlogger integrated, idle |
+| v_homework_schedule_1002 | ONE_OFF integrated and boundedPWA accepted, idle |
+| g_backend_acceptance_1002 | Roster UI integrated; handoffsuccess/filesaveunconfirmed, idle |
+| v_homework_lifecycle_1002 | Roster backend integrated, idle |
+| review_academic_homework_1002 | AffectedreviewPASS, idle |
+| review_homework_schedule_code_1002 | AffectedreviewPASS, idle |
 | v_remaining_actions_1002 | Idle |
 
-Один общий runtime запущен; старые probes не повторять; текущий новый UI blocker диагностируется адресно. Existing native recovery stopped containers/volumes сохранить. Root интегрирует готовое по мере review; новых scopes при очереди интеграции не открывать. Все JAR/dist используются по final manifest без новых сборок. Foreign WIP/runner edits сохранять, push/deploy запрещены без задания.
-
-
-
-
+Next boundedscope: actual StudentToday Attendance dependency failure. No new assignment yet. Do not repeat acceptedONE_OFF/DATE tests/flows. Native recovery stoppedcontainers/volumes preserve; foreign WIP/runneredits preserve. No push/deploy.

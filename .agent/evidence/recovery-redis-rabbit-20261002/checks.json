@@ -1,0 +1,21 @@
+{
+  "baseline": "7e1190a0fddfd95ae272075ab1b0589f6afcb5e2",
+  "sourceRevision": "745d1666",
+  "sourceSha256": "8A861C6E115B36D041D25E321F4F17F91916076CC08676F0697D7EBA6B25DD16",
+  "rulesSha256": "A208AA4380B64376A4EAD645AA0731C9F574077107DC9C44356F5C04D80F28FA",
+  "environment": "Windows PowerShell; existing Python stdlib and Docker Linux daemon; exact pinned Redis/Rabbit images; no helper install/server ports/network",
+  "checks": [
+    {"command": "python -B recipe (default plan only)", "exitCode": 0},
+    {"command": "Python ast.parse recipe", "exitCode": 0},
+    {"command": "git check-ignore runtime-r3/rabbit-cold.tar", "exitCode": 0},
+    {"command": "git diff --check", "exitCode": 0},
+    {"command": "python -B recipe --execute R1", "exitCode": 1, "evidence": "r1-exit.json", "reason": "exact Redis image absent; no resources created"},
+    {"command": "docker pull exact Redis digest 7aec734b", "exitCode": 0, "evidence": "pull-redis.txt"},
+    {"command": "python -B recipe --execute R2", "exitCode": 1, "session": 52748, "evidence": "r2-exit.json", "reason": "native cookie eacces; all own processes stopped"},
+    {"command": "read-only own source TAR-header and pinned entrypoint/CLI/passwd metadata", "exitCode": 0, "evidence": "r2-metadata.json"},
+    {"command": "python -B .agent/evidence/recovery-redis-rabbit-20261002/rehearse-native.py --execute R3", "exitCode": 0, "session": 9177, "evidence": "r3-exit.json"},
+    {"command": "exact own Docker status plus global running-container names", "exitCode": 0, "result": "all R3 Exited0; old own source retained inactive; global running empty", "evidence": "r3-terminal.json"}
+  ],
+  "acceptance": "native RDB/cold Rabbit restore, original persistent event redelivery/consumption, synthetic Redis value/absoluteTTL preserved",
+  "limitations": ["not application/outbox replay", "not Mongo preference authority", "not provider delivery", "not production/offsite recovery", "not RPO/RTO"]
+}

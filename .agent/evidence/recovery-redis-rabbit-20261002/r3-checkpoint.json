@@ -1,0 +1,10 @@
+{
+  "eventId": "63d766f7-ba8e-4318-8896-31cafce2187c",
+  "hashes": {
+    "rabbit-cold.tar": "46fd683ffa6c77272ee7a3842fc15468cd7abfcd6190df2bbe71e42cf6468d77",
+    "redis-rdb.tar": "bf4adcfae5f5013ab5c7948019555f75685c33f96b8d846a9e1987b2c697ba10"
+  },
+  "node": "rabbit@rct-recovery-rabbit-1002",
+  "sourceStopped": true,
+  "syntheticTtlExpiresAt": 1790968531828
+}

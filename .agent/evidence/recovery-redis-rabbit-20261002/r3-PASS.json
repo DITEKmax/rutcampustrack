@@ -1,0 +1,14 @@
+{
+  "eventId": "63d766f7-ba8e-4318-8896-31cafce2187c",
+  "limits": "not current Mongo preference authority/app replay/provider/offsite/RPO/RTO",
+  "nativeAck": true,
+  "nativeRedisProbePreserved": true,
+  "redelivery": [
+    false,
+    true,
+    true
+  ],
+  "result": "PASS",
+  "sameNodeCookie": true,
+  "ttlNotReset": true
+}

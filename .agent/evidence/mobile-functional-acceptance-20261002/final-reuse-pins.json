@@ -1,0 +1,65 @@
+[
+  {
+    "expectedBytes": 62059187,
+    "relativePath": "services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+    "match": true,
+    "name": "gateway",
+    "expectedSha256": "38d112ddf60083318598838baea778c1e73d8afa536d8c12ebb174f46379af8c",
+    "sha256": "38d112ddf60083318598838baea778c1e73d8afa536d8c12ebb174f46379af8c",
+    "bytes": 62059187
+  },
+  {
+    "expectedBytes": 99710950,
+    "relativePath": "services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+    "match": true,
+    "name": "auth",
+    "expectedSha256": "c40e6a8237cf1811c813abd684b928b1f4c08b6c089013f737fbaaa760ebfecc",
+    "sha256": "c40e6a8237cf1811c813abd684b928b1f4c08b6c089013f737fbaaa760ebfecc",
+    "bytes": 99710950
+  },
+  {
+    "expectedBytes": 86196082,
+    "relativePath": "services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+    "match": true,
+    "name": "notification",
+    "expectedSha256": "7100f5e52fa8864595460daae6742c639250f27a426e7b959187bed8ea62f4ec",
+    "sha256": "7100f5e52fa8864595460daae6742c639250f27a426e7b959187bed8ea62f4ec",
+    "bytes": 86196082
+  },
+  {
+    "expectedBytes": 99139601,
+    "relativePath": "services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+    "match": true,
+    "name": "academic",
+    "expectedSha256": "fcc00743d46738dd8f02516a8f14f6d50bc84dfde64477a7a128b487f3353049",
+    "sha256": "fcc00743d46738dd8f02516a8f14f6d50bc84dfde64477a7a128b487f3353049",
+    "bytes": 99139601
+  },
+  {
+    "expectedBytes": 95466207,
+    "relativePath": "services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+    "match": true,
+    "name": "attendance",
+    "expectedSha256": "16e035df437be710391aa225ff1bfcc5c30a705f8badbae77469cf581f381f72",
+    "sha256": "16e035df437be710391aa225ff1bfcc5c30a705f8badbae77469cf581f381f72",
+    "bytes": 95466207
+  },
+  {
+    "expectedBytes": 48259456,
+    "relativePath": "services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+    "match": true,
+    "name": "documentRenderer",
+    "expectedSha256": "b21891315efd3496719d1215f6512a1586e48cc64ee40ee1b9ef563083d623cf",
+    "sha256": "b21891315efd3496719d1215f6512a1586e48cc64ee40ee1b9ef563083d623cf",
+    "bytes": 48259456
+  },
+  {
+    "expectedBytes": 49745060,
+    "relativePath": "services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+    "match": true,
+    "name": "mobileBff",
+    "expectedSha256": "0e4d46d212f86092e15d867e1d5cfc1c27d20d2d8983203531759a87d8255532",
+    "sha256": "0e4d46d212f86092e15d867e1d5cfc1c27d20d2d8983203531759a87d8255532",
+    "bytes": 49745060
+  }
+]

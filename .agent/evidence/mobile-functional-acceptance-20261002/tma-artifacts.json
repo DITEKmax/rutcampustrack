@@ -1,0 +1,36 @@
+{
+  "files": [
+    {
+      "bytes": 1027075,
+      "relativePath": "assets/index-CPIiesve.js",
+      "sha256": "7884f1acb74364e10926a2cbe164945fa9b5cc7d3c525b36905fa50759a0f554"
+    },
+    {
+      "bytes": 220674,
+      "relativePath": "assets/index-DdGi6xkt.css",
+      "sha256": "7edce7c762b77350deffba74ce7e83a4c6135ea8dadfcccb1e23cf4841941233"
+    },
+    {
+      "bytes": 14228,
+      "relativePath": "assets/onest-cyrillic-wght-normal-DXI_y_WF.woff2",
+      "sha256": "37bc16874135c16134679b1db25b87fe80eb9fcd4ef3666af7c531bfde204fe2"
+    },
+    {
+      "bytes": 15992,
+      "relativePath": "assets/onest-latin-ext-wght-normal-CnNj8hVb.woff2",
+      "sha256": "391a9b24b5c46ebff5d21f53cdb2edaa31c3446da3b722f038ab07d75d02a82d"
+    },
+    {
+      "bytes": 32236,
+      "relativePath": "assets/onest-latin-wght-normal-CUIqqgP9.woff2",
+      "sha256": "67849bcc11e02177442da14ad954bfe1cc709553dad137b5003449b303e83fc3"
+    },
+    {
+      "bytes": 430,
+      "relativePath": "index.html",
+      "sha256": "bd328cadebfa13b821f36a9b1d6cc356939bb59d7ba09039d9d020621347065b"
+    }
+  ],
+  "manifestSha256": "4a78383e13fcf125002aaac4064726539ce644fafe63cc6e1edb918f22109312",
+  "relativeRoot": "frontends/tma-vue/dist"
+}

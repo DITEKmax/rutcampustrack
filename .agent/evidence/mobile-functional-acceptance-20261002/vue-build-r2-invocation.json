@@ -1,0 +1,7 @@
+{
+  "fixtureMode": "false",
+  "startedAt": "2026-10-02T23:27:00.2181127+03:00",
+  "sourceRevision": "d17455153cd26af8a30b969cf85cad210eb8543d",
+  "dependencyAvailability": "restored exact existing lock-matched missing cache only",
+  "command": "npm.cmd run build"
+}

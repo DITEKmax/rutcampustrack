@@ -1,0 +1,18 @@
+
+> @rct/mobile-vue-workspace@0.1.0 build
+> npm run build --workspace @rct/pwa-vue && npm run build --workspace @rct/tma-vue
+
+
+> @rct/pwa-vue@0.1.0 build
+> vue-tsc -p tsconfig.json --noEmit && vite build
+
+../mobile-core/src/features/notifications/notifications-realtime.ts(6,8): error TS2307: Cannot find module '@stomp/stompjs' or its corresponding type declarations.
+../mobile-core/src/features/notifications/notifications-realtime.ts(7,20): error TS2307: Cannot find module 'sockjs-client' or its corresponding type declarations.
+../mobile-core/src/features/notifications/notifications-realtime.ts(186,15): error TS18047: 'client' is possibly 'null'.
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\frontends\pwa-vue
+npm error workspace @rct/pwa-vue@0.1.0
+npm error location C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\frontends\pwa-vue
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vue-tsc -p tsconfig.json --noEmit && vite build

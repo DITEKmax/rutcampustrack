@@ -1,0 +1,59 @@
+{
+  "notRun": [
+    "accepted unit/IT",
+    "Docker/server",
+    "browser/API/provider runtime"
+  ],
+  "lease": "released",
+  "sourceRevision": "d17455153cd26af8a30b969cf85cad210eb8543d",
+  "checks": [
+    {
+      "check": "seven reusable JAR exact SHA/bytes + Java dependency delta",
+      "exitCode": 0,
+      "evidence": "final-reuse-pins.json + final-source-freeze.json"
+    },
+    {
+      "check": "Schedule bootJar",
+      "exitCode": 0,
+      "handle": 16623,
+      "evidence": "schedule-build-r1.log + schedule-build-result.json"
+    },
+    {
+      "check": "Vue R1 failure preserved",
+      "exitCode": 2,
+      "handle": 41136,
+      "evidence": "vue-build-r1.log + vue-build-result.json"
+    },
+    {
+      "check": "lock-matched narrow dependency recovery",
+      "exitCode": 0,
+      "evidence": "dependency-cache-metadata.json + dependency-cache-copy-result.json"
+    },
+    {
+      "check": "PWA + TMA Vue R2",
+      "exitCode": 0,
+      "handle": 1780,
+      "evidence": "vue-build-r2.log + vue-build-r2-result.json"
+    },
+    {
+      "check": "existing canonical manifest utilities roundtrip",
+      "exitCode": 0,
+      "evidence": "canonical-verification.json"
+    },
+    {
+      "exitCode": 0,
+      "evidence": "git diff --cached --check excluding raw logs",
+      "check": "scoped non-log diff whitespace"
+    },
+    {
+      "exitCode": 2,
+      "evidence": "Gradle schedule-build-r1.log line2 emits trailing space; no raw evidence rewrite",
+      "check": "raw log whitespace preserved"
+    }
+  ],
+  "limits": [
+    "draft cleanAfterBuild=false until actual full status",
+    "runner serves only PWA",
+    "real provider and browser trust unverified"
+  ]
+}

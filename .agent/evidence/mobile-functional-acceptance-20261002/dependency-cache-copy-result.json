@@ -1,0 +1,22 @@
+{
+  "copiedRelativePaths": [
+    "node_modules/@stomp/stompjs",
+    "node_modules/sockjs-client",
+    "node_modules/eventsource",
+    "node_modules/faye-websocket",
+    "node_modules/websocket-driver",
+    "node_modules/http-parser-js",
+    "node_modules/safe-buffer",
+    "node_modules/websocket-extensions",
+    "node_modules/inherits",
+    "node_modules/url-parse",
+    "node_modules/querystringify",
+    "node_modules/requires-port",
+    "node_modules/@types/sockjs-client"
+  ],
+  "lockSha256Before": "267c19cce12c65f419fb45fffeea9cad773522bd8c256668d89077417302f29a",
+  "lockSha256After": "267c19cce12c65f419fb45fffeea9cad773522bd8c256668d89077417302f29a",
+  "existingPackagesReplaced": 0,
+  "installPerformed": false,
+  "exitCode": 0
+}

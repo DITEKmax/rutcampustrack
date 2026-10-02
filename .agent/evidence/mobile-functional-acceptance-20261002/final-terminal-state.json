@@ -1,0 +1,26 @@
+{
+  "runtime": "not launched",
+  "docker": "not launched",
+  "manifestCleanFinalization": "pending ordinary switch and full status",
+  "lease": "released after terminal Vue build",
+  "fullStatusBeforeEvidenceCommit": [
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/build-manifest.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/canonical-verification.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/create-final-manifest.ps1",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/dependency-cache-copy-result.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/dependency-cache-metadata.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/final-reuse-pins.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/final-source-freeze.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/schedule-build-invocation.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/schedule-build-result.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/tma-artifacts.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/vue-build-invocation.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/vue-build-r2-invocation.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/vue-build-r2-result.json",
+    "?? .agent/evidence/mobile-functional-acceptance-20261002/vue-build-result.json"
+  ],
+  "trackedProductDiff": [],
+  "javaProcessIds": [],
+  "exitCode": 0,
+  "sourceRevision": "d17455153cd26af8a30b969cf85cad210eb8543d"
+}

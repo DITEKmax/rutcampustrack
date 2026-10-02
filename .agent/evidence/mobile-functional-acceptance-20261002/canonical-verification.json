@@ -1,0 +1,16 @@
+{
+  "exitCode": 0,
+  "existingUtilitySource": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-requests-harness/.agent/student-role-orchestrator/requests-runtime/runner.ps1",
+  "sourceSha256": "81473fb04c72e792e12508018bd7ee69c44f9d80220ce19dc2d8e4e30219b95f",
+  "manifestSha256": "248ea8b3872a0c4012349399f6cf402a26f5b2f57e6e72746bfe23014d3c5ecb",
+  "canonicalBytesMatch": true,
+  "cleanFinalizationPending": true,
+  "schedule": {
+    "bytes": 92679713,
+    "name": "schedule",
+    "relativePath": "services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+    "sha256": "d8afee130c6c10457f2a37829c2c7f029bec15cce21160c0495dd431ead3e8b2"
+  },
+  "pwaFileCount": 10,
+  "tmaServedByRunner": false
+}

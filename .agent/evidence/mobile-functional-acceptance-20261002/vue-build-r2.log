@@ -1,0 +1,49 @@
+
+> @rct/mobile-vue-workspace@0.1.0 build
+> npm run build --workspace @rct/pwa-vue && npm run build --workspace @rct/tma-vue
+
+
+> @rct/pwa-vue@0.1.0 build
+> vue-tsc -p tsconfig.json --noEmit && vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 411 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/version.json                                           0.21 kB │ gzip:   0.18 kB
+dist/sw-assets.js                                           0.28 kB
+dist/index.html                                             0.51 kB │ gzip:   0.32 kB
+dist/sw.js                                                  6.78 kB
+dist/assets/onest-cyrillic-wght-normal-DXI_y_WF.woff2      14.23 kB
+dist/assets/onest-latin-ext-wght-normal-CnNj8hVb.woff2     15.99 kB
+dist/assets/onest-latin-wght-normal-CUIqqgP9.woff2         32.24 kB
+dist/assets/index-CdMP2tdt.css                            226.61 kB │ gzip:  28.85 kB
+dist/assets/index-BHvvvjBW.js                           1,078.55 kB │ gzip: 299.12 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.93s
+
+> @rct/tma-vue@0.1.0 build
+> vue-tsc -p tsconfig.json --noEmit && vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 390 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                             0.43 kB │ gzip:   0.29 kB
+dist/assets/onest-cyrillic-wght-normal-DXI_y_WF.woff2      14.23 kB
+dist/assets/onest-latin-ext-wght-normal-CnNj8hVb.woff2     15.99 kB
+dist/assets/onest-latin-wght-normal-CUIqqgP9.woff2         32.24 kB
+dist/assets/index-DdGi6xkt.css                            220.67 kB │ gzip:  28.00 kB
+dist/assets/index-CPIiesve.js                           1,027.08 kB │ gzip: 284.07 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.60s

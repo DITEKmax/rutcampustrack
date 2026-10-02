@@ -1,0 +1,13 @@
+{
+  "frozenRevision": "d17455153cd26af8a30b969cf85cad210eb8543d",
+  "reusedJars": 7,
+  "fixtureMode": "false",
+  "dependencyDelta": [
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/GlobalExceptionHandler.java",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/exception/OneOffCreateRejectedException.java",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonCoordinator.java",
+    "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java"
+  ],
+  "before": "9462768f",
+  "trackedClean": true
+}

@@ -1,0 +1,6 @@
+{
+  "javaHome": "C:/Users/maksd/.jdks/ms-21.0.10",
+  "startedAt": "2026-10-02T23:18:29.4185183+03:00",
+  "sourceRevision": "d17455153cd26af8a30b969cf85cad210eb8543d",
+  "command": "./gradlew.bat :services:schedule-service:schedule-app:bootJar --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --no-parallel --max-workers=1 --console=plain"
+}

@@ -1,0 +1,46 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:schedule-service:schedule-api-contract:compileJava UP-TO-DATE
+> Task :services:schedule-service:schedule-api-contract:processResources NO-SOURCE
+> Task :services:schedule-service:schedule-api-contract:classes UP-TO-DATE
+> Task :services:schedule-service:schedule-api-contract:jar UP-TO-DATE
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-security:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:schedule-service:schedule-app:extractIncludeProto UP-TO-DATE
+> Task :services:schedule-service:schedule-app:extractProto UP-TO-DATE
+> Task :services:schedule-service:schedule-app:generateProto UP-TO-DATE
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-outbox:compileJava UP-TO-DATE
+> Task :services:shared:shared-outbox:classes UP-TO-DATE
+> Task :services:shared:shared-outbox:jar UP-TO-DATE
+> Task :services:shared:shared-security:compileJava UP-TO-DATE
+> Task :services:shared:shared-security:classes UP-TO-DATE
+> Task :services:shared:shared-security:jar UP-TO-DATE
+> Task :services:shared:shared-web:compileJava UP-TO-DATE
+> Task :services:shared:shared-web:classes UP-TO-DATE
+> Task :services:shared:shared-web:jar UP-TO-DATE
+> Task :services:schedule-service:schedule-app:compileJava
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:schedule-service:schedule-app:processResources UP-TO-DATE
+> Task :services:schedule-service:schedule-app:classes
+> Task :services:schedule-service:schedule-app:resolveMainClassName
+> Task :services:schedule-service:schedule-app:bootJar
+
+BUILD SUCCESSFUL in 30s
+27 actionable tasks: 3 executed, 24 up-to-date

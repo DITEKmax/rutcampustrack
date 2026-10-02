@@ -1,0 +1,9 @@
+{
+  "workingDirectory": "frontends",
+  "command": "npm run build",
+  "fixtureMode": "false",
+  "sourceRevision": "d17455153cd26af8a30b969cf85cad210eb8543d",
+  "startedAt": "2026-10-02T23:20:29.0906702+03:00",
+  "node": "v24.14.0",
+  "npm": "11.9.0"
+}

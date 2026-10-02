@@ -5,6 +5,8 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.TransientDataAccessResourceException;
+import org.springframework.data.mongodb.MongoDatabaseUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -81,6 +83,14 @@ public class MongoIdempotencyStore implements IdempotencyStore {
         if (eventId == null) {
             throw new IllegalArgumentException("eventId must be non-null");
         }
+        Query identity = Query.query(Criteria.where("consumer_id").is(consumerId)
+                .and("event_id").is(eventId.toString()));
+        // A committed duplicate must not attempt an insert: E11000 aborts a Mongo
+        // transaction even when the exception is caught by the handler.
+        if (mongoTemplate.exists(identity, collectionName)) {
+            return false;
+        }
+        boolean transactional = MongoDatabaseUtils.isTransactionActive(mongoTemplate.getMongoDatabaseFactory());
         Document doc = new Document()
                 .append("consumer_id", consumerId)
                 .append("event_id", eventId.toString())
@@ -91,6 +101,12 @@ public class MongoIdempotencyStore implements IdempotencyStore {
             mongoTemplate.insert(doc, collectionName);
             return true;
         } catch (DuplicateKeyException ex) {
+            if (transactional) {
+                // Another transaction won after our read. Retry the entire handler
+                // in a fresh transaction; returning false would commit an aborted one.
+                throw new TransientDataAccessResourceException(
+                        "Concurrent idempotency claim requires a fresh Mongo transaction", ex);
+            }
             // Spring DataAccessException wrapper для E11000 — единственная
             // ожидаемая ошибка от insert на коллекции с unique-индексом.
             // Прочие исключения (WriteConcernError, network) пробрасываются.

@@ -3,6 +3,7 @@ package ru.rutcampustrack.shared.outbox.mongo;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.UUID;
@@ -36,7 +37,7 @@ class MongoIdempotencyStoreTest {
 
     @Test
     void tryClaim_usesMongoTemplateInsert_notRawCollection() {
-        MongoTemplate template = mock(MongoTemplate.class);
+        MongoTemplate template = template();
         // Если код case'нет на getCollection — тест увидит
         // через verify(template, never()).getCollection(anyString()).
         when(template.insert(any(Document.class), anyString())).thenReturn(new Document());
@@ -53,7 +54,7 @@ class MongoIdempotencyStoreTest {
 
     @Test
     void tryClaim_duplicateKey_returnsFalse() {
-        MongoTemplate template = mock(MongoTemplate.class);
+        MongoTemplate template = template();
         doThrow(new DuplicateKeyException("E11000"))
                 .when(template).insert(any(Document.class), anyString());
 
@@ -65,7 +66,7 @@ class MongoIdempotencyStoreTest {
 
     @Test
     void tryClaim_otherException_propagates() {
-        MongoTemplate template = mock(MongoTemplate.class);
+        MongoTemplate template = template();
         doThrow(new RuntimeException("network down"))
                 .when(template).insert(any(Document.class), anyString());
 
@@ -95,5 +96,12 @@ class MongoIdempotencyStoreTest {
 
         assertThatThrownBy(() -> store.tryClaim("consumer", null))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    private static MongoTemplate template() {
+        MongoTemplate template = mock(MongoTemplate.class);
+        MongoDatabaseFactory factory = mock(MongoDatabaseFactory.class);
+        when(template.getMongoDatabaseFactory()).thenReturn(factory);
+        return template;
     }
 }

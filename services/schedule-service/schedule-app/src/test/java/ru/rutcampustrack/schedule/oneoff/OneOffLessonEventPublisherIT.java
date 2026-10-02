@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
+import ru.rutcampustrack.academic.grpc.AssignmentInfo;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
@@ -16,17 +18,19 @@ import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
  * Integration test verifying that creating / deleting a one-off lesson publishes
- * OneOffLessonCreatedEvent / OneOffLessonCancelledEvent to RabbitMQ (Phase 60-04).
+ * OneOffLessonCreatedEvent / exact LessonCancelledEvent to the durable outbox.
  *
  * Uses @Autowired OneOffLessonService directly to avoid HTTP auth complexity.
- * NOT @Transactional — transaction must commit for @TransactionalEventListener(AFTER_COMMIT)
- * to fire and forward the event to rabbitTemplate.
+ * NOT @Transactional — the writer commits the BEFORE_COMMIT outbox entry.
  */
 class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
 
@@ -59,7 +63,7 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        oneOffLessonRepository.deleteAll();
+        resetScheduleData();
 
         when(academicGrpcClient.getActiveSemester()).thenReturn(MOCK_SEMESTER);
         when(academicGrpcClient.parseSemesterFirstWeekType(MOCK_SEMESTER))
@@ -72,18 +76,22 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
         when(requestContext.getRole()).thenReturn(UserRole.ADMIN);
         when(requestContext.getUserId()).thenReturn(USER_ID);
         when(requestContext.isHeadman()).thenReturn(false);
+        when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(SEMESTER_ID).setActive(true).build());
+        when(academicGrpcClient.getAssignmentsByIds(List.of(501L))).thenReturn(List.of(AssignmentInfo.newBuilder()
+                .setId(501L).setTeacherId(700L).setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID).setSemesterId(SEMESTER_ID)
+                .setLessonType("lecture").setValidFrom("2026-02-02").setValidUntilExclusive("2026-07-01").build()));
     }
 
     @AfterEach
     void cleanup() {
-        oneOffLessonRepository.deleteAll();
         drainOutbox();
     }
 
     @Test
     void publishesCreatedEventOnCreate() {
         oneOffLessonService.createOneOffLesson(new CreateOneOffLessonRequest(
-                GROUP_ID, SUBJECT_ID, TARGET_DATE, TARGET_LESSON, "D-404"));
+                GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE, TARGET_LESSON, LocalTime.of(8,30), LocalTime.of(10,0), "D-404"), UUID.randomUUID());
 
         assertThat(outboxStorage.findPending(10))
                 .anyMatch(r -> "lesson.one_off.created".equals(r.eventType()));
@@ -91,22 +99,15 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void publishesCancelledEventOnDelete() {
-        // Arrange: insert a one-off directly so delete() has something to remove.
-        OneOffLesson existing = new OneOffLesson();
-        existing.setGroupId(GROUP_ID);
-        existing.setSubjectId(SUBJECT_ID);
-        existing.setSemesterId(SEMESTER_ID);
-        existing.setDate(TARGET_DATE);
-        existing.setLessonNumber(TARGET_LESSON);
-        existing.setClassroom("D-404");
-        existing.setCreatedBy(USER_ID);
-        OneOffLesson saved = oneOffLessonRepository.save(existing);
+        OneOffLesson saved = oneOffLessonService.createOneOffLesson(new CreateOneOffLessonRequest(
+                GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE, TARGET_LESSON, LocalTime.of(8,30), LocalTime.of(10,0), "D-404"), UUID.randomUUID());
 
         // Act
         oneOffLessonService.deleteOneOffLesson(saved.getId());
 
-        // Assert: lesson.one_off.cancelled записан в outbox
+        // Exact physical cancellation, without the old destructive natural-key event.
         assertThat(outboxStorage.findPending(10))
-                .anyMatch(r -> "lesson.one_off.cancelled".equals(r.eventType()));
+                .anyMatch(r -> "lesson.cancelled".equals(r.eventType()));
+        assertThat(outboxStorage.findPending(10)).noneMatch(r -> "lesson.one_off.cancelled".equals(r.eventType()));
     }
 }

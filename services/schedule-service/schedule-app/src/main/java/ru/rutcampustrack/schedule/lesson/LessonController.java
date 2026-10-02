@@ -18,6 +18,7 @@ import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.security.RequireRole;
+import ru.rutcampustrack.schedule.oneoff.OneOffLessonCoordinator;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -35,13 +36,16 @@ public class LessonController implements LessonApi {
     private final LessonService lessonService;
     private final LessonTransferService lessonTransferService;
     private final LessonAssembler lessonAssembler;
+    private final OneOffLessonCoordinator oneOffCoordinator;
 
     public LessonController(LessonService lessonService,
                             LessonTransferService lessonTransferService,
-                            LessonAssembler lessonAssembler) {
+                            LessonAssembler lessonAssembler,
+                            OneOffLessonCoordinator oneOffCoordinator) {
         this.lessonService = lessonService;
         this.lessonTransferService = lessonTransferService;
         this.lessonAssembler = lessonAssembler;
+        this.oneOffCoordinator = oneOffCoordinator;
     }
 
     @Override
@@ -88,7 +92,9 @@ public class LessonController implements LessonApi {
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
     public ResponseEntity<EntityModel<LessonResponse>> restoreLesson(Long id) {
-        LessonWithItem result = lessonService.restoreLesson(id);
+        Long restoredId = oneOffCoordinator.restoreIfOneOff(id);
+        LessonWithItem result = restoredId == null ? lessonService.restoreLesson(id)
+                : lessonService.getRestoredOneOffLesson(restoredId);
         return ResponseEntity.ok(lessonAssembler.toModel(result));
     }
 

@@ -259,10 +259,10 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         long lessonId = jdbcTemplate.queryForObject("""
                 INSERT INTO lessons (one_off_lesson_id, occurrence_id, assignment_id, group_id,
                     subject_id, semester_id, assigned_teacher_id, lesson_type, date, lesson_number,
-                    start_time, end_time, status, generation, revision)
+                    start_time, end_time, day_of_week, week_type_snapshot, status, generation, revision)
                 VALUES (?, ?, ?, ?, 100, 10, 700, 'lecture', ?, ?, '08:30'::time,
-                    '10:00'::time, 'planned', 1, 1) RETURNING id
-                """, Long.class, oneOffId, occurrenceId, testGroupId, testGroupId, date, lessonNumber);
+                    '10:00'::time, extract(isodow FROM ?::date), 'all', 'planned', 1, 1) RETURNING id
+                """, Long.class, oneOffId, occurrenceId, testGroupId, testGroupId, date, lessonNumber, date);
         jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?", lessonId, occurrenceId);
         jdbcTemplate.update("UPDATE schedule_one_off_lessons SET physical_lesson_id = ? WHERE id = ?", lessonId, oneOffId);
         return lessonId;

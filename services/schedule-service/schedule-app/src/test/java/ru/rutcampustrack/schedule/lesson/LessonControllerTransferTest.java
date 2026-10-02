@@ -19,7 +19,8 @@ class LessonControllerTransferTest {
         LessonService lessonService = mock(LessonService.class);
         LessonTransferService transferService = mock(LessonTransferService.class);
         LessonAssembler lessonAssembler = mock(LessonAssembler.class);
-        LessonController controller = new LessonController(lessonService, transferService, lessonAssembler);
+        LessonController controller = new LessonController(lessonService, transferService, lessonAssembler,
+                mock(ru.rutcampustrack.schedule.oneoff.OneOffLessonCoordinator.class));
         TransferLessonRequest request = new TransferLessonRequest(
                 LocalDate.of(2090, 1, 3), 2, null, null, null, "1", UUID.randomUUID());
         TransferLessonResponse error = new TransferLessonResponse(

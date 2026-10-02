@@ -14,6 +14,7 @@ import ru.rutcampustrack.schedule.security.RequireRole;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * REST controller for one-off lesson management (Phase 60-03).
@@ -34,8 +35,9 @@ public class OneOffLessonController implements OneOffLessonApi {
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
     public ResponseEntity<EntityModel<OneOffLessonResponse>> createOneOffLesson(
+            UUID idempotencyKey,
             CreateOneOffLessonRequest request) {
-        OneOffLesson saved = oneOffLessonService.createOneOffLesson(request);
+        OneOffLesson saved = oneOffLessonService.createOneOffLesson(request, idempotencyKey);
         return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(saved));
     }
 

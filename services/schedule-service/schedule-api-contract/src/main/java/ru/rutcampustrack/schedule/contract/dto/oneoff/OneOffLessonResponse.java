@@ -15,6 +15,7 @@ import java.time.OffsetDateTime;
 public class OneOffLessonResponse extends RepresentationModel<OneOffLessonResponse> {
 
     private Long id;
+    private Long physicalLessonId;
     private Long groupId;
     private Long subjectId;
     private Long semesterId;
@@ -26,10 +27,11 @@ public class OneOffLessonResponse extends RepresentationModel<OneOffLessonRespon
 
     public OneOffLessonResponse() {}
 
-    public OneOffLessonResponse(Long id, Long groupId, Long subjectId, Long semesterId,
+    public OneOffLessonResponse(Long id, Long physicalLessonId, Long groupId, Long subjectId, Long semesterId,
                                 LocalDate date, Short lessonNumber, String classroom,
                                 Long createdBy, OffsetDateTime createdAt) {
         this.id = id;
+        this.physicalLessonId = physicalLessonId;
         this.groupId = groupId;
         this.subjectId = subjectId;
         this.semesterId = semesterId;
@@ -41,6 +43,8 @@ public class OneOffLessonResponse extends RepresentationModel<OneOffLessonRespon
     }
 
     public Long getId() { return id; }
+    @Schema(description = "Текущий канонический ID физической пары для ДЗ, посещаемости и статистики. Повтор создания возвращает тот же logical ID и текущий physical ID; отмена не означает активность пары.")
+    public Long getPhysicalLessonId() { return physicalLessonId; }
     public Long getGroupId() { return groupId; }
     public Long getSubjectId() { return subjectId; }
     public Long getSemesterId() { return semesterId; }

@@ -448,7 +448,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         Short lessonNumber = lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber();
         java.time.LocalTime start = lesson.getStartTime() != null ? lesson.getStartTime() : item.getStartTime();
         java.time.LocalTime end = lesson.getEndTime() != null ? lesson.getEndTime() : item.getEndTime();
-        String room = lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item.getRoom();
+        String room = lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item == null ? null : item.getRoom();
         LessonResponse.Builder response = LessonResponse.newBuilder()
                 .setId(lesson.getId())
                 .setScheduleItemId(lesson.getScheduleItemId() == null ? 0 : lesson.getScheduleItemId())

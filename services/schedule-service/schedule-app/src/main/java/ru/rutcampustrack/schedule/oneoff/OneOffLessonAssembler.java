@@ -17,6 +17,7 @@ public class OneOffLessonAssembler {
     public EntityModel<OneOffLessonResponse> toModel(OneOffLesson entity) {
         OneOffLessonResponse body = new OneOffLessonResponse(
                 entity.getId(),
+                entity.getPhysicalLessonId(),
                 entity.getGroupId(),
                 entity.getSubjectId(),
                 entity.getSemesterId(),

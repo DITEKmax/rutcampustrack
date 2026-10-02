@@ -44,6 +44,9 @@ public class OneOffLesson {
     @Column(name = "semester_id", nullable = false)
     private Long semesterId;
 
+    @Column(name = "physical_lesson_id")
+    private Long physicalLessonId;
+
     @Setter
     @Column(nullable = false)
     private LocalDate date;

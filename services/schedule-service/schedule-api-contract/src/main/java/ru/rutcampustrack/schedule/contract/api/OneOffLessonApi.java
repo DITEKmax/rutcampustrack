@@ -14,12 +14,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.OneOffLessonResponse;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * REST API contract for one-off lesson management (Phase 60-03, D-04/D-08/D-09/D-22).
@@ -35,11 +37,12 @@ public interface OneOffLessonApi {
             @ApiResponse(responseCode = "201", description = "Разовая пара создана"),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа (не староста этой группы)"),
-            @ApiResponse(responseCode = "409", description = "Слот занят активным шаблоном или дубль разовой пары"),
+            @ApiResponse(responseCode = "409", description = "Физический слот занят, назначение изменилось или ключ запроса использован с другим содержимым"),
             @ApiResponse(responseCode = "503", description = "Academic Service недоступен")
     })
     @PostMapping
     ResponseEntity<EntityModel<OneOffLessonResponse>> createOneOffLesson(
+            @RequestHeader("Idempotency-Key") UUID idempotencyKey,
             @Valid @RequestBody CreateOneOffLessonRequest request);
 
     @Operation(summary = "Список разовых пар для группы в диапазоне дат")
@@ -50,9 +53,9 @@ public interface OneOffLessonApi {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo);
 
-    @Operation(summary = "Удалить разовую пару (HEADMAN, любая дата D-22)")
+    @Operation(summary = "Отменить текущую физическую разовую пару с сохранением истории (HEADMAN, любая дата D-22)")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Разовая пара удалена"),
+            @ApiResponse(responseCode = "204", description = "Разовая пара отменена, история сохранена"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
             @ApiResponse(responseCode = "404", description = "Разовая пара не найдена")
     })

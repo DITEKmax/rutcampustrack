@@ -79,7 +79,8 @@ public class LessonStatusTransitionJob {
                 .toList();
         for (Lesson lesson : toActivate) {
             lesson.setStatus(LessonStatus.ACTIVE);
-            ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
+            ScheduleItem item = lesson.getScheduleItemId() == null ? null
+                    : scheduleItemRepository.findById(lesson.getScheduleItemId())
                     .orElseThrow(() -> new IllegalStateException(
                             "ScheduleItem not found for lesson " + lesson.getId()));
             eventPublisher.publishEvent(new LessonStartedEvent(this,
@@ -97,7 +98,8 @@ public class LessonStatusTransitionJob {
         for (Lesson lesson : toClose) {
             lesson.setStatus(LessonStatus.CLOSED);
             lesson.setClosedAt(OffsetDateTime.now(clock));
-            ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
+            ScheduleItem item = lesson.getScheduleItemId() == null ? null
+                    : scheduleItemRepository.findById(lesson.getScheduleItemId())
                     .orElseThrow(() -> new IllegalStateException(
                             "ScheduleItem not found for lesson " + lesson.getId()));
             eventPublisher.publishEvent(new LessonClosedEvent(this,
@@ -130,6 +132,6 @@ public class LessonStatusTransitionJob {
     }
 
     private static String snapshotRoom(Lesson lesson, ScheduleItem item) {
-        return lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item.getRoom();
+        return lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item == null ? null : item.getRoom();
     }
 }

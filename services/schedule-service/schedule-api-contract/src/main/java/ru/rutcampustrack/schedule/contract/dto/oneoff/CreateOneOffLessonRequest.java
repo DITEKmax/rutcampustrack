@@ -4,9 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  * Request DTO for creating a one-off lesson (Phase 60-03, D-04).
@@ -30,6 +32,10 @@ public record CreateOneOffLessonRequest(
         @NotNull
         Long subjectId,
 
+        @Schema(description = "ID назначения преподавателя для группы, предмета и семестра",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        @NotNull @Positive Long assignmentId,
+
         @Schema(description = "Дата проведения разовой пары",
                 example = "2026-04-24",
                 requiredMode = Schema.RequiredMode.REQUIRED)
@@ -42,6 +48,12 @@ public record CreateOneOffLessonRequest(
                 requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull @Min(1) @Max(8)
         Short lessonNumber,
+
+        @Schema(description = "Время начала пары", requiredMode = Schema.RequiredMode.REQUIRED)
+        @NotNull LocalTime startTime,
+
+        @Schema(description = "Время окончания пары", requiredMode = Schema.RequiredMode.REQUIRED)
+        @NotNull LocalTime endTime,
 
         @Schema(description = "Номер аудитории",
                 example = "3-405",

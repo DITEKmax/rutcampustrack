@@ -24,6 +24,7 @@ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
+import ru.rutcampustrack.schedule.oneoff.OneOffLessonWriter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -57,6 +58,7 @@ public class LessonService {
     private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
 
     private final Clock clock;
+    private final OneOffLessonWriter oneOffWriter;
 
     public LessonService(LessonRepository lessonRepository,
                          ScheduleItemRepository scheduleItemRepository,
@@ -67,7 +69,7 @@ public class LessonService {
                          EntityManager entityManager,
                          ScheduleSemesterArchiveWriteFence archiveWriteFence) {
         this(lessonRepository, scheduleItemRepository, academicGrpcClient, requestContext,
-                eventPublisher, recurringLifecycleWriter, entityManager, archiveWriteFence, Clock.systemUTC());
+                eventPublisher, recurringLifecycleWriter, entityManager, archiveWriteFence, Clock.systemUTC(), null);
     }
 
     @Autowired
@@ -79,8 +81,10 @@ public class LessonService {
                          RecurringLessonLifecycleWriter recurringLifecycleWriter,
                          EntityManager entityManager,
                          ScheduleSemesterArchiveWriteFence archiveWriteFence,
-                         Clock clock) {
+                         Clock clock,
+                         OneOffLessonWriter oneOffWriter) {
         this.clock = clock;
+        this.oneOffWriter = oneOffWriter;
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.academicGrpcClient = academicGrpcClient;
@@ -163,7 +167,8 @@ public class LessonService {
     private LessonWithItem findLessonAndValidateGroup(Long lessonId, String assistantPermission) {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson", "id", lessonId));
-        ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
+        ScheduleItem item = lesson.getScheduleItemId() == null ? null
+                : scheduleItemRepository.findById(lesson.getScheduleItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
         requireHeadmanForGroup(lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId(),
                 assistantPermission);
@@ -187,6 +192,11 @@ public class LessonService {
         if (lesson.getStatus() == LessonStatus.CANCELLED) {
             throw new InvalidLessonStateException(
                     "Lesson is already cancelled");
+        }
+        if (lesson.getOneOffLessonId() != null && lesson.getOccurrenceId() != null) {
+            oneOffWriter.cancelPhysical(lessonId, request.reason(), requestContext.getUserId());
+            entityManager.refresh(lesson);
+            return new LessonWithItem(lesson, null);
         }
         Lesson saved;
         if (lesson.getOccurrenceId() != null && lesson.getScheduleItemId() != null) {
@@ -232,6 +242,9 @@ public class LessonService {
             throw new InvalidLessonStateException(
                     "Only cancelled lessons can be restored, current status: " + lesson.getStatus());
         }
+        if (lesson.getOneOffLessonId() != null && lesson.getOccurrenceId() != null) {
+            throw new InvalidLessonStateException("Разовая пара восстанавливается через канонический координатор");
+        }
         if (lesson.getOccurrenceId() != null && lesson.getScheduleItemId() != null) {
             long currentLessonId = recurringLifecycleWriter.restore(lessonId, requestContext.getUserId());
             if (currentLessonId == lessonId) {
@@ -253,6 +266,17 @@ public class LessonService {
         lesson.setCancelledBy(null);
         lesson.setCancelledAt(null);
         return new LessonWithItem(lessonRepository.save(lesson), lwi.scheduleItem());
+    }
+
+    @Transactional(readOnly = true)
+    public LessonWithItem getRestoredOneOffLesson(Long lessonId) {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson", "id", lessonId));
+        if (lesson.getOneOffLessonId() == null || lesson.getOccurrenceId() == null) {
+            throw new InvalidLessonStateException("Пара не относится к разовому расписанию");
+        }
+        requireGroupReadAccess(lesson.getGroupId());
+        return new LessonWithItem(lesson, null);
     }
 
     /**

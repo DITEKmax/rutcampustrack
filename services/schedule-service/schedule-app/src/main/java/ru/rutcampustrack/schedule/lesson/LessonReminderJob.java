@@ -102,13 +102,17 @@ public class LessonReminderJob {
     }
 
     private void publishReminder(Lesson lesson, String phase) {
-        ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
+        ScheduleItem item = lesson.getScheduleItemId() == null ? null
+                : scheduleItemRepository.findById(lesson.getScheduleItemId())
                 .orElseThrow(() -> new IllegalStateException(
                         "ScheduleItem not found for lesson " + lesson.getId()));
         eventPublisher.publishEvent(new LessonReminderEvent(this,
-                lesson.getId(), item.getGroupId(), item.getSubjectId(),
-                item.getLessonNumber(),
-                item.getStartTime(), item.getEndTime(), item.getRoom(),
+                lesson.getId(), lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId(),
+                lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId(),
+                lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber(),
+                lesson.getStartTime() != null ? lesson.getStartTime() : item.getStartTime(),
+                lesson.getEndTime() != null ? lesson.getEndTime() : item.getEndTime(),
+                lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item == null ? null : item.getRoom(),
                 phase));
     }
 }

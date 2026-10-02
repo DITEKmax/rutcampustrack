@@ -1,0 +1,98 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:attendance-service:attendance-api-contract:compileJava UP-TO-DATE
+> Task :services:attendance-service:attendance-api-contract:processResources NO-SOURCE
+> Task :services:attendance-service:attendance-api-contract:classes UP-TO-DATE
+> Task :services:attendance-service:attendance-api-contract:jar UP-TO-DATE
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-security:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:attendance-service:attendance-app:extractIncludeProto UP-TO-DATE
+> Task :services:attendance-service:attendance-app:extractProto UP-TO-DATE
+> Task :services:attendance-service:attendance-app:generateProto UP-TO-DATE
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-outbox:compileJava UP-TO-DATE
+> Task :services:shared:shared-outbox:classes UP-TO-DATE
+> Task :services:shared:shared-outbox:jar UP-TO-DATE
+> Task :services:shared:shared-security:compileJava UP-TO-DATE
+> Task :services:shared:shared-security:classes UP-TO-DATE
+> Task :services:shared:shared-security:jar UP-TO-DATE
+> Task :services:shared:shared-web:compileJava UP-TO-DATE
+> Task :services:shared:shared-web:classes UP-TO-DATE
+> Task :services:shared:shared-web:jar UP-TO-DATE
+> Task :services:attendance-service:attendance-app:compileJava
+> Task :services:academic-service:academic-api-contract:compileJava
+> Task :services:academic-service:academic-api-contract:processResources NO-SOURCE
+> Task :services:academic-service:academic-api-contract:classes
+> Task :services:academic-service:academic-api-contract:jar
+> Task :services:academic-service:academic-app:extractIncludeProto UP-TO-DATE
+> Task :services:academic-service:academic-app:extractProto UP-TO-DATE
+> Task :services:academic-service:academic-app:generateProto
+
+> Task :services:academic-service:academic-app:compileJava
+
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:attendance-service:attendance-app:processResources UP-TO-DATE
+> Task :services:attendance-service:attendance-app:classes
+> Task :services:shared:shared-observability:processTestFixturesResources NO-SOURCE
+> Task :services:shared:shared-security:processTestFixturesResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processResources NO-SOURCE
+> Task :services:shared:shared-test-containers:processTestFixturesResources NO-SOURCE
+> Task :services:attendance-service:attendance-app:extractIncludeTestProto UP-TO-DATE
+> Task :services:attendance-service:attendance-app:extractTestProto UP-TO-DATE
+> Task :services:attendance-service:attendance-app:generateTestProto NO-SOURCE
+> Task :services:shared:shared-observability:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-observability:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-observability:testFixturesJar UP-TO-DATE
+> Task :services:shared:shared-security:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-security:testFixturesJar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileJava NO-SOURCE
+> Task :services:shared:shared-test-containers:classes UP-TO-DATE
+> Task :services:shared:shared-test-containers:jar UP-TO-DATE
+> Task :services:shared:shared-test-containers:compileTestFixturesJava UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesClasses UP-TO-DATE
+> Task :services:shared:shared-test-containers:testFixturesJar UP-TO-DATE
+
+> Task :services:attendance-service:attendance-app:compileTestJava
+
+> Task :services:academic-service:academic-app:processResources
+> Task :services:academic-service:academic-app:classes
+> Task :services:academic-service:academic-app:extractIncludeTestProto UP-TO-DATE
+> Task :services:academic-service:academic-app:extractTestProto UP-TO-DATE
+> Task :services:academic-service:academic-app:generateTestProto NO-SOURCE
+
+> Task :services:academic-service:academic-app:compileTestJava
+
+> Task :services:attendance-service:attendance-app:processTestResources UP-TO-DATE
+> Task :services:attendance-service:attendance-app:testClasses
+> Task :services:attendance-service:attendance-app:integrationTest
+> Task :services:academic-service:academic-app:processTestResources UP-TO-DATE
+> Task :services:academic-service:academic-app:testClasses
+> Task :services:academic-service:academic-app:integrationTest
+
+HomeworkStudentCompletionConcurrencyIT > cancellationCommittedAfterActiveSelectionRejectsCompletionWithoutChangingStoredRows(boolean) > [1] completed=true FAILED
+    org.springframework.dao.DataIntegrityViolationException at HomeworkStudentCompletionConcurrencyIT.java:345
+        Caused by: org.postgresql.util.PSQLException at HomeworkStudentCompletionConcurrencyIT.java:345
+
+HomeworkStudentCompletionConcurrencyIT > cancellationCommittedAfterActiveSelectionRejectsCompletionWithoutChangingStoredRows(boolean) > [2] completed=false FAILED
+    org.springframework.dao.DataIntegrityViolationException at HomeworkStudentCompletionConcurrencyIT.java:345
+        Caused by: org.postgresql.util.PSQLException at HomeworkStudentCompletionConcurrencyIT.java:345
+
+> Task :services:academic-service:academic-app:integrationTest FAILED
+49 actionable tasks: 10 executed, 39 up-to-date

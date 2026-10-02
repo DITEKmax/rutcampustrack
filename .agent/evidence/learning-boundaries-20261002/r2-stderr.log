@@ -1,0 +1,16 @@
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\test\java\ru\rutcampustrack\academic\user\UserRepositorySearchIT.java:111: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                Specification.where(empty), PageRequest.of(0, 500));
+                             ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\test\java\ru\rutcampustrack\academic\user\UserRepositorySearchIT.java:132: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesSearch("Пётр"))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+2 warnings
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended

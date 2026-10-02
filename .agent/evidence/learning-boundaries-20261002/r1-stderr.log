@@ -1,0 +1,82 @@
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\map\AuthMapDeletionClient.java:37: warning: [removal] setConnectTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+        this.restTemplate = restTemplateBuilder.setConnectTimeout(java.time.Duration.ofSeconds(3))
+                                               ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\map\AuthMapDeletionClient.java:38: warning: [removal] setReadTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+                .setReadTimeout(java.time.Duration.ofSeconds(3)).build();
+                ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\semester\AuthSemesterDeletionClient.java:37: warning: [removal] setConnectTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+        this.restTemplate = restTemplateBuilder.setConnectTimeout(java.time.Duration.ofSeconds(3))
+                                               ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\semester\AuthSemesterDeletionClient.java:38: warning: [removal] setReadTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+                .setReadTimeout(java.time.Duration.ofSeconds(3)).build();
+                ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\UserService.java:221: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesSearch(search))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\UserService.java:403: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesTeacherLookup(search))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+6 warnings
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\student\StudentCheckinTransactionIT.java:205: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps(AttendanceDocument.class).ensureIndex(new Index()
+                                                        ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\student\StudentCheckinTransactionIT.java:208: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("late_checkin_requests").ensureIndex(new Index()
+                                                       ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\student\StudentCheckinTransactionIT.java:213: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("student_checkin_receipts").ensureIndex(new Index()
+                                                          ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1420: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("attendances").ensureIndex(new Index()
+                                             ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1423: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("late_checkin_requests").ensureIndex(new Index()
+                                                       ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1428: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("student_request_receipts").ensureIndex(new Index()
+                                                          ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1432: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("student_late_checkin_budgets").ensureIndex(new Index()
+                                                              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\studentrequest\StudentRequestDomainIT.java:1435: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps("request_attachments").ensureIndex(new Index()
+                                                     ^
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\attendance-service\attendance-app\src\test\java\ru\rutcampustrack\attendance\checkin\CheckinServiceTest.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+8 warnings
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\test\java\ru\rutcampustrack\academic\user\UserRepositorySearchIT.java:111: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                Specification.where(empty), PageRequest.of(0, 500));
+                             ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\admin-group-promotion-20260927\services\academic-service\academic-app\src\test\java\ru\rutcampustrack\academic\user\UserRepositorySearchIT.java:132: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesSearch("Пётр"))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+2 warnings
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+7 tests completed, 2 failed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':services:academic-service:academic-app:integrationTest'.
+> There were failing tests. See the report at: file:///C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/admin-group-promotion-20260927/services/academic-service/academic-app/build/reports/integrationTest/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 2m 44s

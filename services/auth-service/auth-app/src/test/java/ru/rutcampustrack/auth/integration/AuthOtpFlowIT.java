@@ -323,12 +323,18 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     void passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart() throws Exception {
         TokenResponse oldSession = loginStudent("password");
         CachingConnectionFactory connections = (CachingConnectionFactory) rabbitTemplate.getConnectionFactory();
-        int brokerPort = connections.getPort();
+        CachingConnectionFactory publisherConnections =
+                (CachingConnectionFactory) connections.getPublisherConnectionFactory();
+        assertThat(publisherConnections).isNotNull();
+        String brokerAddress = RABBITMQ.getHost() + ":" + RABBITMQ.getMappedPort(5672);
         try {
-            // Use a refused local port on this test's own connection factory: the
-            // credential request runs while its transport really cannot connect.
-            connections.setPort(1);
+            // Spring also has a dedicated publisher factory and may use an
+            // address list instead of its port property. Disconnect both own
+            // factories from the real broker, including their cached channels.
+            connections.setAddresses("127.0.0.1:1");
+            publisherConnections.setAddresses("127.0.0.1:1");
             connections.resetConnection();
+            publisherConnections.resetConnection();
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(oldSession.accessToken());
             ResponseEntity<Void> changed = restTemplate.exchange("/auth/change-password", HttpMethod.POST,
@@ -341,8 +347,10 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             assertThatThrownBy(() -> publishAuthOutbox(outboxSender)).isInstanceOf(IllegalStateException.class);
             assertThat(outboxStorage.countPending()).isEqualTo(1);
         } finally {
-            connections.setPort(brokerPort);
+            connections.setAddresses(brokerAddress);
+            publisherConnections.setAddresses(brokerAddress);
             connections.resetConnection();
+            publisherConnections.resetConnection();
         }
 
         String storedJson = jdbc.queryForObject("SELECT payload::text FROM auth_outbox WHERE status = 'pending'",

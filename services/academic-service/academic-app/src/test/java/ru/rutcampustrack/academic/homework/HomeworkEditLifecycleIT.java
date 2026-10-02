@@ -84,8 +84,12 @@ class HomeworkEditLifecycleIT {
         publisher = jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
         group = jdbc.queryForObject("SELECT group_id FROM user_role_grants WHERE user_id = ? AND role = 'student'", Long.class, actor);
         jdbc.update("UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role = 'headman'", actor);
-        subject = jdbc.queryForObject("INSERT INTO subjects(name,type,group_id) VALUES(?, 'lecture', ?) RETURNING id",
-                Long.class, "hw-edit-" + UUID.randomUUID(), group);
+        subject = new TransactionTemplate(transactions).execute(status -> {
+            Long id = jdbc.queryForObject("INSERT INTO subjects(name,type,group_id) VALUES(?, 'lecture', ?) RETURNING id",
+                    Long.class, "hw-edit-" + UUID.randomUUID(), group);
+            jdbc.update("INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,'lecture')", id);
+            return id;
+        });
         semester = jdbc.queryForObject("INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id",
                 Long.class, "hw-edit-" + UUID.randomUUID(), day.minusDays(10), day.plusDays(30));
         binding = ThreadLocalRandom.current().nextLong(1_000_000_000L, 9_000_000_000L);

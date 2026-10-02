@@ -1,0 +1,18 @@
+[
+  {
+    "name": "pg-academic",
+    "id": "1b211498429f0d4a1c6daa7dfb02105b593f9a3a888618b546907063e5c0b712"
+  },
+  {
+    "name": "pg-schedule",
+    "id": "9d6bec5a3b201fcfa537c1ca151c46547fe2bdd329f496b60170403c885779d9"
+  },
+  {
+    "name": "mongo",
+    "id": "831057d752c2c3517f310e9c42e1cb48943fbf98a675993126b2b4e2938de43d"
+  },
+  {
+    "name": "rabbit",
+    "id": "45ed1d13686a0695fa02d4aee14a2a1b4bb37545f1b584f4f25561b9027e67a9"
+  }
+]

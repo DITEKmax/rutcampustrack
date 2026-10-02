@@ -1,0 +1,8 @@
+{
+  "session_id": 83409,
+  "chunk_id": "180f29",
+  "exit_code": 1,
+  "steps": 19,
+  "checks": 2,
+  "failure": "Fresh physical API retains source history and current moved generation"
+}

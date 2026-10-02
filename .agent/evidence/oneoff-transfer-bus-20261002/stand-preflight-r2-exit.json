@@ -1,0 +1,7 @@
+{
+  "chunk_id": "61fde5",
+  "exit_code": 1,
+  "wall_time_seconds": 3.9745164,
+  "output": "trusted build manifest is not canonical compact UTF-8 JSON (lexically ordered keys, sorted artifact arrays, no whitespace)",
+  "before_actual_runtime": true
+}

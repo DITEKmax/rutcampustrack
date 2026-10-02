@@ -1,0 +1,35 @@
+{
+  "status": "FAIL",
+  "revision": "24e9233526f652efdd17cf59d889d1d2d90aad4a",
+  "runId": "20261002-172033929-pjohj91n",
+  "startedAt": "2026-10-02T17:26:07.706Z",
+  "steps": [
+    {
+      "name": "oneoff.public.create",
+      "status": 201
+    },
+    {
+      "name": "source.snapshot",
+      "status": 404
+    }
+  ],
+  "checks": [],
+  "fixture": {
+    "groupId": 2,
+    "semesterId": 2,
+    "studentId": 5
+  },
+  "limitations": [
+    "Future manual marks are prohibited; no marks seeded. Nonempty marks preservation is separately accepted realMongo component proof.",
+    "No fake ACK/participant writes; all DB access is read-only."
+  ],
+  "rejection": {
+    "name": "source.snapshot",
+    "status": 404,
+    "type": "https://api.rutcampustrack.ru/problems/resource-not-found",
+    "code": null,
+    "traceId": "7fb61463460dd895490ef717eb5a0db7"
+  },
+  "failure": "source.snapshot: HTTP404 expected200",
+  "finishedAt": "2026-10-02T17:26:22.305Z"
+}

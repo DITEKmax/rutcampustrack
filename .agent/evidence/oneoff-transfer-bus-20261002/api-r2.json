@@ -1,0 +1,295 @@
+{
+  "status": "FAIL",
+  "revision": "24e9233526f652efdd17cf59d889d1d2d90aad4a",
+  "runId": "20261002-173556877-_mcwtoni",
+  "startedAt": "2026-10-02T17:41:49.853Z",
+  "steps": [
+    {
+      "name": "oneoff.public.create",
+      "status": 201
+    },
+    {
+      "name": "source.snapshot",
+      "status": 200
+    },
+    {
+      "name": "homework.public.publish",
+      "status": 201
+    },
+    {
+      "name": "completion.public",
+      "status": 200
+    },
+    {
+      "name": "transfer.accept",
+      "status": 202
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200
+    },
+    {
+      "name": "transfer.wait.actualACK",
+      "status": 200
+    },
+    {
+      "name": "transfer.exact.retry",
+      "status": 200
+    },
+    {
+      "name": "target.fresh",
+      "status": 200
+    },
+    {
+      "name": "source.history.fresh",
+      "status": 200
+    }
+  ],
+  "checks": [
+    "Actual bus ACK completes exact durable operation",
+    "One exact retry preserves operation and target"
+  ],
+  "fixture": {
+    "groupId": 2,
+    "semesterId": 2,
+    "studentId": 5
+  },
+  "limitations": [
+    "Future manual marks are prohibited; no marks seeded. Nonempty marks preservation is separately accepted realMongo component proof.",
+    "No fake ACK/participant writes; all DB access is read-only."
+  ],
+  "created": {
+    "id": 1,
+    "physicalLessonId": 12,
+    "groupId": 2,
+    "subjectId": 1,
+    "semesterId": 2,
+    "date": "2026-10-03",
+    "lessonNumber": 2,
+    "classroom": "BUS-ONEOFF",
+    "createdBy": 4,
+    "createdAt": "2026-10-02T17:42:04.089464Z",
+    "_links": {
+      "self": {
+        "href": "http://schedule-service:9092/schedule/one-off-lessons/1"
+      }
+    }
+  },
+  "before": {
+    "academic": {
+      "homework": {
+        "id": 2,
+        "bindingId": 2,
+        "publisher": 4,
+        "requestKey": "ed81c50f-3701-44a4-8cb1-48beae574727",
+        "date": "2026-10-03",
+        "number": 2,
+        "mode": "LESSON"
+      },
+      "completion": [
+        {
+          "id": 1,
+          "studentId": 5,
+          "completedAt": "2026-10-02T20:42:06.161349+03:00"
+        }
+      ],
+      "receipts": [],
+      "history": []
+    },
+    "binding": {
+      "id": 2,
+      "actor": 4,
+      "key": "ed81c50f-3701-44a4-8cb1-48beae574727",
+      "hash": "748bbea6b7d2df85995c56b1a58096a23a46e46d2784aa8ffec0685fba54b6b0",
+      "originalOccurrence": 12,
+      "originalMode": "LESSON",
+      "originalDate": "2026-10-03",
+      "originalNumber": 2,
+      "group": 2,
+      "subject": 1,
+      "semester": 2,
+      "occurrence": 12,
+      "lesson": 12,
+      "homework": 2,
+      "state": "ACTIVE"
+    }
+  },
+  "operation": {
+    "operationId": "dfc73f1d-7434-4795-ac64-6512d797ec07",
+    "state": "PENDING",
+    "occurrenceId": "12",
+    "sourceLessonId": "12",
+    "targetLessonId": "13",
+    "revision": "2",
+    "retryable": true,
+    "errorCode": null,
+    "targetDate": "2026-10-05"
+  },
+  "stores": {
+    "before": {
+      "homework": {
+        "id": 2,
+        "bindingId": 2,
+        "publisher": 4,
+        "requestKey": "ed81c50f-3701-44a4-8cb1-48beae574727",
+        "date": "2026-10-03",
+        "number": 2,
+        "mode": "LESSON"
+      },
+      "completion": [
+        {
+          "id": 1,
+          "studentId": 5,
+          "completedAt": "2026-10-02T20:42:06.161349+03:00"
+        }
+      ],
+      "receipts": [],
+      "history": []
+    },
+    "after": {
+      "homework": {
+        "id": 2,
+        "bindingId": 2,
+        "publisher": 4,
+        "requestKey": "ed81c50f-3701-44a4-8cb1-48beae574727",
+        "date": "2026-10-05",
+        "number": 3,
+        "mode": "LESSON"
+      },
+      "completion": [
+        {
+          "id": 1,
+          "studentId": 5,
+          "completedAt": "2026-10-02T20:42:06.161349+03:00"
+        }
+      ],
+      "receipts": [
+        {
+          "batch": 0,
+          "result": "APPLIED",
+          "source": 12,
+          "target": 13
+        }
+      ],
+      "history": [
+        {
+          "bindingId": 2,
+          "homeworkId": 2,
+          "occurrenceId": 12,
+          "source": 12,
+          "target": 13,
+          "state": "MOVED"
+        }
+      ]
+    },
+    "placement": {
+      "origin": {
+        "id": 1,
+        "date": "2026-10-03",
+        "number": 2,
+        "physicalId": 13
+      },
+      "binding": {
+        "id": 2,
+        "actor": 4,
+        "key": "ed81c50f-3701-44a4-8cb1-48beae574727",
+        "hash": "748bbea6b7d2df85995c56b1a58096a23a46e46d2784aa8ffec0685fba54b6b0",
+        "originalOccurrence": 12,
+        "originalMode": "LESSON",
+        "originalDate": "2026-10-03",
+        "originalNumber": 2,
+        "group": 2,
+        "subject": 1,
+        "semester": 2,
+        "occurrence": 12,
+        "lesson": 13,
+        "homework": 2,
+        "state": "ACTIVE"
+      },
+      "physical": [
+        {
+          "id": 12,
+          "occurrence": 12,
+          "generation": 1,
+          "date": "2026-10-03",
+          "status": "transferred"
+        },
+        {
+          "id": 13,
+          "occurrence": 12,
+          "generation": 2,
+          "date": "2026-10-05",
+          "status": "planned"
+        }
+      ],
+      "ack": [
+        {
+          "participant": "ACADEMIC",
+          "batch": 0,
+          "result": "APPLIED"
+        },
+        {
+          "participant": "ATTENDANCE",
+          "batch": -1,
+          "result": "APPLIED"
+        }
+      ],
+      "event": {
+        "version": 2,
+        "sourceOrigin": "1",
+        "targetOrigin": "1"
+      }
+    },
+    "marks": {
+      "marks": 0,
+      "receipt": {
+        "id": "dfc73f1d-7434-4795-ac64-6512d797ec07",
+        "eventVersion": 2,
+        "result": "APPLIED",
+        "occurrenceId": "12",
+        "sourceLessonId": "12",
+        "targetLessonId": "13",
+        "sourceOrigin": "1",
+        "targetOrigin": "1"
+      }
+    }
+  },
+  "failure": "Fresh physical API retains source history and current moved generation",
+  "finishedAt": "2026-10-02T17:42:16.050Z"
+}

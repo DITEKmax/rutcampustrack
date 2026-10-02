@@ -1,0 +1,58 @@
+{
+  "revision": "24e9233526f652efdd17cf59d889d1d2d90aad4a",
+  "baselineManifestSha256": "32125fa72e70ddccff2fc5cf7fcd984016eab9ebf28bfc5211c07b23a9ef1bc8",
+  "unchangedSourceDiff": [],
+  "jars": [
+    {
+      "name": "academic",
+      "sha256": "131a339a111b7af3c531fac1f35536ffb71b40b873dffae9e253e5d0c3bbe28f",
+      "bytes": 99139259,
+      "mode": "rebuilt"
+    },
+    {
+      "name": "gateway",
+      "sha256": "8bff8dfbdfc8bf054a696f74b3c82307a92b1be6236573345874538ae6eba03a",
+      "bytes": 62057460,
+      "mode": "rebuilt"
+    },
+    {
+      "name": "attendance",
+      "sha256": "ae3baa95cb49f5dcfe8031e26727610a2080db1a8c8abb5ba352c732303b7110",
+      "bytes": 95464574,
+      "mode": "rebuilt"
+    },
+    {
+      "name": "auth",
+      "sha256": "b86a4d71a268f9c0815f70e64484e68179f0993cfa05cf9585b4942a9c93a3ce",
+      "bytes": 99708853,
+      "mode": "rebuilt"
+    },
+    {
+      "name": "documentRenderer",
+      "sha256": "b21891315efd3496719d1215f6512a1586e48cc64ee40ee1b9ef563083d623cf",
+      "bytes": 48259456,
+      "mode": "verified reuse"
+    },
+    {
+      "name": "mobileBff",
+      "sha256": "0e4d46d212f86092e15d867e1d5cfc1c27d20d2d8983203531759a87d8255532",
+      "bytes": 49745060,
+      "mode": "verified reuse"
+    },
+    {
+      "name": "notification",
+      "sha256": "ba1c94544019e90773991680ffaab2ce2a6666c57bf02cd80976e7cc642d5402",
+      "bytes": 86105528,
+      "mode": "verified reuse"
+    },
+    {
+      "name": "schedule",
+      "sha256": "e5925a3c0741bb79719fc4e4bd6f037c06e37d1da76ee67f488f60fad883af6f",
+      "bytes": 92677433,
+      "mode": "rebuilt"
+    }
+  ],
+  "pwaFilesVerified": 10,
+  "manifestSha256": "82699fc2441ddcb097c0fbd0317831c0252a72f5f94810a9fef665304c010e64",
+  "canonicalVerifier": "existing exact Convert-TrustedManifestToCanonicalObject roundtrip PASS"
+}

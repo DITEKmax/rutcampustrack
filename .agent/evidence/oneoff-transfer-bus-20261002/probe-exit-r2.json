@@ -1,0 +1,11 @@
+{
+  "runId": "20261002-173556877-_mcwtoni",
+  "revision": "24e9233526f652efdd17cf59d889d1d2d90aad4a",
+  "status": "FAIL",
+  "startedAt": "2026-10-02T20:41:03.8312615+03:00",
+  "probeExit": 1,
+  "steps": 19,
+  "checks": 2,
+  "failure": "Fresh physical API retains source history and current moved generation",
+  "finishedAt": "2026-10-02T20:42:16.0931958+03:00"
+}

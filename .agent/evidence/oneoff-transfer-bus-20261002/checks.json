@@ -1,0 +1,57 @@
+{
+  "source": "24e9233526f652efdd17cf59d889d1d2d90aad4a",
+  "node_check": 0,
+  "powershell_parse": 0,
+  "diff_check": 0,
+  "build_exit": 0,
+  "build_session": 72352,
+  "build_seconds": 135,
+  "manifest_sha256": "82699fc2441ddcb097c0fbd0317831c0252a72f5f94810a9fef665304c010e64",
+  "runtime": {
+    "R1": {
+      "runner_session": 10626,
+      "probe_session": 16513,
+      "exit_code": 1,
+      "steps": 2,
+      "checks": 0,
+      "cause": "Invented singlelessonGET route; harness only, corrected to existinggrouplist",
+      "transfer_invoked": false,
+      "cleanup": "PASS14/14+network+keys+artifacts",
+      "independent_absence_exit": 0
+    },
+    "R2": {
+      "runner_session": 7729,
+      "probe_session": 83409,
+      "exit_code": 1,
+      "steps": 19,
+      "checks": 2,
+      "cause": "Transferred physical historical row exposes current=true from unfilled transient entity default; S2 product read defect accepted by root",
+      "accepted_stores": "r2-accepted-stores.json",
+      "cleanup": "PASS14/14+network+keys+artifacts",
+      "independent_absence_exit": 0
+    }
+  },
+  "no_component_pass_repeats": true,
+  "limitations": [
+    "No impossible futuremark fixture; actualfutureONEOFF+homework+completion and zero marks",
+    "Foreign tracked evidence preserved outside clean runtimeholder"
+  ],
+  "preflights": [
+    {
+      "exit_code": 1,
+      "cause": "2stalegeneratedPWAassets preserved, expected10unchanged"
+    },
+    {
+      "exit_code": 1,
+      "cause": "noncanonicalmanifestencoding fixed via exactexistingfunction"
+    }
+  ],
+  "source_correction": {
+    "revision": "1efa2b08af14a659c743f10d6829eceb5793fb33",
+    "scope": "4 Schedule files, canonical batch pointer + read-only REPEATABLE_READ",
+    "diff_check": 0,
+    "planned_exact_IT": "LessonApiIT.getLessons_transferredOneOffHistoryUsesCanonicalCurrentPointer",
+    "runtime": "QUEUED single method, Notification soleheavy",
+    "independent_review": "PASS per root"
+  }
+}

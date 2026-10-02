@@ -1,0 +1,14 @@
+[
+  {
+    "source": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\frontends\\pwa-vue\\dist\\assets\\index-DC_TLvi3.js",
+    "destination": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\admin-group-promotion-20260927\\.agent\\evidence\\oneoff-transfer-bus-20261002\\preserved-runtime-cache\\index-DC_TLvi3.js",
+    "sha256": "b4d9e7bd827e81c48bcef8788bbf3aaa9cd25224c303fbed908b6df22ff52626",
+    "preserved": true
+  },
+  {
+    "source": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r2\\frontends\\pwa-vue\\dist\\assets\\index-nt1gX52y.css",
+    "destination": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\admin-group-promotion-20260927\\.agent\\evidence\\oneoff-transfer-bus-20261002\\preserved-runtime-cache\\index-nt1gX52y.css",
+    "sha256": "7d2d547686f7733bb801c8449dff3741f65f60e00fc15c7a07a1febad2c41120",
+    "preserved": true
+  }
+]

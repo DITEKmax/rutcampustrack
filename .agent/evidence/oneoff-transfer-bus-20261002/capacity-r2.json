@@ -1,0 +1,14 @@
+{
+  "observation_chunk": "bd84f4",
+  "hostFreeKiB": 1449408,
+  "hostTotalKiB": 16154384,
+  "hostVirtualFreeKiB": 6675024,
+  "dockerVmMemAvailableKiB": 11363116,
+  "dockerVmMemTotalKiB": 12250352,
+  "runningContainers": 0,
+  "javaCount": 0,
+  "stoppedForeignPreserved": true,
+  "ownedCapacityContainerRemoved": true,
+  "holderClean": true,
+  "exitCode": 0
+}

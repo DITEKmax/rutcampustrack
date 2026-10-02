@@ -1,0 +1,8 @@
+{
+  "chunk_id": "062a66",
+  "exit_code": 1,
+  "wall_time_seconds": 4.0880942,
+  "output": "Existing runner preflight: PWA file set changed after successful build",
+  "cause": "two stale generated assets outside pinned 10 files",
+  "before_actual_runtime": true
+}

@@ -1,0 +1,7 @@
+{
+  "revision": "24e9233526f652efdd17cf59d889d1d2d90aad4a",
+  "command": "./gradlew.bat :services:academic-service:academic-app:bootJar :services:schedule-service:schedule-app:bootJar :services:attendance-service:attendance-app:bootJar :services:auth-service:auth-app:bootJar :services:api-gateway:bootJar --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --no-parallel --max-workers=1 --console=plain",
+  "exitCode": 0,
+  "startedAt": "2026-10-02T20:11:53.3819353+03:00",
+  "finishedAt": "2026-10-02T20:14:09.0832057+03:00"
+}

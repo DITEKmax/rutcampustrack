@@ -1,0 +1,13 @@
+{
+  "observation_chunk": "a74648",
+  "exit_code": 0,
+  "host_free_GiB": 2.19,
+  "host_virtual_free_GiB": 5.42,
+  "java_count": 0,
+  "containers": [],
+  "docker_vm_memtotal_kB": 12250352,
+  "docker_vm_memavailable_kB": 11380828,
+  "docker_vm_swapfree_kB": 8387364,
+  "prior_stand_GiB": 3.2,
+  "capacity_container_removed": true
+}

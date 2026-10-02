@@ -1,0 +1,9 @@
+{
+  "independent_chunk": "772d50",
+  "exit_code": 0,
+  "docker_ps_a_exact_run": [],
+  "network_ls_exact_run": [],
+  "java": [],
+  "runner": "PASS14/14+network+keys+artifactRoot",
+  "heavy_released_to_root": true
+}

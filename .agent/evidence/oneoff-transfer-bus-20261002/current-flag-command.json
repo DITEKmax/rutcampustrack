@@ -1,0 +1,25 @@
+{
+  "revision": "1efa2b08af14a659c743f10d6829eceb5793fb33",
+  "review": "independent affected PASS accepted by root",
+  "cwd": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\admin-group-promotion-20260927",
+  "env": {
+    "JAVA_HOME": "C:/Users/maksd/.jdks/ms-21.0.10",
+    "TESTCONTAINERS_REUSE_ENABLE": "false"
+  },
+  "executable": "./gradlew.bat",
+  "args": [
+    ":services:schedule-service:schedule-app:compileJava",
+    ":services:schedule-service:schedule-app:compileTestJava",
+    ":services:schedule-service:schedule-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.schedule.integration.LessonApiIT.getLessons_transferredOneOffHistoryUsesCanonicalCurrentPointer",
+    "--max-workers=1",
+    "--no-daemon",
+    "--no-parallel",
+    "--no-problems-report",
+    "--console=plain",
+    "--system-prop=org.gradle.java.compile-classpath-packaging=true"
+  ],
+  "status": "QUEUED awaiting root lease; no wholebus or accepted component repeats",
+  "resources": "one disposable Testcontainers PostgreSQL16; exact owned cleanup"
+}

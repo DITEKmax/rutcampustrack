@@ -1,0 +1,8 @@
+{
+  "session_id": 16513,
+  "chunk_id": "165526",
+  "exit_code": 1,
+  "failure": "Invented GET /schedule/lessons/{physicalId} route404; no transfer invoked",
+  "scope": "harness-only",
+  "raw": "r1/api.json"
+}

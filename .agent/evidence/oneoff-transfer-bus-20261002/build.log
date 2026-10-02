@@ -1,0 +1,173 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.12/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :services:shared:shared-web-api:compileJava UP-TO-DATE
+> Task :services:shared:shared-web-api:processResources NO-SOURCE
+> Task :services:shared:shared-web-api:classes UP-TO-DATE
+> Task :services:shared:shared-web-api:jar UP-TO-DATE
+> Task :services:academic-service:academic-api-contract:compileJava
+> Task :services:academic-service:academic-api-contract:processResources NO-SOURCE
+> Task :services:academic-service:academic-api-contract:classes
+> Task :services:academic-service:academic-api-contract:jar
+> Task :services:shared:shared-events:processResources NO-SOURCE
+> Task :services:shared:shared-logback:processResources UP-TO-DATE
+> Task :services:shared:shared-observability:processResources UP-TO-DATE
+> Task :services:shared:shared-outbox:processResources NO-SOURCE
+> Task :services:shared:shared-security:processResources NO-SOURCE
+> Task :services:shared:shared-web:processResources UP-TO-DATE
+> Task :services:academic-service:academic-app:extractIncludeProto
+> Task :services:academic-service:academic-app:extractProto UP-TO-DATE
+> Task :services:academic-service:academic-app:generateProto
+> Task :services:shared:shared-events:compileJava UP-TO-DATE
+> Task :services:shared:shared-events:classes UP-TO-DATE
+> Task :services:shared:shared-events:jar UP-TO-DATE
+> Task :services:shared:shared-logback:compileJava UP-TO-DATE
+> Task :services:shared:shared-logback:classes UP-TO-DATE
+> Task :services:shared:shared-logback:jar UP-TO-DATE
+> Task :services:shared:shared-observability:compileJava UP-TO-DATE
+> Task :services:shared:shared-observability:classes UP-TO-DATE
+> Task :services:shared:shared-observability:jar UP-TO-DATE
+> Task :services:shared:shared-outbox:compileJava UP-TO-DATE
+> Task :services:shared:shared-outbox:classes UP-TO-DATE
+> Task :services:shared:shared-outbox:jar UP-TO-DATE
+> Task :services:shared:shared-security:compileJava
+> Task :services:shared:shared-security:classes
+> Task :services:shared:shared-security:jar
+> Task :services:shared:shared-web:compileJava
+> Task :services:shared:shared-web:classes
+> Task :services:shared:shared-web:jar
+
+> Task :services:academic-service:academic-app:compileJava
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\map\AuthMapDeletionClient.java:37: warning: [removal] setConnectTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+        this.restTemplate = restTemplateBuilder.setConnectTimeout(java.time.Duration.ofSeconds(3))
+                                               ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\map\AuthMapDeletionClient.java:38: warning: [removal] setReadTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+                .setReadTimeout(java.time.Duration.ofSeconds(3)).build();
+                ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\semester\AuthSemesterDeletionClient.java:37: warning: [removal] setConnectTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+        this.restTemplate = restTemplateBuilder.setConnectTimeout(java.time.Duration.ofSeconds(3))
+                                               ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\semester\AuthSemesterDeletionClient.java:38: warning: [removal] setReadTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+                .setReadTimeout(java.time.Duration.ofSeconds(3)).build();
+                ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\AuthUserArchiveClient.java:22: warning: [removal] setConnectTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+        this.http = builder.setConnectTimeout(Duration.ofSeconds(3)).setReadTimeout(Duration.ofSeconds(3)).build();
+                           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\AuthUserArchiveClient.java:22: warning: [removal] setReadTimeout(Duration) in RestTemplateBuilder has been deprecated and marked for removal
+        this.http = builder.setConnectTimeout(Duration.ofSeconds(3)).setReadTimeout(Duration.ofSeconds(3)).build();
+                                                                    ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\UserService.java:221: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesSearch(search))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\user\UserService.java:413: warning: [removal] <T>where(Specification<T>) in Specification has been deprecated and marked for removal
+                .where(UserSpecifications.matchesTeacherLookup(search))
+                ^
+  where T is a type-variable:
+    T extends Object declared in method <T>where(Specification<T>)
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\academic-service\academic-app\src\main\java\ru\rutcampustrack\academic\repository\GroupRegistryReadRepository.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+8 warnings
+
+> Task :generateGitProperties UP-TO-DATE
+> Task :services:academic-service:academic-app:processResources
+> Task :services:academic-service:academic-app:classes
+> Task :services:academic-service:academic-app:resolveMainClassName
+> Task :services:academic-service:academic-app:bootJar
+> Task :services:schedule-service:schedule-api-contract:compileJava
+> Task :services:schedule-service:schedule-api-contract:processResources NO-SOURCE
+> Task :services:schedule-service:schedule-api-contract:classes
+> Task :services:schedule-service:schedule-api-contract:jar
+> Task :services:schedule-service:schedule-app:extractIncludeProto UP-TO-DATE
+> Task :services:schedule-service:schedule-app:extractProto UP-TO-DATE
+> Task :services:schedule-service:schedule-app:generateProto
+> Task :services:schedule-service:schedule-app:compileJava
+> Task :services:schedule-service:schedule-app:processResources
+> Task :services:schedule-service:schedule-app:classes
+> Task :services:schedule-service:schedule-app:resolveMainClassName
+> Task :services:schedule-service:schedule-app:bootJar
+> Task :services:attendance-service:attendance-api-contract:compileJava
+> Task :services:attendance-service:attendance-api-contract:processResources NO-SOURCE
+> Task :services:attendance-service:attendance-api-contract:classes
+> Task :services:attendance-service:attendance-api-contract:jar
+> Task :services:attendance-service:attendance-app:extractIncludeProto UP-TO-DATE
+> Task :services:attendance-service:attendance-app:extractProto UP-TO-DATE
+> Task :services:attendance-service:attendance-app:generateProto
+
+> Task :services:attendance-service:attendance-app:compileJava
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\AttendanceIndexInitializer.java:97: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        mongoTemplate.indexOps(AttendanceDocument.class).ensureIndex(
+                                                        ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:70: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:77: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:84: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:91: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        ops.ensureIndex(new Index()
+           ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:99: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        cancellationOps.ensureIndex(new Index()
+                       ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:109: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:114: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:118: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:123: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        lcrOps.ensureIndex(new Index()
+              ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:133: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        excuseOps.ensureIndex(new Index()
+                 ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:139: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        requestReceiptOps.ensureIndex(new Index()
+                         ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:147: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        budgetOps.ensureIndex(new Index()
+                 ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:154: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        attachmentOps.ensureIndex(new Index()
+                     ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:159: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        attachmentOps.ensureIndex(new Index()
+                     ^
+C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\config\MongoConfig.java:165: warning: [removal] ensureIndex(IndexDefinition) in IndexOperations has been deprecated and marked for removal
+        receiptOps.ensureIndex(new Index()
+                  ^
+Note: C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r2\services\attendance-service\attendance-app\src\main\java\ru\rutcampustrack\attendance\checkin\CheckinController.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+16 warnings
+
+> Task :services:attendance-service:attendance-app:processResources
+> Task :services:attendance-service:attendance-app:classes
+> Task :services:attendance-service:attendance-app:resolveMainClassName
+> Task :services:attendance-service:attendance-app:bootJar
+> Task :services:auth-service:auth-api-contract:compileJava
+> Task :services:auth-service:auth-api-contract:processResources NO-SOURCE
+> Task :services:auth-service:auth-api-contract:classes
+> Task :services:auth-service:auth-api-contract:jar
+> Task :services:auth-service:auth-app:extractIncludeProto
+> Task :services:auth-service:auth-app:extractProto
+> Task :services:auth-service:auth-app:generateProto
+> Task :services:auth-service:auth-app:compileJava
+> Task :services:auth-service:auth-app:processResources
+> Task :services:auth-service:auth-app:classes
+> Task :services:auth-service:auth-app:resolveMainClassName
+> Task :services:auth-service:auth-app:bootJar
+> Task :services:api-gateway:compileJava
+> Task :services:api-gateway:processResources
+> Task :services:api-gateway:classes
+> Task :services:api-gateway:resolveMainClassName
+> Task :services:api-gateway:bootJar
+
+BUILD SUCCESSFUL in 2m 15s
+58 actionable tasks: 39 executed, 19 up-to-date

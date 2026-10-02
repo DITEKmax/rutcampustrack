@@ -1,0 +1,11 @@
+{
+  "runId": "20261002-172033929-pjohj91n",
+  "revision": "24e9233526f652efdd17cf59d889d1d2d90aad4a",
+  "status": "FAIL",
+  "startedAt": "2026-10-02T20:25:20.6612478+03:00",
+  "probeExit": 1,
+  "steps": 2,
+  "checks": 0,
+  "failure": "source.snapshot: HTTP404 expected200",
+  "finishedAt": "2026-10-02T20:26:22.3518026+03:00"
+}

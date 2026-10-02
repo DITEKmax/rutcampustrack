@@ -1,0 +1,7 @@
+{
+  "session_id": 10626,
+  "chunk_id": "856c0d",
+  "exit_code": 1,
+  "runtime": "FAIL probe wrongroute before transfer",
+  "cleanup": "PASS14/14/net/keys/artifacts"
+}

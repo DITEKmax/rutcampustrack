@@ -1,0 +1,22 @@
+{
+  "source": "24e9233526f652efdd17cf59d889d1d2d90aad4a",
+  "runId": "20261002-173556877-_mcwtoni",
+  "evidence": "api-r2.json/stores",
+  "kind": "offline comparison of immutable captured runtime evidence, no new runtime",
+  "checks": {
+    "actual_bus_completed_and_exact_retry": true,
+    "homework_and_completion_identity_preserved": true,
+    "homework_target_scope": true,
+    "canonical_binding_identity_preserved": true,
+    "physical_history_and_current_origin_pointer": true,
+    "actual_academic_receipt_history_once": true,
+    "both_actual_participant_ack": true,
+    "actual_attendance_v2_receipt_zero_fabricated_marks": true,
+    "v2_producer_exact_origin": true
+  },
+  "exit_code": 0,
+  "unproven": [
+    "Full fresh physical HTTP bodies were not saved in R2; boolean compound assertion failed.",
+    "Fresh Homework GET, BFF feed, Attendance report, and public oneoff list after transfer were not reached."
+  ]
+}

@@ -108,7 +108,7 @@ public final class HeadmanStatsDocxRenderer {
                 "н · количество / знаменатель / %"), widths));
         if (rows.isEmpty()) return emptyRow(xml, widths).append("</w:tbl>").toString();
         for (StudentRow row : rows) {
-            xml.append("<w:tr>").append(cell(row.displayName(), widths[0], false));
+            xml.append("<w:tr><w:trPr><w:cantSplit/></w:trPr>").append(cell(row.displayName(), widths[0], false));
             for (Metric metric : List.of(row.metrics().present(), row.metrics().presentOrExcused(),
                     row.metrics().excused(), row.metrics().absent())) {
                 xml.append(cell(metricText(metric), widths[1], false));
@@ -127,7 +127,7 @@ public final class HeadmanStatsDocxRenderer {
                 "+: гео неуспех", "+: староста"), widths));
         if (rows.isEmpty()) return emptyRow(xml, widths).append("</w:tbl>").toString();
         for (StudentRow row : rows) {
-            xml.append("<w:tr>").append(cell(row.displayName(), widths[0], false));
+            xml.append("<w:tr><w:trPr><w:cantSplit/></w:trPr>").append(cell(row.displayName(), widths[0], false));
             var late = row.lateCheckin();
             var excuse = row.excuse();
             var sources = row.sources();

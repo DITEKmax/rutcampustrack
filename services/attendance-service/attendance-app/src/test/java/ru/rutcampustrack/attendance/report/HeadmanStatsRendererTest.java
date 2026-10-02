@@ -48,6 +48,7 @@ class HeadmanStatsRendererTest {
         String word = entry(docx, "word/document.xml");
         String sheet = entry(xlsx, "xl/worksheets/sheet1.xml");
         String html = new String(htmlBytes, StandardCharsets.UTF_8);
+        assertThat(word.split("<w:cantSplit/>", -1)).hasSize(rows.size() * 2 + 1);
         for (StudentRow row : rows) {
             String escaped = row.displayName().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
             assertThat(word.split(java.util.regex.Pattern.quote(escaped), -1)).hasSize(3); // Both full tables.

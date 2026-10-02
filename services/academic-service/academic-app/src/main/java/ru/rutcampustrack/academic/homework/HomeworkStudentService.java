@@ -15,7 +15,6 @@ import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.OffsetDateTime;
@@ -34,18 +33,18 @@ public class HomeworkStudentService {
     private final HomeworkCompletionRepository completionRepository;
     private final SemesterRepository semesterRepository;
     private final UserRepository userRepository;
-    private final AcademicSemesterArchiveBarrierTransaction archiveBarrier;
+    private final HomeworkBindingArchiveCoordinator archiveCoordinator;
 
     public HomeworkStudentService(HomeworkRepository homeworkRepository,
                                   HomeworkCompletionRepository completionRepository,
                                   SemesterRepository semesterRepository,
                                   UserRepository userRepository,
-                                  AcademicSemesterArchiveBarrierTransaction archiveBarrier) {
+                                  HomeworkBindingArchiveCoordinator archiveCoordinator) {
         this.homeworkRepository = homeworkRepository;
         this.completionRepository = completionRepository;
         this.semesterRepository = semesterRepository;
         this.userRepository = userRepository;
-        this.archiveBarrier = archiveBarrier;
+        this.archiveCoordinator = archiveCoordinator;
     }
 
     /**
@@ -77,6 +76,9 @@ public class HomeworkStudentService {
 
         Homework homework = homeworkRepository.findById(homeworkId)
                 .orElseThrow(() -> new ResourceNotFoundException("Homework", "id", homeworkId));
+        // Cancellation and transfer share semester -> binding lock order.
+        // Refresh the selected entity before using its mutable publication state.
+        archiveCoordinator.lockAndRefresh(homework);
         if (!studentGroupId.equals(homework.getGroupId())) {
             throw new AccessDeniedException("ДЗ принадлежит другой группе");
         }
@@ -87,7 +89,6 @@ public class HomeworkStudentService {
             throw new ResourceNotFoundException("Homework", "id", homeworkId);
         }
 
-        archiveBarrier.lockOrdinaryWrite(homework.getSemesterId());
         if (completed) {
             completionRepository.insertIfAbsent(homework.getId(), studentId);
             HomeworkCompletion completion = completionRepository

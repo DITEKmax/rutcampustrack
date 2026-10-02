@@ -1627,8 +1627,8 @@ public class StudentRequestService {
         document.setExcuseType(null);
         document.setExcuseComment(null);
         if (journalAttachmentPort != null) {
-            journalAttachmentPort.delete(request.getSemesterId(), request.getStudentId(),
-                    request.getLessonId(), request.getGroupId());
+            journalAttachmentPort.delete(request.getSemesterId(), request.getLessonId(),
+                    request.getStudentId(), request.getGroupId());
         }
         clearJournalAttachmentMetadata(document);
         document.setUpdatedAt(now);
@@ -1647,7 +1647,7 @@ public class StudentRequestService {
                 && journalAttachmentPort.isAvailable(lessonId, studentId, document.getAttachmentId());
         if (!retain) {
             if (journalAttachmentPort != null && lessonId > 0 && studentId > 0) {
-                journalAttachmentPort.delete(document.getSemesterId(), studentId, lessonId, document.getGroupId());
+                journalAttachmentPort.delete(document.getSemesterId(), lessonId, studentId, document.getGroupId());
             }
             clearJournalAttachmentMetadata(document);
         }

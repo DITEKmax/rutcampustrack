@@ -1064,6 +1064,61 @@ class StudentRequestDomainIT {
     }
 
     @Test
+    void directRequestDecisionsDeleteOnlyJournalBytesForTheExactStudentLessonPair() {
+        for (boolean lateDecision : List.of(false, true)) {
+            long lessonId = lateDecision ? 97L : 96L;
+            seedAbsent(lessonId);
+            RequestDetail request = lateDecision
+                    ? service.submitLateCheckin(STUDENT,
+                            new LateCheckinSubmission(lessonId, "journal-exact-late-" + lessonId))
+                    : service.submitExcuse(STUDENT, excuse(List.of(lessonId), "journal-exact-excuse-" + lessonId,
+                            List.of(new AttachmentInput("proof.pdf", "application/pdf", pdfBytes(64)))));
+            RequestAttachmentDocument own = attachmentRepository.save(RequestAttachmentDocument.builder()
+                    .id(new ObjectId().toHexString()).requestId(STUDENT_ID + ":" + lessonId)
+                    .ownerStudentId(STUDENT_ID).groupId(GROUP_ID).semesterId(SEMESTER_ID)
+                    .name("journal.pdf").contentType("application/pdf").size(64L)
+                    .state(AttachmentState.ACTIVE).data(new Binary(pdfBytes(64))).uploadedAt(START)
+                    .expiresAt(lateDecision ? START.plusSeconds(3600) : START.minusSeconds(1)).build());
+            RequestAttachmentDocument other = attachmentRepository.save(RequestAttachmentDocument.builder()
+                    .id(new ObjectId().toHexString()).requestId(lessonId + ":" + STUDENT_ID)
+                    .ownerStudentId(lessonId).groupId(GROUP_ID).semesterId(SEMESTER_ID)
+                    .name("other.pdf").contentType("application/pdf").size(64L)
+                    .state(AttachmentState.ACTIVE).data(new Binary(pdfBytes(64))).uploadedAt(START)
+                    .expiresAt(START.plusSeconds(3600)).build());
+            AttendanceDocument mark = attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID)
+                    .orElseThrow();
+            mark.setStatus(AttendanceStatus.EXCUSED);
+            mark.setAttachmentId(own.getId());
+            mark.setAttachmentName(own.getName());
+            mark.setAttachmentContentType(own.getContentType());
+            mark.setAttachmentSize(own.getSize());
+            attendanceRepository.save(mark);
+
+            if (lateDecision) {
+                service.decideLateCheckin(HEADMAN, request.summary().id(), true);
+            } else {
+                service.decideExcuse(HEADMAN, request.summary().id(), true, null);
+            }
+
+            assertThat(attachmentRepository.findById(own.getId())).isEmpty();
+            assertThat(attachmentRepository.findById(other.getId())).hasValueSatisfying(stored ->
+                    assertThat(stored).usingRecursiveComparison().isEqualTo(other));
+            assertThat(attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID).orElseThrow())
+                    .satisfies(updated -> {
+                        assertThat(updated.getStatus()).isEqualTo(lateDecision
+                                ? AttendanceStatus.PRESENT : AttendanceStatus.EXCUSED);
+                        assertThat(updated.getAttachmentId()).isNull();
+                        assertThat(updated.getAttachmentName()).isNull();
+                    });
+            if (!lateDecision) {
+                assertThat(attachmentRepository.findByRequestIdAndOwnerStudentIdOrderByPositionAsc(
+                        request.summary().id(), STUDENT_ID)).singleElement()
+                        .satisfies(evidence -> assertThat(evidence.getData()).isNotNull());
+            }
+        }
+    }
+
+    @Test
     void excuseApprovalAfterTransferUsesCurrentLessonAndPreservesOriginalRequestEvidence() {
         for (boolean targetMarkExists : List.of(false, true)) {
             long sourceId = targetMarkExists ? 88L : 87L;

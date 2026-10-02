@@ -5,9 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
-import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.HomeworkCompletion;
 import ru.rutcampustrack.academic.entity.Semester;
@@ -17,7 +15,6 @@ import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.OffsetDateTime;
@@ -41,7 +38,7 @@ class HomeworkStudentServiceTest {
     @Mock private HomeworkCompletionRepository completionRepository;
     @Mock private SemesterRepository semesterRepository;
     @Mock private UserRepository userRepository;
-    @Mock private AcademicSemesterArchiveBarrierTransaction archiveBarrier;
+    @Mock private HomeworkBindingArchiveCoordinator archiveCoordinator;
     @Mock private Homework homework;
     @Mock private HomeworkCompletion completion;
     @Mock private Semester semester;
@@ -53,13 +50,11 @@ class HomeworkStudentServiceTest {
     @BeforeEach
     void setUp() {
         service = new HomeworkStudentService(
-                homeworkRepository, completionRepository, semesterRepository, userRepository, archiveBarrier);
+                homeworkRepository, completionRepository, semesterRepository, userRepository, archiveCoordinator);
         claims = new InternalJwtClaims(
                 STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", GROUP_ID, false, false);
         lenient().when(userRepository.findById(STUDENT_ID)).thenReturn(Optional.of(user));
-        lenient().when(user.getRole()).thenReturn(UserRole.STUDENT);
-        lenient().when(user.getStatus()).thenReturn(AccountStatus.ACTIVE);
-        lenient().when(user.getGroupId()).thenReturn(GROUP_ID);
+        lenient().when(userRepository.findActiveStudentGrantGroupId(STUDENT_ID)).thenReturn(Optional.of(GROUP_ID));
         lenient().when(semesterRepository.findByIsActiveTrue()).thenReturn(Optional.of(semester));
         lenient().when(semester.getId()).thenReturn(SEMESTER_ID);
         lenient().when(homeworkRepository.findById(HOMEWORK_ID)).thenReturn(Optional.of(homework));
@@ -107,7 +102,8 @@ class HomeworkStudentServiceTest {
 
     @Test
     void wrongRoleIsRejectedBeforeReadingHomework() {
-        when(user.getRole()).thenReturn(UserRole.ADMIN);
+        claims = new InternalJwtClaims(
+                STUDENT_ID, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", GROUP_ID, false, false);
 
         assertThatThrownBy(() -> service.setCompletion(HOMEWORK_ID, SEMESTER_ID, claims, true))
                 .isInstanceOf(AccessDeniedException.class);
@@ -117,7 +113,7 @@ class HomeworkStudentServiceTest {
 
     @Test
     void inactiveStudentIsRejectedBeforeReadingHomework() {
-        when(user.getStatus()).thenReturn(AccountStatus.SUSPENDED);
+        when(userRepository.findActiveStudentGrantGroupId(STUDENT_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.setCompletion(HOMEWORK_ID, SEMESTER_ID, claims, true))
                 .isInstanceOf(AccessDeniedException.class);

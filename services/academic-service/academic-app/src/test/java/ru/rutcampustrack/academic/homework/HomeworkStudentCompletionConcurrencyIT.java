@@ -2,6 +2,8 @@ package ru.rutcampustrack.academic.homework;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,15 +14,20 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import io.grpc.stub.StreamObserver;
 import ru.rutcampustrack.academic.AcademicApplication;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
+import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
 import ru.rutcampustrack.academic.grpc.StudentHomeworkTestIdentity;
+import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.academic.grpc.HomeworksForWeekRequest;
 import ru.rutcampustrack.academic.grpc.HomeworksForWeekResponse;
@@ -93,6 +100,15 @@ class HomeworkStudentCompletionConcurrencyIT {
     @Autowired
     private AcademicGrpcServiceImpl grpcService;
 
+    @Autowired
+    private HomeworkRepository homeworkRepository;
+
+    @Autowired
+    private HomeworkBindingArchiveCoordinator archiveCoordinator;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
     private long groupId;
     private long semesterId;
     private long subjectId;
@@ -131,6 +147,61 @@ class HomeworkStudentCompletionConcurrencyIT {
                 Long.class, groupId, subjectId, semesterId, LocalDate.of(2026, 3, 2),
                 "Concurrent homework " + suffix, "Concurrency fixture", studentId,
                 subjectId, studentId, UUID.randomUUID());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void cancellationCommittedAfterActiveSelectionRejectsCompletionWithoutChangingStoredRows(boolean completed)
+            throws Exception {
+        insertCompletion(otherStudentId);
+        if (!completed) {
+            insertCompletion(studentId);
+        }
+        var beforeRows = jdbc.queryForList(
+                "SELECT student_id, completed_at FROM homework_completions WHERE homework_id = ? ORDER BY student_id",
+                homeworkId);
+        UUID requestKey = jdbc.queryForObject("SELECT request_key FROM homeworks WHERE id = ?",
+                UUID.class, homeworkId);
+        CountDownLatch activeSelected = new CountDownLatch(1);
+        CountDownLatch cancellationCommitted = new CountDownLatch(1);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            Future<?> completion = executor.submit(() -> new TransactionTemplate(transactionManager)
+                    .execute(status -> {
+                        var staleActive = homeworkRepository.findById(homeworkId).orElseThrow();
+                        assertThat(staleActive.getPublicationState()).isEqualTo(HomeworkPublicationState.ACTIVE);
+                        activeSelected.countDown();
+                        try {
+                            if (!cancellationCommitted.await(10, TimeUnit.SECONDS)) {
+                                throw new IllegalStateException("Cancellation did not commit before completion");
+                            }
+                        } catch (InterruptedException interrupted) {
+                            Thread.currentThread().interrupt();
+                            throw new IllegalStateException("Interrupted waiting for cancellation", interrupted);
+                        }
+                        // The service initially selects the already-cached ACTIVE
+                        // entity. Its shared binding lock + refresh must observe
+                        // the cancellation before either desired-state write.
+                        return service.setCompletion(homeworkId, semesterId, claims(), completed);
+                    }));
+            assertThat(activeSelected.await(10, TimeUnit.SECONDS)).isTrue();
+            new TransactionTemplate(transactionManager).executeWithoutResult(status ->
+                    archiveCoordinator.archiveCancelledBinding(subjectId, studentId, requestKey,
+                            homeworkId, semesterId, UUID.randomUUID()));
+            cancellationCommitted.countDown();
+
+            assertThatThrownBy(() -> completion.get(30, TimeUnit.SECONDS))
+                    .isInstanceOf(ExecutionException.class).hasCauseInstanceOf(ResourceNotFoundException.class);
+            assertThat(jdbc.queryForObject("SELECT publication_state FROM homeworks WHERE id = ?",
+                    String.class, homeworkId)).isEqualTo("ARCHIVED");
+            assertThat(jdbc.queryForList(
+                    "SELECT student_id, completed_at FROM homework_completions WHERE homework_id = ? ORDER BY student_id",
+                    homeworkId)).isEqualTo(beforeRows);
+        } finally {
+            cancellationCommitted.countDown();
+            executor.shutdownNow();
+            assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+        }
     }
 
     @Test
@@ -264,13 +335,16 @@ class HomeworkStudentCompletionConcurrencyIT {
     }
 
     private long insertStudent(String login, String firstName, long group) {
-        return jdbc.queryForObject(
+        long id = jdbc.queryForObject(
                 "INSERT INTO users "
                         + "(login, password_hash, last_name, first_name, role, status, is_headman, group_id, "
                         + "password_changed, created_at, updated_at) "
                         + "VALUES (?, NULL, 'HomeworkDb', ?, 'student'::user_role, 'active'::account_status, "
                         + "false, ?, false, NOW(), NOW()) RETURNING id",
                 Long.class, login, firstName, group);
+        jdbc.update("INSERT INTO user_role_grants (user_id, role, status, group_id) "
+                + "VALUES (?, 'student'::user_role, 'active'::account_status, ?)", id, group);
+        return id;
     }
 
     private void insertCompletion(long student) {

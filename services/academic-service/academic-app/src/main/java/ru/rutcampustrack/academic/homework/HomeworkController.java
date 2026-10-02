@@ -12,6 +12,7 @@ import ru.rutcampustrack.academic.contract.api.HomeworkApi;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.HomeworkResponse;
 import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
+import ru.rutcampustrack.academic.contract.dto.homework.HomeworkHistoryResponse;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.security.RequireRole;
@@ -38,7 +39,7 @@ public class HomeworkController implements HomeworkApi {
     @Override
     public ResponseEntity<EntityModel<HomeworkResponse>> getHomework(Long id) {
         Homework homework = homeworkService.getHomework(id);
-        return ResponseEntity.ok(homeworkAssembler.toModel(homework));
+        return ResponseEntity.ok(homeworkAssembler.toModel(homework, homeworkService.isCompleted(homework.getId())));
     }
 
     @Override
@@ -58,7 +59,12 @@ public class HomeworkController implements HomeworkApi {
     @RequireRole({UserRole.STUDENT})
     public ResponseEntity<EntityModel<HomeworkResponse>> updateHomework(Long id, UpdateHomeworkRequest request) {
         Homework homework = homeworkService.updateHomework(id, request);
-        return ResponseEntity.ok(homeworkAssembler.toModel(homework));
+        return ResponseEntity.ok(homeworkAssembler.toModel(homework, homeworkService.isCompleted(homework.getId())));
+    }
+
+    @Override
+    public ResponseEntity<Page<HomeworkHistoryResponse>> history(Long id, Pageable pageable) {
+        return ResponseEntity.ok(homeworkService.history(id, pageable));
     }
 
     @Override

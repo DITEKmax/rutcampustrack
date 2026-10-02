@@ -1,0 +1,13 @@
+{
+  "revision": "092e500690c243a72c6bf850451a9477a0a2ce97+Academic-source-checkpoint",
+  "environment": "assigned Windows worktree map-usage-delivery-20260922",
+  "checks": [
+    {"command":"canonical rules/skills/AGENTS reads + SHA256", "exitCode":0,"result":"PASS","evidence":"CONTRACT.md"},
+    {"command":"git diff a5974af8 -- Academic/Schedule/proto", "exitCode":0,"result":"no relevant baseline diff"},
+    {"command":"initial WT owner-decision read", "exitCode":1,"result":"path absent in WT; read canonical root decision exit0"},
+    {"command":"initial combined rg with POSIX brace list in PowerShell", "exitCode":1,"result":"shell ParserError; corrected explicit paths exit0; no product inference"},
+    {"command":"git diff --check", "exitCode":0,"result":"PASS WIP whitespace only"}
+  ],
+  "runtime": {"result":"NOT_RUN","reason":"root heavy lease requested; architecture frozen and source implemented"},
+  "limitations": ["independent stable code review and scoped compile/PostgreSQL runtime pending", "real-network combined Schedule/Academic acceptance pending", "backend contract requires next-stage client requestKey/revision adapter"]
+}

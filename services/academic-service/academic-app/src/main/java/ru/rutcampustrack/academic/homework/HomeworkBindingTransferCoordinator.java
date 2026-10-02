@@ -35,17 +35,20 @@ public class HomeworkBindingTransferCoordinator {
     private final HomeworkBindingArchiveCoordinator archiveCoordinator;
     private final AcademicSemesterArchiveBarrierTransaction archiveBarrier;
     private final ApplicationEventPublisher eventPublisher;
+    private final HomeworkEditHistory editHistory;
 
     public HomeworkBindingTransferCoordinator(JdbcTemplate jdbc,
                                               HomeworkRepository homeworkRepository,
                                               HomeworkBindingArchiveCoordinator archiveCoordinator,
                                               AcademicSemesterArchiveBarrierTransaction archiveBarrier,
-                                              ApplicationEventPublisher eventPublisher) {
+                                              ApplicationEventPublisher eventPublisher,
+                                              HomeworkEditHistory editHistory) {
         this.jdbc = jdbc;
         this.homeworkRepository = homeworkRepository;
         this.archiveCoordinator = archiveCoordinator;
         this.archiveBarrier = archiveBarrier;
         this.eventPublisher = eventPublisher;
+        this.editHistory = editHistory;
     }
 
     @Transactional
@@ -270,12 +273,16 @@ public class HomeworkBindingTransferCoordinator {
             upsertMarker(batch, binding, null, "PENDING");
             resultState = "PENDING_PUBLICATION";
         } else {
+            var before = homework.snapshot();
             boolean slotChanged = !batch.targetDate().equals(homework.getLessonDate())
                     || batch.targetLessonNumber() != homework.getLessonNumber();
             homework.transferLessonSlot(batch.targetDate(), batch.targetLessonNumber());
             homeworkRepository.save(homework);
+            homeworkRepository.flush();
             upsertMarker(batch, binding, homework.getId(), "APPLIED");
             if (slotChanged && homework.getPublicationState() == HomeworkPublicationState.ACTIVE) {
+                editHistory.append(homework, batch.actorId(), before,
+                        java.time.OffsetDateTime.now(), "LESSON_TRANSFERRED");
                 eventPublisher.publishEvent(new HomeworkUpdatedEvent(this, homework.getId(),
                         homework.getGroupId(), homework.getSubjectId(), homework.getTitle(),
                         homework.getDescription(), homework.getLink(), homework.getLessonDate().toString(),
@@ -298,6 +305,30 @@ public class HomeworkBindingTransferCoordinator {
                 batch.sourceLessonId(), batch.targetLessonId(), batch.sourceDate(),
                 batch.sourceLessonNumber(), batch.targetDate(), batch.targetLessonNumber(), resultState,
                 batch.eventId(), batch.batchIndex());
+    }
+
+    public void requireNoPendingPublicationMarker(Homework homework) {
+        TransferMarker marker = findMarker(homework.getBindingId(), true);
+        if (marker != null) validateMarkerIdentity(marker, homework.getActorId(), homework.getRequestKey(), homework.getPayloadHash(),
+                homework.getGroupId(), homework.getSubjectId(), homework.getSemesterId());
+        if (marker != null && "PENDING".equals(marker.state())) {
+            throw new ConflictException("Ожидается завершение публикации домашнего задания");
+        }
+    }
+
+    public void supersedeAppliedMarker(Homework homework, UUID editOperationId) {
+        requireNoPendingPublicationMarker(homework);
+        jdbc.update("""
+                UPDATE homework_binding_transfer_markers marker
+                   SET superseded_by_edit_operation_id = ?
+                 WHERE marker.binding_id = ? AND marker.state = 'APPLIED'
+                   AND marker.superseded_by_edit_operation_id IS NULL
+                   AND marker.homework_id = ? AND marker.actor_id = ? AND marker.request_key = ?
+                   AND marker.binding_payload_hash = ? AND marker.group_id = ?
+                   AND marker.subject_id = ? AND marker.semester_id = ?
+                """, editOperationId, homework.getBindingId(), homework.getId(), homework.getActorId(),
+                homework.getRequestKey(), homework.getPayloadHash(), homework.getGroupId(),
+                homework.getSubjectId(), homework.getSemesterId());
     }
 
     private void upsertMarker(LessonTransferBatch batch, LessonTransferBatch.Binding binding,
@@ -326,6 +357,7 @@ public class HomeworkBindingTransferCoordinator {
                     source_event_id = EXCLUDED.source_event_id,
                     batch_index = EXCLUDED.batch_index,
                     state = EXCLUDED.state,
+                    superseded_by_edit_operation_id = NULL,
                     updated_at = NOW()
                 """, binding.bindingId(), binding.actorId(), binding.requestKey(),
                 hashBytes(binding.payloadHash()), homeworkId, batch.operationId(),
@@ -381,6 +413,7 @@ public class HomeworkBindingTransferCoordinator {
                        source_lesson_id, target_lesson_id, source_date, source_lesson_number,
                        target_date, target_lesson_number, state, source_event_id, batch_index
                   FROM homework_binding_transfer_markers WHERE binding_id = ?
+                   AND superseded_by_edit_operation_id IS NULL
                 """ + suffix, HomeworkBindingTransferCoordinator::mapMarker, bindingId);
         return rows.isEmpty() ? null : rows.getFirst();
     }

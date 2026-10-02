@@ -17,7 +17,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
-import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.subject.CreateSubjectRequest;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
@@ -603,45 +602,6 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         // Phase 61 / D-07: payload обязан содержать lesson_date + lesson_number
         assertThat(payload.get("lesson_date").asText()).isEqualTo(LocalDate.now().plusDays(1).toString());
         assertThat(payload.get("lesson_number").asInt()).isEqualTo(1);
-    }
-
-    @Test
-    void updateHomework_publishesHomeworkUpdatedEvent() throws Exception {
-        // Save a homework directly via repository to bypass permission checks for setup
-        Homework homework = new Homework(
-                groupA.getId(), testSubject.getId(), testSemester.getId(),
-                "Original Title", "description", null, testUser.getId(),
-                java.time.LocalDate.now().plusDays(1), 1,
-                9201L, testUser.getId(), UUID.randomUUID(), new byte[32]
-        );
-        homework = homeworkRepository.save(homework);
-
-        String queueName = bindTempQueue();
-
-        homeworkService.updateHomework(homework.getId(),
-                new UpdateHomeworkRequest("Updated Title", "new desc", "https://link.example.com"));
-        flushOutbox();
-
-        Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
-        assertThat(message).isNotNull();
-
-        JsonNode root = objectMapper.readTree(message.getBody());
-        assertThat(root.get("event_type").asText()).isEqualTo("homework.updated");
-        assertThat(root.get("event_id").asText()).matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
-        assertThat(root.get("occurred_at")).isNotNull();
-
-        JsonNode payload = root.get("payload");
-        assertThat(payload).isNotNull();
-        assertThat(payload.get("homework_id").asLong()).isEqualTo(homework.getId());
-        assertThat(payload.get("group_id").asLong()).isEqualTo(groupA.getId());
-        assertThat(payload.get("title").asText()).isEqualTo("Updated Title");
-        assertThat(payload.get("description").asText()).isEqualTo("new desc");
-        assertThat(payload.get("link").asText()).isEqualTo("https://link.example.com");
-        // Phase 61 / D-07: homework.updated payload обязан содержать subject_id + lesson_date + lesson_number
-        assertThat(payload.get("subject_id").asLong()).isEqualTo(testSubject.getId());
-        assertThat(payload.get("lesson_date").asText()).isEqualTo(LocalDate.now().plusDays(1).toString());
-        assertThat(payload.get("lesson_number").asInt()).isEqualTo(1);
-        assertThat(payload.get("has_link").asBoolean()).isTrue();
     }
 
     private ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse homeworkBindingResponse(

@@ -22,6 +22,10 @@ import ru.rutcampustrack.schedule.grpc.HomeworkBindingsResponse;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.ResolveLessonRequest;
 import ru.rutcampustrack.schedule.grpc.ReserveHomeworkBindingRequest;
+import ru.rutcampustrack.schedule.grpc.HomeworkBindingLookupRequest;
+import ru.rutcampustrack.schedule.grpc.HomeworkEditIdentity;
+import ru.rutcampustrack.schedule.grpc.HomeworkEditReceipt;
+import ru.rutcampustrack.schedule.grpc.MoveHomeworkBindingRequest;
 import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
 import ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt;
 import ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest;
@@ -128,6 +132,55 @@ public class ScheduleGrpcClient {
         } catch (StatusRuntimeException e) {
             throw mapBindingError(e, "зарезервировать привязку домашней работы");
         }
+    }
+
+    public HomeworkBindingResponse reserveDateHomeworkBinding(long groupId, long subjectId, long semesterId,
+                                                               LocalDate date, UUID requestKey, byte[] payloadHash) {
+        try {
+            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS).reserveHomeworkBinding(
+                    ReserveHomeworkBindingRequest.newBuilder().setBindingMode("DATE")
+                    .setGroupId(groupId).setSubjectId(subjectId).setSemesterId(semesterId).setDate(date.toString())
+                    .setRequestKey(requestKey.toString()).setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash)).build());
+        } catch (StatusRuntimeException error) { throw mapBindingError(error, "создать ДЗ на календарный день"); }
+    }
+
+    public HomeworkBindingResponse getHomeworkBinding(long bindingId) {
+        try {
+            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS).getHomeworkBinding(
+                    HomeworkBindingLookupRequest.newBuilder().setBindingId(bindingId).build());
+        } catch (StatusRuntimeException error) { throw mapBindingError(error, "получить текущую привязку ДЗ"); }
+    }
+
+    public HomeworkBindingResponse getHomeworkBindingForReconciliation(long bindingId) {
+        try {
+            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS).getHomeworkBinding(
+                    HomeworkBindingLookupRequest.newBuilder().setBindingId(bindingId).build());
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "сверить exact DATE identity");
+        }
+    }
+
+    public HomeworkEditReceipt moveHomeworkBinding(MoveHomeworkBindingRequest request) {
+        try { return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS).moveHomeworkBinding(request); }
+        catch (StatusRuntimeException error) { throw mapBindingError(error, "изменить привязку ДЗ"); }
+    }
+
+    public Optional<HomeworkEditReceipt> continueHomeworkEdit(HomeworkEditIdentity identity) {
+        try { return Optional.of(directedStub().withDeadlineAfter(3, TimeUnit.SECONDS).continueHomeworkEdit(identity)); }
+        catch (StatusRuntimeException error) {
+            if (error.getStatus().getCode() == Status.Code.NOT_FOUND) return Optional.empty();
+            throw mapBindingError(error, "продолжить принятое изменение ДЗ");
+        }
+    }
+
+    public HomeworkEditReceipt abortUnacceptedHomeworkEdit(HomeworkEditIdentity identity) {
+        try { return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS).abortUnacceptedHomeworkEdit(identity); }
+        catch (StatusRuntimeException error) { throw mapBindingError(error, "отменить ещё не принятую привязку ДЗ"); }
+    }
+
+    public HomeworkEditReceipt acknowledgeHomeworkEdit(HomeworkEditIdentity identity) {
+        try { return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS).acknowledgeHomeworkEdit(identity); }
+        catch (StatusRuntimeException error) { throw mapBindingError(error, "подтвердить принятое изменение ДЗ"); }
     }
 
     public HomeworkBindingResponse confirmHomeworkBinding(long bindingId,

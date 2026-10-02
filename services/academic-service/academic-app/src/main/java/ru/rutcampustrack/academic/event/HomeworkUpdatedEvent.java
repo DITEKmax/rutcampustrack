@@ -20,7 +20,8 @@ public class HomeworkUpdatedEvent extends DomainEvent {
             String link,
             @JsonProperty("has_link") boolean hasLink,
             @JsonProperty("lesson_date") String lessonDate,
-            @JsonProperty("lesson_number") Integer lessonNumber
+            @JsonProperty("lesson_number") Integer lessonNumber,
+            @JsonProperty("binding_mode") String bindingMode
     ) {}
 
     public HomeworkUpdatedEvent(Object source, Long homeworkId, Long groupId,
@@ -28,7 +29,8 @@ public class HomeworkUpdatedEvent extends DomainEvent {
                                  String lessonDate, Integer lessonNumber) {
         super(source, "homework.updated",
                 new Payload(homeworkId, groupId, subjectId, title, description, link,
-                        hasLink(link), lessonDate, lessonNumber));
+                        hasLink(link), lessonDate, lessonNumber,
+                        lessonNumber == null ? "DATE" : "LESSON"));
     }
 
     private static boolean hasLink(String link) {

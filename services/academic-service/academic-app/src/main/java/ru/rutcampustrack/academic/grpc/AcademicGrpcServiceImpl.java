@@ -67,6 +67,8 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
  */
 @GrpcService
 public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrpcServiceImplBase {
+    @Autowired private ru.rutcampustrack.academic.homework.HomeworkLifecycle homeworkLifecycle =
+            new ru.rutcampustrack.academic.homework.HomeworkLifecycle(java.time.Clock.system(java.time.ZoneId.of("Europe/Moscow")));
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
@@ -1261,7 +1263,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         List<Homework> homeworks = new ArrayList<>(homeworksById.values());
         homeworks.sort(java.util.Comparator
                 .comparing(Homework::getLessonDate)
-                .thenComparing(Homework::getLessonNumber)
+                .thenComparing(Homework::getLessonNumber, java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder()))
                 .thenComparing(Homework::getId));
         List<Long> homeworkIds = homeworks.stream()
                 .map(Homework::getId)
@@ -1290,7 +1292,9 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                                 .setDescription(emptyIfNull(homework.getDescription()))
                                 .setLink(emptyIfNull(homework.getLink()))
                                 .setLessonDate(homework.getLessonDate().toString())
-                                .setLessonNumber(homework.getLessonNumber())
+                                .setLessonNumber(homework.getLessonNumber() == null ? 0 : homework.getLessonNumber())
+                                .setBindingMode(homework.getBindingMode().name())
+                                .setArchived(homeworkLifecycle.archived(homework))
                                 .setCompleted(completedAtByHomeworkId.containsKey(homework.getId()))
                                 .build())
                         .map(info -> {

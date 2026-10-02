@@ -303,11 +303,21 @@ public class SemesterArchiveCoordinator {
     private void resolvePendingBinding(SemesterArchiveOperation operation,
                                        SetSemesterArchiveBarrierResponse scheduleResponse) {
         var pending = scheduleResponse.getPendingBinding();
+        boolean exactDate = false;
+        if (pending.getOccurrenceId() == 0) {
+            var binding = scheduleClient.getHomeworkBindingForReconciliation(pending.getBindingId());
+            if (!"DATE".equals(binding.getBindingMode()) || binding.getOccurrenceId() != 0
+                    || binding.getBindingId() != pending.getBindingId() || binding.getSemesterId() != operation.getSemesterId()
+                    || binding.getRevision() != pending.getRevision()) {
+                throw new ru.rutcampustrack.academic.exception.ConflictException("DATE admission differs from exact Schedule binding");
+            }
+            exactDate = true;
+        }
         var resolution = academicBarrier.preparePendingBindingResolution(
                 operation.getOperationId(), operation.getSemesterId(), operation.getStateVersion(),
                 pending.getBindingId(), pending.getOccurrenceId(), pending.getActorId(),
                 UUID.fromString(pending.getRequestKey()), pending.getPayloadHash().toByteArray(),
-                pending.getRevision());
+                pending.getRevision(), exactDate);
         switch (resolution.kind()) {
             case CONFIRM_MATERIALIZED -> {
                 SetSemesterArchiveBarrierResponse confirmed = scheduleClient.reconcileArchiveHomeworkBinding(

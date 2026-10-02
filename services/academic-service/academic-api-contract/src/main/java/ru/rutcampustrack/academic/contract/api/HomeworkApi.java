@@ -24,6 +24,8 @@ import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.HomeworkResponse;
 import ru.rutcampustrack.academic.contract.dto.homework.HomeworkPublicationPendingResponse;
 import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
+import ru.rutcampustrack.academic.contract.dto.homework.HomeworkHistoryResponse;
+import org.springframework.data.domain.Page;
 
 /**
  * REST API contract for homework management.
@@ -63,7 +65,7 @@ public interface HomeworkApi {
             Pageable pageable,
             PagedResourcesAssembler<HomeworkResponse> assembler);
 
-    @Operation(summary = "Полное обновление задания (PUT, HEADMAN, только автор)")
+    @Operation(summary = "Обновить ДЗ своей группы (староста или помощник с manage_homework)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Задание обновлено"),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
@@ -74,6 +76,10 @@ public interface HomeworkApi {
     ResponseEntity<EntityModel<HomeworkResponse>> updateHomework(
             @PathVariable Long id,
             @Valid @RequestBody UpdateHomeworkRequest request);
+
+    @Operation(summary = "История изменений ДЗ, включая архивные задания")
+    @GetMapping("/{id}/history")
+    ResponseEntity<Page<HomeworkHistoryResponse>> history(@PathVariable Long id, Pageable pageable);
 
     @Operation(summary = "Архивировать задание (HEADMAN или помощник с manage_homework)")
     @ApiResponses({

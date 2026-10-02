@@ -437,7 +437,7 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
                         activeRowLoaded.countDown();
                         await(cancellationCommitted);
                         return homeworkService.updateHomework(pending.getId(),
-                                new UpdateHomeworkRequest("late edit", "stale writer", null));
+                                new UpdateHomeworkRequest("late edit", "stale writer", null, UUID.randomUUID(), 1L));
                     });
                 } finally {
                     RequestContextHolder.resetRequestAttributes();

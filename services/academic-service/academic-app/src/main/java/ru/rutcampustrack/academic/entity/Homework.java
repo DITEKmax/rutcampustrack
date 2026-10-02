@@ -7,10 +7,14 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
+import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
+import ru.rutcampustrack.academic.contract.dto.homework.HomeworkSnapshot;
+import ru.rutcampustrack.academic.homework.HomeworkCreateIntent;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import java.util.Objects;
 
 @Entity
 @Table(name = "homeworks")
@@ -36,8 +40,22 @@ public class Homework {
     private LocalDate lessonDate;
 
     /** Phase 61 / D-01: номер пары в дне (1..8). */
-    @Column(name = "lesson_number", nullable = false)
+    @Column(name = "lesson_number")
     private Integer lessonNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "binding_mode", nullable = false)
+    private HomeworkBindingMode bindingMode = HomeworkBindingMode.LESSON;
+
+    @Column(name = "revision", nullable = false)
+    private long revision = 1;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "create_intent", columnDefinition = "jsonb")
+    private HomeworkCreateIntent createIntent;
+
+    @Column(name = "create_intent_kind", length = 32)
+    private String createIntentKind;
 
     @Setter
     @Column(nullable = false, length = 500)
@@ -101,6 +119,9 @@ public class Homework {
         // Kept for source compatibility with old fixture-only constructors.
         // The live creation path must use the binding-aware constructor below.
         this.actorId = publishedBy;
+        this.createIntent = new HomeworkCreateIntent(groupId, subjectId, semesterId,
+                title, description, link, HomeworkBindingMode.LESSON, lessonDate, lessonNumber);
+        this.createIntentKind = "ORIGINAL_CREATE";
     }
 
     public Homework(Long groupId, Long subjectId, Long semesterId,
@@ -115,8 +136,74 @@ public class Homework {
         this.payloadHash = payloadHash == null ? null : payloadHash.clone();
     }
 
+    public Homework(Long groupId, Long subjectId, Long semesterId,
+                    String title, String description, String link, Long publishedBy,
+                    LocalDate lessonDate, Integer lessonNumber, Long bindingId, Long actorId,
+                    UUID requestKey, byte[] payloadHash, HomeworkBindingMode mode) {
+        this(groupId, subjectId, semesterId, title, description, link, publishedBy,
+                lessonDate, lessonNumber, bindingId, actorId, requestKey, payloadHash);
+        this.bindingMode = mode;
+        this.createIntent = new HomeworkCreateIntent(groupId, subjectId, semesterId,
+                title, description, link, mode, lessonDate, lessonNumber);
+    }
+
     public byte[] getPayloadHash() {
         return payloadHash == null ? null : payloadHash.clone();
+    }
+
+    public HomeworkSnapshot snapshot() {
+        return new HomeworkSnapshot(title, description, link, bindingMode, lessonDate, lessonNumber);
+    }
+
+    /** Captures only the request previously accepted by legacy sameRequest, never guesses original content. */
+    public void captureLegacyAcceptedReplay() {
+        if (createIntent != null) return;
+        createIntent = new HomeworkCreateIntent(groupId, subjectId, semesterId, title,
+                description, link, bindingMode, lessonDate, lessonNumber);
+        createIntentKind = "LEGACY_ACCEPTED_REPLAY";
+    }
+
+    public void replaceContent(String title, String description, String link, OffsetDateTime changedAt) {
+        if (publicationState != HomeworkPublicationState.ACTIVE) {
+            throw new IllegalStateException("only active homework can be edited");
+        }
+        this.title = title;
+        this.description = description;
+        this.link = link;
+        this.updatedAt = changedAt;
+        revision++;
+    }
+
+    /** The accepted edit changes content/placement once without touching publication identity. */
+    public void applyEdit(HomeworkSnapshot accepted, OffsetDateTime changedAt) {
+        if (publicationState != HomeworkPublicationState.ACTIVE) throw new IllegalStateException("archived homework is read-only");
+        if (accepted.bindingMode() == null || accepted.lessonDate() == null
+                || (accepted.bindingMode() == HomeworkBindingMode.DATE && accepted.lessonNumber() != null)
+                || (accepted.bindingMode() == HomeworkBindingMode.LESSON && (accepted.lessonNumber() == null
+                    || accepted.lessonNumber() < 1 || accepted.lessonNumber() > 8))) {
+            throw new IllegalArgumentException("invalid accepted homework placement");
+        }
+        if (!Objects.equals(lessonDate, accepted.lessonDate()) || !Objects.equals(lessonNumber, accepted.lessonNumber())
+                || bindingMode != accepted.bindingMode()) dueReminderSentAt = null;
+        title = accepted.title(); description = accepted.description(); link = accepted.link();
+        bindingMode = accepted.bindingMode(); lessonDate = accepted.lessonDate(); lessonNumber = accepted.lessonNumber();
+        updatedAt = changedAt; revision++;
+    }
+
+    /** Detached response of a previously committed command; never saved or attached. */
+    public Homework recordedResult(HomeworkSnapshot result, long acceptedRevision) {
+        Homework copy = new Homework(groupId, subjectId, semesterId, result.title(),
+                result.description(), result.link(), publishedBy, result.lessonDate(),
+                result.lessonNumber(), bindingId, actorId, requestKey, payloadHash);
+        copy.id = id;
+        copy.bindingMode = result.bindingMode();
+        copy.revision = acceptedRevision;
+        copy.publicationState = publicationState;
+        copy.createdAt = createdAt;
+        copy.updatedAt = updatedAt;
+        copy.createIntent = createIntent;
+        copy.createIntentKind = createIntentKind;
+        return copy;
     }
 
     public void activatePublication() {
@@ -145,6 +232,7 @@ public class Homework {
         if (targetDate.equals(lessonDate) && targetLessonNumber.equals(lessonNumber)) return;
         lessonDate = targetDate;
         lessonNumber = targetLessonNumber;
+        revision++;
         dueReminderSentAt = null;
         updatedAt = OffsetDateTime.now();
     }

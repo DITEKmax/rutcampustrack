@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
+import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.HomeworkBindingArchiveMarker;
 import ru.rutcampustrack.academic.event.HomeworkPublishedEvent;
@@ -52,6 +53,15 @@ public class HomeworkPublicationPersistence {
                                    String title, String description, String link,
                                    Long actorId, LocalDate lessonDate, Integer lessonNumber,
                                    Long bindingId, UUID requestKey, byte[] payloadHash) {
+        return persistPending(groupId, subjectId, semesterId, title, description, link,
+                actorId, lessonDate, lessonNumber, bindingId, requestKey, payloadHash, HomeworkBindingMode.LESSON);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Homework persistPending(Long groupId, Long subjectId, Long semesterId,
+                                   String title, String description, String link,
+                                   Long actorId, LocalDate lessonDate, Integer lessonNumber,
+                                   Long bindingId, UUID requestKey, byte[] payloadHash, HomeworkBindingMode bindingMode) {
         archiveBarrier.admitPendingPublication(requestKey, semesterId, bindingId, actorId, payloadHash);
         archiveCoordinator.lock(bindingId);
         Optional<HomeworkBindingArchiveMarker> terminalMarker = archiveCoordinator.findMarker(
@@ -83,7 +93,7 @@ public class HomeworkPublicationPersistence {
         Homework homework = new Homework(
                 groupId, subjectId, semesterId, title, description, link,
                 actorId, lessonDate, lessonNumber,
-                bindingId, actorId, requestKey, payloadHash);
+                bindingId, actorId, requestKey, payloadHash, bindingMode);
         transferCoordinator.applyPendingMarker(homework, bindingId, actorId, requestKey, payloadHash);
         if (terminalMarker.isPresent()) {
             // Cancellation can commit before the corresponding publication

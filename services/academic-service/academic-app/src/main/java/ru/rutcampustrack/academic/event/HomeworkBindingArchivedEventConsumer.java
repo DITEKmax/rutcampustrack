@@ -79,6 +79,16 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
         }
 
         ArchiveCommand command = parseTargetEvent(envelope);
+        if (command.occurrenceId() == 0) {
+            Boolean incompatible = jdbc.queryForObject("""
+                    SELECT EXISTS (SELECT 1 FROM homeworks h WHERE h.binding_id = ? AND h.binding_mode <> 'DATE'
+                        AND NOT EXISTS (SELECT 1 FROM homework_edit_operations e WHERE e.binding_id = h.binding_id
+                            AND e.homework_id = h.id AND e.semester_id = h.semester_id
+                            AND e.state <> 'CANCELLED' AND e.expected_binding_revision < ?
+                            AND e.desired_snapshot ->> 'bindingMode' = 'DATE'))
+                    """, Boolean.class, command.bindingId(), command.bindingRevision());
+            if (Boolean.TRUE.equals(incompatible)) throw new IllegalArgumentException("DATE terminal event conflicts with linked homework identity");
+        }
         byte[] payloadHash = semanticPayloadHash(envelope.get("payload"));
         EffectReceipt receipt = claimReceipt(command, payloadHash);
         if (receipt.applied()) {
@@ -143,8 +153,10 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
         long bindingId = positiveLong(payload.get("binding_id"), "binding_id");
         long actorId = positiveLong(payload.get("actor_id"), "actor_id");
         UUID requestKey = uuid(payload.get("request_key"), "request_key");
-        long occurrenceId = positiveLong(payload.get("occurrence_id"), "occurrence_id");
-        long lessonId = positiveLong(payload.get("lesson_id"), "lesson_id");
+        Object rawOccurrence = payload.get("occurrence_id"), rawLesson = payload.get("lesson_id");
+        if ((rawOccurrence == null) != (rawLesson == null)) throw new IllegalArgumentException("homework archive placement tuple is incomplete");
+        long occurrenceId = rawOccurrence == null ? 0 : positiveLong(rawOccurrence, "occurrence_id");
+        long lessonId = rawLesson == null ? 0 : positiveLong(rawLesson, "lesson_id");
         Object rawHomeworkId = payload.get("homework_id");
         Long homeworkId = rawHomeworkId == null
                 ? null : positiveLong(rawHomeworkId, "homework_id");

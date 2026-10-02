@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
+import ru.rutcampustrack.academic.contract.dto.homework.HomeworkHistoryResponse;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
+import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Homework;
@@ -58,6 +60,9 @@ public class HomeworkService {
     private final HomeworkPublicationPersistence publicationPersistence;
     private final HomeworkBindingArchiveCoordinator archiveCoordinator;
     private final UserRoleGrantRepository grantRepository;
+    private final HomeworkEditHistory editHistory;
+    private final HomeworkScopeValidator scopeValidator;
+    private final HomeworkEditCoordinator editCoordinator;
 
     /** Spring constructor. The persistence bean supplies real transaction boundaries. */
     @Autowired
@@ -70,7 +75,10 @@ public class HomeworkService {
                             Clock clock,
                             HomeworkPublicationPersistence publicationPersistence,
                             HomeworkBindingArchiveCoordinator archiveCoordinator,
-                            UserRoleGrantRepository grantRepository) {
+                            UserRoleGrantRepository grantRepository,
+                            HomeworkEditHistory editHistory,
+                            HomeworkScopeValidator scopeValidator,
+                            HomeworkEditCoordinator editCoordinator) {
         this.homeworkRepository = homeworkRepository;
         this.completionRepository = completionRepository;
         this.assistantRepository = assistantRepository;
@@ -81,6 +89,24 @@ public class HomeworkService {
         this.publicationPersistence = publicationPersistence;
         this.archiveCoordinator = archiveCoordinator;
         this.grantRepository = grantRepository;
+        this.editHistory = editHistory;
+        this.scopeValidator = scopeValidator;
+        this.editCoordinator = editCoordinator;
+    }
+
+    /** Source-compatible constructor for focused service unit tests. */
+    public HomeworkService(HomeworkRepository homeworkRepository,
+                           HomeworkCompletionRepository completionRepository,
+                           HeadmanAssistantRepository assistantRepository,
+                           RequestContext requestContext,
+                           ApplicationEventPublisher eventPublisher,
+                           ScheduleGrpcClient scheduleGrpcClient,
+                           Clock clock, HomeworkPublicationPersistence publicationPersistence,
+                           HomeworkBindingArchiveCoordinator archiveCoordinator,
+                           UserRoleGrantRepository grantRepository) {
+        this(homeworkRepository, completionRepository, assistantRepository, requestContext,
+                eventPublisher, scheduleGrpcClient, clock, publicationPersistence, archiveCoordinator,
+                grantRepository, null, null, null);
     }
 
     /** Source-compatible constructor for focused service unit tests. */
@@ -92,18 +118,10 @@ public class HomeworkService {
                            ScheduleGrpcClient scheduleGrpcClient,
                            Clock clock) {
         this(homeworkRepository, completionRepository, assistantRepository, requestContext,
-                eventPublisher, scheduleGrpcClient, clock, null, null, null);
+                eventPublisher, scheduleGrpcClient, clock, null, null, null, null, null, null);
     }
 
-    /**
-     * Phase 61 / D-06: homework management is limited to the headman or an
-     * active assistant carrying the manage_homework grant.
-     * ADMIN удалён из разрешённых ролей (CONTEXT D-06).
-     * Помощник старосты с {@code manage_homework} разрешением — legacy (pre-Phase 61,
-     * Phase 61 CONTEXT явно выносит помощника в deferred-ideas, но удаление доступа
-     * ломает Phase 52 функционал, поэтому оставляем без поломки обратной совместимости
-     * для ASSISTANT — ADMIN же блокируется однозначно).
-     */
+    /** Current headman or active same-group assistant with manage_homework may manage group homework. */
     private void requireHeadmanOrManageHomework() {
         Long actorId = requestContext.getUserId();
         Long groupId = requestContext.getGroupId();
@@ -142,18 +160,6 @@ public class HomeworkService {
     }
 
     /**
-     * Phase 61 / D-05: content editing remains author-scoped. Terminal archive
-     * uses the broader publish/manage permission and is handled separately.
-     */
-    private void requireAuthor(Homework homework) {
-        Long currentUserId = requestContext.getUserId();
-        if (currentUserId == null || !currentUserId.equals(homework.getPublishedBy())) {
-            throw new AccessDeniedException(
-                    "Редактировать или удалять ДЗ может только автор");
-        }
-    }
-
-    /**
      * M13 G9: STUDENT может видеть ДЗ только своей группы (включая headman+assistant).
      * ADMIN/TEACHER видят любое. TEACHER здесь не используется (HomeworkController
      * @RequireRole указывает STUDENT/ADMIN для list, без role для get) — но добавляем
@@ -173,6 +179,11 @@ public class HomeworkService {
     public Homework createHomework(CreateHomeworkRequest request) {
         // D-06: роль-гard (HEADMAN / assistant c manage_homework)
         requireHeadmanOrManageHomework();
+
+        if (!Objects.equals(request.groupId(), requestContext.getGroupId())) {
+            throw new AccessDeniedException("ДЗ можно создать только для своей группы");
+        }
+        if (!request.isPlacementValid()) throw new BadRequestException("bindingMode", "Недопустимая привязка ДЗ");
 
         Long actorId = requestContext.getUserId();
         if (actorId == null || actorId <= 0) {
@@ -200,6 +211,9 @@ public class HomeworkService {
             throw new BadRequestException(
                     "lessonDate", "Нельзя создать ДЗ на прошедшую дату");
         }
+
+        if (scopeValidator != null) scopeValidator.validate(request.groupId(), request.subjectId(), request.semesterId(), request.lessonDate());
+        if (request.bindingMode() == HomeworkBindingMode.DATE) return createDateHomework(request, actorId, requestKey);
 
         // D-04: пара существует + предмет совпадает
         LessonResponse lesson = scheduleGrpcClient
@@ -301,6 +315,61 @@ public class HomeworkService {
         return saved;
     }
 
+    private Homework createDateHomework(CreateHomeworkRequest request, long actor, UUID key) {
+        byte[] hash = datePayloadHash(request, actor);
+        HomeworkBindingResponse reservation = scheduleGrpcClient.reserveDateHomeworkBinding(
+                request.groupId(), request.subjectId(), request.semesterId(), request.lessonDate(), key, hash);
+        validateDateBinding(reservation, request);
+        Homework saved;
+        if (reservation.getState() == HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE) {
+            if (!reservation.hasHomeworkId()) throw new ConflictException("ACTIVE DATE binding has no content identity");
+            saved = homeworkRepository.findById(reservation.getHomeworkId())
+                    .orElseThrow(() -> new ConflictException("DATE binding points to missing content"));
+            if (!Objects.equals(saved.getActorId(), actor) || !key.equals(saved.getRequestKey())
+                    || !Arrays.equals(hash, saved.getPayloadHash())) throw new ConflictException("DATE create identity differs");
+            return requireNotArchived(publicationPersistence.activate(saved.getId(), actor, key, saved.getBindingId(), hash));
+        }
+        if (reservation.getState() != HomeworkBindingState.HOMEWORK_BINDING_STATE_PENDING) {
+            throw new ConflictException("DATE binding is terminal");
+        }
+        saved = publicationPersistence.persistPending(request.groupId(), request.subjectId(), request.semesterId(),
+                request.title(), request.description(), request.link(), actor, request.lessonDate(), null,
+                reservation.getBindingId(), key, hash, HomeworkBindingMode.DATE);
+        HomeworkBindingResponse confirmation;
+        try { confirmation = scheduleGrpcClient.confirmHomeworkBinding(reservation.getBindingId(), saved.getId(), key); }
+        catch (ScheduleServiceUnavailableException unavailable) {
+            throw new HomeworkPublicationPendingException(saved.getId(), reservation.getBindingId(), key);
+        }
+        validateDateBinding(confirmation, request);
+        if (confirmation.getState() != HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE
+                || !confirmation.hasHomeworkId() || confirmation.getHomeworkId() != saved.getId()) {
+            throw new ConflictException("DATE binding did not activate the saved content");
+        }
+        return requireNotArchived(publicationPersistence.activate(saved.getId(), actor, key, saved.getBindingId(), hash));
+    }
+
+    private static void validateDateBinding(HomeworkBindingResponse binding, CreateHomeworkRequest request) {
+        if (binding.getBindingId() <= 0 || binding.getRevision() <= 0 || !"DATE".equals(binding.getBindingMode())
+                || binding.getOccurrenceId() != 0 || binding.getLessonNumber() != 0
+                || binding.getGroupId() != request.groupId() || binding.getSubjectId() != request.subjectId()
+                || binding.getSemesterId() != request.semesterId() || !request.lessonDate().toString().equals(binding.getDate())) {
+            throw new ConflictException("DATE binding response does not match request scope");
+        }
+    }
+
+    private static byte[] datePayloadHash(CreateHomeworkRequest request, long actor) {
+        try {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            DataOutputStream out = new DataOutputStream(bytes);
+            out.writeInt(2); out.writeLong(actor); out.writeLong(request.groupId());
+            out.writeLong(request.subjectId()); out.writeLong(request.semesterId());
+            writeCanonicalString(out, "DATE"); writeCanonicalString(out, request.lessonDate().toString());
+            writeCanonicalString(out, request.title()); writeCanonicalString(out, request.description());
+            writeCanonicalString(out, request.link()); out.flush();
+            return MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray());
+        } catch (IOException | NoSuchAlgorithmException unavailable) { throw new IllegalStateException(unavailable); }
+    }
+
     private Homework replayExistingHomework(Homework existing,
                                              CreateHomeworkRequest request,
                                              long actorId,
@@ -343,14 +412,13 @@ public class HomeworkService {
     }
 
     private static boolean sameRequest(Homework existing, CreateHomeworkRequest request) {
-        return Objects.equals(existing.getGroupId(), request.groupId())
-                && Objects.equals(existing.getSubjectId(), request.subjectId())
-                && Objects.equals(existing.getSemesterId(), request.semesterId())
-                && Objects.equals(existing.getTitle(), request.title())
-                && Objects.equals(existing.getDescription(), request.description())
-                && Objects.equals(existing.getLink(), request.link())
-                && Objects.equals(existing.getLessonDate(), request.lessonDate())
-                && Objects.equals(existing.getLessonNumber(), request.lessonNumber());
+        HomeworkCreateIntent accepted = existing.getCreateIntent();
+        if (accepted == null) {
+            accepted = new HomeworkCreateIntent(existing.getGroupId(), existing.getSubjectId(),
+                    existing.getSemesterId(), existing.getTitle(), existing.getDescription(),
+                    existing.getLink(), existing.getBindingMode(), existing.getLessonDate(), existing.getLessonNumber());
+        }
+        return Objects.equals(accepted, HomeworkCreateIntent.from(request));
     }
 
     private static void validateReplayConfirmation(HomeworkBindingResponse confirmation,
@@ -359,7 +427,8 @@ public class HomeworkService {
                 || !confirmation.hasHomeworkId()
                 || confirmation.getHomeworkId() != existing.getId()
                 || confirmation.getState() != HomeworkBindingState.HOMEWORK_BINDING_STATE_ACTIVE
-                || confirmation.getCurrentLesson().getOccurrenceId() <= 0
+                || (existing.getBindingMode() == HomeworkBindingMode.LESSON && confirmation.getCurrentLesson().getOccurrenceId() <= 0)
+                || (existing.getBindingMode() == HomeworkBindingMode.DATE && confirmation.getOccurrenceId() != 0)
                 || confirmation.getGroupId() != existing.getGroupId()
                 || confirmation.getSubjectId() != existing.getSubjectId()
                 || confirmation.getSemesterId() != existing.getSemesterId()) {
@@ -459,13 +528,13 @@ public class HomeworkService {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream(192);
             DataOutputStream out = new DataOutputStream(bytes);
-            out.writeInt(1); // request-key identity version
+            out.writeInt(request.bindingMode() == HomeworkBindingMode.DATE ? 2 : 1); // preserve LESSON identity bytes
             out.writeLong(actorId);
             out.writeLong(request.groupId());
             out.writeLong(request.subjectId());
             out.writeLong(request.semesterId());
             writeCanonicalString(out, request.lessonDate().toString());
-            out.writeInt(request.lessonNumber());
+            out.writeInt(request.lessonNumber() == null ? 0 : request.lessonNumber());
             writeCanonicalString(out, request.title());
             writeCanonicalString(out, request.description());
             writeCanonicalString(out, request.link());
@@ -519,33 +588,74 @@ public class HomeworkService {
         return completionRepository.existsByHomeworkIdAndStudentId(homeworkId, studentId);
     }
 
-    @Transactional
     public Homework updateHomework(Long id, UpdateHomeworkRequest request) {
+        if (editCoordinator != null) return editCoordinator.update(id, request);
+        // The source-compatible fixture constructor never owns a live database transaction.
         requireHeadmanOrManageHomework();
-        Homework homework = getHomework(id);
-        requireAuthor(homework); // D-05
+        if (request.requestKey() == null || request.expectedRevision() == null || request.expectedRevision() <= 0) {
+            throw new BadRequestException("requestKey", "Изменение ДЗ требует requestKey и expectedRevision");
+        }
+        Homework homework = homeworkRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Homework", "id", id));
+        if (!Objects.equals(homework.getGroupId(), requestContext.getGroupId())) {
+            throw new AccessDeniedException("ДЗ принадлежит другой группе");
+        }
         if (archiveCoordinator != null) {
             if (homework.getBindingId() != null) {
                 archiveCoordinator.lockAndRefresh(homework);
             } else {
                 archiveCoordinator.lockSemesterWrite(homework.getSemesterId());
             }
-            requireAuthor(homework); // immutable author check after the fresh read
-            if (homework.getPublicationState() == HomeworkPublicationState.ARCHIVED) {
-                throw new ConflictException("archived homework cannot be updated");
-            }
         }
-        homework.setTitle(request.title());
-        homework.setDescription(request.description());
-        homework.setLink(request.link());
-        homework.setUpdatedAt(OffsetDateTime.now());
+        requireHeadmanOrManageHomework();
+        if (homework.getPublicationState() != HomeworkPublicationState.ACTIVE) {
+            throw new ConflictException("archived or pending homework cannot be updated");
+        }
+        if (request.hasPlacementFields()) {
+            // Placement is integrated through the separately reviewed durable protocol.
+            throw new ConflictException("placement edit protocol is not available yet");
+        }
+        byte[] hash = editHistory == null ? null : editHistory.commandHash(request);
+        if (editHistory != null) {
+            Homework replay = editHistory.replay(homework, requestContext.getUserId(), request.requestKey(), hash);
+            if (replay != null) return replay;
+        }
+        if (homework.getRevision() != request.expectedRevision()) {
+            throw new ConflictException("ДЗ уже изменено; обнови текущую версию");
+        }
+        var before = homework.snapshot();
+        homework.captureLegacyAcceptedReplay();
+        boolean changed = !Objects.equals(homework.getTitle(), request.title())
+                || !Objects.equals(homework.getDescription(), request.description())
+                || !Objects.equals(homework.getLink(), request.link());
+        OffsetDateTime changedAt = OffsetDateTime.now(clock);
+        if (changed) homework.replaceContent(request.title(), request.description(), request.link(), changedAt);
         Homework saved = homeworkRepository.save(homework);
-        eventPublisher.publishEvent(new HomeworkUpdatedEvent(
+        if (editHistory != null) editHistory.record(saved, requestContext.getUserId(), request.requestKey(), hash,
+                before, changedAt, changed);
+        homeworkRepository.flush();
+        if (changed) eventPublisher.publishEvent(new HomeworkUpdatedEvent(
                 this, saved.getId(), saved.getGroupId(), saved.getSubjectId(),
                 saved.getTitle(), saved.getDescription(), saved.getLink(),
                 saved.getLessonDate().toString(), saved.getLessonNumber()
         ));
         return saved;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<HomeworkHistoryResponse> history(Long id, Pageable pageable) {
+        Homework homework = homeworkRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Homework", "id", id));
+        // History follows permitted group scope, including terminal archive readers.
+        if (requestContext.getRole() != UserRole.ADMIN
+                && (requestContext.getRole() != UserRole.STUDENT
+                || !Objects.equals(homework.getGroupId(), requestContext.getGroupId()))) {
+            throw new AccessDeniedException("История ДЗ доступна только своей группе");
+        }
+        if (homework.getPublicationState() == HomeworkPublicationState.PENDING) {
+            throw new ResourceNotFoundException("Homework", "id", id);
+        }
+        return editHistory.history(id, pageable);
     }
 
     public void deleteHomework(Long id) {
@@ -595,8 +705,9 @@ public class HomeworkService {
         // M13 G9 — getHomework делает groupId-check; нельзя отмечать чужое ДЗ
         Homework homework = getHomework(homeworkId);
         if (archiveCoordinator != null) {
-            archiveCoordinator.lockSemesterWrite(homework.getSemesterId());
+            archiveCoordinator.lockAndRefresh(homework);
         }
+        if (new HomeworkLifecycle(clock).archived(homework)) throw new ConflictException("Архивное ДЗ доступно только для чтения");
         Long studentId = requestContext.getUserId();
         if (completionRepository.existsByHomeworkIdAndStudentId(homeworkId, studentId)) {
             throw new ConflictException("Домашнее задание уже отмечено как выполненное");
@@ -610,8 +721,9 @@ public class HomeworkService {
         // M13 G9 — getHomework делает groupId-check
         Homework homework = getHomework(homeworkId);
         if (archiveCoordinator != null) {
-            archiveCoordinator.lockSemesterWrite(homework.getSemesterId());
+            archiveCoordinator.lockAndRefresh(homework);
         }
+        if (new HomeworkLifecycle(clock).archived(homework)) throw new ConflictException("Архивное ДЗ доступно только для чтения");
         Long studentId = requestContext.getUserId();
         HomeworkCompletion completion = completionRepository
                 .findByHomeworkIdAndStudentId(homeworkId, studentId)

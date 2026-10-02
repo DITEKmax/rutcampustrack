@@ -6,13 +6,14 @@ import org.springframework.hateoas.RepresentationModel;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
 
 /**
  * Response DTO for a homework assignment with HATEOAS links.
  * The {@code completed} flag is per-student, derived from HomeworkCompletion records.
  *
- * <p>Phase 61 / D-01: {@code lessonDate} + {@code lessonNumber} определяют пару, к которой
- * привязано задание. Привязка фиксируется при create и не редактируется (см. D-04/D-05).
+ * <p>{@code bindingMode} distinguishes a schedule lesson from a calendar date.
+ * Revision is required by edit commands; bindingId and publishedBy remain stable.
  */
 @Schema(description = "Домашнее задание (HATEOAS Level 3 с _links; completed — per-student)")
 public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
@@ -33,6 +34,9 @@ public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
     private OffsetDateTime createdAt;
     private LocalDate lessonDate;
     private Integer lessonNumber;
+    private HomeworkBindingMode bindingMode;
+    private long revision;
+    private boolean archived;
 
     public HomeworkResponse() {}
 
@@ -95,4 +99,10 @@ public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
 
     public Integer getLessonNumber() { return lessonNumber; }
     public void setLessonNumber(Integer lessonNumber) { this.lessonNumber = lessonNumber; }
+    public HomeworkBindingMode getBindingMode() { return bindingMode; }
+    public void setBindingMode(HomeworkBindingMode bindingMode) { this.bindingMode = bindingMode; }
+    public long getRevision() { return revision; }
+    public void setRevision(long revision) { this.revision = revision; }
+    public boolean isArchived() { return archived; }
+    public void setArchived(boolean archived) { this.archived = archived; }
 }

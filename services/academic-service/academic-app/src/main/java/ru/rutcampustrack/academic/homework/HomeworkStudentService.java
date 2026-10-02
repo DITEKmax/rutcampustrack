@@ -18,6 +18,9 @@ import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.OffsetDateTime;
+import java.time.Clock;
+import java.time.ZoneId;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Student-only homework commands used by the trusted mobile BFF.
@@ -28,6 +31,8 @@ import java.time.OffsetDateTime;
  */
 @Service
 public class HomeworkStudentService {
+    // The live bean uses the existing injected Clock; focused legacy constructor fixtures use system time.
+    @Autowired private HomeworkLifecycle lifecycle = new HomeworkLifecycle(Clock.system(ZoneId.of("Europe/Moscow")));
 
     private final HomeworkRepository homeworkRepository;
     private final HomeworkCompletionRepository completionRepository;
@@ -85,7 +90,7 @@ public class HomeworkStudentService {
         if (!active.getId().equals(homework.getSemesterId())) {
             throw new AccessDeniedException("ДЗ принадлежит неактивному семестру");
         }
-        if (homework.getPublicationState() != HomeworkPublicationState.ACTIVE) {
+        if (homework.getPublicationState() != HomeworkPublicationState.ACTIVE || lifecycle.archived(homework)) {
             throw new ResourceNotFoundException("Homework", "id", homeworkId);
         }
 

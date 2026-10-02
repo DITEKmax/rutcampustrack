@@ -10,6 +10,9 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import jakarta.validation.constraints.AssertTrue;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
 
 /**
  * Request DTO for creating a new homework assignment.
@@ -64,22 +67,41 @@ public record CreateHomeworkRequest(
         LocalDate lessonDate,
 
         @Schema(description = "Номер пары (1..8)", example = "3",
-                requiredMode = Schema.RequiredMode.REQUIRED,
                 minimum = "1", maximum = "8")
-        @NotNull(message = "Номер пары обязателен")
         @Min(value = 1, message = "Номер пары должен быть в диапазоне 1..8")
         @Max(value = 8, message = "Номер пары должен быть в диапазоне 1..8")
         Integer lessonNumber,
 
         @Schema(description = "Ключ идемпотентности команды (повтор запроса продолжает ту же публикацию)",
                 example = "4d1f2f1f-42f0-4e9a-a9d4-fd5cbf9f9e1f")
-        UUID requestKey
+        UUID requestKey,
+
+        @Schema(description = "Привязка к паре LESSON (по умолчанию) или к календарному дню DATE")
+        HomeworkBindingMode bindingMode
 ) {
+    public CreateHomeworkRequest {
+        if (bindingMode == null) bindingMode = HomeworkBindingMode.LESSON;
+    }
+
+    @AssertTrue(message = "LESSON требует номер пары; DATE не допускает номер пары")
+    @JsonIgnore
+    public boolean isPlacementValid() {
+        return bindingMode == HomeworkBindingMode.DATE
+                ? lessonNumber == null
+                : lessonNumber != null && lessonNumber >= 1 && lessonNumber <= 8;
+    }
+
+    public CreateHomeworkRequest(String title, String description, String link,
+                                 Long subjectId, Long groupId, Long semesterId,
+                                 LocalDate lessonDate, Integer lessonNumber, UUID requestKey) {
+        this(title, description, link, subjectId, groupId, semesterId,
+                lessonDate, lessonNumber, requestKey, HomeworkBindingMode.LESSON);
+    }
     /** Backward-compatible source constructor for clients that omit the key. */
     public CreateHomeworkRequest(String title, String description, String link,
                                  Long subjectId, Long groupId, Long semesterId,
                                  LocalDate lessonDate, Integer lessonNumber) {
         this(title, description, link, subjectId, groupId, semesterId,
-                lessonDate, lessonNumber, null);
+                lessonDate, lessonNumber, null, HomeworkBindingMode.LESSON);
     }
 }

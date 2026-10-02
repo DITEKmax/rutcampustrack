@@ -237,22 +237,21 @@ class HomeworkServiceTest {
     }
 
     // =========================================================================
-    // D-05: только автор редактирует; archive is permission-scoped
+    // Accepted owner decision: current group management rights permit editing another author's homework.
     // =========================================================================
 
     @Test
-    void updateHomework_throwsForbidden_whenNotAuthor() {
+    void updateHomework_succeeds_forAuthorizedNonAuthor() {
         stubHeadman();
         Homework hw = existingHomework(OTHER_USER_ID);
         when(homeworkRepository.findById(1L)).thenReturn(Optional.of(hw));
 
-        assertThatThrownBy(() -> service.updateHomework(1L,
-                new UpdateHomeworkRequest("t", "d", null)))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessageContaining("автор");
-
-        verify(homeworkRepository, never()).save(any());
-        verify(eventPublisher, never()).publishEvent(any());
+        when(homeworkRepository.save(any(Homework.class))).thenAnswer(inv -> inv.getArgument(0));
+        Homework result = service.updateHomework(1L, new UpdateHomeworkRequest("t", "d", null, UUID.randomUUID(), hw.getRevision()));
+        assertThat(result.getTitle()).isEqualTo("t");
+        assertThat(result.getPublishedBy()).isEqualTo(OTHER_USER_ID);
+        verify(homeworkRepository).save(hw);
+        verify(eventPublisher).publishEvent(any());
     }
 
     @Test
@@ -278,7 +277,7 @@ class HomeworkServiceTest {
         when(homeworkRepository.save(any(Homework.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Homework result = service.updateHomework(1L,
-                new UpdateHomeworkRequest("new title", "new desc", "https://ex.com"));
+                new UpdateHomeworkRequest("new title", "new desc", "https://ex.com", UUID.randomUUID(), hw.getRevision()));
 
         assertThat(result.getTitle()).isEqualTo("new title");
         assertThat(result.getDescription()).isEqualTo("new desc");

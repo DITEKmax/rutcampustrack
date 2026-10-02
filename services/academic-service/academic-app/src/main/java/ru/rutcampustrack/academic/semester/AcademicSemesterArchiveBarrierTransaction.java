@@ -229,6 +229,12 @@ public class AcademicSemesterArchiveBarrierTransaction {
                  WHERE archived.homework_id = homework.id AND homework.semester_id = ?
                 """, semesterId);
         jdbc.update("""
+                UPDATE homework_binding_transfer_markers marker
+                   SET superseded_by_edit_operation_id = NULL
+                  FROM homework_edit_operations edit
+                 WHERE marker.superseded_by_edit_operation_id = edit.operation_id AND edit.semester_id = ?
+                """, semesterId);
+        jdbc.update("""
                 DELETE FROM homework_completions completion
                  USING homeworks homework
                  WHERE completion.homework_id = homework.id AND homework.semester_id = ?
@@ -249,6 +255,28 @@ public class AcademicSemesterArchiveBarrierTransaction {
         if (authorityBlocks(state) || barrier != null && isFenced(String.valueOf(barrier.get("participant_state")))) {
             throw new ConflictException("Семестр временно заблокирован переходом архивации или восстановления");
         }
+    }
+
+    /** Only a command captured before PREPARE may finish through the fence. */
+    public void lockHomeworkEditContinuation(UUID editOperationId) {
+        requireTransaction();
+        Map<String, Object> edit = jdbc.queryForMap(
+                "SELECT semester_id, command_hash FROM homework_edit_operations WHERE operation_id = ?", editOperationId);
+        long semesterId = ((Number) edit.get("semester_id")).longValue();
+        lockSemester(semesterId);
+        Map<String, Object> current = barrier(semesterId);
+        if (!authorityBlocks(authorityState(semesterId))
+                && (current == null || !isFenced(String.valueOf(current.get("participant_state"))))) return;
+        if (isPreparing(current) && preparationAuthority(semesterId, current)) {
+            Long admitted = jdbc.queryForObject("""
+                    SELECT count(*) FROM homework_edit_archive_admissions
+                     WHERE archive_operation_id = ? AND state_version = ? AND semester_id = ?
+                       AND edit_operation_id = ? AND command_hash = ?
+                    """, Long.class, current.get("operation_id"), current.get("state_version"),
+                    semesterId, editOperationId, edit.get("command_hash"));
+            if (admitted != null && admitted == 1) return;
+        }
+        throw new ConflictException("Редактирование не принято до seal архивации");
     }
 
     /** Schedule-confirmed publication admission is deliberately limited to one immutable binding identity. */
@@ -289,9 +317,17 @@ public class AcademicSemesterArchiveBarrierTransaction {
     public BindingResolution preparePendingBindingResolution(
             UUID operationId, long semesterId, long stateVersion, long bindingId,
             long occurrenceId, long actorId, UUID requestKey, byte[] payloadHash, long revision) {
+        return preparePendingBindingResolution(operationId, semesterId, stateVersion, bindingId,
+                occurrenceId, actorId, requestKey, payloadHash, revision, false);
+    }
+
+    @Transactional
+    public BindingResolution preparePendingBindingResolution(
+            UUID operationId, long semesterId, long stateVersion, long bindingId,
+            long occurrenceId, long actorId, UUID requestKey, byte[] payloadHash, long revision, boolean exactDateBinding) {
         requireTransaction();
         if (operationId == null || semesterId <= 0 || stateVersion < 0 || bindingId <= 0
-                || occurrenceId <= 0 || actorId <= 0 || requestKey == null
+                || (exactDateBinding ? occurrenceId != 0 : occurrenceId <= 0) || actorId <= 0 || requestKey == null
                 || payloadHash == null || payloadHash.length != 32 || revision <= 0) {
             throw new IllegalArgumentException("Schedule archive binding identity is invalid");
         }
@@ -794,6 +830,13 @@ public class AcademicSemesterArchiveBarrierTransaction {
 
     private void capturePendingPublications(UUID operationId, long semesterId, long stateVersion) {
         jdbc.update("""
+                INSERT INTO homework_edit_archive_admissions
+                    (archive_operation_id, state_version, semester_id, edit_operation_id, command_hash)
+                SELECT ?, ?, semester_id, operation_id, command_hash FROM homework_edit_operations
+                 WHERE semester_id = ? AND state IN ('PREPARED', 'FINALIZED')
+                ON CONFLICT (archive_operation_id, edit_operation_id) DO NOTHING
+                """, operationId, stateVersion, semesterId);
+        jdbc.update("""
                 INSERT INTO academic_semester_archive_publication_admissions
                     (operation_id, state_version, semester_id, binding_id, actor_id, request_key,
                      payload_hash, admitted_homework_id)
@@ -820,6 +863,7 @@ public class AcademicSemesterArchiveBarrierTransaction {
     }
 
     private String firstPendingReason(long semesterId) {
+        if (hasPendingHomeworkEdit(semesterId)) return "Ожидается завершение принятого редактирования домашнего задания";
         Long pendingPublication = jdbc.queryForObject("""
                 SELECT count(*) FROM homeworks
                  WHERE semester_id = ? AND publication_state = 'PENDING'
@@ -855,6 +899,7 @@ public class AcademicSemesterArchiveBarrierTransaction {
     }
 
     private String firstPendingDeleteReason(UUID operationId, long semesterId, long stateVersion) {
+        if (hasPendingHomeworkEdit(semesterId)) return "Ожидается завершение принятого редактирования домашнего задания";
         Long unownedPendingPublication = jdbc.queryForObject("""
                 SELECT count(*) FROM homeworks homework
                  WHERE homework.semester_id = ? AND homework.publication_state = 'PENDING'
@@ -898,6 +943,11 @@ public class AcademicSemesterArchiveBarrierTransaction {
             return "Ожидается точный ACK применения эффекта Schedule";
         }
         return null;
+    }
+
+    private boolean hasPendingHomeworkEdit(long semesterId) {
+        Long count = jdbc.queryForObject("SELECT count(*) FROM homework_edit_operations WHERE semester_id = ? AND state IN ('PREPARED', 'FINALIZED')", Long.class, semesterId);
+        return count != null && count > 0;
     }
 
     private boolean hasExactCompletedEmptyTransfer(long bindingId, long actorId, UUID requestKey,

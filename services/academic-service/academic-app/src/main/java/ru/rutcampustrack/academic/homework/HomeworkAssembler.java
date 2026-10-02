@@ -10,6 +10,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Component
 public class HomeworkAssembler implements RepresentationModelAssembler<Homework, EntityModel<HomeworkResponse>> {
+    private final HomeworkLifecycle lifecycle;
+    public HomeworkAssembler(HomeworkLifecycle lifecycle) { this.lifecycle = lifecycle; }
 
     @Override
     public EntityModel<HomeworkResponse> toModel(Homework homework) {
@@ -36,6 +38,9 @@ public class HomeworkAssembler implements RepresentationModelAssembler<Homework,
         response.setCreatedAt(homework.getCreatedAt());
         response.setLessonDate(homework.getLessonDate());
         response.setLessonNumber(homework.getLessonNumber());
+        response.setBindingMode(homework.getBindingMode());
+        response.setRevision(homework.getRevision());
+        response.setArchived(lifecycle.archived(homework));
 
         return EntityModel.of(response,
                 linkTo(methodOn(HomeworkController.class).getHomework(homework.getId())).withSelfRel()

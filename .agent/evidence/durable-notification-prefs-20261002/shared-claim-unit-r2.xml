@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStoreTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-02T18:23:38" hostname="DITEK-PK" time="3.12">
+  <properties/>
+  <testcase name="tryClaim_usesMongoTemplateInsert_notRawCollection()" classname="ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStoreTest" time="3.054"/>
+  <testcase name="tryClaim_nullEventId_throws()" classname="ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStoreTest" time="0.017"/>
+  <testcase name="tryClaim_otherException_propagates()" classname="ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStoreTest" time="0.021"/>
+  <testcase name="tryClaim_duplicateKey_returnsFalse()" classname="ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStoreTest" time="0.007"/>
+  <testcase name="tryClaim_nullConsumerId_throws()" classname="ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStoreTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\maksd\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.8\f09415827a71be7ed621c7bd02550678f28bc81c\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

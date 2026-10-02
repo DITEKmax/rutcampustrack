@@ -6,3 +6,4 @@ services/notification-service/notification-app/src/test/java/ru/rutcampustrack/n
 services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/NotificationPreferencesServiceTest.java
 services/notification-bot/tests/test_durable_preferences_delivery.py
 services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/DurableNotificationPreferencesIT.java
+services/notification-bot/tests/test_headman_alerts.py

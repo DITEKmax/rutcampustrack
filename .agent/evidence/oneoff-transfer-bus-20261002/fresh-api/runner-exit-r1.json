@@ -1,0 +1,11 @@
+{
+  "session_id": 40595,
+  "exitCode": 1,
+  "chunk": "852c1d",
+  "runId": "20261002-184002051-syostadj",
+  "failure": {
+    "message": "HTTP service on 127.0.0.1:18522/actuator/health did not become ready"
+  },
+  "cleanup": "PASS",
+  "probeStarted": false
+}

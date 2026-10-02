@@ -1,0 +1,15 @@
+{
+  "source": "7e1190a0fddfd95ae272075ab1b0589f6afcb5e2",
+  "manifest": "f3f238f09d8cd4e428cab15a701283e2062759926202c5beb7cdec500100d61c",
+  "runner_session": 40595,
+  "runner_chunk": "b02a2d",
+  "runId": "20261002-184002051-syostadj",
+  "build_session": 34171,
+  "build_exit": 0,
+  "build_seconds": 66,
+  "hostFreeKiB": 2084892,
+  "virtualFreeKiB": 6303424,
+  "dockerVmMemAvailableKiB": 11351444,
+  "javaBefore": 0,
+  "runningDockerBefore": []
+}

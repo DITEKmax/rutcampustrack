@@ -1,0 +1,11 @@
+{
+  "runnerParseExit": 0,
+  "generator": "existing New-RandomSecret -Bytes32",
+  "decodedBytes": 32,
+  "encodedLength": 43,
+  "canonicalRoundtrip": true,
+  "secretValues": "not recorded",
+  "nodeCheck": 0,
+  "artifactClosureVerification": 0,
+  "productRebuildAfterFailure": false
+}

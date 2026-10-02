@@ -1,0 +1,28 @@
+{
+  "revision": "7e1190a0fddfd95ae272075ab1b0589f6afcb5e2",
+  "holder": "C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r2",
+  "ordinarySwitchExit": 0,
+  "trackedAndUntrackedClean": true,
+  "chunk": "5f6155",
+  "hostFreeKiB": 2852152,
+  "hostTotalKiB": 16154384,
+  "virtualFreeKiB": 6801976,
+  "javaBefore": 0,
+  "runningDockerBefore": [],
+  "rebuilt": [
+    "academic",
+    "schedule",
+    "attendance",
+    "auth",
+    "notification"
+  ],
+  "reuse": [
+    "gateway",
+    "mobileBff",
+    "documentRenderer",
+    "pwaDist"
+  ],
+  "reuseBase": "24e9233526f652efdd17cf59d889d1d2d90aad4a",
+  "reuseManifestSha256": "82699fc2441ddcb097c0fbd0317831c0252a72f5f94810a9fef665304c010e64",
+  "reason": "shared-outbox changed; embedded in all five rebuilt modules; other three runtime dependency closures and PWA unchanged"
+}

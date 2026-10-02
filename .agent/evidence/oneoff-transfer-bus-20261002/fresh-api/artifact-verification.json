@@ -1,0 +1,78 @@
+{
+  "revision": "7e1190a0fddfd95ae272075ab1b0589f6afcb5e2",
+  "reuseBaseline": "24e9233526f652efdd17cf59d889d1d2d90aad4a",
+  "baselineManifestSha256": "82699fc2441ddcb097c0fbd0317831c0252a72f5f94810a9fef665304c010e64",
+  "runtimeDependencyClosure": [
+    "services/mobile-bff",
+    "services/api-gateway",
+    "services/document-renderer-service",
+    "services/auth-service/auth-api-contract",
+    "services/shared",
+    "frontends/pwa-vue",
+    "proto",
+    "build.gradle.kts",
+    "settings.gradle.kts",
+    "gradle",
+    ":(exclude)services/shared/shared-outbox"
+  ],
+  "closureDiff": [],
+  "sharedOutboxConsumers": [
+    "academic",
+    "schedule",
+    "attendance",
+    "auth",
+    "notification"
+  ],
+  "jars": [
+    {
+      "name": "academic",
+      "sha256": "fcc00743d46738dd8f02516a8f14f6d50bc84dfde64477a7a128b487f3353049",
+      "bytes": 99139601,
+      "mode": "rebuilt currentsource+sharedoutbox"
+    },
+    {
+      "name": "gateway",
+      "sha256": "8bff8dfbdfc8bf054a696f74b3c82307a92b1be6236573345874538ae6eba03a",
+      "bytes": 62057460,
+      "mode": "exact reused bytes+runtimeclosure"
+    },
+    {
+      "name": "attendance",
+      "sha256": "16e035df437be710391aa225ff1bfcc5c30a705f8badbae77469cf581f381f72",
+      "bytes": 95466207,
+      "mode": "rebuilt currentsource+sharedoutbox"
+    },
+    {
+      "name": "auth",
+      "sha256": "94a48cd2c49f2766f6d1f4d5bbdb95290eb1288219c57aeb47d63239d2f2d4d6",
+      "bytes": 99709195,
+      "mode": "rebuilt currentsource+sharedoutbox"
+    },
+    {
+      "name": "documentRenderer",
+      "sha256": "b21891315efd3496719d1215f6512a1586e48cc64ee40ee1b9ef563083d623cf",
+      "bytes": 48259456,
+      "mode": "exact reused bytes+runtimeclosure"
+    },
+    {
+      "name": "mobileBff",
+      "sha256": "0e4d46d212f86092e15d867e1d5cfc1c27d20d2d8983203531759a87d8255532",
+      "bytes": 49745060,
+      "mode": "exact reused bytes+runtimeclosure"
+    },
+    {
+      "name": "notification",
+      "sha256": "9309aa8ed49e6bf8e0567b2e103292d78c31555f222fa16b7e79a280f3f29378",
+      "bytes": 86194487,
+      "mode": "rebuilt currentsource+sharedoutbox"
+    },
+    {
+      "name": "schedule",
+      "sha256": "4bbecb7cb5b8571696f2dad728cff19c9db07a1db8369a9b8f9bef88ee9a6c6e",
+      "bytes": 92679021,
+      "mode": "rebuilt currentsource+sharedoutbox"
+    }
+  ],
+  "pwaFilesVerified": 10,
+  "manifestSha256": "f3f238f09d8cd4e428cab15a701283e2062759926202c5beb7cdec500100d61c"
+}

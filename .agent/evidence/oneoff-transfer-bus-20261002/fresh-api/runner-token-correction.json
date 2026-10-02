@@ -1,0 +1,12 @@
+{
+  "beforeSha256": "c5fac7604ef75e42d46b4c51667c96a0b93b04b3720140f242dc8db55c4e79db",
+  "afterSha256": "81473fb04c72e792e12508018bd7ee69c44f9d80220ce19dc2d8e4e30219b95f",
+  "scope": "only Notification ephemeral synthetic32byte token env and masking registration",
+  "productChanged": false,
+  "artifactBytesChanged": false,
+  "existingDirtyDiffPreserved": true,
+  "additionalRequiredEnv": "BOT_TO_NOTIFICATION_SERVICE_TOKEN only; all prior required env already present",
+  "secretValues": "not emitted or read, generated runtime only via existing New-RandomSecret",
+  "permission": "root explicitly sole writer of existing harness runner for this correction",
+  "logLimit": "Startup loglines unavailable after automaticcleanup; saved run report proves Notification healthFAIL, AuthPASS, exactcreatecommand has no new env key. Source required-env and constructor guarantee blankcredential rejection."
+}

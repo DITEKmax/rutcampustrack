@@ -1,0 +1,22 @@
+--- a/.agent/student-role-orchestrator/requests-runtime/runner.ps1
++++ b/.agent/student-role-orchestrator/requests-runtime/runner.ps1
+@@ -2520,6 +2520,7 @@
+     if ($script:includeNotifications) {
+         Add-PhaseDiagnostic -Name 'notification-service' -Status 'START' -Message "Notification HTTP readiness on 127.0.0.1:$([int]$script:report.ports.notificationDiagnostics)"
+         $notificationEnvironment = $common + @{
++            BOT_TO_NOTIFICATION_SERVICE_TOKEN = $Secrets.botToNotificationToken
+             NOTIFICATION_WS_ALLOWED_ORIGINS = 'https://127.0.0.1:18514'
+             SPRING_DATA_MONGODB_URI = 'mongodb://mongo:27017/notification_db?replicaSet=rs0'; REDIS_HOST = 'redis'; REDIS_PORT = '6379'; REDIS_PASSWORD = $Secrets.redis; RABBITMQ_USER = 'rct_user'; RABBITMQ_PASSWORD = $Secrets.rabbit; AUTH_SERVICE_URL = 'http://auth-service:9090'; INTERNAL_ISSUER_SECRET = $Secrets.internalIssuer; ALERT_WEBHOOK_SECRET = $Secrets.alertWebhook; VAPID_PUBLIC_KEY = $Secrets.vapidPublicKey; VAPID_PRIVATE_KEY = $Secrets.vapidPrivateKey; GRPC_SECRET = $Secrets.grpc; ACADEMIC_GRPC_TRUST_CERT_COLLECTION = 'file:/run/rct-academic-tls/academic-server.crt'; ACADEMIC_GRPC_TLS_AUTHORITY = 'academic-service'
+         }
+@@ -3630,9 +3631,10 @@
+     if ($script:includeNotifications) {
+         $vapid = New-VapidKeyPair
+         $secrets.alertWebhook = New-RandomSecret
++        $secrets.botToNotificationToken = New-RandomSecret -Bytes 32
+         $secrets.vapidPublicKey = $vapid.publicKey
+         $secrets.vapidPrivateKey = $vapid.privateKey
+-        $script:runtimeSecrets += @($secrets.alertWebhook, $secrets.vapidPublicKey, $secrets.vapidPrivateKey)
++        $script:runtimeSecrets += @($secrets.alertWebhook, $secrets.botToNotificationToken, $secrets.vapidPublicKey, $secrets.vapidPrivateKey)
+     }
+     Assert-UnionSourceStability -Context 'runtime config preflight' | Out-Null
+     $edgeConfig = New-RuntimeConfig

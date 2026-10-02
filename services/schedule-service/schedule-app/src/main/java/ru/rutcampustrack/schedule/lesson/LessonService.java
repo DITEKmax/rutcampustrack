@@ -312,11 +312,16 @@ public class LessonService {
         lesson.setBlockedAt(OffsetDateTime.now());
         Lesson saved = lessonRepository.save(lesson);
         ScheduleItem item = lwi.scheduleItem();
+        Short number = saved.getLessonNumber() != null ? saved.getLessonNumber()
+                : item == null ? null : item.getLessonNumber();
         eventPublisher.publishEvent(new LessonBlockedEvent(this,
-                saved.getId(), item.getGroupId(), item.getSubjectId(),
-                saved.getDate(), item.getStartTime(), item.getEndTime(),
-                item.getLessonNumber() != null ? item.getLessonNumber().intValue() : null,
-                item.getRoom(), saved.getBlockedByUserId(), saved.getBlockedAt()));
+                saved.getId(), saved.getGroupId() != null ? saved.getGroupId() : item == null ? null : item.getGroupId(),
+                saved.getSubjectId() != null ? saved.getSubjectId() : item == null ? null : item.getSubjectId(),
+                saved.getDate(), saved.getStartTime() != null ? saved.getStartTime() : item == null ? null : item.getStartTime(),
+                saved.getEndTime() != null ? saved.getEndTime() : item == null ? null : item.getEndTime(),
+                number == null ? null : number.intValue(),
+                saved.getRoomSnapshot() != null ? saved.getRoomSnapshot() : item == null ? null : item.getRoom(),
+                saved.getBlockedByUserId(), saved.getBlockedAt()));
         return new LessonWithItem(saved, item);
     }
 

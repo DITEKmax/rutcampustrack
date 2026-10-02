@@ -180,14 +180,53 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, physical)).isEqualTo("cancelled");
     }
 
-    @Test void restore_replacementCreatesExactNewGeneration_oldPhysicalRemainsImmutable() throws Exception {
+    @Test void blockOneOff_persistsAndEmitsExactPhysicalSnapshotWithNullableRoom() throws Exception {
+        long physical = create(UUID.randomUUID(), (short)1, null).path("physicalLessonId").asLong();
+        mvc.perform(actor(post("/schedule/lessons/{id}/blockage", physical))).andExpect(status().isOk());
+        assertThat(jdbcTemplate.queryForMap("SELECT is_blocked_by_headman, blocked_by_user_id FROM lessons WHERE id = ?", physical))
+                .containsEntry("is_blocked_by_headman", true).containsEntry("blocked_by_user_id", ACTOR);
+        var blocked = outboxStorage.findPending(20).stream().filter(row -> row.eventType().equals("lesson.blocked")).toList();
+        assertThat(blocked).hasSize(1);
+        assertThat(ru.rutcampustrack.schedule.events.EventSchemaValidator.validate("lesson.blocked.json", blocked.get(0).payload())).isEmpty();
+        JsonNode payload = json.readTree(blocked.get(0).payload()).path("payload");
+        assertThat(payload.path("lesson_id").asLong()).isEqualTo(physical);
+        assertThat(payload.path("group_id").asLong()).isEqualTo(GROUP);
+        assertThat(payload.path("subject_id").asLong()).isEqualTo(SUBJECT);
+        assertThat(payload.path("date").asText()).isEqualTo(DATE.toString());
+        assertThat(payload.path("start_time").asText()).isEqualTo("08:30");
+        assertThat(payload.path("end_time").asText()).isEqualTo("10:00");
+        assertThat(payload.path("lesson_number").asInt()).isEqualTo(1);
+        assertThat(payload.path("blocked_by").asLong()).isEqualTo(ACTOR);
+        assertThat(payload.path("room").isNull() || payload.path("room").isMissingNode()).isTrue();
+    }
+
+    @Test void restore_foreignCommittedReplacementChainIsRejectedWithoutMutation() throws Exception {
+        long physical = create(UUID.randomUUID(), (short)1, null).path("physicalLessonId").asLong();
+        cancel(physical);
+        jdbcTemplate.update("""
+                INSERT INTO schedule_assignment_replacement_operations (operation_id, payload_hash, source_assignment_id,
+                    target_assignment_id, source_teacher_id, target_teacher_id, group_id, subject_id, semester_id,
+                    lesson_type, source_valid_from, valid_until_exclusive, effective_from, state)
+                VALUES (?, ?, ?, 502, ?, 701, 2, ?, ?, 'lecture', ?, ?, ?, 'COMMITTED')
+                """, UUID.randomUUID(), new byte[32], ASSIGNMENT, TEACHER, SUBJECT, SEMESTER, FROM, UNTIL, DATE);
+        mvc.perform(actor(patch("/schedule/lessons/{id}/restore", physical))).andExpect(status().isConflict());
+        assertThat(jdbcTemplate.queryForMap("SELECT status::text AS status, generation FROM lessons WHERE id = ?", physical))
+                .containsEntry("status", "cancelled").containsEntry("generation", 1L);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM one_off_lesson_restore_authorities", Long.class)).isZero();
+    }
+
+    @Test void restore_twoHopTeacherReturnCreatesExactNewAssignmentGeneration_oldPhysicalRemainsImmutable() throws Exception {
         UUID key = UUID.randomUUID();
         JsonNode created = create(key, (short)1, "C-303");
         long old = created.path("physicalLessonId").asLong();
         cancel(old);
         long revision = jdbcTemplate.queryForObject("SELECT revision FROM lessons WHERE id = ?", Long.class, old);
-        long targetAssignment = 502, targetTeacher = 701;
+        long middleAssignment = 502, middleTeacher = 701, targetAssignment = 503, targetTeacher = TEACHER;
         mockAssignment(targetAssignment, targetTeacher, DATE, UNTIL);
+        jdbcTemplate.update("""
+                INSERT INTO schedule_assignment_fences (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
+                    lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive) VALUES (?, ?, ?, ?, ?, 'lecture', ?, ?, ?)
+                """, middleAssignment, GROUP, SUBJECT, SEMESTER, middleTeacher, DATE, UNTIL, UNTIL);
         jdbcTemplate.update("""
                 INSERT INTO schedule_assignment_fences (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
                     lesson_type, valid_from, cap_until_exclusive, creation_cap_until_exclusive) VALUES (?, ?, ?, ?, ?, 'lecture', ?, ?, ?)
@@ -197,7 +236,13 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
                     target_assignment_id, source_teacher_id, target_teacher_id, group_id, subject_id, semester_id,
                     lesson_type, source_valid_from, valid_until_exclusive, effective_from, state)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'lecture', ?, ?, ?, 'COMMITTED')
-                """, UUID.randomUUID(), new byte[32], ASSIGNMENT, targetAssignment, TEACHER, targetTeacher, GROUP, SUBJECT, SEMESTER, FROM, UNTIL, DATE);
+                """, UUID.randomUUID(), new byte[32], ASSIGNMENT, middleAssignment, TEACHER, middleTeacher, GROUP, SUBJECT, SEMESTER, FROM, UNTIL, DATE);
+        jdbcTemplate.update("""
+                INSERT INTO schedule_assignment_replacement_operations (operation_id, payload_hash, source_assignment_id,
+                    target_assignment_id, source_teacher_id, target_teacher_id, group_id, subject_id, semester_id,
+                    lesson_type, source_valid_from, valid_until_exclusive, effective_from, state)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'lecture', ?, ?, ?, 'COMMITTED')
+                """, UUID.randomUUID(), new byte[32], middleAssignment, targetAssignment, middleTeacher, targetTeacher, GROUP, SUBJECT, SEMESTER, DATE, UNTIL, DATE);
         JsonNode restored = json.readTree(mvc.perform(actor(patch("/schedule/lessons/{id}/restore", old)))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
         long current = restored.path("id").asLong();

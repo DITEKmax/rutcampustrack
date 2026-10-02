@@ -43,7 +43,7 @@ CREATE TABLE one_off_lesson_restore_authorities (
     created_at TIMESTAMPTZ NOT NULL,
     UNIQUE (occurrence_id, expected_occurrence_revision),
     CHECK (target_generation = expected_generation + 1 AND target_lesson_id <> source_lesson_id
-           AND target_assignment_id <> source_assignment_id AND target_teacher_id <> source_teacher_id),
+           AND target_assignment_id <> source_assignment_id),
     CHECK (cardinality(replacement_operation_ids) BETWEEN 1 AND 32
            AND array_position(replacement_operation_ids, NULL) IS NULL)
 );

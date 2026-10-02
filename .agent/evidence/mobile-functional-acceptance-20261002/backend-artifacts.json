@@ -1,0 +1,26 @@
+[
+  {
+    "sha256": "38d112ddf60083318598838baea778c1e73d8afa536d8c12ebb174f46379af8c",
+    "relativePath": "services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+    "lastWriteUtc": "2026-10-02T20:04:20.6768186Z",
+    "sourceRevision": "9a811c661c41e83484d0148a1e236231176a6d66",
+    "bytes": 62059187,
+    "name": "gateway"
+  },
+  {
+    "sha256": "c40e6a8237cf1811c813abd684b928b1f4c08b6c089013f737fbaaa760ebfecc",
+    "relativePath": "services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+    "lastWriteUtc": "2026-10-02T20:04:17.8099888Z",
+    "sourceRevision": "9a811c661c41e83484d0148a1e236231176a6d66",
+    "bytes": 99710950,
+    "name": "auth"
+  },
+  {
+    "sha256": "7100f5e52fa8864595460daae6742c639250f27a426e7b959187bed8ea62f4ec",
+    "relativePath": "services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+    "lastWriteUtc": "2026-10-02T20:04:27.3055629Z",
+    "sourceRevision": "9a811c661c41e83484d0148a1e236231176a6d66",
+    "bytes": 86196082,
+    "name": "notification"
+  }
+]

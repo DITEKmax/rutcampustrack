@@ -1,0 +1,47 @@
+[
+  {
+    "name": "academic",
+    "relativePath": "services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+    "expectedSha256": "fcc00743d46738dd8f02516a8f14f6d50bc84dfde64477a7a128b487f3353049",
+    "match": true,
+    "sha256": "fcc00743d46738dd8f02516a8f14f6d50bc84dfde64477a7a128b487f3353049",
+    "bytes": 99139601,
+    "expectedBytes": 99139601
+  },
+  {
+    "name": "attendance",
+    "relativePath": "services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+    "expectedSha256": "16e035df437be710391aa225ff1bfcc5c30a705f8badbae77469cf581f381f72",
+    "match": true,
+    "sha256": "16e035df437be710391aa225ff1bfcc5c30a705f8badbae77469cf581f381f72",
+    "bytes": 95466207,
+    "expectedBytes": 95466207
+  },
+  {
+    "name": "documentRenderer",
+    "relativePath": "services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+    "expectedSha256": "b21891315efd3496719d1215f6512a1586e48cc64ee40ee1b9ef563083d623cf",
+    "match": true,
+    "sha256": "b21891315efd3496719d1215f6512a1586e48cc64ee40ee1b9ef563083d623cf",
+    "bytes": 48259456,
+    "expectedBytes": 48259456
+  },
+  {
+    "name": "mobileBff",
+    "relativePath": "services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+    "expectedSha256": "0e4d46d212f86092e15d867e1d5cfc1c27d20d2d8983203531759a87d8255532",
+    "match": true,
+    "sha256": "0e4d46d212f86092e15d867e1d5cfc1c27d20d2d8983203531759a87d8255532",
+    "bytes": 49745060,
+    "expectedBytes": 49745060
+  },
+  {
+    "name": "schedule",
+    "relativePath": "services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+    "expectedSha256": "4bbecb7cb5b8571696f2dad728cff19c9db07a1db8369a9b8f9bef88ee9a6c6e",
+    "match": true,
+    "sha256": "4bbecb7cb5b8571696f2dad728cff19c9db07a1db8369a9b8f9bef88ee9a6c6e",
+    "bytes": 92679021,
+    "expectedBytes": 92679021
+  }
+]

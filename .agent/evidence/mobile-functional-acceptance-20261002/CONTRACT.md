@@ -1,0 +1,11 @@
+# Mobile functional runtime: backend preparation only
+
+1. Goal: prepare only the three changed Java runtime artifacts while Vue review continues, avoiding a second backend build for frontend-only integration.
+2. Context/evidence: root GO/sole-writer/heavy lease; integrated9a811c66 contains accepted Auth/Gateway roster contract4a2a9114/5c674c2a and Vue rosterb43ad9dc/a0821a8c. RULES SHA A208AA4380B64376A4EAD645AA0731C9F574077107DC9C44356F5C04D80F28FA.
+3. Relevant scope: sole existing v2-runtime-build-r2 holder, normal detached switch from clean7e1190a0 to9a811c66; own .agent/evidence/mobile-functional-acceptance-20261002 only. Main is root-owned; foreign caches/artifacts/runner WIP preserved.
+4. Required behavior: build Auth/Gateway/Notification bootJar only; retain five old accepted JARs after exact SHA/size match; record actual command/revision/exit/output pins and release heavy lease.
+5. Constraints: no reset/clean/stash/install, Docker/server/npm/frontend build, repeated accepted unit/IT, secret reads/output, main/push/deploy. Later frontend-only frozen source update must not repeat accepted backend build without changed Java inputs.
+6. Existing patterns: accepted fresh-api manifest, existing JDK21/ms-21.0.10, packaging=true/no-problems-report/no-daemon/no-parallel/max-workers1; elevated cached-JAR access. Notification embeds changed auth-api-contract and therefore also requires bootJar.
+7. Acceptance: all five reused pins match; one three-target build exits0; three new JAR pins recorded; tracked source remains clean and Java process inventory empty. Backend artifacts ready does not mean a full client/browser runtime accepted.
+8. Verification: exact size/SHA of five reusable JARs, one Gradle invocation, three output pins and terminal metadata. No API/browser/provider checks; those await Vue review/final freeze and separately assigned runtime lease.
+9. Do not: modify product sources, unrelated artifacts/settings/foreign harness, rebuild all services, old runtime replay, fake Telegram initData/login, claim frontend/browser/provider acceptance from bootJar.

@@ -1,0 +1,9 @@
+{
+  "javaProcessIds": [],
+  "runtime": "not launched",
+  "sourceRevision": "9a811c661c41e83484d0148a1e236231176a6d66",
+  "docker": "not launched or inspected",
+  "lease": "release after terminal build",
+  "npm": "not launched",
+  "trackedClean": true
+}

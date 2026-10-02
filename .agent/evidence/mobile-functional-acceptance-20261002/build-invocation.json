@@ -1,0 +1,7 @@
+{
+  "sourceRevision": "9a811c661c41e83484d0148a1e236231176a6d66",
+  "startedAt": "2026-10-02T23:03:42.4372376+03:00",
+  "command": "./gradlew.bat :services:auth-service:auth-app:bootJar :services:api-gateway:bootJar :services:notification-service:notification-app:bootJar --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --no-parallel --max-workers=1 --console=plain",
+  "scope": "Only Auth/Gateway/Notification bootJar; no unit/IT/npm/Docker/server",
+  "javaHome": "C:/Users/maksd/.jdks/ms-21.0.10"
+}

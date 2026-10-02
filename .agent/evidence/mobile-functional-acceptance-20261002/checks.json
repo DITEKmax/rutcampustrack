@@ -1,0 +1,30 @@
+{
+  "checks": [
+    {
+      "evidence": "reuse-pins.json",
+      "check": "five reusable JAR exact hashes and sizes",
+      "exitCode": 0
+    },
+    {
+      "handle": 17714,
+      "evidence": "backend-build-r1.log",
+      "check": "three bootJar targets",
+      "command": "./gradlew.bat :services:auth-service:auth-app:bootJar :services:api-gateway:bootJar :services:notification-service:notification-app:bootJar --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --no-parallel --max-workers=1 --console=plain",
+      "exitCode": 0
+    },
+    {
+      "evidence": "backend-artifacts.json + terminal-state.json",
+      "check": "three new output pins and post-terminal tracked-clean/JavaEMPTY",
+      "exitCode": 0
+    }
+  ],
+  "schema": "rct.backend-preparation.v1",
+  "notRun": [
+    "Docker/server",
+    "npm/frontend build",
+    "accepted unit/IT",
+    "browser/API/provider runtime"
+  ],
+  "lease": "released",
+  "sourceRevision": "9a811c661c41e83484d0148a1e236231176a6d66"
+}

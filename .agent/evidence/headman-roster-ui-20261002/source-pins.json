@@ -1,0 +1,49 @@
+{
+  "baseline": "996f590ca5b3fa947e2da111a332a3f58232da0a",
+  "source": "287538770f758cb78bc0a0ebd4fb1da6370c8c1d",
+  "owned": [
+    {
+      "path": "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+      "sha256": "5507caa6eefb83baeebce16492e49e05940249831dd244ef0524c648c2da3643"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-group/headman-group-client.ts",
+      "sha256": "9bcced8eb5d8471c313ca31cf976ac98bb19baf147e6987eb06617104fa8a1d1"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-group/headman-group-screen.pcss",
+      "sha256": "ec263a9d77fcca809816883de41f960c156cf8b240bf1e891b35a7c5a649a46e"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-group/headman-roster-download.test.ts",
+      "sha256": "3b6e4dac211af3061d3675337f86c477313e7e12a59f25d91679bec5481e07d9"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/report-download-client.ts",
+      "sha256": "c67e103468be2fdebb9cb46a133a31686591d265dfe15ed43a911b21c9de3428"
+    },
+    {
+      "path": "frontends/tma-vue/src/report-download-adapter.ts",
+      "sha256": "27dfbfea7b6aa949bd8b5e48839d60cb0874867da516d7126576aab83fc2563c"
+    },
+    {
+      "path": "frontends/tma-vue/src/report-download-adapter.test.ts",
+      "sha256": "f06ecf9361cf1587eac7f1e097b50da8511934c1e749f96800dee7cef9d97072"
+    }
+  ],
+  "unchangedDiagnosticFiles": [
+    {
+      "path": "frontends/mobile-core/src/features/headman-journal/headman-journal-client.test.ts",
+      "baselineGitBlob": "bcee92d06c361c62907b2d6415f023818bac9292",
+      "currentGitBlob": "bcee92d06c361c62907b2d6415f023818bac9292",
+      "unchanged": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/requests/request-attachment-action.test.ts",
+      "baselineGitBlob": "52b2a6597b58af3e0d8716a91415cbebf7bd5c62",
+      "currentGitBlob": "52b2a6597b58af3e0d8716a91415cbebf7bd5c62",
+      "unchanged": true
+    }
+  ],
+  "baselineInference": "Diagnostic files unchanged; no baseline runtime rerun or baseline PASS/FAIL claimed"
+}

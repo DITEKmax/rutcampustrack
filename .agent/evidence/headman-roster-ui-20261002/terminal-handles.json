@@ -1,0 +1,9 @@
+{
+  "initialChecks61787": 1,
+  "correctedChecks44411": 0,
+  "targetedVitestR2": 0,
+  "targetedVitestR2TestsPassed": 4,
+  "targetedVitestR2UnchangedSkipped": 25,
+  "liveHandles": [],
+  "heavyResourcesCreated": false
+}

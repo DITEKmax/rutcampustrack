@@ -1,0 +1,26 @@
+X [ERROR] Cannot read directory "../../../../../..": Access is denied.
+
+X [ERROR] Could not resolve "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\frontends\\tma-vue\\vite.config.ts"
+
+failed to load config from C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r3\frontends\tma-vue\vite.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Startup Error ⎯⎯⎯⎯⎯⎯⎯⎯
+Error: Build failed with 2 errors:
+error: Cannot read directory "../../../../../..": Access is denied.
+error: Could not resolve "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\v2-runtime-build-r3\\frontends\\tma-vue\\vite.config.ts"
+    at failureErrorWithLog (C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r3\frontends\node_modules\esbuild\lib\main.js:1752:15)
+    at C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r3\frontends\node_modules\esbuild\lib\main.js:1211:25
+    at runOnEndCallbacks (C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r3\frontends\node_modules\esbuild\lib\main.js:1592:45)
+    at buildResponseToResult (C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r3\frontends\node_modules\esbuild\lib\main.js:1209:7)
+    at C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r3\frontends\node_modules\esbuild\lib\main.js:1236:16
+    at responseCallbacks.<computed> (C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r3\frontends\node_modules\esbuild\lib\main.js:886:9)
+    at handleIncomingPacket (C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r3\frontends\node_modules\esbuild\lib\main.js:941:12)
+    at Socket.readFromStdout (C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\v2-runtime-build-r3\frontends\node_modules\esbuild\lib\main.js:864:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12) {
+  errors: [Getter/Setter],
+  warnings: [Getter/Setter]
+}
+
+
+

@@ -1,0 +1,5 @@
+{
+  "exitCode": 0,
+  "command": "vitest run --config tma-vue/vite.config.ts <two exact files> -t <four new roster cases> --maxWorkers 1 --no-file-parallelism",
+  "reason": "Initial esbuild sandbox AccessDenied before any test; elevated known path without source/config change"
+}

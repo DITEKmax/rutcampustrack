@@ -1,0 +1,9 @@
+
+ RUN  v4.1.4 C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/worktrees/v2-runtime-build-r3/frontends
+
+
+ Test Files  2 passed (2)
+      Tests  4 passed | 25 skipped (29)
+   Start at  22:52:58
+   Duration  3.33s (transform 1.16s, setup 0ms, import 1.84s, tests 153ms, environment 1ms)
+

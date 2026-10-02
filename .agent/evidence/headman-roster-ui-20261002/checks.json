@@ -1,0 +1,37 @@
+[
+  {
+    "name": "mobile-types",
+    "command": "C:/Users/maksd/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe node_modules/typescript/bin/tsc -p mobile-core/tsconfig.json --noEmit",
+    "startedAt": "2026-10-02T22:50:51.4586105+03:00",
+    "finishedAt": "2026-10-02T22:50:56.5626792+03:00",
+    "exitCode": 2
+  },
+  {
+    "name": "pwa-types",
+    "command": "C:/Users/maksd/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe node_modules/vue-tsc/bin/vue-tsc.js -p pwa-vue/tsconfig.json --noEmit",
+    "startedAt": "2026-10-02T22:50:56.6106143+03:00",
+    "finishedAt": "2026-10-02T22:51:08.3907045+03:00",
+    "exitCode": 0
+  },
+  {
+    "name": "tma-types",
+    "command": "C:/Users/maksd/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe node_modules/vue-tsc/bin/vue-tsc.js -p tma-vue/tsconfig.json --noEmit",
+    "startedAt": "2026-10-02T22:51:08.3976782+03:00",
+    "finishedAt": "2026-10-02T22:51:18.6749982+03:00",
+    "exitCode": 0
+  },
+  {
+    "name": "targeted-tests",
+    "command": "C:/Users/maksd/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe node_modules/vitest/vitest.mjs run --config tma-vue/vite.config.ts mobile-core/src/features/headman-group/headman-roster-download.test.ts tma-vue/src/report-download-adapter.test.ts -t personal roster session boundary|accepts the roster format-only|keeps roster PNG --maxWorkers 1 --no-file-parallelism",
+    "startedAt": "2026-10-02T22:51:18.6810946+03:00",
+    "finishedAt": "2026-10-02T22:51:21.0985512+03:00",
+    "exitCode": 1
+  },
+  {
+    "name": "scoped-lint",
+    "command": "C:/Users/maksd/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe node_modules/eslint/bin/eslint.js mobile-core/src/features/headman-group/HeadmanGroupScreen.vue mobile-core/src/features/headman-group/headman-group-client.ts mobile-core/src/features/headman-group/headman-roster-download.test.ts mobile-core/src/shared/report-download-client.ts tma-vue/src/report-download-adapter.ts tma-vue/src/report-download-adapter.test.ts --max-warnings=0",
+    "startedAt": "2026-10-02T22:51:21.1025580+03:00",
+    "finishedAt": "2026-10-02T22:51:41.0617916+03:00",
+    "exitCode": 1
+  }
+]

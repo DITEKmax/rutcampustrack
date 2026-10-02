@@ -1,0 +1,12 @@
+{
+  "scope":"Continuous warning quiet hours; critical quiet-hour exception; inhibition preserved",
+  "risk":"S1",
+  "baseline":"ba05ea2dbd73cbde5b8757d42d5e23df9122d866",
+  "productFiles":["infra/alertmanager/alertmanager.yml","docs/operations/monitoring/alerts.md"],
+  "diffCheckExitCode":0,
+  "nativeRuntime":"PENDING root bounded cached-container lease",
+  "pinnedImage":"prom/alertmanager:v0.27.0@sha256:e13b6ed5cb929eeaee733479dce55e10eb3bc2e9c4586c705a4e8da41e5eacf5",
+  "source":"https://raw.githubusercontent.com/prometheus/alertmanager/v0.27.0/docs/configuration.md",
+  "intervalSemantics":"inclusive start/exclusive end,24:00 explicitly allowed",
+  "limits":["Native routing test cannot simulate wall clock","No external notifications or production restart","No Docker without root lease/pull/network/ports/server","Foreign work preserved"]
+}

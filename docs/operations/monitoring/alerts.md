@@ -465,7 +465,7 @@ UI Alertmanager доступен через `https://ruttrack.site/alertmanager/
 ## Quiet hours (22:00-08:00 MSK)
 
 Определены в `alertmanager.yml` `time_intervals.quiet-hours-msk`
-(`19:00-05:00 UTC`). Только `warning` severity уходит в mute; `critical`
+(`[19:00,24:00)` + `[00:00,05:00)` UTC, без разрыва; 22:00 MSK включено, 08:00 исключено). Только `warning` severity уходит в mute; `critical`
 всегда fire'ит. Изменить — отредактировать `alertmanager.yml` +
 `docker compose restart alertmanager`.
 

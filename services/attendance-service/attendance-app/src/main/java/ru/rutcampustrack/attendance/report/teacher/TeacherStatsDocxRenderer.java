@@ -110,7 +110,7 @@ public final class TeacherStatsDocxRenderer {
             xml.append("</w:tr>");
         } else {
             for (Row row : model.rows()) {
-                xml.append("<w:tr>").append(cell(row.label(), widths[0], false));
+                xml.append("<w:tr><w:trPr><w:cantSplit/></w:trPr>").append(cell(row.label(), widths[0], false));
                 List<Metric> metrics = row.metricsInDisplayOrder();
                 for (int index = 0; index < metrics.size(); index++) {
                     xml.append(cell(metricText(metrics.get(index)), widths[index + 1], false));

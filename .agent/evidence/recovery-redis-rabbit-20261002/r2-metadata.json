@@ -1,0 +1,10 @@
+{
+  "exitCode": 0,
+  "probe": "read-only Docker cp --archive TAR headers of exact stopped own source; pinned image/container Config.User, Entrypoint, Cmd",
+  "source": "rct-recovery-redis-rabbit-20261002-src-rabbit",
+  "parent": {"path": "/var/lib/rabbitmq", "uid": 100, "gid": 101, "mode": "01777"},
+  "cookieHeader": {"path": "/var/lib/rabbitmq/.erlang.cookie", "uid": 0, "gid": 0, "mode": "0400"},
+  "imageAndContainer": {"user": "", "entrypoint": ["docker-entrypoint.sh"], "command": ["rabbitmq-server"]},
+  "cookieContents": "not printed or committed",
+  "runtimeMutation": false
+}

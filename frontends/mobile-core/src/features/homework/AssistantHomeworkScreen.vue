@@ -15,6 +15,7 @@ import {
 import {
   intentAfterHomeworkCreateFailure,
   reuseOrCreateAssistantHomeworkIntent,
+  withAssistantHomeworkPublicationReceipt,
   reuseOrCreateAssistantHomeworkEditIntent,
   sameAssistantHomeworkDraftContext,
   type AssistantHomeworkCreateIntent,
@@ -257,9 +258,10 @@ async function save(): Promise<void> {
       createIntent.value = intent
       createConflict.value = false
       createPending.value = false
-      const created = await api.createHomework(intent.input)
+      const created = await api.createHomework(intent.input, intent.receipt)
       if (disposed || revision !== mutationRevision) return
-      if (created === null) {
+      if (created.state === 'PENDING') {
+        createIntent.value = withAssistantHomeworkPublicationReceipt(intent, created.receipt)
         createPending.value = true
         notice.value = 'Сервер принял публикацию. Повтори запрос с тем же ключом, чтобы проверить завершение.'
         return

@@ -22,6 +22,8 @@ export interface HeadmanHomeworkSemester {
 
 export interface HeadmanManagedHomework {
   readonly id: number
+  readonly bindingId: number | null
+  readonly requestKey: string | null
   readonly title: string
   readonly description: string | null
   readonly link: string | null
@@ -35,6 +37,16 @@ export interface HeadmanManagedHomework {
   readonly revision: number | null
   readonly archived: boolean
 }
+
+export interface HeadmanHomeworkPublicationReceipt {
+  readonly homeworkId: string
+  readonly bindingId: string
+  readonly requestKey: string
+}
+
+export type HeadmanHomeworkCreateResult =
+  | { readonly state: 'PENDING'; readonly receipt: HeadmanHomeworkPublicationReceipt }
+  | { readonly state: 'ACTIVE'; readonly homework: HeadmanManagedHomework }
 
 export interface HeadmanHomeworkCreateInput {
   readonly title: string
@@ -131,8 +143,12 @@ export class HeadmanHomeworkApi {
     )
   }
 
-  async createHomework(input: HeadmanHomeworkCreateInput): Promise<HeadmanManagedHomework | null> {
+  async createHomework(
+    input: HeadmanHomeworkCreateInput,
+    acceptedReceipt: HeadmanHomeworkPublicationReceipt | null = null,
+  ): Promise<HeadmanHomeworkCreateResult> {
     validateCreateInput(input)
+    if (acceptedReceipt !== null) validatePublicationReceipt(acceptedReceipt, input.requestKey)
     const response = await this.response('/api/academic/homeworks', {
       method: 'POST',
       body: JSON.stringify({
@@ -152,20 +168,27 @@ export class HeadmanHomeworkApi {
     const value: unknown = await response.json()
     this.options.assertCurrent?.()
     if (response.status === 202) {
-      if (!isRecord(value) || value.state !== 'PENDING'
-        || textValue(value.requestKey)?.toLowerCase() !== input.requestKey.toLowerCase()
-        || !/^[1-9][0-9]*$/.test(String(value.homeworkId)) || !/^[1-9][0-9]*$/.test(String(value.bindingId))) {
+      if (!isRecord(value) || value.state !== 'PENDING') {
         throw new Error('Сервер вернул некорректное подтверждение публикации ДЗ')
       }
-      return null
+      const receipt = {
+        homeworkId: typeof value.homeworkId === 'string' ? value.homeworkId : '',
+        bindingId: typeof value.bindingId === 'string' ? value.bindingId : '',
+        requestKey: textValue(value.requestKey) ?? '',
+      }
+      validatePublicationReceipt(receipt, input.requestKey, acceptedReceipt)
+      return { state: 'PENDING', receipt: Object.freeze(receipt) }
     }
     const created = normalizeHomework(value)
     if (created === null || created.groupId !== input.groupId || created.subjectId !== input.subjectId
-      || created.semesterId !== input.semesterId || created.bindingMode !== input.bindingMode
-      || created.lessonDate !== input.lessonDate || created.lessonNumber !== input.lessonNumber) {
-      throw new Error('Сервер вернул ДЗ для другой привязки')
+      || created.semesterId !== input.semesterId || created.bindingId === null || created.requestKey === null) {
+      throw new Error('Сервер вернул ДЗ для другого запроса')
     }
-    return created
+    // A replay returns the current placement, which may have moved after creation.
+    validatePublicationReceipt({
+      homeworkId: String(created.id), bindingId: String(created.bindingId), requestKey: created.requestKey,
+    }, input.requestKey, acceptedReceipt)
+    return { state: 'ACTIVE', homework: created }
   }
 
   async updateHomework(id: number, input: HeadmanHomeworkUpdateInput): Promise<HeadmanManagedHomework | null> {
@@ -317,6 +340,18 @@ function validateRequestKey(value: string): void {
   }
 }
 
+function validatePublicationReceipt(
+  receipt: HeadmanHomeworkPublicationReceipt,
+  requestKey: string,
+  accepted: HeadmanHomeworkPublicationReceipt | null = null,
+): void {
+  if (!/^[1-9][0-9]*$/.test(receipt.homeworkId) || !/^[1-9][0-9]*$/.test(receipt.bindingId)
+    || receipt.requestKey.toLowerCase() !== requestKey.toLowerCase()
+    || (accepted !== null && (receipt.homeworkId !== accepted.homeworkId || receipt.bindingId !== accepted.bindingId))) {
+    throw new Error('Сервер вернул некорректное подтверждение публикации ДЗ')
+  }
+}
+
 function assertPositiveInteger(value: number, name: string): void {
   if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${name} должен быть положительным целым числом`)
 }
@@ -366,6 +401,8 @@ function normalizeHomework(value: unknown): HeadmanManagedHomework | null {
   }
   return {
     id,
+    bindingId: positiveNumber(source.bindingId),
+    requestKey: textValue(source.requestKey),
     title: textValue(source.title) ?? `Задание #${id}`,
     description: textValue(source.description),
     link: textValue(source.link),

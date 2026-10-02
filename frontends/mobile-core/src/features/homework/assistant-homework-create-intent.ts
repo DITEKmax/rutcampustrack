@@ -1,4 +1,4 @@
-import type { HeadmanHomeworkCreateInput, HeadmanHomeworkUpdateInput, HomeworkBindingMode } from './headman-homework-client'
+import type { HeadmanHomeworkCreateInput, HeadmanHomeworkPublicationReceipt, HeadmanHomeworkUpdateInput, HomeworkBindingMode } from './headman-homework-client'
 
 export interface AssistantHomeworkDraftContext {
   readonly userId: number
@@ -21,6 +21,7 @@ export interface AssistantHomeworkCreateValues {
 export interface AssistantHomeworkCreateIntent {
   readonly context: AssistantHomeworkDraftContext
   readonly input: Readonly<HeadmanHomeworkCreateInput>
+  readonly receipt: HeadmanHomeworkPublicationReceipt | null
 }
 
 export function createAssistantHomeworkCreateIntent(
@@ -41,7 +42,15 @@ export function createAssistantHomeworkCreateIntent(
     bindingMode: frozenContext.bindingMode,
     requestKey,
   })
-  return Object.freeze({ context: frozenContext, input })
+  return Object.freeze({ context: frozenContext, input, receipt: null })
+}
+
+/** Retain accepted identity alongside the original payload for every later replay. */
+export function withAssistantHomeworkPublicationReceipt(
+  intent: AssistantHomeworkCreateIntent,
+  receipt: HeadmanHomeworkPublicationReceipt,
+): AssistantHomeworkCreateIntent {
+  return Object.freeze({ ...intent, receipt: Object.freeze({ ...receipt }) })
 }
 
 export function sameAssistantHomeworkDraftContext(

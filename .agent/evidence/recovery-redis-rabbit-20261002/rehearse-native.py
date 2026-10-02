@@ -20,7 +20,7 @@ ROOT = HERE.parents[2]
 spec = importlib.util.spec_from_file_location("accepted_recovery", ROOT / "scripts/recovery.py")
 r = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(r)
-BASE = "rct-recovery-redis-rabbit-20261002"
+BASE = "rct-recovery-redis-rabbit-20261002-r3"
 HOST = "rct-recovery-rabbit-1002"
 NODE = "rabbit@" + HOST
 IMAGES = {
@@ -32,7 +32,11 @@ EXCHANGE = "rct.recovery.1002"
 
 
 def native(container, *command):
-    return r.run(["docker", "exec", container, *command]).decode("utf-8").strip()
+    # docker exec bypasses the image entrypoint's su-exec; root CLI can race
+    # broker initialization by creating a root-only cookie. Use the pinned
+    # image's verified rabbitmq uid/gid for every Rabbit CLI, including readiness.
+    user = ["--user", "100:101"] if container.endswith("-rabbit") else []
+    return r.run(["docker", "exec", *user, container, *command]).decode("utf-8").strip()
 
 
 def inspect(kind, name):
@@ -102,7 +106,7 @@ def validate_tar(path, redis=False):
 
 
 def execute():
-    runtime = (HERE / "runtime").resolve()
+    runtime = (HERE / "runtime-r3").resolve()
     r.require(runtime.is_relative_to(ROOT.resolve()), "Runtime target outside assigned workspace")
     r.require(not runtime.exists(), "Runtime already exists; no overwrite/resume/deletion")
     names = {(side, store): BASE + "-" + side + "-" + store
@@ -272,7 +276,7 @@ def main():
     if not args.execute:
         print(json.dumps({"mode": "PLAN ONLY, no Docker/files mutation", "base": BASE, "maxActiveContainers": 2,
                           "images": IMAGES, "node": NODE, "network": "none", "ports": [],
-                          "runtime": str(HERE / "runtime"), "source": "retained stopped; no data deletion"}, indent=2))
+                          "runtime": str(HERE / "runtime-r3"), "source": "retained stopped; no data deletion"}, indent=2))
         return
     try:
         execute()

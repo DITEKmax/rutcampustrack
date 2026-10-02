@@ -133,6 +133,10 @@ class HomeworkEditLifecycleIT {
         jdbc.update("UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role = 'headman'", actor);
         assertThatThrownBy(() -> service.updateHomework(homework.getId(), first)).isInstanceOf(AccessDeniedException.class);
         assertThat(updatedOutbox(homework)).isEqualTo(3);
+        archiveConsumer.onEvent(terminalEvent(homework, 701L, 701L));
+        assertThat(service.history(homework.getId(), PageRequest.of(0,10)).getTotalElements()).isEqualTo(3);
+        when(context.getRole()).thenReturn(UserRole.TEACHER);
+        assertThatThrownBy(() -> service.history(homework.getId(), PageRequest.of(0,10))).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test void legacyAcceptedReplayFreezesBeforeEditAndEffectiveDateCutoffKeepsHistoryReadable() {
@@ -214,13 +218,7 @@ class HomeworkEditLifecycleIT {
         Homework homework = linkedHomework();
         completion(homework);
         HomeworkEditOperation operation = uncertainDateEdit(homework);
-        Map<String,Object> payload = new HashMap<>();
-        payload.put("binding_id", binding); payload.put("actor_id", publisher); payload.put("request_key", createKey.toString());
-        payload.put("occurrence_id", null); payload.put("lesson_id", null); payload.put("homework_id", homework.getId());
-        payload.put("binding_revision", 9L); payload.put("semester_id", semester);
-        Map<String,Object> event = Map.of("event_id", UUID.randomUUID().toString(), "event_type", "homework.binding.archived",
-                "source", "schedule-service", "event_version", 1L, "payload", payload);
-        archiveConsumer.onEvent(event);
+        archiveConsumer.onEvent(terminalEvent(homework, null, null));
         when(schedule.continueHomeworkEdit(operation.identity())).thenReturn(Optional.of(accepted(operation)));
         when(schedule.acknowledgeHomeworkEdit(operation.identity())).thenReturn(accepted(operation).toBuilder().setState("ACKNOWLEDGED").build());
         coordinator.recover(operation);
@@ -233,6 +231,31 @@ class HomeworkEditLifecycleIT {
         assertThat(updatedOutbox(homework)).isZero();
         assertThat(persistence.find(homework.getId(), actor, operation.requestKey()).outcome()).isEqualTo("TERMINAL_ABORTED");
         assertThatThrownBy(() -> service.updateHomework(homework.getId(), edit("late", 1))).isInstanceOf(ConflictException.class);
+    }
+
+    @Test void missingMoveRequiresDurableAbortTombstoneBeforePreparedCommandIsCancelled() {
+        Homework homework = linkedHomework();
+        completion(homework);
+        HomeworkEditOperation operation = uncertainDateEdit(homework);
+        when(schedule.continueHomeworkEdit(operation.identity())).thenReturn(Optional.empty());
+        when(schedule.abortUnacceptedHomeworkEdit(operation.identity())).thenReturn(HomeworkEditReceipt.newBuilder()
+                .setIdentity(operation.identity()).setState("NOT_ACCEPTED").build());
+        coordinator.recover(operation);
+        verify(schedule).abortUnacceptedHomeworkEdit(operation.identity());
+        verify(schedule, never()).acknowledgeHomeworkEdit(any());
+        assertThat(persistence.find(homework.getId(), actor, operation.requestKey()).state()).isEqualTo("CANCELLED");
+        assertThat(repository.findById(homework.getId()).orElseThrow().getTitle()).isEqualTo("A");
+        assertThat(service.isCompleted(homework.getId())).isTrue();
+        assertThat(updatedOutbox(homework)).isZero();
+    }
+
+    private Map<String,Object> terminalEvent(Homework homework, Long occurrence, Long lesson) {
+        Map<String,Object> payload = new HashMap<>();
+        payload.put("binding_id", binding); payload.put("actor_id", publisher); payload.put("request_key", createKey.toString());
+        payload.put("occurrence_id", occurrence); payload.put("lesson_id", lesson); payload.put("homework_id", homework.getId());
+        payload.put("binding_revision", 9L); payload.put("semester_id", semester);
+        return Map.of("event_id", UUID.randomUUID().toString(), "event_type", "homework.binding.archived",
+                "source", "schedule-service", "event_version", 1L, "payload", payload);
     }
 
     private Homework linkedHomework() {

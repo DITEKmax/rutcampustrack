@@ -4,20 +4,31 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.*;
 import ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.*;
 import ru.rutcampustrack.academic.contract.enums.*;
+import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
+import ru.rutcampustrack.academic.assistant.AssistantService;
+import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.grpc.AttendanceUserImpactGrpcClient;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.user.*;
 import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
+import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
+import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
 import ru.rutcampustrack.attendance.grpc.UserImpactSnapshot;
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import static org.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -29,6 +40,10 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
     @Autowired UserArchiveRepository repository;
     @Autowired UserRoleGrantReader grants;
     @Autowired PlatformTransactionManager transactionManager;
+    @Autowired GroupRepository groupRepository;
+    @Autowired UserRepository userRepository;
+    @Autowired UserRoleGrantRepository roleGrantRepository;
+    @Autowired HeadmanAssistantRepository assistantRepository;
     private final AuthUserArchiveClient auth=mock(AuthUserArchiveClient.class);
     private final AttendanceUserImpactGrpcClient attendance=mock(AttendanceUserImpactGrpcClient.class);
     private final RequestContext context=mock(RequestContext.class);
@@ -145,5 +160,104 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         assertThatThrownBy(()->service.preview(owner)).isInstanceOf(ResponseStatusException.class);
         assertThat(repository.observe(target).status()).isEqualTo("active");
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM user_archive_receipt WHERE target_id=?",Long.class,target)).isZero();
+    }
+
+    @Test void archiveWaitsForHelperWriterThenRevokesItsCommittedAuthorityWithoutFkDeadlock() throws Exception {
+        long candidate=users.createUser(new CreateUserRequest("Archive","Helper",null,UserRole.STUDENT,group,null,
+                Math.abs(System.nanoTime())+100000)).getContent().getId();
+        userIds.add(candidate);
+        Preview preview=service.preview(target);
+        ArchiveRequest request=new ArchiveRequest(UUID.randomUUID(),preview.previewDigest(),"synthetic");
+        RequestContext headman=mock(RequestContext.class);
+        when(headman.getUserId()).thenReturn(target);
+        when(headman.getGroupId()).thenReturn(group);
+        when(headman.isHeadman()).thenReturn(true);
+        CountDownLatch groupLocked=new CountDownLatch(1), finishHelper=new CountDownLatch(1);
+        GroupRepository gatedGroups=mock(GroupRepository.class);
+        when(gatedGroups.findByIdForUpdate(group)).thenAnswer(invocation -> {
+            var locked=groupRepository.findByIdForUpdate(group);
+            groupLocked.countDown();
+            if (!finishHelper.await(10,TimeUnit.SECONDS)) throw new IllegalStateException("helper release timed out");
+            return locked;
+        });
+        AssistantService gatedAssistant=new AssistantService(assistantRepository,userRepository,gatedGroups,roleGrantRepository,headman);
+        AssistantService assistant=new AssistantService(assistantRepository,userRepository,groupRepository,roleGrantRepository,headman);
+        AssignAssistantRequest assign=new AssignAssistantRequest(candidate,group,List.of(AssistantPermission.MARK_ATTENDANCE));
+        AtomicInteger archivePid=new AtomicInteger();
+        UserArchiveRepository observed=spy(repository);
+        doAnswer(invocation -> {
+            archivePid.set(jdbc.queryForObject("SELECT pg_backend_pid()",Integer.class));
+            return invocation.callRealMethod();
+        }).when(observed).lock(owner,target,request.operationId());
+        UserArchiveService archive=new UserArchiveService(observed,users,auth,attendance,context,transactionManager,null);
+        TransactionTemplate tx=new TransactionTemplate(transactionManager);
+        ExecutorService workers=Executors.newFixedThreadPool(2);
+        Future<?> helperWrite=null, archiveWrite=null;
+        try {
+            helperWrite=workers.submit(() -> tx.executeWithoutResult(status -> {
+                gatedAssistant.assignAssistant(assign);
+                assistantRepository.flush(); // Executes the assigned_by FK KEY SHARE before releasing the group.
+            }));
+            assertThat(groupLocked.await(10,TimeUnit.SECONDS)).isTrue();
+            archiveWrite=workers.submit(() -> archive.archive(target,request));
+            await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+                assertThat(archivePid.get()).isPositive();
+                assertThat(jdbc.queryForObject("""
+                        SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=? AND wait_event_type='Lock'
+                          AND query LIKE '%SELECT id FROM groups WHERE id IN%')
+                        """,Boolean.class,archivePid.get())).isTrue();
+            });
+            finishHelper.countDown();
+            helperWrite.get(10,TimeUnit.SECONDS);
+            archiveWrite.get(10,TimeUnit.SECONDS);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM headman_assistants WHERE group_id=? AND is_active",Long.class,group)).isZero();
+            assertThat(jdbc.queryForObject("SELECT NOT is_active AND revoked_at IS NOT NULL FROM headman_assistants WHERE group_id=? AND student_id=?",Boolean.class,group,candidate)).isTrue();
+            assertThatThrownBy(() -> tx.executeWithoutResult(status -> assistant.assignAssistant(assign))).isInstanceOf(AccessDeniedException.class);
+            service.restore(target,new RestoreRequest(UUID.randomUUID()));
+            assertThatThrownBy(() -> tx.executeWithoutResult(status -> assistant.assignAssistant(assign))).isInstanceOf(AccessDeniedException.class);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM headman_assistants WHERE group_id=? AND is_active",Long.class,group)).isZero();
+        } finally {
+            finishHelper.countDown();
+            if (helperWrite!=null && !helperWrite.isDone()) helperWrite.cancel(true);
+            if (archiveWrite!=null && !archiveWrite.isDone()) archiveWrite.cancel(true);
+            workers.shutdownNow();
+            assertThat(workers.awaitTermination(10,TimeUnit.SECONDS)).isTrue();
+        }
+    }
+
+    @Test void previewBecomesStaleWhenAnotherTeacherLosesAuthorityAndLocalWarningChanges() {
+        // Assignment identity/history cannot be deleted. Roll back only this test's synthetic
+        // assignments and subject instead of weakening their database retention guards.
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            status.setRollbackOnly();
+            long other=jdbc.queryForObject("""
+                    INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,password_changed,created_at,updated_at)
+                    VALUES (?, 'synthetic-hash','Archive','OtherTeacher','teacher','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
+                    """,Long.class,"archive-other-"+UUID.randomUUID().toString().substring(0,8));
+            jdbc.update("INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES(?,'teacher','active',NOW(),NOW())",other);
+            long subject=jdbc.queryForObject("INSERT INTO subjects(name,type,group_id) VALUES(?,'lecture',?) RETURNING id",Long.class,"Archive "+UUID.randomUUID(),group);
+            jdbc.update("INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,'lecture')",subject);
+            for (long teacher:List.of(target,other)) jdbc.update("""
+                    INSERT INTO assignments(teacher_id,subject_id,group_id,semester_id,lesson_type,valid_from,valid_until_exclusive)
+                    VALUES(?,?,?,?,'lecture',?,?)
+                    """,teacher,subject,group,semester,today.minusDays(1),today.plusDays(1));
+            Preview preview=service.preview(target);
+            assertThat(preview.soleTeacherAssignmentCount()).isZero();
+            var unchangedTarget=jdbc.queryForMap("SELECT to_jsonb(u)::text AS state FROM users u WHERE id=?",target);
+            var unchangedGrants=jdbc.queryForList("SELECT * FROM user_role_grants WHERE user_id=? ORDER BY id",target);
+            jdbc.update("UPDATE user_role_grants SET status='suspended',updated_at=NOW() WHERE user_id=? AND role='teacher'",other);
+            assertThat(repository.observe(target).soleTeacherCount()).isEqualTo(1);
+            assertThat(jdbc.queryForMap("SELECT to_jsonb(u)::text AS state FROM users u WHERE id=?",target)).isEqualTo(unchangedTarget);
+            assertThat(jdbc.queryForList("SELECT * FROM user_role_grants WHERE user_id=? ORDER BY id",target)).isEqualTo(unchangedGrants);
+            assertThatThrownBy(() -> service.archive(target,new ArchiveRequest(UUID.randomUUID(),preview.previewDigest(),"synthetic")))
+                    .isInstanceOfSatisfying(ResponseStatusException.class,e -> {
+                        assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+                        assertThat(e.getReason()).isEqualTo("archive_preview_stale");
+                    });
+            verifyNoInteractions(auth);
+            assertThat(repository.observe(target).status()).isEqualTo("active");
+            assertThat(jdbc.queryForObject("SELECT active_role_grant_id IS NOT NULL FROM auth_sessions WHERE sid=?",Boolean.class,session)).isTrue();
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM user_archive_receipt WHERE target_id=?",Long.class,target)).isZero();
+        });
     }
 }

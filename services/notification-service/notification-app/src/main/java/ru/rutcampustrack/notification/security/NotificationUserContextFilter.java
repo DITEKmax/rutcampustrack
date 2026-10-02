@@ -61,6 +61,8 @@ public class NotificationUserContextFilter extends DualModeUserContextFilter {
         // + infrastructure paths (actuator/api-docs/swagger-ui) from base class.
         String path = request.getRequestURI();
         return path.startsWith("/ws")
+                || (("GET".equals(request.getMethod()) || "POST".equals(request.getMethod()))
+                    && path.matches("/internal/bot/notification-preferences/[1-9][0-9]*/[1-9][0-9]*"))
                 || path.startsWith("/internal/alert")
                 || path.startsWith("/csp-report")
                 || isInfrastructurePath(request);

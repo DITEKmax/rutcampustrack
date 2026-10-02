@@ -1,220 +1,157 @@
-"""Per-user notification preferences for the Telegram bot.
-
-Две модели подписки уживаются вместе по обратной совместимости:
-
-1. **Глобальный toggle** (legacy): ключ ``bot:notif:{telegram_id}``.
-   ``"off"`` в значении → все уведомления от бота выключены.
-
-2. **Per-category toggles** (new): hash ``bot:notif:cat:{telegram_id}``,
-   поле на категорию, значение ``"off"``. Отсутствие поля (или любое
-   значение кроме ``"off"``) означает «категория включена». Категории
-   перечислены в :data:`CATEGORIES`.
-
-Решение о том, уходит ли сообщение в TG, принимается в два этапа:
-
-* если глобально выключено — не шлём вне зависимости от категорий;
-* если категория явно выключена — не шлём;
-* иначе шлём.
-
-Такой подход позволяет: (а) пользователям со старыми настройками
-ничего не терять, (б) быстро выключить всё разом одной кнопкой.
-"""
-
+"""Typed private Notification authority client; no Redis preference reads in the bot."""
 from __future__ import annotations
-
-import logging
+import asyncio
+import base64
+import re
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+import aiohttp
 
-import redis.asyncio as aioredis
-
-logger = logging.getLogger(__name__)
-
-# Категории уведомлений должны быть синхронизированы с PWA
-# (frontends/pwa/src/features/notifications/notificationPrefs.ts) —
-# оба клиента должны показывать один набор и использовать одинаковые ключи.
-CATEGORIES: tuple[str, ...] = (
-    "lessons",  # lesson.started, lesson.cancelled
-    "homework",  # homework.published, homework.updated
-    "tickets",  # excuse.*, late_checkin.*
-    "schedule",  # lesson.one_off.*
-    "group",  # group.renamed, group.archived
-    "reminders",  # NOTIF-02/NOTIF-03 — напоминания в середине/конце пары
-)
-
-# Ивент → категория. None означает «категория неприменима», отправляем
-# без фильтрации по категории (но глобальный toggle всё равно работает).
-_EVENT_CATEGORY: dict[str, str] = {
-    "lesson.started": "reminders",
-    "lesson.reminder": "reminders",
-    "lesson.cancelled": "lessons",
-    "lesson.one_off.created": "schedule",
-    "lesson.one_off.cancelled": "schedule",
-    "homework.published": "homework",
-    "homework.updated": "homework",
-    "homework.weekly_digest": "homework",
-    "homework.due_reminder": "homework",
-    "excuse.requested": "tickets",
-    "excuse.decided": "tickets",
-    "late_checkin.requested": "tickets",
-    "late_checkin.decided": "tickets",
-    "attendance.marked": "tickets",
-    "group.renamed": "group",
-    "group.archived": "group",
+CATEGORIES = ("lessons", "homework", "tickets", "schedule", "group", "reminders")
+_EVENT_CATEGORY = {
+    "lesson.started": "reminders", "lesson.reminder": "reminders",
+    "lesson.cancelled": "lessons", "lesson.closed": "lessons", "lesson.blocked": "lessons",
+    "lesson.one_off.created": "schedule", "lesson.one_off.cancelled": "schedule",
+    "homework.published": "homework", "homework.updated": "homework",
+    "homework.weekly_digest": "homework", "homework.due_reminder": "homework",
+    "excuse.requested": "tickets", "excuse.decided": "tickets",
+    "late_checkin.requested": "tickets", "late_checkin.decided": "tickets",
+    "attendance.marked": "tickets", "group.renamed": "group", "group.archived": "group",
 }
 
-
 def category_for_event(event_type: str) -> Optional[str]:
-    """Возвращает категорию для event_type или None, если неизвестен."""
     return _EVENT_CATEGORY.get(event_type)
 
+class NotificationPreferencesUnavailable(RuntimeError):
+    """Retain the original event/task; unknown is neither enabled nor disabled."""
+
+class NotificationBindingMismatch(RuntimeError):
+    """Known stale/unbound identity must never deliver to another account."""
+
+@dataclass(frozen=True)
+class PreferencesSnapshot:
+    user_id: int
+    telegram_id: int
+    global_enabled: bool
+    categories: dict[str, bool]
+    muted_until: Optional[datetime]
+    canonical_categories: dict[str, bool]
+    canonical_muted_until: Optional[datetime]
+    eligible: Optional[bool]
+
+def canonical_token(token: str) -> bool:
+    if not re.fullmatch(r"[A-Za-z0-9_-]{43}", token):
+        return False
+    decoded = base64.urlsafe_b64decode(token + "=")
+    return len(decoded) == 32 and base64.urlsafe_b64encode(decoded).decode().rstrip("=") == token
 
 class NotificationPrefsClient:
-    _GLOBAL_PREFIX = "bot:notif:"
-    _CATEGORY_PREFIX = "bot:notif:cat:"
-    _TELEGRAM_MUTE_PREFIX = "bot:notif:mute:"
-    _USER_PREF_PREFIX = "notif:prefs:user:"
-    _MUTE_UNTIL_FIELD = "mute_until"
+    def __init__(self, base_url: str, token: str, academic_client, session=None) -> None:
+        if not canonical_token(token):
+            raise ValueError("BOT_TO_NOTIFICATION_SERVICE_TOKEN must be canonical32byte base64url")
+        self._base_url = base_url.rstrip("/")
+        self._token = token
+        self._academic = academic_client
+        self._session = session
 
-    def __init__(
-        self,
-        host: str = "redis",
-        port: int = 6379,
-        password: str = "",
-        redis_client: Optional[aioredis.Redis] = None,
-    ) -> None:
-        if redis_client is not None:
-            self._redis = redis_client
-        else:
-            auth = f":{password}@" if password else ""
-            url = f"redis://{auth}{host}:{port}"
-            self._redis = aioredis.from_url(url, max_connections=10, decode_responses=True)
-
-    def _global_key(self, telegram_id: int) -> str:
-        return f"{self._GLOBAL_PREFIX}{telegram_id}"
-
-    def _category_key(self, telegram_id: int) -> str:
-        return f"{self._CATEGORY_PREFIX}{telegram_id}"
-
-    def _telegram_mute_key(self, telegram_id: int) -> str:
-        return f"{self._TELEGRAM_MUTE_PREFIX}{telegram_id}"
-
-    def _user_pref_key(self, user_id: int) -> str:
-        return f"{self._USER_PREF_PREFIX}{user_id}"
-
-    async def is_enabled(
-        self,
-        telegram_id: Optional[int],
-        category: Optional[str] = None,
-        user_id: Optional[int] = None,
-    ) -> bool:
-        """True, если сообщение должно быть отправлено пользователю.
-
-        telegram_id=None — системное сообщение (без пользователя), всегда True.
-        category=None — событие без категории, проверяем только глобальный toggle.
-        """
-        if telegram_id is None:
-            return True
+    async def _identity(self, telegram_id: int, user_id: Optional[int]) -> int:
+        if type(telegram_id) is not int or telegram_id <= 0:
+            raise NotificationBindingMismatch("Positive Telegram identity is required")
         try:
-            if user_id is not None and not await self._user_preferences_enabled(user_id, category):
-                return False
-            muted_until = await self.get_muted_until(telegram_id)
-            if muted_until is not None and muted_until > _now_utc():
-                return False
-            global_value = await self._redis.get(self._global_key(telegram_id))
-            if global_value == "off":
-                return False
-            if category is None:
-                return True
-            cat_value = await self._redis.hget(self._category_key(telegram_id), category)
-            return cat_value != "off"
-        except Exception:
-            logger.exception("Redis error reading notif pref for telegram_id=%s", telegram_id)
-            return True  # fail-open — лучше прислать, чем потерять
+            bound = await self._academic.get_user_by_telegram_id(telegram_id)
+        except Exception as error:
+            raise NotificationPreferencesUnavailable("Binding authority is unavailable") from error
+        if not bound or not bound.found or bound.user_id <= 0:
+            raise NotificationBindingMismatch("Telegram account is not bound")
+        if user_id is not None and (type(user_id) is not int or bound.user_id != user_id):
+            raise NotificationBindingMismatch("Telegram binding changed")
+        return bound.user_id
 
-    async def _user_preferences_enabled(self, user_id: int, category: Optional[str]) -> bool:
-        key = self._user_pref_key(user_id)
-        muted_raw = await self._redis.hget(key, self._MUTE_UNTIL_FIELD)
-        muted_until = _parse_instant(muted_raw)
-        if muted_until is not None and muted_until > _now_utc():
-            return False
-        if category is None:
-            return True
-        cat_value = await self._redis.hget(key, category)
-        return cat_value != "off"
+    async def _request(self, telegram_id: int, user_id: Optional[int], category: Optional[str], body=None) -> PreferencesSnapshot:
+        uid = await self._identity(telegram_id, user_id)
+        if self._session is None:
+            self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8))
+        url = f"{self._base_url}/internal/bot/notification-preferences/{uid}/{telegram_id}"
+        for attempt in range(3):
+            try:
+                async with self._session.request("GET" if body is None else "POST", url,
+                        headers={"X-Bot-Preferences-Token": self._token},
+                        params={"category": category} if category is not None else None, json=body) as response:
+                    if response.status == 409 and body is None:
+                        raise NotificationBindingMismatch("Telegram binding does not match")
+                    if response.status != 200:
+                        raise NotificationPreferencesUnavailable("Notification preferences are unavailable")
+                    return _snapshot(await response.json(), uid, telegram_id, category)
+            except NotificationBindingMismatch:
+                raise
+            except (aiohttp.ClientError, asyncio.TimeoutError, NotificationPreferencesUnavailable, ValueError, TypeError) as error:
+                if attempt == 2:
+                    raise NotificationPreferencesUnavailable("Notification preferences are unavailable") from error
+                await asyncio.sleep(0.1 * (attempt + 1))
+        raise NotificationPreferencesUnavailable("Notification preferences are unavailable")
 
-    async def disable(self, telegram_id: int) -> None:
-        """Глобально отключить уведомления (legacy API)."""
-        await self._redis.set(self._global_key(telegram_id), "off")
+    async def get_snapshot(self, telegram_id: int, user_id: Optional[int] = None) -> PreferencesSnapshot:
+        return await self._request(telegram_id, user_id, None)
 
-    async def enable(self, telegram_id: int) -> None:
-        """Глобально включить уведомления (legacy API)."""
-        await self._redis.delete(self._global_key(telegram_id))
-
-    async def set_category(self, telegram_id: int, category: str, enabled: bool) -> None:
-        """Включить/выключить одну категорию."""
+    async def is_enabled(self, telegram_id: Optional[int], category: Optional[str] = None,
+                         user_id: Optional[int] = None) -> bool:
         if category not in CATEGORIES:
-            raise ValueError(f"Unknown category: {category}")
-        if enabled:
-            await self._redis.hdel(self._category_key(telegram_id), category)
-        else:
-            await self._redis.hset(self._category_key(telegram_id), category, "off")
-
-    async def get_categories(self, telegram_id: int) -> dict[str, bool]:
-        """Снимок состояния всех категорий. Отсутствующие = True."""
+            raise NotificationPreferencesUnavailable("A classified notification category is required")
         try:
-            raw = await self._redis.hgetall(self._category_key(telegram_id))
-        except Exception:
-            logger.exception("Redis error loading categories for telegram_id=%s", telegram_id)
-            raw = {}
-        return {cat: raw.get(cat) != "off" for cat in CATEGORIES}
+            return (await self._request(telegram_id, user_id, category)).eligible is True
+        except NotificationBindingMismatch:
+            return False
 
-    async def is_global_enabled(self, telegram_id: int) -> bool:
-        try:
-            return await self._redis.get(self._global_key(telegram_id)) != "off"
-        except Exception:
-            logger.exception("Redis error reading global pref for telegram_id=%s", telegram_id)
-            return True
+    async def command(self, telegram_id: int, request_key: str, operation: str, **fields) -> PreferencesSnapshot:
+        if not isinstance(request_key, str) or not re.fullmatch(r"[A-Za-z0-9_/:-]{1,128}", request_key):
+            raise ValueError("Stable preference request identity is required")
+        return await self._request(telegram_id, None, None,
+                                   {"requestKey": request_key, "operation": operation, **fields})
 
-    async def mute_for(self, telegram_id: int, duration: timedelta) -> datetime:
-        muted_until = _now_utc() + duration
-        await self._redis.set(self._telegram_mute_key(telegram_id), _format_instant(muted_until))
-        return muted_until
+    async def toggle_global(self, telegram_id: int, request_key: str) -> PreferencesSnapshot:
+        return await self.command(telegram_id, request_key, "TOGGLE_GLOBAL")
 
-    async def clear_mute(self, telegram_id: int) -> None:
-        await self._redis.delete(self._telegram_mute_key(telegram_id))
+    async def toggle_category(self, telegram_id: int, category: str, request_key: str) -> PreferencesSnapshot:
+        return await self.command(telegram_id, request_key, "TOGGLE_CATEGORY", category=category)
 
-    async def get_muted_until(self, telegram_id: int) -> Optional[datetime]:
-        try:
-            value = await self._redis.get(self._telegram_mute_key(telegram_id))
-        except Exception:
-            logger.exception("Redis error reading mute pref for telegram_id=%s", telegram_id)
-            return None
-        muted_until = _parse_instant(value)
-        if muted_until is not None and muted_until <= _now_utc():
-            await self.clear_mute(telegram_id)
-            return None
-        return muted_until
+    async def mute_for(self, telegram_id: int, duration: timedelta, request_key: str) -> PreferencesSnapshot:
+        seconds = int(duration.total_seconds())
+        if seconds not in (86400, 604800):
+            raise ValueError("Unsupported mute duration")
+        return await self.command(telegram_id, request_key, "MUTE_FOR", durationSeconds=seconds)
+
+    async def clear_mute(self, telegram_id: int, request_key: str) -> PreferencesSnapshot:
+        return await self.command(telegram_id, request_key, "CLEAR_MUTE")
 
     async def close(self) -> None:
-        await self._redis.aclose()
+        if self._session is not None:
+            await self._session.close()
 
-
-def _now_utc() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-def _format_instant(value: datetime) -> str:
-    return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-def _parse_instant(value: object) -> Optional[datetime]:
-    if not isinstance(value, str) or not value:
-        return None
-    try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(timezone.utc)
-    except ValueError:
-        try:
-            return datetime.fromtimestamp(float(value), timezone.utc)
-        except (TypeError, ValueError):
+def _snapshot(raw: object, user_id: int, telegram_id: int, category: Optional[str]) -> PreferencesSnapshot:
+    if not isinstance(raw, dict) or type(raw.get("userId")) is not int or raw["userId"] != user_id \
+            or type(raw.get("telegramId")) is not int or raw["telegramId"] != telegram_id \
+            or type(raw.get("globalEnabled")) is not bool:
+        raise NotificationPreferencesUnavailable("Invalid preference response identity")
+    def flags(name):
+        value = raw.get(name)
+        if not isinstance(value, dict) or set(value) != set(CATEGORIES) or any(type(v) is not bool for v in value.values()):
+            raise NotificationPreferencesUnavailable("Invalid preference response categories")
+        return dict(value)
+    def instant(name):
+        if name not in raw:
+            raise NotificationPreferencesUnavailable("Incomplete preference response")
+        value = raw[name]
+        if value is None:
             return None
+        if not isinstance(value, str):
+            raise NotificationPreferencesUnavailable("Invalid preference response mute")
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            raise NotificationPreferencesUnavailable("Invalid preference response mute")
+        return parsed.astimezone(timezone.utc)
+    eligible = raw.get("eligible")
+    if "eligible" not in raw or (category is None and eligible is not None) or (category is not None and type(eligible) is not bool):
+        raise NotificationPreferencesUnavailable("Invalid preference eligibility response")
+    return PreferencesSnapshot(user_id, telegram_id, raw["globalEnabled"], flags("categories"), instant("mutedUntil"),
+                               flags("canonicalCategories"), instant("canonicalMutedUntil"), eligible)

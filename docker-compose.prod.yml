@@ -424,6 +424,7 @@ services:
     image: ghcr.io/ditekmax/rutcampustrack/notification-web:${IMAGE_TAG:-latest}
     container_name: rct-notification-web
     environment:
+      BOT_TO_NOTIFICATION_SERVICE_TOKEN: ${BOT_TO_NOTIFICATION_SERVICE_TOKEN:?BOT_TO_NOTIFICATION_SERVICE_TOKEN must be set}
       SPRING_PROFILES_ACTIVE: prod
       GRPC_SECRET: ${GRPC_SECRET:?GRPC_SECRET must be set}
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
@@ -497,6 +498,8 @@ services:
     image: ghcr.io/ditekmax/rutcampustrack/notification-bot:${IMAGE_TAG:-latest}
     container_name: rct-notification-bot
     environment:
+      BOT_TO_NOTIFICATION_SERVICE_TOKEN: ${BOT_TO_NOTIFICATION_SERVICE_TOKEN:?BOT_TO_NOTIFICATION_SERVICE_TOKEN must be set}
+      NOTIFICATION_SERVICE_URL: http://notification-web:9094
       BOT_TOKEN: ${BOT_TOKEN}
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       ACADEMIC_GRPC_HOST: academic-service

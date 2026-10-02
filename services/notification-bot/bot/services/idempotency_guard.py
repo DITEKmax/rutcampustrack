@@ -121,6 +121,12 @@ class BotIdempotencyGuard:
         )
         return bool(result)
 
+    async def is_completed(self, event_id: str) -> bool:
+        """A live processing lease is retryable; only a completed marker permits duplicate ACK."""
+        if not event_id:
+            raise ValueError("event_id is required")
+        return await self._redis.get(self._key(event_id)) == "completed"
+
     async def release(self, event_id: Optional[str], token: str) -> bool:
         """Release an owned processing lease after handler failure."""
         if not event_id or not token:

@@ -8,7 +8,7 @@
 #   3. Формат каждой соответствует ожиданиям:
 #      - GRPC_SECRET / INTERNAL_ISSUER_SECRET — base64 ≥ 32 bytes.
 #      - ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN / SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
-#        — canonical unpadded base64url ровно 32 bytes (43 ASCII chars).
+#        / BOT_TO_NOTIFICATION_SERVICE_TOKEN — canonical unpadded base64url ровно 32 bytes (43 ASCII chars).
 #      - MONGODB_REPLICA_SET_KEY — base64 ровно 1024 chars (756 raw bytes).
 #      - BOT_TOKEN / TMA_BOT_TOKEN / BOT_ALERT_TOKEN — Telegram regex.
 #      - VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY — base64url, нужная длина.
@@ -112,6 +112,7 @@ REQUIRED_VARS=(
     GATEWAY_DYNAMIC_IP_RANGE
     GRPC_SECRET INTERNAL_ISSUER_SECRET
     ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
+    BOT_TO_NOTIFICATION_SERVICE_TOKEN
     ALERT_WEBHOOK_SECRET GRAFANA_PASSWORD
     SWAGGER_HTPASSWD
 )
@@ -348,6 +349,7 @@ check_directed_service_token() {
 
 check_directed_service_token ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN
 check_directed_service_token SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
+check_directed_service_token BOT_TO_NOTIFICATION_SERVICE_TOKEN
 
 # Passwords — minimum 8 chars (production hardening).
 check_min_length POSTGRES_ACADEMIC_PASSWORD 8

@@ -158,11 +158,11 @@ async def main() -> None:
     observability_mw = ObservabilityMiddleware()
     dp.update.middleware(observability_mw)
 
-    # Notification on/off prefs (Redis-backed)
+    # Notification's Mongo authority; Redis in the bot is only transient delivery/session state.
     prefs_client = NotificationPrefsClient(
-        host=config.redis_host,
-        port=config.redis_port,
-        password=config.redis_password,
+        base_url=config.notification_service_url,
+        token=config.bot_to_notification_service_token,
+        academic_client=academic_client,
     )
 
     keyboard_sync = KeyboardSyncClient(

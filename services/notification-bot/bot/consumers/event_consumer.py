@@ -1,9 +1,11 @@
+import asyncio
 import json
 import logging
 
 import aio_pika
 
 from bot.observability import bind_trace_context
+from bot.services.notification_prefs import NotificationPreferencesUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +83,7 @@ async def start_consumer(
             # M13 G24-fix-2: requeue=False — после handler exception
             # message идёт в DLQ (через x-dead-letter-exchange arguments),
             # а не возвращается в основную очередь (иначе hot-loop).
-            async with message.process(requeue=False):
+            async with message.process(requeue=False, ignore_processed=True):
                 try:
                     body = json.loads(message.body)
                 except json.JSONDecodeError:
@@ -122,6 +124,9 @@ async def start_consumer(
                         else:
                             claim_token = await claim(event_id)
                             if claim_token is None:
+                                if not await idempotency_guard.is_completed(event_id):
+                                    await asyncio.sleep(1)
+                                    await message.nack(requeue=True)
                                 continue
                     logger.info("[notification-bot] Received event: %s", event_type)
                     try:
@@ -129,6 +134,16 @@ async def start_consumer(
                             # Handler exceptions are deliberately propagated
                             # so aio-pika NACKs the message into the DLQ.
                             await dispatcher.dispatch(body)
+                    except NotificationPreferencesUnavailable:
+                        if claim_token is not None:
+                            try:
+                                await idempotency_guard.release(event_id, claim_token)
+                            except Exception:
+                                logger.warning("Preference retry retains processing lease event_id=%s", event_id)
+                        # Keep the original broker message. Delay prevents an authority-outage hot loop.
+                        await asyncio.sleep(1)
+                        await message.nack(requeue=True)
+                        continue
                     except BaseException:
                         if claim_token is not None:
                             try:

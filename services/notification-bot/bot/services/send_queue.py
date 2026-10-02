@@ -2,7 +2,11 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass
+from contextlib import asynccontextmanager
+from contextvars import ContextVar
 from typing import Any, Awaitable, Callable, Optional
+
+from bot.services.notification_prefs import CATEGORIES, NotificationPreferencesUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +29,10 @@ class SendTask:
     # последующего редактирования при получении *.decided.
     on_sent: Optional[Callable[[Any], Awaitable[None]]] = None
     # Категория уведомления (см. bot.services.notification_prefs.CATEGORIES).
-    # Если указана — перед отправкой сверяемся с per-category prefs; None
-    # означает «системное сообщение», пропускаем только через глобальный toggle.
+    # Generic tasks always require a classified category and exact recipient.
     category: Optional[str] = None
+    # Set only by the trusted alert.fired producer, never inferred from missing IDs/category.
+    system_alert: bool = False
 
 
 class TelegramSendQueue:
@@ -43,21 +48,52 @@ class TelegramSendQueue:
         self._total_sent: int = 0
         self._total_failed: int = 0
         self._prefs_client = prefs_client  # NotificationPrefsClient | None
+        self._staged: ContextVar[Optional[list[SendTask]]] = ContextVar("telegram_staged_tasks", default=None)
 
     def start(self) -> None:
         self._worker_task = asyncio.create_task(self._worker())
 
     async def put(self, task: SendTask) -> None:
-        await self._queue.put(task)
+        staged = self._staged.get()
+        if staged is not None:
+            staged.append(task)
+        else:
+            await self._queue.put(task)
+
+    @asynccontextmanager
+    async def staged(self):
+        """Resolve every actual task before admitting any of an event's tasks to the worker."""
+        batch: list[SendTask] = []
+        token = self._staged.set(batch)
+        try:
+            yield
+            admitted = []
+            for task in batch:
+                if await self._eligible(task):
+                    admitted.append(task)
+            # Unbounded put_nowait has no await/cancellation boundary part-way through the batch.
+            for task in admitted:
+                self._queue.put_nowait(task)
+        finally:
+            self._staged.reset(token)
+
+    async def _eligible(self, task: SendTask) -> bool:
+        if task.system_alert:
+            return True
+        if self._prefs_client is None or task.category not in CATEGORIES \
+                or type(task.user_id) is not int or task.user_id <= 0 \
+                or type(task.chat_id) is not int or task.chat_id <= 0:
+            raise NotificationPreferencesUnavailable("Classified recipient preferences are required")
+        try:
+            return await self._prefs_client.is_enabled(task.chat_id, task.category, user_id=task.user_id)
+        except NotificationPreferencesUnavailable:
+            raise
+        except Exception as error:
+            raise NotificationPreferencesUnavailable("Recipient preferences are unavailable") from error
 
     async def _worker(self) -> None:
         while True:
             task = await self._queue.get()
-            if self._prefs_client is not None and task.chat_id is not None:
-                if not await self._prefs_client.is_enabled(task.chat_id, task.category, user_id=task.user_id):
-                    self._queue.task_done()
-                    continue
-            await self._consume_token()
             await self._send_with_retry(task)
             self._queue.task_done()
 
@@ -80,6 +116,16 @@ class TelegramSendQueue:
             RetryAfterExc = None
 
         for attempt, delay in enumerate(self._RETRY_DELAYS + [None], start=1):
+            while True:
+                try:
+                    enabled = await self._eligible(task)
+                    break
+                except NotificationPreferencesUnavailable:
+                    # Retain this pending task, including across provider retry attempts.
+                    await asyncio.sleep(1)
+            if not enabled:
+                return
+            await self._consume_token()
             try:
                 result = await task.coroutine_factory()
                 self._total_sent += 1

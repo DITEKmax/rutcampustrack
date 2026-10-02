@@ -49,10 +49,10 @@ class RequestMessageTracker:
     def _key(self, kind: str, request_id: str | int) -> str:
         return f"{self._key_prefix}{kind}:{request_id}"
 
-    async def add(self, kind: str, request_id: str | int, chat_id: int, message_id: int) -> None:
+    async def add(self, kind: str, request_id: str | int, chat_id: int, message_id: int, user_id: int) -> None:
         """Добавить одну пару (chat_id, message_id) в список запроса."""
         key = self._key(kind, request_id)
-        payload = json.dumps({"chat_id": chat_id, "message_id": message_id})
+        payload = json.dumps({"chat_id": chat_id, "message_id": message_id, "user_id": user_id})
         try:
             await self._redis.rpush(key, payload)
             await self._redis.expire(key, self._ttl)
@@ -74,6 +74,11 @@ class RequestMessageTracker:
         except Exception:
             logger.exception("Redis error reading request message_ids (kind=%s, id=%s)", kind, request_id)
             return []
+
+    async def delete_entry(self, kind: str, request_id: str | int, entry: dict) -> None:
+        """Remove only a successfully delivered, identified entry; unknown legacy owners stay pending."""
+        payload = json.dumps({"chat_id": entry["chat_id"], "message_id": entry["message_id"], "user_id": entry["user_id"]})
+        await self._redis.lrem(self._key(kind, request_id), 1, payload)
 
     async def delete(self, kind: str, request_id: str | int) -> None:
         """Удалить запись (например, после успешного edit-а у всех старост)."""

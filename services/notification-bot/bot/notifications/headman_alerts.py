@@ -120,7 +120,7 @@ async def handle_headman_alert(
                 fetched.append((data, str(descriptor.name)))
             attachments_by_user[actor_id] = fetched
 
-    def _build_on_sent(chat_id_value: int):
+    def _build_on_sent(chat_id_value: int, owner_id: int):
         if request_tracker is None:
             return None
 
@@ -128,7 +128,7 @@ async def handle_headman_alert(
             message_id = getattr(result_value, "message_id", None)
             if message_id is None:
                 return
-            await request_tracker.add(tracking_kind, tracking_id, chat_id_value, int(message_id))
+            await request_tracker.add(tracking_kind, tracking_id, chat_id_value, int(message_id), owner_id)
 
         return _on_sent
 
@@ -162,7 +162,7 @@ async def handle_headman_alert(
                         coroutine_factory=_send_document,
                         user_id=actor_id,
                         chat_id=telegram_id,
-                        on_sent=_build_on_sent(telegram_id),
+                        on_sent=_build_on_sent(telegram_id, actor_id),
                         category="tickets",
                     )
                 )
@@ -176,7 +176,7 @@ async def handle_headman_alert(
                     ),
                     user_id=actor_id,
                     chat_id=telegram_id,
-                    on_sent=_build_on_sent(telegram_id),
+                    on_sent=_build_on_sent(telegram_id, actor_id),
                     category="tickets",
                 )
             )

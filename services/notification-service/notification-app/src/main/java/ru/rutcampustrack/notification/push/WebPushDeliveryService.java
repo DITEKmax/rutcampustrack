@@ -136,16 +136,13 @@ public class WebPushDeliveryService {
     }
 
     /**
-     * Sends Web Push notifications asynchronously to subscribers in the group,
-     * respecting per-event routing rules (headman-only, user-scoped).
+     * Convenience entry point resolves preferences synchronously. Production event
+     * consumers use the async overload with an already admitted recipient snapshot.
      */
-    @Async("pushTaskExecutor")
     public CompletableFuture<Void> sendToGroup(long groupId, String eventType, Map<String, Object> payload) {
         try {
             return deliverToGroup(groupId, eventType, payload,
-                    USER_SCOPED_EVENT_TYPES.contains(eventType) ? null
-                            : "lesson.reminder".equals(eventType) ? resolveReminderAudience(groupId, payload)
-                            : resolveCurrentAudience(groupId, eventType));
+                    resolveEligibleAudience(groupId, eventType, payload));
         } catch (RuntimeException error) {
             return CompletableFuture.failedFuture(error);
         }
@@ -162,6 +159,36 @@ public class WebPushDeliveryService {
         return Set.copyOf(HEADMAN_ONLY_EVENT_TYPES.contains(eventType)
                 ? academicGroupMemberClient.getCurrentHeadmanUserIds(groupId)
                 : academicGroupMemberClient.getCurrentMemberUserIds(groupId));
+    }
+
+    /** Resolve canonical prefs while the event transaction can still retry, never in the provider worker. */
+    public Set<Long> resolveEligibleAudience(long groupId, String eventType, Map<String, Object> payload) {
+        if (preferencesService == null) throw new IllegalStateException("Preferences resolver is unavailable");
+        if ("lesson.reminder".equals(eventType)) return resolveReminderAudience(groupId, payload);
+        Set<Long> candidates;
+        if (USER_SCOPED_EVENT_TYPES.contains(eventType)) {
+            Object raw = payload.get("user_id");
+            long userId;
+            try {
+                if (raw instanceof Byte || raw instanceof Short || raw instanceof Integer || raw instanceof Long) {
+                    userId = ((Number) raw).longValue();
+                } else if (raw instanceof BigInteger integer) {
+                    userId = integer.longValueExact();
+                } else if (raw instanceof BigDecimal decimal) {
+                    userId = decimal.longValueExact();
+                } else {
+                    throw new IllegalArgumentException("Notification user_id must be a positive integer");
+                }
+            } catch (ArithmeticException error) {
+                throw new IllegalArgumentException("Notification user_id must be a positive integer", error);
+            }
+            if (userId <= 0) throw new IllegalArgumentException("Notification user_id must be positive");
+            candidates = Set.of(userId);
+        } else {
+            candidates = resolveCurrentAudience(groupId, eventType);
+        }
+        return candidates.stream().filter(userId -> preferencesService.isEnabledForUser(userId, eventType))
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     /** Resolve marks and preferences before WS/enqueue, while a failure can still roll back the claim. */
@@ -289,7 +316,6 @@ public class WebPushDeliveryService {
             }
             return subs.stream()
                     .filter(s -> s.getUserId() != null && currentAudienceIds.contains(s.getUserId()))
-                    .filter(s -> preferencesEnabled(s, eventType))
                     .collect(Collectors.toList());
         }
         if ("attendance.marked".equals(eventType) && !"headman".equals(payload.get("marked_by"))) {
@@ -303,19 +329,14 @@ public class WebPushDeliveryService {
             }
             long userId = userIdNum.longValue();
             return subs.stream()
-                    .filter(s -> s.getUserId() != null && s.getUserId() == userId)
-                    .filter(s -> preferencesEnabled(s, eventType))
+                    .filter(s -> s.getUserId() != null && s.getUserId() == userId
+                            && currentAudienceIds != null && currentAudienceIds.contains(s.getUserId()))
                     .collect(Collectors.toList());
         }
         return subs.stream()
                 .filter(s -> s.getUserId() != null && currentAudienceIds != null
                         && currentAudienceIds.contains(s.getUserId()))
-                .filter(s -> "lesson.reminder".equals(eventType) || preferencesEnabled(s, eventType))
                 .collect(Collectors.toList());
-    }
-
-    private boolean preferencesEnabled(PushSubscriptionDocument sub, String eventType) {
-        return preferencesService == null || preferencesService.isEnabledForUser(sub.getUserId(), eventType);
     }
 
     /**

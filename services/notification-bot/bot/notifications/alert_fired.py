@@ -119,7 +119,6 @@ async def handle_alert_fired(
             SendTask(
                 coroutine_factory=_send,
                 chat_id=cid,
-                # category=None — системное сообщение: prefs не применяется,
-                # глобальный notification toggle не отключает.
+                system_alert=True,  # Explicit exemption of this trusted system producer only.
             )
         )

@@ -23,7 +23,7 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 
-from bot.services.notification_prefs import CATEGORIES, NotificationPrefsClient
+from bot.services.notification_prefs import CATEGORIES, NotificationPrefsClient, NotificationPreferencesUnavailable, NotificationBindingMismatch
 
 logger = logging.getLogger(__name__)
 
@@ -82,10 +82,11 @@ def _checkbox(enabled: bool) -> str:
     return "✅" if enabled else "⬜"
 
 
-async def _build_menu(prefs_client: NotificationPrefsClient, telegram_id: int) -> tuple[str, InlineKeyboardMarkup]:
-    global_on = await prefs_client.is_global_enabled(telegram_id)
-    categories = await prefs_client.get_categories(telegram_id)
-    muted_until = await prefs_client.get_muted_until(telegram_id)
+async def _build_menu(prefs_client: NotificationPrefsClient, telegram_id: int, snapshot=None) -> tuple[str, InlineKeyboardMarkup]:
+    snapshot = snapshot or await prefs_client.get_snapshot(telegram_id)
+    global_on = snapshot.global_enabled
+    categories = snapshot.categories
+    muted_until = snapshot.muted_until
 
     status = "🔔 включены" if global_on else "🔕 глобально выключены"
     pause = f"до {_format_mute_until(muted_until)}" if muted_until is not None else "нет"
@@ -134,65 +135,55 @@ def _format_mute_until(value) -> str:
 
 @prefs_router.message(F.text == SETTINGS_LABEL)
 async def cmd_open_settings(message: Message, prefs_client: NotificationPrefsClient) -> None:
-    text, markup = await _build_menu(prefs_client, message.from_user.id)
+    try:
+        text, markup = await _build_menu(prefs_client, message.from_user.id)
+    except (NotificationPreferencesUnavailable, NotificationBindingMismatch):
+        await message.answer("⚠️ Настройки временно недоступны. Попробуй ещё раз позже.")
+        return
     await message.answer(text, reply_markup=markup)
 
 
-@prefs_router.callback_query(F.data == _GLOBAL_CB)
-async def cb_toggle_global(callback: CallbackQuery, prefs_client: NotificationPrefsClient) -> None:
-    telegram_id = callback.from_user.id
-    currently_on = await prefs_client.is_global_enabled(telegram_id)
-    if currently_on:
-        await prefs_client.disable(telegram_id)
-        verdict = "Уведомления выключены"
-    else:
-        await prefs_client.enable(telegram_id)
-        verdict = "Уведомления включены"
-
-    text, markup = await _build_menu(prefs_client, telegram_id)
+async def _apply(callback: CallbackQuery, prefs_client: NotificationPrefsClient, operation: str, **fields) -> None:
+    try:
+        snapshot = await prefs_client.command(callback.from_user.id, callback.id, operation, **fields)
+    except (NotificationPreferencesUnavailable, NotificationBindingMismatch):
+        await callback.answer("Настройки временно недоступны. Попробуй ещё раз позже.", show_alert=True)
+        return
+    text, markup = await _build_menu(prefs_client, callback.from_user.id, snapshot)
     try:
         await callback.message.edit_text(text, reply_markup=markup)
     except Exception:
         logger.debug("edit_text failed for prefs menu", exc_info=True)
+    if operation == "TOGGLE_GLOBAL":
+        verdict = "Уведомления включены" if snapshot.global_enabled else "Уведомления выключены"
+    elif operation == "TOGGLE_CATEGORY":
+        category = fields["category"]
+        verdict = f"{_CATEGORY_LABELS[category]}: {'вкл' if snapshot.categories[category] else 'выкл'}"
+    elif operation == "CLEAR_MUTE":
+        verdict = "Пауза снята"
+    else:
+        verdict = "Пауза включена на день" if fields["durationSeconds"] == 86400 else "Пауза включена на неделю"
     await callback.answer(verdict)
+
+
+@prefs_router.callback_query(F.data == _GLOBAL_CB)
+async def cb_toggle_global(callback: CallbackQuery, prefs_client: NotificationPrefsClient) -> None:
+    await _apply(callback, prefs_client, "TOGGLE_GLOBAL")
 
 
 @prefs_router.callback_query(F.data == _MUTE_DAY_CB)
 async def cb_mute_day(callback: CallbackQuery, prefs_client: NotificationPrefsClient) -> None:
-    await _set_mute(callback, prefs_client, timedelta(days=1), "Пауза включена на день")
+    await _apply(callback, prefs_client, "MUTE_FOR", durationSeconds=86400)
 
 
 @prefs_router.callback_query(F.data == _MUTE_WEEK_CB)
 async def cb_mute_week(callback: CallbackQuery, prefs_client: NotificationPrefsClient) -> None:
-    await _set_mute(callback, prefs_client, timedelta(days=7), "Пауза включена на неделю")
+    await _apply(callback, prefs_client, "MUTE_FOR", durationSeconds=604800)
 
 
 @prefs_router.callback_query(F.data == _MUTE_CLEAR_CB)
 async def cb_mute_clear(callback: CallbackQuery, prefs_client: NotificationPrefsClient) -> None:
-    telegram_id = callback.from_user.id
-    await prefs_client.clear_mute(telegram_id)
-    text, markup = await _build_menu(prefs_client, telegram_id)
-    try:
-        await callback.message.edit_text(text, reply_markup=markup)
-    except Exception:
-        logger.debug("edit_text failed for prefs mute clear", exc_info=True)
-    await callback.answer("Пауза снята")
-
-
-async def _set_mute(
-    callback: CallbackQuery,
-    prefs_client: NotificationPrefsClient,
-    duration: timedelta,
-    verdict: str,
-) -> None:
-    telegram_id = callback.from_user.id
-    await prefs_client.mute_for(telegram_id, duration)
-    text, markup = await _build_menu(prefs_client, telegram_id)
-    try:
-        await callback.message.edit_text(text, reply_markup=markup)
-    except Exception:
-        logger.debug("edit_text failed for prefs mute", exc_info=True)
-    await callback.answer(verdict)
+    await _apply(callback, prefs_client, "CLEAR_MUTE")
 
 
 @prefs_router.callback_query(F.data.startswith(_CAT_CB_PREFIX))
@@ -201,16 +192,4 @@ async def cb_toggle_category(callback: CallbackQuery, prefs_client: Notification
     if category not in CATEGORIES:
         await callback.answer("Неизвестная категория")
         return
-
-    telegram_id = callback.from_user.id
-    snapshot = await prefs_client.get_categories(telegram_id)
-    currently_on = snapshot.get(category, True)
-    await prefs_client.set_category(telegram_id, category, enabled=not currently_on)
-
-    text, markup = await _build_menu(prefs_client, telegram_id)
-    try:
-        await callback.message.edit_text(text, reply_markup=markup)
-    except Exception:
-        logger.debug("edit_text failed for prefs menu (category)", exc_info=True)
-    label = _CATEGORY_LABELS.get(category, category)
-    await callback.answer(f"{label}: {'вкл' if not currently_on else 'выкл'}")
+    await _apply(callback, prefs_client, "TOGGLE_CATEGORY", category=category)

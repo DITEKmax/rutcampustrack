@@ -125,21 +125,14 @@ public class EventConsumer extends AbstractEventConsumer {
             }
 
             boolean pushEligible = groupId != null && webPushDeliveryService.shouldPush(eventType);
-            boolean resolveAudienceBeforeCommit = HEADMAN_ONLY_EVENTS.contains(eventType)
-                    || GROUP_NOTIFICATION_EVENTS.contains(eventType) || reminder;
-            Set<Long> currentAudienceIds = null;
+            Set<Long> currentAudienceIds = pushEligible
+                    ? webPushDeliveryService.resolveEligibleAudience(groupId, eventType, payload) : Set.of();
             if (reminder) {
-                currentAudienceIds = webPushDeliveryService.resolveReminderAudience(groupId, payload);
                 Map<String, Object> wsMessage = Map.of("type", eventType, "payload", payload);
                 for (Long userId : currentAudienceIds) {
                     messagingTemplate.convertAndSend("/topic/user/" + userId, wsMessage);
                 }
-            } else if (pushEligible && resolveAudienceBeforeCommit) {
-                // Only Academic's bounded authority check holds the event claim.
-                // Provider latency must never hold the transaction or WS delivery.
-                currentAudienceIds = webPushDeliveryService.resolveCurrentAudience(groupId, eventType);
             }
-
             if (destination != null) {
                 // D-06: Wrap in {type, payload} envelope — no enrichment
                 Map<String, Object> wsMessage = Map.of("type", eventType, "payload", payload);
@@ -149,11 +142,7 @@ public class EventConsumer extends AbstractEventConsumer {
 
             // D-07, D-08: After STOMP delivery — trigger async Web Push for push-eligible events.
             if (pushEligible && (!reminder || !currentAudienceIds.isEmpty())) {
-                if (resolveAudienceBeforeCommit) {
-                    webPushDeliveryService.sendToGroup(groupId, eventType, payload, currentAudienceIds);
-                } else {
-                    webPushDeliveryService.sendToGroup(groupId, eventType, payload);
-                }
+                webPushDeliveryService.sendToGroup(groupId, eventType, payload, currentAudienceIds);
                 log.debug("Triggered async push for {} to group {}", eventType, groupId);
             }
         });

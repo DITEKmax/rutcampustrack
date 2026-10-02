@@ -50,8 +50,7 @@ _INSTALL_BLOCK = (
 async def cmd_start(message: Message, academic_client, prefs_client, keyboard_sync=None) -> None:
     """Handle /start command — account linking (D-02, D-03)."""
     telegram_id = message.from_user.id
-    notifications_enabled = await prefs_client.is_enabled(telegram_id)
-    keyboard = main_keyboard(notifications_enabled=notifications_enabled)
+    keyboard = main_keyboard()
     await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature())
     try:
         response = await academic_client.get_user_by_telegram_id(telegram_id)

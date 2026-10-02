@@ -11,7 +11,7 @@ from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
 from bot.services.otp_message_tracker import OtpMessageTracker
 from bot.services.redis_client import ReminderRedisClient
 from bot.services.request_message_tracker import RequestMessageTracker
-from bot.services.send_queue import TelegramSendQueue
+from bot.services.send_queue import SendTask, TelegramSendQueue
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 class EventDispatcher:
     """Routes event dicts (by event_type) to registered async handlers.
 
-    All handler exceptions are caught and logged so that RabbitMQ messages
-    are always acknowledged (no infinite requeue loop).
+    Classified delivery tasks are staged; authority failure propagates before admission.
+    Other handler errors retain the existing DLQ path.
     """
 
     def __init__(
@@ -160,6 +160,7 @@ class EventDispatcher:
                 bot=self._bot,
                 academic_client=self._academic_client,
                 redis_client=self._redis_client,
+                send_queue=self._send_queue,
             ),
             # 58-07 / BUG-006-6: notify students when group is renamed / archived
             "group.renamed": lambda event: handle_group_renamed(
@@ -265,33 +266,28 @@ class EventDispatcher:
 
     async def _close_tracked_messages(self, kind: str, request_id: str, verdict_line: str) -> None:
         entries = await self._request_tracker.get_all(kind, request_id)
+        unresolved = 0
         for entry in entries:
-            chat_id = entry.get("chat_id")
-            message_id = entry.get("message_id")
-            if chat_id is None or message_id is None:
+            chat_id, message_id, user_id = (entry.get(key) for key in ("chat_id", "message_id", "user_id"))
+            if any(type(value) is not int or value <= 0 for value in (chat_id, message_id, user_id)):
+                # Legacy tracker does not identify its original owner. Retain under existing TTL,
+                # never attribute this old message to whoever owns the Telegram ID today.
+                unresolved += 1
                 continue
-            try:
-                # Убираем клавиатуру и шлём verdict отдельным reply-сообщением:
-                # Telegram Bot API не возвращает исходный текст сообщения, поэтому
-                # edit_text/edit_caption без сохранённого контекста перезапишет
-                # карточку. Reply — минимально-инвазивный вариант: сохраняет
-                # оригинал в истории чата и однозначно связан с ним.
-                await self._bot.edit_message_reply_markup(chat_id=chat_id, message_id=message_id, reply_markup=None)
-                await self._bot.send_message(
-                    chat_id=chat_id,
-                    text=f"Решение: {verdict_line}",
-                    reply_to_message_id=message_id,
-                )
-            except Exception:
-                logger.debug(
-                    "Failed to close TG message kind=%s id=%s chat=%s msg=%s",
-                    kind,
-                    request_id,
-                    chat_id,
-                    message_id,
-                    exc_info=True,
-                )
-        await self._request_tracker.delete(kind, request_id)
+
+            async def close_message(chat=chat_id, message=message_id):
+                await self._bot.edit_message_reply_markup(chat_id=chat, message_id=message, reply_markup=None)
+                return await self._bot.send_message(chat_id=chat, text=f"Решение: {verdict_line}",
+                                                    reply_to_message_id=message)
+
+            async def cleanup(result, saved=entry):
+                await self._request_tracker.delete_entry(kind, request_id, saved)
+
+            await self._send_queue.put(SendTask(close_message, user_id=user_id, chat_id=chat_id,
+                                               category="tickets", on_sent=cleanup))
+        if unresolved:
+            logger.warning("Deferred tracked replies with unknown original owner kind=%s id=%s count=%s",
+                           kind, request_id, unresolved)
 
     async def dispatch(self, event: dict) -> None:
         """Dispatch an event dict to the appropriate handler.
@@ -317,4 +313,5 @@ class EventDispatcher:
             logger.debug("Unhandled event type: %s", event_type)
             return
 
-        await handler(event)
+        async with self._send_queue.staged():
+            await handler(event)

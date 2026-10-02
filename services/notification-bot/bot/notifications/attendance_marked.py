@@ -15,6 +15,7 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 
 from bot.services.redis_client import ReminderRedisClient
+from bot.services.send_queue import SendTask, TelegramSendQueue
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,7 @@ async def handle_attendance_marked(
     bot: Bot,
     academic_client,
     redis_client: ReminderRedisClient,
+    send_queue: TelegramSendQueue,
 ) -> None:
     payload = event.get("payload", {})
     status = payload.get("status")
@@ -83,14 +85,11 @@ async def handle_attendance_marked(
             text_parts.append(line_lesson)
         if line_date:
             text_parts.append(f"Дата: {line_date}")
-        try:
-            await bot.send_message(chat_id=student.telegram_id, text="\n".join(text_parts))
-        except Exception:
-            logger.warning(
-                "Failed to notify student chat_id=%d about manual mark",
-                student.telegram_id,
-                exc_info=True,
-            )
+        text = "\n".join(text_parts)
+        await send_queue.put(SendTask(
+            coroutine_factory=lambda: bot.send_message(chat_id=student.telegram_id, text=text),
+            user_id=user_id, chat_id=student.telegram_id, category="tickets",
+        ))
 
     # 2. Cleanup активных ремайндеров (только для «отметка получена» статусов).
     if status not in _CLEANUP_STATUSES:

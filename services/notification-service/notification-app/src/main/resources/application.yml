@@ -43,6 +43,8 @@ spring:
         default-page-size: 20
 
 notification:
+  bot-preferences:
+    token: ${BOT_TO_NOTIFICATION_SERVICE_TOKEN:}
   jwt:
     public-key-path: ${JWT_PUBLIC_KEY_PATH:/keys/public.key}
   # M10 G3 D4 — retention для notification_history (TTL index).
@@ -53,7 +55,7 @@ rutcampustrack:
   security:
     # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
     # SPRING_DATA_MONGODB_URI содержит password в URI.
-    required-env-vars: SPRING_DATA_MONGODB_URI,RABBITMQ_PASSWORD,INTERNAL_ISSUER_SECRET,ALERT_WEBHOOK_SECRET,VAPID_PUBLIC_KEY,VAPID_PRIVATE_KEY
+    required-env-vars: BOT_TO_NOTIFICATION_SERVICE_TOKEN,SPRING_DATA_MONGODB_URI,RABBITMQ_PASSWORD,INTERNAL_ISSUER_SECRET,ALERT_WEBHOOK_SECRET,VAPID_PUBLIC_KEY,VAPID_PRIVATE_KEY
     internal-jwt:
       # M03a: pull RSA public key from auth-service /auth/public-key.
       auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}

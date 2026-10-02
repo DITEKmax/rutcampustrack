@@ -366,6 +366,8 @@ message HomeworkInfo {
   optional int64 current_lesson_id = 13;
   optional int64 binding_revision = 14;
   bool archived = 15;
+  // Empty on older producers means LESSON. DATE has no numbered pair.
+  string binding_mode = 16;
 }
 
 message SetHomeworkCompletionRequest {

@@ -1,0 +1,53 @@
+[
+  {
+    "path": "r1-xml/TEST-ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT.xml",
+    "sha256": "91ECE1B4E374410B1AE295F730AC0E3F7DACDE348CCFB4A4CD34484B34AF98F3",
+    "tests": 4,
+    "failures": 4,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment()",
+      "archiveWaitsForHelperWriterThenRevokesItsCommittedAuthorityWithoutFkDeadlock()",
+      "stalePreviewAndLegacyArchiveSeamsCannotChangeAuthority()",
+      "previewBecomesStaleWhenAnotherTeacherLosesAuthorityAndLocalWarningChanges()"
+    ]
+  },
+  {
+    "path": "r1-xml/TEST-ru.rutcampustrack.attendance.grpc.UserImpactIT.xml",
+    "sha256": "EA503B6C87BF8B0F8DC2DD0BDDFE315263BF006BC70FBF3DDC7FDAB4644D52E8",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "countsEveryRetainedTargetMarkWithoutReadingPrivateFieldsOrChangingRows()"
+    ]
+  },
+  {
+    "path": "r1-xml/TEST-ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT.xml",
+    "sha256": "E62926B61777B9A9C2D9091C568777C84202C0580C0A94DB6C1CC14E855D4B4A",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "restoredVisibleAccountWithRetainedArchivedGrantsHasNoRoleUntilExplicitAssignment()",
+      "userArchiveConfirmationRequiresLiveAdminAndSharesCredentialAttemptBudget()"
+    ]
+  },
+  {
+    "path": "r2-xml/TEST-ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT.xml",
+    "sha256": "B9898FD539E1A20E3E2CAD59FC1DFE2F529BB5368FAACE0161F93A208B063031",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment()",
+      "archiveWaitsForHelperWriterThenRevokesItsCommittedAuthorityWithoutFkDeadlock()",
+      "stalePreviewAndLegacyArchiveSeamsCannotChangeAuthority()",
+      "previewBecomesStaleWhenAnotherTeacherLosesAuthorityAndLocalWarningChanges()"
+    ]
+  }
+]

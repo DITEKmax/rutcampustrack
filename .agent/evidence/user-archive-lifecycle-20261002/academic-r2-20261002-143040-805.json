@@ -1,0 +1,13 @@
+{
+  "revision": "8ecbff35081f7ba483038e3cc7ba880f89091807",
+  "criteria": [
+    "archive rollback/replay and no-rights restore",
+    "stale local impact and protected legacy routes",
+    "group serialization and FK KEY SHARE compatibility"
+  ],
+  "log_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\map-usage-delivery-20260922\\.agent\\evidence\\user-archive-lifecycle-20261002\\academic-r2-20261002-143040-805.log",
+  "selected_cases": 4,
+  "command": ".\\gradlew.bat :services:academic-service:academic-app:compileTestJava :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT --continue --no-daemon --no-parallel --max-workers=1 --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true",
+  "environment": "Java 21; isolated PostgreSQL Testcontainers; TESTCONTAINERS_REUSE_ENABLE=false; no production migration",
+  "exit_code": 0
+}

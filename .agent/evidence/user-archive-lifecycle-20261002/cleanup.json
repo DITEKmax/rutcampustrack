@@ -1,0 +1,17 @@
+{
+  "observed_at": "2026-10-02T11:33:36.2441489Z",
+  "r1_session": 66254,
+  "r1_terminal_exit": 1,
+  "r1_after_terminal_testcontainers_empty": true,
+  "r2_session": 78707,
+  "r2_terminal_exit": 0,
+  "r2_fresh_postgres": "497d2c9490ee",
+  "r2_fresh_ryuk": "11ca54e13dd3",
+  "r2_created_at": "2026-10-02 14:31:17 +0300",
+  "r2_postgres_tc_session": "dea04187-ef32-4e24-ad8f-0b80e52ea0dc",
+  "r2_container_reuse_hash_label_present": false,
+  "testcontainers_reuse_enable": "false",
+  "exact_own_container_ids_remaining": [],
+  "all_testcontainers_remaining": [],
+  "manual_removal_performed": false
+}

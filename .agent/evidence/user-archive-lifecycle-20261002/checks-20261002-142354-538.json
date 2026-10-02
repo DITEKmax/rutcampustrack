@@ -1,0 +1,16 @@
+{
+  "exit_code": 1,
+  "environment": "Java 21; isolated Academic PostgreSQL, Attendance MongoDB, Auth PostgreSQL/Redis Testcontainers; no production migration",
+  "revision": "484366601eaf0e4896d8c5548febab6cbb101904",
+  "selected_cases": 7,
+  "command": ".\\gradlew.bat :services:auth-service:auth-app:compileJava :services:academic-service:academic-app:compileJava :services:attendance-service:attendance-app:compileJava :services:auth-service:auth-app:compileTestJava :services:academic-service:academic-app:compileTestJava :services:attendance-service:attendance-app:compileTestJava :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT :services:attendance-service:attendance-app:integrationTest --tests ru.rutcampustrack.attendance.grpc.UserImpactIT :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT.userArchiveConfirmationRequiresLiveAdminAndSharesCredentialAttemptBudget --tests ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT.restoredVisibleAccountWithRetainedArchivedGrantsHasNoRoleUntilExplicitAssignment --continue --no-daemon --no-parallel --max-workers=1 --no-problems-report --console=plain --system-prop=org.gradle.java.compile-classpath-packaging=true",
+  "criteria": [
+    "archive rollback/replay and no-rights restore",
+    "stale local impact and protected legacy routes",
+    "group serialization and FK KEY SHARE compatibility",
+    "read-only historical attendance count",
+    "live ADMIN dedicated password purpose and shared attempt budget",
+    "no role admission after restore until explicit assignment"
+  ],
+  "log_path": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\map-usage-delivery-20260922\\.agent\\evidence\\user-archive-lifecycle-20261002\\archive-checks-20261002-142354-538.log"
+}

@@ -16,3 +16,5 @@ Source be9f67bc +069d0e0c, evidence71ce6255. Rabbit UNACKED до заверше�
 KnownGradle JDK21 C:/Users/maksd/.jdks/ms-21.0.10; --system-prop=org.gradle.java.compile-classpath-packaging=true --no-problems-report --no-daemon --max-workers=1 --no-parallel; exact escalation для cachedJAR. Не повторять packaging/problemsgenerator ошибки, не clean/ACL/globalconfig.
 Реальная внешняя Telegram/WebPush доставка, app DR/offsite/RPO/RTO/release остаются неподтверждёнными; frontend/Figma отдельный этап. Providerexactlyonce не обещать. Чужие dirty/protected файлы не трогать, reset/stash/clean запрещены. BACKEND-STAGE-20261001.md хранит общий остаток; проценты не повышать по числу тестов.
 
+
+Решение владельца: внешнее backupхранилище/S3 и RPO/RTO оставить до подготовки deploy; не блокировать функциональный backend, не подключать сейчас. Документ docs/product/decisions/2026-10-02-offsite-backup-deferred-to-deploy.md.

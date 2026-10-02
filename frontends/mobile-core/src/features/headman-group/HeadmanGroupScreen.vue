@@ -7,7 +7,10 @@ import {
   type HeadmanGroupApi,
   type HeadmanGroupMember,
   type HeadmanPermissionOption,
+  type HeadmanRosterFormat,
 } from './headman-group-client'
+import { StaleSessionGenerationError } from '../../shared/session-owner'
+import type { ReportDownloadFormat, ReportDownloadPort } from '../../shared/report-download-client'
 import './headman-group-screen.pcss'
 
 const props = withDefaults(defineProps<{
@@ -15,9 +18,13 @@ const props = withDefaults(defineProps<{
   groupId: number | null
   offline?: boolean
   readOnly?: boolean
+  assistantPermissions?: readonly HeadmanAssistantPermission[] | null
+  reportDownload?: ReportDownloadPort | null
 }>(), {
   offline: false,
   readOnly: false,
+  assistantPermissions: null,
+  reportDownload: null,
 })
 
 const emit = defineEmits<{
@@ -35,16 +42,111 @@ const busy = ref(false)
 const error = ref<string | null>(null)
 const notice = ref<string | null>(null)
 let loadRevision = 0
+const rosterFormats = ref<readonly HeadmanRosterFormat[]>([])
+const rosterFormat = ref<ReportDownloadFormat | null>(null)
+const rosterLoading = ref(false)
+const rosterDownloading = ref(false)
+const rosterError = ref<string | null>(null)
+const rosterNotice = ref<string | null>(null)
+let rosterRevision = 0
+let downloadRevision = 0
+let rosterController: AbortController | null = null
+const isHeadman = computed(() => props.assistantPermissions === null)
+const activeRosterFormat = computed(() => rosterFormats.value.find((format) => format.code === rosterFormat.value) ?? null)
+
+function invalidateDownload(): void {
+  downloadRevision += 1
+  rosterController?.abort()
+  rosterController = null
+  rosterDownloading.value = false
+  rosterError.value = null
+  rosterNotice.value = null
+}
+
+async function loadRosterFormats(): Promise<void> {
+  const revision = ++rosterRevision
+  rosterFormats.value = []
+  rosterFormat.value = null
+  const api = props.api
+  if (!api || props.groupId === null || props.offline || !isHeadman.value) {
+    rosterLoading.value = false
+    return
+  }
+  rosterLoading.value = true
+  try {
+    const formats = await api.listRosterFormats()
+    if (revision !== rosterRevision) return
+    rosterFormats.value = formats
+    rosterFormat.value = formats[0]?.code ?? null
+  } catch (cause) {
+    if (revision !== rosterRevision || cause instanceof StaleSessionGenerationError) return
+    rosterError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить форматы состава группы.'
+    emit('error', cause)
+  } finally {
+    if (revision === rosterRevision) rosterLoading.value = false
+  }
+}
+
+async function downloadRoster(): Promise<void> {
+  const api = props.api
+  const format = activeRosterFormat.value
+  const groupId = props.groupId
+  const reportDownload = props.reportDownload
+  if (!api || !format || groupId === null || props.offline || !isHeadman.value || rosterDownloading.value) return
+  const revision = ++downloadRevision
+  const isCurrent = (): boolean => revision === downloadRevision && api === props.api
+    && groupId === props.groupId && reportDownload === props.reportDownload && !props.offline
+    && isHeadman.value && format.code === rosterFormat.value
+  rosterDownloading.value = true
+  rosterError.value = null
+  rosterNotice.value = null
+  try {
+    if (reportDownload) {
+      const result = await reportDownload.download({
+        kind: 'HEADMAN_GROUP_COMPOSITION', headmanGroupComposition: { format: format.code },
+      }, isCurrent)
+      if (result === 'stale' || !isCurrent()) return
+      if (result === 'unsupported') {
+        rosterError.value = 'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.'
+      } else {
+        rosterNotice.value = result === 'accepted'
+          ? 'Telegram принял запрос на скачивание; проверь завершение в Telegram.' : 'Скачивание отменено.'
+      }
+      return
+    }
+    rosterController = new AbortController()
+    const downloaded = await api.downloadRoster(format, rosterController.signal)
+    if (!isCurrent()) return
+    const url = URL.createObjectURL(downloaded.blob)
+    const anchor = document.createElement('a')
+    try {
+      anchor.href = url
+      anchor.download = downloaded.filename
+      anchor.rel = 'noopener'
+      document.body.append(anchor)
+      anchor.click()
+      rosterNotice.value = 'Файл передан браузеру для скачивания.'
+    } finally {
+      anchor.remove()
+      window.setTimeout(() => URL.revokeObjectURL(url), 0)
+    }
+  } catch (cause) {
+    if (!isCurrent() || cause instanceof StaleSessionGenerationError) return
+    rosterError.value = cause instanceof Error ? cause.message : 'Не удалось скачать состав группы.'
+    emit('error', cause)
+  } finally {
+    if (revision === downloadRevision) {
+      rosterDownloading.value = false
+      rosterController = null
+    }
+  }
+}
 
 const activeAssistants = computed(() => assistants.value.filter((assistant) => assistant.active))
 const availableMembers = computed(() => {
   const assigned = new Set(activeAssistants.value.map((assistant) => assistant.studentId))
   return members.value.filter((member) => !assigned.has(member.id))
 })
-
-function optionLabel(code: HeadmanAssistantPermission): string {
-  return options.value.find((option) => option.code === code)?.label ?? code
-}
 
 function permissionCodes(): HeadmanAssistantPermission[] {
   return options.value.map((option) => option.code)
@@ -164,36 +266,159 @@ watch(
   { immediate: true },
 )
 
-onBeforeUnmount(() => { loadRevision += 1 })
+watch(() => [props.api, props.groupId, props.offline, props.assistantPermissions] as const, () => {
+  invalidateDownload()
+  void loadRosterFormats()
+}, { immediate: true, flush: 'sync' })
+watch(() => [props.reportDownload, rosterFormat.value] as const, invalidateDownload, { flush: 'sync' })
+
+onBeforeUnmount(() => {
+  loadRevision += 1
+  rosterRevision += 1
+  invalidateDownload()
+})
 </script>
 
 <template>
-  <main class="headman-group" aria-labelledby="headman-group-title">
+  <main
+    class="headman-group"
+    aria-labelledby="headman-group-title"
+  >
     <header class="headman-group__header">
       <div>
-        <p class="headman-group__eyebrow">Староста · группа</p>
-        <h1 id="headman-group-title">Помощники группы</h1>
-        <p class="headman-group__hint">Назначай только действующих студентов своей группы.</p>
+        <p class="headman-group__eyebrow">
+          Староста · группа
+        </p>
+        <h1 id="headman-group-title">
+          Помощники группы
+        </h1>
+        <p class="headman-group__hint">
+          Назначай только действующих студентов своей группы.
+        </p>
       </div>
     </header>
 
-    <p v-if="offline" class="headman-group__state" role="status">Управление доступно только онлайн.</p>
-    <p v-if="loading" class="headman-group__state" role="status">Загружаем студентов и права…</p>
-    <p v-if="error" class="headman-group__state headman-group__state--error" role="alert">{{ error }}</p>
-    <p v-if="notice" class="headman-group__state headman-group__state--success" role="status">{{ notice }}</p>
+    <p
+      v-if="offline"
+      class="headman-group__state"
+      role="status"
+    >
+      Управление доступно только онлайн.
+    </p>
+    <p
+      v-if="loading"
+      class="headman-group__state"
+      role="status"
+    >
+      Загружаем студентов и права…
+    </p>
+    <p
+      v-if="error"
+      class="headman-group__state headman-group__state--error"
+      role="alert"
+    >
+      {{ error }}
+    </p>
+    <p
+      v-if="notice"
+      class="headman-group__state headman-group__state--success"
+      role="status"
+    >
+      {{ notice }}
+    </p>
 
-    <section v-if="!loading && options.length > 0" class="headman-group__assign" aria-labelledby="headman-group-assign-title">
-      <h2 id="headman-group-assign-title">Новый помощник</h2>
+    <section
+      v-if="isHeadman"
+      class="headman-group__export"
+      aria-labelledby="headman-group-export-title"
+      :aria-busy="rosterDownloading"
+    >
+      <h2 id="headman-group-export-title">
+        Состав группы
+      </h2>
+      <p class="headman-group__hint">
+        Текущий состав: номер по алфавиту, ФИО, логин и роль. В файле — группа и дата выгрузки.
+      </p>
+      <p
+        v-if="rosterLoading"
+        class="headman-group__state"
+        role="status"
+      >
+        Загружаем форматы…
+      </p>
+      <label class="headman-group__field">
+        <span>Формат файла</span>
+        <select
+          v-model="rosterFormat"
+          :disabled="rosterLoading || rosterDownloading || offline || rosterFormats.length === 0"
+        >
+          <option
+            v-if="rosterFormats.length === 0"
+            :value="null"
+          >Нет доступных форматов</option>
+          <option
+            v-for="format in rosterFormats"
+            :key="format.code"
+            :value="format.code"
+          >{{ format.label }}</option>
+        </select>
+      </label>
+      <button
+        class="headman-group__secondary"
+        type="button"
+        :disabled="rosterLoading || rosterDownloading || offline || !api || groupId === null || !activeRosterFormat"
+        @click="downloadRoster"
+      >
+        {{ rosterDownloading ? 'Готовим файл…' : 'Скачать состав группы' }}
+      </button>
+      <p
+        v-if="rosterError"
+        class="headman-group__state headman-group__state--error"
+        role="alert"
+      >
+        {{ rosterError }}
+      </p>
+      <p
+        v-if="rosterNotice"
+        class="headman-group__state headman-group__state--success"
+        role="status"
+      >
+        {{ rosterNotice }}
+      </p>
+    </section>
+
+    <section
+      v-if="!loading && options.length > 0"
+      class="headman-group__assign"
+      aria-labelledby="headman-group-assign-title"
+    >
+      <h2 id="headman-group-assign-title">
+        Новый помощник
+      </h2>
       <label class="headman-group__field">
         <span>Студент</span>
-        <select v-model.number="selectedStudent" :disabled="busy || offline || readOnly || availableMembers.length === 0">
-          <option v-if="availableMembers.length === 0" :value="null">Нет доступных студентов</option>
-          <option v-for="member in availableMembers" :key="member.id" :value="member.id">{{ member.fullName }}</option>
+        <select
+          v-model.number="selectedStudent"
+          :disabled="busy || offline || readOnly || availableMembers.length === 0"
+        >
+          <option
+            v-if="availableMembers.length === 0"
+            :value="null"
+          >Нет доступных студентов</option>
+          <option
+            v-for="member in availableMembers"
+            :key="member.id"
+            :value="member.id"
+          >{{ member.fullName }}</option>
         </select>
       </label>
       <fieldset class="headman-group__permissions">
         <legend>Права</legend>
-        <label v-for="option in options" :key="option.code" class="headman-group__check">
+        <label
+          v-for="option in options"
+          :key="option.code"
+          class="headman-group__check"
+        >
           <input
             type="checkbox"
             :checked="selectedPermissions.includes(option.code)"
@@ -203,25 +428,55 @@ onBeforeUnmount(() => { loadRevision += 1 })
           <span>{{ option.label }}</span>
         </label>
       </fieldset>
-      <button class="headman-group__primary" type="button" :disabled="busy || offline || readOnly || selectedStudent === null || selectedPermissions.length === 0" @click="assign">
+      <button
+        class="headman-group__primary"
+        type="button"
+        :disabled="busy || offline || readOnly || selectedStudent === null || selectedPermissions.length === 0"
+        @click="assign"
+      >
         {{ busy ? 'Сохраняем…' : 'Назначить помощника' }}
       </button>
     </section>
 
-    <section class="headman-group__list" aria-labelledby="headman-group-list-title">
-      <h2 id="headman-group-list-title">Действующие помощники</h2>
-      <p v-if="!loading && activeAssistants.length === 0" class="headman-group__state">Помощников пока нет.</p>
-      <article v-for="assistant in activeAssistants" :key="assistant.id" class="headman-group__card">
+    <section
+      class="headman-group__list"
+      aria-labelledby="headman-group-list-title"
+    >
+      <h2 id="headman-group-list-title">
+        Действующие помощники
+      </h2>
+      <p
+        v-if="!loading && activeAssistants.length === 0"
+        class="headman-group__state"
+      >
+        Помощников пока нет.
+      </p>
+      <article
+        v-for="assistant in activeAssistants"
+        :key="assistant.id"
+        class="headman-group__card"
+      >
         <div class="headman-group__card-header">
           <div>
             <h3>{{ assistant.studentName }}</h3>
             <p>{{ assistant.login || `Студент #${assistant.studentId}` }}</p>
           </div>
-          <button class="headman-group__secondary" type="button" :disabled="busy || offline || readOnly" @click="revoke(assistant)">Отозвать</button>
+          <button
+            class="headman-group__secondary"
+            type="button"
+            :disabled="busy || offline || readOnly"
+            @click="revoke(assistant)"
+          >
+            Отозвать
+          </button>
         </div>
         <fieldset class="headman-group__permissions">
           <legend>Разрешённые действия</legend>
-          <label v-for="option in options" :key="`${assistant.id}-${option.code}`" class="headman-group__check">
+          <label
+            v-for="option in options"
+            :key="`${assistant.id}-${option.code}`"
+            class="headman-group__check"
+          >
             <input
               type="checkbox"
               :checked="(editingPermissions[assistant.id] ?? []).includes(option.code)"
@@ -231,7 +486,14 @@ onBeforeUnmount(() => { loadRevision += 1 })
             <span>{{ option.label }}</span>
           </label>
         </fieldset>
-        <button class="headman-group__secondary" type="button" :disabled="busy || offline || readOnly" @click="update(assistant)">Сохранить права</button>
+        <button
+          class="headman-group__secondary"
+          type="button"
+          :disabled="busy || offline || readOnly"
+          @click="update(assistant)"
+        >
+          Сохранить права
+        </button>
       </article>
     </section>
   </main>

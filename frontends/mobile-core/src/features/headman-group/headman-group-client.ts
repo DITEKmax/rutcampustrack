@@ -1,4 +1,25 @@
 import { StaleSessionGenerationError } from '../../shared/session-owner'
+import { isReportDownloadFormat, type ReportDownloadFormat } from '../../shared/report-download-client'
+
+export interface HeadmanRosterFormat {
+  readonly code: ReportDownloadFormat
+  readonly label: string
+  readonly contentType: string
+  readonly extension: string
+}
+
+export interface HeadmanRosterDownload {
+  readonly blob: Blob
+  readonly filename: string
+}
+
+const ROSTER_CONTENT_TYPES: Readonly<Record<ReportDownloadFormat, string>> = {
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  pdf: 'application/pdf',
+  png: 'application/zip',
+  html: 'text/html',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+}
 
 export type HeadmanAssistantPermission =
   | 'MARK_ATTENDANCE'
@@ -80,6 +101,53 @@ export class HeadmanGroupApi {
   async listMyPermissions(): Promise<readonly HeadmanPermissionOption[]> {
     const value = await this.request<unknown>('/api/academic/assistants/me/permissions')
     return normalizePermissionOptions(value)
+  }
+
+  async listRosterFormats(): Promise<readonly HeadmanRosterFormat[]> {
+    const value = await this.request<unknown>('/api/attendance/reports/headman/group-composition/formats')
+    if (!isRecord(value) || !Array.isArray(value.formats)) {
+      throw new Error('Сервер вернул некорректный список форматов состава группы.')
+    }
+    const formats = value.formats.map((item): HeadmanRosterFormat => {
+      if (!isRecord(item) || !isReportDownloadFormat(item.code) || !isText(item.label)
+        || typeof item.contentType !== 'string' || typeof item.extension !== 'string') {
+        throw new Error('Сервер вернул некорректный формат состава группы.')
+      }
+      const format = { code: item.code, label: item.label, contentType: item.contentType, extension: item.extension }
+      validateRosterFormat(format)
+      return format
+    })
+    if (new Set(formats.map((format) => format.code)).size !== formats.length) {
+      throw new Error('Сервер вернул повторяющиеся форматы состава группы.')
+    }
+    return formats
+  }
+
+  async downloadRoster(format: HeadmanRosterFormat, signal?: AbortSignal): Promise<HeadmanRosterDownload> {
+    validateRosterFormat(format)
+    const response = await this.response(`/api/attendance/reports/headman/group-composition/export?format=${format.code}`, {
+      headers: { Accept: '*/*' },
+      ...(signal ? { signal } : {}),
+    })
+    if (!response.ok) throw await this.apiError(response)
+    const blob = await response.blob()
+    this.options.assertCurrent?.()
+    const contentType = response.headers.get('Content-Type')?.split(';', 1)[0]?.trim().toLowerCase()
+    const disposition = response.headers.get('Content-Disposition')
+    const extended = disposition && /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1]
+    const quoted = disposition && /filename="([^"]+)"/i.exec(disposition)?.[1]
+    const plain = disposition && /filename=([^;]+)/i.exec(disposition)?.[1]?.trim()
+    let filename: string | null = null
+    try {
+      filename = extended ? decodeURIComponent(extended) : quoted || plain || null
+    } catch { /* Invalid encoding is rejected with the other response metadata. */ }
+    if (blob.size === 0 || contentType !== ROSTER_CONTENT_TYPES[format.code] || !filename
+      || [...filename].some((character) => character === '/' || character === '\\'
+        || (character.codePointAt(0) ?? 0) <= 0x1f || character.codePointAt(0) === 0x7f)
+      || !filename.toLowerCase().endsWith(`.${format.extension}`)) {
+      throw new Error('Сервер вернул некорректный файл состава группы.')
+    }
+    return { blob, filename }
   }
 
   async assignAssistant(
@@ -331,4 +399,12 @@ function assertPositiveInteger(value: number, name: string): void {
 function problemDetail(value: unknown): string | null {
   if (!isRecord(value)) return null
   return isText(value.detail) ? value.detail : isText(value.title) ? value.title : null
+}
+
+function validateRosterFormat(format: HeadmanRosterFormat): void {
+  const expectedExtension = format.code === 'png' ? 'zip' : format.code
+  if (!isReportDownloadFormat(format.code) || format.extension !== expectedExtension
+    || format.contentType.split(';', 1)[0]?.trim().toLowerCase() !== ROSTER_CONTENT_TYPES[format.code]) {
+    throw new RangeError('Выбран неподдерживаемый формат состава группы.')
+  }
 }

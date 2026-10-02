@@ -58,9 +58,14 @@ export interface HeadmanStatsTrendReportSelector {
   readonly format: 'png' | 'html'
 }
 
+export interface HeadmanGroupCompositionReportSelector {
+  readonly format: ReportDownloadFormat
+}
+
 export type ReportDownloadTicketRequest =
   | {
     readonly kind: 'TEACHER_JOURNAL'
+    readonly headmanGroupComposition?: never
     readonly teacherJournal: TeacherJournalReportSelector
     readonly teacherStats?: never
     readonly headmanWeeklyCurrent?: never
@@ -69,6 +74,7 @@ export type ReportDownloadTicketRequest =
   }
   | {
     readonly kind: 'TEACHER_STATS'
+    readonly headmanGroupComposition?: never
     readonly teacherJournal?: never
     readonly teacherStats: TeacherStatsReportSelector
     readonly headmanWeeklyCurrent?: never
@@ -77,6 +83,7 @@ export type ReportDownloadTicketRequest =
   }
   | {
     readonly kind: 'HEADMAN_WEEKLY_CURRENT'
+    readonly headmanGroupComposition?: never
     readonly teacherJournal?: never
     readonly teacherStats?: never
     readonly headmanWeeklyCurrent: HeadmanWeeklyCurrentReportSelector
@@ -85,6 +92,7 @@ export type ReportDownloadTicketRequest =
   }
   | {
     readonly kind: 'HEADMAN_WEEKLY_SELECTED'
+    readonly headmanGroupComposition?: never
     readonly teacherJournal?: never
     readonly teacherStats?: never
     readonly headmanWeeklyCurrent?: never
@@ -93,6 +101,7 @@ export type ReportDownloadTicketRequest =
   }
   | {
     readonly kind: 'HEADMAN_STATS'
+    readonly headmanGroupComposition?: never
     readonly teacherJournal?: never
     readonly teacherStats?: never
     readonly headmanWeeklyCurrent?: never
@@ -102,12 +111,23 @@ export type ReportDownloadTicketRequest =
   }
   | {
     readonly kind: 'HEADMAN_STATS_TREND'
+    readonly headmanGroupComposition?: never
     readonly teacherJournal?: never
     readonly teacherStats?: never
     readonly headmanWeeklyCurrent?: never
     readonly headmanWeeklySelected?: never
     readonly headmanStats?: never
     readonly headmanStatsTrend: HeadmanStatsTrendReportSelector
+  }
+  | {
+    readonly kind: 'HEADMAN_GROUP_COMPOSITION'
+    readonly headmanGroupComposition: HeadmanGroupCompositionReportSelector
+    readonly teacherJournal?: never
+    readonly teacherStats?: never
+    readonly headmanWeeklyCurrent?: never
+    readonly headmanWeeklySelected?: never
+    readonly headmanStats?: never
+    readonly headmanStatsTrend?: never
   }
 
 export interface ReportDownloadTicket {
@@ -273,6 +293,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     HEADMAN_WEEKLY_SELECTED: 'headmanWeeklySelected',
     HEADMAN_STATS: 'headmanStats',
     HEADMAN_STATS_TREND: 'headmanStatsTrend',
+    HEADMAN_GROUP_COMPOSITION: 'headmanGroupComposition',
   }
   const expectedSelector = selectorByKind[request.kind]
   const actualSelectors = Object.keys(record).filter((key) => selectorByKind[request.kind] === key
@@ -293,6 +314,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     HEADMAN_WEEKLY_SELECTED: ['weekStarts', 'format'],
     HEADMAN_STATS: ['subjectId', 'lessonTypes', 'sorts', 'filters', 'format'],
     HEADMAN_STATS_TREND: ['mode', 'weekStart', 'subjectId', 'lessonTypes', 'format'],
+    HEADMAN_GROUP_COMPOSITION: ['format'],
   }
   if (Object.keys(selector).some((key) => !allowedSelectorFields[request.kind].includes(key))) {
     throw new RangeError('У отчёта есть неподдерживаемые параметры.')
@@ -304,6 +326,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     HEADMAN_WEEKLY_SELECTED: ['weekStarts', 'format'],
     HEADMAN_STATS: ['format'],
     HEADMAN_STATS_TREND: ['mode', 'format'],
+    HEADMAN_GROUP_COMPOSITION: ['format'],
   }
   if (requiredSelectorFields[request.kind].some((key) => !Object.prototype.hasOwnProperty.call(selector, key))) {
     throw new RangeError('У отчёта не хватает обязательных параметров.')
@@ -417,6 +440,7 @@ function reportFormat(request: ReportDownloadTicketRequest): ReportDownloadForma
     case 'HEADMAN_WEEKLY_SELECTED': return request.headmanWeeklySelected.format
     case 'HEADMAN_STATS': return request.headmanStats.format
     case 'HEADMAN_STATS_TREND': return request.headmanStatsTrend.format
+    case 'HEADMAN_GROUP_COMPOSITION': return request.headmanGroupComposition.format
   }
 }
 

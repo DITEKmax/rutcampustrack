@@ -69,6 +69,34 @@ function fakeHost(
 }
 
 describe('report ticket boundary', () => {
+  it('accepts the roster format-only selector and rejects a caller-selected foreign group', () => {
+    const request: ReportDownloadTicketRequest = {
+      kind: 'HEADMAN_GROUP_COMPOSITION', headmanGroupComposition: { format: 'pdf' },
+    }
+    expect(() => validateTicketRequest(request)).not.toThrow()
+    expect(() => validateTicketRequest({
+      ...request, headmanGroupComposition: { format: 'pdf', groupId: 999 },
+    } as unknown as ReportDownloadTicketRequest)).toThrow(RangeError)
+    expect(() => validateTicketRequest({
+      ...request, headmanStats: { format: 'pdf' },
+    } as unknown as ReportDownloadTicketRequest)).toThrow(RangeError)
+  })
+
+  it('keeps roster PNG as a ZIP filename across all five supported ticket formats', () => {
+    for (const format of ['docx', 'pdf', 'png', 'html', 'xlsx'] as const) {
+      const request: ReportDownloadTicketRequest = {
+        kind: 'HEADMAN_GROUP_COMPOSITION', headmanGroupComposition: { format },
+      }
+      validateTicketRequest(request)
+      const filename = `headman-group-composition.${format === 'png' ? 'zip' : format}`
+      expect(validateSuggestedFilename(filename, request)).toBe(filename)
+    }
+    const request: ReportDownloadTicketRequest = {
+      kind: 'HEADMAN_GROUP_COMPOSITION', headmanGroupComposition: { format: 'png' },
+    }
+    expect(() => validateSuggestedFilename('headman-group-composition.png', request)).toThrow()
+  })
+
   it('posts only the typed selector with the current bearer and validates the ticket response', async () => {
     const request = teacherJournalRequest()
     const fetcher = vi.fn<typeof fetch>(async () => new Response(JSON.stringify(ticket()), {

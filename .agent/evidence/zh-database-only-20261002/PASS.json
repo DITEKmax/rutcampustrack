@@ -1,0 +1,16 @@
+{
+  "bundle_manifest_sha256": "0eafbfe51740f651cc0bbcbb806ac97ae027afed7b52046dee6584c40be33794",
+  "checks": [
+    "PG BYTEA exact inventory",
+    "both Mongo BSON Binary exact inventory",
+    "wrong files mode refused before write",
+    "no filesystem payload directories created"
+  ],
+  "files_mode": "database-only",
+  "projects": [
+    "rct-recovery-zh1002-no-files-src",
+    "rct-recovery-zh1002-no-files-dst"
+  ],
+  "result": "PASS",
+  "revision": "86e35277"
+}

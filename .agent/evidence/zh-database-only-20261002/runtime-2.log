@@ -1,0 +1,5 @@
+PASS existing corrected source fixture: both Mongo Binary docs present
+PASS backup: complete immutable PG/Mongo bundle; mode=database-only
+PASS wrong files mode refused before target writes
+PASS restore: PostgreSQL data/schema/sequences, Mongo documents/indexes/options match source; mode=database-only
+PASS minimal DB-only Binary roundtrip; retained bundle; cleanup separate

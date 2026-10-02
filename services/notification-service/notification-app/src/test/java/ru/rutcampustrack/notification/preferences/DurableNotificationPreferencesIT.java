@@ -57,6 +57,7 @@ class DurableNotificationPreferencesIT {
             MongoTemplate mongo = new MongoTemplate(factory);
             new NotificationPreferencesMongoConfig(mongo).initialize();
             mongo.createCollection(ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION);
+            mongo.createCollection("prefs_claim_effects");
             new ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore(mongo).ensureIndexes();
             return mongo;
         }
@@ -97,6 +98,7 @@ class DurableNotificationPreferencesIT {
     @Autowired ru.rutcampustrack.notification.event.EventConsumer consumer;
     @Autowired ru.rutcampustrack.notification.push.WebPushDeliveryService webPush;
     @Autowired org.springframework.messaging.simp.SimpMessagingTemplate messaging;
+    @Autowired MongoTransactionManager transactionManager;
 
     @BeforeEach void clearOwnedSyntheticState() {
         reset(mongo, binding, redis);
@@ -105,7 +107,7 @@ class DurableNotificationPreferencesIT {
                 .sendToGroup(anyLong(), anyString(), anyMap(), anySet());
         for (String collection : List.of(NotificationPreferencesStore.USERS, NotificationPreferencesStore.TELEGRAM,
                 NotificationPreferencesStore.LEGACY_OWNERS, NotificationPreferencesStore.RECEIPTS,
-                ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION)) {
+                ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION, "prefs_claim_effects")) {
             mongo.remove(new Query(), collection);
         }
         redis.delete(List.of("notif:prefs:user:11", "notif:prefs:user:12", "bot:notif:101",
@@ -129,6 +131,41 @@ class DurableNotificationPreferencesIT {
         assertThat(mongo.getCollection(ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION)
                 .countDocuments()).isEqualTo(1);
         verify(webPush, times(1)).sendToGroup(7L, "homework.due_reminder", payload, java.util.Set.of(11L));
+    }
+
+    @Test void concurrentSameEventClaimCommitsOneEffectAndLoserRetriesSafely() throws Exception {
+        var eventId = java.util.UUID.randomUUID();
+        String claims = ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION;
+        var store = new ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore(mongo);
+        var transactions = new org.springframework.transaction.support.TransactionTemplate(transactionManager);
+        var simultaneousSnapshots = new java.util.concurrent.CyclicBarrier(2);
+        var attempts = new java.util.concurrent.atomic.AtomicInteger();
+        Callable<Object> claimant = () -> {
+            var localAttempts = new java.util.concurrent.atomic.AtomicInteger();
+            return retryTransaction(() -> transactions.execute(status -> {
+                attempts.incrementAndGet();
+                if (localAttempts.getAndIncrement() == 0) {
+                    // Real first read fixes both transaction snapshots before either insert.
+                    // No mocked query/claim result and no provider effect outside the transaction.
+                    mongo.count(new Query(), claims);
+                    try { simultaneousSnapshots.await(5, java.util.concurrent.TimeUnit.SECONDS); }
+                    catch (Exception failure) { throw new IllegalStateException(failure); }
+                }
+                boolean won = store.tryClaim("prefs-race", eventId);
+                if (won) mongo.insert(new Document("event_id", eventId.toString()), "prefs_claim_effects");
+                return won;
+            }));
+        };
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var futures = executor.invokeAll(List.of(claimant, claimant));
+            assertThat(List.of(futures.get(0).get(), futures.get(1).get())).containsExactlyInAnyOrder(true, false);
+        }
+        assertThat(attempts.get()).isGreaterThanOrEqualTo(3);
+        assertThat(mongo.getCollection(claims).countDocuments()).isEqualTo(1);
+        assertThat(mongo.getCollection("prefs_claim_effects").countDocuments()).isEqualTo(1);
+        Boolean duplicate = transactions.execute(status -> store.tryClaim("prefs-race", eventId));
+        assertThat(duplicate).isFalse();
+        assertThat(mongo.getCollection("prefs_claim_effects").countDocuments()).isEqualTo(1);
     }
 
     @Test void adoptedChoicesSurviveRedisLossAndDoNotReimportOverMongo() {

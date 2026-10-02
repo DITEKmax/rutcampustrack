@@ -470,7 +470,7 @@ public class SemesterArchiveCoordinator {
         }
     }
 
-    private static SemesterArchiveParticipantStatus fromWire(SemsterArchiveParticipantState state) {
+    private static SemesterArchiveParticipantStatus fromWire(SemesterArchiveParticipantState state) {
         return switch (state) {
             case SEMESTER_ARCHIVE_PARTICIPANT_PENDING -> SemesterArchiveParticipantStatus.PENDING;
             case SEMESTER_ARCHIVE_PARTICIPANT_READY -> SemesterArchiveParticipantStatus.READY;

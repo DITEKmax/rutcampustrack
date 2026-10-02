@@ -1,0 +1,1 @@
+FAIL native rehearsal: docker operation failed (exit 1)

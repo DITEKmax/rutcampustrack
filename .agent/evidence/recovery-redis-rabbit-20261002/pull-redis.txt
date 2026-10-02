@@ -1,0 +1,28 @@
+docker.io/library/redis@sha256:7aec734b2bb298a1d769fd8729f13b8514a41bf90fcdd1f38ec52267fbaa8ee6: Pulling from library/redis
+9572acab3f32: Pulling fs layer
+2da9501c87e4: Pulling fs layer
+6447bc944d85: Pulling fs layer
+1f0676652ae4: Pulling fs layer
+47836b8a3274: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+897d797d2723: Pulling fs layer
+51bf34b872a6: Pulling fs layer
+4f4fb700ef54: Already exists
+2da9501c87e4: Download complete
+9572acab3f32: Download complete
+51bf34b872a6: Download complete
+1f0676652ae4: Download complete
+6447bc944d85: Download complete
+47836b8a3274: Download complete
+897d797d2723: Download complete
+897d797d2723: Pull complete
+1f0676652ae4: Pull complete
+9572acab3f32: Pull complete
+51bf34b872a6: Pull complete
+47836b8a3274: Pull complete
+4f4fb700ef54: Pull complete
+2da9501c87e4: Pull complete
+6447bc944d85: Pull complete
+Digest: sha256:7aec734b2bb298a1d769fd8729f13b8514a41bf90fcdd1f38ec52267fbaa8ee6
+Status: Downloaded newer image for redis@sha256:7aec734b2bb298a1d769fd8729f13b8514a41bf90fcdd1f38ec52267fbaa8ee6
+docker.io/library/redis:7-alpine@sha256:7aec734b2bb298a1d769fd8729f13b8514a41bf90fcdd1f38ec52267fbaa8ee6

@@ -1,0 +1,13 @@
+{
+  "cleanup": "no deletion; all own stop attempts completed",
+  "cleanupErrors": [],
+  "containersVolumesCheckpointsRetained": true,
+  "criteriaResult": "FAIL",
+  "result": "FAIL",
+  "stopped": [
+    "rct-recovery-redis-rabbit-20261002-src-redis",
+    "rct-recovery-redis-rabbit-20261002-src-rabbit",
+    "rct-recovery-redis-rabbit-20261002-dst-redis",
+    "rct-recovery-redis-rabbit-20261002-dst-rabbit"
+  ]
+}

@@ -2,7 +2,7 @@
 
 Backend А–Ж first; frontend/Figma/manual client and deploy separate. Goal active. Root sole main/docs integrator. All authors/reviewers Sol6.1 high, no children; no push/deploy. RULES SHA A208AA4380B64376A4EAD645AA0731C9F574077107DC9C44356F5C04D80F28FA.
 
-Main a3d64e0f (latest product d8b9d961, cache evidence2574c07d). Runtime2948e60e OFF, all owned commonstand resources cleaned. Product changes integrated, no product STOP.
+Main dc3ece98 (DATE notification rendering), prior cache product d8b9d961/evidence2574c07d. Runtime2948e60e OFF, all owned commonstand resources cleaned. Product changes integrated, no product STOP.
 
 Latest accepted components:
 - Б JS-ADMIN-04: owner restore WITHOUT active rights, role assignment explicitly later; preview/password/receipt/stale-impact/helper-race protections. mainc02bba78/evidence50f6eabb; independent reviews PASS, compile6 PASS; Auth2+Attendance1 R1, Academic4 R2 PASS. Fixture-only corrections, no independent passed checks repeated. HTTP R2 additionally archive/restore/replay/history passed, remaining explicit regrant not yet accepted viaHTTP. Source .agent/evidence/user-archive-lifecycle-20261002/SUMMARY.md.
@@ -16,7 +16,7 @@ HEAVY FREE. Focused runner7205/run20261002-122839350-8_iv38m4 and wrapper54576 t
 ACCEPTED cache: a_no_active_semester_1002 source87f3108d -> main d8b9d961; independent review PASS, targeted36948 exit0/2PASS; no containers. Authoritative NOT_FOUND clears cached semester, transport failure retains prior policy; next lazy read discovers new active semester. Evidence main2574c07d .agent/evidence/no-active-semester-20261002/SUMMARY.md. Author/reviewer completed.
 
 ACTIVE v_homework_lifecycle_1002: sole writer map-usage-delivery-20260922 WT baseline67a3d364; Academic/Schedule homework, proto, reserved V45/V24. Concrete missing JS-HEADMAN-16/17/28/29: DATE homework, authorized nonauthor edits, date/binding edits, persistent edit history. DTO/content/history WIP, not ready. Owner DATE archive midnight next day Moscow recorded docs/product/decisions/2026-10-02-unbound-homework-archive.md maina3d64e0f. All edits requestKey+expectedRevision. Preserve identity/completion/terminal archive/create replay.
-Architecture reviewer review_homework_architecture_1002 read-only recheck: proposal FAIL two P1 before binding migration. Required durable APPLIED_AWAITING_ACK gate, exact admitted recovery through PREPARE, Academic finalize then ACK; transfer cannot create poisoned ERROR during edit. Accepted manual placement supersedes old APPLIED transfer marker preserving immutable history. Pending marker must drain/refuse. Author revising CONTRACT; legacy immutable payload_hash compatibility under narrow source review. No broad audits or heavy runs until coherent diff.
+Architecture reviewer review_homework_architecture_1002 read-only recheck: proposal FAIL two P1 before binding migration. Required durable APPLIED_AWAITING_ACK gate, exact admitted recovery through PREPARE, Academic finalize then ACK; transfer cannot create poisoned ERROR during edit. Accepted manual placement supersedes old APPLIED transfer marker preserving immutable history. Pending marker must drain/refuse. Frozen architecture CONTRACT SHA93E3322EA87FA90FD47F4275C0E913427198B8AC2A80661EDE4618E9E19AE50F final independent PASS. Legacy accepted-replay fingerprint distinct from original CREATE intent; DATE included in semester lifecycle; exact directed recovery. Binding implementation active. Missing Schedule op cannot imply cancellation: durable same-key NOT_ACCEPTED tombstone/CAS needed against delayed Move. No broad audits or heavy runs until coherent diff.
 Common acceptance: build55865 PASS1m21 (4rebuilt/4reusedJAR+PWA10); manifest2948 SHA d8bdd51c6aee18077d43810175dd49e5ffe5391fff09d07443142e571856ed9b.
 R1 probe70850 fixture expected1 retainedmark vs actual3; no archive/restore performed. Corrected independent Mongo count forR2. R1 evidence preserved .agent/evidence/backend-acceptance-20261002-next/r1.
 R2 probe9288 terminal1:27HTTP steps and10checks PASS, old selected session denied403 but harness allowed401/409. No productfailure inferred solelyfromstatus. Explicit regrant and А populated interrupted delete NOTexecuted; no container pauses. Runner93692 run20261002-115737609-_uyvdmm9 terminal1; cleanupPASS14/14/network/keys/artifactsabsent/errors0. Do not start R3. g_backend_acceptance_1002 only source403 diagnosis/sanitizedsummary/focusednextplan, independent scenarios so acceptedБ notrerun dueА.
@@ -26,5 +26,9 @@ Other prior authors/reviewers complete; v_remaining_actions_1002 confirmed concr
 
 
 
+
+
+
+Parallel e_homework_date_bot_1002 completed, sourcebf3a145a -> main dc3ece98; actual handler local formatting PASS with annotation-only aiogram placeholder, not external delivery. Only product file notification-bot/bot/notifications/homework.py changed. Read-only geo reconciliation found no concrete missing server action; accepted GPS-unavailable automatic request/cancel/approval reused. Valid coordinate success and geo-block HTTP remain for next shared batch, not new product fixes. G structured409 capture/regrant probe ready SHA4bf636c61786432b2a3acba0e06cbbaaf836035e1fadd860d69856a338923a79; syntaxPASS, preserved raw failures, no runtime authorized. A409-DIAGNOSTIC-READY.md records next batch.
 
 

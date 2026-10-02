@@ -86,6 +86,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
     private final List<Long> occurrenceIds = new ArrayList<>();
     private final List<Long> lessonIds = new ArrayList<>();
     private final List<Long> archiveBarrierSemesterIds = new ArrayList<>();
+    private final java.util.Set<Long> dateFixtureSemesters = new java.util.HashSet<>();
 
     @AfterEach
     void cleanup() {
@@ -99,6 +100,12 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
                    SET state = 'ARCHIVED', revision = revision + 1, updated_at = NOW()
                  WHERE occurrence_id = ? AND state <> 'ARCHIVED'
                 """, id));
+        dateFixtureSemesters.forEach(id -> jdbcTemplate.update("""
+                UPDATE lesson_homework_bindings
+                   SET state = 'ARCHIVED', revision = revision + 1, updated_at = NOW()
+                 WHERE semester_id = ? AND state <> 'ARCHIVED'
+                """, id));
+        dateFixtureSemesters.clear();
         drainOutbox();
         scheduleItemIds.clear();
         occurrenceIds.clear();
@@ -626,6 +633,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
     @Test
     void blockedExpiredBatchDoesNotStarveWritableSemester() {
         long blocked = FIXTURE_SEQUENCE.incrementAndGet(), writable = FIXTURE_SEQUENCE.incrementAndGet();
+        dateFixtureSemesters.add(blocked);
         when(academicGrpcClient.getSemesterArchiveAuthorityState(writable)).thenReturn(
                 SemesterStateResponse.newBuilder().setId(writable).setActive(true).build());
         jdbcTemplate.update("""
@@ -732,6 +740,7 @@ class HomeworkBindingServiceIT extends AbstractScheduleIntegrationTest {
     }
 
     private ReserveHomeworkBindingRequest dateCreate(long semester, String date) {
+        dateFixtureSemesters.add(semester);
         byte[] hash = new byte[32]; hash[0] = 17;
         return ReserveHomeworkBindingRequest.newBuilder().setBindingMode("DATE").setDate(date)
                 .setGroupId(AUTHORIZED_GROUP_ID).setSubjectId(SUBJECT_ID).setSemesterId(semester)

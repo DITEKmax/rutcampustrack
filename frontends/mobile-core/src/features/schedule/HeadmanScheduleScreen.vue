@@ -44,6 +44,11 @@ import { profileOwnerStaleMessage } from '../../shared/profile-owner-status'
 import { createProfileViewPublication } from '../../shared/components/profile-view-publication'
 import {
   HeadmanScheduleApiError,
+  persistOneOffIntent,
+  readOneOffIntent,
+  type HeadmanOneOffCreateInput,
+  type HeadmanOneOffIntent,
+  type HeadmanOneOffLesson,
   type HeadmanScheduleApi,
   type HeadmanScheduleAssignment,
   type HeadmanScheduleCreateInput,
@@ -111,6 +116,12 @@ const error = ref<string | null>(null)
 const denied = ref(false)
 const assignments = shallowRef<readonly HeadmanScheduleAssignment[]>([])
 const scheduleItems = shallowRef<readonly HeadmanScheduleItem[]>([])
+const oneOffLessons = shallowRef<readonly HeadmanOneOffLesson[]>([])
+const createMode = ref<'RECURRING' | 'ONE_OFF'>('RECURRING')
+const oneOffDate = ref(moscowToday())
+const oneOffIntent = shallowRef<HeadmanOneOffIntent | null>(null)
+const intentRecoveryBlocked = ref(false)
+const formLocked = computed(() => formBusy.value || (createMode.value === 'ONE_OFF' && oneOffIntent.value !== null))
 const semester = shallowRef<HeadmanScheduleSemester | null>(null)
 const selectedDay = ref(1)
 const formOpen = ref(false)
@@ -165,6 +176,7 @@ const moreAvailability = computed(() => ({
   lessons: props.journalApi !== null && props.groupId !== null,
 }))
 let loadRevision = 0
+let commandRevision = 0
 let disposed = false
 let stopTheme = (): void => undefined
 let stopNavigation = navigation.subscribe(() => {
@@ -368,6 +380,13 @@ function openHomeLesson(lesson: HeadmanJournalLesson): void {
   navigation.push(nestedRoute('headman-attendance', journalRouteId, 'detail'))
 }
 
+function openOneOffLesson(lesson: HeadmanOneOffLesson): void {
+  if (!props.journalApi) return
+  selectedDate.value = lesson.date
+  selectedLessonId.value = lesson.physicalLessonId
+  navigation.push(nestedRoute('headman-more', lessonManagementRouteId, 'task'))
+}
+
 function openGroup(): void {
   if (!props.groupApi || props.groupId === null) return
   navigation.push(nestedRoute('headman-more', groupRouteId, 'detail'))
@@ -468,6 +487,30 @@ function openForm(): void {
   startTime.value = ''
   endTime.value = ''
   room.value = ''
+  createMode.value = 'RECURRING'
+  oneOffDate.value = selectedDate.value
+  oneOffIntent.value = null
+  intentRecoveryBlocked.value = false
+  try {
+    const scope = oneOffScope()
+    if (scope) {
+      const saved = readOneOffIntent(sessionStorage, scope)
+      if (saved) {
+        if (saved.input.groupId !== props.groupId) throw new Error('Сохранённый запрос относится к другой группе.')
+        oneOffIntent.value = saved
+        createMode.value = 'ONE_OFF'
+        assignmentId.value = saved.input.assignmentId
+        oneOffDate.value = saved.input.date
+        lessonNumber.value = saved.input.lessonNumber
+        startTime.value = saved.input.startTime.slice(0, 5)
+        endTime.value = saved.input.endTime.slice(0, 5)
+        room.value = saved.input.classroom ?? ''
+      }
+    }
+  } catch {
+    intentRecoveryBlocked.value = true
+    formError.value = 'Не удалось прочитать сохранённый запрос. Проверь доступ к хранилищу браузера.'
+  }
   formOpen.value = true
   navigation.push(nestedRoute('headman-more', scheduleFormRouteId, 'editor'))
 }
@@ -481,7 +524,13 @@ function validTime(value: string): boolean {
   return /^\d{2}:\d{2}$/.test(value) && Number(value.slice(0, 2)) < 24 && Number(value.slice(3)) < 60
 }
 
-function buildInput(): HeadmanScheduleCreateInput | null {
+function oneOffScope(): string | null {
+  const profile = props.profile
+  return profile && props.groupId !== null
+    ? `rct:oneoff-create:${profile.userId}:${profile.sessionId}:${profile.activeRole}:${props.groupId}` : null
+}
+
+function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | null {
   const selected = selectedAssignment.value
   const currentSemester = semester.value
   if (!props.groupId || !currentSemester?.id || !selected?.id || !selected.subjectId) {
@@ -500,6 +549,24 @@ function buildInput(): HeadmanScheduleCreateInput | null {
     formError.value = 'Время конца должно быть позже времени начала.'
     return null
   }
+  if (createMode.value === 'ONE_OFF') {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(oneOffDate.value) || oneOffDate.value < moscowToday()
+      || (currentSemester.dateFrom && oneOffDate.value < currentSemester.dateFrom)
+      || (currentSemester.dateTo && oneOffDate.value >= currentSemester.dateTo)) {
+      formError.value = 'Выбери дату в текущем семестре, не раньше сегодня.'
+      return null
+    }
+    if (lessonNumber.value > 8 || room.value.trim().length > 64) {
+      formError.value = 'Номер разовой пары — от 1 до 8, аудитория — до 64 символов.'
+      return null
+    }
+    return {
+      assignmentId: selected.id, groupId: props.groupId, subjectId: selected.subjectId,
+      date: oneOffDate.value, lessonNumber: lessonNumber.value,
+      startTime: `${startTime.value}:00`, endTime: `${endTime.value}:00`,
+      ...(room.value.trim() ? { classroom: room.value.trim() } : {}),
+    }
+  }
   return {
     assignmentId: selected.id,
     groupId: props.groupId,
@@ -515,9 +582,14 @@ function buildInput(): HeadmanScheduleCreateInput | null {
 }
 
 async function save(): Promise<void> {
-  if (formBusy.value || props.offline || props.readOnly || !props.api) return
+  if (formBusy.value || intentRecoveryBlocked.value || props.offline || props.readOnly || !props.api) return
   formError.value = null
-  const input = buildInput()
+  const api = props.api
+  const revision = commandRevision
+  const mode = createMode.value
+  const scope = oneOffScope()
+  const isCurrent = (): boolean => !disposed && revision === commandRevision && api === props.api
+  const input = mode === 'ONE_OFF' && oneOffIntent.value ? oneOffIntent.value.input : buildInput()
   if (!input) return
   const nextFingerprint = JSON.stringify(input)
   if (commandFingerprint.value !== null && commandFingerprint.value !== nextFingerprint) commandKey.value = newCommandKey()
@@ -526,18 +598,34 @@ async function save(): Promise<void> {
   commandKey.value = key
   formBusy.value = true
   try {
-    await props.api.createScheduleItem(input, key)
-    notice.value = 'Слот сохранён. Расписание обновлено с сервера.'
+    if (mode === 'ONE_OFF') {
+      if (!scope) throw new Error('Для сохранения разовой пары нужна текущая сессия.')
+      const saved = oneOffIntent.value ?? { key, input: Object.freeze({ ...input }) as HeadmanOneOffCreateInput }
+      persistOneOffIntent(sessionStorage, scope, saved)
+      oneOffIntent.value = saved
+      const created = await api.createOneOffLesson(saved.input, saved.key)
+      if (!isCurrent()) return
+      sessionStorage.removeItem(scope)
+      oneOffIntent.value = null
+      selectedDate.value = created.date
+      selectedLessonId.value = created.physicalLessonId
+      notice.value = 'Разовая пара создана.'
+    } else {
+      await api.createScheduleItem(input as HeadmanScheduleCreateInput, key)
+      if (!isCurrent()) return
+      notice.value = 'Слот сохранён. Расписание обновлено с сервера.'
+    }
     commandKey.value = null
     commandFingerprint.value = null
     formBusy.value = false
     closeForm()
     await load()
   } catch (cause) {
+    if (!isCurrent()) return
     formError.value = cause instanceof Error ? cause.message : 'Не удалось сохранить слот.'
     emit('error', cause)
   } finally {
-    formBusy.value = false
+    if (isCurrent()) formBusy.value = false
   }
 }
 
@@ -563,15 +651,20 @@ async function load(): Promise<void> {
     if (!current?.id) {
       assignments.value = []
       scheduleItems.value = []
+      oneOffLessons.value = []
       return
     }
-    const [nextAssignments, nextItems] = await Promise.all([
+    const [nextAssignments, nextItems, nextOneOff] = await Promise.all([
       props.api.listAssignments(props.groupId, current.id),
       props.api.listScheduleItems(props.groupId, current.id),
+      current.dateFrom && current.dateTo
+        ? props.api.listOneOffLessons(props.groupId, current.dateFrom, current.dateTo)
+        : Promise.resolve([]),
     ])
     if (revision !== loadRevision) return
     assignments.value = nextAssignments
     scheduleItems.value = nextItems
+    oneOffLessons.value = nextOneOff.filter((lesson) => lesson.semesterId === current.id)
   } catch (cause) {
     if (revision !== loadRevision) return
     if (cause instanceof HeadmanScheduleApiError && (cause.response.status === 401 || cause.response.status === 403)) {
@@ -606,11 +699,20 @@ watch(() => props.profilePort, (port) => {
 })
 
 watch(
-  () => [props.api, props.groupId, props.profile?.sessionId, props.profile?.activeRole] as const,
-  ([api, groupId, sessionId, activeRole], previous) => {
-    if (previous && previous[0] === api && previous[1] === groupId
-      && previous[2] === sessionId && previous[3] === activeRole) return
+  () => [props.api, props.groupId, props.profile?.userId, props.profile?.sessionId, props.profile?.activeRole,
+    props.profile?.sessionVersion, props.profile?.rolesVersion] as const,
+  (current, previous) => {
+    if (previous && current.every((value, index) => previous[index] === value)) return
     selectedLessonId.value = null
+    commandRevision += 1
+    loadRevision += 1
+    formBusy.value = false
+    oneOffIntent.value = null
+    commandKey.value = null
+    commandFingerprint.value = null
+    formError.value = null
+    notice.value = null
+    oneOffLessons.value = []
     selectedDate.value = props.selectedDate || moscowToday()
     profileRoleError.value = null
     profilePendingRole.value = null
@@ -620,11 +722,14 @@ watch(
 )
 
 watch(
-  () => [props.host, formOpen.value, formBusy.value, props.offline, props.readOnly] as const,
+  () => [props.host, formOpen.value, formBusy.value, props.offline, props.readOnly,
+    createMode.value, oneOffIntent.value, intentRecoveryBlocked.value] as const,
   ([host, open, busy, offline, readOnly]) => {
     if (!host || host.primaryActionOwner !== 'host') return
     host.setPrimaryAction?.(open
-      ? { label: busy ? 'Сохраняем…' : 'Сохранить слот', disabled: busy || offline || readOnly, onInvoke: save }
+      ? { label: busy ? 'Сохраняем…' : oneOffIntent.value ? 'Повторить сохранение'
+        : createMode.value === 'ONE_OFF' ? 'Создать разовую пару' : 'Сохранить слот',
+      disabled: busy || offline || readOnly || intentRecoveryBlocked.value, onInvoke: save }
       : null)
   },
   { immediate: true },
@@ -632,6 +737,7 @@ watch(
 
 onBeforeUnmount(() => {
   disposed = true
+  commandRevision += 1
   loadRevision += 1
   stopNavigation()
   stopTheme()
@@ -723,6 +829,7 @@ onBeforeUnmount(() => {
       :assistant-permissions="assistantPermissions"
       :offline="offline"
       :read-only="readOnly"
+      :report-download="reportDownload"
       @error="emit('error', $event)"
     />
     <HeadmanSubjectsScreen
@@ -919,13 +1026,48 @@ onBeforeUnmount(() => {
           </article>
         </section>
 
+        <section
+          class="headman-schedule__list"
+          aria-label="Разовые пары"
+          aria-live="polite"
+        >
+          <h2>Разовые пары</h2>
+          <p
+            v-if="oneOffLessons.length === 0"
+            class="headman-schedule__empty"
+          >
+            В этом семестре разовых пар пока нет.
+          </p>
+          <article
+            v-for="item in oneOffLessons"
+            :key="item.id"
+            class="headman-schedule__slot"
+          >
+            <div class="headman-schedule__slot-time">
+              <strong>{{ item.lessonNumber }} пара</strong>
+              <span>{{ item.date }}</span>
+            </div>
+            <div class="headman-schedule__slot-copy">
+              <strong>{{ assignments.find((candidate) => candidate.subjectId === item.subjectId)?.subjectName || 'Предмет' }}</strong>
+              <span>Разовая<span v-if="item.classroom"> · {{ item.classroom }}</span></span>
+              <button
+                v-if="journalApi"
+                type="button"
+                class="headman-schedule__secondary"
+                @click="openOneOffLesson(item)"
+              >
+                Открыть пару
+              </button>
+            </div>
+          </article>
+        </section>
         <button
           class="headman-schedule__primary"
           type="button"
           :disabled="offline || readOnly || activeAssignments.length === 0"
           @click="openForm"
         >
-          Добавить слот
+          Добавить пару
         </button>
       </template>
 
@@ -936,7 +1078,7 @@ onBeforeUnmount(() => {
       >
         <div class="headman-schedule__form-header">
           <h2 id="headman-schedule-form-title">
-            Новый слот · {{ days.find((day) => day.value === selectedDay)?.label }}
+            {{ createMode === 'ONE_OFF' ? 'Разовая пара' : 'Новый слот' }}
           </h2>
           <button
             class="headman-schedule__secondary"
@@ -948,10 +1090,39 @@ onBeforeUnmount(() => {
           </button>
         </div>
         <label class="headman-schedule__field">
+          <span>Повторение</span>
+          <select
+            v-model="createMode"
+            :disabled="formLocked || offline || readOnly || intentRecoveryBlocked"
+          >
+            <option value="RECURRING">По расписанию каждую неделю</option>
+            <option value="ONE_OFF">Разовая пара</option>
+          </select>
+        </label>
+        <label
+          v-if="createMode === 'ONE_OFF'"
+          class="headman-schedule__field"
+        >
+          <span>Дата</span>
+          <input
+            v-model="oneOffDate"
+            type="date"
+            :min="semester?.dateFrom && semester.dateFrom > moscowToday() ? semester.dateFrom : moscowToday()"
+            :disabled="formLocked || offline || readOnly"
+          >
+        </label>
+        <p
+          v-if="oneOffIntent"
+          class="headman-schedule__context"
+          role="status"
+        >
+          Повтори сохранение исходной пары, чтобы проверить результат предыдущего запроса.
+        </p>
+        <label class="headman-schedule__field">
           <span>Предмет и преподаватель</span>
           <select
             v-model.number="assignmentId"
-            :disabled="formBusy || offline || readOnly"
+            :disabled="formLocked || offline || readOnly"
           >
             <option
               v-for="item in activeAssignments"
@@ -962,13 +1133,16 @@ onBeforeUnmount(() => {
             </option>
           </select>
         </label>
-        <fieldset class="headman-schedule__field">
+        <fieldset
+          v-if="createMode === 'RECURRING'"
+          class="headman-schedule__field"
+        >
           <legend>Неделя</legend>
           <div class="headman-schedule__parity">
             <button
               type="button"
               :data-selected="weekType === 'ODD'"
-              :disabled="formBusy || offline || readOnly"
+              :disabled="formLocked || offline || readOnly"
               @click="weekType = 'ODD'"
             >
               1
@@ -976,7 +1150,7 @@ onBeforeUnmount(() => {
             <button
               type="button"
               :data-selected="weekType === 'EVEN'"
-              :disabled="formBusy || offline || readOnly"
+              :disabled="formLocked || offline || readOnly"
               @click="weekType = 'EVEN'"
             >
               2
@@ -984,7 +1158,7 @@ onBeforeUnmount(() => {
             <button
               type="button"
               :data-selected="weekType === 'ALL'"
-              :disabled="formBusy || offline || readOnly"
+              :disabled="formLocked || offline || readOnly"
               @click="weekType = 'ALL'"
             >
               Обе
@@ -997,10 +1171,10 @@ onBeforeUnmount(() => {
             <input
               v-model.number="lessonNumber"
               min="1"
-              max="20"
+              :max="createMode === 'ONE_OFF' ? 8 : 20"
               inputmode="numeric"
               type="number"
-              :disabled="formBusy || offline || readOnly"
+              :disabled="formLocked || offline || readOnly"
             >
           </label>
           <label class="headman-schedule__field">
@@ -1009,7 +1183,7 @@ onBeforeUnmount(() => {
               v-model="room"
               type="text"
               autocomplete="off"
-              :disabled="formBusy || offline || readOnly"
+              :disabled="formLocked || offline || readOnly"
             >
           </label>
         </div>
@@ -1019,7 +1193,7 @@ onBeforeUnmount(() => {
             <input
               v-model="startTime"
               type="time"
-              :disabled="formBusy || offline || readOnly"
+              :disabled="formLocked || offline || readOnly"
             >
           </label>
           <label class="headman-schedule__field">
@@ -1027,7 +1201,7 @@ onBeforeUnmount(() => {
             <input
               v-model="endTime"
               type="time"
-              :disabled="formBusy || offline || readOnly"
+              :disabled="formLocked || offline || readOnly"
             >
           </label>
         </div>
@@ -1041,10 +1215,10 @@ onBeforeUnmount(() => {
         <button
           class="headman-schedule__primary"
           type="button"
-          :disabled="formBusy || offline || readOnly"
+          :disabled="formBusy || offline || readOnly || intentRecoveryBlocked"
           @click="save"
         >
-          {{ formBusy ? 'Сохраняем…' : 'Сохранить слот' }}
+          {{ formBusy ? 'Сохраняем…' : oneOffIntent ? 'Повторить сохранение' : createMode === 'ONE_OFF' ? 'Создать разовую пару' : 'Сохранить слот' }}
         </button>
       </section>
     </main>

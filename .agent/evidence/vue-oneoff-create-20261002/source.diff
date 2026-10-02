@@ -1,0 +1,443 @@
+diff --git a/frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue b/frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue
+index d387031f..91eafefd 100644
+--- a/frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue
++++ b/frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue
+@@ -46,0 +47,5 @@ import {
++  persistOneOffIntent,
++  readOneOffIntent,
++  type HeadmanOneOffCreateInput,
++  type HeadmanOneOffIntent,
++  type HeadmanOneOffLesson,
+@@ -113,0 +119,6 @@ const scheduleItems = shallowRef<readonly HeadmanScheduleItem[]>([])
++const oneOffLessons = shallowRef<readonly HeadmanOneOffLesson[]>([])
++const createMode = ref<'RECURRING' | 'ONE_OFF'>('RECURRING')
++const oneOffDate = ref(moscowToday())
++const oneOffIntent = shallowRef<HeadmanOneOffIntent | null>(null)
++const intentRecoveryBlocked = ref(false)
++const formLocked = computed(() => formBusy.value || (createMode.value === 'ONE_OFF' && oneOffIntent.value !== null))
+@@ -167,0 +179 @@ let loadRevision = 0
++let commandRevision = 0
+@@ -370,0 +383,7 @@ function openHomeLesson(lesson: HeadmanJournalLesson): void {
++function openOneOffLesson(lesson: HeadmanOneOffLesson): void {
++  if (!props.journalApi) return
++  selectedDate.value = lesson.date
++  selectedLessonId.value = lesson.physicalLessonId
++  navigation.push(nestedRoute('headman-more', lessonManagementRouteId, 'task'))
++}
++
+@@ -470,0 +490,24 @@ function openForm(): void {
++  createMode.value = 'RECURRING'
++  oneOffDate.value = selectedDate.value
++  oneOffIntent.value = null
++  intentRecoveryBlocked.value = false
++  try {
++    const scope = oneOffScope()
++    if (scope) {
++      const saved = readOneOffIntent(sessionStorage, scope)
++      if (saved) {
++        if (saved.input.groupId !== props.groupId) throw new Error('Сохранённый запрос относится к другой группе.')
++        oneOffIntent.value = saved
++        createMode.value = 'ONE_OFF'
++        assignmentId.value = saved.input.assignmentId
++        oneOffDate.value = saved.input.date
++        lessonNumber.value = saved.input.lessonNumber
++        startTime.value = saved.input.startTime.slice(0, 5)
++        endTime.value = saved.input.endTime.slice(0, 5)
++        room.value = saved.input.classroom ?? ''
++      }
++    }
++  } catch {
++    intentRecoveryBlocked.value = true
++    formError.value = 'Не удалось прочитать сохранённый запрос. Проверь доступ к хранилищу браузера.'
++  }
+@@ -484 +527,7 @@ function validTime(value: string): boolean {
+-function buildInput(): HeadmanScheduleCreateInput | null {
++function oneOffScope(): string | null {
++  const profile = props.profile
++  return profile && props.groupId !== null
++    ? `rct:oneoff-create:${profile.userId}:${profile.sessionId}:${profile.activeRole}:${props.groupId}` : null
++}
++
++function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | null {
+@@ -502,0 +552,18 @@ function buildInput(): HeadmanScheduleCreateInput | null {
++  if (createMode.value === 'ONE_OFF') {
++    if (!/^\d{4}-\d{2}-\d{2}$/.test(oneOffDate.value) || oneOffDate.value < moscowToday()
++      || (currentSemester.dateFrom && oneOffDate.value < currentSemester.dateFrom)
++      || (currentSemester.dateTo && oneOffDate.value >= currentSemester.dateTo)) {
++      formError.value = 'Выбери дату в текущем семестре, не раньше сегодня.'
++      return null
++    }
++    if (lessonNumber.value > 8 || room.value.trim().length > 64) {
++      formError.value = 'Номер разовой пары — от 1 до 8, аудитория — до 64 символов.'
++      return null
++    }
++    return {
++      assignmentId: selected.id, groupId: props.groupId, subjectId: selected.subjectId,
++      date: oneOffDate.value, lessonNumber: lessonNumber.value,
++      startTime: `${startTime.value}:00`, endTime: `${endTime.value}:00`,
++      ...(room.value.trim() ? { classroom: room.value.trim() } : {}),
++    }
++  }
+@@ -518 +585 @@ async function save(): Promise<void> {
+-  if (formBusy.value || props.offline || props.readOnly || !props.api) return
++  if (formBusy.value || intentRecoveryBlocked.value || props.offline || props.readOnly || !props.api) return
+@@ -520 +587,6 @@ async function save(): Promise<void> {
+-  const input = buildInput()
++  const api = props.api
++  const revision = commandRevision
++  const mode = createMode.value
++  const scope = oneOffScope()
++  const isCurrent = (): boolean => !disposed && revision === commandRevision && api === props.api
++  const input = mode === 'ONE_OFF' && oneOffIntent.value ? oneOffIntent.value.input : buildInput()
+@@ -529,2 +601,17 @@ async function save(): Promise<void> {
+-    await props.api.createScheduleItem(input, key)
+-    notice.value = 'Слот сохранён. Расписание обновлено с сервера.'
++    if (mode === 'ONE_OFF') {
++      if (!scope) throw new Error('Для сохранения разовой пары нужна текущая сессия.')
++      const saved = oneOffIntent.value ?? { key, input: Object.freeze({ ...input }) as HeadmanOneOffCreateInput }
++      persistOneOffIntent(sessionStorage, scope, saved)
++      oneOffIntent.value = saved
++      const created = await api.createOneOffLesson(saved.input, saved.key)
++      if (!isCurrent()) return
++      sessionStorage.removeItem(scope)
++      oneOffIntent.value = null
++      selectedDate.value = created.date
++      selectedLessonId.value = created.physicalLessonId
++      notice.value = 'Разовая пара создана.'
++    } else {
++      await api.createScheduleItem(input as HeadmanScheduleCreateInput, key)
++      if (!isCurrent()) return
++      notice.value = 'Слот сохранён. Расписание обновлено с сервера.'
++    }
+@@ -536,0 +624 @@ async function save(): Promise<void> {
++    if (!isCurrent()) return
+@@ -540 +628 @@ async function save(): Promise<void> {
+-    formBusy.value = false
++    if (isCurrent()) formBusy.value = false
+@@ -565,0 +654 @@ async function load(): Promise<void> {
++      oneOffLessons.value = []
+@@ -568 +657 @@ async function load(): Promise<void> {
+-    const [nextAssignments, nextItems] = await Promise.all([
++    const [nextAssignments, nextItems, nextOneOff] = await Promise.all([
+@@ -570,0 +660,3 @@ async function load(): Promise<void> {
++      current.dateFrom && current.dateTo
++        ? props.api.listOneOffLessons(props.groupId, current.dateFrom, current.dateTo)
++        : Promise.resolve([]),
+@@ -574,0 +667 @@ async function load(): Promise<void> {
++    oneOffLessons.value = nextOneOff.filter((lesson) => lesson.semesterId === current.id)
+@@ -609,4 +702,4 @@ watch(
+-  () => [props.api, props.groupId, props.profile?.sessionId, props.profile?.activeRole] as const,
+-  ([api, groupId, sessionId, activeRole], previous) => {
+-    if (previous && previous[0] === api && previous[1] === groupId
+-      && previous[2] === sessionId && previous[3] === activeRole) return
++  () => [props.api, props.groupId, props.profile?.userId, props.profile?.sessionId, props.profile?.activeRole,
++    props.profile?.sessionVersion, props.profile?.rolesVersion] as const,
++  (current, previous) => {
++    if (previous && current.every((value, index) => previous[index] === value)) return
+@@ -613,0 +707,9 @@ watch(
++    commandRevision += 1
++    loadRevision += 1
++    formBusy.value = false
++    oneOffIntent.value = null
++    commandKey.value = null
++    commandFingerprint.value = null
++    formError.value = null
++    notice.value = null
++    oneOffLessons.value = []
+@@ -623 +725,2 @@ watch(
+-  () => [props.host, formOpen.value, formBusy.value, props.offline, props.readOnly] as const,
++  () => [props.host, formOpen.value, formBusy.value, props.offline, props.readOnly,
++    createMode.value, oneOffIntent.value, intentRecoveryBlocked.value] as const,
+@@ -627 +730,3 @@ watch(
+-      ? { label: busy ? 'Сохраняем…' : 'Сохранить слот', disabled: busy || offline || readOnly, onInvoke: save }
++      ? { label: busy ? 'Сохраняем…' : oneOffIntent.value ? 'Повторить сохранение'
++        : createMode.value === 'ONE_OFF' ? 'Создать разовую пару' : 'Сохранить слот',
++      disabled: busy || offline || readOnly || intentRecoveryBlocked.value, onInvoke: save }
+@@ -634,0 +740 @@ onBeforeUnmount(() => {
++  commandRevision += 1
+@@ -725,0 +832 @@ onBeforeUnmount(() => {
++      :report-download="reportDownload"
+@@ -921,0 +1029,35 @@ onBeforeUnmount(() => {
++        <section
++          class="headman-schedule__list"
++          aria-label="Разовые пары"
++          aria-live="polite"
++        >
++          <h2>Разовые пары</h2>
++          <p
++            v-if="oneOffLessons.length === 0"
++            class="headman-schedule__empty"
++          >
++            В этом семестре разовых пар пока нет.
++          </p>
++          <article
++            v-for="item in oneOffLessons"
++            :key="item.id"
++            class="headman-schedule__slot"
++          >
++            <div class="headman-schedule__slot-time">
++              <strong>{{ item.lessonNumber }} пара</strong>
++              <span>{{ item.date }}</span>
++            </div>
++            <div class="headman-schedule__slot-copy">
++              <strong>{{ assignments.find((candidate) => candidate.subjectId === item.subjectId)?.subjectName || 'Предмет' }}</strong>
++              <span>Разовая<span v-if="item.classroom"> · {{ item.classroom }}</span></span>
++              <button
++                v-if="journalApi"
++                type="button"
++                class="headman-schedule__secondary"
++                @click="openOneOffLesson(item)"
++              >
++                Открыть пару
++              </button>
++            </div>
++          </article>
++        </section>
+@@ -928 +1070 @@ onBeforeUnmount(() => {
+-          Добавить слот
++          Добавить пару
+@@ -939 +1081 @@ onBeforeUnmount(() => {
+-            Новый слот · {{ days.find((day) => day.value === selectedDay)?.label }}
++            {{ createMode === 'ONE_OFF' ? 'Разовая пара' : 'Новый слот' }}
+@@ -949,0 +1092,29 @@ onBeforeUnmount(() => {
++        <label class="headman-schedule__field">
++          <span>Повторение</span>
++          <select
++            v-model="createMode"
++            :disabled="formLocked || offline || readOnly || intentRecoveryBlocked"
++          >
++            <option value="RECURRING">По расписанию каждую неделю</option>
++            <option value="ONE_OFF">Разовая пара</option>
++          </select>
++        </label>
++        <label
++          v-if="createMode === 'ONE_OFF'"
++          class="headman-schedule__field"
++        >
++          <span>Дата</span>
++          <input
++            v-model="oneOffDate"
++            type="date"
++            :min="semester?.dateFrom && semester.dateFrom > moscowToday() ? semester.dateFrom : moscowToday()"
++            :disabled="formLocked || offline || readOnly"
++          >
++        </label>
++        <p
++          v-if="oneOffIntent"
++          class="headman-schedule__context"
++          role="status"
++        >
++          Повтори сохранение исходной пары, чтобы проверить результат предыдущего запроса.
++        </p>
+@@ -954 +1125 @@ onBeforeUnmount(() => {
+-            :disabled="formBusy || offline || readOnly"
++            :disabled="formLocked || offline || readOnly"
+@@ -965 +1136,4 @@ onBeforeUnmount(() => {
+-        <fieldset class="headman-schedule__field">
++        <fieldset
++          v-if="createMode === 'RECURRING'"
++          class="headman-schedule__field"
++        >
+@@ -971 +1145 @@ onBeforeUnmount(() => {
+-              :disabled="formBusy || offline || readOnly"
++              :disabled="formLocked || offline || readOnly"
+@@ -979 +1153 @@ onBeforeUnmount(() => {
+-              :disabled="formBusy || offline || readOnly"
++              :disabled="formLocked || offline || readOnly"
+@@ -987 +1161 @@ onBeforeUnmount(() => {
+-              :disabled="formBusy || offline || readOnly"
++              :disabled="formLocked || offline || readOnly"
+@@ -1000 +1174 @@ onBeforeUnmount(() => {
+-              max="20"
++              :max="createMode === 'ONE_OFF' ? 8 : 20"
+@@ -1003 +1177 @@ onBeforeUnmount(() => {
+-              :disabled="formBusy || offline || readOnly"
++              :disabled="formLocked || offline || readOnly"
+@@ -1012 +1186 @@ onBeforeUnmount(() => {
+-              :disabled="formBusy || offline || readOnly"
++              :disabled="formLocked || offline || readOnly"
+@@ -1022 +1196 @@ onBeforeUnmount(() => {
+-              :disabled="formBusy || offline || readOnly"
++              :disabled="formLocked || offline || readOnly"
+@@ -1030 +1204 @@ onBeforeUnmount(() => {
+-              :disabled="formBusy || offline || readOnly"
++              :disabled="formLocked || offline || readOnly"
+@@ -1044 +1218 @@ onBeforeUnmount(() => {
+-          :disabled="formBusy || offline || readOnly"
++          :disabled="formBusy || offline || readOnly || intentRecoveryBlocked"
+@@ -1047 +1221 @@ onBeforeUnmount(() => {
+-          {{ formBusy ? 'Сохраняем…' : 'Сохранить слот' }}
++          {{ formBusy ? 'Сохраняем…' : oneOffIntent ? 'Повторить сохранение' : createMode === 'ONE_OFF' ? 'Создать разовую пару' : 'Сохранить слот' }}
+diff --git a/frontends/mobile-core/src/features/schedule/headman-schedule-client.test.ts b/frontends/mobile-core/src/features/schedule/headman-schedule-client.test.ts
+new file mode 100644
+index 00000000..81233ded
+--- /dev/null
++++ b/frontends/mobile-core/src/features/schedule/headman-schedule-client.test.ts
+@@ -0,0 +1,68 @@
++import { describe, expect, it } from 'vitest'
++import { StaleSessionGenerationError } from '../../shared/session-owner'
++import {
++  HeadmanScheduleApi,
++  createGenerationBoundHeadmanScheduleApi,
++  persistOneOffIntent,
++  readOneOffIntent,
++  type HeadmanOneOffCreateInput,
++} from './headman-schedule-client'
++
++const input: HeadmanOneOffCreateInput = {
++  groupId: 7, subjectId: 9, assignmentId: 501, date: '2026-10-12',
++  lessonNumber: 3, startTime: '12:00:00', endTime: '13:30:00', classroom: 'А-101',
++}
++const key = '11111111-2222-4333-8444-555555555555'
++const canonical = { id: 31, physicalLessonId: 42, groupId: 7, subjectId: 9, semesterId: 10, date: input.date, lessonNumber: 3 }
++const json = (body: unknown): Response => new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } })
++
++describe('ONE_OFF durable creation', () => {
++  it('recovers the exact request/key after an unknown outcome and refresh, then reads canonical physical identity', async () => {
++    const values = new Map<string, string>()
++    const storage = { getItem: (scope: string) => values.get(scope) ?? null, setItem: (scope: string, value: string) => { values.set(scope, value) } }
++    const scope = 'user5:session1:HEADMAN:group7'
++    persistOneOffIntent(storage, scope, { key, input })
++    const requests: Array<{ path: string; key: string | null; body: string | null }> = []
++    const api = new HeadmanScheduleApi({ accessToken: () => 'owned-token', fetcher: async (path, init) => {
++      requests.push({ path: String(path), key: new Headers(init?.headers).get('Idempotency-Key'), body: typeof init?.body === 'string' ? init.body : null })
++      if (requests.length === 1) throw new TypeError('response lost after acceptance')
++      return requests.length === 2 ? json(canonical) : json({ _embedded: { oneOffLessonResponseList: [canonical] } })
++    } })
++    await expect(api.createOneOffLesson(input, key)).rejects.toThrow('response lost')
++    const recovered = readOneOffIntent(storage, scope)!
++    expect(Object.isFrozen(recovered.input)).toBe(true)
++    expect(readOneOffIntent(storage, 'user6:session2:HEADMAN:group7')).toBeNull()
++    await expect(api.createOneOffLesson(recovered.input, recovered.key)).resolves.toEqual(canonical)
++    expect(requests[0]).toEqual(requests[1])
++    expect(JSON.parse(requests[1]!.body!)).toEqual(input)
++    await expect(api.listOneOffLessons(7, '2026-09-01', '2027-01-01')).resolves.toEqual([canonical])
++    expect(requests[2]!.path).toBe('/api/schedule/one-off-lessons?groupId=7&dateFrom=2026-09-01&dateTo=2027-01-01')
++    expect(values.get(scope)).not.toContain('owned-token')
++  })
++
++  it('rejects a response from the old session and never retries its 401 with the new account', async () => {
++    let generation = 1
++    let respond!: (response: Response) => void
++    let refreshes = 0
++    let calls = 0
++    const api = createGenerationBoundHeadmanScheduleApi({
++      currentGeneration: () => generation, accessTokenFor: () => 'old-token',
++      refreshFor: async () => { refreshes += 1 },
++    }, async () => { calls += 1; return new Promise<Response>((resolve) => { respond = resolve }) })
++    const pending = api.createOneOffLesson(input, key)
++    generation = 2
++    respond(new Response('{}', { status: 401 }))
++    await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
++    expect(refreshes).toBe(0)
++    expect(calls).toBe(1)
++    await expect(api.createOneOffLesson(input, key)).rejects.toBeInstanceOf(StaleSessionGenerationError)
++    expect(calls).toBe(1)
++  })
++
++  it('fails closed for unavailable durable storage or a server response without a physical lesson', async () => {
++    expect(() => persistOneOffIntent({ setItem: () => { throw new Error('storage denied') } }, 'scope', { key, input })).toThrow('storage denied')
++    expect(() => readOneOffIntent({ getItem: () => '{broken' }, 'scope')).toThrow()
++    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async () => json({ ...canonical, physicalLessonId: undefined }) })
++    await expect(api.createOneOffLesson(input, key)).rejects.toThrow('physicalLessonId')
++  })
++})
+diff --git a/frontends/mobile-core/src/features/schedule/headman-schedule-client.ts b/frontends/mobile-core/src/features/schedule/headman-schedule-client.ts
+index 89eb91d9..4eb5c4e1 100644
+--- a/frontends/mobile-core/src/features/schedule/headman-schedule-client.ts
++++ b/frontends/mobile-core/src/features/schedule/headman-schedule-client.ts
+@@ -17,0 +18,50 @@ export type HeadmanScheduleCreateInput = CreateScheduleItemRequest
++// The generated snapshot predates the accepted ONE_OFF assignment/physical identity contract.
++export interface HeadmanOneOffCreateInput {
++  groupId: number
++  subjectId: number
++  assignmentId: number
++  date: string
++  lessonNumber: number
++  startTime: string
++  endTime: string
++  classroom?: string
++}
++
++export interface HeadmanOneOffLesson {
++  id: number
++  physicalLessonId: number
++  groupId: number
++  subjectId: number
++  semesterId: number
++  date: string
++  lessonNumber: number
++  classroom?: string | null
++}
++
++export interface HeadmanOneOffIntent {
++  key: string
++  input: Readonly<HeadmanOneOffCreateInput>
++}
++
++export function readOneOffIntent(storage: Pick<Storage, 'getItem'>, scope: string): HeadmanOneOffIntent | null {
++  const raw = storage.getItem(scope)
++  if (!raw) return null
++  const value: unknown = JSON.parse(raw)
++  if (!isRecord(value) || typeof value.key !== 'string' || !isRecord(value.input)) throw new Error('Не удалось прочитать сохранённый запрос разовой пары.')
++  validateHeadmanIdempotencyKey(value.key)
++  validateOneOffKey(value.key)
++  const input = value.input
++  for (const field of ['groupId', 'subjectId', 'assignmentId', 'lessonNumber'] as const) assertNumericId(input[field] as number, field)
++  if (typeof input.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(input.date)
++    || typeof input.startTime !== 'string' || typeof input.endTime !== 'string'
++    || (input.classroom !== undefined && typeof input.classroom !== 'string')) throw new Error('Сохранённый запрос разовой пары повреждён.')
++  return { key: value.key, input: Object.freeze({ ...input }) as unknown as HeadmanOneOffCreateInput }
++}
++
++export function persistOneOffIntent(storage: Pick<Storage, 'setItem'>, scope: string, intent: HeadmanOneOffIntent): void {
++  validateHeadmanIdempotencyKey(intent.key)
++  validateOneOffKey(intent.key)
++  // Must succeed before POST: an unknown outcome must remain recoverable after refresh.
++  storage.setItem(scope, JSON.stringify(intent))
++}
++
+@@ -21,0 +72 @@ export interface HeadmanScheduleApiOptions {
++  assertCurrent?: () => void
+@@ -80,0 +132,19 @@ export class HeadmanScheduleApi {
++  async createOneOffLesson(input: Readonly<HeadmanOneOffCreateInput>, idempotencyKey: string): Promise<HeadmanOneOffLesson> {
++    validateOneOffKey(idempotencyKey)
++    const value = await this.request<unknown>('/api/schedule/one-off-lessons', {
++      method: 'POST', headers: { 'Idempotency-Key': idempotencyKey }, body: JSON.stringify(input),
++    })
++    const lesson = oneOffLesson(value)
++    if (lesson.groupId !== input.groupId || lesson.subjectId !== input.subjectId) throw new Error('Сервер вернул пару другого предмета или группы.')
++    return lesson
++  }
++
++  async listOneOffLessons(groupId: number, dateFrom: string, dateTo: string): Promise<readonly HeadmanOneOffLesson[]> {
++    assertNumericId(groupId, 'groupId')
++    const query = new URLSearchParams({ groupId: String(groupId), dateFrom, dateTo })
++    const value = await this.request<unknown>(`/api/schedule/one-off-lessons?${query}`)
++    const lessons = embeddedItems<unknown>(value, 'oneOffLessonResponseList').map(oneOffLesson)
++    if (lessons.some((lesson) => lesson.groupId !== groupId)) throw new Error('Сервер вернул разовые пары другой группы.')
++    return lessons
++  }
++
+@@ -109 +179,6 @@ export class HeadmanScheduleApi {
+-    if (response.ok) return response.json() as Promise<T>
++    this.options.assertCurrent?.()
++    if (response.ok) {
++      const value = await response.json() as T
++      this.options.assertCurrent?.()
++      return value
++    }
+@@ -140,0 +216 @@ export function createGenerationBoundHeadmanScheduleApi(
++    assertCurrent,
+@@ -154,0 +231,11 @@ export function createGenerationBoundHeadmanScheduleApi(
++function oneOffLesson(value: unknown): HeadmanOneOffLesson {
++  if (!isRecord(value)) throw new Error('Сервер не вернул разовую пару.')
++  for (const field of ['id', 'physicalLessonId', 'groupId', 'subjectId', 'semesterId', 'lessonNumber'] as const) assertNumericId(value[field] as number, field)
++  if (typeof value.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value.date)) throw new Error('Сервер не вернул дату разовой пары.')
++  return value as unknown as HeadmanOneOffLesson
++}
++
++function validateOneOffKey(value: string): void {
++  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) throw new Error('Для разовой пары нужен UUID запроса. Обнови браузер и повтори создание.')
++}
++

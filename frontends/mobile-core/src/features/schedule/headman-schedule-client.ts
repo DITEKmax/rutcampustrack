@@ -15,10 +15,61 @@ export type HeadmanScheduleAssignment = Assignment
 export type HeadmanScheduleSemester = Semester
 export type HeadmanScheduleCreateInput = CreateScheduleItemRequest
 
+// The generated snapshot predates the accepted ONE_OFF assignment/physical identity contract.
+export interface HeadmanOneOffCreateInput {
+  groupId: number
+  subjectId: number
+  assignmentId: number
+  date: string
+  lessonNumber: number
+  startTime: string
+  endTime: string
+  classroom?: string
+}
+
+export interface HeadmanOneOffLesson {
+  id: number
+  physicalLessonId: number
+  groupId: number
+  subjectId: number
+  semesterId: number
+  date: string
+  lessonNumber: number
+  classroom?: string | null
+}
+
+export interface HeadmanOneOffIntent {
+  key: string
+  input: Readonly<HeadmanOneOffCreateInput>
+}
+
+export function readOneOffIntent(storage: Pick<Storage, 'getItem'>, scope: string): HeadmanOneOffIntent | null {
+  const raw = storage.getItem(scope)
+  if (!raw) return null
+  const value: unknown = JSON.parse(raw)
+  if (!isRecord(value) || typeof value.key !== 'string' || !isRecord(value.input)) throw new Error('Не удалось прочитать сохранённый запрос разовой пары.')
+  validateHeadmanIdempotencyKey(value.key)
+  validateOneOffKey(value.key)
+  const input = value.input
+  for (const field of ['groupId', 'subjectId', 'assignmentId', 'lessonNumber'] as const) assertNumericId(input[field] as number, field)
+  if (typeof input.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(input.date)
+    || typeof input.startTime !== 'string' || typeof input.endTime !== 'string'
+    || (input.classroom !== undefined && typeof input.classroom !== 'string')) throw new Error('Сохранённый запрос разовой пары повреждён.')
+  return { key: value.key, input: Object.freeze({ ...input }) as unknown as HeadmanOneOffCreateInput }
+}
+
+export function persistOneOffIntent(storage: Pick<Storage, 'setItem'>, scope: string, intent: HeadmanOneOffIntent): void {
+  validateHeadmanIdempotencyKey(intent.key)
+  validateOneOffKey(intent.key)
+  // Must succeed before POST: an unknown outcome must remain recoverable after refresh.
+  storage.setItem(scope, JSON.stringify(intent))
+}
+
 export interface HeadmanScheduleApiOptions {
   accessToken: () => string | null
   onUnauthorized?: () => Promise<void>
   fetcher?: typeof fetch
+  assertCurrent?: () => void
 }
 
 export class HeadmanScheduleApiError extends Error {
@@ -78,6 +129,25 @@ export class HeadmanScheduleApi {
     })
   }
 
+  async createOneOffLesson(input: Readonly<HeadmanOneOffCreateInput>, idempotencyKey: string): Promise<HeadmanOneOffLesson> {
+    validateOneOffKey(idempotencyKey)
+    const value = await this.request<unknown>('/api/schedule/one-off-lessons', {
+      method: 'POST', headers: { 'Idempotency-Key': idempotencyKey }, body: JSON.stringify(input),
+    })
+    const lesson = oneOffLesson(value)
+    if (lesson.groupId !== input.groupId || lesson.subjectId !== input.subjectId) throw new Error('Сервер вернул пару другого предмета или группы.')
+    return lesson
+  }
+
+  async listOneOffLessons(groupId: number, dateFrom: string, dateTo: string): Promise<readonly HeadmanOneOffLesson[]> {
+    assertNumericId(groupId, 'groupId')
+    const query = new URLSearchParams({ groupId: String(groupId), dateFrom, dateTo })
+    const value = await this.request<unknown>(`/api/schedule/one-off-lessons?${query}`)
+    const lessons = embeddedItems<unknown>(value, 'oneOffLessonResponseList').map(oneOffLesson)
+    if (lessons.some((lesson) => lesson.groupId !== groupId)) throw new Error('Сервер вернул разовые пары другой группы.')
+    return lessons
+  }
+
   private async requestPaged<T>(path: (page: number) => string, key: string): Promise<readonly T[]> {
     const items: T[] = []
     let nextPath = path(0)
@@ -106,7 +176,12 @@ export class HeadmanScheduleApi {
     if (typeof init?.body === 'string' && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
-    if (response.ok) return response.json() as Promise<T>
+    this.options.assertCurrent?.()
+    if (response.ok) {
+      const value = await response.json() as T
+      this.options.assertCurrent?.()
+      return value
+    }
     if (response.status === 401 && !retried && this.options.onUnauthorized) {
       await this.options.onUnauthorized()
       return this.request<T>(path, init, true)
@@ -138,6 +213,7 @@ export function createGenerationBoundHeadmanScheduleApi(
   }
 
   const options: HeadmanScheduleApiOptions = {
+    assertCurrent,
     accessToken: () => {
       assertCurrent()
       return owner.accessTokenFor(generation)
@@ -150,6 +226,17 @@ export function createGenerationBoundHeadmanScheduleApi(
   }
   if (fetcher) options.fetcher = fetcher
   return new HeadmanScheduleApi(options)
+}
+
+function oneOffLesson(value: unknown): HeadmanOneOffLesson {
+  if (!isRecord(value)) throw new Error('Сервер не вернул разовую пару.')
+  for (const field of ['id', 'physicalLessonId', 'groupId', 'subjectId', 'semesterId', 'lessonNumber'] as const) assertNumericId(value[field] as number, field)
+  if (typeof value.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value.date)) throw new Error('Сервер не вернул дату разовой пары.')
+  return value as unknown as HeadmanOneOffLesson
+}
+
+function validateOneOffKey(value: string): void {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) throw new Error('Для разовой пары нужен UUID запроса. Обнови браузер и повтори создание.')
 }
 
 function validateHeadmanIdempotencyKey(value: string): void {

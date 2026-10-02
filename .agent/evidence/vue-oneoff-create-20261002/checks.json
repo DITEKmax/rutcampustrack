@@ -1,0 +1,81 @@
+{
+  "baseline": "996f590ca5b3fa947e2da111a332a3f58232da0a",
+  "branch": "codex/vue-oneoff-create-1002",
+  "scope": "ONE_OFF Vue creation/client, one adjacent replay/session test, own evidence",
+  "risk": "S2/3",
+  "rulesSha": "A208AA4380B64376A4EAD645AA0731C9F574077107DC9C44356F5C04D80F28FA",
+  "checks": [
+    {
+      "cwd": "frontends",
+      "passed": 3,
+      "exitCode": 0,
+      "chunk": "8631dd",
+      "command": "node node_modules/vitest/vitest.mjs run mobile-core/src/features/schedule/headman-schedule-client.test.ts --maxWorkers=1 --no-file-parallelism"
+    },
+    {
+      "cwd": "frontends",
+      "terminalChunk": "d3d744",
+      "sessionId": 78123,
+      "exitCode": 0,
+      "command": "node node_modules/vue-tsc/bin/vue-tsc.js -p pwa-vue/tsconfig.json --noEmit"
+    },
+    {
+      "chunk": "85ad01",
+      "exitCode": 1,
+      "classification": "new template formatting",
+      "warnings": 20,
+      "command": "node frontends/node_modules/eslint/bin/eslint.js <three owned schedule files> --max-warnings=0"
+    },
+    {
+      "chunk": "00fa2b",
+      "correction": "owned template formatting only",
+      "exitCode": 0,
+      "command": "node frontends/node_modules/eslint/bin/eslint.js frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue --fix --max-warnings=0"
+    },
+    {
+      "command": "node node_modules/vitest/vitest.mjs run mobile-core/src/features/schedule/headman-schedule-client.test.ts -t \"recovers the exact\" --maxWorkers=1 --no-file-parallelism",
+      "passed": 1,
+      "reason": "affected group/semester canonical guard",
+      "exitCode": 0,
+      "skipped": 2,
+      "chunk": "449be6",
+      "cwd": "frontends"
+    },
+    {
+      "cwd": "frontends",
+      "terminalChunk": "3de2ef",
+      "sessionId": 65727,
+      "exitCode": 0,
+      "command": "node node_modules/vue-tsc/bin/vue-tsc.js -p pwa-vue/tsconfig.json --noEmit"
+    },
+    {
+      "chunk": "6262f1",
+      "exitCode": 0,
+      "command": "node frontends/node_modules/eslint/bin/eslint.js frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue frontends/mobile-core/src/features/schedule/headman-schedule-client.ts frontends/mobile-core/src/features/schedule/headman-schedule-client.test.ts --max-warnings=0"
+    },
+    {
+      "command": "git diff --cached --check (owned scope only)",
+      "exitCode": 0
+    }
+  ],
+  "runtime": {
+    "status": "PENDING",
+    "containersStarted": false,
+    "reason": "No heavy/runtime lease; source review and integrated browser acceptance remain",
+    "buildStarted": false
+  },
+  "limits": [
+    "No full suite or provider/deploy claims",
+    "Missing archived design reference names recorded; existing UI approved",
+    "SessionStorage survives current-tab refresh; no new cross-tab persistence contract",
+    "Unknown outcome retained, no automatic abandonment"
+  ],
+  "productFiles": [
+    "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue",
+    "frontends/mobile-core/src/features/schedule/headman-schedule-client.ts"
+  ],
+  "testFiles": [
+    "frontends/mobile-core/src/features/schedule/headman-schedule-client.test.ts"
+  ],
+  "evidenceDiffFormat": "unified=0: avoids literal blank-context whitespace inside added evidence file; product diff unchanged"
+}

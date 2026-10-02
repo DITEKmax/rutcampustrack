@@ -432,11 +432,13 @@ public final class StudentApiModels {
     public record HomeworkSubject(String id, String name) {
     }
 
+    public enum HomeworkBindingMode { LESSON, DATE }
+
     @Schema(
             name = "StudentHomeworkItem",
             requiredProperties = {
-                    "id", "subject", "title", "description", "link", "lessonDate", "lessonNumber", "completed",
-                    "completedAt"
+                    "id", "subject", "title", "description", "link", "lessonDate", "lessonNumber", "bindingMode",
+                    "completed", "completedAt", "archived"
             }
     )
     public record HomeworkItem(
@@ -446,9 +448,11 @@ public final class StudentApiModels {
             String description,
             @Schema(nullable = true) String link,
             LocalDate lessonDate,
-            int lessonNumber,
+            @Schema(nullable = true, description = "Номер пары для LESSON; null для DATE") Integer lessonNumber,
+            HomeworkBindingMode bindingMode,
             boolean completed,
-            @Schema(nullable = true) Instant completedAt
+            @Schema(nullable = true) Instant completedAt,
+            boolean archived
     ) {
     }
 

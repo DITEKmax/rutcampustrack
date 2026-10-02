@@ -1,5 +1,7 @@
 package ru.rutcampustrack.mobilebff.runtime;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.Metadata;
@@ -81,6 +83,8 @@ class StudentHomeworkHttpGrpcIT {
     private static final long SEMESTER_ID = 9L;
     private static final long HOMEWORK_ID = 9001L;
     private static final long OLD_HOMEWORK_ID = 9002L;
+    private static final long DATE_HOMEWORK_ID = 9003L;
+    private static final long COMPLETED_DATE_HOMEWORK_ID = 9004L;
     private static final long SUBJECT_ID = 501L;
     private static final Instant SERVER_NOW = Instant.parse("2026-03-05T10:00:00Z");
     private static final String TOKEN_HEADER = "X-Internal-Token";
@@ -99,6 +103,7 @@ class StudentHomeworkHttpGrpcIT {
     private static final AtomicReference<Status> FORCED_HOMEWORK_STATUS = new AtomicReference<>();
     private static final AtomicReference<Status> FORCED_COMPLETION_STATUS = new AtomicReference<>();
     private static final AtomicReference<Status> FORCED_ACTIVE_SEMESTER_STATUS = new AtomicReference<>();
+    private static final AtomicReference<String> HOMEWORK_BINDING_MODE = new AtomicReference<>("");
     private static final AtomicInteger RPC_CALLS = new AtomicInteger();
     private static Server grpcServer;
 
@@ -107,6 +112,9 @@ class StudentHomeworkHttpGrpcIT {
 
     @Autowired
     private TestRestTemplate http;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private PublicKeyProvider bffPublicKeyProvider;
@@ -135,6 +143,7 @@ class StudentHomeworkHttpGrpcIT {
         FORCED_HOMEWORK_STATUS.set(null);
         FORCED_COMPLETION_STATUS.set(null);
         FORCED_ACTIVE_SEMESTER_STATUS.set(null);
+        HOMEWORK_BINDING_MODE.set("");
         RPC_CALLS.set(0);
         when(bffPublicKeyProvider.getPublicKey()).thenReturn(JWT.publicKey());
         when(bffClock.instant()).thenReturn(SERVER_NOW);
@@ -151,7 +160,7 @@ class StudentHomeworkHttpGrpcIT {
     }
 
     @Test
-    void signedStudentJwtTraversesGetAndPutAndSpoofedHeadersAreIgnored() {
+    void signedStudentJwtTraversesGetAndPutAndSpoofedHeadersAreIgnored() throws Exception {
         String token = validToken(STUDENT_ID, "STUDENT", "ACTIVE", GROUP_ID, false);
 
         ResponseEntity<String> feed = http.exchange(
@@ -169,6 +178,32 @@ class StudentHomeworkHttpGrpcIT {
                 .contains("\"id\":\"9002\"")
                 .contains("\"completedAt\":\"2026-03-05T08:00:00Z\"")
                 .contains("\"serverNow\":\"2026-03-05T10:00:00Z\"");
+        JsonNode items = objectMapper.readTree(feed.getBody()).get("items");
+        assertThat(items.size()).isEqualTo(4);
+        assertThat(items.get(0).get("id").asText()).isEqualTo("9002");
+        assertThat(items.get(1).get("id").asText()).isEqualTo("9001");
+        assertThat(items.get(2).get("id").asText()).isEqualTo("9003");
+        assertThat(items.get(3).get("id").asText()).isEqualTo("9004");
+        assertThat(items.get(0).get("bindingMode").asText()).isEqualTo("LESSON");
+        assertThat(items.get(0).get("lessonNumber").asInt()).isEqualTo(2);
+        assertThat(items.get(1).get("bindingMode").asText()).isEqualTo("LESSON");
+        assertThat(items.get(1).get("lessonNumber").asInt()).isEqualTo(1);
+        assertThat(items.get(1).get("archived").asBoolean()).isFalse();
+        JsonNode dateHomework = items.get(2);
+        assertThat(dateHomework.get("bindingMode").asText()).isEqualTo("DATE");
+        assertThat(dateHomework.get("lessonNumber").isNull()).isTrue();
+        assertThat(dateHomework.get("lessonDate").asText()).isEqualTo("2026-03-02");
+        assertThat(dateHomework.get("subject").get("name").asText()).isEqualTo("Алгоритмы");
+        assertThat(dateHomework.get("link").asText()).isEqualTo("https://example.test/date-homework");
+        assertThat(dateHomework.get("completed").asBoolean()).isFalse();
+        assertThat(dateHomework.get("completedAt").isNull()).isTrue();
+        assertThat(dateHomework.get("archived").asBoolean()).isFalse();
+        JsonNode completedDateHomework = items.get(3);
+        assertThat(completedDateHomework.get("bindingMode").asText()).isEqualTo("DATE");
+        assertThat(completedDateHomework.get("lessonNumber").isNull()).isTrue();
+        assertThat(completedDateHomework.get("completed").asBoolean()).isTrue();
+        assertThat(completedDateHomework.get("completedAt").asText()).isEqualTo("2026-03-05T08:00:00Z");
+        assertThat(completedDateHomework.get("archived").asBoolean()).isTrue();
         assertThat(LAST_HOMEWORK_REQUEST).hasValueSatisfying(request -> {
             assertThat(request.getGroupId()).isEqualTo(GROUP_ID);
             assertThat(request.getSemesterId()).isEqualTo(SEMESTER_ID);
@@ -469,6 +504,13 @@ class StudentHomeworkHttpGrpcIT {
                 url("/api/v1/student/homework/9001/completion"), HttpMethod.PUT,
                 new HttpEntity<>("{\"completed\":true}", headers(token, false)), String.class);
         assertProblem(unavailable, HttpStatus.SERVICE_UNAVAILABLE, "DEPENDENCY_UNAVAILABLE");
+
+        FORCED_HOMEWORK_STATUS.set(null);
+        HOMEWORK_BINDING_MODE.set("UNKNOWN");
+        ResponseEntity<String> unknownBindingMode = http.exchange(
+                url("/api/v1/student/homework?from=2026-03-01&to=2026-03-31"), HttpMethod.GET,
+                new HttpEntity<>(headers(token, false)), String.class);
+        assertProblem(unknownBindingMode, HttpStatus.SERVICE_UNAVAILABLE, "DEPENDENCY_UNAVAILABLE");
     }
 
     @Test
@@ -625,6 +667,18 @@ class StudentHomeworkHttpGrpcIT {
                             .setDescription("Конкурентная проверка")
                             .setLessonDate("2026-03-02")
                             .setLessonNumber(1)
+                            .setBindingMode(HOMEWORK_BINDING_MODE.get())
+                            .setCompleted(false)
+                            .build())
+                    .addHomeworks(HomeworkInfo.newBuilder()
+                            .setHomeworkId(DATE_HOMEWORK_ID)
+                            .setSubjectId(SUBJECT_ID)
+                            .setSubjectName("Алгоритмы")
+                            .setTitle("Задание на дату")
+                            .setDescription("Выбранная дата без пары")
+                            .setLink("https://example.test/date-homework")
+                            .setLessonDate("2026-03-02")
+                            .setBindingMode("DATE")
                             .setCompleted(false)
                             .build());
             if (request.getIncludeCompletedToday()) {
@@ -636,6 +690,19 @@ class StudentHomeworkHttpGrpcIT {
                         .setDescription("Завершено сегодня")
                         .setLessonDate("2026-02-20")
                         .setLessonNumber(2)
+                        .setBindingMode("LESSON")
+                        .setCompleted(true)
+                        .setCompletedAt("2026-03-05T08:00:00Z")
+                        .build());
+                response.addHomeworks(HomeworkInfo.newBuilder()
+                        .setHomeworkId(COMPLETED_DATE_HOMEWORK_ID)
+                        .setSubjectId(SUBJECT_ID)
+                        .setSubjectName("Алгоритмы")
+                        .setTitle("Завершённое задание на дату")
+                        .setDescription("Сохраняет completion")
+                        .setLessonDate("2026-03-02")
+                        .setBindingMode("DATE")
+                        .setArchived(true)
                         .setCompleted(true)
                         .setCompletedAt("2026-03-05T08:00:00Z")
                         .build());

@@ -206,7 +206,9 @@ public class StudentQueryService {
         List<HomeworkItem> items = response.getHomeworksList().stream()
                 .sorted(Comparator.comparing((HomeworkInfo item) -> LocalDate.parse(item.getLessonDate()))
                         .thenComparingInt(item -> item.getCompleted() ? 1 : 0)
-                        .thenComparingInt(HomeworkInfo::getLessonNumber)
+                        .thenComparing(item -> homeworkBindingMode(item.getBindingMode()) == HomeworkBindingMode.DATE
+                                        ? null : Integer.valueOf(item.getLessonNumber()),
+                                Comparator.nullsLast(Comparator.naturalOrder()))
                         .thenComparingLong(HomeworkInfo::getHomeworkId))
                 .map(StudentQueryService::homeworkItem)
                 .toList();
@@ -300,13 +302,28 @@ public class StudentQueryService {
     }
 
     private static HomeworkItem homeworkItem(HomeworkInfo item) {
+        HomeworkBindingMode bindingMode = homeworkBindingMode(item.getBindingMode());
         String link = item.getLink().isBlank() ? null : item.getLink();
         Instant completedAt = completionAt(item.getCompleted(), item.hasCompletedAt(), item.getCompletedAt());
         return new HomeworkItem(
                 Long.toString(item.getHomeworkId()),
                 new HomeworkSubject(Long.toString(item.getSubjectId()), item.getSubjectName()),
                 item.getTitle(), item.getDescription(), link,
-                LocalDate.parse(item.getLessonDate()), item.getLessonNumber(), item.getCompleted(), completedAt);
+                LocalDate.parse(item.getLessonDate()),
+                bindingMode == HomeworkBindingMode.DATE ? null : item.getLessonNumber(),
+                bindingMode, item.getCompleted(), completedAt, item.getArchived());
+    }
+
+    private static HomeworkBindingMode homeworkBindingMode(String value) {
+        if (value.isBlank()) {
+            return HomeworkBindingMode.LESSON;
+        }
+        try {
+            return HomeworkBindingMode.valueOf(value);
+        } catch (IllegalArgumentException error) {
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                    "Academic Service вернул неизвестный режим привязки ДЗ");
+        }
     }
 
     private static Instant completionAt(boolean completed, boolean hasCompletedAt, String rawCompletedAt) {

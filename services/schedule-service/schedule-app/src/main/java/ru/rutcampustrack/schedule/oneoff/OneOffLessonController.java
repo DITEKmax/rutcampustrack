@@ -9,7 +9,7 @@ import ru.rutcampustrack.schedule.contract.api.OneOffLessonApi;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.OneOffLessonResponse;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
-import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
+import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
 import ru.rutcampustrack.schedule.security.RequireRole;
 
 import java.time.LocalDate;
@@ -37,14 +37,14 @@ public class OneOffLessonController implements OneOffLessonApi {
     public ResponseEntity<EntityModel<OneOffLessonResponse>> createOneOffLesson(
             UUID idempotencyKey,
             CreateOneOffLessonRequest request) {
-        OneOffLesson saved = oneOffLessonService.createOneOffLesson(request, idempotencyKey);
+        OneOffCurrentLessonProjection saved = oneOffLessonService.createCurrentOneOffLesson(request, idempotencyKey);
         return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(saved));
     }
 
     @Override
     public ResponseEntity<CollectionModel<EntityModel<OneOffLessonResponse>>> listOneOffLessons(
             Long groupId, LocalDate dateFrom, LocalDate dateTo) {
-        List<OneOffLesson> items = oneOffLessonService.listOneOffLessons(groupId, dateFrom, dateTo);
+        List<OneOffCurrentLessonProjection> items = oneOffLessonService.listOneOffLessons(groupId, dateFrom, dateTo);
         List<EntityModel<OneOffLessonResponse>> models = items.stream()
                 .map(assembler::toModel)
                 .toList();

@@ -10,6 +10,20 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.http.MediaType;
+import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.academic.grpc.AssignmentInfo;
+import ru.rutcampustrack.academic.grpc.GroupResponse;
+import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
+import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
 import ru.rutcampustrack.schedule.event.EventConsumer;
@@ -30,6 +44,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** PostgreSQL proof for the transfer transaction, replay, fixed batches and wire ACKs. */
@@ -38,6 +55,7 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
 
     private static final AtomicLong FIXTURE_SEQUENCE = new AtomicLong(System.currentTimeMillis() * 1000L);
 
+    @MockitoBean private AcademicGrpcClient academic;
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private LessonTransferWriter transferWriter;
     @Autowired private EventConsumer eventConsumer;
@@ -218,6 +236,134 @@ class LessonTransferWriterIT extends AbstractScheduleIntegrationTest {
             if (row.path("id").asLong() == lessonId) return row;
         }
         throw new AssertionError("Reloaded schedule did not include target lesson " + lessonId);
+    }
+
+    @Test
+    void oneOffPublicTransferKeepsOriginAndBindingsAcrossRaceReplayAckAndRestore() throws Exception {
+        long seed = FIXTURE_SEQUENCE.incrementAndGet();
+        long group = seed + 10, subject = seed + 20, semester = seed + 30, actor = seed + 40;
+        LocalDate sourceDate = LocalDate.now(ZoneId.of("Europe/Moscow")).plusDays(30);
+        LocalDate targetDate = sourceDate.plusDays(1);
+        if (targetDate.getDayOfWeek().getValue() == 7) targetDate = targetDate.plusDays(1);
+        LocalDate until = targetDate.plusDays(5);
+        when(academic.isHeadman(actor, group)).thenReturn(true);
+        when(academic.validateGroup(group)).thenReturn(GroupResponse.newBuilder().setId(group).setIsActive(true).build());
+        when(academic.getActiveSemester()).thenReturn(SemesterResponse.newBuilder().setId(semester)
+                .setDateFrom(sourceDate.minusDays(2).toString()).setDateTo(until.minusDays(1).toString()).build());
+        when(academic.getSemesterArchiveAuthorityState(semester))
+                .thenReturn(SemesterStateResponse.newBuilder().setId(semester).setActive(true).build());
+        when(academic.getAssignmentsByIds(List.of(seed))).thenReturn(List.of(AssignmentInfo.newBuilder()
+                .setId(seed).setTeacherId(seed + 50).setGroupId(group).setSubjectId(subject).setSemesterId(semester)
+                .setLessonType("lecture").setValidFrom(sourceDate.minusDays(2).toString())
+                .setValidUntilExclusive(until.toString()).build()));
+        UUID createKey = UUID.randomUUID();
+        String createBody = objectMapper.writeValueAsString(new CreateOneOffLessonRequest(group, subject, seed,
+                sourceDate, (short) 2, LocalTime.of(9, 0), LocalTime.of(10, 30), "original"));
+        JsonNode created = objectMapper.readTree(mockMvc.perform(oneOffActor(post("/schedule/one-off-lessons"), actor, group)
+                .header("Idempotency-Key", createKey).contentType(MediaType.APPLICATION_JSON).content(createBody))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());
+        long origin = created.path("id").asLong(), source = created.path("physicalLessonId").asLong();
+        long occurrence = jdbcTemplate.queryForObject("SELECT occurrence_id FROM lessons WHERE id = ?", Long.class, source);
+        UUID bindingKey = UUID.randomUUID();
+        long binding = jdbcTemplate.queryForObject("""
+                INSERT INTO lesson_homework_bindings (occurrence_id, current_lesson_id, homework_id,
+                    actor_id, request_key, payload_hash, state, revision)
+                VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE', 1) RETURNING binding_id
+                """, Long.class, occurrence, source, seed + 60, actor, bindingKey, new byte[32]);
+        TransferLessonRequest request = new TransferLessonRequest(targetDate, 3, null, null, "moved", "1", UUID.randomUUID());
+        String body = objectMapper.writeValueAsString(request);
+        mockMvc.perform(oneOffActor(post("/schedule/lessons/{id}/transfer", source), actor + 1, group + 1)
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isForbidden());
+        JsonNode accepted;
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            CountDownLatch ready = new CountDownLatch(2), start = new CountDownLatch(1);
+            java.util.function.Supplier<JsonNode> command = () -> {
+                ready.countDown();
+                try {
+                    if (!start.await(10, TimeUnit.SECONDS)) throw new AssertionError("transfer race start timed out");
+                    return objectMapper.readTree(mockMvc.perform(oneOffActor(post("/schedule/lessons/{id}/transfer", source), actor, group)
+                            .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isAccepted())
+                            .andReturn().getResponse().getContentAsString());
+                } catch (Exception error) { throw new java.util.concurrent.CompletionException(error); }
+            };
+            var first = CompletableFuture.supplyAsync(command, executor);
+            var second = CompletableFuture.supplyAsync(command, executor);
+            assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue(); start.countDown();
+            accepted = first.get(20, TimeUnit.SECONDS);
+            assertThat(second.get(20, TimeUnit.SECONDS).path("operationId").asText())
+                    .isEqualTo(accepted.path("operationId").asText());
+        }
+        long target = accepted.path("targetLessonId").asLong();
+        assertThat(target).isPositive().isNotEqualTo(source);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lessons WHERE occurrence_id = ?", Long.class, occurrence)).isEqualTo(2);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_transfer_operations WHERE occurrence_id = ?", Long.class, occurrence)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForMap("SELECT date, lesson_number, classroom, physical_lesson_id FROM schedule_one_off_lessons WHERE id = ?", origin))
+                .containsEntry("date", java.sql.Date.valueOf(sourceDate))
+                .containsEntry("classroom", "original").containsEntry("physical_lesson_id", target);
+        assertThat(jdbcTemplate.queryForObject("SELECT lesson_number FROM schedule_one_off_lessons WHERE id = ?", Integer.class, origin)).isEqualTo(2);
+        assertThat(jdbcTemplate.queryForMap("SELECT occurrence_id, current_lesson_id, actor_id, request_key, revision, state FROM lesson_homework_bindings WHERE binding_id = ?", binding))
+                .containsEntry("occurrence_id", occurrence).containsEntry("current_lesson_id", target)
+                .containsEntry("actor_id", actor).containsEntry("request_key", bindingKey).containsEntry("revision", 2L).containsEntry("state", "ACTIVE");
+        mockMvc.perform(oneOffActor(post("/schedule/lessons/{id}/transfer", source), actor, group)
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(new TransferLessonRequest(
+                        targetDate, 4, null, null, "moved", "1", request.requestKey())))).andExpect(status().isConflict());
+        // A stale source cancellation must not cancel the new current physical generation.
+        mockMvc.perform(oneOffActor(patch("/schedule/lessons/{id}/cancel", source), actor, group)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"late old source\"}"))
+                .andExpect(status().isConflict());
+        JsonNode replay = objectMapper.readTree(mockMvc.perform(oneOffActor(post("/schedule/one-off-lessons"), actor, group)
+                .header("Idempotency-Key", createKey).contentType(MediaType.APPLICATION_JSON).content(createBody))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());
+        assertThat(replay.path("id").asLong()).isEqualTo(origin);
+        assertThat(replay.path("physicalLessonId").asLong()).isEqualTo(target);
+        assertThat(replay.path("date").asText()).isEqualTo(targetDate.toString());
+        JsonNode list = objectMapper.readTree(mockMvc.perform(oneOffActor(get("/schedule/one-off-lessons"), actor, group)
+                .param("groupId", Long.toString(group)).param("dateFrom", targetDate.toString()).param("dateTo", targetDate.toString()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(list.toString()).contains("\"physicalLessonId\":" + target).contains(targetDate.toString()).contains("moved");
+        JsonNode oldDay = objectMapper.readTree(mockMvc.perform(oneOffActor(get("/schedule/one-off-lessons"), actor, group)
+                .param("groupId", Long.toString(group)).param("dateFrom", sourceDate.toString()).param("dateTo", sourceDate.toString()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(oldDay.toString()).doesNotContain("\"physicalLessonId\":" + target);
+        var nextRequest = oneOffActor(get("/schedule/lessons/next"), actor, group).param("groupId", Long.toString(group))
+                .param("semesterId", Long.toString(semester)).param("subjectId", Long.toString(subject))
+                .param("lessonType", "LECTURE").param("fromDate", targetDate.toString());
+        mockMvc.perform(nextRequest).andExpect(status().isNoContent());
+        List<Map<String, Object>> batches = outboxStorage.findPending(1000).stream()
+                .filter(row -> row.eventType().equals("lesson.transfer.requested")).map(this::eventEnvelope)
+                .filter(event -> accepted.path("operationId").asText().equals(String.valueOf(payload(event).get("operation_id"))))
+                .toList();
+        assertThat(batches).hasSize(1);
+        assertThat(batches.getFirst().get("event_version")).isEqualTo(2);
+        Map<String, Object> batch = payload(batches.getFirst());
+        for (String side : List.of("source", "target")) {
+            Map<?, ?> snapshot = (Map<?, ?>) batch.get(side);
+            assertThat(snapshot.get("schedule_item_id")).isNull();
+            assertThat(((Number) snapshot.get("one_off_lesson_id")).longValue()).isEqualTo(origin);
+        }
+        transferWriter.republishPendingBatches();
+        ack(batch, "attendance-service", "ATTENDANCE", -1, "APPLIED");
+        ack(batch, "academic-service", "ACADEMIC", 0, "APPLIED");
+        assertThat(transferWriter.status(UUID.fromString(accepted.path("operationId").asText())).state()).isEqualTo("COMPLETED");
+        JsonNode next = objectMapper.readTree(mockMvc.perform(oneOffActor(get("/schedule/lessons/next"), actor, group)
+                .param("groupId", Long.toString(group)).param("semesterId", Long.toString(semester))
+                .param("subjectId", Long.toString(subject)).param("lessonType", "LECTURE").param("fromDate", targetDate.toString()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(next.path("lessonId").asLong()).isEqualTo(target);
+        assertThat(next.path("occurrenceId").asLong()).isEqualTo(occurrence);
+        mockMvc.perform(oneOffActor(patch("/schedule/lessons/{id}/cancel", target), actor, group)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"current canceled\"}")).andExpect(status().isOk());
+        mockMvc.perform(oneOffActor(patch("/schedule/lessons/{id}/restore", target), actor, group)).andExpect(status().isOk());
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, target)).isEqualTo("planned");
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id = ?", String.class, source)).isEqualTo("transferred");
+        assertThat(jdbcTemplate.queryForObject("SELECT current_lesson_id FROM lesson_occurrences WHERE id = ?", Long.class, occurrence)).isEqualTo(target);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lessons WHERE occurrence_id = ?", Long.class, occurrence)).isEqualTo(2);
+    }
+
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder oneOffActor(
+            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request, long actor, long group) {
+        return request.header("X-User-Id", actor).header("X-User-Role", "STUDENT")
+                .header("X-Group-Id", group).header("X-Is-Headman", "true");
     }
 
     private void ack(Map<String, Object> requestPayload, String source, String participant,

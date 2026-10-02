@@ -1,0 +1,20 @@
+{
+  "baseline": "60c0ff8b22bcd54f55f9bf9c7a21af8e8e9f5e7b",
+  "source_diff_check": {
+    "command": "git diff --check -- services/schedule-service",
+    "exit_code": 0
+  },
+  "mechanical": {
+    "V25_guard_body_preservation": "PASS exact bodies after prefix removal",
+    "target_insert_columns_values": "PASS28/28"
+  },
+  "compile": "not run; no heavy lease",
+  "runtime": "not run",
+  "review": "pending stable source",
+  "resource_handles": [],
+  "limitations": [
+    "Consumer v2 dedicated author/root integration pending",
+    "Fake component ACK verifies Schedule state machine only, not actual marks application",
+    "Foreign .agent/transfer-attendance-evidence.md preserved"
+  ]
+}

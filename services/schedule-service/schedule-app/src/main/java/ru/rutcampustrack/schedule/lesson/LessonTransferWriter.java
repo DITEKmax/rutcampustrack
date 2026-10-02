@@ -16,6 +16,7 @@ import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.event.LessonTransferRequestedEvent;
+import ru.rutcampustrack.schedule.event.OneOffLessonTransferRequestedEvent;
 import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 
 import java.security.MessageDigest;
@@ -75,9 +76,6 @@ public class LessonTransferWriter {
         try {
             Map<String, Object> before = readSource(sourceLessonId);
             long occurrenceId = number(before.get("occurrence_id"));
-            if (before.get("schedule_item_id") == null) {
-                throw new ConflictException("Перенос этой пары вне текущего цикла расписания не поддерживается");
-            }
             // Academic is checked before the local advisory lock. The exact
             // same lock as PREPARE then serializes acceptance against the
             // assignment/item/occurrence/binding lock chain.
@@ -86,7 +84,7 @@ public class LessonTransferWriter {
             replay = findReplay(actorId, request.requestKey(), requestHash);
             if (replay != null) return replay;
             lockFences(List.of(number(before.get("assignment_id"))));
-            lockItems(List.of(number(before.get("schedule_item_id"))));
+            lockOrigin(before);
             Map<String, Object> current = lockOccurrence(occurrenceId);
             Map<String, Object> source = lockSource(sourceLessonId, occurrenceId);
             requireCurrent(sourceLessonId, source, current, request.expectedRevision());
@@ -191,6 +189,16 @@ public class LessonTransferWriter {
             }
             insertTargetLesson(source, targetLessonId, targetDate, targetDay, targetNumber,
                     targetStart, targetEnd, targetRoom, generation + 1, now);
+            if (source.get("one_off_lesson_id") != null) {
+                int originUpdated = jdbc.update("""
+                        UPDATE schedule_one_off_lessons SET physical_lesson_id = ?
+                         WHERE id = ? AND physical_lesson_id = ? AND group_id = ?
+                           AND subject_id = ? AND semester_id = ?
+                        """, targetLessonId, number(source.get("one_off_lesson_id")), sourceLessonId,
+                        number(source.get("group_id")), number(source.get("subject_id")),
+                        number(source.get("semester_id")));
+                if (originUpdated != 1) throw new ConflictException("Текущая разовая пара изменилась во время переноса");
+            }
             // Persist the exact immutable participant batches before changing
             // bindings. V21's binding guard validates each mutation against
             // this durable snapshot inside the same transaction.
@@ -205,7 +213,7 @@ public class LessonTransferWriter {
                         VALUES (?, ?, ?, ?::jsonb, ?, ?)
                         """, operationId, index, batchHash, json(eventPayload),
                         bindingBatches.get(index).size(), now);
-                eventPublisher.publishEvent(new LessonTransferRequestedEvent(this, eventPayload));
+                publishTransfer(eventPayload);
             }
             moveBindings(occurrenceId, sourceLessonId, targetLessonId, bindings);
             jdbc.update("""
@@ -280,8 +288,7 @@ public class LessonTransferWriter {
                  LIMIT 256
                 """);
         for (Map<String, Object> row : rows) {
-            eventPublisher.publishEvent(new LessonTransferRequestedEvent(this,
-                    readObject(String.valueOf(row.get("payload")))));
+            publishTransfer(readObject(String.valueOf(row.get("payload"))));
         }
         return rows.size();
     }
@@ -437,6 +444,16 @@ public class LessonTransferWriter {
         }
     }
 
+    private void publishTransfer(Map<String, Object> payload) {
+        // Version is recoverable from the immutable stored snapshot; never consult current rows.
+        Object source = payload.get("source");
+        if (source instanceof Map<?, ?> snapshot && snapshot.get("one_off_lesson_id") != null) {
+            eventPublisher.publishEvent(new OneOffLessonTransferRequestedEvent(this, payload));
+        } else {
+            eventPublisher.publishEvent(new LessonTransferRequestedEvent(this, payload));
+        }
+    }
+
     private void lockRequestKey(long actorId, UUID requestKey) {
         jdbc.execute((ConnectionCallback<Void>) connection -> {
             try (PreparedStatement statement = connection.prepareStatement(
@@ -471,7 +488,7 @@ public class LessonTransferWriter {
     private Map<String, Object> readSource(long lessonId) {
         try {
             return jdbc.queryForMap("""
-                    SELECT l.id AS lesson_id, l.schedule_item_id, l.occurrence_id, l.assignment_id,
+                    SELECT l.id AS lesson_id, l.schedule_item_id, l.one_off_lesson_id, l.occurrence_id, l.assignment_id,
                            l.group_id, l.subject_id, l.semester_id, l.assigned_teacher_id, l.lesson_type,
                            l.date, l.status::text AS status, l.lesson_number, l.day_of_week,
                            l.start_time, l.end_time, l.room_snapshot, l.week_type_snapshot,
@@ -490,7 +507,7 @@ public class LessonTransferWriter {
 
     private Map<String, Object> lockOccurrence(long occurrenceId) {
         return jdbc.queryForMap("""
-                SELECT id, schedule_item_id, assignment_id, assigned_teacher_id,
+                SELECT id, schedule_item_id, one_off_lesson_id, assignment_id, assigned_teacher_id,
                        group_id, subject_id, semester_id, lesson_type, occurrence_date,
                        generation, revision, current_lesson_id
                   FROM lesson_occurrences WHERE id = ? FOR UPDATE
@@ -499,7 +516,7 @@ public class LessonTransferWriter {
 
     private Map<String, Object> lockSource(long lessonId, long occurrenceId) {
         return jdbc.queryForMap("""
-                SELECT l.id AS lesson_id, l.schedule_item_id, l.occurrence_id, l.assignment_id,
+                SELECT l.id AS lesson_id, l.schedule_item_id, l.one_off_lesson_id, l.occurrence_id, l.assignment_id,
                        l.group_id, l.subject_id, l.semester_id, l.assigned_teacher_id, l.lesson_type,
                        l.date, l.status::text AS status, l.lesson_number, l.day_of_week,
                        l.start_time, l.end_time, l.room_snapshot, l.week_type_snapshot,
@@ -517,7 +534,9 @@ public class LessonTransferWriter {
 
     private void requireCurrent(long lessonId, Map<String, Object> source,
                                 Map<String, Object> occurrence, String expectedRevision) {
-        if (number(occurrence.get("current_lesson_id")) != lessonId
+        if (!java.util.Objects.equals(occurrence.get("schedule_item_id"), source.get("schedule_item_id"))
+                || !java.util.Objects.equals(occurrence.get("one_off_lesson_id"), source.get("one_off_lesson_id"))
+                || number(occurrence.get("current_lesson_id")) != lessonId
                 || number(occurrence.get("revision")) != parsePositive(expectedRevision)
                 || number(source.get("occurrence_revision")) != parsePositive(expectedRevision)
                 || number(occurrence.get("generation")) != number(source.get("generation"))
@@ -599,9 +618,9 @@ public class LessonTransferWriter {
                      is_blocked_by_headman, blocked_by_user_id, blocked_at, cancel_reason,
                      cancelled_by, cancelled_at, created_at)
                 OVERRIDING SYSTEM VALUE
-                VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?,
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?,
                         'planned'::lesson_status, ?, ?, ?, ?, NULL, NULL, NULL, ?)
-                """, targetLessonId, number(source.get("schedule_item_id")),
+                """, targetLessonId, source.get("schedule_item_id"), source.get("one_off_lesson_id"),
                 number(source.get("occurrence_id")), number(source.get("assignment_id")),
                 number(source.get("group_id")), number(source.get("subject_id")),
                 number(source.get("semester_id")), number(source.get("assigned_teacher_id")),
@@ -647,6 +666,28 @@ public class LessonTransferWriter {
         }
     }
 
+    private void lockOrigin(Map<String, Object> source) {
+        Object item = source.get("schedule_item_id");
+        Object oneOff = source.get("one_off_lesson_id");
+        if ((item == null) == (oneOff == null)) throw new ConflictException("Не найден точный источник пары");
+        if (item != null) {
+            lockItems(List.of(number(item)));
+            return;
+        }
+        List<Map<String, Object>> rows = jdbc.queryForList("""
+                SELECT id, physical_lesson_id, group_id, subject_id, semester_id
+                  FROM schedule_one_off_lessons WHERE id = ? FOR UPDATE
+                """, number(oneOff));
+        if (rows.size() != 1) throw new ConflictException("Источник разовой пары изменился");
+        Map<String, Object> origin = rows.getFirst();
+        if (!java.util.Objects.equals(origin.get("physical_lesson_id"), source.get("lesson_id"))
+                || !java.util.Objects.equals(origin.get("group_id"), source.get("group_id"))
+                || !java.util.Objects.equals(origin.get("subject_id"), source.get("subject_id"))
+                || !java.util.Objects.equals(origin.get("semester_id"), source.get("semester_id"))) {
+            throw new ConflictException("Текущая разовая пара изменилась; обнови расписание");
+        }
+    }
+
     private void lockItems(List<Long> itemIds) {
         for (long id : itemIds.stream().distinct().sorted().toList()) {
             List<Map<String, Object>> rows = jdbc.queryForList(
@@ -675,6 +716,10 @@ public class LessonTransferWriter {
         putSnapshot(snapshot, source, "lesson_revision", "revision");
         putSnapshot(snapshot, source, "occurrence_revision", "occurrence_revision");
         putSnapshot(snapshot, source, "room", "room_snapshot");
+        // V1 recurring payload/hash stays byte-for-byte compatible with persisted replays.
+        if (source.get("one_off_lesson_id") != null) {
+            putSnapshot(snapshot, source, "one_off_lesson_id", "one_off_lesson_id");
+        }
         return snapshot;
     }
 

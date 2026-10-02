@@ -7,6 +7,7 @@ import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
+import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
 
@@ -31,19 +32,26 @@ public class OneOffLessonService {
         this.context = context;
     }
 
+    /** Internal callers retain the immutable origin entity; public responses use the current snapshot. */
     public OneOffLesson createOneOffLesson(CreateOneOffLessonRequest request, UUID requestKey) {
         long id = coordinator.create(request, requestKey);
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("OneOffLesson", "id", id));
     }
 
+    public OneOffCurrentLessonProjection createCurrentOneOffLesson(CreateOneOffLessonRequest request, UUID requestKey) {
+        long id = coordinator.create(request, requestKey);
+        return repository.findCurrentSnapshot(id)
+                .orElseThrow(() -> new ResourceNotFoundException("OneOffLesson", "id", id));
+    }
+
     @Transactional(readOnly = true)
-    public List<OneOffLesson> listOneOffLessons(Long groupId, LocalDate dateFrom, LocalDate dateTo) {
+    public List<OneOffCurrentLessonProjection> listOneOffLessons(Long groupId, LocalDate dateFrom, LocalDate dateTo) {
         if (context.getRole() != UserRole.ADMIN && context.getRole() != UserRole.TEACHER
                 && !java.util.Objects.equals(context.getGroupId(), groupId)) {
             throw new AccessDeniedException("Разовая пара принадлежит другой группе");
         }
-        return repository.findByGroupIdAndDateBetween(groupId, dateFrom, dateTo);
+        return repository.findCurrentSnapshots(groupId, dateFrom, dateTo);
     }
 
     /** DELETE cancels the current physical lesson and retains its origin/history. */

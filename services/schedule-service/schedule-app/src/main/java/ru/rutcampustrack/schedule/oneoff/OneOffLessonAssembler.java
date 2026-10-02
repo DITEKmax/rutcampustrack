@@ -3,18 +3,18 @@ package ru.rutcampustrack.schedule.oneoff;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.OneOffLessonResponse;
-import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
+import ru.rutcampustrack.schedule.oneoff.projection.OneOffCurrentLessonProjection;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
- * Converts {@link OneOffLesson} JPA entities to HATEOAS {@link EntityModel}s.
+ * Converts {@link OneOffCurrentLessonProjection} snapshots to HATEOAS {@link EntityModel}s.
  */
 @Component
 public class OneOffLessonAssembler {
 
-    public EntityModel<OneOffLessonResponse> toModel(OneOffLesson entity) {
+    public EntityModel<OneOffLessonResponse> toModel(OneOffCurrentLessonProjection entity) {
         OneOffLessonResponse body = new OneOffLessonResponse(
                 entity.getId(),
                 entity.getPhysicalLessonId(),

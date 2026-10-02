@@ -42,13 +42,16 @@ public class UserController implements UserApi {
     private final UserService userService;
     private final UserAssembler userAssembler;
     private final UserRoleGrantReader grantReader;
+    private final UserArchiveService archiveService;
 
     public UserController(UserService userService,
                           UserAssembler userAssembler,
-                          UserRoleGrantReader grantReader) {
+                          UserRoleGrantReader grantReader,
+                          UserArchiveService archiveService) {
         this.userService = userService;
         this.userAssembler = userAssembler;
         this.grantReader = grantReader;
+        this.archiveService = archiveService;
     }
 
     @Override
@@ -114,8 +117,25 @@ public class UserController implements UserApi {
     @RequireRole({ADMIN})
     @AdminAction("user.archive")
     public ResponseEntity<Void> archiveUser(Long id) {
-        userService.archiveUser(id);
-        return ResponseEntity.noContent().build();
+        throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.CONFLICT, "protectedroute_required");
+    }
+
+    @Override @RequireRole({ADMIN})
+    public ResponseEntity<ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.Preview> previewUserArchive(Long id) {
+        return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore()).body(archiveService.preview(id));
+    }
+    @Override @RequireRole({ADMIN}) @AdminAction("user.archive")
+    public ResponseEntity<Void> archiveUserProtected(Long id,
+            ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.ArchiveRequest request) {
+        archiveService.archive(id,request);
+        return ResponseEntity.noContent().cacheControl(org.springframework.http.CacheControl.noStore()).build();
+    }
+    @Override @RequireRole({ADMIN}) @AdminAction("user.restore")
+    public ResponseEntity<Void> restoreUser(Long id,
+            ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.RestoreRequest request) {
+        archiveService.restore(id,request);
+        return ResponseEntity.noContent().cacheControl(org.springframework.http.CacheControl.noStore()).build();
     }
 
     @Override

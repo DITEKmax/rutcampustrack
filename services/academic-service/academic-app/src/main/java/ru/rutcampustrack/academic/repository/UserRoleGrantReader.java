@@ -17,8 +17,9 @@ public class UserRoleGrantReader {
 
     private static final String BASE_SQL = """
             SELECT g.user_id, g.role, g.status, g.group_id,
-                   grp.name AS group_name
+                   grp.name AS group_name, u.status::text AS user_status
             FROM user_role_grants g
+            JOIN users u ON u.id=g.user_id
             LEFT JOIN groups grp ON grp.id = g.group_id
             WHERE g.user_id IN (%s)
             ORDER BY g.user_id, g.id
@@ -59,6 +60,8 @@ public class UserRoleGrantReader {
         String role = rs.getString("role").toUpperCase(java.util.Locale.ROOT);
         String status = rs.getString("status").toUpperCase(java.util.Locale.ROOT);
         boolean selectable = "ACTIVE".equals(status);
+        boolean freshAssignment = "ARCHIVED".equals(status) && !"archived".equals(rs.getString("user_status"))
+                && List.of("STUDENT","TEACHER","ADMIN").contains(role);
         return new RoleGrantViewResponse(
                 role,
                 status,
@@ -67,8 +70,8 @@ public class UserRoleGrantReader {
                 selectable,
                 !selectable,
                 applicableStatuses(role),
-                canUpdate(role, status),
-                blockedReason(role, status));
+                freshAssignment || canUpdate(role, status),
+                freshAssignment ? null : blockedReason(role, status));
     }
 
     private static List<String> applicableStatuses(String role) {

@@ -36,6 +36,19 @@ service AttendanceRequestBotGrpcService {
 
 // Directed, read-only semester deletion preview. The caller authenticates with
 // the existing internal service credential; no student identity is accepted.
+// Directed read-only user impact. snapshot_digest identifies the returned count,
+// not a durable version or an atomic snapshot shared with Academic.
+service AttendanceUserImpactGrpcService {
+  rpc PreviewUserImpact (UserImpactRequest) returns (UserImpactSnapshot);
+}
+message UserImpactRequest { int64 user_id = 1; }
+message UserImpactSnapshot {
+  int64 user_id = 1;
+  int64 attendance_marks_count = 2;
+  int64 observed_at_epoch_ms = 3;
+  string snapshot_digest = 4;
+}
+
 service AttendanceSemesterDeletionGrpcService {
   rpc PreviewSemesterDeletion (SemesterDeletionPreviewRequest)
       returns (SemesterDeletionParticipantPreview);

@@ -261,11 +261,13 @@ public class UserService {
         validateRoleStatus(role, status);
         String previousStatus = current.map(grant -> grant.status().toUpperCase(java.util.Locale.ROOT))
                 .orElse(null);
-        if ("ARCHIVED".equals(previousStatus)) {
+        boolean freshAssignment = "ARCHIVED".equals(previousStatus)
+                && user.getStatus() != AccountStatus.ARCHIVED;
+        if ("ARCHIVED".equals(previousStatus) && !freshAssignment) {
             throw new BadRequestException("Архивную роль нельзя изменить через этот endpoint");
         }
 
-        if (role == UserRole.ADMIN && current.isPresent() && !"ACTIVE".equals(current.get().status())) {
+        if (role == UserRole.ADMIN && current.isPresent() && !"ACTIVE".equals(current.get().status()) && !freshAssignment) {
             throw new BadRequestException("Неактивную роль ADMIN нельзя реактивировать в этом пакете");
         }
 
@@ -276,7 +278,7 @@ public class UserService {
         }
         boolean createdStudentHistory = false;
         if (role == UserRole.STUDENT) {
-            if (current.isPresent()) {
+            if (current.isPresent() && !freshAssignment) {
                 if (request.groupId() != null && !java.util.Objects.equals(request.groupId(), grantGroupId)) {
                     throw HistoricalMembershipException.unsupported(
                         "Изменение группы выполняется только через перевод с причиной");
@@ -291,18 +293,25 @@ public class UserService {
                     applyStudentTelegram(user, request.telegramId());
                 }
             } else {
-                if (request.groupId() == null || request.telegramId() == null) {
+                Long telegram = request.telegramId() != null ? request.telegramId() : user.getTelegramId();
+                if (request.groupId() == null || telegram == null) {
                     throw new BadRequestException("Для добавления STUDENT нужны группа и Telegram ID");
                 }
                 EnrollmentContext enrollment = prepareInitialEnrollment(request.groupId());
                 grantGroupId = enrollment.group().getId();
-                applyStudentTelegram(user, request.telegramId());
+                if (freshAssignment) {
+                    requireCoveredGroup(enrollment.group(), LocalDate.now(MOSCOW));
+                    if (!studentGroupHistoryRepository.findOpenByUserIdForUpdate(id).isEmpty()) {
+                        throw HistoricalMembershipException.precondition("Fresh role assignment cannot overlap membership");
+                    }
+                }
+                applyStudentTelegram(user, telegram);
                 StudentGroupHistory history = new StudentGroupHistory();
                 history.setUserId(user.getId());
                 history.setGroupId(grantGroupId);
-                history.setJoinedAt(enrollment.semester().getDateFrom());
+                history.setJoinedAt(freshAssignment ? LocalDate.now(MOSCOW) : enrollment.semester().getDateFrom());
                 history.setCreatedAt(OffsetDateTime.now());
-                history.setReason("initial-enrollment");
+                history.setReason(freshAssignment ? "role-reassignment" : "initial-enrollment");
                 studentGroupHistoryRepository.save(history);
                 createdStudentHistory = true;
             }
@@ -340,6 +349,7 @@ public class UserService {
         // deliberate neutral marker so synchronize() preserves the durable
         // role-specific status instead of reactivating or rewriting it.
         if (role == user.getRole()) {
+            if (freshAssignment && role == UserRole.STUDENT) user.setGroupId(grantGroupId);
             switch (status) {
                 case ACTIVE -> user.setStatus(AccountStatus.ACTIVE);
                 case EXPELLED -> user.setStatus(AccountStatus.EXPELLED);
@@ -591,6 +601,10 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User patchUser(Long id, PatchUserRequest request) {
+        if (request != null && request.status() == AccountStatus.ARCHIVED) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT, "protectedroute_required");
+        }
         boolean profileOnlyPatch = request != null
                 && request.isHeadman() == null
                 && request.groupId() == null

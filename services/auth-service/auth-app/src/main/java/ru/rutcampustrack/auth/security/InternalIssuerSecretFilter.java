@@ -30,6 +30,7 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
             "/internal/auth/confirm-semester-deletion";
     private static final String MAP_DELETE_CONFIRMATION_PATH =
             "/internal/auth/confirm-map-deletion";
+    private static final String USER_ARCHIVE_CONFIRMATION_PATH = "/internal/auth/confirm-user-archive";
 
     private static final Logger log = LoggerFactory.getLogger(InternalIssuerSecretFilter.class);
 
@@ -68,13 +69,15 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
 
     private static boolean isPasswordConfirmationRequest(HttpServletRequest request) {
         if (SEMESTER_DELETE_CONFIRMATION_PATH.equals(request.getServletPath())
-                || MAP_DELETE_CONFIRMATION_PATH.equals(request.getServletPath())) {
+                || MAP_DELETE_CONFIRMATION_PATH.equals(request.getServletPath())
+                || USER_ARCHIVE_CONFIRMATION_PATH.equals(request.getServletPath())) {
             return true;
         }
         String contextPath = request.getContextPath();
         String prefix = contextPath == null ? "" : contextPath;
         return (prefix + SEMESTER_DELETE_CONFIRMATION_PATH).equals(request.getRequestURI())
-                || (prefix + MAP_DELETE_CONFIRMATION_PATH).equals(request.getRequestURI());
+                || (prefix + MAP_DELETE_CONFIRMATION_PATH).equals(request.getRequestURI())
+                || (prefix + USER_ARCHIVE_CONFIRMATION_PATH).equals(request.getRequestURI());
     }
 
     private static void writeUnauthorized(HttpServletResponse response, String message) throws IOException {

@@ -127,6 +127,20 @@ public interface UserApi {
     @DeleteMapping("/{id}")
     ResponseEntity<Void> archiveUser(@PathVariable Long id);
 
+    @Operation(summary = "Предпросмотр архивирования; количества наблюдаются отдельно по сервисам")
+    @GetMapping("/{id}/archive-preview")
+    ResponseEntity<ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.Preview> previewUserArchive(@PathVariable Long id);
+
+    @Operation(summary = "Архивировать пользователя по подтверждённому предпросмотру")
+    @PostMapping("/{id}/archive")
+    ResponseEntity<Void> archiveUserProtected(@PathVariable Long id,
+        @Valid @RequestBody ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.ArchiveRequest request);
+
+    @Operation(summary = "Восстановить аккаунт без активных полномочий; роли назначаются заново")
+    @PostMapping("/{id}/restore")
+    ResponseEntity<Void> restoreUser(@PathVariable Long id,
+        @Valid @RequestBody ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.RestoreRequest request);
+
     @Operation(summary = "Перевести студента в другую группу")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Студент переведён"),

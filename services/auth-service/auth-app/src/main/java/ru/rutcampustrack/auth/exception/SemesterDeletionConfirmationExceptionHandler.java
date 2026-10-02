@@ -25,7 +25,8 @@ import java.util.Map;
 
 /** Keeps request secrets out of validation and denial responses for this internal route. */
 @RestControllerAdvice(assignableTypes = {InternalSemesterDeletionConfirmationController.class,
-        InternalMapDeletionConfirmationController.class})
+        InternalMapDeletionConfirmationController.class,
+        ru.rutcampustrack.auth.controller.InternalUserArchiveConfirmationController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public final class SemesterDeletionConfirmationExceptionHandler {
 

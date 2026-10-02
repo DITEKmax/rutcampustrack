@@ -66,6 +66,11 @@ public final class SemesterDeletionConfirmationService {
         confirmPassword(request.internalToken(), request.password());
     }
 
+    public void confirmUserArchive(ru.rutcampustrack.auth.dto.ConfirmUserArchiveRequest request) {
+        Objects.requireNonNull(request, "request");
+        confirmPassword(request.internalToken(), request.password());
+    }
+
     private void confirmPassword(String internalToken, String password) {
         SessionPrincipal principal = parsePrincipal(internalToken);
         SessionSnapshot current = authService.admit(principal);

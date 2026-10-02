@@ -186,7 +186,7 @@ class HomeworkEditLifecycleIT {
             Homework homework = new Homework(group, subject, semester, "moved", null, null, actor,
                     yesterday, 1, binding + 3, actor, movedKey, createHash);
             homework.activatePublication();
-            homework.applyEdit(new HomeworkSnapshot("current", null, null, HomeworkBindingMode.LESSON, day, 1), java.time.OffsetDateTime.now());
+            homework.applyEdit(new HomeworkSnapshot("current", null, null, HomeworkBindingMode.LESSON, day, 1), java.time.OffsetDateTime.now(boundaryClock));
             return repository.saveAndFlush(homework);
         });
         var movedOriginal = new CreateHomeworkRequest("moved", null, null, subject, group, semester, yesterday, 1, movedKey);
@@ -198,7 +198,7 @@ class HomeworkEditLifecycleIT {
             Homework homework = new Homework(group, subject, semester, "future-original", null, null, actor,
                     day, null, binding + 4, actor, expiredKey, createHash, HomeworkBindingMode.DATE);
             homework.activatePublication();
-            homework.applyEdit(new HomeworkSnapshot("past-current", null, null, HomeworkBindingMode.DATE, yesterday, null), java.time.OffsetDateTime.now());
+            homework.applyEdit(new HomeworkSnapshot("past-current", null, null, HomeworkBindingMode.DATE, yesterday, null), java.time.OffsetDateTime.now(boundaryClock));
             return repository.saveAndFlush(homework);
         });
         long countBefore = jdbc.queryForObject("SELECT count(*) FROM homeworks WHERE semester_id = ?", Long.class, semester);

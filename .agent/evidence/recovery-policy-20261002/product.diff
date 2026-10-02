@@ -1,0 +1,131 @@
+diff --git a/docs/operations/runbooks/backup-restore.md b/docs/operations/runbooks/backup-restore.md
+index 32066b1f..d0e78409 100644
+--- a/docs/operations/runbooks/backup-restore.md
++++ b/docs/operations/runbooks/backup-restore.md
+@@ -49 +49 @@ Bot отправляет attachment bytes в памяти; отдельного
+-| Redis | `redis-data:/data` | Cache/OTP/оперативное состояние; этот комплект не сохраняет Redis snapshot |
++| Redis | `redis-data:/data` | Настройки уведомлений, OTP/rate limits, одноразовые tickets и bot dedup; этот комплект не сохраняет Redis snapshot |
+@@ -112,0 +113,123 @@ Offsite-копия и отдельное восстановление секре
++## Redis/Rabbit: preflight и границы восстановления
++
++Ниже — операторский порядок для текущей конфигурации, а не проверенный production
++DR. Команды discovery только читают состояние; в рамках подготовки они не
++выполнялись. Запускать их можно лишь на явно выбранном окружении. Не выводить
++`.env`, Docker `Config.Env`, cookie или содержимое Redis keys.
++
++Текущий Compose задаёт `rct-redis`, Redis 7 Alpine, `redis-data:/data`, 96 MiB и
++`allkeys-lru`, без явного включения AOF. RabbitMQ 3.13 management использует
++`rct-rabbitmq`, `rabbitmq-data:/var/lib/rabbitmq`; hostname/nodename в Compose
++не закреплён. `container_name` не доказывает прежний nodename. Фактические имена
++volumes зависят от Compose project; сначала установи их, image digest и hostname:
++
++```bash
++docker inspect --format '{{.Name}} {{.Config.Image}} {{.Config.Hostname}} {{index .Config.Labels "com.docker.compose.project"}}' rct-redis rct-rabbitmq
++docker inspect --format '{{json .Mounts}}' rct-redis rct-rabbitmq
++# REDISCLI_AUTH заранее предоставлен оператору защищённым способом, не аргументом -a.
++docker exec -e REDISCLI_AUTH rct-redis redis-cli --no-auth-warning INFO persistence
++docker exec -e REDISCLI_AUTH rct-redis redis-cli --no-auth-warning CONFIG GET dir
++docker exec -e REDISCLI_AUTH rct-redis redis-cli --no-auth-warning CONFIG GET dbfilename
++docker exec -e REDISCLI_AUTH rct-redis redis-cli --no-auth-warning CONFIG GET save
++docker exec -e REDISCLI_AUTH rct-redis redis-cli --no-auth-warning CONFIG GET appendonly
++docker exec -e REDISCLI_AUTH rct-redis redis-cli --no-auth-warning INFO memory
++docker exec -e REDISCLI_AUTH rct-redis redis-cli --no-auth-warning DBSIZE
++docker exec rct-rabbitmq rabbitmq-diagnostics -q status
++docker exec rct-rabbitmq rabbitmqctl list_vhosts name
++docker exec rct-rabbitmq rabbitmqctl list_queues -p / name durable messages_ready messages_unacknowledged consumers
++docker exec rct-rabbitmq rabbitmqctl list_bindings -p / source_name destination_name destination_kind routing_key
++```
++
++Повтори queue/binding inventory для каждого фактически обнаруженного vhost.
++Запиши nodename/hostname, версии/digests, volume/project identity, topology и
++счётчики основного backlog/DLQ; cookie сохраняется отдельно как secret, его значение
++не попадает в журнал. Нет прежней identity, версии, состава persistence или
++инвентаря checkpoint — **STOP**, не поднимать приложение на пустом store.
++
++Redis нельзя целиком объявлять disposable cache. `notif:prefs:user:*` и legacy
++`bot:notif:*`/`bot:notif:cat:*` хранят настройки уведомлений без TTL; отсутствие
++означает включённую доставку. Потеря/eviction меняет выбор пользователя, а
++`allkeys-lru` не гарантирует его сохранность. Отдельно существуют OTP/rate counters,
++одноразовые `ws_ticket:*`/`report_download_ticket:*`, bot dedup leases/completion
++и message trackers. Возврат старого snapshot может вернуть уже использованную
++capability или потерять dedup; массовый `FLUSHDB` также не является безопасным
++восстановлением. Проверяй настройки в изоляции без внешней доставки. Политика
++утраты, исключения ephemeral keys и восстановления защит от replay ещё не принята;
++до её согласования Auth/выдача tickets и consumers остаются остановленными.
++
++Durable Rabbit queues и экспорт definitions не содержат гарантии сохранности
++сообщений. DB outbox повторяет `PENDING`, а не автоматически все `SENT`; у bot
++есть отдельный publisher и очередь Telegram send в памяти. Нулевые broker unacked
++не доказывают доставку пользователю. Не менять `SENT` на `PENDING`, не purge/DLQ
++replay и не создавать новый event ID ради восстановления без отдельного
++согласованного плана reconciliation.
++
++### Новый согласованный checkpoint
++
++1. После отдельного разрешения перекрой ingress и останови всех writers,
++   schedulers, publishers и consumers: Auth, Academic, Schedule, Attendance,
++   notification-web и notification-bot; Gateway/BFF не должны принимать новые
++   команды. Дождись завершения транзакций и зафиксируй broker ready/unacked/DLQ.
++2. Сохрани принятый PG/Mongo/files bundle с `--quiesced` по процедуре выше.
++   Не менять его manifest и не добавлять туда secrets/оперативные stores.
++3. Для Redis выбран native persistence checkpoint: отдельно разрешённый `BGSAVE`,
++   затем `INFO persistence` с `rdb_bgsave_in_progress=0`,
++   `rdb_last_bgsave_status=ok` и подтверждённым новым `LASTSAVE`. Сохранять завершённый
++   RDB из фактических `dir`/`dbfilename`, вместе с TTL и защищённой контрольной суммой.
++   Если фактически включён AOF, сначала согласовать сохранение полного его native
++   набора/manifest; одного произвольного файла недостаточно. Здесь BGSAVE/copy
++   не выполнялись; reset TTL и преобразование key values не допускаются этим планом.
++4. Для Rabbit выбран полный **cold** state: после остановки publishers/consumers
++   отдельно разрешённо остановить broker, сохранить весь фактический volume
++   `/var/lib/rabbitmq` при остановленном broker. Зафиксировать прежние nodename,
++   version/image, vhosts/topology/counters и защищённую cookie identity. Definitions
++   пригодны для сверки topology, но не заменяют message store. Cold state содержит
++   чувствительные данные: хранить с теми же ограничениями, что secrets.
++5. Связать DB bundle, Redis и Rabbit state с одним checkpoint и остановленными
++   writers; определить защищённое внешнее хранение и проверить доступ к ранее
++   сохранённой копии отдельно. Writers не возобновлять по одному до завершения
++   capture и проверки всех компонентов. Не назначать RPO/RTO/retention по умолчанию.
++
++### После катастрофы: изоляция, восстановление, возврат
++
++После утраты источника восстанавливай **последний ранее согласованный checkpoint**.
++Новый BGSAVE/cold snapshot потерянного источника создать нельзя. Если сохранился
++только DB bundle, Redis/Rabbit восстановление этим комплектом не доказано:
++зафиксировать утрату и STOP до решения владельца, а не молча принять пустые stores.
++
++1. Подготовить отдельную изолированную цель с известными compatible versions,
++   новым resource mapping и закрытым ingress/egress providers. Проверить bundle
++   принятым restore `--dry-run`; фактический restore сохраняет fresh/disposable
++   guards ниже. Не менять исходные backup или прежние volumes.
++2. Оператор восстанавливает конфигурацию/signing keys/TLS из защищённого источника
++   до запуска Auth: отсутствие JWT keys вызывает генерацию новой identity в
++   `JwtService`. Directed credentials обоих направлений и остальные required vars
++   проверяются существующим `scripts/validate-env-prod.sh` отдельно; в evidence
++   сохранять санитарный результат/exit code, не raw credentials/вывод validator.
++3. Восстановить PG/Mongo/files принятой процедурой и сверить inventory. Затем
++   восстановить согласованное Redis native state и полный cold Rabbit state только
++   в свои изолированные цели, с прежним nodename/cookie identity, permissions и
++   совместимой версией. Exact Rabbit nodename mapping — обязательная часть отдельного
++   операторского плана; текущий Compose его автоматически не обеспечивает.
++4. Сначала поднять только инфраструктуру, без application writers/consumers.
++   Повторить discovery, сверить persistence/topology/backlog/DLQ с checkpoint,
++   настройки уведомлений и TTL с прошедшим временем. Несовпадение, неизвестные
++   snapshots, ошибка integrity или отсутствие authority secrets — STOP.
++5. До запуска Auth/delivery согласовать последствия rollback для одноразовых
++   capabilities, rate limits/dedup, DB sessions и broker delivery; проверить
++   целевые read/auth и отказ replay в изоляции. Затем по отдельному разрешению
++   включать authority/domain services, consumers/publishers, BFF/Gateway и ingress.
++   Внешнюю доставку включать после reconciliation preferences/backlog/DLQ.
++
++При отказе держать цель изолированной, сохранить логи и checkpoint artifacts,
++не повторять restore поверх частичного состояния и не переключать ingress.
++Возврат возможен только на отдельно проверенный прежний комплект/authority;
++возврат на утраченный или изменённый источник не обещается. Удаление любых volumes,
++backup/целей и production переключение требуют отдельной операции и разрешения.
++
++Нерешённые решения владельца: допустимая утрата Redis preferences и ephemeral
++состояния, предотвращение rollback/replay capabilities/dedup, broker message loss
++и reconciliation, checkpoint cadence/RPO/RTO, offsite provider/доступ/шифрование,
++retention и disaster secrets/key recovery. Read-only preflight и этот порядок
++не принимают эти решения и не подтверждают actual production DR.
++

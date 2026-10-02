@@ -1,0 +1,49 @@
+{
+  "baseline": "178c196a13f28732ed854411e0d451346ffd9806",
+  "revision": "baseline plus scoped product.diff, frozen in local commit",
+  "environment": "Windows PowerShell, Python3.12, Git Bash5.3.15 syntax-only",
+  "checks": [
+    {
+      "command": "git status --short --untracked-files=no",
+      "exit_code": 0,
+      "result": "trackedclean before safe branch; foreign untracked evidence preserved"
+    },
+    {
+      "command": "git switch -c codex/recovery-policy-1002 178c196a",
+      "exit_code": 0,
+      "result": "ordinary switch; no reset/stash/clean"
+    },
+    {
+      "command": "python -X utf8 .agent/evidence/recovery-policy-20261002/check-docs.py (initial)",
+      "exit_code": 1,
+      "log": "doc-check.log",
+      "result": "Windows raw ../ path falsely reports existing RequestAttachmentDocument.java missing; normalized path resolves to235chars and exists. No product/link defect inferred."
+    },
+    {
+      "command": "python -X utf8 .agent/evidence/recovery-policy-20261002/check-docs.py (normalized)",
+      "exit_code": 0,
+      "log": "doc-check-normalized.log",
+      "result": "6relative links exist; extracted newdiscovery block bash-n exit0; documented commands NOT executed"
+    },
+    {
+      "command": "git diff --check -- docs/operations/runbooks/backup-restore.md",
+      "exit_code": 0,
+      "result": "scoped whitespacePASS"
+    },
+    {
+      "command": "git diff 178c196a --name-only -- scripts docker-compose.prod.yml .env.prod.example",
+      "exit_code": 0,
+      "result": "empty: accepted scripts/Compose/config unchanged"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0,
+      "result": "all scoped docs/evidence whitespacePASS"
+    }
+  ],
+  "runtime": "N/A: docs-only; no Docker/native snapshot/stop/export/restore/provider commands executed",
+  "limits": "Production Redis/Rabbit DR/RPO/RTO/offsite/secrets and rollback capabilities/dedup policy remain unresolved. Discovery syntax is not runtime validation. Operator must STOP on absent identity/version/checkpoint/evidence/policy.",
+  "runs": "One initial docs checker fail from Windows raw-path length, one corrected normalized checkerPASS. No repeatedPASS, heavy suite, productchanges or fixture expansion.",
+  "contract_delta": "Root rejected generic selfattestedpreflight after bounded technicalpath request; uncommitted draft removed. Frozen scope docs-only with concrete nativeRedis/coldRabbitconditions; no generatedpolicyvalidator remains.",
+  "requested_model": "Sol6.1high; actual runtime fields not exposed; no children/Terra"
+}

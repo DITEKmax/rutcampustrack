@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Users\maksd\IntelliJIDEA\rutcampustrack\.agent\worktrees\headman-assistants-delivery-20260922\.agent\evidence\recovery-policy-20261002\check-docs.py", line 12, in <module>
+    assert (doc.parent / link.split("#")[0]).exists(), "Missing relative link"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Missing relative link

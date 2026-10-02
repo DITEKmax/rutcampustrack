@@ -1,0 +1,1 @@
+PASS relative links=6; discovery bash -n exit=0; no documented command executed; runtime N/A
